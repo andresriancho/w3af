@@ -250,7 +250,7 @@ class w3af_core_strategy(object):
                 # plugin exceptions in this way, and not framework 
                 # exceptions                        
                 exec_info = sys.exc_info()
-                exception_handler.handle( status, e , exec_info )
+                exception_handler.handle( self._w3af_core.status, e , exec_info )
             
 
     def _discover_and_bruteforce( self ):
@@ -558,7 +558,7 @@ class w3af_core_strategy(object):
                     # plugin exceptions in this way, and not framework 
                     # exceptions                    
                     exec_info = sys.exc_info()
-                    exception_handler.handle( status, e , exec_info )
+                    exception_handler.handle( self._w3af_core.status, e , exec_info )
                 
                 # Performed one test, report it
                 self._w3af_core.progress.inc()
@@ -614,7 +614,7 @@ class w3af_core_strategy(object):
                     # plugin exceptions in this way, and not framework 
                     # exceptions                    
                     exec_info = sys.exc_info()
-                    exception_handler.handle( status, e , exec_info )
+                    exception_handler.handle( self._w3af_core.status, e , exec_info )
                 
                 else:
                     res.extend( new_frs )

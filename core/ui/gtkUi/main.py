@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
-import pprint
 import StringIO
 import sys
 
@@ -66,11 +65,14 @@ from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare, exception_handler
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
 from . import export_request
 from . import entries, encdec, messages, logtab, pluginconfig, confpanel
 from . import wizard, guardian, proxywin
+
 from core.ui.gtkUi.splash import Splash
+from core.ui.gtkUi.exception_handling import unhandled
+from core.ui.gtkUi.exception_handling import handled
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
@@ -650,33 +652,19 @@ class MainApp(object):
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
-                # print 'Ctrl+C found, exiting!'
                 pass
             except Exception:
                 gobject.idle_add(self._scan_stopfeedback)
                 
-                def pprint_plugins():
-                    # Return a pretty-printed string from the plugins dicts
-                    import copy
-                    from itertools import chain
-                    plugs_opts = copy.deepcopy(self.w3af.plugins.getAllPluginOptions())
-                    plugs = self.w3af.plugins.getAllEnabledPlugins()
-
-                    for ptype, plist in plugs.iteritems():
-                        for p in plist:
-                            if p not in chain(*(pt.keys() for pt in \
-                                                    plugs_opts.itervalues())):
-                                plugs_opts[ptype][p] = {}
-                    
-                    plugins = StringIO.StringIO()
-                    pprint.pprint(plugs_opts, plugins)
-                    return  plugins.getvalue()
-                
-                plugins_str = pprint_plugins()
+                #
+                #    Here we handle the case of an exception that was raised
+                #    and did not get handled by coreHelpers.exception_handler
+                #
                 try:
+                    plugins_str = pprint_plugins(self.w3af)
                     exc_class, exc_inst, exc_tb = sys.exc_info()
-                    exception_handler.handle_crash(exc_class, exc_inst,
-                                                   exc_tb, plugins=plugins_str)
+                    unhandled.handle_crash(exc_class, exc_inst,
+                                           exc_tb, plugins=plugins_str)
                 finally:
                     del exc_tb
         
@@ -887,7 +875,7 @@ class MainApp(object):
     
     def report_bug(self, action):
         '''Report bug to Sourceforge'''
-        from .bug_report import sourceforge_bug_report
+        from .exception_handling.bug_report import sourceforge_bug_report
         sfbr = sourceforge_bug_report()
         sfbr.report_bug()
 

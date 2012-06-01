@@ -21,11 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk
-
-# w3af crash File creation
-from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 import cgi
 import webbrowser
+
+from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.ui.gtkUi.helpers import endThreads
 
 

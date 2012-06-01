@@ -24,6 +24,7 @@ from collections import deque
 import httplib
 import os
 import re
+import sys
 import socket
 import threading
 import time
@@ -31,7 +32,8 @@ import traceback
 import urllib, urllib2
 import sqlite3
 
-
+from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
@@ -76,9 +78,7 @@ class xUrllib(object):
         self._errorCount = {}
         self._countLock = threading.RLock()
         
-        self._dnsCache()
         self._tm = thread_manager
-        self._sizeLRU = LRU(200)
         
         # User configured options (in an indirect way)
         self._grepPlugins = []
@@ -155,47 +155,7 @@ class xUrllib(object):
                          % e)
         else:
             om.out.debug('Cleared urllib2 local cache.')
-    
-    def _dnsCache( self ):
-        '''
-        DNS cache trick
-        This will speed up all the test ! Before this dns cache voodoo magic every request
-        to the http server needed a dns query, this is slow on some networks so I added
-        this feature.
         
-        This method was taken from:
-        # $Id: download.py,v 1.30 2004/05/13 09:55:30 torh Exp $
-        That is part of :
-        swup-0.0.20040519/
-        
-        Developed by:
-        #  Copyright 2001 - 2003 Trustix AS - <http://www.trustix.com>
-        #  Copyright 2003 - 2004 Tor Hveem - <tor@bash.no>
-        #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
-        '''
-        om.out.debug('Enabling _dnsCache()')
-        
-        if not hasattr( socket, 'already_configured' ):
-            socket._getaddrinfo = socket.getaddrinfo
-        
-        _dns_cache = LRU(200)
-        def _caching_getaddrinfo(*args, **kwargs):
-            try:
-                query = (args)
-                res = _dns_cache[query]
-                #This was too noisy and not so usefull
-                om.out.debug('Cached DNS response for domain: ' + query[0] )
-                return res
-            except KeyError:
-                res = socket._getaddrinfo(*args, **kwargs)
-                _dns_cache[args] = res
-                om.out.debug('DNS response from DNS server for domain: ' + query[0] )
-                return res
-        
-        if not hasattr( socket, 'already_configured' ):      
-            socket.getaddrinfo = _caching_getaddrinfo
-            socket.already_configured = True
-    
     def _init(self):
         if self.settings.needUpdate or self._opener is None:
             self.settings.needUpdate = False
@@ -230,9 +190,10 @@ class xUrllib(object):
     
     def sendRawRequest(self, head, postdata, fixContentLength=True):
         '''
-        In some cases the xUrllib user wants to send a request that was typed in a textbox or is stored in a file.
-        When something like that happens, this library allows the user to send the request by specifying two parameters
-        for the sendRawRequest method:
+        In some cases the xUrllib user wants to send a request that was typed 
+        in a textbox or is stored in a file. When something like that happens,
+        this library allows the user to send the request by specifying two 
+        parameters for the sendRawRequest method:
         
         @parameter head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
         @parameter postdata: The postdata, if any. If set to '' or None, no postdata is sent.
@@ -422,7 +383,8 @@ class xUrllib(object):
             msg = 'The response didn\'t contain a content-length header. Unable to return the'
             msg += ' remote file size of request with id: ' + str(res.id)
             om.out.debug( msg )
-            # I prefer to fetch the file, before this om.out.debug was a "raise w3afException", but this didnt make much sense
+            # I prefer to fetch the file, before this om.out.debug was a "raise w3afException",
+            # but this didnt make much sense
             return 0
         
     def __getattr__(self, method_name):
@@ -807,7 +769,7 @@ class xUrllib(object):
         if self._grepPlugins and domain in cf.cf.getData('targetDomains'):
             
             # I'll create a fuzzable request based on the urllib2 request object
-            fuzzReq = create_fuzzable_request(
+            fr = create_fuzzable_request(
                                         url_instance,
                                         request.get_method(),
                                         request.get_data(),
@@ -821,7 +783,7 @@ class xUrllib(object):
                 #
                 #   For debugging, do not remove, only comment out if needed.
                 #
-                self._grep_worker( grep_plugin, fuzzReq, response )
+                self._grep_worker( grep_plugin, fr, response )
                 
                 # TODO: Analyze if creating a different threadpool for grep workers speeds 
                 #       up the whole process
@@ -843,9 +805,6 @@ class xUrllib(object):
         @parameter response: The response which was generated by the request (first parameter).
                              A httpResponse object.
         '''
-        #msg = 'Starting "'+ grep_plugin.getName() +'" grep_worker for response: ' + repr(response)
-        #om.out.debug( msg )
-        
         # Create a wrapper that will timeout in "timeout_seconds" seconds.
         #
         # TODO:
@@ -865,32 +824,19 @@ class xUrllib(object):
             (grep_plugin.getName(), timeout_seconds)
             om.out.error(msg)
         except Exception, e:
-            msg = 'Error in grep plugin, "%s" raised the exception: %s. ' \
-            'Please report this bug to the w3af sourceforge project page ' \
-            '[ https://sourceforge.net/apps/trac/w3af/newticket ] ' \
-            '\nException: %s' % (grep_plugin.getName(), str(e), 
-                                 traceback.format_exc(1))
-            om.out.error(msg)
-            om.out.error(getattr(e, 'orig_traceback_str', '') or \
-                            traceback.format_exc())
+            # Smart error handling, much better than just crashing.
+            # Doing this here and not with something similar to:
+            # sys.excepthook = handle_crash because we want to handle
+            # plugin exceptions in this way, and not framework 
+            # exceptions
+            class fake_status(w3af_core_status):
+                pass
 
-        #om.out.debug('Finished grep_worker for response: ' + repr(response))
+            status = fake_status()
+            status.set_running_plugin( grep_plugin.getName() )
+            status.set_phase( 'grep' )
+            status.set_current_fuzzable_request( request )
+            
+            exec_info = sys.exc_info()
+            exception_handler.handle( status, e , exec_info )
 
-_abbrevs = [
-    (1<<50L, 'P'),
-    (1<<40L, 'T'), 
-    (1<<30L, 'G'), 
-    (1<<20L, 'M'), 
-    (1<<10L, 'k'),
-    (1, '')
-    ]
-
-def greek(size):
-    """
-    Return a string representing the greek/metric suffix of a size
-    """
-    for factor, suffix in _abbrevs:
-        if size > factor:
-            break
-    return str( int(size/factor) ) + suffix
-    

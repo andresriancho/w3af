@@ -105,7 +105,7 @@ class ExceptionData(object):
         self.fuzzable_request = current_status.get_current_fuzzable_request()
 
     def __str__(self):
-        res = 'An exception was found while running %s.%s on "%s": "%s". Traceback:\n %s'
+        res = 'An exception was found while running %s.%s on "%s": "%s". Traceback:\n%s'
         tbstr = '\n'.join([str(i) for i in self.traceback])
         res = res % (self.phase, self.plugin, self.fuzzable_request, self.exception, tbstr)
         return res
