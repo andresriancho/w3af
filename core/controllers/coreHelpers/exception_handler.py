@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import md5
+import random
 import threading
 import traceback
 
@@ -45,6 +47,8 @@ class ExceptionHandler(object):
         # fill the memory with exceptions?
         self._exception_data = []
         self._lock = threading.RLock()
+        
+        self._scan_id = None
 
     def handle( self, current_status, exception, exec_info ):
         '''
@@ -94,7 +98,90 @@ class ExceptionHandler(object):
                 self._exception_data.append(edata)
 
                 om.out.information( str(edata) )
-                    
+
+    def get_all_exceptions():
+        return self._exception_data
+    
+    def generate_summary_str(self):
+        '''
+        @return: A string with a summary of the exceptions found during the
+                 current scan. This is mostly used for printing in the console
+                 but can be used anywhere.
+        
+        @see: generate_summary method for a way of getting a summary in a
+              different format.
+        '''
+        fmt_with_exceptions = 'During the current scan (with id: %s) w3af caught '
+        fmt_with_exceptions += '%s exceptions in it\'s plugins. The scan was able '
+        fmt_with_exceptions += ' to continue by ignoring those failures but the '
+        fmt_with_exceptions += ' scan result is most likely incomplete.\n\n'
+        fmt_with_exceptions += 'These are the phases and plugins that raised '
+        fmt_with_exceptions += 'exceptions:\n'
+        fmt_with_exceptions += '%s\n\n'
+        fmt_with_exceptions += 'We recommend you report these vulnerabilities '
+        fmt_with_exceptions += 'to the developers in order to help increase the '
+        fmt_with_exceptions += 'project\'s stability.'
+        
+        fmt_without_exceptions = 'No exceptions were raised during scan with id: %s.'
+        
+        summary = self.generate_summary()
+        
+        if len( summary['total_exceptions'] ):
+            phase_plugin_str = ''
+            for phase in summary['exceptions']:
+                for exception in summary['exceptions'][phase]:
+                    phase_plugin_str += '- %s.%s\n' % (phase,exception.plugin)
+            
+            with_exceptions = fmt_with_exceptions % ( self.get_scan_id() ,
+                                                      summary['total_exceptions'],
+                                                      phase_plugin_str)
+            return with_exceptions
+        else:
+            without_exceptions = fmt_without_exceptions % self.get_scan_id()
+            return without_exceptions
+    
+    def generate_summary(self):
+        '''
+        @return: A dict with information about exceptions.
+        '''
+        res = {}
+        res['total_exceptions'] = len(self._exception_data)
+        res['exceptions'] = {}
+        exception_dict = res['exceptions']
+        
+        for exception in self._exception_data:
+            phase = exception.get_phase()
+            
+            data = (exception.plugin,
+                    exception.fuzzable_request,
+                    exception.e,
+                    exception.traceback)            
+            
+            if phase not in exception_dict:
+                exception_dict[phase] = [ data, ]
+            else:
+                exception_dict[phase].append( data )
+        
+        return res
+    
+    def get_scan_id(self):
+        '''
+        @return: A scan identifier to bind all bug reports together so that we
+                 can understand them much better when looking at the individual
+                 Trac bug reports.
+                 
+                 Note that this will NOT leak any personal information to our
+                 systems.
+        '''
+        if not self._scan_id:
+            hash_data = ''
+            hash_data += random.randint(1,50000000) * random.randint(1,50000000) 
+            
+            m = md5.new(hash_data)
+            self._scan_id = m.hexdigest()[:10]
+        
+        return self._scan_id
+
         
 class ExceptionData(object):
     def __init__(self, current_status, e, tb):

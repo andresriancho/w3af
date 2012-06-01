@@ -26,14 +26,14 @@ import traceback
 import tempfile
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.data.fuzzer.fuzzer import createRandAlNum
-from core.ui.gtkUi import bug_report
-from core.ui.gtkUi import helpers
-from core.ui.gtkUi.exception_handling.helpers import VERSIONS, gettempdir
+from core.data.misc.cleanup_bug_report import cleanup_bug_report
+
+from core.ui.gtkUi.exception_handling.helpers import gettempdir
+from core.ui.gtkUi.exception_handling.handled_bug_report import handled_bug_report
 
 
 
-def handle_exceptions():
+def handle_exceptions(enabled_plugins=''):
     '''
     In w3af's new exception handling method, some exceptions raising from
     plugins are "allowed" and the scan is NOT stopped because of them.
@@ -46,21 +46,28 @@ def handle_exceptions():
     
     The main class in this game is core.controllers.coreHelpers.exception_handler
     and you should read it before this one.
-    '''
+    '''    
     for exception in exception_handler.get_all_exceptions():
         
-        # Save the info to a file for later analysis
+        # Save the info to a file for later analysis by the user
         exception_str = str(exception)
-        filename = create_crash_file(exception)
+
+        # Do not disclose user information in bug reports
+        clean_exception = cleanup_bug_report(exception_str)
+        
+        filename = create_crash_file(clean_exception)
     
     # We do this because it would be both awful and useless to simply
     # print all exceptions one below the other in the console
-    print exception_handler.generate_summary()
+    print exception_handler.generate_summary_str()
     print 'Complete information related to the exceptions is available at "%s"' % gettempdir()
     
-    # Create the dialog that allows the user to send the bugs to Trac
-    bug_report_win = bug_report.bug_report_window( _('Bug detected!'), exception,
-                                                    filename, plugins)
+    # Create the dialog that allows the user to send the bugs, potentially more
+    # than one since we captured all of them during the scan using the new
+    # exception_handler, to Trac.
+    bug_report_win = handled_bug_report( _('Bug detected!'),
+                                         clean_exception,
+                                         enabled_plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

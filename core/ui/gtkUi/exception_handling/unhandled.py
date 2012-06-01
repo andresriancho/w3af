@@ -26,7 +26,7 @@ import traceback
 from core.ui.gtkUi import bug_report
 from core.ui.gtkUi import helpers
 from core.ui.gtkUi.exception_handling.helpers import pprint_plugins, create_crash_file
-
+from core.data.misc.cleanup_bug_report import cleanup_bug_report 
 
 
 def handle_crash(type, value, tb, plugins=''):
@@ -44,12 +44,16 @@ def handle_crash(type, value, tb, plugins=''):
     exception = "".join(exception)
     print exception
 
+    # Do not disclose user information in bug reports
+    clean_exception = cleanup_bug_report(exception)
+
     # Save the info to a file for later analysis
-    filename = create_crash_file(exception)
+    filename = create_crash_file( clean_exception )
     
     # Create the dialog that allows the user to send the bug to Trac
-    bug_report_win = bug_report.bug_report_window( _('Bug detected!'), exception,
-                                                    filename, plugins)
+    bug_report_win = bug_report.bug_report_window( _('Bug detected!'), 
+                                                   clean_exception,
+                                                   filename, plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()
