@@ -31,8 +31,10 @@ def cleanup_bug_report( input ):
              all references to the target site, operating system user name, etc.
     '''
     user_re = '/home/(.*?)/'
-    # TODO: Need a regex for Windows
-    # TODO: Apply regex.sub
+    user_re_win= 'C:\\Documents and Settings\\(.*?)\\'
+    
+    input = re.sub(user_re, '/home/user/', input)
+    input = re.sub(user_re_win, 'C:\\Documents and Settings\\user\\', input)
     
     targets = cf.cf.getData('targets')
     domains = [url.getDomain() for url in targets]
