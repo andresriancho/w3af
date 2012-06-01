@@ -1,5 +1,5 @@
 '''
-get_local_ip.py
+get_net_iface.py
 
 Copyright 2009 Andres Riancho
 
