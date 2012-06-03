@@ -39,6 +39,8 @@ class bruteforcer:
         # Config params
         self._usersFile = os.path.join('core', 'controllers', 'bruteforce','users.txt')
         self._passwdFile = os.path.join('core','controllers','bruteforce','passwords.txt')
+        self._comboFile = "" 
+        self._comboSeparator = ":"
         self._useMailUsers = True
         self._useSvnUsers = True
         self._stopOnFirst = True
@@ -53,8 +55,10 @@ class bruteforcer:
         self._alreadyInit = False
         self._usersFD = None
         self._passwordsFD = None
+        self._comboFD = None
         self._eofPasswords = False
         self._eofUsers = False
+        self._eofCombo = False
         self._nextUser = True
         self._leeted_passwords = []
         
@@ -64,17 +68,27 @@ class bruteforcer:
         '''
         if not self._alreadyInit:
             self._alreadyInit = True
-            try:
+
+        try:
+            if self._usersFile != "":
                 self._usersFD = open( self._usersFile )
-            except:
-                raise w3afException('Cant open ' + self._usersFile + ' file.')
-            try:
+        except:
+            raise w3afException('Can\'t open ' + self._usersFile + ' file.')
+
+        try:
+            if self._passwdFile != "":
                 self._passwordsFD = open( self._passwdFile )
-            except:
-                raise w3afException('Cant open ' + self._passwdFile + ' file.')
+        except:
+            raise w3afException('Can\'t open ' + self._passwdFile + ' file.')
+
+        try:
+            if self._comboFile != "":
+                self._comboFD = open( self._comboFile )
+        except:
+            raise w3afException('Can\'t open ' + self._comboFile + ' file.')
             
-            self._genSpecialPasswords()
-            self._genSpecialUsers()
+        self._genSpecialPasswords()
+        self._genSpecialUsers()
     
     def _genSpecialUsers( self ):
         '''
@@ -120,8 +134,12 @@ class bruteforcer:
         self._specialPasswords = list(set(self._specialPasswords))
             
     def stop( self ):
-        self._passwordsFD.close()
-        self._usersFD.close()
+        if self._passwordsFD != None:
+            self._passwordsFD.close()
+        if self._usersFD != None:
+            self._usersFD.close()
+        if self._comboFD != None:
+            self._comboFD.close()
     
     def _getPassword( self, user ):
         '''
@@ -129,6 +147,9 @@ class bruteforcer:
         '''
         passwd = None
         
+        if self._passwordsFD == None:
+            self._eofPasswords = True
+
         if self._eofPasswords:
             # The file with passwords is now over, here i'll add the "special" passwords
             self._specialPassIndex += 1
@@ -165,6 +186,9 @@ class bruteforcer:
         '''
         user = None
         
+        if self._usersFD == None:
+            self._eofUsers = True
+
         if self._eofUsers:
             # The file with users is now over, here i'll add the "special" users
             
@@ -189,7 +213,34 @@ class bruteforcer:
                 user = self._user
                     
         return user
+
+    def _getCombo( self ):
+        '''
+        Get the user, password combo.
+        '''
+        user = None
+        passwd = None
+
+        if self._comboFD == None:
+            self._eofCombo = True
+
+        if self._eofCombo:
+            # The combo file is now over, let's continue with the "special" users
+            raise w3afException('No more users to test.')
+        else:
+            line = self._comboFD.readline()
+
+            om.out.debug( "Adding combo '"+line.strip()+"' to combinations" )
+            if line == '':
+                self._eofCombo = True
     
+        try:
+            user,passwd = line.strip().split(self._comboSeparator)
+        except:
+            user = passwd = ""
+        
+        return user,passwd
+
     def getNextString( self ):
         '''
         This is used for "password only" logins.
@@ -200,9 +251,13 @@ class bruteforcer:
         '''
         @return: The next user/password combination
         '''     
-        user = self._getUser()
-        passwd = self._getPassword( user )
-        
+        try:
+            user = self._getUser()
+            passwd = self._getPassword( user )
+        except w3afException:
+            # Users and passwords finished, now check for combos
+            return self._getCombo()
+
         return user, passwd
         
     def getNextPassword(self):
@@ -235,21 +290,22 @@ class bruteforcer:
         '''
         def sortfunc(x,y):
             return cmp(y[1],x[1])
-            
-        items = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' ).items()
-        items.sort(sortfunc)
         
-        listLen = len(items)
-        if listLen == 0:
-            msg = 'No password profiling information collected, please try to enable webSpider'
-            msg += ' plugin and try again.'
+        kb_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+        
+        if not kb_data:
+            msg = 'No password profiling information collected, please try to enable'
+            msg += ' discovery.webSpider and grep.passwordProfiling plugins and try again.'
             om.out.information( msg )
-        if listLen > self._profilingNumber:
-            xLen = self._profilingNumber
-        else:
-            xLen = listLen
+            return []
         
-        return [ x[0] for x in items[:xLen] ]
+        else:
+            items = kb_data.items()
+            items.sort(sortfunc)
+        
+            xlen = min(self._profilingNumber, len(items))
+            
+            return [ x[0] for x in items[:xlen] ]
         
     def setUsersFile( self, usersFile ):
         self._usersFile = usersFile
@@ -260,6 +316,16 @@ class bruteforcer:
         self._passwdFile = passwdFile
     
     def getPassFile( self ): return self._passwdFile
+
+    def setComboFile( self, comboFile ):
+        self._comboFile = comboFile
+    
+    def getComboFile( self ): return self._comboFile
+
+    def setComboSeparator( self, tf ):
+        self._comboSeparator = tf
+        
+    def getComboSeparator( self ): return self._comboSeparator
     
     def setPassEqUser( self, tf ):
         self._passEqUser = tf
@@ -303,7 +369,7 @@ class bruteforcer:
         Traceback (most recent call last):
             ...
         ValueError: The URL in the bruteforcer must be of urlParser.url_object type.
-        >>> url = url_object('http://www.google.com/')
+        >>> url = url_object('http://www.w3af.org/')
         >>> b = bruteforcer()
         >>> b.setURL(url)
         >>> b.getURL() == url
@@ -315,5 +381,4 @@ class bruteforcer:
         self._url = url
     
     def getURL( self ): return self._url
-    
     
