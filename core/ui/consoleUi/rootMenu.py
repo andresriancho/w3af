@@ -25,6 +25,7 @@ from core.ui.consoleUi.plugins import *
 from core.ui.consoleUi.profiles import *
 from core.ui.consoleUi.exploit import *
 from core.ui.consoleUi.kbMenu import *
+from core.ui.consoleUi.bug_report import bug_report_menu
 import core.controllers.miscSettings as ms
 #from core.ui.consoleUi.session import *
 from core.ui.consoleUi.util import *
@@ -62,6 +63,7 @@ class rootMenu(menu):
             'misc-settings' : (configMenu, ms.miscSettings()),
             'http-settings' : (configMenu, self._w3af.uriOpener.settings),
             'profiles' : profilesMenu,
+            'bug-report' : bug_report_menu,
             'exploit' : exploit,
             'kb': kbMenu
         })

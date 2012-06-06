@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.kb.shell as shell
-from core.ui.consoleUi.util import *
+from core.ui.consoleUi.util import suggest
 from core.ui.consoleUi.history import *
 from core.ui.consoleUi.help import *
 import core.controllers.outputManager as om

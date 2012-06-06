@@ -99,7 +99,10 @@ class ExceptionHandler(object):
 
                 om.out.information( str(edata) )
 
-    def get_all_exceptions():
+    def clear(self):
+        self._exception_data = []
+                
+    def get_all_exceptions(self):
         return self._exception_data
     
     def generate_summary_str(self):

@@ -26,9 +26,9 @@ import traceback
 import tempfile
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.data.misc.cleanup_bug_report import cleanup_bug_report
+from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
-from core.ui.gtkUi.exception_handling.helpers import gettempdir
+from core.controllers.exception_handling.helpers import gettempdir
 from core.ui.gtkUi.exception_handling import handled_bug_report
 
 

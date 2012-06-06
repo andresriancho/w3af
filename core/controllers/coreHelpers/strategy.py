@@ -69,6 +69,10 @@ class w3af_core_strategy(object):
         
         @return: No value is returned.
         '''
+        # If this is not the first scan, I want to clear the old bug data that
+        # might be stored in the exception_handler.
+        exception_handler.clear()
+        
         try:
             self._pre_discovery()
             

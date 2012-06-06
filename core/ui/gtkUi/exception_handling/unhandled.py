@@ -25,8 +25,8 @@ import traceback
 
 from core.ui.gtkUi import helpers
 from core.ui.gtkUi.exception_handling import unhandled_bug_report
-from core.ui.gtkUi.exception_handling.helpers import pprint_plugins, create_crash_file
-from core.data.misc.cleanup_bug_report import cleanup_bug_report 
+from core.controllers.exception_handling.helpers import pprint_plugins, create_crash_file
+from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
 
 def handle_crash(type, value, tb, plugins=''):

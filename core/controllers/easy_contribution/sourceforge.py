@@ -84,7 +84,7 @@ $plugins
                 m.update(time.ctime())
                 bug_summary = m.hexdigest()
         
-        from core.ui.gtkUi.exception_handler import VERSIONS
+        from core.controllers.exception_handling.helpers import VERSIONS
         bdata = {'plugins': plugins, 't_back': tback,
                  'user_desc': desc, 'w3af_v': VERSIONS}
 
@@ -103,7 +103,7 @@ $plugins
 class SourceforgeXMLRPC(Sourceforge):
     
     LOGIN_URL = "https://%s:%s@sourceforge.net/apps/trac/w3af/login/xmlrpc"
-    
+        
     def __init__(self, username, passwd):
         Sourceforge.__init__(self, username, passwd)
         self._proxy = None
@@ -130,7 +130,7 @@ class SourceforgeXMLRPC(Sourceforge):
             print 'Error resolving DNS name for sourceforge. Is your DNS properly set?'
             return False
         return self.logged_in
-            
+
     def report_bug(self, summary, userdesc, tback='',
                    fname=None, plugins='', autogen=True):
         '''

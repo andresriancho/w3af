@@ -24,6 +24,7 @@ import pprint
 import gtk
 import sys
 import tempfile
+import StringIO
 
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.data.fuzzer.fuzzer import createRandAlNum
