@@ -29,7 +29,7 @@ from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.data.misc.cleanup_bug_report import cleanup_bug_report
 
 from core.ui.gtkUi.exception_handling.helpers import gettempdir
-from core.ui.gtkUi.exception_handling.handled_bug_report import handled_bug_report
+from core.ui.gtkUi.exception_handling import handled_bug_report
 
 
 
@@ -65,9 +65,9 @@ def handle_exceptions(enabled_plugins=''):
     # Create the dialog that allows the user to send the bugs, potentially more
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Trac.
-    bug_report_win = handled_bug_report( _('Bug detected!'),
-                                         clean_exception,
-                                         enabled_plugins)
+    bug_report_win = handled_bug_report.bug_report_window( _('Bug detected!'),
+                                                           clean_exception,
+                                                           enabled_plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

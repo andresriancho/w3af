@@ -1,7 +1,7 @@
 '''
-bug_report.py
+common_windows_report.py
 
-Copyright 2009 Andres Riancho
+Copyright 2012 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 import cgi
 import webbrowser
@@ -38,12 +37,8 @@ class simple_base_window(gtk.Window):
         self.connect("delete-event", gtk.main_quit)
         
     def _handle_cancel(self, widg):
-        # Exit w3af
         endThreads()
         self.destroy()
-        #gtk.main_quit()
-        #sys.exit(-1)
-
 
 class bug_report_result(simple_base_window):
 
@@ -400,4 +395,3 @@ class bug_report_window(simple_base_window, sourceforge_bug_report):
             text += _(' contained inside the <i>%s</i> file here: ' % self.fname)
             brf = bug_report_result(text, bug_url)
             brf.show()
-    

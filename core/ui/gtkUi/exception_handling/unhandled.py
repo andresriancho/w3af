@@ -23,8 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import traceback
 
-from core.ui.gtkUi import bug_report
 from core.ui.gtkUi import helpers
+from core.ui.gtkUi.exception_handling import unhandled_bug_report
 from core.ui.gtkUi.exception_handling.helpers import pprint_plugins, create_crash_file
 from core.data.misc.cleanup_bug_report import cleanup_bug_report 
 
@@ -51,9 +51,9 @@ def handle_crash(type, value, tb, plugins=''):
     filename = create_crash_file( clean_exception )
     
     # Create the dialog that allows the user to send the bug to Trac
-    bug_report_win = bug_report.bug_report_window( _('Bug detected!'), 
-                                                   clean_exception,
-                                                   filename, plugins)
+    bug_report_win = unhandled_bug_report.bug_report_window( _('Bug detected!'), 
+                                                             clean_exception,
+                                                             filename, plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

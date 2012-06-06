@@ -50,7 +50,7 @@ class bruteforcer:
         
         
         # Internal vars
-        self._alreadyInit = False
+        self._already_init = False
         self._usersFD = None
         self._passwordsFD = None
         self._eofPasswords = False
@@ -62,16 +62,18 @@ class bruteforcer:
         '''
         Open files and init some variables
         '''
-        if not self._alreadyInit:
-            self._alreadyInit = True
+        if not self._already_init:
+            self._already_init = True
+            
             try:
                 self._usersFD = open( self._usersFile )
             except:
-                raise w3afException('Cant open ' + self._usersFile + ' file.')
+                raise w3afException('Can\'t open ' + self._usersFile + ' file.')
+            
             try:
                 self._passwordsFD = open( self._passwdFile )
             except:
-                raise w3afException('Cant open ' + self._passwdFile + ' file.')
+                raise w3afException('Can\'t open ' + self._passwdFile + ' file.')
             
             self._genSpecialPasswords()
             self._genSpecialUsers()
