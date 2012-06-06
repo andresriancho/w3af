@@ -79,6 +79,10 @@ class webSpider(baseDiscoveryPlugin):
         om.out.debug('webSpider plugin is testing: %s' %
                      fuzzable_req.getURL())
         
+        import random
+        if random.randint(1,4) == 3:
+            raise Exception('Test')
+        
         if self._first_run:
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature
