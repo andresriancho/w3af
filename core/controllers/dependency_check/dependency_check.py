@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.dependency_check.lazy_load import lazy_load
 
+
 def dependency_check():
     '''
     This function verifies that the dependencies that are needed by the

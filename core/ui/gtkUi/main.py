@@ -29,8 +29,8 @@ import sys
 # presence of different libraries.
 # This task is done in different places because the consoleUi has different requirements
 # than the GTK UI.
-from . import dependencyCheck
-dependencyCheck.gtkui_dependency_check()
+from . import dependency_check
+dependency_check.gtkui_dependency_check()
 
 # Now that I know that I have them, import them!
 import pygtk
