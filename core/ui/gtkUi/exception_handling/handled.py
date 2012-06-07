@@ -20,15 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import os
-import sys
-import traceback
-import tempfile
-
 from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
-from core.controllers.exception_handling.helpers import gettempdir
+from core.controllers.exception_handling.helpers import gettempdir, create_crash_file
 from core.ui.gtkUi.exception_handling import handled_bug_report
 
 
@@ -47,15 +41,11 @@ def handle_exceptions(enabled_plugins=''):
     The main class in this game is core.controllers.coreHelpers.exception_handler
     and you should read it before this one.
     '''    
-    for exception in exception_handler.get_all_exceptions():
+    for edata in exception_handler.get_all_exceptions():
         
         # Save the info to a file for later analysis by the user
-        exception_str = str(exception)
-
-        # Do not disclose user information in bug reports
-        clean_exception = cleanup_bug_report(exception_str)
-        
-        filename = create_crash_file(clean_exception)
+        edata_str = edata.get_details()
+        filename = create_crash_file(edata_str)
     
     # We do this because it would be both awful and useless to simply
     # print all exceptions one below the other in the console
@@ -66,7 +56,7 @@ def handle_exceptions(enabled_plugins=''):
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Trac.
     bug_report_win = handled_bug_report.bug_report_window( _('Bug detected!'),
-                                                           clean_exception,
+                                                           edata_str,
                                                            enabled_plugins)
     
     # Blocks waiting for user interaction

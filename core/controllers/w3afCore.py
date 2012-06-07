@@ -303,4 +303,4 @@ class w3afCore(object):
         consecutive_number_generator.reset()
         
 # Singleton
-wCore = w3afCore()
+w3af_core = w3afCore()

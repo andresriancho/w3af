@@ -31,6 +31,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
 from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
@@ -254,7 +255,9 @@ class w3af_core_strategy(object):
                 # plugin exceptions in this way, and not framework 
                 # exceptions                        
                 exec_info = sys.exc_info()
-                exception_handler.handle( self._w3af_core.status, e , exec_info )
+                enabled_plugins = pprint_plugins(self._w3af_core)
+                exception_handler.handle( self._w3af_core.status, e , 
+                                          exec_info, enabled_plugins )
             
 
     def _discover_and_bruteforce( self ):
@@ -435,7 +438,9 @@ class w3af_core_strategy(object):
                         # plugin exceptions in this way, and not framework 
                         # exceptions                        
                         exec_info = sys.exc_info()
-                        exception_handler.handle( status, e , exec_info )
+                        enabled_plugins = pprint_plugins(self._w3af_core)
+                        exception_handler.handle( self._w3af_core.status, e , 
+                                                  exec_info, enabled_plugins )
                     
                     else:
                         # We don't trust plugins, i'll only work if this
@@ -562,7 +567,9 @@ class w3af_core_strategy(object):
                     # plugin exceptions in this way, and not framework 
                     # exceptions                    
                     exec_info = sys.exc_info()
-                    exception_handler.handle( self._w3af_core.status, e , exec_info )
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( self._w3af_core.status, e , 
+                                              exec_info, enabled_plugins )
                 
                 # Performed one test, report it
                 self._w3af_core.progress.inc()
@@ -618,7 +625,9 @@ class w3af_core_strategy(object):
                     # plugin exceptions in this way, and not framework 
                     # exceptions                    
                     exec_info = sys.exc_info()
-                    exception_handler.handle( self._w3af_core.status, e , exec_info )
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( self._w3af_core.status, e , 
+                                              exec_info, enabled_plugins )
                 
                 else:
                     res.extend( new_frs )

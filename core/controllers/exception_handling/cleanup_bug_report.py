@@ -29,22 +29,39 @@ def cleanup_bug_report( input ):
     '''
     @return: A string that contains a "clean" bug report. The function will remove
              all references to the target site, operating system user name, etc.
+    
+    >>> cleanup_bug_report( 'foo' )
+    'foo'
+    
+    >>> cleanup_bug_report( 'start /home/nsa/w3af/ end' )
+    'start /home/user/w3af/ end'
+    
+    >>> cleanup_bug_report( 'start C:\\Documents and Settings\\CIA\\ end' )
+    'start C:/user/ end'
+
+    >>> from core.data.parsers.urlParser import url_object
+    >>> target_url = url_object('http://www.target.com/')
+    >>> cf.cf.save('targets', [target_url,] )
+    >>> cleanup_bug_report( 'start http://www.target.com/ end' )
+    'start http://domain/ end'
+    
     '''
     user_re = '/home/(.*?)/'
-    user_re_win= 'C:\\Documents and Settings\\(.*?)\\'
+    user_re_win= 'C:\\\\Documents and Settings\\\\(.*?)\\\\'
     
     input = re.sub(user_re, '/home/user/', input)
-    input = re.sub(user_re_win, 'C:\\Documents and Settings\\user\\', input)
+    input = re.sub(user_re_win, 'C:/user/', input)
     
     targets = cf.cf.getData('targets')
-    domains = [url.getDomain() for url in targets]
-    paths = [url.getPath() for url in targets]
+    if targets is not None:
+        domains = [url.getDomain() for url in targets]
+        paths = [url.getPath() for url in targets if url.getPath() != '/']
     
-    for domain in domains:
-        input = input.replace(domain, 'domain')
-
-    for path in paths:
-        input = input.replace(path, '/path/foo')
+        for domain in domains:
+            input = input.replace(domain, 'domain')
+    
+        for path in paths:
+            input = input.replace(path, '/path/foo')
         
     return input
     

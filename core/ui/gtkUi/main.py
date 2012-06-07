@@ -59,7 +59,7 @@ if sys.platform == "win32":
 
 import sqlite3
 import threading, shelve, os
-from core.controllers.w3afCore import wCore
+from core.controllers.w3afCore import w3af_core
 import core.controllers.miscSettings
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException
@@ -331,7 +331,7 @@ class MainApp(object):
         mainvbox.show()
 
         splash.push(_("Initializing core..."))
-        self.w3af = wCore
+        self.w3af = w3af_core
         
         # This is inited before all, to have a full logging facility.
         om.out.setOutputPlugins( ['gtkOutput'] )

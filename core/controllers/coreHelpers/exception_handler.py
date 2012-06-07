@@ -27,6 +27,9 @@ import traceback
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
+from os.path import basename
+
+from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from core.controllers.w3afException import (w3afMustStopException,
                                             w3afMustStopByUnknownReasonExc)
 
@@ -50,11 +53,21 @@ class ExceptionHandler(object):
         
         self._scan_id = None
 
-    def handle( self, current_status, exception, exec_info ):
+    def handle( self, current_status, exception, exec_info, enabled_plugins ):
         '''
         This method stores the current status and the exception for later
         processing. If there are already too many stored exceptions for this
         plugin then no action is taken.
+        
+        @param current_status: Pointer to the coreHelpers.status module
+        @param exception: The exception that was raised
+        @param exec_info: The exec info as returned by sys module
+        @param enabled_plugins: A string as returned by helpers.pprint_plugins.
+                                First I thought about getting the enabled_plugins
+                                after the scan finished, but that proved to be an
+                                incorrect approach since the UI and/or strategy
+                                could simply remove that information as soon as the
+                                scan finished.
         
         @return: None
         '''
@@ -83,10 +96,9 @@ class ExceptionHandler(object):
         # the way we want to.
         #
         except_type, except_class, tb = exec_info
-        tb = traceback.extract_tb(tb)
         
         with self._lock:
-            edata = ExceptionData(current_status, exception, tb)
+            edata = ExceptionData(current_status, exception, tb, enabled_plugins)
             
             count = 0
             for stored_edata in self._exception_data:
@@ -97,7 +109,10 @@ class ExceptionHandler(object):
             if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
                 self._exception_data.append(edata)
 
-                om.out.information( str(edata) )
+                msg = edata.get_summary()
+                msg += ' The scan will continue but some vulnerabilities might not'
+                msg += ' be identified.'
+                om.out.error( msg )
 
     def clear(self):
         self._exception_data = []
@@ -114,26 +129,26 @@ class ExceptionHandler(object):
         @see: generate_summary method for a way of getting a summary in a
               different format.
         '''
-        fmt_with_exceptions = 'During the current scan (with id: %s) w3af caught '
-        fmt_with_exceptions += '%s exceptions in it\'s plugins. The scan was able '
-        fmt_with_exceptions += ' to continue by ignoring those failures but the '
+        fmt_with_exceptions = 'During the current scan (with id: %s) w3af caught'
+        fmt_with_exceptions += ' %s exceptions in it\'s plugins. The scan was able'
+        fmt_with_exceptions += ' to continue by ignoring those failures but the'
         fmt_with_exceptions += ' scan result is most likely incomplete.\n\n'
-        fmt_with_exceptions += 'These are the phases and plugins that raised '
-        fmt_with_exceptions += 'exceptions:\n'
-        fmt_with_exceptions += '%s\n\n'
-        fmt_with_exceptions += 'We recommend you report these vulnerabilities '
-        fmt_with_exceptions += 'to the developers in order to help increase the '
-        fmt_with_exceptions += 'project\'s stability.'
+        fmt_with_exceptions += 'These are the phases and plugins that raised'
+        fmt_with_exceptions += ' exceptions:\n'
+        fmt_with_exceptions += '%s\n'
+        fmt_with_exceptions += 'We recommend you report these vulnerabilities'
+        fmt_with_exceptions += ' to the developers in order to help increase the'
+        fmt_with_exceptions += ' project\'s stability.'
         
         fmt_without_exceptions = 'No exceptions were raised during scan with id: %s.'
         
         summary = self.generate_summary()
         
-        if len( summary['total_exceptions'] ):
+        if summary['total_exceptions']:
             phase_plugin_str = ''
             for phase in summary['exceptions']:
-                for exception in summary['exceptions'][phase]:
-                    phase_plugin_str += '- %s.%s\n' % (phase,exception.plugin)
+                for plugin, fr, exception, traceback in summary['exceptions'][phase]:
+                    phase_plugin_str += '- %s.%s\n' % (phase, plugin)
             
             with_exceptions = fmt_with_exceptions % ( self.get_scan_id() ,
                                                       summary['total_exceptions'],
@@ -153,11 +168,11 @@ class ExceptionHandler(object):
         exception_dict = res['exceptions']
         
         for exception in self._exception_data:
-            phase = exception.get_phase()
+            phase = exception.phase
             
             data = (exception.plugin,
                     exception.fuzzable_request,
-                    exception.e,
+                    exception.exception,
                     exception.traceback)            
             
             if phase not in exception_dict:
@@ -178,7 +193,7 @@ class ExceptionHandler(object):
         '''
         if not self._scan_id:
             hash_data = ''
-            hash_data += random.randint(1,50000000) * random.randint(1,50000000) 
+            hash_data += str(random.randint(1,50000000) * random.randint(1,50000000)) 
             
             m = md5.new(hash_data)
             self._scan_id = m.hexdigest()[:10]
@@ -187,17 +202,38 @@ class ExceptionHandler(object):
 
         
 class ExceptionData(object):
-    def __init__(self, current_status, e, tb):
+    def __init__(self, current_status, e, tb, enabled_plugins):
         self.exception = e
         self.traceback = tb
+       
+        # Extract the filename and line number where the exception was raised
+        filepath = traceback.extract_tb(tb)[-1][0]
+        self.filename = basename(filepath)
+        self.lineno = tb.tb_lineno
+                
+        self.traceback_str = ''.join(traceback.format_tb(tb))
+        self.traceback_str = cleanup_bug_report(self.traceback_str)
+        
         self.plugin = current_status.get_running_plugin()
         self.phase = current_status.get_phase()
+        self.enabled_plugins = enabled_plugins
+        
         self.fuzzable_request = current_status.get_current_fuzzable_request()
+        self.fuzzable_request = cleanup_bug_report( str(self.fuzzable_request) )
 
-    def __str__(self):
-        res = 'An exception was found while running %s.%s on "%s": "%s". Traceback:\n%s'
-        tbstr = '\n'.join([str(i) for i in self.traceback])
-        res = res % (self.phase, self.plugin, self.fuzzable_request, self.exception, tbstr)
+    def get_summary(self):
+        res = 'An exception was found while running %s.%s on "%s". The exception'
+        res += ' was: "%s" at %s:%s.'
+        res = res % (self.phase, self.plugin, self.fuzzable_request, self.exception,
+                     self.filename, self.lineno)
+        return res
+        
+    def get_details(self):
+        res = self.get_summary()
+        res += 'The full traceback is:\n%s' % self.traceback_str
         return res
 
+    def __str__(self):
+        return self.get_details()
+    
 exception_handler = ExceptionHandler()

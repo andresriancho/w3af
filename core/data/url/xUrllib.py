@@ -34,6 +34,7 @@ import sqlite3
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.status import w3af_core_status
+from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.timeout_function import TimeLimited, TimeLimitExpired
 from core.controllers.misc.lru import LRU
@@ -838,5 +839,6 @@ class xUrllib(object):
             status.set_current_fuzzable_request( request )
             
             exec_info = sys.exc_info()
-            exception_handler.handle( status, e , exec_info )
-
+            from core.controllers.w3afCore import w3af_core as w3af_core
+            enabled_plugins = pprint_plugins(w3af_core)
+            exception_handler.handle( status, e , exec_info, enabled_plugins )

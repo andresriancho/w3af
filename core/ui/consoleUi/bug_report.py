@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.ui.consoleUi.menu import menu
@@ -43,7 +42,7 @@ class bug_report_menu(menu):
         self._loadHelp( 'bug-report' )
 
     def _cmd_summary(self, params):
-        summary = exception_handler.generate_summary()
+        summary = exception_handler.generate_summary_str()
         om.out.console(summary)
         
     def _cmd_list(self, params):
@@ -51,7 +50,7 @@ class bug_report_menu(menu):
         
         if len(params) == 0:
             ptype = 'all'
-        elif len(params) == 1 and params[0] in self._w3af.getPluginTypes():
+        elif len(params) == 1 and params[0] in self._w3af.plugins.getPluginTypes():
             ptype = params[0]
         else:
             om.out.console('Invalid parameter type, please read help:')
@@ -60,10 +59,11 @@ class bug_report_menu(menu):
             
         table = []
         table.append(('ID', 'Phase', 'Plugin', 'Exception'))
+        table.append( () )
         eid = 0
         for edata in all_edata:
             if edata.phase == ptype or ptype == 'all':
-                table_line = ( (eid, edata.phase, edata.plugin, str(edata.exception)) )
+                table_line = ( (str(eid), edata.phase, edata.plugin, str(edata.exception)) )
                 table.append( table_line )
             eid += 1
                         
@@ -83,12 +83,12 @@ class bug_report_menu(menu):
             om.out.console('The exception ID needs to be an integer, please read help:')
             self._cmd_help(['details'])
             return
-        elif int(params[0].isdigit()) > len(all_edata) or int(params[0].isdigit()) < 0:
+        elif int(params[0]) > len(all_edata)-1 or int(params[0]) < 0:
             om.out.console('Invalid ID specified, please read help:')
             self._cmd_help(['details'])
             return
         else:
-            eid = int(params[0].isdigit())
+            eid = int(params[0])
             edata = all_edata[eid]
             om.out.console( str(edata) )    
 
@@ -98,19 +98,34 @@ class bug_report_menu(menu):
         '''
         all_edata = exception_handler.get_all_exceptions()
         
+        if not all_edata:
+            om.out.console('There are no exceptions to report for this scan.')
+            return
+        
         report_bug_eids = []
         
         for data in params:
             id_list = data.split(',')
             for eid in id_list:
-                if eid.isdigit():
-                    report_bug_eids.append( int(eid) )
+                if not eid.isdigit():
+                    om.out.console('Exception IDs must be integers.')
+                else:
+                    eid = int(eid)
+                    if not eid < len(all_edata):
+                        om.out.console('Exception ID out of range.')
+                    else:
+                        report_bug_eids.append( eid )
+                    
         
-        for eid in report_bug_eids:
+        # default to reporting all exceptions if none was specified
+        if report_bug_eids == []:
+            report_bug_eids = range(len(all_edata))
+            
+        for num, eid in enumerate(report_bug_eids):
             edata = all_edata[eid]
-            self._report_exception(edata, eid)
+            self._report_exception(edata, eid, num+1, len(report_bug_eids))
     
-    def _report_exception(self, edata, eid):
+    def _report_exception(self, edata, eid, num, total):
         '''
         Report one or more bugs to w3af's Trac, submit data to server.
         '''
@@ -123,24 +138,18 @@ class bug_report_menu(menu):
         if not sf.login():
             om.out.console('Failed to contact Trac server. Please try again later.')
         else:
-            # TODO: Improve this, maybe with some of the functions from
-            #       the traceback module?
-            traceback_str = '\n'.join([str(i) for i in edata.traceback])
-            traceback_str = cleanup_bug_report(traceback_str)
-
-            desc = str(edata)
-            desc = cleanup_bug_report(desc)
-            
-            plugins = pprint_plugins( self._w3af )
+            traceback_str = edata.traceback_str
+            desc = edata.get_summary()
+            plugins = edata.enabled_plugins
             summary = str(edata.exception)
             
             result = sf.report_bug( summary, desc, tback=traceback_str,
                                     plugins=plugins)
             
             if result is None:
-                msg = 'Failed to report bug with id %s.' % eid
+                msg = '    [%s/%s] Failed to report bug with id %s.' % (num, total, eid)
             else:
-                msg = 'Bug with id %s reported at %s' % (eid, result)
+                msg = '    [%s/%s] Bug with id %s reported at %s' % (num, total, eid, result)
         
             om.out.console( str(msg) )
                 
@@ -152,3 +161,11 @@ class bug_report_menu(menu):
         suggestions = [str(i) for i in xrange(len(all_edata))]
         
         return suggest(suggestions, part) 
+
+    _para_report = _para_details
+
+    def _para_list(self, params, part):
+        if len(params):
+            return []
+
+        return suggest(self._w3af.plugins.getPluginTypes(), part) 
