@@ -47,7 +47,9 @@ class TestExceptionHandler(unittest.TestCase):
             enabled_plugins = ''
             exception_handler.handle( self.status, e , exec_info, enabled_plugins )
         
-        exception_handler.get_scan_id()
+        scan_id = exception_handler.get_scan_id()
+        self.assertTrue( scan_id )
+        
         all_edata = exception_handler.get_all_exceptions()
         
         self.assertEqual(1, len(all_edata))
@@ -85,8 +87,8 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals( edata.phase, 'phase' )
         self.assertEquals( edata.fuzzable_request, 'http://www.w3af.org/' )
         self.assertEquals( edata.filename, 'test_exception_handler.py' )
-
-            
+    
+           
 class fake_status(w3af_core_status):
     pass
 

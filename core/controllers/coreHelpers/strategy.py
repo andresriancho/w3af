@@ -449,8 +449,6 @@ class w3af_core_strategy(object):
                         if hasattr(plugin_result, '__iter__'):
                             lst.extend(fr for fr in plugin_result)
                                 
-                    om.out.debug('Ending plugin: ' + plugin.getName())
-                    
                     # Finished one loop, inc!
                     self._w3af_core.progress.inc()
             
