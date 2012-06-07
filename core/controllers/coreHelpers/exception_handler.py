@@ -42,7 +42,7 @@ class ExceptionHandler(object):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    MAX_EXCEPTIONS_PER_PLUGIN = 5
+    MAX_EXCEPTIONS_PER_PLUGIN = 3
     NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc, w3afMustStopException)
     
     def __init__(self):
