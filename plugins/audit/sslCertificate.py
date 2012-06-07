@@ -114,14 +114,14 @@ class sslCertificate(baseAuditPlugin):
             if invalid_cert:
                 v = vuln.vuln()
                 v.setName('Invalid SSL certificate')
-                desc = '"%s" uses an invalid security certificate.'
-                desc += 'The certificate is not trusted because: %s.'
+                desc = '"%s" uses an invalid security certificate. '
+                desc += 'The certificate is not trusted because: "%s".'
                 tag = 'invalid_ssl_cert'
             else:
                 # We use here info() instead of vuln() because it is too common case
                 v = info.info()
                 v.setName('Invalid SSL connection')
-                desc = '"%s" has an invalid SSL configuration. Technical details: %s'
+                desc = '"%s" has an invalid SSL configuration. Technical details: "%s"'
                 tag = 'invalid_ssl_connect'
 
             v.setDesc(desc % (domain, details))
@@ -129,7 +129,7 @@ class sslCertificate(baseAuditPlugin):
             v.setURL(url)
             v.setSeverity(severity.LOW)
             kb.kb.append(self, tag, v)
-            om.out.vulnerability(v.getName() + ':' + v.getDesc())
+            om.out.vulnerability(v.getName() + ': ' + v.getDesc())
             return
 
         except Exception, e:
