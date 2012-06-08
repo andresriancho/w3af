@@ -875,7 +875,7 @@ class MainApp(object):
     
     def report_bug(self, action):
         '''Report bug to Sourceforge'''
-        from .exception_handling.bug_report import sourceforge_bug_report
+        from .exception_handling.common_windows import sourceforge_bug_report
         sfbr = sourceforge_bug_report()
         sfbr.report_bug()
 

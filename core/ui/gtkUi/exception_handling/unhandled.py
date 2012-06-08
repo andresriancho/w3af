@@ -25,6 +25,7 @@ import traceback
 
 from core.ui.gtkUi import helpers
 from core.ui.gtkUi.exception_handling import unhandled_bug_report
+from core.ui.gtkUi.exception_handling import common_windows
 from core.controllers.exception_handling.helpers import create_crash_file
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
@@ -51,7 +52,7 @@ def handle_crash(type, value, tb, plugins=''):
     filename = create_crash_file( clean_exception )
     
     # Create the dialog that allows the user to send the bug to Trac
-    bug_report_win = unhandled_bug_report.bug_report_window( _('Bug detected!'), 
+    bug_report_win = common_windows.bug_report_window( _('Bug detected!'), 
                                                              clean_exception,
                                                              filename, plugins)
     
