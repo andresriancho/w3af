@@ -45,7 +45,8 @@ class trac_bug_report(object):
     
     def report_bug(self):
         sf, summary, userdesc, email = self._info_and_login()
-        report_bug_show_result( self._report_bug_to_sf, [(sf, summary, userdesc, email),] )
+        rbsr = report_bug_show_result( self._report_bug_to_sf, [(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email), (sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email)] )
+        rbsr.run()
     
     def _info_and_login(self):
         # Do the login
