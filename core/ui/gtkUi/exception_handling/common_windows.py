@@ -25,6 +25,8 @@ import webbrowser
 
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.ui.gtkUi.helpers import endThreads
+from core.ui.gtkUi.entries import EmailEntry
+
 
 
 class simple_base_window(gtk.Window):
@@ -150,7 +152,9 @@ class sourceforge_bug_report(object):
         Perform user login.
         '''
         if ask_credentials is None:
-            ask_credentials = self._ask_credentials
+            dlg_creds = dlg_ask_credentials()
+            ask_credentials = dlg_creds.run()
+        
         invalid_login = False
 
         while retry:
@@ -237,90 +241,116 @@ Please provide any additional information below:
         dialog.destroy()
         
         return summary, description
+
+    def _display_result(self, bug_url):
+        # Show the tracking URL to the user
+        text = _('<b>Thanks for reporting your bugs!</b>\n\n')
+        text += _('You can track your bug report here:\n')
+        brf = bug_report_result(text, bug_url)
+        brf.show()
+
+
+class dlg_ask_credentials(gtk.MessageDialog):
+
+    METHOD_ANON = 1
+    METHOD_EMAIL = 2
+    METHOD_SF = 3
+
+    def __init__(self, invalid_login=False):
+        '''
+        @return: A tuple with the following information:
+                    (method, params)
+                
+                Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_SF and,
+                params is the email or the sourceforge username and password,
+                in the anon case, the params are empty.
+        '''
+        gtk.MessageDialog.__init__(self,
+                                   None,
+                                   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                                   gtk.MESSAGE_QUESTION,
+                                   gtk.BUTTONS_OK_CANCEL,
+                                   None)
+        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
+        
+        self._invalid_login = invalid_login
     
-    def _ask_credentials(self, invalid_login=False):
+    def run(self):
         '''
-        @return: A tuple with the user and the password to use. Blank in both
-            if anonymous.
+        Setup the dialog and return the results to the invoker.
         '''
+        
+        msg = '<b>Step 1 of 2</b>\n\n\n'
+        if self._invalid_login:
+            msg += '<b><i>Your credentials are invalid, please try again.</i></b>\n\n'
+        
+        msg += 'Choose how you\'ll report the bug(s):'
+        self.set_markup( msg )
+    
+        #
+        # Simple handler for radios
+        #
         def radio_callback(event, enable, disable):
             '''
             Handle the clicks on the different radio buttons.
             '''
             for section in enable:
                 section.set_sensitive(True)
-
+    
             for section in disable:
-                section.set_sensitive(False)
-                    
-        #base this on a message dialog
-        dialog = gtk.MessageDialog(
-            None,
-            gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk.MESSAGE_QUESTION,
-            gtk.BUTTONS_OK_CANCEL,
-            None)
-        dialog.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
-        
-        msg = '<b>Step 1 of 2</b>\n\n\n'
-        if invalid_login:
-            msg += '<b><i>Your credentials are invalid, please try again.</i></b>\n\n'
-        
-        msg += 'Choose how you\'ll report the bug(s):'
-        dialog.set_markup( msg )
-        
+                section.set_sensitive(False)        
         #
         #    Anon
         #
         anon_button = gtk.RadioButton(None, "Anonymously")
         anon_button.set_active(True)
-        dialog.vbox.pack_start(anon_button, True, True, 0)
-
+        self.vbox.pack_start(anon_button, True, True, 0)
+    
         separator = gtk.HSeparator()
-        dialog.vbox.pack_start(separator, True, True, 0)
+        self.vbox.pack_start(separator, True, True, 0)
         
         #
         #    Email
         #
         email_button = gtk.RadioButton(anon_button, "Use email address")
-        dialog.vbox.pack_start(email_button, True, True, 0)
+        self.vbox.pack_start(email_button, True, True, 0)
         
         # Create the text input field
-        email_entry = gtk.Entry()
-        email_entry.connect("activate", lambda x: dialog.response(gtk.RESPONSE_OK))  
+        email_entry = EmailEntry()
+        email_entry.connect("activate", lambda x: self.response(gtk.RESPONSE_OK))  
         
         # Create a horizontal box to pack the entry and a label
         email_hbox = gtk.HBox()
-        email_hbox.pack_start(gtk.Label("Email:"), False, 5, 5)
+        email_hbox.pack_start(gtk.Label("Email address:"), False, 5, 5)
         email_hbox.pack_end(email_entry)
         email_hbox.set_sensitive(False)
-        dialog.vbox.pack_start(email_hbox, True, True, 0)
+        self.vbox.pack_start(email_hbox, True, True, 0)
         
         separator = gtk.HSeparator()
-        dialog.vbox.pack_start(separator, True, True, 0)
-
+        self.vbox.pack_start(separator, True, True, 0)
+    
         #
         #    Sourceforge credentials
         #
         sf_button = gtk.RadioButton(email_button, "Sourceforge credentials:")
-        dialog.vbox.pack_start(sf_button, True, True, 0)
+        self.vbox.pack_start(sf_button, True, True, 0)
         
         sf_vbox = gtk.VBox()
         
         # Create the text input field
         user_entry = gtk.Entry()
-        user_entry.connect("activate", lambda x: dialog.response(gtk.RESPONSE_OK))  
-
+        user_entry.connect("activate", lambda x: self.response(gtk.RESPONSE_OK))  
+    
         user_hbox = gtk.HBox()
-        user_hbox.pack_start(gtk.Label("User:  "), False, 5, 5)
+        user_hbox.pack_start(gtk.Label("Username:  "), False, 5, 5)
         user_hbox.pack_end(user_entry)
         sf_vbox.pack_start(user_hbox, True, True, 0)
         
         # Create the password entry
         passwd_entry = gtk.Entry()
         passwd_entry.set_visibility(False)
-        passwd_entry.connect("activate", lambda x: dialog.response(gtk.RESPONSE_OK))  
-
+        passwd_entry.connect("activate", lambda x: self.response(gtk.RESPONSE_OK))  
+    
         passwd_hbox = gtk.HBox()
         passwd_hbox.pack_start(gtk.Label("Password:  "), False, 5, 5)
         passwd_hbox.pack_end(passwd_entry)
@@ -328,38 +358,48 @@ Please provide any additional information below:
         
         # Some secondary text
         warning_label = gtk.Label()
-        warning = "Your credentials won't be stored in your computer, and"
-        warning += " will only be sent over HTTPS connections."
+        warning = "\nYour credentials won't be stored in your computer,\n"
+        warning += "  and will only be sent over HTTPS connections."
         warning_label.set_text(warning)
         sf_vbox.pack_start(warning_label, True, True, 0)
         sf_vbox.set_sensitive(False)
-        dialog.vbox.pack_start(sf_vbox, True, True, 0)
+        self.vbox.pack_start(sf_vbox, True, True, 0)
         
         separator = gtk.HSeparator()
-        dialog.vbox.pack_start(separator, True, True, 0)
-
-        # Handling of sensitiviness between the radio contents
-        sf_button.connect("toggled", radio_callback, [], [email_hbox,sf_vbox])        
-        email_button.connect("toggled", radio_callback, [email_hbox,], [sf_vbox,])
-        anon_button.connect("toggled", radio_callback, [sf_vbox,], [email_hbox,])
-                
-        # Show all!        
-        dialog.show_all()
-        
-        #go go go
-        dialog.run()
-        user = user_entry.get_text()
-        passwd = passwd_entry.get_text()
-        dialog.destroy()
-        
-        return user, passwd
+        self.vbox.pack_start(separator, True, True, 0)
     
-    def _display_result(self, bug_url):
-        # Show the tracking URL to the user
-        text = _('<b>Thanks for reporting your bugs!</b>\n\n')
-        text += _('You can track your bug report here:\n')
-        brf = bug_report_result(text, bug_url)
-        brf.show()
+        # Handling of sensitiviness between the radio contents
+        anon_button.connect("toggled", radio_callback, [], [email_hbox,sf_vbox])        
+        email_button.connect("toggled", radio_callback, [email_hbox,], [sf_vbox,])
+        sf_button.connect("toggled", radio_callback, [sf_vbox,], [email_hbox,])
+                
+        # Go go go!        
+        self.show_all()
+        super(dlg_ask_credentials, self).run()
+        
+        #
+        # Get the results, generate the result tuple and return
+        #
+        active_label = [r.get_label() for r in anon_button.get_group() if r.get_active()]
+        active_label = active_label[0].lower()
+        
+        if 'email' in active_label:
+            method = self.METHOD_EMAIL
+            email = email_entry.get_text()
+            params = (email,)
+        elif 'sourceforge' in active_label:
+            method = self.METHOD_SF
+            user = user_entry.get_text()
+            passwd = passwd_entry.get_text()
+            params = (user, passwd)
+        else:
+            method = self.METHOD_ANON
+            params = ()
+        
+        # I'm done!
+        self.destroy()
+
+        return (method, params)
 
 
 class bug_report_window(simple_base_window, sourceforge_bug_report):
