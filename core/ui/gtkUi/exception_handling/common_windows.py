@@ -244,7 +244,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self._invalid_login = invalid_login
         
         self.set_icon_from_file(W3AF_ICON)
-        self.set_title('Bug report method')
+        self.set_title('Bug report method - Step 1/2')
         
     
     def run(self):
@@ -252,11 +252,11 @@ class dlg_ask_credentials(gtk.MessageDialog):
         Setup the dialog and return the results to the invoker.
         '''
         
-        msg = '<b>Step 1 of 2</b>\n\n\n'
-        if self._invalid_login:
-            msg += '<b><i>Your credentials are invalid, please try again.</i></b>\n\n'
+        msg = '\nChoose how to report the bug(s)'
         
-        msg += 'Choose how you\'ll report the bug(s):'
+        if self._invalid_login:
+            msg += '<b><i>Invalid credentials, please try again.</i></b>\n\n'
+        
         self.set_markup( msg )
     
         #
@@ -417,7 +417,7 @@ class dlg_ask_bug_info(gtk.MessageDialog):
                                    None)
         
         self.set_icon_from_file(W3AF_ICON)
-        self.set_title('Bug report information')
+        self.set_title('Bug report information - Step 2/2')
 
     def run(self):
             
@@ -437,8 +437,7 @@ Please provide any additional information below:
     
 '''
         
-        msg = '<b>Step 2 of 2</b>\n\n\n'
-        msg += 'Please provide the following information about the bug:\n'
+        msg = 'Please provide the following information about the bug\n'
         self.set_markup( msg )
         
         #create the text input field
@@ -448,18 +447,18 @@ Please provide any additional information below:
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         description_text_view = gtk.TextView()
-        description_text_view.set_size_request(150, 250)
+        description_text_view.set_size_request(200, 280)
         buffer = description_text_view.get_buffer()
         buffer.set_text(default_text)
         sw.add(description_text_view)
         
         #create a horizontal box to pack the entry and a label
         summary_hbox = gtk.HBox()
-        summary_hbox.pack_start(gtk.Label("Summary:  "), False, 5, 5)
+        summary_hbox.pack_start(gtk.Label("Summary    "), False, 5, 5)
         summary_hbox.pack_end(summary_entry)
         
         description_hbox = gtk.HBox()
-        description_hbox.pack_start(gtk.Label("Description:"), False, 5, 5)
+        description_hbox.pack_start(gtk.Label("Description"), False, 5, 5)
         description_hbox.pack_start(sw, True, True, 0)
         
         #add it and show it

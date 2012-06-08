@@ -60,7 +60,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
         # the label for the title
         self.title_label = gtk.Label()
         self.title_label.set_line_wrap(True)
-        label_text = _('\n<b>An unhandled exception was raised:</b>\n\n')
+        label_text = _('\n<b>An unhandled exception was raised</b>')
         self.title_label.set_markup(label_text)
         self.title_label.show()
         
@@ -86,13 +86,13 @@ class bug_report_window(simple_base_window, trac_bug_report):
         label_text += _(' bug to our bug tracking system from within this window.')
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the exception traceback and the version information to')
-        label_text += _(' Trac, no personal or confidential information is collected.\n\n')
+        label_text += _(' Trac, no personal or confidential information is collected.')
         self.label.set_markup(label_text)
         self.label.show()
         
-        self.vbox.pack_start(self.title_label, True, False)
-        self.vbox.pack_start(sw, False, False, 10)
-        self.vbox.pack_start(self.label, True, False, 10)
+        self.vbox.pack_start(self.title_label, True, True, 10)
+        self.vbox.pack_start(sw, True, True, 10)
+        self.vbox.pack_start(self.label, True, True, 10)
         
         # the buttons
         self.hbox = gtk.HBox()
