@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
-sys.path.append('/home/pablo/workspace/error_handling/')
 import gtk
 import cgi
 import Queue
@@ -379,6 +377,3 @@ class dlg_ask_credentials(gtk.MessageDialog):
             section.set_sensitive(False)
 
 
-if __name__ == '__main__':
-    dlg = dlg_ask_credentials()
-    dlg.run()
