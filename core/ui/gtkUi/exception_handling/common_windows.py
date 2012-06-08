@@ -288,18 +288,6 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.set_markup( msg )
     
         #
-        # Simple handler for radios
-        #
-        def radio_callback(event, enable, disable):
-            '''
-            Handle the clicks on the different radio buttons.
-            '''
-            for section in enable:
-                section.set_sensitive(True)
-    
-            for section in disable:
-                section.set_sensitive(False)        
-        #
         #    Anon
         #
         anon_button = gtk.RadioButton(None, "Anonymously")
@@ -316,13 +304,13 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.vbox.pack_start(email_button, True, True, 0)
         
         # Create the text input field
-        email_entry = EmailEntry()
-        email_entry.connect("activate", lambda x: self.response(gtk.RESPONSE_OK))  
+        self.email_entry = EmailEntry(self._email_entry_changed)
+        self.email_entry.connect("activate", lambda x: self.response(gtk.RESPONSE_OK))  
         
         # Create a horizontal box to pack the entry and a label
         email_hbox = gtk.HBox()
         email_hbox.pack_start(gtk.Label("Email address:"), False, 5, 5)
-        email_hbox.pack_end(email_entry)
+        email_hbox.pack_end(self.email_entry)
         email_hbox.set_sensitive(False)
         self.vbox.pack_start(email_hbox, True, True, 0)
         
@@ -369,9 +357,9 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.vbox.pack_start(separator, True, True, 0)
     
         # Handling of sensitiviness between the radio contents
-        anon_button.connect("toggled", radio_callback, [], [email_hbox,sf_vbox])        
-        email_button.connect("toggled", radio_callback, [email_hbox,], [sf_vbox,])
-        sf_button.connect("toggled", radio_callback, [sf_vbox,], [email_hbox,])
+        anon_button.connect("toggled", self._radio_callback, [], [email_hbox,sf_vbox])        
+        email_button.connect("toggled", self._radio_callback, [email_hbox,], [sf_vbox,])
+        sf_button.connect("toggled", self._radio_callback, [sf_vbox,], [email_hbox,])
                 
         # Go go go!        
         self.show_all()
@@ -385,7 +373,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         
         if 'email' in active_label:
             method = self.METHOD_EMAIL
-            email = email_entry.get_text()
+            email = self.email_entry.get_text()
             params = (email,)
         elif 'sourceforge' in active_label:
             method = self.METHOD_SF
@@ -400,6 +388,31 @@ class dlg_ask_credentials(gtk.MessageDialog):
         self.destroy()
 
         return (method, params)
+
+    def _email_entry_changed(self, x, y):
+        '''
+        Disable the OK button if the email is invalid
+        '''
+        ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
+        
+        if self.email_entry.isValid():
+            # Activate OK button
+            ok_button.set_sensitive(True)
+        else:
+            # Disable OK button
+            ok_button.set_sensitive(False)
+        
+    def _radio_callback(self, event, enable, disable):
+        '''
+        Handle the clicks on the different radio buttons.
+        '''
+        for section in enable:
+            section.set_sensitive(True)
+
+        for section in disable:
+            section.set_sensitive(False)
+        
+ 
 
 
 class bug_report_window(simple_base_window, sourceforge_bug_report):

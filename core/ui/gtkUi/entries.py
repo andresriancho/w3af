@@ -234,13 +234,14 @@ class FloatOption(ValidatedEntry, ModifiedMixIn):
             return False
         return True
 
-class EmailEntry(ValidatedEntry):
+class EmailEntry(ValidatedEntry, ModifiedMixIn):
     '''Class that implements the config option email.
 
     @author: Andres Riancho <andres.riancho =at= gmail.com>
     '''
-    def __init__(self):
+    def __init__(self, alert):
         ValidatedEntry.__init__(self, '')
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ''
         self.EMAIL_RE = BaseParser.EMAIL_RE
 
