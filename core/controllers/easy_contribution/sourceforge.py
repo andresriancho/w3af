@@ -21,15 +21,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import cookielib
 import hashlib
-import socket
 import re
+import socket
 import string
 import time
 import urllib2, urllib
 import xmlrpclib
 
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
+from core.controllers.exception_handling.helpers import VERSIONS
 
+#
+#    Yeah, yeah, I know that this sucks but it's the best we could do...
+#
+DEFAULT_USER_NAME = 'w3afbugsreport'
+DEFAULT_PASSWD = 'w3afs1nce2006'
+    
 
 class Sourceforge(object):
     
@@ -66,12 +73,14 @@ $plugins
         raise NotImplementedError
     
     def _build_summary_and_desc(self, summary, desc, tback,
-                                fname, plugins, autogen):
+                                fname, plugins, autogen, email):
         '''
         Build the formatted summary and description that will be
         part of the reported bug.
         '''
-        # Which summary should I use?
+        #
+        #    Define which summary to use
+        #
         if summary:
             bug_summary = summary
         else:
@@ -83,17 +92,28 @@ $plugins
                 m = hashlib.md5()
                 m.update(time.ctime())
                 bug_summary = m.hexdigest()
-        
-        from core.controllers.exception_handling.helpers import VERSIONS
-        bdata = {'plugins': plugins, 't_back': tback,
-                 'user_desc': desc, 'w3af_v': VERSIONS}
 
-        # Handle the summary. Concat 'user_title'. If empty, append a random
-        # token to avoid the double click protection added by sourceforge.
+        # Generate the summary string. Concat 'user_title'. If empty, append a 
+        # random token to avoid the double click protection added by sourceforge.
         summary = '%sBug Report - %s' % (
                     autogen and '[Auto-Generated] ' or '',
                     bug_summary)
         
+        #
+        #    Define which description to use (depending on the availability of an
+        #    email provided by the user or not).
+        #
+        if email is not None:
+            email_fmt = '\n\nThe user provided the following email address for contact: %s'
+            desc += email_fmt % email
+            
+        #
+        #    Apply all the info
+        #
+        bdata = {'plugins': plugins, 't_back': tback,
+                 'user_desc': desc, 'w3af_v': VERSIONS}
+
+       
         # Build details string
         details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
         
@@ -132,7 +152,7 @@ class SourceforgeXMLRPC(Sourceforge):
         return self.logged_in
 
     def report_bug(self, summary, userdesc, tback='',
-                   fname=None, plugins='', autogen=True):
+                   fname=None, plugins='', autogen=True, email=None):
         '''
         Without logging in:
         >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
@@ -156,7 +176,8 @@ class SourceforgeXMLRPC(Sourceforge):
         assert self.logged_in, "You should login first"
         
         summary, desc = self._build_summary_and_desc(
-                            summary, userdesc, tback, fname, plugins, autogen
+                            summary, userdesc, tback, fname, plugins,
+                            autogen, email
                             )
         
         values = {
@@ -169,7 +190,7 @@ class SourceforgeXMLRPC(Sourceforge):
         try:
             newticket = self._proxy.ticket.create(summary, desc,
                                                   values, True)
-            return self.CREATED_TKT + str(newticket)
+            return str(newticket), self.CREATED_TKT + str(newticket)
         except xmlrpclib.ProtocolError:
             return None
         
@@ -306,9 +327,9 @@ class SourceforgeHTTP(Sourceforge):
                 NEW_ATTACHMENT_URL = self.NEW_ATTACHMENT_URL_FORMAT % ticket_id
                 self._attach_file(NEW_ATTACHMENT_URL, ticket_id, fname, form_token)
                 
-            return self.CREATED_TKT + ticket_id
+            return ticket_id, self.CREATED_TKT + ticket_id
         
-        return None
+        return None, None
         
     def _attach_file(self, url, ticket_id, filename, form_token):
         '''

@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
+from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.ui.consoleUi.menu import menu
 from core.ui.consoleUi.util import suggest
@@ -129,11 +129,6 @@ class bug_report_menu(menu):
         '''
         Report one or more bugs to w3af's Trac, submit data to server.
         '''
-        # TODO: Need to refactor this since I have these credentials here AND
-        #       in the GTK ui bug_report.py file also.
-        DEFAULT_USER_NAME = 'w3afbugsreport'
-        DEFAULT_PASSWD = 'w3afs1nce2006'
-        
         sf = SourceforgeXMLRPC(DEFAULT_USER_NAME, DEFAULT_PASSWD)
         if not sf.login():
             om.out.console('Failed to contact Trac server. Please try again later.')
@@ -143,13 +138,13 @@ class bug_report_menu(menu):
             plugins = edata.enabled_plugins
             summary = str(edata.exception)
             
-            result = sf.report_bug( summary, desc, tback=traceback_str,
-                                    plugins=plugins)
+            ticket_id, ticket_url = sf.report_bug( summary, desc, tback=traceback_str,
+                                                   plugins=plugins)
             
-            if result is None:
+            if ticket_id is None:
                 msg = '    [%s/%s] Failed to report bug with id %s.' % (num, total, eid)
             else:
-                msg = '    [%s/%s] Bug with id %s reported at %s' % (num, total, eid, result)
+                msg = '    [%s/%s] Bug with id %s reported at %s' % (num, total, eid, ticket_url)
         
             om.out.console( str(msg) )
                 

@@ -29,17 +29,19 @@ import webbrowser
 from core.ui.gtkUi.helpers import endThreads
 from core.ui.gtkUi.entries import EmailEntry
 from core.ui.gtkUi.helpers import Throbber
-
+from core.ui.gtkUi.constants import W3AF_ICON
 
 
 class simple_base_window(gtk.Window):
 
-    def __init__(self, _type=None):
+    def __init__(self, type=gtk.WINDOW_TOPLEVEL):
         '''
         One simple class to create other windows.
         '''
-        super(simple_base_window,self).__init__(_type=gtk.WINDOW_TOPLEVEL)
+        super(simple_base_window,self).__init__(type=type)    
+        
         self.connect("delete-event", gtk.main_quit)
+        self.set_icon_from_file(W3AF_ICON)
         
     def _handle_cancel(self, widg):
         endThreads()
@@ -64,7 +66,7 @@ class bug_report_worker(threading.Thread):
         The thread's main method, where all the magic happens.
         '''
         for bug in self.bugs_to_report:
-            result = self.bug_report_function(bug)
+            result = apply(self.bug_report_function, bug)
             self.output.put(result)
         
         self.output.put(self.FINISHED)
@@ -83,7 +85,7 @@ class report_bug_show_result(simple_base_window):
     def __init__(self, bug_report_function, bugs_to_report):
         '''
         @param bug_report_function: The function that's used to report bugs.
-                                    Should only take ONE parameter: a bug.
+                                    apply(bug_report_function, bug_to_report)
                                     
         @param bugs_to_report: An iterable with the bugs to report. These are
                                going to be the parameters for the bug_report_function.
@@ -92,7 +94,6 @@ class report_bug_show_result(simple_base_window):
         
         self.set_modal(True)
         self.set_title('Bug report results')
-        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         self.vbox = gtk.VBox()
         
         self.label = gtk.Label()
@@ -126,7 +127,7 @@ class report_bug_show_result(simple_base_window):
         #    http://www.pygtk.org/docs/pygtk/gtk-stock-items.html
         #
         self.done_icon = gtk.Image()
-        self.done_icon.set_from_stock(gtk.STOCK_YES)
+        self.done_icon.set_from_stock(gtk.STOCK_YES, gtk.ICON_SIZE_BUTTON)
         
         # Close button
         self.butt_close = gtk.Button(stock=gtk.STOCK_CLOSE)
@@ -217,11 +218,12 @@ class dlg_ask_credentials(gtk.MessageDialog):
                                    None,
                                    gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                                    gtk.MESSAGE_QUESTION,
-                                   gtk.BUTTONS_OK_CANCEL,
+                                   gtk.BUTTONS_OK,
                                    None)
-        self.set_icon_from_file('core/ui/gtkUi/data/w3af_icon.png')
         
         self._invalid_login = invalid_login
+        
+        self.set_icon_from_file(W3AF_ICON)
     
     def run(self):
         '''
@@ -377,3 +379,75 @@ class dlg_ask_credentials(gtk.MessageDialog):
             section.set_sensitive(False)
 
 
+class dlg_ask_bug_info(gtk.MessageDialog):
+    
+    def __init__(self, invalid_login=False):
+        '''
+        @return: A tuple with the following information:
+                    (bug_summary, bug_description)
+                
+        '''
+        gtk.MessageDialog.__init__(self,
+                                   None,
+                                   gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                                   gtk.MESSAGE_QUESTION,
+                                   gtk.BUTTONS_OK,
+                                   None)
+        self.set_icon_from_file(W3AF_ICON)
+
+    def run(self):
+            
+        default_text = '''What steps will reproduce the problem?
+1. 
+2. 
+3. 
+    
+What is the expected output? What do you see instead?
+    
+    
+What operating system are you using?
+    
+    
+Please provide any additional information below:
+    
+    
+'''
+        
+        msg = '<b>Step 2 of 2</b>\n\n\n'
+        msg += 'Please provide the following information about the bug:\n'
+        self.set_markup( msg )
+        
+        #create the text input field
+        summary_entry = gtk.Entry()
+        
+        sw = gtk.ScrolledWindow()
+        sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
+        sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        description_text_view = gtk.TextView()
+        buffer = description_text_view.get_buffer()
+        buffer.set_text(default_text)
+        sw.add(description_text_view)
+        
+        #create a horizontal box to pack the entry and a label
+        summary_hbox = gtk.HBox()
+        summary_hbox.pack_start(gtk.Label("Summary:  "), False, 5, 5)
+        summary_hbox.pack_end(summary_entry)
+        
+        description_hbox = gtk.HBox()
+        description_hbox.pack_start(gtk.Label("Description:"), False, 5, 5)
+        description_hbox.pack_start(sw, True, True, 0)
+        
+        #add it and show it
+        self.vbox.pack_start(summary_hbox, True, True, 0)
+        self.vbox.pack_start(description_hbox, True, True, 0)
+        self.show_all()
+        
+        # Go go go
+        super(dlg_ask_bug_info, self).run()
+        
+        summary = summary_entry.get_text()
+        description = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter())
+        
+        self.destroy()
+        
+        return summary, description

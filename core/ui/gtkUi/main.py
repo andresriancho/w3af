@@ -21,9 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import absolute_import
 
-import StringIO
-import sys
-
 # I perform the GTK UI dependency check here
 # please note that there is also a CORE dependency check, which verifies the
 # presence of different libraries.
@@ -33,9 +30,30 @@ from . import dependency_check
 dependency_check.gtkui_dependency_check()
 
 # Now that I know that I have them, import them!
-import pygtk
 import gtk, gobject
+import threading, shelve, os
+import webbrowser, time
+import sys
 
+import core.controllers.outputManager as om
+import core.controllers.miscSettings
+import core.data.kb.config as cf
+
+from core.controllers.w3afCore import w3af_core
+from core.controllers.auto_update import VersionMgr, UIUpdater
+from core.controllers.w3afException import w3afException
+from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.get_w3af_version import get_w3af_version
+from core.ui.gtkUi.splash import Splash
+from core.ui.gtkUi.exception_handling import unhandled
+from core.ui.gtkUi.exception_handling import handled
+from core.ui.gtkUi.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
+
+from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from . import export_request
+from . import entries, encdec, messages, logtab, pluginconfig, confpanel
+from . import wizard, guardian, proxywin
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"
@@ -48,104 +66,11 @@ print
 # Threading initializer
 if sys.platform == "win32":
     gobject.threads_init()
+    # Load the theme, this fixes bug 2022433: Windows buttons without images
+    gtk.rc_add_default_file('%USERPROFILE%/.gtkrc-2.0')
 else:
     gtk.gdk.threads_init()
 
-# Load the theme (this fixes bug [ 2022433 ] windows buttons without images)
-# https://sourceforge.net/tracker/index.php?func=detail&aid=2022433&group_id=170274&atid=853652
-if sys.platform == "win32":
-    gtk.rc_add_default_file('%USERPROFILE%/.gtkrc-2.0')
-
-
-import sqlite3
-import threading, shelve, os
-from core.controllers.w3afCore import w3af_core
-import core.controllers.miscSettings
-from core.controllers.auto_update import VersionMgr, UIUpdater
-from core.controllers.w3afException import w3afException
-import core.data.kb.config as cf
-import core.controllers.outputManager as om
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
-from . import export_request
-from . import entries, encdec, messages, logtab, pluginconfig, confpanel
-from . import wizard, guardian, proxywin
-
-from core.ui.gtkUi.splash import Splash
-from core.ui.gtkUi.exception_handling import unhandled
-from core.ui.gtkUi.exception_handling import handled
-
-from core.controllers.misc.homeDir import get_home_dir
-from core.controllers.misc.get_w3af_version import get_w3af_version
-
-import webbrowser, time
-
-W3AF_ICON = 'core/ui/gtkUi/data/w3af_icon.png'
-
-MAINTITLE = "w3af - Web Application Attack and Audit Framework"
-
-#    Commented out: this has no sense after Results reorganizing
-#    <menu action="ViewMenuScan">
-#      <menuitem action="URLWindow"/>
-#      <menuitem action="KBExplorer"/>
-#    </menu>
-ui_menu = """
-<ui>
-  <menubar name="MenuBar">
-    <menu action="ProfilesMenu">
-      <menuitem action="New"/>
-      <menuitem action="Save"/>
-      <menuitem action="SaveAs"/>
-      <menuitem action="Revert"/>
-      <menuitem action="Delete"/>
-      <menuitem action="Quit"/>
-    </menu>
-    <menu action="EditMenuScan">
-      <menuitem action="EditPlugin"/>
-    </menu>
-    <menu action="ViewMenuExploit">
-      <menuitem action="ExploitVuln"/>
-      <menuitem action="Interactive"/>
-    </menu>
-    <menu action="ToolsMenu">
-      <menuitem action="ManualRequest"/>
-      <menuitem action="FuzzyRequest"/>
-      <menuitem action="EncodeDecode"/>
-      <menuitem action="ExportRequest"/>
-      <menuitem action="Compare"/>
-      <menuitem action="Proxy"/>
-    </menu>
-    <menu action="ConfigurationMenu">
-      <menuitem action="URLconfig"/>
-      <menuitem action="Miscellaneous"/>
-    </menu>
-    <menu action="HelpMenu">
-      <menuitem action="Help"/>
-      <menuitem action="Wizards"/>
-      <menuitem action="ReportBug"/>
-      <separator name="s4"/>
-      <menuitem action="About"/>
-    </menu>
-  </menubar>
-  <toolbar name="Toolbar">
-    <toolitem action="Wizards"/>
-    <separator name="s5"/>
-    <toolitem action="New"/>
-    <toolitem action="Save"/>
-    <separator name="s1"/>
-    <toolitem action="StartStop"/>
-    <toolitem action="Pause"/>
-    <separator name="s2"/>
-    <toolitem action="ExploitAll"/>
-    <separator name="s3"/>
-    <toolitem action="ManualRequest"/>
-    <toolitem action="FuzzyRequest"/>
-    <toolitem action="EncodeDecode"/>
-    <toolitem action="ExportRequest"/>
-    <toolitem action="Compare"/>
-    <toolitem action="Proxy"/>
-  </toolbar>
-</ui>
-"""
 
 class FakeShelve(dict):
     def close(self):
@@ -313,7 +238,7 @@ class MainApp(object):
         gui_upd.update()
 
         # title and positions
-        self.window.set_title(MAINTITLE)
+        self.window.set_title(MAIN_TITLE)
         genconfigfile = os.path.join(get_home_dir(),  "generalconfig.pkl") 
         try:
             self.generalconfig = shelve.open(genconfigfile)
@@ -402,20 +327,6 @@ class MainApp(object):
                            self._scan_pause, False),
         ])
 
-#        Commented out: this has no sense after Results reorganizing
-#        # the view menu for scanning
-#        # (this is different to the others because this one is the first one)
-#        actiongroup.add_toggle_actions([
-#            # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-#            ('KBExplorer', None, '_KB Explorer', None, 'Toggle the Knowledge Base Explorer',
-#                           lambda w: self.dynPanels(w, "kbexplorer"), True),
-#            ('URLWindow', None, '_URL Window', None, 'Toggle the URL Window', 
-#                           lambda w: self.dynPanels(w, "urltree"), True),
-#        ])
-#        ag = actiongroup.get_action("ViewMenuScan")
-#        ag.set_sensitive(False)
-#        self.menuViews["Results"] = ag
-
         # the view menu for exploit
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
@@ -439,7 +350,7 @@ class MainApp(object):
 
         # Add the actiongroup to the uimanager
         uimanager.insert_action_group(actiongroup, 0)
-        uimanager.add_ui_from_string(ui_menu)
+        uimanager.add_ui_from_string(UI_MENU)
 
         # menubar and toolbar
         menubar = uimanager.get_widget('/MenuBar')
@@ -747,7 +658,7 @@ class MainApp(object):
         # put the button in start
         self.startstopbtns.changeInternals(_("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         self.scanShould = "start"
-        self.window.set_title(MAINTITLE)
+        self.window.set_title(MAIN_TITLE)
         
         # This is done here in order to keep the logging facility.
         om.out.setOutputPlugins( ['gtkOutput'] )
@@ -875,9 +786,19 @@ class MainApp(object):
     
     def report_bug(self, action):
         '''Report bug to Sourceforge'''
-        from .exception_handling.common_windows import sourceforge_bug_report
-        sfbr = sourceforge_bug_report()
-        sfbr.report_bug()
+        try:
+            alskd
+        except:
+            try:
+                plugins_str = pprint_plugins(self.w3af)
+                exc_class, exc_inst, exc_tb = sys.exc_info()
+                unhandled.handle_crash(exc_class, exc_inst,
+                                       exc_tb, plugins=plugins_str)
+            finally:
+                del exc_tb
+        
+        #sfbr = sourceforge_bug_report()
+        #sfbr.report_bug()
 
     def _exploit_all(self, action):
         '''Exploits all vulns.'''
