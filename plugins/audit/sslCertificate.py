@@ -93,6 +93,7 @@ class sslCertificate(baseAuditPlugin):
             kb.kb.append(self, 'ssl_v2', v)
             om.out.vulnerability(desc % domain)
 
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             ssl_sock = ssl.wrap_socket(s,
                                        ca_certs=self._ca_file,
@@ -113,6 +114,7 @@ class sslCertificate(baseAuditPlugin):
            
             if invalid_cert:
                 v = vuln.vuln()
+                v.setSeverity(severity.LOW)
                 v.setName('Invalid SSL certificate')
                 desc = '"%s" uses an invalid security certificate. '
                 desc += 'The certificate is not trusted because: "%s".'
@@ -127,7 +129,6 @@ class sslCertificate(baseAuditPlugin):
             v.setDesc(desc % (domain, details))
             v.setPluginName(self.getName())
             v.setURL(url)
-            v.setSeverity(severity.LOW)
             kb.kb.append(self, tag, v)
             om.out.vulnerability(v.getName() + ': ' + v.getDesc())
             return
