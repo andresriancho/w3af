@@ -22,94 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk
 
-from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
-from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
-from core.ui.gtkUi.exception_handling.common_windows import (simple_base_window, report_bug_show_result,
-                                                             dlg_ask_bug_info, dlg_ask_credentials)
-from core.ui.gtkUi.constants import W3AF_ICON
-
-
-
-class trac_bug_report(object):
-    '''
-    Class that models user interaction with Trac to report a bug.
-    '''
-    
-    def __init__(self, tback='', fname=None, plugins=''):
-        self.sf = None
-        self.tback = tback
-        self.fname = fname
-        self.plugins = plugins
-        self.autogen = False
-    
-    def report_bug(self):
-        sf, summary, userdesc, email = self._info_and_login()
-        rbsr = report_bug_show_result( self._report_bug_to_sf, [(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email), (sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email),(sf, summary, userdesc, email)] )
-        rbsr.run()
-    
-    def _info_and_login(self):
-        # Do the login
-        sf, email = self._login_sf()
-        
-        # Ask for a bug title and description
-        dlg_bug_info = dlg_ask_bug_info()
-        summary, userdesc = dlg_bug_info.run()
-        
-        return sf, summary, userdesc, email
-        
-    def _report_bug_to_sf(self, sf, summary, userdesc, email):
-        '''
-        Send bug to Trac.
-        '''
-        try:
-            ticket_url, ticket_id = sf.report_bug(summary, userdesc, self.tback,
-                                                  self.fname, self.plugins, self.autogen,
-                                                  email)
-        except:
-            return None, None
-        else:
-            return ticket_url, ticket_id
-    
-    def _login_sf(self, retry=3):
-        '''
-        Perform user login.
-        '''
-        invalid_login = False
-        email = None
-        
-        while retry:
-            # Decrement retry counter
-            retry -= 1
-            # Ask for user and password, or anonymous
-            dlg_cred = dlg_ask_credentials(invalid_login)
-            method, params = dlg_cred.run()
-            
-            if method == dlg_ask_credentials.METHOD_SF:
-                user, password = params
-            
-            elif method == dlg_ask_credentials.METHOD_EMAIL:
-                # The user chose METHOD_ANON or METHOD_EMAIL with both these
-                # methods the framework actually logs in using our default 
-                # credentials
-                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
-                email = params[0]
-
-            else:
-                # The user chose METHOD_ANON or METHOD_EMAIL with both these
-                # methods the framework actually logs in using our default 
-                # credentials
-                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
-            
-            sf = SourceforgeXMLRPC(user, password)
-            login_result = sf.login()
-            invalid_login = not login_result
-            
-            if login_result:
-                break
-            
-        return (sf, email)
-    
+from core.ui.gtkUi.exception_handling.common_windows import (simple_base_window, trac_bug_report)
 
     
 
@@ -177,8 +91,8 @@ class bug_report_window(simple_base_window, trac_bug_report):
         self.label.show()
         
         self.vbox.pack_start(self.title_label, True, False)
-        self.vbox.pack_start(sw, False, False)
-        self.vbox.pack_start(self.label, True, False)
+        self.vbox.pack_start(sw, False, False, 10)
+        self.vbox.pack_start(self.label, True, False, 10)
         
         # the buttons
         self.hbox = gtk.HBox()
@@ -189,7 +103,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
         self.butt_cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         self.butt_cancel.connect("clicked", self._handle_cancel)
         self.hbox.pack_start(self.butt_cancel, True, False)
-        self.vbox.pack_start(self.hbox, True, False)
+        self.vbox.pack_start(self.hbox, True, False, 10)
         
         #self.resize(400,450)
         self.add(self.vbox)

@@ -48,6 +48,7 @@ from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.gtkUi.splash import Splash
 from core.ui.gtkUi.exception_handling import unhandled
 from core.ui.gtkUi.exception_handling import handled
+from core.ui.gtkUi.exception_handling import user_reports_bug
 from core.ui.gtkUi.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 
 from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
@@ -786,19 +787,7 @@ class MainApp(object):
     
     def report_bug(self, action):
         '''Report bug to Sourceforge'''
-        try:
-            alskd
-        except:
-            try:
-                plugins_str = pprint_plugins(self.w3af)
-                exc_class, exc_inst, exc_tb = sys.exc_info()
-                unhandled.handle_crash(exc_class, exc_inst,
-                                       exc_tb, plugins=plugins_str)
-            finally:
-                del exc_tb
-        
-        #sfbr = sourceforge_bug_report()
-        #sfbr.report_bug()
+        user_reports_bug.user_reports_bug()
 
     def _exploit_all(self, action):
         '''Exploits all vulns.'''

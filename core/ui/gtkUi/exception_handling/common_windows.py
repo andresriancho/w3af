@@ -20,16 +20,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import gtk
-import cgi
 import Queue
 import threading
 import gobject
-import webbrowser
+
+from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
+from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
 
 from core.ui.gtkUi.helpers import endThreads
 from core.ui.gtkUi.entries import EmailEntry
 from core.ui.gtkUi.helpers import Throbber
 from core.ui.gtkUi.constants import W3AF_ICON
+
 
 
 class simple_base_window(gtk.Window):
@@ -446,6 +448,7 @@ Please provide any additional information below:
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         description_text_view = gtk.TextView()
+        description_text_view.set_size_request(150, 250)
         buffer = description_text_view.get_buffer()
         buffer.set_text(default_text)
         sw.add(description_text_view)
@@ -473,3 +476,83 @@ Please provide any additional information below:
         self.destroy()
         
         return summary, description
+
+class trac_bug_report(object):
+    '''
+    Class that models user interaction with Trac to report a bug.
+    '''
+    
+    def __init__(self, tback='', fname=None, plugins=''):
+        self.sf = None
+        self.tback = tback
+        self.fname = fname
+        self.plugins = plugins
+        self.autogen = False
+    
+    def report_bug(self):
+        sf, summary, userdesc, email = self._info_and_login()
+        rbsr = report_bug_show_result( self._report_bug_to_sf, [(sf, summary, userdesc, email),] )
+        rbsr.run()
+    
+    def _info_and_login(self):
+        # Do the login
+        sf, email = self._login_sf()
+        
+        # Ask for a bug title and description
+        dlg_bug_info = dlg_ask_bug_info()
+        summary, userdesc = dlg_bug_info.run()
+        
+        return sf, summary, userdesc, email
+        
+    def _report_bug_to_sf(self, sf, summary, userdesc, email):
+        '''
+        Send bug to Trac.
+        '''
+        try:
+            ticket_url, ticket_id = sf.report_bug(summary, userdesc, self.tback,
+                                                  self.fname, self.plugins, self.autogen,
+                                                  email)
+        except:
+            return None, None
+        else:
+            return ticket_url, ticket_id
+    
+    def _login_sf(self, retry=3):
+        '''
+        Perform user login.
+        '''
+        invalid_login = False
+        email = None
+        
+        while retry:
+            # Decrement retry counter
+            retry -= 1
+            # Ask for user and password, or anonymous
+            dlg_cred = dlg_ask_credentials(invalid_login)
+            method, params = dlg_cred.run()
+            dlg_cred.destroy()
+            
+            if method == dlg_ask_credentials.METHOD_SF:
+                user, password = params
+            
+            elif method == dlg_ask_credentials.METHOD_EMAIL:
+                # The user chose METHOD_ANON or METHOD_EMAIL with both these
+                # methods the framework actually logs in using our default 
+                # credentials
+                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
+                email = params[0]
+
+            else:
+                # The user chose METHOD_ANON or METHOD_EMAIL with both these
+                # methods the framework actually logs in using our default 
+                # credentials
+                user, password = (DEFAULT_USER_NAME, DEFAULT_PASSWD)
+            
+            sf = SourceforgeXMLRPC(user, password)
+            login_result = sf.login()
+            invalid_login = not login_result
+            
+            if login_result:
+                break
+            
+        return (sf, email)
