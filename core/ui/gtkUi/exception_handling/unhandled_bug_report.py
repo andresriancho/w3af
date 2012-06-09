@@ -56,15 +56,17 @@ class bug_report_window(simple_base_window, trac_bug_report):
         self.set_title(title)
         
         self.vbox = gtk.VBox()
+        self.vbox.set_border_width(10)
         
         # the label for the title
         self.title_label = gtk.Label()
         self.title_label.set_line_wrap(True)
-        label_text = _('\n<b>An unhandled exception was raised</b>')
+        label_text = _('<b>An unhandled exception was raised</b>')
         self.title_label.set_markup(label_text)
         self.title_label.show()
         
         # A gtk.TextView for the exception
+        frame = gtk.Frame('Traceback')
         sw = gtk.ScrolledWindow()
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         
@@ -77,6 +79,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
         buffer.set_text(tback)
         
         sw.add(self.text_view)
+        frame.add(sw)
         
         # the label for the rest of the message
         self.label = gtk.Label()
@@ -91,7 +94,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
         self.label.show()
         
         self.vbox.pack_start(self.title_label, True, True, 10)
-        self.vbox.pack_start(sw, True, True, 10)
+        self.vbox.pack_start(frame, True, True)
         self.vbox.pack_start(self.label, True, True, 10)
         
         # the buttons

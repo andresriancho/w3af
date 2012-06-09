@@ -417,7 +417,7 @@ class dlg_ask_bug_info(gtk.MessageDialog):
                                    None)
         
         self.set_icon_from_file(W3AF_ICON)
-        self.set_title('Bug report information - Step 2/2')
+        self.set_title('Bug information - Step 2/2')
 
     def run(self):
             

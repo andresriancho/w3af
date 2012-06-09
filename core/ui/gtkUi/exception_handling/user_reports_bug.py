@@ -43,6 +43,7 @@ class user_reports_bug(simple_base_window, trac_bug_report):
         self.set_title('Report bug to developers')
         
         self.vbox = gtk.VBox()
+        self.vbox.set_border_width(10)
         
         # the label for the rest of the message
         self.label = gtk.Label()
@@ -51,14 +52,14 @@ class user_reports_bug(simple_base_window, trac_bug_report):
         label_text += _(' a bug report to our system using this window.')
         label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
         label_text += _('w3af will only send the text you enter and the version information to')
-        label_text += _(' Trac, no personal or confidential information is collected.')
+        label_text += _(' Trac, no personal or confidential information is collected.\n')
         self.label.set_markup(label_text)
         self.label.show()
         
         hbox = gtk.HBox()
         icon = gtk.Image()
         icon.set_from_stock(gtk.STOCK_YES, gtk.ICON_SIZE_DIALOG)
-        hbox.pack_start(icon, True, True)
+        hbox.pack_start(icon, True, True, 30)
         hbox.pack_start(self.label, True, True)
         
         self.vbox.pack_start(hbox, True, True)
@@ -72,7 +73,7 @@ class user_reports_bug(simple_base_window, trac_bug_report):
         self.butt_cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         self.butt_cancel.connect("clicked", self._handle_cancel)
         self.hbox.pack_start(self.butt_cancel, True, False)
-        self.vbox.pack_start(self.hbox, True, False, 10)
+        self.vbox.pack_start(self.hbox, True, False)
         
         #self.resize(400,450)
         self.add(self.vbox)
