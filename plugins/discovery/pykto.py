@@ -198,7 +198,7 @@ class pykto(baseDiscoveryPlugin):
             elif local_version > remote_version:
                 msg = 'Local version of scan_database.db is grater than remote version... this is'
                 msg += ' odd... check this.'
-                om.out.information()
+                om.out.information(msg)
             else:
                 msg = 'Updating to scan_database version: "' + str(remote_version) + '".'
                 om.out.information( msg )
