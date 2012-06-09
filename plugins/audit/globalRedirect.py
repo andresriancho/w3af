@@ -48,7 +48,7 @@ class globalRedirect(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._test_site = 'http://w3af.sourceforge.net/'
+        self._test_site = 'http://www.w3af.org/'
         self._scriptre = re.compile('< *script.*?>(.*)< */ *script *>', re.IGNORECASE | re.DOTALL )
 
     def audit(self, freq ):
@@ -57,7 +57,7 @@ class globalRedirect(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'golbalRedirect plugin is testing: ' + freq.getURL() )
+        om.out.debug( 'globalRedirect plugin is testing: ' + freq.getURL() )
         
         mutants = createMutants( freq , [self._test_site, ] )
             
@@ -107,12 +107,11 @@ class globalRedirect(baseAuditPlugin):
                     if redir.count( self._test_site ):
                         return True
             
-            # Test for javascript redirects
-            # These are some redirects I found on google :
-            # location.href = '../htmljavascript.htm';
-            # window.location = "http://www.google.com/"
-            # window.location.href="http://www.example.com/";
-            # location.replace('http://www.example.com/');
+            # Test for JavaScript redirects, these are some common redirects:
+            #     location.href = '../htmljavascript.htm';
+            #     window.location = "http://www.w3af.com/"
+            #     window.location.href="http://www.w3af.com/";
+            #     location.replace('http://www.w3af.com/');
             res = self._scriptre.search( response.getBody() )
             if res:
                 for scriptCode in res.groups():
