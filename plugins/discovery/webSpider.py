@@ -390,7 +390,7 @@ class webSpider(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return [ 'grep.httpAuthDetect', ]
+        return []
             
     def getLongDesc( self ):
         '''
