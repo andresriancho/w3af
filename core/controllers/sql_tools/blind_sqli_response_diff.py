@@ -88,42 +88,23 @@ class blind_sqli_response_diff(basePlugin):
         Returns a list of statement tuples.
         '''
         res = {}
-        rndNum = int( createRandNum( 2 , excludeNumbers ) )
-        rndNumPlusOne = rndNum +1
+        rnd_num = int( createRandNum( 2 , excludeNumbers ) )
+        rnd_num_plus_one = rnd_num +1
         
-        if mutant.getOriginalValue() == '':
-            # I use this when I don't have a value setted in the original request
-            
-            # Unquoted, integer values
-            trueStm = '%i OR %i=%i ' % (rndNum, rndNum, rndNum )
-            falseStm = '%i AND %i=%i ' % (rndNum, rndNum, rndNumPlusOne)
-            res['numeric'] = ( trueStm, falseStm )
-            # Single quotes
-            trueStm = "%i' OR '%i'='%i" % (rndNum, rndNum, rndNum )
-            falseStm = "%i' AND '%i'='%i" % (rndNum, rndNum, rndNumPlusOne)
-            res['stringsingle'] = ( trueStm, falseStm)
-            # Double quotes
-            trueStm = '%i" OR "%i"="%i' % (rndNum, rndNum, rndNum )
-            falseStm = '%i" AND "%i"="%i' % (rndNum, rndNum, rndNumPlusOne)
-            res['stringdouble'] = ( trueStm, falseStm)
-        else:
-            # I use this when I HAVE a value setted in the original request
-            # Unquoted, integer values, they should only be used if the original value is a number
-            # if it's something like 1209jas and it's used in a WHERE... then it MUST be quoted.
-            oval = mutant.getOriginalValue()
-            if oval.isdigit():
-                trueStm = oval + ' OR %i=%i ' % (rndNum, rndNum )
-                falseStm = oval + ' AND %i=%i ' % (rndNum, rndNumPlusOne)
-                res['numeric'] = ( trueStm, falseStm )
-            
-            # Single quotes
-            trueStm = oval + "' OR '%i'='%i" % (rndNum, rndNum )
-            falseStm = oval + "' AND '%i'='%i" % (rndNum, rndNumPlusOne)
-            res['stringsingle'] = ( trueStm, falseStm)
-            # Double quotes
-            trueStm = oval + '" OR "%i"="%i' % ( rndNum, rndNum )
-            falseStm = oval + '" AND "%i"="%i' % ( rndNum, rndNumPlusOne)
-            res['stringdouble'] = ( trueStm, falseStm)
+        # Numeric/Datetime
+        true_stm = '%i OR %i=%i ' % (rnd_num, rnd_num, rnd_num )
+        false_stm = '%i AND %i=%i ' % (rnd_num, rnd_num, rnd_num_plus_one)
+        res['numeric'] = ( true_stm, false_stm )
+        
+        # Single quotes
+        true_stm = "%i' OR '%i'='%i" % (rnd_num, rnd_num, rnd_num )
+        false_stm = "%i' AND '%i'='%i" % (rnd_num, rnd_num, rnd_num_plus_one)
+        res['stringsingle'] = ( true_stm, false_stm)
+        
+        # Double quotes
+        true_stm = '%i" OR "%i"="%i' % (rnd_num, rnd_num, rnd_num )
+        false_stm = '%i" AND "%i"="%i' % (rnd_num, rnd_num, rnd_num_plus_one)
+        res['stringdouble'] = ( true_stm, false_stm)
             
         return res
     
