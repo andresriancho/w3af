@@ -53,7 +53,7 @@ class ftp_config_files(base_payload):
         return result
     
     def run_read(self, parameters):
-        hashmap = self.api_read()
+        hashmap = self.api_read(parameters)
         result = []
         if hashmap:
             result.append('FTP Config Files')
