@@ -60,6 +60,9 @@ class TestXSS(PluginTest):
             ('no_tag_xss.php', 'text', ['text']),
             ('dataReceptor2.php', 'empresa', ['empresa', 'firstname']),
             ('stored/writer.php', 'a', ['a']),
+            ('xss_clean.php', 'text', ['text',]),
+            ('xss_clean_4_strict.php', 'text', ['text',])
+            
         ]
         res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
                 for m in (xv.getMutant() for xv in xssvulns)]
