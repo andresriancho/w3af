@@ -43,7 +43,7 @@ class TestWordnet(PluginTest):
         
         expected_urls = (
              'azure.html', 'blue.html', 'green.html', 'red.html',
-             'hide.php', 'show.php',
+             'hide.php', 'show.php', '',
              )
         
         urls = self.kb.getData('urls', 'url_objects')
