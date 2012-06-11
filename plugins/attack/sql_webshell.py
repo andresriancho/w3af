@@ -67,8 +67,7 @@ class sql_webshell(baseAttackPlugin):
         self._injvar = ''
         
         # User configured variables
-        self._equalLimit = 0.9
-        self._equAlgorithm = 'setIntersection'
+        self._eq_limit = 0.9
         self._goodSamaritan = True
         self._generateOnlyOne = True
         
@@ -96,8 +95,7 @@ class sql_webshell(baseAttackPlugin):
             
             bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )
-            bsql.setEqualLimit( self._equalLimit )
-            bsql.setEquAlgorithm( self._equAlgorithm )
+            bsql.set_eq_limit( self._eq_limit )
             
             vuln_obj = bsql.is_injectable( freq, self._injvar )
             if not vuln_obj:
@@ -161,8 +159,7 @@ class sql_webshell(baseAttackPlugin):
             
             bsql = blind_sqli_response_diff()
             bsql.setUrlOpener( self._urlOpener )
-            bsql.setEqualLimit( self._equalLimit )
-            bsql.setEquAlgorithm( self._equAlgorithm )
+            bsql.set_eq_limit( self._eq_limit )
             
             tmp_vuln_list = []
             for v in vulns:
@@ -206,14 +203,15 @@ class sql_webshell(baseAttackPlugin):
                 
     def _generateShell( self, vuln_obj ):
         '''
-        @parameter vuln_obj: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
-        @return: A sql_webshell shell object if sql_webshell could fingerprint the database.
+        @parameter vuln_obj: The vuln to exploit, as it was saved in the kb or 
+                             supplied by the user with set commands.
+        @return: A sql_webshell shell object if sql_webshell could fingerprint 
+                 the database.
         '''
         bsql = blind_sqli_response_diff()
-        bsql.setEqualLimit( self._equalLimit )
-        bsql.setEquAlgorithm( self._equAlgorithm )
+        bsql.set_eq_limit( self._eq_limit )
             
-        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal )
+        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal_with_limit )
         driver = dbBuilder.getDriverForVuln( vuln_obj )
         if driver is None:
             return None
@@ -349,48 +347,43 @@ class sql_webshell(baseAttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
-        
-        d2 = 'Method to use with fastExploit()'
-        o2 = option('method', self._method, d2, 'string')
-
-        d3 = 'Data to send with fastExploit()'
-        o3 = option('data', self._data, d3, 'string')
-
-        d4 = 'Variable where to inject with fastExploit()'
-        o4 = option('injvar', self._injvar, d4, 'string')
-
-        d5 = 'The algorithm to use in the comparison of true and false response for blind sql.'
-        h5 = 'The options are: "stringEq" and "setIntersection". Read the user documentation for'
-        h5 += ' details.'
-        o5 = option('equAlgorithm', self._equAlgorithm, d5, 'string', help=h5)
-
-        d6 = 'Set the equal limit variable'
-        h6 = 'Two pages are equal if they match in more than equalLimit. Only used when'
-        h6 += ' equAlgorithm is set to setIntersection.'
-        o6 = option('equalLimit', self._equalLimit, d6, 'float', help=h6)
-
-        d7 = 'Enable or disable the good samaritan module'
-        h7 = 'The good samaritan module is a the best way to speed up blind sql exploitations.'
-        h7 += ' It\'s really simple, you see messages in the console that show the status of the'
-        h7 += ' discovery and you can help the discovery. For example, if you see "Micros" you'
-        h7 += ' could type "oft", and if it\'s correct, you have made your good action of the day'
-        h7 += ', speeded up the discovery AND had fun doing it.'
-        o7 = option('goodSamaritan', self._goodSamaritan, d7, 'boolean', help=h7)
-
-        d8 = 'If true, this plugin will try to generate only one shell object.'
-        o8 = option('generateOnlyOne', self._generateOnlyOne, d8, 'boolean')
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o5)
-        ol.add(o6)
-        ol.add(o7)
-        ol.add(o8)
+        
+        d = 'URL to exploit with fastExploit()'
+        o = option('url', self._url, d, 'url')
+        ol.add(o)        
+        
+        d = 'Method to use with fastExploit()'
+        o = option('method', self._method, d, 'string')
+        ol.add(o)
+        
+        d = 'Data to send with fastExploit()'
+        o = option('data', self._data, d, 'string')
+        ol.add(o)
+        
+        d = 'Variable where to inject with fastExploit()'
+        o = option('injvar', self._injvar, d, 'string')
+        ol.add(o)
+        
+        d = 'Set the equal limit variable'
+        h = 'Two pages are equal if they match in more than equalLimit. Only used when'
+        h += ' equAlgorithm is set to setIntersection.'
+        o = option('equalLimit', self._eq_limit, d, 'float', help=h)
+        ol.add(o)
+        
+        d = 'Enable or disable the good samaritan module'
+        h = 'The good samaritan module is a the best way to speed up blind sql exploitations.'
+        h += ' It\'s really simple, you see messages in the console that show the status of the'
+        h += ' discovery and you can help the discovery. For example, if you see "Micros" you'
+        h += ' could type "oft", and if it\'s correct, you have made your good action of the day'
+        h += ', speeded up the discovery AND had fun doing it.'
+        o = option('goodSamaritan', self._goodSamaritan, d, 'boolean', help=h)
+        ol.add(o)
+        
+        d = 'If true, this plugin will try to generate only one shell object.'
+        o = option('generateOnlyOne', self._generateOnlyOne, d, 'boolean')
+        ol.add(o)
+        
         return ol
 
 
@@ -412,7 +405,7 @@ class sql_webshell(baseAttackPlugin):
         self._data = optionsMap['data'].getValue()
         self._injvar = optionsMap['injvar'].getValue()
         self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
-        self._equalLimit = optionsMap['equalLimit'].getValue()
+        self._eq_limit = optionsMap['equalLimit'].getValue()
         self._goodSamaritan = optionsMap['goodSamaritan'].getValue()
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
     
@@ -435,12 +428,11 @@ class sql_webshell(baseAttackPlugin):
         The original sql_webshell program was coded by Bernardo Damele and Daniele Bellucci, many thanks to both of
         them.
         
-        Seven configurable parameters exist:
+        Six configurable parameters exist:
             - url
             - method
             - data
             - injvar
-            - equAlgorithm
             - equalLimit
         '''
 

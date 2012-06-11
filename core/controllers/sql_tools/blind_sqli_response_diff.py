@@ -20,20 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import re
+import urllib
+import cgi
 
-from core.controllers.basePlugin.basePlugin import basePlugin
-from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import createMutants, createRandNum
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
+from core.controllers.basePlugin.basePlugin import basePlugin
+from core.data.fuzzer.fuzzer import createMutants, createRandNum
+from core.controllers.misc.levenshtein import relative_distance_boolean
+from core.controllers.misc.diff import diff
+
 
 class blind_sqli_response_diff(basePlugin):
     '''
-    This class tests for blind SQL injection bugs using response diffing,
-    the logic is here and not as an audit plugin because this logic is also used in attack plugins.
+    This class tests for blind SQL injection bugs using response diffs,
+    the logic is here and not as an audit plugin because it is also used in
+    attack plugins when trying to verify the vulnerability.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -43,23 +47,16 @@ class blind_sqli_response_diff(basePlugin):
         basePlugin.__init__(self)
         
         # User configured variables
-        self._equalLimit = 0.8
-        self._equAlgorithm = 'setIntersection'
+        self._eq_limit = 0.8
         
-    def setEqualLimit( self, _equalLimit ):
+    def set_eq_limit( self, eq_limit ):
         '''
         Most of the equal algorithms use a rate to tell if two responses 
         are equal or not. 1 is 100% equal, 0 is totally different.
         
-        @parameter _equalLimit: The equal limit to use.
+        @parameter eq_limit: The equal limit to use.
         '''
-        self._equalLimit = _equalLimit
-        
-    def setEquAlgorithm( self, _equAlgorithm ):
-        '''
-        @parameter _equAlgorithm: The equal algorithm to use.
-        '''
-        self._equAlgorithm = _equAlgorithm
+        self._eq_limit = eq_limit
         
     def is_injectable( self, freq, parameter ):
         '''
@@ -77,7 +74,7 @@ class blind_sqli_response_diff(basePlugin):
         for mutant in mutants:
             statements = self._get_statements( mutant )
             for statement_type in statements:
-                vuln = self._findBsql( mutant, statements[statement_type], statement_type )
+                vuln = self._find_bsql( mutant, statements[statement_type], statement_type )
                 if vuln:
                     return vuln
         
@@ -89,7 +86,7 @@ class blind_sqli_response_diff(basePlugin):
         '''
         res = {}
         rnd_num = int( createRandNum( 2 , excludeNumbers ) )
-        rnd_num_plus_one = rnd_num +1
+        rnd_num_plus_one = rnd_num + 1
         
         # Numeric/Datetime
         true_stm = '%i OR %i=%i ' % (rnd_num, rnd_num, rnd_num )
@@ -107,125 +104,156 @@ class blind_sqli_response_diff(basePlugin):
         res['stringdouble'] = ( true_stm, false_stm)
             
         return res
-    
-    def _findBsqlAux( self, mutant, statementTuple, statement_type, saveToKb ):
-        '''
-        Auxiliar function that does almost nothing.
-        '''
-        bsqlVulns = self._findBsql( mutant, statementTuple, statement_type )
-        if saveToKb:
-            for bsqlVuln in bsqlVulns:
-                om.out.vulnerability( bsqlVuln.getDesc() )
-                kb.kb.append( 'blindSqli', 'blindSqli', bsqlVuln )
                 
-    def _findBsql( self, mutant, statementTuple, statement_type ):
+    def _find_bsql( self, mutant, statement_tuple, statement_type ):
         '''
-        Is the main algorithm for finding blind sql injections.
+        Is the main algorithm for finding blind SQL injections.
         
         @return: A vulnerability object or None if nothing is found
         '''
-        trueStatement = statementTuple[0]
-        falseStatement = statementTuple[1]
+        true_statement = statement_tuple[0]
+        false_statement = statement_tuple[1]
         
-        mutant.setModValue( trueStatement )
-        trueResponse = self._sendMutant( mutant, analyze=False )
+        mutant.setModValue( true_statement )
+        _, body_true_response = self.send_clean( mutant )
 
-        mutant.setModValue( falseStatement )
-        falseResponse = self._sendMutant( mutant, analyze=False )
+        mutant.setModValue( false_statement )
+        _, body_false_response = self.send_clean( mutant )
         
-        om.out.debug('Comparing trueResponse and falseResponse.')
-        if not self.equal( trueResponse.getBody() , falseResponse.getBody() ):
+        if body_true_response == body_false_response:
+            #
+            #    There is NO CHANGE between the true and false responses.
+            #    NO WAY I'm going to detect a blind SQL injection using 
+            #    response diffs in this case.
+            #
+            return None
+        
+        compare_diff = False
+        
+        om.out.debug('Comparing body_true_response and body_false_response.')
+        if self.equal_with_limit( body_true_response , body_false_response, compare_diff ):
+            #
+            #    They might be equal because of various reasons, in the best
+            #    case scenario there IS a blind SQL injection but the % of the
+            #    HTTP response body controlled by it is so small that the equal
+            #    ratio is not catching it.
+            #
+            compare_diff = True
             
-            sintaxError = "d'z'0"
-            mutant.setModValue( sintaxError )
-            seResponse = self._sendMutant( mutant, analyze=False )
+        syntax_error = "d'z'0"
+        mutant.setModValue( syntax_error )
+        syntax_error_response, body_syntax_error_response = self.send_clean( mutant )
+        
+        self.debug('Comparing body_true_response and body_syntax_error_response.')
+        if not self.equal_with_limit( body_true_response , 
+                                      body_syntax_error_response,
+                                      compare_diff ):
             
-            om.out.debug('Comparing trueResponse and sintaxErrorResponse.')
-            if not self.equal( trueResponse.getBody() , seResponse.getBody() ):
-                
-                # Verify the injection!
-                statements = self._get_statements( mutant )
-                secondTrueStm = statements[ statement_type ][0]
-                secondFalseStm = statements[ statement_type ][1]
-                
-                mutant.setModValue( secondTrueStm )
-                secondTrueResponse = self._sendMutant( mutant, analyze=False )
+            # Verify the injection!
+            statements = self._get_statements( mutant )
+            second_true_stm = statements[ statement_type ][0]
+            second_false_stm = statements[ statement_type ][1]
+            
+            mutant.setModValue( second_true_stm )
+            second_true_response, body_second_true_response = self.send_clean( mutant )
 
-                mutant.setModValue( secondFalseStm )
-                secondFalseResponse = self._sendMutant( mutant, analyze=False ) 
+            mutant.setModValue( second_false_stm )
+            second_false_response, body_second_false_response = self.send_clean( mutant ) 
+            
+            self.debug('Comparing body_second_true_response and body_true_response.')
+            if self.equal_with_limit( body_second_true_response, 
+                                      body_true_response,
+                                      compare_diff ):
                 
-                om.out.debug('Comparing secondTrueResponse and trueResponse.')
-                if self.equal( secondTrueResponse.getBody(), trueResponse.getBody() ):
+                self.debug('Comparing body_second_false_response and body_false_response.')
+                if self.equal_with_limit( body_second_false_response, 
+                                          body_false_response,
+                                          compare_diff ):
+                    v = vuln.vuln( mutant )
+                    v.setId( [second_false_response.id, second_true_response.id] )
+                    v.setSeverity(severity.HIGH)
+                    v.setName( 'Blind SQL injection vulnerability' )
+                    # This is needed to be used in fuzz file name
+                    v.getMutant().setOriginalValue( '' )
+                    v.getMutant().setModValue( '' )
                     
-                    om.out.debug('Comparing secondFalseResponse and falseResponse.')
-                    if self.equal( secondFalseResponse.getBody(), falseResponse.getBody() ):
-                        v = vuln.vuln( mutant )
-                        v.setId( [secondFalseResponse.id, secondTrueResponse.id] )
-                        v.setSeverity(severity.HIGH)
-                        v.setName( 'Blind SQL injection vulnerability' )
-                        # This is needed to be used in fuzz file name
-                        v.getMutant().setOriginalValue( '' )
-                        v.getMutant().setModValue( '' )
-                        
-                        desc = 'Blind SQL injection was found at: "' + v.getURL()  + '",'
-                        desc += ' using HTTP method ' + v.getMethod() + '.'
-                        desc += ' The injectable parameter is: "' + mutant.getVar() + '".'
-                        v.setDesc( desc )
-                        om.out.debug( v.getDesc() )
-                        
-                        v['type'] = statement_type
-                        v['trueHtml'] = secondTrueResponse.getBody()
-                        v['falseHtml'] = secondFalseResponse.getBody()
-                        v['errorHtml'] = seResponse.getBody()
-                        return v
+                    desc = 'Blind SQL injection was found at: "%s", using'
+                    desc += ' HTTP method %s. The injectable parameter is: "%s"'
+                    desc = desc % (v.getURL(), v.getMethod(), mutant.getVar())
+                    v.setDesc( desc )
+                    om.out.debug( v.getDesc() )
+                    
+                    v['type'] = statement_type
+                    v['trueHtml'] = second_true_response.getBody()
+                    v['falseHtml'] = second_false_response.getBody()
+                    v['errorHtml'] = syntax_error_response.getBody()
+                    return v
                         
         return None
-        
-    def equal( self, body1, body2 ):
+    
+    def debug(self, msg):
+        om.out.debug('[blind_sqli_debug] ' + msg)
+    
+    def equal_with_limit( self, body1, body2, compare_diff=False ):
         '''
-        Determines if two pages are equal using some tricks.
+        Determines if two pages are equal using a ratio.
         '''
-        if self._equAlgorithm == 'setIntersection':
-            return self._setIntersection( body1, body2)
-        elif self._equAlgorithm == 'stringEq':
-            return self._stringEq( body1, body2)
+        if compare_diff:
+            body1, body2 = diff(body1, body2)
             
-        raise w3afException('Unknown algorithm selected.')
+        cmp_res = relative_distance_boolean(body1, body2, self._eq_limit)
+        self.debug('Result: %s' % cmp_res)
+        
+        return cmp_res
     
-    def _stringEq( self, body1 , body2 ):
+    def send_clean(self, mutant):
         '''
-        This is one of the equal algorithms.
+        Sends a mutant to the network (without using the cache) and then returns
+        the HTTP response object and a sanitized response body (which doesn't contain
+        any traces of the injected payload).
+        
+        The sanitized version is useful for having clean comparisons between two
+        responses that were generated with different mutants. 
+         
+        @param mutant: The mutant to send to the network.
+        @return: (
+                    HTTP response,
+                    Sanitized HTTP response body,
+                 )
         '''
-        if body1 == body2:
-            om.out.debug('Pages are equal.')
-            return True
-        else:
-            om.out.debug('Pages are NOT equal.')
-            return False
+        http_response = self._sendMutant( mutant, analyze=False, useCache=False )
+        clean_body = get_clean_body(mutant, http_response)
         
-    def _setIntersection( self, body1, body2 ):
-        '''
-        This is one of the equal algorithms.
-        '''
-        sb1 = re.findall('(\w+)', body1)
-        sb2 = re.findall('(\w+)', body2)
-        
-        setb1 = set( sb1 )
-        setb2 = set( sb2 )
-        
-        intersection = setb1.intersection( setb2 )
-        
-        totalLen = float( len( setb1 ) + len( setb2 ) )
-        if totalLen == 0:
-            om.out.debug( 'The length of both pages is zero. Cant apply setIntersection.' )
-            return False
-        equal = ( 2 * len(intersection) ) / totalLen 
-        
-        if equal > self._equalLimit:
-            om.out.debug('Pages are equal, match rate: ' + str(equal) )
-            return True
-        else:
-            om.out.debug('Pages are NOT equal, match rate: ' + str(equal) )
-            return False
-    
+        return http_response, clean_body
 
+def get_clean_body(mutant, response):
+    '''
+    @see: Very similar to fingerprint_404.py get_clean_body() bug not quite 
+          the same maybe in the future I can merge both?
+          
+    Definition of clean in this method:
+        - input:
+            - response.getURL() == http://host.tld/aaaaaaa/?id=1 OR 23=23
+            - response.getBody() == '...<x>1 OR 23=23</x>...'
+            
+        - output:
+            - self._clean_body( response ) == '...<x></x>...'
+    
+    All injected values are removed encoded and "as is".
+    
+    @param mutant: The mutant where I can get the value from.
+    @param response: The httpResponse object to clean
+    @return: A string that represents the "cleaned" response body.
+    '''
+    
+    body = response.body
+    
+    if response.is_text_or_html():
+        mod_value = mutant.getModValue()
+        
+        body = body.replace(mod_value, '')
+        body = body.replace(urllib.unquote_plus(mod_value), '')
+        body = body.replace(cgi.escape(mod_value), '')
+        body = body.replace(cgi.escape(urllib.unquote_plus(mod_value)), '')
+
+    return body

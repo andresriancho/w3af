@@ -352,6 +352,8 @@ def is_404(http_response):
 
 def get_clean_body(response):
     '''
+    @see: blind_sqli_response_diff.get_clean_body()
+    
     Definition of clean in this method:
         - input:
             - response.getURL() == http://host.tld/aaaaaaa/

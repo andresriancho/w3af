@@ -32,7 +32,8 @@ import core.data.kb.knowledgeBase as kb
 
 class blindSqli(baseAuditPlugin):
     '''
-    Find blind SQL injection vulnerabilities.
+    Identify blind SQL injection vulnerabilities.
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
@@ -42,8 +43,7 @@ class blindSqli(baseAuditPlugin):
         self._blind_sqli_time_delay = blind_sqli_time_delay()
         
         # User configured variables
-        self._equalLimit = 0.9
-        self._equAlgorithm = 'setIntersection'
+        self._eq_limit = 0.9
 
     def audit(self, freq):
         '''
@@ -53,43 +53,63 @@ class blindSqli(baseAuditPlugin):
         '''
         om.out.debug('blindSqli plugin is testing: ' + freq.getURL())
         
-        # Setup bsqli detector objects
+        #
+        # Setup blind SQL injection detector objects
+        #
         bsqli_resp_diff = self._bsqli_response_diff
         bsqli_resp_diff.setUrlOpener(self._urlOpener)
-        bsqli_resp_diff.setEqualLimit(self._equalLimit)
-        bsqli_resp_diff.setEquAlgorithm(self._equAlgorithm)
+        bsqli_resp_diff.set_eq_limit(self._eq_limit)
+        
         bsqli_time_delay = self._blind_sqli_time_delay
         bsqli_time_delay.setUrlOpener(self._urlOpener)
-        # Setup partial function
+
         
+        # FIXME: what about repeated parameter names?
         for param in freq.getDc():
-            # Try to identify the vulnerabilities using response
-            # string difference
-            # FIXME: what about repeated parameter names?
-            found_vuln = bsqli_resp_diff.is_injectable(freq, param) or \
-                                bsqli_time_delay.is_injectable(freq, param)
-            if found_vuln and \
-                self._has_no_bug(freq, varname=found_vuln.getVar()):
-                om.out.vulnerability(found_vuln.getDesc())
-                kb.kb.append(self, 'blindSqli', found_vuln)
+            
+            if self._has_sql_injection( freq, param ):
+                #
+                #    If sqli.py was enabled and already detected a vulnerability
+                #    in this parameter, then it makes no sense to test it again
+                #    and report a duplicate to the user
+                #
+                continue
+            
+            method_list = [bsqli_resp_diff, bsqli_time_delay]
+            
+            for method in method_list:
+                found_vuln = method.is_injectable(freq, param)
+
+                if found_vuln is not None and self._has_no_bug(freq, varname=found_vuln.getVar()):
+                    om.out.vulnerability(found_vuln.getDesc())
+                    kb.kb.append(self, 'blindSqli', found_vuln)
+                    break
+    
+    def _has_sql_injection(self, freq, param):
+        '''
+        @return: True if there IS a reported SQL injection for this URL/parameter
+                 combination.
+        '''
+        sql_injection_list = kb.kb.getData('sqli','sqli')
+        for sql_injection in sql_injection_list:
+            if  sql_injection.getURL() == freq.getURL() and \
+                sql_injection.getVar() == param:
+                return True
+        
+        return False
     
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'The algorithm to use in the comparison of true and false response for blind sql.'
-        h1 = 'The options are: "stringEq" and "setIntersection". '
-        h1 += 'Read the long description for details.'
-        o1 = option('equAlgorithm', self._equAlgorithm, d1, 'string', help=h1)
-        
-        d2 = 'Set the equal limit variable'
-        h2 = 'Two pages are equal if they match in more than equalLimit. Only used when '
-        h2 += 'equAlgorithm is set to setIntersection.'
-        o2 = option('equalLimit', self._equalLimit, d2, 'float', help=h2)
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
+        
+        d = 'String equal ratio (0.0 to 1.0)'
+        h = 'Two pages are considered equal if they match in more than eq_limit.'
+        o = option('eq_limit', self._eq_limit, d, 'float', help=h)
+        
+        ol.add(o)
+        
         return ol
 
     def setOptions( self, optionsMap ):
@@ -100,8 +120,7 @@ class blindSqli(baseAuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._equAlgorithm = optionsMap['equAlgorithm'].getValue()
-        self._equalLimit = optionsMap['equalLimit'].getValue()
+        self._eq_limit = optionsMap['eq_limit'].getValue()
 
     def getPluginDeps( self ):
         '''
@@ -115,18 +134,10 @@ class blindSqli(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds blind SQL injections.
+        This plugin finds blind SQL injections using two techniques: time delays
+        and true/false response comparisons.
         
-        Two configurable parameters exist:
-            - equAlgorithm
-            - equalLimit
+        Only one configurable parameters exists:
+            - eq_limit
         
-        The equAlgorithm parameter configures how the comparison of pages is done, the options for equAlgorithm are:
-            - stringEq
-            - setIntersection
-            
-        The classic way of matching two strings is "stringEq" , in Python this is "string1 == string2" , but other ways have been
-        developed for sites that have changing banners and random data on their HTML response. "setIntersection" will create
-        two different sets with the words inside the two HTML responses, and do an intersection. If number of words that are
-        in the intersection set divided by the total words are more than "equalLimit", then the responses are equal.
         '''
