@@ -22,16 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 
+from core.data.options.optionList import optionList
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.factory import factory
 
 
@@ -110,8 +105,9 @@ class passwordProfiling(baseGrepPlugin):
                         else:
                             old_data[ d ] = data[ d ]
                 
-                #   If the dict grows a lot, I want to trim it. Basically, if it grows to a length of 
-                #   more than 2000 keys, I'll trim it to 1000 keys.
+                #   If the dict grows a lot, I want to trim it. Basically, if 
+                #   it grows to a length of more than 2000 keys, I'll trim it
+                #   to 1000 keys.
                 if len( old_data ) > 2000:
                     def sortfunc(x_obj, y_obj):
                         return cmp(y_obj[1], x_obj[1])

@@ -70,11 +70,13 @@ class string_representation(object):
 
         '''
         linecount = lambda ln: sum(map(ord, (char for char in ln)))
-        sumlinecounts = lambda st, en: \
-                            sum(linecount(ln) for ln in split[st:en])
         split = instr.split('\n')
         length = max(len(split), width)
         step, extra = divmod(length, width)
+        
+        sumlinecounts = lambda st, en: \
+                            sum(linecount(ln) for ln in split[st:en])
+        
         
         for i, j in enumerate(xrange(0, length-extra, step)):
             accum = sumlinecounts(j, j+step)
