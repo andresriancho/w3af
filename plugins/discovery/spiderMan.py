@@ -91,7 +91,7 @@ class spiderMan(baseDiscoveryPlugin):
     def discover(self, freq ):
         # Create the proxy server
         self._proxy = proxy(self._listenAddress, self._listenPort,
-                            self._urlOpener, self.createPH())
+                            self._uri_opener, self.createPH())
         self._proxy.targetDomain = freq.getURL().getDomain()
         
         # Inform the user
@@ -176,7 +176,7 @@ class proxyHandler(w3afProxyHandler):
                 self._spiderMan = server.chainedHandler._spiderMan
         else:
             self._spiderMan = spiderMan
-        self._urlOpener = self._spiderMan._urlOpener
+        self._uri_opener = self._spiderMan._urlOpener
         w3afProxyHandler.__init__(self, request, client_address, server)
     
     def do_ALL(self):

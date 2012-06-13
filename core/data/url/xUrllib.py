@@ -258,11 +258,56 @@ class xUrllib(object):
         # Send it
         function_reference = getattr( self , fuzzReq.getMethod() )
         return function_reference(fuzzReq.getURI(), data=fuzzReq.getData(),
-                                  headers=fuzzReq.getHeaders(), useCache=False,
-                                  grepResult=False)
+                                  headers=fuzzReq.getHeaders(), cache=False,
+                                  grep=False)
+    
+    def send_mutant( self, mutant, callback=None, grep=True, cache=True,
+                     follow_redir=True):
+        '''
+        Sends a mutant to the remote web server.
         
-    def GET(self, uri, data=None, headers={}, useCache=False,
-            grepResult=True, follow_redir=True):
+        @param callback: If None, return the HTTP response object, else call
+                         the callback with the mutant and the http response as
+                         parameters.
+        
+        @return: The httpResponse object associated with the request
+                 that was just sent.
+        '''
+        #
+        # IMPORTANT NOTE: If you touch something here, the whole framework may
+        # stop working!
+        #
+        uri = mutant.getURI()
+        data = mutant.getData()
+
+        # Also add the cookie header; this is needed by the mutantCookie
+        headers = mutant.getHeaders()
+        cookie = mutant.getCookie()
+        if cookie:
+            headers['Cookie'] = str(cookie)
+
+        args = (uri,)
+        kwargs = {
+              'data': data, 
+              'headers': headers,
+              'grep': grep,
+              'cache': cache,
+              'follow_redir': follow_redir
+              }
+        method = mutant.getMethod()
+        
+        functor = getattr(self, method)
+        res = functor(*args, **kwargs)
+        
+        if callback is not None:
+            # The user specified a custom callback for analyzing the HTTP response
+            # this is commonly used when sending requests in an async way.
+            callback(mutant, res)
+
+        return res
+            
+    def GET(self, uri, data=None, headers={}, cache=False,
+            grep=True, follow_redir=True):
         '''
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in urlOpenerSettings.py .
@@ -298,8 +343,8 @@ class xUrllib(object):
         converted into a string and set as the URL object query string before sending.
         @param headers: Any special headers that will be sent with this request
 
-        @param useCache: Should the library search the local cache for a response before sending it to the wire?
-        @param grepResult: Should grep plugins be applied to this request/response?
+        @param cache: Should the library search the local cache for a response before sending it to the wire?
+        @param grep: Should grep plugins be applied to this request/response?
 
         @return: An httpResponse object.
         '''
@@ -325,7 +370,7 @@ class xUrllib(object):
             
         req = HTTPRequest(uri, follow_redir=follow_redir)
         req = self._add_headers(req, headers)
-        return self._send(req, useCache=useCache, grepResult=grepResult)
+        return self._send(req, cache=cache, grep=grep)
     
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -358,8 +403,8 @@ class xUrllib(object):
             
         return no_content_response
             
-    def POST(self, uri, data='', headers={}, grepResult=True,
-             useCache=False, follow_redir=True):
+    def POST(self, uri, data='', headers={}, grep=True,
+             cache=False, follow_redir=True):
         '''
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -387,9 +432,9 @@ class xUrllib(object):
         #
         req = HTTPRequest(uri, data=data, follow_redir=follow_redir)
         req = self._add_headers( req, headers )
-        return self._send( req , grepResult=grepResult, useCache=useCache)
+        return self._send( req , grep=grep, cache=cache)
     
-    def getRemoteFileSize(self, req, useCache=True):
+    def getRemoteFileSize(self, req, cache=True):
         '''
         This method was previously used in the framework to perform a HEAD 
         request before each GET/POST (ouch!) and get the size of the response.
@@ -402,7 +447,7 @@ class xUrllib(object):
         @return: The file size of the remote file.
         '''
         res = self.HEAD( req.get_full_url(), headers=req.headers, 
-                         data=req.get_data(), useCache=useCache )  
+                         data=req.get_data(), cache=cache )  
         
         resource_length = None
         for i in res.getHeaders():
@@ -445,7 +490,7 @@ class xUrllib(object):
                 self._method = method
             
             def __call__(self, uri, data=None, headers={},
-                         useCache=False, grepResult=True, follow_redir=True):
+                         cache=False, grep=True, follow_redir=True):
                 '''
                 @return: An httpResponse object that's the result of
                     sending the request with a method different from
@@ -463,8 +508,8 @@ class xUrllib(object):
                 req = self.MethodRequest(uri, data, follow_redir=follow_redir)
                 req.set_method(self._method)
                 req = self._xurllib._add_headers(req, headers or {})
-                return self._xurllib._send(req, useCache=useCache,
-                                           grepResult=grepResult)
+                return self._xurllib._send(req, cache=cache,
+                                           grep=grep)
         
         return AnyMethod(self, method_name)
 
@@ -493,7 +538,7 @@ class xUrllib(object):
         else:
             return False
             
-    def _send(self, req, useCache=False, useMultipart=False, grepResult=True):
+    def _send(self, req, cache=False, useMultipart=False, grep=True):
         '''
         Actually send the request object.
         
@@ -515,7 +560,7 @@ class xUrllib(object):
         start_time = time.time()
         res = None
 
-        req.get_from_cache = useCache
+        req.get_from_cache = cache
         
         try:
             res = self._opener.open(req)
@@ -545,11 +590,11 @@ class xUrllib(object):
             # Reset errors counter
             self._zeroGlobalErrorCount()
         
-            if grepResult:
-                self._grepResult(req, httpResObj)
+            if grep:
+                self._grep(req, httpResObj)
             else:
                 om.out.debug('No grep for: "%s", the plugin sent '
-                             'grepResult=False.' % geturl_instance)
+                             'grep=False.' % geturl_instance)
 
             return httpResObj
         except urllib2.URLError, e:
@@ -576,7 +621,7 @@ class xUrllib(object):
                          traceback.format_exc())
             req._Request__original = original_url
             # Then retry!
-            return self._retry(req, e, useCache)
+            return self._retry(req, e, cache)
         except KeyboardInterrupt:
             # Correct control+c handling...
             raise
@@ -646,10 +691,10 @@ class xUrllib(object):
                 del self._errorCount[req_id]
             self._zeroGlobalErrorCount()
 
-            if grepResult:
-                self._grepResult(req, httpResObj)
+            if grep:
+                self._grep(req, httpResObj)
             else:
-                om.out.debug('No grep for: %s, the plugin sent grepResult='
+                om.out.debug('No grep for: %s, the plugin sent grep='
                              'False.' % res.geturl())
             return httpResObj
 
@@ -663,7 +708,7 @@ class xUrllib(object):
             om.out.error(str(e))
         return read
         
-    def _retry(self, req, urlerr, useCache):
+    def _retry(self, req, urlerr, cache):
         '''
         Try to send the request again while doing some error handling.
         '''
@@ -673,7 +718,7 @@ class xUrllib(object):
             # Increment the error count of this particular request.
             self._errorCount[req_id] += 1            
             om.out.debug('Re-sending request...')
-            return self._send(req, useCache)
+            return self._send(req, cache)
         else:
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do
@@ -798,7 +843,7 @@ class xUrllib(object):
                 
         return request
         
-    def _grepResult(self, request, response):
+    def _grep(self, request, response):
         # The grep process is all done in another thread. This improves the
         # speed of all w3af.
         url_instance = request.url_object

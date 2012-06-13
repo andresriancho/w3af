@@ -55,7 +55,7 @@ class fingerprint_404:
         #   Set the opener, I need it to perform some tests and gain 
         #   the knowledge about the server's 404 response bodies.
         #
-        self._urlOpener =  None
+        self._uri_opener =  None
 
         #
         #   Internal variables
@@ -72,7 +72,7 @@ class fingerprint_404:
         self._test_db_index = 0
 
     def set_urlopener(self, urlopener):
-        self._urlOpener = urlopener
+        self._uri_opener = urlopener
             
     def generate_404_knowledge( self, url ):
         '''
@@ -85,7 +85,7 @@ class fingerprint_404:
         #    This is the case when nobody has properly configured
         #    the object in order to use it.
         #
-        if self._urlOpener is None:
+        if self._uri_opener is None:
             raise w3afException('404 fingerprint database was incorrectly initialized.')
         
         with self._lock:        
@@ -155,8 +155,8 @@ class fingerprint_404:
         '''
         try:
             # I don't use the cache, because the URLs are random and the only thing that
-            # useCache does is to fill up disk space
-            response = self._urlOpener.GET(url404, useCache=False, grepResult=False)
+            # cache does is to fill up disk space
+            response = self._uri_opener.GET(url404, cache=False, grep=False)
         except w3afException, w3:
             raise w3afException('Exception while fetching a 404 page, error: ' + str(w3))
         except w3afMustStopException, mse:

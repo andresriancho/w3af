@@ -64,7 +64,7 @@ class generic(baseAuditPlugin):
         om.out.debug( 'generic plugin is testing: ' + freq.getURL() )
         
         # First, get the original response and create the mutants
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants( freq , ['', ] , oResponse=oResponse )
         
         for m in mutants:
@@ -88,11 +88,14 @@ class generic(baseAuditPlugin):
             #     If http://localhost/a.php?b=1 ; then I should request b=
             #     If http://localhost/a.php?b=abc ; then I should request b=
             for error_string in self._get_error_strings():
-                m.setModValue( error_string )
-                error_response = self._sendMutant(  m , analyze=False )
-            
-                # Now I compare all responses
-                self._analyzeResponses( oResponse, limit_response, error_response, m )
+                
+                if self._has_no_bug(m):
+                    
+                    m.setModValue( error_string )
+                    error_response = self._uri_opener.send_mutant(m)
+                
+                    # Now I compare all responses
+                    self._analyze_responses( oResponse, limit_response, error_response, m )
           
     def _get_error_strings( self ):
         '''
@@ -101,7 +104,7 @@ class generic(baseAuditPlugin):
         '''
         return ['d\'kc"z\'gj\'\"**5*(((;-*`)', '']
        
-    def _analyzeResponses( self, oResponse, limit_response, error_response, mutant ):
+    def _analyze_responses( self, oResponse, limit_response, error_response, mutant ):
         '''
         Analyze responses; if error_response doesn't look like oResponse nor limit_response,
         then we have a vuln.
@@ -167,7 +170,7 @@ class generic(baseAuditPlugin):
             m.setModValue( createRandNum(length=8) )
         else:
             m.setModValue( createRandAlNum(length=8) )
-        limit_response = self._sendMutant(  m , analyze=False )
+        limit_response = self._uri_opener.send_mutant(m)
         
         # restore the dc
         m.setDc( dc )

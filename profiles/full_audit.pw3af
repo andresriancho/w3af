@@ -67,8 +67,7 @@ basicAuthPass =
 cookieJarFile = 
 
 [audit.blindSqli]
-equAlgorithm = setIntersection
-equalLimit = 0.8
+eq_limit = 0.9
 
 [audit.globalRedirect]
 

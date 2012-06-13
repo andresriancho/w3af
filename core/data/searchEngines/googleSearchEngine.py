@@ -50,7 +50,7 @@ class googleSearchEngine(searchEngine):
         # url_opener's GET wrapper function
         self._url_open = lambda url: url_opener.GET(
                                             url, headers=self._headers,
-                                            useCache=True, grepResult=False)
+                                            cache=True, grep=False)
     
     def getNResults(self, query, limit=0):
         return self.search(query, 0, count=limit)

@@ -28,17 +28,16 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 # kb stuff
 import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
-
-import re
 
 
 class osCommanding(baseAuditPlugin):
@@ -78,12 +77,7 @@ class osCommanding(baseAuditPlugin):
         # The wait time of the unfuzzed request
         self._original_wait_time = 0
         self._file_compiled_regex = []
-        
-        # The wait time of the first test I'm going to perform
-        self._wait_time = 4
-        # The wait time of the second test I'm going to perform (this one is just to be sure!)
-        self._second_wait_time = 9
-        
+                
 
     def audit(self, freq ):
         '''
@@ -109,34 +103,6 @@ class osCommanding(baseAuditPlugin):
         self._with_echo(freq)
         self._with_time_delay(freq)
     
-    def _with_time_delay(self, freq):
-        '''
-        Tests an URL for OS Commanding vulnerabilities using time delays.
-        
-        @param freq: A fuzzableRequest
-        '''
-        # Send the fuzzableRequest without any fuzzing, so we can measure the response 
-        # time of this script in order to compare it later
-        res = self._sendMutant( freq, analyze=False, grepResult=False )
-        self._original_wait_time = res.getWaitTime()
-        
-        # Prepare the strings to create the mutants
-        command_list = self._get_wait_commands()
-        only_command_strings = [ v.getCommand() for v in command_list ]
-        mutants = createMutants( freq , only_command_strings )
-        
-        for mutant in mutants:
-            
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                self._run_async(
-                        meth=self._sendMutant,
-                        args=(mutant,),
-                        kwds={'analyze': self._analyze_wait}
-                        )
-        self._join()
-
     def _with_echo(self, freq):
         '''
         Tests an URL for OS Commanding vulnerabilities using cat/type to write the 
@@ -144,10 +110,10 @@ class osCommanding(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        original_response = self._sendMutant( freq , analyze=False )
+        original_response = self._uri_opener.send_mutant(freq)
         # Prepare the strings to create the mutants
         command_list = self._get_echo_commands()
-        only_command_strings = [ v.getCommand() for v in command_list ]
+        only_command_strings = [ v.get_command() for v in command_list ]
         mutants = createMutants( freq , only_command_strings, oResponse=original_response )
 
         for mutant in mutants:
@@ -155,16 +121,15 @@ class osCommanding(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(
-                            meth=self._sendMutant,
-                            args=(mutant,),
-                            kwds={'analyze': self._analyze_echo}
-                            )
+                args = (mutant,)
+                kwds = {'callback': self._analyze_echo }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
                 
     def _analyze_echo( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method that was sent in the _with_echo method.
+        Analyze results of the _send_mutant method that was sent in the _with_echo method.
         '''
         with self._plugin_lock:
             
@@ -202,75 +167,47 @@ class osCommanding(baseAuditPlugin):
         '''
         # Retrieve the data I need to create the vuln and the info objects
         command_list = self._get_echo_commands()
-        command_list.extend( self._get_wait_commands() )
         
         ### BUGBUG: Are you sure that this works as expected?!?!?!
         for comm in command_list:
-            if comm.getCommand() in mutant.getModValue():
-                sentOs = comm.getOs()
-                sentSeparator = comm.getSeparator()
-        return sentOs, sentSeparator
+            if comm.get_command() in mutant.getModValue():
+                os = comm.get_OS()
+                separator = comm.get_separator()
+        return os, separator
 
-    def _analyze_wait( self, mutant, response ):
+    def _with_time_delay(self, freq):
         '''
-        Analyze results of the _sendMutant method that was sent in the _with_time_delay method.
+        Tests an URL for OS Commanding vulnerabilities using time delays.
+        
+        @param freq: A fuzzableRequest
         '''
-        with self._plugin_lock:
+        fake_mutants = createMutants(freq, ['',])
+        
+        for mutant in fake_mutants:
             
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
+            if self._has_bug(mutant):
+                continue
+            
+            for delay_obj in self._get_wait_commands():
                 
-                if response.getWaitTime() > (self._original_wait_time + self._wait_time-2) and \
-                response.getWaitTime() < (self._original_wait_time + self._wait_time+2):
-                    sentOs, sentSeparator = self._get_os_separator(mutant)
-                            
-                    # This could be because of an osCommanding vuln, or because of an error that
-                    # generates a delay in the response; so I'll resend changing the time and see 
-                    # what happens
-                    original_wait_param = mutant.getModValue()
-                    more_wait_param = original_wait_param.replace( \
-                                                                str(self._wait_time), \
-                                                                str(self._second_wait_time) )
-                    mutant.setModValue( more_wait_param )
-                    response = self._sendMutant( mutant, analyze=False )
+                ed = exact_delay(mutant, delay_obj, self._uri_opener)
+                success, responses = ed.delay_is_controlled()
+                
+                if success:
+                    v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
+                    v.setName( 'OS commanding vulnerability' )
+                    v.setSeverity(severity.HIGH)
+                    v['os'] = delay_obj.get_OS()
+                    v['separator'] = delay_obj.get_separator()
+                    v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
+                    v.setDc( mutant.getDc() )
+                    v.setId( [r.id for r in responses] )
+                    v.setURI( r.getURI() )
+                    kb.kb.append( self, 'osCommanding', v )
                     
-                    if response.getWaitTime() > (self._original_wait_time + self._second_wait_time-3) and \
-                    response.getWaitTime() < (self._original_wait_time + self._second_wait_time+3):
-                        # Now I can be sure that I found a vuln, I control the time of the response.
-                        v = vuln.vuln( mutant )
-                        v.setPluginName(self.getName())
-                        v.setName( 'OS commanding vulnerability' )
-                        v.setSeverity(severity.HIGH)
-                        v['os'] = sentOs
-                        v['separator'] = sentSeparator
-                        v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
-                        v.setDc( mutant.getDc() )
-                        v.setId( response.id )
-                        v.setURI( response.getURI() )
-                        kb.kb.append( self, 'osCommanding', v )
+                    break
 
-                    else:
-                        # The first delay existed... I must report something...
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Possible OS commanding vulnerability')
-                        i.setId( response.id )
-                        i.setDc( mutant.getDc() )
-                        i.setMethod( mutant.getMethod() )
-                        i['os'] = sentOs
-                        i['separator'] = sentSeparator
-                        msg = 'A possible OS Commanding was found at: ' + mutant.foundAt() 
-                        msg += 'Please review manually.'
-                        i.setDesc( msg )
-                        
-                        # Just printing to the debug log, we're not sure about this
-                        # finding and we don't want to clog the report with false
-                        # positives
-                        om.out.debug( str(i) )
-                        
-    
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -287,19 +224,19 @@ class osCommanding(baseAuditPlugin):
         for special_char in self._special_chars:
             # Unix
             cmd_string = special_char + "/bin/cat /etc/passwd"
-            commands.append( command(cmd_string, 'unix', special_char))
+            commands.append( base_command(cmd_string, 'unix', special_char))
             # Windows
             cmd_string = special_char + "type %SYSTEMROOT%\\win.ini"
-            commands.append( command(cmd_string, 'windows', special_char))
+            commands.append( base_command(cmd_string, 'windows', special_char))
         
         # Execution quotes
-        commands.append( command("`/bin/cat /etc/passwd`", 'unix', '`'))		
+        commands.append( base_command("`/bin/cat /etc/passwd`", 'unix', '`'))		
         # FoxPro uses run to run os commands. I found one of this vulns !!
-        commands.append( command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
+        commands.append( base_command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
         
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
-        commands = [ c for c in commands if c.getOs() == targetOS or targetOS == 'unknown']
+        commands = [ c for c in commands if c.get_OS() == targetOS or targetOS == 'unknown']
 
         return commands
     
@@ -311,25 +248,30 @@ class osCommanding(baseAuditPlugin):
         commands = []
         for special_char in self._special_chars:
             # Windows
-            cmd_string = special_char + 'ping -n '+str(self._wait_time -1)+' localhost'
-            commands.append( command( cmd_string, 'windows', special_char))
+            cmd_fmt = special_char + 'ping -n %s localhost'
+            delay_cmd = ping_delay( cmd_fmt, 'windows', special_char)
+            commands.append( delay_cmd )
+            
             # Unix
-            cmd_string = special_char + 'ping -c '+str(self._wait_time)+' localhost'
-            commands.append( command( cmd_string, 'unix', special_char))
+            cmd_fmt = special_char + 'ping -c %s localhost'
+            delay_cmd = ping_delay( cmd_fmt, 'unix', special_char)
+            commands.append( delay_cmd )
+            
             # This is needed for solaris 10
-            cmd_string = special_char + '/usr/sbin/ping -s localhost 1000 10 '
-            commands.append( command( cmd_string, 'unix', special_char))
+            cmd_fmt = special_char + '/usr/sbin/ping -s localhost %s'
+            delay_cmd = ping_delay( cmd_fmt, 'unix', special_char)
+            commands.append( delay_cmd )
         
         # Using execution quotes
-        commands.append( command( '`ping -n '+str(self._wait_time -1)+' localhost`', 'windows', '`'))
-        commands.append( command( '`ping -c '+str(self._wait_time)+' localhost`', 'unix', '`'))
+        commands.append( ping_delay( '`ping -n %s localhost`', 'windows', '`'))
+        commands.append( ping_delay( '`ping -c %s localhost`', 'unix', '`'))
         
         # FoxPro uses the "run" macro to exec os commands. I found one of this vulns !!
-        commands.append( command( 'run ping -n '+str(self._wait_time -1)+' localhost', 'windows', 'run '))
+        commands.append( ping_delay( 'run ping -n %s localhost', 'windows', 'run '))
         
         # Now I filter the commands based on the targetOS:
         targetOS = cf.cf.getData('targetOS').lower()
-        commands = [ c for c in commands if c.getOs() == targetOS or targetOS == 'unknown']
+        commands = [ c for c in commands if c.get_OS() == targetOS or targetOS == 'unknown']
         
         return commands
         
@@ -380,9 +322,7 @@ class osCommanding(baseAuditPlugin):
         '''
 
 
-# I define this here, because it is used by the _get_echo_commands
-# and _get_wait_commands methods.
-class command:
+class base_command:
     '''
     Defines a command that is going to be sent to the remote web app.
     '''
@@ -391,20 +331,27 @@ class command:
         self._os = os
         self._sep = sep
     
-    def getOs( self ):
+    def get_OS( self ):
         '''
         @return: The OS
         '''
         return self._os
         
-    def getCommand( self ):
+    def get_command( self ):
         '''
         @return: The Command to be executed
         '''
         return self._comm
         
-    def getSeparator( self ):
+    def get_separator( self ):
         '''
         @return: The separator, could be one of ; && | etc.
         '''
         return self._sep
+
+class ping_delay(base_command, delay):
+    def __init__(self, delay_fmt, os, sep):
+        base_command.__init__(self, delay_fmt, os, sep)
+        delay.__init__(self, delay_fmt)
+        self._delay_delta = 1
+

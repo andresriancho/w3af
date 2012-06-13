@@ -80,7 +80,7 @@ class frontpage(baseAuditPlugin):
                 for i in xrange(3):
                     randFile = createRandAlpha( 5 ) + '.html'
                     randPathFile = domain_path.urlJoin(randFile)
-                    res = self._urlOpener.GET( randPathFile )
+                    res = self._uri_opener.GET( randPathFile )
                     if is_404( res ):
                         found404 = True
                         break
@@ -119,7 +119,7 @@ class frontpage(baseAuditPlugin):
         targetURL = domain_path.urlJoin( '_vti_bin/_vti_aut/author.dll' )
 
         try:
-            res = self._urlOpener.POST( targetURL , data=content )
+            res = self._uri_opener.POST( targetURL , data=content )
         except w3afException,  e:
             om.out.debug('Exception while uploading file using author.dll: ' + str(e))
         else:
@@ -142,7 +142,7 @@ class frontpage(baseAuditPlugin):
         targetURL = domain_path.urlJoin( randFile )
         
         try:
-            res = self._urlOpener.GET( targetURL )
+            res = self._uri_opener.GET( targetURL )
         except w3afException,  e:
             msg = 'Exception while verifying if the file that was uploaded using '
             msg += 'author.dll was there: ' + str(e)

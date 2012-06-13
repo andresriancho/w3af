@@ -71,7 +71,7 @@ class serverStatus(baseDiscoveryPlugin):
             
             base_url = fuzzableRequest.getURL().baseUrl()
             server_status_url = base_url.urlJoin( 'server-status' )
-            response = self._urlOpener.GET( server_status_url, useCache=True )
+            response = self._uri_opener.GET( server_status_url, cache=True )
             
             if not is_404( response ) and response.getCode() not in range(400, 404):
                 msg = 'Apache server-status cgi exists. The URL is: "' + response.getURL() + '".'
@@ -109,7 +109,7 @@ class serverStatus(baseDiscoveryPlugin):
                         found_url = url_object(found_url)
                     
                         # They are equal, request the URL and create the fuzzable requests
-                        tmp_res = self._urlOpener.GET( found_url, useCache=True )
+                        tmp_res = self._uri_opener.GET( found_url, cache=True )
                         if not is_404( tmp_res ):
                             res.extend( self._createFuzzableRequests( tmp_res ) )
                     else:

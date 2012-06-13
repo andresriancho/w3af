@@ -60,7 +60,7 @@ class bing_spider(baseDiscoveryPlugin):
 
         # I will only run this one time. All calls to bing_spider return the same url's
         self._run = False
-        bingSE = bing(self._urlOpener)
+        bingSE = bing(self._uri_opener)
         domain = fuzzableRequest.getURL().getDomain()
 
         if is_private_site(domain):
@@ -83,7 +83,7 @@ class bing_spider(baseDiscoveryPlugin):
         @parameter url: The URL to GET.
         '''
         try:
-            response = self._urlOpener.GET(url, useCache=True)
+            response = self._uri_opener.GET(url, cache=True)
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:

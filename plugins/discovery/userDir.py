@@ -78,7 +78,7 @@ class userDir(baseDiscoveryPlugin):
             non_existant_user = '~_w_3_a_f_/'
             test_URL = base_url.urlJoin( non_existant_user )
             try:
-                response = self._urlOpener.GET( test_URL, useCache=True, \
+                response = self._uri_opener.GET( test_URL, cache=True, \
                                                                     headers=self._headers )
                 response_body = response.getBody()                
             except:
@@ -119,7 +119,7 @@ class userDir(baseDiscoveryPlugin):
         @return: True when the user was found.
         '''
         try:
-            response = self._urlOpener.GET( mutant, useCache=True, headers=self._headers )
+            response = self._uri_opener.GET( mutant, cache=True, headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         else:

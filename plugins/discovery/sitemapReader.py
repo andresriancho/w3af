@@ -62,7 +62,7 @@ class sitemapReader(baseDiscoveryPlugin):
             
             base_url = fuzzableRequest.getURL().baseUrl()
             sitemap_url = base_url.urlJoin( 'sitemap.xml' )
-            response = self._urlOpener.GET( sitemap_url, useCache=True )
+            response = self._uri_opener.GET( sitemap_url, cache=True )
             
             # Remember that httpResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
@@ -104,7 +104,7 @@ class sitemapReader(baseDiscoveryPlugin):
         @return: None, everything is saved to self._new_fuzzable_requests.
         '''
         try:
-            http_response = self._urlOpener.GET( url, useCache=True )
+            http_response = self._uri_opener.GET( url, cache=True )
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:

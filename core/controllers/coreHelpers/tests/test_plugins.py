@@ -32,9 +32,9 @@ class Test_w3afCore_plugins(unittest.TestCase):
     def test_getPluginTypes(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.getPluginTypes()
-        expected = ['grep', 'output', 'mangle', 'audit', 'discovery',
-                    'evasion', 'bruteforce', 'auth']
-        self.assertEquals( plugin_types, expected )
+        expected = set( ['grep', 'output', 'mangle', 'audit', 'discovery',
+                    'evasion', 'bruteforce', 'auth'] )
+        self.assertEquals( set(plugin_types), expected )
         
     def test_getPluginList(self):
         w3af_core = w3afCore()

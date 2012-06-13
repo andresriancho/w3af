@@ -70,8 +70,8 @@ class digitSum(baseDiscoveryPlugin):
             self._first_time = False
         
         om.out.debug('digitSum is testing ' + fuzzableRequest.getURL() )
-        original_response = self._urlOpener.GET( fuzzableRequest.getURL(), \
-                                                 useCache=True, headers=self._headers )
+        original_response = self._uri_opener.GET( fuzzableRequest.getURL(), \
+                                                 cache=True, headers=self._headers )
         
         if original_response.is_text_or_html() or self._fuzz_images:
             for fr in self._mangle_digits( fuzzableRequest ):
@@ -97,7 +97,7 @@ class digitSum(baseDiscoveryPlugin):
         @parameter original_resp: The response for the original request that was sent.
         '''
         try:
-            response = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True,
+            response = self._uri_opener.GET(fuzzableRequest.getURI(), cache=True,
                                                             headers=self._headers)
         except KeyboardInterrupt, e:
             raise e

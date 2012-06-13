@@ -58,7 +58,7 @@ class wordpress_fullpathdisclosure(baseDiscoveryPlugin):
 
         # Search this theme path and add the themes header/footer to the possible vulnerable files
         domain_path = fuzzableRequest.getURL().getDomainPath()
-        response = self._urlOpener.GET( domain_path, useCache=True )
+        response = self._uri_opener.GET( domain_path, cache=True )
         if not is_404( response ):
             response_body = response.getBody()
             theme_regexp = domain_path+'wp-content/themes/(.*)/style.css'
@@ -74,7 +74,7 @@ class wordpress_fullpathdisclosure(baseDiscoveryPlugin):
         else:
             for vulnerable_file in possible_vulnerable_files:
                 vulnerable_url = domain_path.urlJoin(vulnerable_file)
-                response = self._urlOpener.GET( vulnerable_url, useCache=True )
+                response = self._uri_opener.GET( vulnerable_url, cache=True )
 
                 if not is_404( response ):
                     response_body = response.getBody()

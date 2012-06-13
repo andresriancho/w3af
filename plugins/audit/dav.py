@@ -81,7 +81,7 @@ class dav(baseAuditPlugin):
         content += "</g:sql>\r\n"
         content += "</g:searchrequest>\r\n"
 
-        res = self._urlOpener.SEARCH( domain_path , data=content )
+        res = self._uri_opener.SEARCH( domain_path , data=content )
         
         content_matches =  '<a:response>' in res or '<a:status>' in res or 'xmlns:a="DAV:"' in res
         
@@ -109,7 +109,7 @@ class dav(baseAuditPlugin):
         content += "</a:prop>\r\n"
         content += "</a:propfind>\r\n"
         
-        res = self._urlOpener.PROPFIND( domain_path , data=content, headers={'Depth': '1'} )
+        res = self._uri_opener.PROPFIND( domain_path , data=content, headers={'Depth': '1'} )
         # Remember that httpResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response               
@@ -133,10 +133,10 @@ class dav(baseAuditPlugin):
         # upload
         url = domain_path.urlJoin( createRandAlpha( 5 ) )
         rndContent = createRandAlNum(6)
-        put_response = self._urlOpener.PUT( url , data=rndContent )
+        put_response = self._uri_opener.PUT( url , data=rndContent )
         
         # check if uploaded
-        res = self._urlOpener.GET( url , useCache=True )
+        res = self._uri_opener.GET( url , cache=True )
         if res.getBody() == rndContent:
             v = vuln.vuln()
             v.setPluginName(self.getName())

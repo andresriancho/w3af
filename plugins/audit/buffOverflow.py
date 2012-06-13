@@ -93,7 +93,7 @@ class buffOverflow(baseAuditPlugin):
         
         str_list = self._get_string_list()
         try:
-            oResponse = self._sendMutant( freq , analyze=False )
+            oResponse = self._uri_opener.send_mutant(freq)
         except:
             msg = 'Failed to perform the initial request during buffer'
             msg += ' overflow testing'
@@ -102,47 +102,28 @@ class buffOverflow(baseAuditPlugin):
             mutants = createMutants(freq , str_list, oResponse=oResponse)
                 
             for mutant in mutants:
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                self._run_async(meth=self._send_request, args=(mutant,))
             self._join()
             
-    def _sendMutant( self, mutant, analyze=True, grepResult=True ):
+    def _send_request(self, mutant):
         '''
-        Sends a mutant to the remote web server. I override the _sendMutant of basePlugin
+        Sends a mutant to the remote web server. I wrap urllib's _send_mutant 
         just to handle errors in a different way.
         '''
-        url = mutant.getURI()
-        data = mutant.getData()
-        headers = mutant.getHeaders()
-        # Also add the cookie header.
-        cookie = mutant.getCookie()
-        if cookie:
-            headers['Cookie'] = str(cookie)
-
-        args = ( url, )
-        method = mutant.getMethod()
-        
-        functor = getattr( self._urlOpener , method )
         try:
-            kwdargs = {'data': data, 'headers': headers, 'grepResult': grepResult }
-            res = apply( functor, args, kwdargs )
+            response = self._uri_opener.send_mutant(mutant)
         except (w3afException,w3afMustStopException):
             i = info.info( mutant )
             i.setPluginName(self.getName())
             i.setName( 'Possible buffer overflow vulnerability' )
-            if data:
-                msg = 'A possible (most probably a false positive than a bug) buffer overflow was'
-                msg += ' found when requesting: "' + url + '", using HTTP method ' + method
-                msg += '. The data sent was: "' + str(data) + '".'
-                i.setDesc( msg )
-            else:
-                msg = 'A possible (most probably a false positive than a bug) buffer overflow was'
-                msg += ' found when requesting: "' + url + '", using HTTP method ' + method + '.'
-                i.setDesc( msg )
+            msg = 'A potential (most probably a false positive than a bug) buffer-'
+            msg += 'overflow was found when requesting: "%s", using HTTP method'
+            msg += ' %s. The data sent was: "%s".' 
+            msg = msg % ( mutant.getURL(), mutant.getMethod(), mutant.getDc())
+            i.setDesc( msg )
             kb.kb.append( self, 'buffOverflow', i )
         else:
-            if analyze:
-                self._analyzeResult( mutant, res )
-            return res
+            self._analyze_result( mutant, response )
         
     def _get_string_list( self ):
         '''
@@ -157,9 +138,9 @@ class buffOverflow(baseAuditPlugin):
             strings.append( createRandAlpha( i ) )  
         return strings
         
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         for error_str in self._multi_in.query( response.body ):
             # And not in the original response
@@ -213,7 +194,8 @@ class buffOverflow(baseAuditPlugin):
         return '''
         This plugin finds buffer overflow vulnerabilities.
         
-        Users have to know that detecting a buffer overflow vulnerability will be only possible if the server is configured
-        to return errors, and the application is developed in cgi-c or some other language that allows the programmer to
-        do their own memory management.
+        Users have to know that detecting a buffer overflow vulnerability will
+        be only possible if the server is configured to return errors, and the
+        application is developed in cgi-c or some other language that allows 
+        the programmer to do their own memory management.
         '''

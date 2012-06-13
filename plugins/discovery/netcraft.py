@@ -66,7 +66,7 @@ class netcraft(baseDiscoveryPlugin):
         nc_url = url_object( nc_url_str )
 
         try:
-            response = self._urlOpener.GET( nc_url )
+            response = self._uri_opener.GET( nc_url )
         except w3afException, e:
             msg = 'An exception was raised while running netcraft plugin. Exception: ' + str(e)
             om.out.debug( msg )

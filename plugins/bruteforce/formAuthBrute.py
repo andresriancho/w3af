@@ -150,7 +150,7 @@ class formAuthBrute(baseBruteforcePlugin):
             data_container[self._passwd_field_name][0] = passwd
             freq.setDc(data_container)
             
-            response = self._sendMutant(freq, analyze=False, grepResult=False)
+            response = self._uri_opener.send_mutant(freq, grep=False)
             
             body = response.getBody()
             body = body.replace(user, '')
@@ -172,7 +172,7 @@ class formAuthBrute(baseBruteforcePlugin):
                 data_container[self._user_field_name][0] = user
             data_container[self._passwd_field_name][0] = passwd
             freq.setDc(data_container)
-            response = self._sendMutant(freq, analyze=False, grepResult=False)
+            response = self._uri_opener.send_mutant(freq, grep=False)
             
             body = response.getBody()
             body = body.replace(user, '')
@@ -282,7 +282,7 @@ class formAuthBrute(baseBruteforcePlugin):
             headers = fuzz_req.getHeaders()
             # Typically GET and POST
             meth = getattr(xUrllib(), fuzz_req.getMethod().upper())
-            resp = meth(url, data, headers, grepResult=False, useCache=False)
+            resp = meth(url, data, headers, grep=False, cache=False)
             return resp
         
         data_container = freq.getDc()
@@ -359,7 +359,7 @@ class formAuthBrute(baseBruteforcePlugin):
                                 if 'cookie' in header_name.lower():
                                     additionalHeaders.append(
                                             (header_name, headers[header_name]))                            
-                            self._urlOpener.settings.setHeadersList(
+                            self._uri_opener.settings.setHeadersList(
                                                             additionalHeaders)
 
                             om.out.vulnerability(msg, severity=severity.HIGH)

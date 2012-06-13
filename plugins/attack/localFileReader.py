@@ -112,7 +112,7 @@ class localFileReader(baseAttackPlugin):
             
             # Create the shell object
             shell_obj = fileReaderShell( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             
             return shell_obj
@@ -126,7 +126,7 @@ class localFileReader(baseAttackPlugin):
 
         @return : True if vuln can be exploited.
         '''
-        function_reference = getattr( self._urlOpener , vuln_obj.getMethod() )
+        function_reference = getattr( self._uri_opener , vuln_obj.getMethod() )
         
         #    Prepare the first request, with the original data
         data_a = str(vuln_obj.getDc())
@@ -308,7 +308,7 @@ class fileReaderShell(read_shell):
         filename = '../' * 15 + filename
 
         # Lets send the command.
-        function_reference = getattr( self._urlOpener , self.getMethod() )
+        function_reference = getattr( self._uri_opener , self.getMethod() )
         data_container = self.getDc()
         data_container[ self.getVar() ] = filename
         try:

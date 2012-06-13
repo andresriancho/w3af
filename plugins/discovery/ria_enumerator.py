@@ -76,7 +76,7 @@ class ria_enumerator(baseDiscoveryPlugin):
                     manifest_url = base_url.urlJoin( word.strip() + ext )
 
                     om.out.debug( 'Google Gears Manifest Testing "%s"' % (manifest_url)  )
-                    http_response = self._urlOpener.GET( manifest_url, useCache=True )
+                    http_response = self._uri_opener.GET( manifest_url, cache=True )
                         
                     if '"entries":' in http_response and not is_404( http_response ):
                         # Save it to the kb!
@@ -95,7 +95,7 @@ class ria_enumerator(baseDiscoveryPlugin):
             ### CrossDomain.XML
             cross_domain_url = base_url.urlJoin( 'crossdomain.xml' )
             om.out.debug( 'Checking crossdomain.xml file')
-            response = self._urlOpener.GET( cross_domain_url, useCache=True )
+            response = self._uri_opener.GET( cross_domain_url, cache=True )
 
             if not is_404( response ):
                 self._checkResponse(response, 'crossdomain.xml')
@@ -103,7 +103,7 @@ class ria_enumerator(baseDiscoveryPlugin):
             ### CrossAccessPolicy.XML
             client_access_url = base_url.urlJoin( 'clientaccesspolicy.xml' )
             om.out.debug( 'Checking clientaccesspolicy.xml file')
-            response = self._urlOpener.GET( client_access_url, useCache=True )
+            response = self._uri_opener.GET( client_access_url, cache=True )
 
             if not is_404( response ):
                 self._checkResponse(response, 'clientaccesspolicy.xml')

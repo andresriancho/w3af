@@ -37,7 +37,7 @@ class baseAuditPlugin(basePlugin):
 
     def __init__(self):
         basePlugin.__init__( self )
-        self._urlOpener = None
+        self._uri_opener = None
 
     def audit_wrapper( self, fuzzable_request ):
         '''
@@ -88,17 +88,9 @@ class baseAuditPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method audit' )
     
-    def _analyzeResult( self, mutant, res ):
-        '''
-        This method analyzes the result of _sendMutant().
+    def _has_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
+        return not self._has_no_bug(fuzz_req, varname, pname, kb_varname)
         
-        This method MUST be implemented on every plugin.
-        
-        @param mutant: The mutant that was sent using _sendMutant
-        @param res: The response of _sendMutant
-        '''
-        raise NotImplementedError
-
     def _has_no_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         '''
         Test if the current combination of `fuzz_req`, `varname` hasn't

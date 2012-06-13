@@ -68,7 +68,7 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
             # Check if the server is running WordPress
             domain_path = fuzzableRequest.getURL().getDomainPath()
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
-            response = self._urlOpener.GET( wp_unique_url, useCache=True )
+            response = self._uri_opener.GET( wp_unique_url, cache=True )
 
             # If wp_unique_url is not 404, wordpress = true
             if not is_404( response ):
@@ -76,7 +76,7 @@ class wordpress_enumerate_users(baseDiscoveryPlugin):
                 while (gap <= gap_tolerance):
                     domain_path.querystring = {u'author': u'%s' % uid}
                     wp_author_url = domain_path
-                    response_author = self._urlOpener.GET(wp_author_url, useCache=True)
+                    response_author = self._uri_opener.GET(wp_author_url, cache=True)
                     if not is_404( response_author ):
                         path = response_author.getRedirURI().getPath()
                         if 'author' in path:

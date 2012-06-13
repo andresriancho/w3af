@@ -77,7 +77,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
             
             # Main scan URL passed from w3af + unique wp file
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
-            response = self._urlOpener.GET( wp_unique_url, useCache=True )
+            response = self._uri_opener.GET( wp_unique_url, cache=True )
 
             # If wp_unique_url is not 404, wordpress = true
             if not is_404( response ):
@@ -89,7 +89,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
             
                 # Main scan URL passed from w3af + wp index page
                 wp_index_url = domain_path.urlJoin( 'index.php' )
-                response = self._urlOpener.GET( wp_index_url, useCache=True )
+                response = self._uri_opener.GET( wp_index_url, cache=True )
 
                 # Find the string in the response html
                 find = '<meta name="generator" content="[Ww]ord[Pp]ress (\d\.\d\.?\d?)" />'
@@ -129,7 +129,7 @@ class wordpress_fingerprint(baseDiscoveryPlugin):
 
                 for row in self._wp_fingerprint:
                     test_url = domain_path.urlJoin( row[0] )
-                    response = self._urlOpener.GET( test_url, useCache=True )
+                    response = self._uri_opener.GET( test_url, cache=True )
 
                     if row[1] == '200' and not is_404(response):
                         self._version = row[2]

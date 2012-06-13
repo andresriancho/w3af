@@ -20,27 +20,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.kb.shell import shell as shell
-
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import HTTPQSRequest
-
 import core.controllers.outputManager as om
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.controllers.w3afException import w3afException
-
-from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
-from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+from core.data.kb.shell import shell as shell
+from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.fuzzer.fuzzer import createMutants
 from core.data.parsers.urlParser import parse_qs, url_object
-from core.controllers.threads.threadManager import threadManagerObj as tm
-
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
+from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+from core.controllers.threads.threadManager import threadManagerObj as tm
+
+from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
+
 
 SQLMAPCREATORS = 'sqlmap coded by inquis <bernardo.damele@gmail.com> and belch <daniele.bellucci@gmail.com>'
 
@@ -96,25 +94,24 @@ class sqlmap(baseAttackPlugin):
             
             freq.setDc(parse_qs(self._data))
             
-            bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener(self._urlOpener)
+            bsql = blind_sqli_response_diff(self._uri_opener)
             bsql.set_eq_limit(self._eq_limit)
             
-            vuln_obj = bsql.is_injectable(freq, self._injvar)
-            if not vuln_obj:
-                raise w3afException('Could not verify SQL injection ' + str(vuln))
-            else:
-                om.out.console('SQL injection could be verified, trying to create the DB driver.')
-                
-                # Try to get a shell using all vuln
-                msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
-                msg += '. Please wait...'
-                om.out.console(msg)
-                shell_obj = self._generateShell(vuln_obj)
-                if shell_obj is not None:
-                    kb.kb.append(self, 'shell', shell_obj)
-                    return [shell_obj, ]
+            fake_mutants = createMutants(freq, [''], fuzzableParamList=[self._injvar,])
+            for mutant in fake_mutants:            
+                vuln_obj = bsql.is_injectable(mutant)
+                if vuln_obj is not None:
+                    om.out.console('SQL injection verified, trying to create the DB driver.')
                     
+                    # Try to get a shell using all vuln
+                    msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
+                    msg += '. Please wait...'
+                    om.out.console(msg)
+                    shell_obj = self._generateShell(vuln_obj)
+                    if shell_obj is not None:
+                        kb.kb.append(self, 'shell', shell_obj)
+                        return [shell_obj, ]
+            else:    
                 raise w3afException('No exploitable vulnerabilities found.')
 
         
@@ -161,9 +158,8 @@ class sqlmap(baseAttackPlugin):
             vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
             vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
             
-            bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._urlOpener )
-            bsql.set_eq_limit( self._eq_limit )
+            bsql = blind_sqli_response_diff(self._uri_opener)
+            bsql.set_eq_limit(self._eq_limit)
             
             tmp_vuln_list = []
             for v in vulns:
@@ -212,10 +208,10 @@ class sqlmap(baseAttackPlugin):
         @parameter vuln_obj: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
         @return: A sqlmap shell object if sqlmap could fingerprint the database.
         '''
-        bsql = blind_sqli_response_diff()
+        bsql = blind_sqli_response_diff(self._uri_opener)
         bsql.set_eq_limit( self._eq_limit )
             
-        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal_with_limit )
+        dbBuilder = dbDriverBuilder( self._uri_opener, bsql.equal_with_limit )
         driver = dbBuilder.getDriverForVuln( vuln_obj )
         if driver is None:
             return None

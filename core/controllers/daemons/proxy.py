@@ -75,12 +75,12 @@ class proxy(w3afThread):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self, ip, port, urlOpener, proxyHandler=None,
+    def __init__(self, ip, port, uri_opener, proxyHandler=None,
                  proxyCert='core/controllers/daemons/mitm.crt'):
         '''
         @parameter ip: IP address to bind
         @parameter port: Port to bind
-        @parameter urlOpener: The urlOpener that will be used to open
+        @parameter uri_opener: The uri_opener that will be used to open
             the requests that arrive from the browser
         @parameter proxyHandler: A class that will know how to handle
             requests from the browser
@@ -93,7 +93,7 @@ class proxy(w3afThread):
         self._server = None
         self._proxyHandler = proxyHandler
         self._running = False
-        self._urlOpener = urlOpener
+        self._uri_opener = uri_opener
         self._tm = tm
         
         # User configured parameters
@@ -157,8 +157,8 @@ class proxy(w3afThread):
         time.sleep(0.1)
         
         om.out.debug( 'Using proxy handler: ' + str(self._proxyHandler) )
-        self._proxyHandler._urlOpener = self._urlOpener
-        self._proxyHandler._urlOpener._proxyCert = self._proxyCert
+        self._proxyHandler._uri_opener = self._uri_opener
+        self._proxyHandler._uri_opener._proxyCert = self._proxyCert
         
         # Starting to handle requests
         message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
@@ -295,9 +295,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             post_data = self._getPostData()
 
         try:
-            httpCommandMethod = getattr(self._urlOpener, self.command)
+            httpCommandMethod = getattr(self._uri_opener, self.command)
             res = httpCommandMethod(uri_instance, data=post_data,
-                                    headers=self.headers, grepResult=grep)
+                                    headers=self.headers, grep=grep)
         except w3afException, w:
             traceback.print_exc()
             om.out.error('The proxy request failed, error: ' + str(w) )
@@ -409,12 +409,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 ctx.set_timeout(5)
                 
                 try:
-                    ctx.use_privatekey_file ( self._urlOpener._proxyCert )
+                    ctx.use_privatekey_file ( self._uri_opener._proxyCert )
                 except:
-                    om.out.error( "[proxy error] Couldn't find certificate file %s"% self._urlOpener._proxyCert )
+                    om.out.error( "[proxy error] Couldn't find certificate file %s"% self._uri_opener._proxyCert )
                 
-                ctx.use_certificate_file( self._urlOpener._proxyCert )
-                ctx.load_verify_locations( self._urlOpener._proxyCert )
+                ctx.use_certificate_file( self._uri_opener._proxyCert )
+                ctx.load_verify_locations( self._uri_opener._proxyCert )
                 
                 # Save for later
                 browSoc = self.connection

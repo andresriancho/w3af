@@ -27,13 +27,12 @@ import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.basePlugin import basePlugin
 from core.data.fuzzer.fuzzer import createMutants, createRandNum
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.controllers.misc.diff import diff
 
 
-class blind_sqli_response_diff(basePlugin):
+class blind_sqli_response_diff(object):
     '''
     This class tests for blind SQL injection bugs using response diffs,
     the logic is here and not as an audit plugin because it is also used in
@@ -42,12 +41,10 @@ class blind_sqli_response_diff(basePlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    def __init__(self):
-        # ""I'm a plugin""
-        basePlugin.__init__(self)
-        
+    def __init__(self, uri_opener):
         # User configured variables
         self._eq_limit = 0.8
+        self._uri_opener = uri_opener
         
     def set_eq_limit( self, eq_limit ):
         '''
@@ -58,25 +55,20 @@ class blind_sqli_response_diff(basePlugin):
         '''
         self._eq_limit = eq_limit
         
-    def is_injectable( self, freq, parameter ):
+    def is_injectable( self, mutant ):
         '''
         Check if "parameter" of the fuzzable request object is injectable or not.
         
-        @freq: The fuzzableRequest object that I have to modify
+        @mutant: The mutant object that I have to inject to
         @parameter: A string with the parameter name to test
         
         @return: A vulnerability object or None if nothing is found
         '''
-        dummy = ['', ]
-        parameter_to_test = [ parameter, ]
-        mutants = createMutants( freq , dummy, fuzzableParamList=parameter_to_test )
-        
-        for mutant in mutants:
-            statements = self._get_statements( mutant )
-            for statement_type in statements:
-                vuln = self._find_bsql( mutant, statements[statement_type], statement_type )
-                if vuln:
-                    return vuln
+        statements = self._get_statements( mutant )
+        for statement_type in statements:
+            vuln = self._find_bsql( mutant, statements[statement_type], statement_type )
+            if vuln:
+                return vuln
         
         return None
     
@@ -221,7 +213,7 @@ class blind_sqli_response_diff(basePlugin):
                     Sanitized HTTP response body,
                  )
         '''
-        http_response = self._sendMutant( mutant, analyze=False, useCache=False )
+        http_response = self._uri_opener.send_mutant(mutant, cache=False)
         clean_body = get_clean_body(mutant, http_response)
         
         return http_response, clean_body

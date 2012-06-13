@@ -47,7 +47,8 @@ class xsrf(baseAuditPlugin):
     
     AND the web application at bank.com sends a cookie that is persistent.
     
-    Note: I do realize that xsrf can be exploited using javascript to do POSTS's impersonating the user.
+    Note: I do realize that xsrf can be exploited using javascript to do POSTS's
+          impersonating the user.
     '''
 
     def __init__(self):
@@ -81,12 +82,15 @@ class xsrf(baseAuditPlugin):
                 v.setName( 'Cross site request forgery vulnerability' )
                 v.setSeverity(severity.LOW)
                 v.setMethod( freq.getMethod() )
-                v.setDesc( 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.' )
+                desc = 'The URL: ' + freq.getURL() + ' is vulnerable to cross-'
+                desc += 'site request forgery.'
+                v.setDesc( desc )
                 self._vuln_simple.append( v )
         
         # This is a POST request that can be sent using a GET and querystring
         # Vulnerable by definition
-        elif freq.getMethod() =='POST' and len ( freq.getDc() ) and isExchangable( self, freq ):
+        elif freq.getMethod() =='POST' and len ( freq.getDc() ) and \
+             isExchangable( self._uri_opener, freq ):
             
             # Now check if we already added this target URL to the list
             already_added = [ v.getURL() for v in self._vuln_complex ]
@@ -100,9 +104,10 @@ class xsrf(baseAuditPlugin):
                 v.setDc( freq.getDc() )
                 v.setName( 'Cross site request forgery vulnerability' )
                 v.setMethod( freq.getMethod() )
-                msg = 'The URL: ' + freq.getURL() + ' is vulnerable to cross site request forgery.'
-                msg += ' It allows the attacker to exchange the method from POST to GET when sending'
-                msg += ' data to the server.'
+                msg = 'The URL: ' + freq.getURL() + ' is vulnerable to cross-'
+                msg += 'site request forgery. It allows the attacker to exchange'
+                msg += ' the method from POST to GET when sendin data to the'
+                msg += ' server.'
                 v.setDesc( msg )
                 self._vuln_complex.append( v )
     
@@ -174,6 +179,7 @@ class xsrf(baseAuditPlugin):
         return '''
         This plugin finds Cross Site Request Forgeries (XSRF) vulnerabilities.
         
-        The simplest type of XSRF is checked, to be vulnerable, the web application must have sent a permanent
-        cookie, and the aplicacion must have query string parameters.
+        The simplest type of XSRF is checked, to be vulnerable, the web 
+        application must have sent a permanent cookie, and the application
+        must have query string parameters.
         '''

@@ -74,7 +74,7 @@ class favicon_identification(baseDiscoveryPlugin):
         domain_path = fuzzableRequest.getURL().getDomainPath()
         
         def_favicon_url = domain_path.urlJoin('favicon.ico' )
-        response = self._urlOpener.GET( def_favicon_url, useCache=True )
+        response = self._uri_opener.GET( def_favicon_url, cache=True )
 
         if not is_404( response ):
             favmd5=md5.new(response.getBody()).hexdigest()

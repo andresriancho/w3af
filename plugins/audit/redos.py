@@ -72,11 +72,14 @@ class redos(baseAuditPlugin):
             if 'php' in powered_by.lower():
                 return
         
+        if 'php' in freq.getURL().getExtension().lower():
+            return
+        
         om.out.debug( 'redos plugin is testing: ' + freq.getURL() )
     
         # Send the fuzzableRequest without any fuzzing, so we can measure the response 
         # time of this script in order to compare it later
-        res = self._sendMutant( freq, analyze=False, grepResult=False )
+        res = self._uri_opener.send_mutant(freq, grep=False)
         self._original_wait_time = res.getWaitTime()
         
         # Prepare the strings to create the mutants
@@ -87,16 +90,16 @@ class redos(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(
-                            meth=self._sendMutant,
-                            args=(mutant,),
-                            kwds={'analyze': self._analyze_wait}
-                            )
+                args = (mutant,)
+                kwds = {'callback': self._analyze_wait }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
+                
         self._join()
 
     def _analyze_wait( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method that was sent in the audit method.
+        Analyze results of the _send_mutant method that was sent in the audit method.
         '''
         with self._plugin_lock:
             
@@ -121,7 +124,7 @@ class redos(baseAuditPlugin):
                     mutant.setModValue( more_wait_param )
                     
                     # send
-                    response = self._sendMutant( mutant, analyze=False )
+                    response = self._uri_opener.send_mutant(mutant)
                     
                     # compare the times
                     if response.getWaitTime() > (first_wait_time * 1.5):
@@ -203,6 +206,7 @@ class redos(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds ReDoS (regular expression DoS) vulnerabilities as explained here:
-            - http://www.checkmarx.com/NewsDetails.aspx?id=23 
+        This plugin finds ReDoS (regular expression DoS) vulnerabilities as
+        explained here:
+                    - http://www.checkmarx.com/NewsDetails.aspx?id=23 
         '''

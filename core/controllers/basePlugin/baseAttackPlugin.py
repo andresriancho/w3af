@@ -46,7 +46,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
         basePlugin.__init__( self )
         commonAttackMethods.__init__( self )
         
-        self._urlOpener = None
+        self._uri_opener = None
         self._footer = None
         self._header = None
         

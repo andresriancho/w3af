@@ -77,7 +77,7 @@ class findJBoss(baseDiscoveryPlugin):
         
         for vuln_db_instance in findJBoss._jboss_vulns:
             vuln_url = base_url.urlJoin( vuln_db_instance['url'] )
-            response = self._urlOpener.GET(vuln_url)
+            response = self._uri_opener.GET(vuln_url)
             
             if response.getCode() == 200:
                 

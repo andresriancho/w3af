@@ -75,7 +75,7 @@ class frontpage_version(baseDiscoveryPlugin):
                 # Request the file
                 frontpage_info_url = domain_path.urlJoin( "_vti_inf.html" )
                 try:
-                    response = self._urlOpener.GET( frontpage_info_url, useCache=True )
+                    response = self._uri_opener.GET( frontpage_info_url, cache=True )
                     om.out.debug( '[frontpage_version] Testing "' + frontpage_info_url + '".' )
                 except w3afException,  w3:
                     msg = 'Failed to GET Frontpage Server _vti_inf.html file: "'

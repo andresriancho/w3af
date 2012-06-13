@@ -60,7 +60,7 @@ class fingerPKS(baseDiscoveryPlugin):
             # This plugin will only run one time. 
             self._run = False
             
-            pks_se = pks( self._urlOpener)
+            pks_se = pks( self._uri_opener)
             
             root_domain = fuzzableRequest.getURL().getRootDomain()
             

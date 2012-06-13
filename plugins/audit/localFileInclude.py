@@ -86,7 +86,7 @@ class localFileInclude(baseAuditPlugin):
         '''
         om.out.debug( 'localFileInclude plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         
         #   What payloads do I want to send to the remote end?
         local_files = []
@@ -105,11 +105,11 @@ class localFileInclude(baseAuditPlugin):
                 # file inclusion I will be requesting /etc/passwd and that
                 # would generate A LOT of false positives in the
                 # grep.pathDisclosure plugin
-                self._run_async(
-                            meth=self._sendMutant,
-                            args=(mutant,),
-                            kwds={'grepResult': False}
-                            )
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result,
+                        'grep': False }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
                                                     
         self._join()
         
@@ -158,9 +158,9 @@ class localFileInclude(baseAuditPlugin):
         
         return local_files
 
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
         '''
         with self._plugin_lock:

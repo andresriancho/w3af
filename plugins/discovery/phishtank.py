@@ -79,7 +79,7 @@ class phishtank(baseDiscoveryPlugin):
             # I found some URLs, create fuzzable requests
             phishtank_matches = self._is_in_phishtank( to_check_list )
             for ptm in phishtank_matches:
-                response = self._urlOpener.GET( ptm.url )
+                response = self._uri_opener.GET( ptm.url )
                 self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
             
             # Only create the vuln object once
@@ -267,7 +267,7 @@ class phishtank(baseDiscoveryPlugin):
         msg += ' ( almost 7MB to download ).'
         om.out.information( msg )
         update_url = url_object('http://data.phishtank.com/data/online-valid/')
-        res = self._urlOpener.GET( update_url )
+        res = self._uri_opener.GET( update_url )
         om.out.information('Download complete, writing to the database file.')
         
         try:

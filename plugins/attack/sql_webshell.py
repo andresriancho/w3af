@@ -94,7 +94,7 @@ class sql_webshell(baseAttackPlugin):
             freq.setDc(parse_qs(self._data))
             
             bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._urlOpener )
+            bsql.setUrlOpener( self._uri_opener )
             bsql.set_eq_limit( self._eq_limit )
             
             vuln_obj = bsql.is_injectable( freq, self._injvar )
@@ -158,7 +158,7 @@ class sql_webshell(baseAttackPlugin):
             vulns.extend(kb.kb.getData( 'sqli' , 'sqli' ))
             
             bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._urlOpener )
+            bsql.setUrlOpener( self._uri_opener )
             bsql.set_eq_limit( self._eq_limit )
             
             tmp_vuln_list = []
@@ -211,7 +211,7 @@ class sql_webshell(baseAttackPlugin):
         bsql = blind_sqli_response_diff()
         bsql.set_eq_limit( self._eq_limit )
             
-        dbBuilder = dbDriverBuilder( self._urlOpener, bsql.equal_with_limit )
+        dbBuilder = dbDriverBuilder( self._uri_opener, bsql.equal_with_limit )
         driver = dbBuilder.getDriverForVuln( vuln_obj )
         if driver is None:
             return None
@@ -221,13 +221,13 @@ class sql_webshell(baseAttackPlugin):
             webshell_url = self._upload_webshell( driver, vuln_obj )
             if webshell_url:
                 # Define the corresponding cut...
-                response = self._urlOpener.GET( webshell_url )
+                response = self._uri_opener.GET( webshell_url )
                 self._define_exact_cut( response.getBody(), shell_handler.SHELL_IDENTIFIER )
                 
                 # Create the shell object
                 # Set shell parameters
                 shell_obj = sql_web_shell( vuln_obj )
-                shell_obj.setUrlOpener( self._urlOpener )
+                shell_obj.setUrlOpener( self._uri_opener )
                 shell_obj.setWebShellURL( webshell_url )
                 shell_obj.set_cut( self._header_length, self._footer_length )
                 kb.kb.append( self, 'shell', shell_obj )
@@ -324,7 +324,7 @@ class sql_webshell(baseAttackPlugin):
         
         try:
             driver.writeFile( remote_path , content )
-            response = self._urlOpener.GET( test_url )
+            response = self._uri_opener.GET( test_url )
         except Exception, e:
             om.out.error('Exception raised while uploading file: "' + str(e) + '".')
             return False
@@ -455,7 +455,7 @@ class sql_web_shell(shell):
         @return: The result of the command.
         '''
         to_send = self.getWebShellURL() + urllib.quote_plus( command )
-        response = self._urlOpener.GET( to_send )
+        response = self._uri_opener.GET( to_send )
         return self._cut(response.getBody())
     
     def end( self ):

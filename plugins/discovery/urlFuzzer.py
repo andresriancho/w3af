@@ -85,9 +85,9 @@ class urlFuzzer(baseDiscoveryPlugin):
         
         self._verify_head_enabled(url)
         if self._head_enabled():
-            response = self._urlOpener.HEAD(url, useCache=True, headers=self._headers)
+            response = self._uri_opener.HEAD(url, cache=True, headers=self._headers)
         else:
-            response = self._urlOpener.GET(url, useCache=True, headers=self._headers)
+            response = self._uri_opener.GET(url, cache=True, headers=self._headers)
 
         if response.is_text_or_html() or self._fuzzImages:
             om.out.debug('urlFuzzer is testing "%s"' % url)
@@ -107,7 +107,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         Perform a simple GET to see if the result is an error or not, and then
         run the actual fuzzing.
         '''
-        response = self._urlOpener.GET(mutant, useCache=True, headers=self._headers)
+        response = self._uri_opener.GET(mutant, cache=True, headers=self._headers)
 
         if not (is_404(response) or
                 response.getCode() in (403, 401) or
@@ -140,8 +140,8 @@ class urlFuzzer(baseDiscoveryPlugin):
         uri.setFileName(uri.getFileName() + createRandAlNum(7))
             
         try:
-            response = self._urlOpener.GET(
-                                   uri, useCache=True, headers=self._headers)
+            response = self._uri_opener.GET(
+                                   uri, cache=True, headers=self._headers)
         except w3afException, e:
             msg = 'An exception was raised while requesting "' + uri + '" , the error message is: '
             msg += str(e)

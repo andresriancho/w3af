@@ -21,15 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
-from core.data.options.option import option
-from core.data.options.optionList import optionList
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.delay import delay
+from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
+
 
 
 class eval(baseAuditPlugin):
@@ -50,38 +55,31 @@ class eval(baseAuditPlugin):
         # ASP
         "Response.Write(new String(\"%s\",5))"
      )
-    WAIT_STRINGS = (
+    
+    WAIT_OBJ = (
         # PHP http://php.net/sleep
         # Perl http://perldoc.perl.org/functions/sleep.html
-        ("sleep(%s);", 1),
+        delay("sleep(%s);"),
         # Python http://docs.python.org/library/time.html#time.sleep
-        ("import time;time.sleep(%s);", 1),
+        delay("import time;time.sleep(%s);"),
         # It seems that ASP doesn't support sleep! A language without sleep...
         # is not a language!
         # http://classicasp.aspfaq.com/general/how-do-i-make-my-asp-page-pause-or-sleep.html
         # JSP takes the amount in miliseconds
         # http://java.sun.com/j2se/1.4.2/docs/api/java/lang/Thread.html#sleep(long)
-        ("Thread.sleep(%s);", 1000),
+        delay("Thread.sleep(%s);", mult=1000),
         # ASP.NET also uses miliseconds
         # http://msdn.microsoft.com/en-us/library/d00bd51t.aspx
         # Note: The Sleep in ASP.NET is uppercase
-        ("Thread.Sleep(%s);", 1000)
+        delay("Thread.Sleep(%s);", mult=1000)
     )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
 
-        #Create some random strings, which the plugin will use.
+        # Create some random strings, which the plugin will use.
         # for the fuzz_with_echo
         self._rnd = createRandAlpha(5)
-        
-        # And now for the fuzz_with_time_delay
-        # The wait time of the unfuzzed request
-        self._original_wait_time = 0
-        # The wait time of the first test I'm going to perform
-        self._wait_time = 4
-        # The wait time of the second test I'm going to perform (this one is just to be sure!)
-        self._second_wait_time = 9
         
         # User configured parameters
         self._use_time_delay = True
@@ -105,7 +103,7 @@ class eval(baseAuditPlugin):
         Tests an URL for eval() usage vulnerabilities using echo strings.
         @param freq: A fuzzableRequest
         '''
-        oResponse = self._sendMutant(freq , analyze=False)
+        oResponse = self._uri_opener.send_mutant(freq)
         print_strings = [pstr % (self._rnd,) for pstr in self.PRINT_STRINGS]
             
         mutants = createMutants(freq, print_strings, oResponse=oResponse)
@@ -115,11 +113,10 @@ class eval(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(
-                        meth=self._sendMutant,
-                        args=(mutant,),
-                        kwds={'analyze': self._analyze_echo}
-                        )
+                args = (mutant,)
+                kwds = {'callback': self._analyze_echo }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)                
         self._join()
 
     def _fuzz_with_time_delay(self, freq):
@@ -127,29 +124,31 @@ class eval(baseAuditPlugin):
         Tests an URL for eval() usage vulnerabilities using time delays.
         @param freq: A fuzzableRequest
         '''
-        res = self._sendMutant(freq, analyze=False, grepResult=False)
-        self._original_wait_time = res.getWaitTime()
-
-        # Prepare the strings to create the mutants
-        wait_strings = [wstr % (mult * self._wait_time,)
-                        for (wstr, mult) in self.WAIT_STRINGS]
-        mutants = createMutants(freq, wait_strings)
-
-        for mutant in mutants:
+        fake_mutants = createMutants(freq, ['',])
+        
+        for mutant in fake_mutants:
             
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                self._run_async(
-                        meth=self._sendMutant,
-                        args=(mutant,),
-                        kwds={'analyze': self._analyze_wait}
-                        )
-        self._join()
+            if self._has_bug(mutant):
+                continue
 
+            for delay_obj in self.WAIT_OBJ:
+                
+                ed = exact_delay(mutant, delay_obj, self._uri_opener)
+                success, responses = ed.delay_is_controlled()
+
+                if success:
+                    v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
+                    v.setId( [r.id for r in responses] )
+                    v.setSeverity(severity.HIGH)
+                    v.setName('eval() input injection vulnerability')
+                    v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
+                    kb.kb.append(self, 'eval', v)
+                    break
+                        
     def _analyze_echo(self, mutant, response):
         '''
-        Analyze results of the _sendMutant method that was sent in the
+        Analyze results of the _send_mutant method that was sent in the
         _fuzz_with_echo method.
         '''
         with self._plugin_lock:
@@ -169,59 +168,6 @@ class eval(baseAuditPlugin):
                         v.setName('eval() input injection vulnerability')
                         v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
                         kb.kb.append(self, 'eval', v)
-
-    def _analyze_wait(self, mutant, response):
-        '''
-        Analyze results of the _sendMutant method that was sent in the
-        _fuzz_with_time_delay method.
-        '''
-
-        with self._plugin_lock:
-            
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
-                        
-                if response.getWaitTime() > (self._original_wait_time + self._wait_time - 2) and \
-                response.getWaitTime() < (self._original_wait_time + self._wait_time + 2):
-                    # generates a delay in the response; so I'll resend changing the time and see 
-                    # what happens
-                    originalWaitParam = mutant.getModValue()
-                    moreWaitParam = originalWaitParam.replace(\
-                                                                str(self._wait_time), \
-                                                                str(self._second_wait_time))
-                    mutant.setModValue(moreWaitParam)
-                    response = self._sendMutant(mutant, analyze=False)
-
-                    if response.getWaitTime() > (self._original_wait_time + self._second_wait_time - 3) and \
-                    response.getWaitTime() < (self._original_wait_time + self._second_wait_time + 3):
-                        # Now I can be sure that I found a vuln, I control the time of the response.
-                        v = vuln.vuln(mutant)
-                        v.setPluginName(self.getName())
-                        v.setId(response.id)
-                        v.setSeverity(severity.HIGH)
-                        v.setName('eval() input injection vulnerability')
-                        v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
-                        kb.kb.append(self, 'eval', v)
-                    else:
-                        # The first delay existed... I must report something...
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setMethod(mutant.getMethod())
-                        i.setURI(mutant.getURI())
-                        i.setId(response.id)
-                        i.setDc(mutant.getDc())
-                        i.setName('eval() input injection vulnerability')
-                        msg = 'eval() input injection was found at: '
-                        msg += mutant.foundAt()
-                        msg += 'Please review manually.'
-                        i.setDesc(msg)
-
-                        # Just printing to the debug log, we're not sure about this
-                        # finding and we don't want to clog the report with false
-                        # positives
-                        om.out.debug(str(i))
 
     def end(self):
         '''
@@ -259,19 +205,20 @@ class eval(baseAuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Use time delay (sleep() implementations)'
-        h1 = 'If set to True, w3af will checks insecure eval() usage by analyzing'
-        h1 += ' of time delay result of script execution.'
-        o1 = option('useTimeDelay', self._use_time_delay, d1, 'boolean', help=h1)
-
-        d2 = 'Use echo implementations'
-        h2 = 'If set to True, w3af will checks insecure eval() usage by grepping'
-        h2 += ' result of script execution for test strings.'
-        o2 = option('useEcho', self._use_echo, d2, 'boolean', help=h2)
-
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
+        
+        d = 'Use time delay (sleep() technique)'
+        h = 'If set to True, w3af will checks insecure eval() usage by analyzing'
+        h += ' of time delay result of script execution.'
+        o = option('useTimeDelay', self._use_time_delay, d, 'boolean', help=h)
+        ol.add(o)
+        
+        d = 'Use echo technique'
+        h = 'If set to True, w3af will checks insecure eval() usage by grepping'
+        h += ' result of script execution for test strings.'
+        o = option('useEcho', self._use_echo, d, 'boolean', help=h)
+        ol.add(o)
+        
         return ol
 
     def setOptions(self, optionsMap):

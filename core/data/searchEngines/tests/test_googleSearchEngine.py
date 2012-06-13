@@ -37,7 +37,7 @@ URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U
 
 def URL_OPEN_FUNC( url ):
     try:
-        return URL_OPENER.GET(url, headers=HEADERS, useCache=True, grepResult=False)
+        return URL_OPENER.GET(url, headers=HEADERS, cache=True, grep=False)
     except KeyboardInterrupt:
         raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
 

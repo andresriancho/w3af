@@ -51,7 +51,7 @@ class wordnet(baseDiscoveryPlugin):
         '''
         self._fuzzableRequests = []
         
-        self._original_response = self._sendMutant( fuzzableRequest, analyze=False )
+        self._original_response = self._uri_opener.send_mutant(fuzzableRequest)        
         
         for mutant in self._generate_mutants( fuzzableRequest ):
             #   Send the requests using threads:
@@ -66,7 +66,7 @@ class wordnet(baseDiscoveryPlugin):
         Actually check if the mutated URL exists.
         @return: None, all important data is saved to self._fuzzableRequests
         '''
-        response = self._sendMutant( mutant, analyze=False )
+        response = self._uri_opener.send_mutant(mutant)
         if not is_404( response ) and self._original_response.getBody() != response.getBody() :
             fuzzReqs = self._createFuzzableRequests( response )
             self._fuzzableRequests.extend( fuzzReqs )

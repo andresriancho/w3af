@@ -64,7 +64,7 @@ class htaccessMethods(baseAuditPlugin):
         else:
             # Just in case grep plugin did not find this before
             # this only happends if the page wasnt requested
-            response = self._urlOpener.GET( freq.getURL() , useCache=True )
+            response = self._uri_opener.GET( freq.getURL() , cache=True )
             if response.getCode() == http_constants.UNAUTHORIZED:
                 self._check_methods( freq.getURL() )
                 # not needed, the grep plugin will do this for us
@@ -77,7 +77,7 @@ class htaccessMethods(baseAuditPlugin):
         '''
         allowed_methods = []
         for method in ['GET', 'POST', 'ABCD', 'HEAD']:
-            method_functor = getattr( self._urlOpener, method )
+            method_functor = getattr( self._uri_opener, method )
             try:
                 response = apply( method_functor, (url,) , {} )
                 code = response.getCode()

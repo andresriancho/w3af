@@ -81,14 +81,19 @@ class fileUpload(baseAuditPlugin):
                     mutant.uploaded_file_name = filename
        
                 for mutant in mutants:
-                    self._run_async(meth=self._sendMutant, args=(mutant,))
+                    args = (mutant,)
+                    kwds = {'callback': self._analyze_result }
+                    self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                        kwds=kwds)
                     
             self._join()
             
     def _get_files( self ):
         '''
         If the extension is in the templates dir, open it and return the handler.
-        If the extension aint in the templates dir, create a file with random content, open it and return the handler.
+        If the extension isn't in the templates dir, create a file with random 
+        content, open it and return the handler.
+        
         @return: A list of open files.
         '''
         result = []
@@ -134,9 +139,9 @@ class fileUpload(baseAuditPlugin):
         
         return result
         
-    def _analyzeResult(self, mutant, mutant_response):
+    def _analyze_result(self, mutant, mutant_response):
         '''
-        Analyze results of the _sendMutant method. 
+        Analyze results of the _send_mutant method. 
         
         In this case, check if the file was uploaded to any of the known directories,
         or one of the "default" ones like "upload" or "files".
@@ -152,7 +157,7 @@ class fileUpload(baseAuditPlugin):
                 for url in domain_path_list:
                     for path in self._generate_urls(url, mutant.uploaded_file_name):
         
-                        get_response = self._urlOpener.GET(path, useCache=False)
+                        get_response = self._uri_opener.GET(path, cache=False)
                         if not is_404(get_response):
                             # This is necesary, if I dont do this, the session
                             # saver will break cause REAL file objects can't 
@@ -201,13 +206,15 @@ class fileUpload(baseAuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Extensions that w3af will try to upload through the form.'
-        h1 = 'When finding a form with a file upload, this plugin will try to upload a set of files'
-        h1 += ' with the extensions specified here.'
-        o1 = option('extensions', self._extensions, d1, 'list', help=h1)
-
         ol = optionList()
-        ol.add(o1)
+        
+        d = 'Extensions that w3af will try to upload through the form.'
+        h = 'When finding a form with a file upload, this plugin will try to upload a set of files'
+        h += ' with the extensions specified here.'
+        o = option('extensions', self._extensions, d, 'list', help=h)
+
+        ol.add(o)
+        
         return ol
         
     def setOptions( self, optionsMap ):
@@ -237,14 +244,19 @@ class fileUpload(baseAuditPlugin):
         One configurable parameter exists:
             - extensions
         
-        The extensions parameter is a comma separated list of extensions that this plugin will try to upload. Many web applications
-        verify the extension of the file being uploaded, if special extensions are required, they can be added here.
+        The extensions parameter is a comma separated list of extensions that 
+        this plugin will try to upload. Many web applications verify the extension
+        of the file being uploaded, if special extensions are required, they can
+        be added here.
     
-        Some web applications check the contents of the files being uploaded to see if they are really what their extension
-        is telling. To bypass this check, this plugin uses file templates located at "plugins/audit/fileUpload/", this templates
-        are valid files for each extension that have a section ( the comment field in a gif file for example ) that can be replaced
+        Some web applications check the contents of the files being uploaded to
+        see if they are really what their extension is telling. To bypass this
+        check, this plugin uses file templates located at "plugins/audit/fileUpload/",
+        this templates are valid files for each extension that have a section
+        (the comment field in a gif file for example ) that can be replaced
         by scripting code ( PHP, ASP, etc ).
         
-        After uploading the file, this plugin will try to find it on common directories like "upload" and "files" on every know directory.
-        If the file is found, a vulnerability exists. 
+        After uploading the file, this plugin will try to find it on common
+        directories like "upload" and "files" on every know directory. If the
+        file is found, a vulnerability exists. 
         '''

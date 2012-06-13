@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
+
 import re
+from lxml import etree
 
 import core.controllers.outputManager as om
 
@@ -30,7 +32,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
-from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -48,11 +49,13 @@ class phishingVector(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Some internal vars
+        self._tag_xpath = etree.XPath('//iframe | //frame')
         
         # I test this with different URL handlers because the developer may have
         # blacklisted http:// and https:// but missed ftp://.
-        # I also use hTtp instead of http because I want to evade some (stupid) case sensitive
-        # filters
+        #
+        # I also use hTtp instead of http because I want to evade some (stupid) 
+        # case sensitive filters
         self._test_urls = ('hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/',
                            'fTp://w3af.sf.net/')
 
@@ -66,12 +69,15 @@ class phishingVector(baseAuditPlugin):
         
         mutants = createMutants( freq , self._test_urls )
         for mutant in mutants:
-            self._run_async(meth=self._sendMutant, args=(mutant,))
+            args = (mutant,)
+            kwds = {'callback': self._analyze_result }
+            self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                kwds=kwds)
         self._join()
             
-    def _analyzeResult(self, mutant, response):
+    def _analyze_result(self, mutant, response):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             if self._has_no_bug(mutant):
@@ -83,24 +89,30 @@ class phishingVector(baseAuditPlugin):
         '''
         Find the phishing vectors!
         '''
-        res = []
-        html_body = response.getBody()
-        for url in self._test_urls:
-            if html_body.count( url ):
-                # Houston we *may* have a problem ;)
-                regex = '<(iframe|frame).*?src=(\'|")?' + url + '.*?>'
-                frame_regex = re.compile(regex, re.DOTALL )
-                match = frame_regex.search( html_body )
-                if match:
-                    # Vuln vuln!
-                    v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setId( response.id )
-                    v.setSeverity(severity.LOW)
-                    v.setName( 'Phishing vector' )
-                    v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
-                    v.addToHighlight( match.group(0) )
-                    res.append( v )
+        dom = response.getDOM()
+        
+        if response.is_text_or_html() and dom is not None:
+
+            elem_list = self._tag_xpath( dom )
+            
+            for element in elem_list:
+
+                if 'src' not in element.attrib:
+                    return []
+                
+                res = []
+                src_attr = element.attrib['src']
+                
+                for url in self._test_urls:
+                    if src_attr.startswith( url ):
+                        # Vuln vuln!
+                        v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
+                        v.setId( response.id )
+                        v.setSeverity(severity.LOW)
+                        v.setName( 'Phishing vector' )
+                        v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
+                        res.append( v )
         return res
         
     def end(self):

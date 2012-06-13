@@ -239,13 +239,13 @@ class phpEggs(baseDiscoveryPlugin):
                 
                 # Init some internal variables
                 GET_results = []
-                original_response = self._urlOpener.GET( fuzzableRequest.getURL(), useCache=True )
+                original_response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
                 
                 # Perform the GET requests to see if we have a phpegg
                 for egg, egg_desc in self._get_eggs():
                     egg_URL = fuzzableRequest.getURL().uri2url().urlJoin( egg )
                     try:
-                        response = self._urlOpener.GET( egg_URL, useCache=True )
+                        response = self._uri_opener.GET( egg_URL, cache=True )
                     except KeyboardInterrupt,e:
                         raise e
                     except w3afException, w3:

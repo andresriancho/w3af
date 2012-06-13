@@ -47,7 +47,7 @@ class basePlugin(configurable):
         '''
         Create some generic attributes that are going to be used by most plugins.
         '''
-        self._urlOpener = None
+        self._uri_opener = None
         self._tm = tm
         self._plugin_lock = threading.RLock()
 
@@ -65,7 +65,7 @@ class basePlugin(configurable):
         
         @return: No value is returned.
         '''
-        self._urlOpener = UrlOpenerProxy(urlOpener, self)
+        self._uri_opener = UrlOpenerProxy(urlOpener, self)
         
 
     def setOptions( self, optionsMap ):
@@ -170,66 +170,6 @@ class basePlugin(configurable):
             else:
                 om.out.information( i.getDesc() )
             
-    def _sendMutant(self, mutant, analyze=True, grepResult=True,
-                    useCache=True, follow_redir=True):
-        '''
-        Sends a mutant to the remote web server.
-        
-        @param analyze: If True, run the default callback, i.e.
-            '_analyzeResult'. If a method is passed then call it as
-            callback. Be aware of the arguments to be passed to
-            a callback method. If False, call nobody.
-        
-        @return: The httpResponse object associated with the request
-        that was just sent.
-        '''
-        #
-        # IMPORTANT NOTE: If you touch something here, the whole framework may
-        # stop working!
-        #
-        uri = mutant.getURI()
-        data = mutant.getData()
-
-        # Also add the cookie header; this is needed by the mutantCookie
-        headers = mutant.getHeaders()
-        cookie = mutant.getCookie()
-        if cookie:
-            headers['Cookie'] = str(cookie)
-
-        args = (uri,)
-        kwargs = {
-              'data': data, 'headers': headers,
-              'grepResult': grepResult,
-              'useCache': useCache,
-              'follow_redir': follow_redir
-              }
-        method = mutant.getMethod()
-        
-        functor = getattr(self._urlOpener, method)
-        # run functor, run! (forest gump flash)
-        res = functor(*args, **kwargs)
-        
-        if analyze:
-            if callable(analyze):
-                # The user specified a custom callback for analyzing
-                # the sendMutant result
-                analyze(mutant, res)
-            else:
-                # Calling the default callback
-                self._analyzeResult(mutant, res)
-        return res
-    
-    def _analyzeResult(self, mutant, res):
-        '''
-        Analyze the result of sending the mutant to the remote web server.
-        
-        @parameter mutant: The mutated request.
-        @parameter res: The HTTP response.
-        '''
-        msg = ('You must override the "_analyzeResult" method of basePlugin if'
-        ' you want to use "_sendMutant" with the default callback.')
-        raise NotImplementedError, msg
-    
     def __eq__( self, other ):
         '''
         This function is called when extending a list of plugin instances.

@@ -49,7 +49,8 @@ class globalRedirect(baseAuditPlugin):
         
         # Internal variables
         self._test_site = 'http://www.w3af.org/'
-        self._scriptre = re.compile('< *script.*?>(.*)< */ *script *>', re.IGNORECASE | re.DOTALL )
+        self._scriptre = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 
+                                    re.IGNORECASE | re.DOTALL )
 
     def audit(self, freq ):
         '''
@@ -63,12 +64,16 @@ class globalRedirect(baseAuditPlugin):
             
         for mutant in mutants:
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result,
+                        'follow_redir': False }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
 
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         if self._find_redirect( response ):
             v = vuln.vuln( mutant )
@@ -91,38 +96,46 @@ class globalRedirect(baseAuditPlugin):
         This method checks if the browser was redirected ( using a 302 code ) 
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
         '''
-        if response.getRedirURL().url_string.startswith( self._test_site ):
-            # The script sent a 302, and w3af followed the redirection
-            # so the URL is now the test site
-            return True
+        #
+        #    Test for 302 header redirects
+        #
+        lheaders = response.getLowerCaseHeaders()
+        for header_name in ('location', 'uri'):
+            if header_name in lheaders and \
+               lheaders[header_name].startswith( self._test_site ):
+                # The script sent a 302, and w3af followed the redirection
+                # so the URL is now the test site
+                return True
+
+        #
+        # Test for meta redirects
+        #
+        try:
+            dp = dpCache.dpc.getDocumentParserFor( response )
+        except w3afException:
+            # Failed to find a suitable parser for the document
+            return False
         else:
-            # Test for http-equiv redirects
-            try:
-                dp = dpCache.dpc.getDocumentParserFor( response )
-            except w3afException:
-                # Failed to find a suitable parser for the document
-                return False
-            else:
-                for redir in dp.getMetaRedir():
-                    if redir.count( self._test_site ):
+            for redir in dp.getMetaRedir():
+                if redir.count( self._test_site ):
+                    return True
+        #
+        # Test for JavaScript redirects, these are some common redirects:
+        #     location.href = '../htmljavascript.htm';
+        #     window.location = "http://www.w3af.com/"
+        #     window.location.href="http://www.w3af.com/";
+        #     location.replace('http://www.w3af.com/');
+        res = self._scriptre.search( response.getBody() )
+        if res:
+            for scriptCode in res.groups():
+                splittedCode = scriptCode.split('\n')
+                code = []
+                for i in splittedCode:
+                    code.extend( i.split(';') )
+                    
+                for line in code:
+                    if re.search( '(window\.location|location\.).*' + self._test_site, line ):
                         return True
-            
-            # Test for JavaScript redirects, these are some common redirects:
-            #     location.href = '../htmljavascript.htm';
-            #     window.location = "http://www.w3af.com/"
-            #     window.location.href="http://www.w3af.com/";
-            #     location.replace('http://www.w3af.com/');
-            res = self._scriptre.search( response.getBody() )
-            if res:
-                for scriptCode in res.groups():
-                    splittedCode = scriptCode.split('\n')
-                    code = []
-                    for i in splittedCode:
-                        code.extend( i.split(';') )
-                        
-                    for line in code:
-                        if re.search( '(window\.location|location\.).*' + self._test_site, line ):
-                            return True
         
         return False
         

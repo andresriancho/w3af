@@ -52,6 +52,7 @@ CONFIG_ERROR_MSG = ('audit.remoteFileInclude plugin has to be correctly '
 
 RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
 
+
 class remoteFileInclude(baseAuditPlugin):
     '''
     Find remote file inclusion vulnerabilities.
@@ -179,7 +180,7 @@ class remoteFileInclude(baseAuditPlugin):
         
         @return: None
         '''
-        oResponse = self._sendMutant(freq, analyze=False)
+        oResponse = self._uri_opener.send_mutant(freq)
         
         rfi_url = str(self._rfi_url)
         rfi_url_list = [rfi_url, rfi_url + '\0']
@@ -189,13 +190,16 @@ class remoteFileInclude(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         # Wait for threads to finish
         self._join()
                 
-    def _analyzeResult(self, mutant, response):
+    def _analyze_result(self, mutant, response):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             

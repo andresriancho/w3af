@@ -19,15 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.sql_tools.blind_sqli_response_diff import \
     blind_sqli_response_diff
 from core.controllers.sql_tools.blind_sqli_time_delay import \
     blind_sqli_time_delay
+
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+from core.data.fuzzer.fuzzer import createMutants
+
 
 
 class blindSqli(baseAuditPlugin):
@@ -39,8 +43,6 @@ class blindSqli(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._bsqli_response_diff = blind_sqli_response_diff()
-        self._blind_sqli_time_delay = blind_sqli_time_delay()
         
         # User configured variables
         self._eq_limit = 0.9
@@ -54,20 +56,25 @@ class blindSqli(baseAuditPlugin):
         om.out.debug('blindSqli plugin is testing: ' + freq.getURL())
         
         #
-        # Setup blind SQL injection detector objects
+        #    Setup blind SQL injection detector objects
         #
+        self._bsqli_response_diff = blind_sqli_response_diff(self._uri_opener)
         bsqli_resp_diff = self._bsqli_response_diff
-        bsqli_resp_diff.setUrlOpener(self._urlOpener)
         bsqli_resp_diff.set_eq_limit(self._eq_limit)
         
+        self._blind_sqli_time_delay = blind_sqli_time_delay(self._uri_opener)
         bsqli_time_delay = self._blind_sqli_time_delay
-        bsqli_time_delay.setUrlOpener(self._urlOpener)
-
         
-        # FIXME: what about repeated parameter names?
-        for param in freq.getDc():
+        method_list = [bsqli_resp_diff, bsqli_time_delay]
+        
+        #
+        #    Use the objects to identify the vulnerabilities
+        #
+        fake_mutants = createMutants(freq, ['',])
+        
+        for mutant in fake_mutants:
             
-            if self._has_sql_injection( freq, param ):
+            if self._has_sql_injection( mutant ):
                 #
                 #    If sqli.py was enabled and already detected a vulnerability
                 #    in this parameter, then it makes no sense to test it again
@@ -75,25 +82,25 @@ class blindSqli(baseAuditPlugin):
                 #
                 continue
             
-            method_list = [bsqli_resp_diff, bsqli_time_delay]
             
             for method in method_list:
-                found_vuln = method.is_injectable(freq, param)
+                found_vuln = method.is_injectable( mutant )
 
-                if found_vuln is not None and self._has_no_bug(freq, varname=found_vuln.getVar()):
+                if found_vuln is not None and \
+                self._has_no_bug(freq, varname=found_vuln.getVar()):
                     om.out.vulnerability(found_vuln.getDesc())
                     kb.kb.append(self, 'blindSqli', found_vuln)
                     break
     
-    def _has_sql_injection(self, freq, param):
+    def _has_sql_injection(self, mutant):
         '''
         @return: True if there IS a reported SQL injection for this URL/parameter
                  combination.
         '''
         sql_injection_list = kb.kb.getData('sqli','sqli')
         for sql_injection in sql_injection_list:
-            if  sql_injection.getURL() == freq.getURL() and \
-                sql_injection.getVar() == param:
+            if  sql_injection.getURL() == mutant.getURL() and \
+                sql_injection.getVar() == mutant.getVar():
                 return True
         
         return False
@@ -135,7 +142,7 @@ class blindSqli(baseAuditPlugin):
         '''
         return '''
         This plugin finds blind SQL injections using two techniques: time delays
-        and true/false response comparisons.
+        and true/false response comparison.
         
         Only one configurable parameters exists:
             - eq_limit

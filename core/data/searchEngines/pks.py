@@ -36,7 +36,7 @@ class pks(searchEngine):
     
     def __init__(self, urlOpener ):
         searchEngine.__init__(self)
-        self._urlOpener = urlOpener
+        self._uri_opener = urlOpener
         
     def search( self, hostname ):
         '''
@@ -70,7 +70,7 @@ class pks(searchEngine):
         url = url_object(u'http://pgp.mit.edu:11371/pks/lookup')
         url.querystring = {u'op': u'index', u'search': query}
 
-        response = self._urlOpener.GET( url , headers=self._headers, useCache=True, grepResult=False )
+        response = self._uri_opener.GET( url , headers=self._headers, cache=True, grep=False )
         content = response.getBody()
         
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)

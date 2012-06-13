@@ -198,7 +198,7 @@ class w3af_core_strategy(object):
                 #    GET the initial target URLs in order to save them
                 #    in a list and use them as our bootstrap URLs
                 #
-                response = self._w3af_core.uriOpener.GET(url, useCache=True)
+                response = self._w3af_core.uriOpener.GET(url, cache=True)
                 self._fuzzable_request_set.update( filter(
                     get_curr_scope_pages, createFuzzableRequests(response)) )
 
@@ -254,7 +254,7 @@ class w3af_core_strategy(object):
         
         while True:
             discovered_fr_list = self._discover( tmp_set )
-            successfully_bruteforced = self._bruteforce( discovered_fr_list )
+            successfully_bruteforced = self._bruteforce( tmp_set.union(discovered_fr_list) )
 
             chain = itertools.chain( discovered_fr_list,
                                      successfully_bruteforced,
@@ -313,7 +313,7 @@ class w3af_core_strategy(object):
         # Let the plugins know that they won't be used anymore
         self._end_discovery()
         
-        return result
+        return set(result)
     
     def _end_discovery( self ):
         '''
@@ -530,31 +530,30 @@ class w3af_core_strategy(object):
             except w3afException, e:
                 om.out.error( str(e) )
             
-    def _bruteforce(self, fuzzableRequestList):
+    def _bruteforce(self, fr_list):
         '''
-        @parameter fuzzableRequestList: A list of fr's to be analyzed by the bruteforce plugins
+        @parameter fr_list: A list of fr's to be analyzed by the bruteforce plugins
         @return: A list of the URL's that have been successfully bruteforced
         '''
+        om.out.debug('Called _bruteforce()' )
+        
         res = []
         
         # Progress
-        om.out.debug('Called _bruteforce()' )
         self._w3af_core.status.set_phase('bruteforce')
-        amount_of_tests = len(self._w3af_core.plugins.plugins['bruteforce']) * len(fuzzableRequestList)
+        amount_of_tests = len(self._w3af_core.plugins.plugins['bruteforce']) * len(fr_list)
         self._w3af_core.progress.set_total_amount( amount_of_tests )
         
-        for plugin in self._w3af_core.plugins.plugins['bruteforce']:
-            # FIXME: I should remove this information lines, they duplicate
-            #        functionality with the set_running_plugin
-            om.out.information('Starting ' + plugin.getName() + ' plugin execution.')
-            self._w3af_core.status.set_running_plugin( plugin.getName() )
-            for fr in fuzzableRequestList:
+        for fr in fr_list:
+            
+            for plugin in self._w3af_core.plugins.plugins['bruteforce']:
+            
+                self._w3af_core.status.set_running_plugin( plugin.getName() )
+                self._w3af_core.status.set_current_fuzzable_request( fr )
                 
                 # Sends each url to the plugin
                 try:
-                    self._w3af_core.status.set_current_fuzzable_request( fr )
-                    
-                    frList = plugin.bruteforce_wrapper( fr )
+                    fr_list = plugin.bruteforce_wrapper( fr )
                     tm.join( plugin )
                 except w3afException, e:
                     tm.join( plugin )
@@ -568,8 +567,8 @@ class w3af_core_strategy(object):
                 except w3afException, e:
                     om.out.error( str(e) )
                     
-                res.extend( frList )
+                res.extend( fr_list )
                 
-        return res
+        return set(res)
 
 

@@ -52,7 +52,7 @@ class generic(baseAuthPlugin):
 
         try:
             # TODO Why we don't use httpPostDataRequest here?
-            self._urlOpener.POST(self.auth_url, urlencode({
+            self._uri_opener.POST(self.auth_url, urlencode({
                 self.username_field: self.username,
                 self.password_field: self.password,
             }))
@@ -75,7 +75,7 @@ class generic(baseAuthPlugin):
     def is_logged(self):
         '''Check user session.'''
         try:
-            body = self._urlOpener.GET(self.check_url, grepResult=False).body
+            body = self._uri_opener.GET(self.check_url, grep=False).body
             logged_in = self.check_string in body
 
             msg_yes = 'User "%s" is currently logged into the application'
