@@ -20,32 +20,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
-
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import HTTPQSRequest
-
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-from core.data.parsers.urlParser import parse_qs
-from core.controllers.w3afException import w3afException
-from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
-from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
-from core.controllers.misc.webroot import get_webroot_dirs
-from core.data.fuzzer.fuzzer import createRandAlNum
+import urllib
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-from core.data.kb.shell import shell as shell
+
+import core.controllers.outputManager as om
 
 import plugins.attack.payloads.shell_handler as shell_handler
-from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
-# options
+from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.parsers.urlParser import parse_qs
+from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
+from core.data.kb.shell import shell as shell
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+from core.controllers.misc.webroot import get_webroot_dirs
 
-import urllib
+from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
+from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
 class sql_webshell(baseAttackPlugin):
@@ -92,28 +90,28 @@ class sql_webshell(baseAttackPlugin):
                 raise w3afException('Method not supported.')
             
             freq.setDc(parse_qs(self._data))
+
+            bsql = blind_sqli_response_diff(self._uri_opener)
+            bsql.set_eq_limit(self._eq_limit)
             
-            bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._uri_opener )
-            bsql.set_eq_limit( self._eq_limit )
-            
-            vuln_obj = bsql.is_injectable( freq, self._injvar )
-            if not vuln_obj:
-                raise w3afException('Could not verify SQL injection ' + str(vuln) )
-            else:
-                om.out.console('SQL injection could be verified, trying to create the DB driver.')
-                
-                # Try to get a shell using all vuln
-                msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
-                msg += '. Please wait...'
-                om.out.console( msg )
-                shell_obj = self._generateShell( vuln_obj )
-                if shell_obj is not None:
-                    kb.kb.append( self, 'shell', shell_obj )
-                    return [shell_obj, ]
+            fake_mutants = createMutants(freq, [''], fuzzableParamList=[self._injvar,])
+            for mutant in fake_mutants:            
+                vuln_obj = bsql.is_injectable(mutant)
+                if vuln_obj is not None:
+                    om.out.console('SQL injection verified, trying to create the DB driver.')
                     
+                    # Try to get a shell using all vuln
+                    msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
+                    msg += '. Please wait...'
+                    om.out.console(msg)
+                    shell_obj = self._generateShell(vuln_obj)
+                    if shell_obj is not None:
+                        kb.kb.append(self, 'shell', shell_obj)
+                        return [shell_obj, ]
+            else:    
                 raise w3afException('No exploitable vulnerabilities found.')
-        
+
+            
     def getAttackType(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
@@ -157,8 +155,7 @@ class sql_webshell(baseAttackPlugin):
             vulns = list(kb.kb.getData( 'blindSqli' , 'blindSqli'))
             vulns.extend(kb.kb.getData( 'sqli' , 'sqli' ))
             
-            bsql = blind_sqli_response_diff()
-            bsql.setUrlOpener( self._uri_opener )
+            bsql = blind_sqli_response_diff(self._uri_opener)
             bsql.set_eq_limit( self._eq_limit )
             
             tmp_vuln_list = []
@@ -175,7 +172,7 @@ class sql_webshell(baseAttackPlugin):
             
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
-                vuln_obj = bsql.is_injectable( v.getMutant().getFuzzableReq(), v.getVar() )
+                vuln_obj = bsql.is_injectable( v.getMutant() )
                 if vuln_obj:
                     tmp_vuln_list.append( vuln_obj )
             
