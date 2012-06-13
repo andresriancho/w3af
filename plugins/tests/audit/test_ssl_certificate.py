@@ -96,11 +96,12 @@ class ssl_server(threading.Thread):
             # SSL protocol v2 and that will "break" the handshake
             pass
 
-        print 'Connection from ', fromaddr
+        #print 'Connection from ', fromaddr
         try:
             newsocket.send(HTTP_RESPONSE)
         except:
-            print 'Connection closed by remote end.'
+            pass
+            #print 'Connection closed by remote end.'
         finally:
             newsocket.close()
 
