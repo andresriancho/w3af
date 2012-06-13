@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from ..helper import PluginTest, PluginConfig
-import core.data.constants.dbms as dbms
 
 
 class TestBlindSQLI(PluginTest):
@@ -45,6 +44,7 @@ class TestBlindSQLI(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals( "Blind SQL injection vulnerability", vuln.getName() )
+        self.assertFalse( 'time delays' in vuln.getDesc() )
         self.assertEquals( "numeric", vuln['type'])
         self.assertEquals( target_url, str(vuln.getURL()))
 
@@ -59,6 +59,7 @@ class TestBlindSQLI(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals( "Blind SQL injection vulnerability", vuln.getName() )
+        self.assertFalse( 'time delays' in vuln.getDesc() )
         self.assertEquals( "stringsingle", vuln['type'])
         self.assertEquals( target_url, str(vuln.getURL()))
 
@@ -70,15 +71,10 @@ class TestBlindSQLI(PluginTest):
         vulns = self.kb.getData('blindSqli', 'blindSqli')
         self.assertEquals(1, len(vulns))
         
-        # Given the random nature of this target script, in some cases it will be
-        # detected by the time delay technique and in some other cases by the
-        # response diffing. That's why we need this:
-        titles = ('Blind SQL injection - MySQL database',
-                  'Blind SQL injection vulnerability')
-        
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertTrue( vuln.getName() in titles )
+        self.assertEquals( vuln.getName(), 'Blind SQL injection vulnerability' )
+        self.assertFalse( 'time delays' in vuln.getDesc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_delay_integer(self):
@@ -91,11 +87,12 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( "Blind SQL injection - " + dbms.MYSQL, vuln.getName() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
+        self.assertTrue( 'time delays' in vuln.getDesc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
-    def test_delay_string(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_string.php'
+    def test_delay_string_single(self):
+        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_single.php'
         qs = '?email=andres@w3af.org'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
@@ -104,7 +101,22 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( "Blind SQL injection - " + dbms.MYSQL, vuln.getName() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
+        self.assertTrue( 'time delays' in vuln.getDesc() )
+        self.assertEquals( target_url, str(vuln.getURL()))
+
+    def test_delay_string_double(self):
+        target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_double.php'
+        qs = '?email=andres@w3af.org'
+        self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
+        
+        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        self.assertEquals(1, len(vulns))
+        
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
+        self.assertTrue( 'time delays' in vuln.getDesc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_single_quote_form(self):
@@ -117,8 +129,9 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( "Blind SQL injection vulnerability", vuln.getName() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
         self.assertEquals( "stringsingle", vuln['type'])
+        self.assertFalse( 'time delays' in vuln.getDesc() )
         self.assertEquals( action_url, str(vuln.getURL()))
     
     def test_false_positives(self):
