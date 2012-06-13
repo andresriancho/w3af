@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import itertools
+
 from core.controllers.w3afCore import w3afCore
 
 
@@ -49,6 +51,14 @@ class Test_w3afCore_plugins(unittest.TestCase):
         plugin_inst = w3af_core.plugins.getPluginInstance('sqli','audit')
 
         self.assertEquals( plugin_inst.getName(), 'sqli' )
+
+    def test_getPluginInstanceAll(self):
+        w3af_core = w3afCore()
+        
+        for plugin_type in itertools.chain( w3af_core.plugins.getPluginTypes() , ['attack'] ):
+            for plugin_name in w3af_core.plugins.getPluginList(plugin_type):
+                plugin_inst = w3af_core.plugins.getPluginInstance(plugin_name, plugin_type)
+                self.assertEquals( plugin_inst.getName(), plugin_name )
 
     def test_setPlugins(self):
         w3af_core = w3afCore()
