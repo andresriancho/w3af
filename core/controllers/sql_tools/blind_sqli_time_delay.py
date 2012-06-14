@@ -25,7 +25,6 @@ import core.data.kb.vuln as vuln
 
 from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
-from core.data.fuzzer.fuzzer import createMutants
 
 
 
@@ -118,8 +117,8 @@ class blind_sqli_time_delay(object):
               
         # PostgreSQL
         res.append( delay("1 or pg_sleep(%s)") )
-        res.append( delay("1' or pg_sleep(%s) or '1'='1") )
-        res.append( delay('1" or pg_sleep(%s) or "1"="1') )
+        res.append( delay("1' or pg_sleep(%s) and '1'='1") )
+        res.append( delay('1" or pg_sleep(%s) and "1"="1') )
         
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
