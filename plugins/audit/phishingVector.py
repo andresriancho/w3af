@@ -93,6 +93,7 @@ class phishingVector(baseAuditPlugin):
         
         if response.is_text_or_html() and dom is not None:
 
+            res = []
             elem_list = self._tag_xpath( dom )
             
             for element in elem_list:
@@ -100,7 +101,6 @@ class phishingVector(baseAuditPlugin):
                 if 'src' not in element.attrib:
                     return []
                 
-                res = []
                 src_attr = element.attrib['src']
                 
                 for url in self._test_urls:
@@ -112,8 +112,10 @@ class phishingVector(baseAuditPlugin):
                         v.setSeverity(severity.LOW)
                         v.setName( 'Phishing vector' )
                         v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
+                        v.addToHighlight( src_attr )
                         res.append( v )
-        return res
+                        
+            return res
         
     def end(self):
         '''
