@@ -92,7 +92,7 @@ class phpinfo(baseDiscoveryPlugin):
         # Request the file
         php_info_url = domain_path.urlJoin( php_info_filename )
         try:
-            response = self._urlOpener.GET( php_info_url, useCache=True )
+            response = self._uri_opener.GET( php_info_url, cache=True )
             om.out.debug( '[phpinfo] Testing "' + php_info_url + '".' )
         except w3afException,  w3:
             msg = 'Failed to GET phpinfo file: "' + php_info_url + '".'

@@ -92,7 +92,7 @@ class findCaptchas(baseDiscoveryPlugin):
         res = {}
         
         try:
-            response = self._urlOpener.GET( fuzzable_request.getURI(), useCache=False )
+            response = self._uri_opener.GET( fuzzable_request.getURI(), cache=False )
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
@@ -108,7 +108,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 for img_src in image_list:
                     # TODO: Use self._run_async
                     try:
-                        image_response = self._urlOpener.GET( img_src, useCache=False )
+                        image_response = self._uri_opener.GET( img_src, cache=False )
                     except:
                         om.out.debug('Failed to retrieve the image for finding captchas.')
                     else:

@@ -98,7 +98,7 @@ class eval(baseAttackPlugin):
         if self._verify_vuln( vuln_obj ):
             # Create the shell object
             shell_obj = eval_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setCode( self._shell_code )
             return shell_obj
@@ -119,7 +119,7 @@ class eval(baseAttackPlugin):
         
         for code, real_extension in shell_code_list:
             # Prepare for exploitation...
-            function_reference = getattr( self._urlOpener , vuln_obj.getMethod() )
+            function_reference = getattr( self._uri_opener , vuln_obj.getMethod() )
             data_container = vuln_obj.getDc()
             data_container[ vuln_obj.getVar() ] = code
 
@@ -225,7 +225,7 @@ class eval_shell(exec_shell):
         @return: The result of the command.
         '''
         # Lets send the command.
-        function_reference = getattr( self._urlOpener , self.getMethod() )
+        function_reference = getattr( self._uri_opener , self.getMethod() )
         exploit_dc = self.getDc()
         exploit_dc[ 'cmd' ] = command
         exploit_dc[ self.getVar() ] = self._shell_code

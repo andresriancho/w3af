@@ -75,7 +75,7 @@ class zone_h(baseDiscoveryPlugin):
             zone_h_url = url_object( zone_h_url_str )
 
             try:
-                response = self._urlOpener.GET( zone_h_url )
+                response = self._uri_opener.GET( zone_h_url )
             except w3afException, e:
                 msg = 'An exception was raised while running zone-h plugin. Exception: ' + str(e)
                 om.out.debug( msg )

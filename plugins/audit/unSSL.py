@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.misc.levenshtein import relative_distance_boolean
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -65,7 +65,7 @@ class unSSL(baseAuditPlugin):
             
             if self._first_run:
                 try:
-                    self._urlOpener.GET( insecure )
+                    self._uri_opener.GET( insecure )
                 except:
                     # The request failed because the HTTP port is closed or something like that
                     # we shouldn't test any other fuzzable requests.
@@ -83,14 +83,17 @@ class unSSL(baseAuditPlugin):
 
                 # We are going to perform requests that (in normal cases)
                 # are going to fail, so we set the ignore errors flag to True
-                self._urlOpener.ignore_errors( True )
+                self._uri_opener.ignore_errors( True )
                 
-                https_response = self._sendMutant( freq )
+                https_response = self._uri_opener.send_mutant(freq)
                 freq.setURL( insecure )
-                http_response = self._sendMutant( freq )
+                http_response = self._uri_opener.send_mutant(freq)
                 
                 if http_response.getCode() == https_response.getCode():
-                    if http_response.getBody() == https_response.getBody():
+                    
+                    if relative_distance_boolean( http_response.getBody(),
+                                                  https_response.getBody(),
+                                                  0.97 ):
                         v = vuln.vuln( freq )
                         v.setPluginName(self.getName())
                         v.setName( 'Secure content over insecure channel' )
@@ -103,11 +106,8 @@ class unSSL(baseAuditPlugin):
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
 
                 # Disable error ignoring
-                self._urlOpener.ignore_errors( False )
+                self._uri_opener.ignore_errors( False )
     
-    def _analyzeResult( self, fuzzableRequest, res ):
-        pass
-        
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.

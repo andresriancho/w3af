@@ -72,7 +72,7 @@ class xst(baseAuditPlugin):
             my_mutant = mutant(fr_copy)
             
             # send the request to the server and recode the response
-            response = self._sendMutant( my_mutant, analyze=False )
+            response = self._uri_opener.send_mutant(my_mutant)
             
             # create a regex to test the response. 
             regex = re.compile("[FalseHeader: XST]")

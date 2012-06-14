@@ -154,7 +154,8 @@ class info(dict):
         '''
         Just a wrapper for _convert_to_range; please see documentation below!
         
-        @return: The result of self._convert_to_range( list_of_integers ) but without the trailing comma.
+        @return: The result of self._convert_to_range( list_of_integers ) but 
+                 without the trailing comma.
         '''
         res = self._convert_to_range( list_of_integers )
         if res.endswith(','):
@@ -166,21 +167,7 @@ class info(dict):
         Convert a list of integers to a nicer "range like" string. Assumed
         that `seq` elems are ordered.
         
-        >>> inf = info()
-        >>> inf._convert_to_range([1, 2, 3, 4, 5, 6])
-        '1 to 6'
-        >>> inf._convert_to_range([1, 2, 3, 6])
-        '1 to 3 and 6'
-        >>> inf._convert_to_range([1, 2, 3, 6, 7, 8])
-        '1 to 3, 6 to 8'
-        >>> inf._convert_to_range([1, 2, 3, 6, 7, 8, 10])
-        '1 to 3, 6 to 8 and 10'
-        >>> inf._convert_to_range([1, 2, 3, 10, 20, 30])
-        '1 to 3, 10, 20 and 30'
-        >>> inf._convert_to_range([1, 3, 10, 20, 30])
-        '1, 3, 10, 20 and 30'
-        >>> len(inf._convert_to_range(range(0, 30000, 2)).split())
-        15001
+        @see test_info.py
         '''
         first = last = seq[0]
         dist = 0
@@ -258,8 +245,8 @@ class info(dict):
     
     def getId( self ):
         '''
-        @return: The list of ids related to this information object. Please read the
-        documentation of setId().
+        @return: The list of ids related to this information object. Please read
+                 the documentation of setId().
         '''
         return self._id
         
@@ -277,13 +264,13 @@ class info(dict):
         
     def getToHighlight(self):
         '''
-        The string match is the string that was used to identify the vulnerability. For example,
-        in a SQL injection the string match would look like:
+        The string match is the string that was used to identify the vulnerability. 
+        For example, in a SQL injection the string match would look like:
         
             - "...supplied argument is not a valid MySQL..."
             
-        This information is used to highlight the string in the GTK user interface, when showing the
-        request / response.
+        This information is used to highlight the string in the GTK user interface,
+        when showing the request / response.
         '''
         return self._string_matches
         

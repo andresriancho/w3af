@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import re
-
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.options.optionList import optionList
@@ -73,7 +71,7 @@ class ssi(baseAuditPlugin):
         '''
         om.out.debug( 'ssi plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         
         # Used in end() to detect "persistent SSI"
         self._add_persistent_SSI( freq, oResponse )
@@ -87,7 +85,10 @@ class ssi(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
                 
         self._join()
     
@@ -135,7 +136,7 @@ class ssi(baseAuditPlugin):
         
         return local_files
     
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
         Analyze the result of the previously sent request.
         @return: None, save the vuln to the kb.
@@ -158,7 +159,7 @@ class ssi(baseAuditPlugin):
         '''
         self._join()
         for fr in self._fuzzable_requests:
-            self._sendMutant( fr )
+            response = self._uri_opener.send_mutant( fr )
             # The _analyzeResult is called and "permanent" SSI's are saved there to the kb
             # Example where this works:
             '''

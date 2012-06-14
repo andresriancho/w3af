@@ -29,7 +29,6 @@ from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
-from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createMutants, createFormatString
 
 import core.data.kb.knowledgeBase as kb
@@ -42,6 +41,10 @@ class formatString(baseAuditPlugin):
     Find format string vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    ERROR_STRINGS = (
+                     # TODO: Add more error strings here
+                    '<title>500 Internal Server Error</title>\n',
+                    )
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
@@ -55,7 +58,7 @@ class formatString(baseAuditPlugin):
         om.out.debug( 'formatString plugin is testing: ' + freq.getURL() )
         
         string_list = self._get_string_list()
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants( freq , string_list, oResponse=oResponse )
             
         for mutant in mutants:
@@ -63,12 +66,15 @@ class formatString(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
             
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             
@@ -77,33 +83,24 @@ class formatString(baseAuditPlugin):
             #
             if self._has_no_bug(mutant):
                 
-                for error in self._get_errors():
+                for error in self.ERROR_STRINGS:
                     # Check if the error string is in the response
-                    if error in response:
-                        # And not in the originally requested (non fuzzed) request
-                        if not error not in mutant.getOriginalResponseBody():
-                            # vuln, vuln!
-                            v = vuln.vuln( mutant )
-                            v.setPluginName(self.getName())
-                            v.setId( response.id )
-                            v.setSeverity(severity.MEDIUM)
-                            v.setName( 'Format string vulnerability' )
-                            msg = 'A possible (detection is really hard...) format string was found at: '
-                            msg += mutant.foundAt()
-                            v.setDesc( msg )
-                            v.addToHighlight( error )
-                            kb.kb.append( self, 'formatString', v )
+                    
+                    if error in response.body and \
+                    error not in mutant.getOriginalResponseBody():
+                        # vuln, vuln!
+                        v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
+                        v.setId( response.id )
+                        v.setSeverity(severity.MEDIUM)
+                        v.setName( 'Format string vulnerability' )
+                        msg = 'A possible (detection is really hard...) format'
+                        msg += ' string vulnerability was found at: '
+                        msg += mutant.foundAt()
+                        v.setDesc( msg )
+                        v.addToHighlight( error )
+                        kb.kb.append( self, 'formatString', v )
     
-    def _get_errors( self ):
-        '''
-        @return: A list of error strings.
-        '''
-        res = []
-        msg = '<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>'
-        msg += 'Internal Server Error</h1>'
-        res.append(msg)
-        return res
-        
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -116,7 +113,7 @@ class formatString(baseAuditPlugin):
         @return: This method returns a list of format strings.
         '''
         strings = []
-        lengths = [ 1 , 10 , 25, 50, 100 ]
+        lengths = [ 1 , 10 , 25, 100 ]
         for i in lengths:
             strings.append( createFormatString( i ) )
         return strings
@@ -152,7 +149,8 @@ class formatString(baseAuditPlugin):
         return '''
         This plugin finds format string bugs.
         
-        Users have to know that detecting a format string vulnerability will be only possible if the server is configured
-        to return errors, and the application is developed in cgi-c or some other language that allows the programmer to
-        do this kind of mistakes.
+        Users have to know that detecting a format string vulnerability will be
+        only possible if the server is configured to return errors, and the
+        application is developed in cgi-c or some other language that allows
+        the programmer to do this kind of mistakes.
         '''

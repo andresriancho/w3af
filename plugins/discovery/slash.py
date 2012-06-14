@@ -57,9 +57,9 @@ class slash(baseDiscoveryPlugin):
             
             self._already_visited.add(url)
             fr = self._get_fuzzed_request(fuzzableRequest)
-            orig_resp = self._urlOpener.GET(
+            orig_resp = self._uri_opener.GET(
                                         fuzzableRequest.getURL(),
-                                        useCache=True
+                                        cache=True
                                         )
             self._do_request(fr, orig_resp)
             self._already_visited.add(fr.getURL())
@@ -93,7 +93,7 @@ class slash(baseDiscoveryPlugin):
             that was sent.
         '''
         try:
-            resp = self._urlOpener.GET(fuzzableRequest.getURI(), useCache=True)
+            resp = self._uri_opener.GET(fuzzableRequest.getURI(), cache=True)
         except KeyboardInterrupt, e:
             raise e
         else:

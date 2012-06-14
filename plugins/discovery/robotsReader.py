@@ -65,7 +65,7 @@ class robotsReader(baseDiscoveryPlugin):
             
             base_url = fuzzableRequest.getURL().baseUrl()
             robots_url = base_url.urlJoin( 'robots.txt' )
-            http_response = self._urlOpener.GET( robots_url, useCache=True )
+            http_response = self._uri_opener.GET( robots_url, cache=True )
             
             if not is_404( http_response ):
                 # Save it to the kb!
@@ -116,7 +116,7 @@ class robotsReader(baseDiscoveryPlugin):
         @return: None, everything is saved to self._new_fuzzable_requests.
         '''
         try:
-            http_response = self._urlOpener.GET( url, useCache=True )
+            http_response = self._uri_opener.GET( url, cache=True )
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:

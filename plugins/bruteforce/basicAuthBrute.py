@@ -106,7 +106,7 @@ class basicAuthBrute(baseBruteforcePlugin):
             if not self._found or not self._stopOnFirst:
 
                 try:
-                    response = uriOpener.GET( url, useCache=False, grepResult=False )
+                    response = uriOpener.GET( url, cache=False, grep=False )
                 except w3afException, w3:
                     msg = 'Exception while bruteforcing basic authentication, error message: ' 
                     msg += str(w3)

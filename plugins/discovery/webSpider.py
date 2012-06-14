@@ -114,9 +114,9 @@ class webSpider(baseDiscoveryPlugin):
             fuzzable_req = self._fill_form(fuzzable_req)            
 
         # Send the HTTP request,
-        resp = self._sendMutant(fuzzable_req, analyze=False,
-                                follow_redir=False)
-
+        resp = self._uri_opener.send_mutant(fuzzable_req,
+                                             follow_redir=False)
+        
         # Nothing to do here...        
         if resp.getCode() == 401:
             return []
@@ -263,7 +263,7 @@ class webSpider(baseDiscoveryPlugin):
         is_forward = self._is_forward(reference)
         if not self._only_forward or is_forward:
             #
-            # Remember that this "breaks" the useCache=True in most cases!
+            # Remember that this "breaks" the cache=True in most cases!
             #     headers = { 'Referer': originalURL }
             #
             # But this does not, and it is friendlier that simply ignoring the
@@ -275,7 +275,7 @@ class webSpider(baseDiscoveryPlugin):
             headers = {'Referer': referer}
             
             try:
-                resp = self._urlOpener.GET(reference, useCache=True, 
+                resp = self._uri_opener.GET(reference, cache=True, 
                                            headers=headers, follow_redir=False)
             except w3afMustStopOnUrlError:
                 pass
@@ -394,7 +394,7 @@ class webSpider(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return [ 'grep.httpAuthDetect', ]
+        return []
             
     def getLongDesc( self ):
         '''

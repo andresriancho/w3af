@@ -64,7 +64,7 @@ class googleSpider(baseDiscoveryPlugin):
             # I will only run this one time. All calls to googleSpider return the same url's
             self._run = False
             
-            google_se = google(self._urlOpener)
+            google_se = google(self._uri_opener)
             
             domain = fuzzableRequest.getURL().getDomain()
             if is_private_site( domain ):
@@ -96,7 +96,7 @@ class googleSpider(baseDiscoveryPlugin):
         @parameter url: A URL from google.
         '''
         try:
-            response = self._urlOpener.GET( url, useCache=True)
+            response = self._uri_opener.GET( url, cache=True)
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:

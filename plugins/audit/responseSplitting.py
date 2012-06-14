@@ -64,7 +64,10 @@ class responseSplitting(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
                 
         self._join()
             
@@ -79,9 +82,9 @@ class responseSplitting(baseAuditPlugin):
         res.append( 'Cannot modify header information - headers already sent' )
         return res
     
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             

@@ -36,8 +36,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-import re
-
 
 class mxInjection(baseAuditPlugin):
     '''
@@ -75,7 +73,7 @@ class mxInjection(baseAuditPlugin):
         '''
         om.out.debug( 'mxInjection plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
             
@@ -84,13 +82,16 @@ class mxInjection(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
         
             
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             

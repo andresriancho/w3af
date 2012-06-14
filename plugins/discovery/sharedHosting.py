@@ -64,7 +64,7 @@ class sharedHosting(baseDiscoveryPlugin):
             # I will only run this one time. All calls to sharedHosting return the same url's
             self._run = False
             
-            bing_wrapper = bing( self._urlOpener )
+            bing_wrapper = bing( self._uri_opener )
             
             domain = fuzzableRequest.getURL().getDomain()
             if is_private_site( domain ):

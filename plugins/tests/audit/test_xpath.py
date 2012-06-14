@@ -1,5 +1,5 @@
 '''
-test_os_commanding.py
+test_xpath.py
 
 Copyright 2012 Andres Riancho
 

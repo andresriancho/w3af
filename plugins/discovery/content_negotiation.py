@@ -182,7 +182,7 @@ class content_negotiation(baseDiscoveryPlugin):
         @return: A list of strings containing the alternates.
         '''
         headers['Accept'] = 'w3af/bar'
-        response = self._urlOpener.GET( alternate_resource, headers = headers )
+        response = self._uri_opener.GET( alternate_resource, headers = headers )
         
         # And I parse the result
         if 'alternates' in response.getLowerCaseHeaders():
@@ -214,7 +214,7 @@ class content_negotiation(baseDiscoveryPlugin):
         for alternate in alternates:
             # Get the new resource
             full_url = base_url.urlJoin(alternate)
-            response = self._urlOpener.GET( full_url )
+            response = self._uri_opener.GET( full_url )
                 
             result.extend( self._createFuzzableRequests( response ) )
             
@@ -244,7 +244,7 @@ class content_negotiation(baseDiscoveryPlugin):
             alternate_resource = fuzzableRequest.getURL().urlJoin(filename)
             headers = fuzzableRequest.getHeaders()
             headers['Accept'] = 'w3af/bar'
-            response = self._urlOpener.GET( alternate_resource, headers = headers )
+            response = self._uri_opener.GET( alternate_resource, headers = headers )
             
             if 'alternates' in response.getLowerCaseHeaders():
                 # Even if there is only one file, with an unique mime type, the content negotiation

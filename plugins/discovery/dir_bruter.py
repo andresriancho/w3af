@@ -104,7 +104,7 @@ class dir_bruter(baseDiscoveryPlugin):
             if directory_name and not directory_name.startswith('#'):
                 dir_url = base_path.urlJoin( directory_name +  '/' )
 
-                http_response = self._urlOpener.GET( dir_url, useCache=False )
+                http_response = self._uri_opener.GET( dir_url, cache=False )
                 
                 if not is_404( http_response ):
                     #
@@ -112,7 +112,7 @@ class dir_bruter(baseDiscoveryPlugin):
                     #
                     dir_url = base_path.urlJoin( directory_name + createRandAlNum(5) + '/')
 
-                    invalid_http_response = self._urlOpener.GET( dir_url, useCache=False )
+                    invalid_http_response = self._uri_opener.GET( dir_url, cache=False )
 
                     if is_404( invalid_http_response ):
                         #

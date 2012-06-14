@@ -122,7 +122,7 @@ class dbDriverFunctions:
         url = url_object( url )
         m.setDc(url.querystring)
         m.setURL( url.uri2url() )
-        response = self._sendMutant( m , analyze=False )
+        response = self._uri_opener.send_mutant( m )
         if response.getCode() in range( 500, 599 ):
             raise w3afException('getPage request returned an HTTP error 500.')
         return response.getBody()

@@ -75,9 +75,9 @@ class fingerprint_os(baseDiscoveryPlugin):
             last_url = last_url.url_string
             
             windows_url = url_object(last_url[0:-1] + '\\' + filename)
-            windows_response = self._urlOpener.GET(windows_url)
+            windows_response = self._uri_opener.GET(windows_url)
             
-            original_response = self._urlOpener.GET(freq_url)
+            original_response = self._uri_opener.GET(freq_url)
             found_os = True
 
             if relative_distance_ge(original_response.getBody(),

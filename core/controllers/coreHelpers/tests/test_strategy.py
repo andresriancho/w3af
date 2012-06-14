@@ -35,12 +35,12 @@ class TestStrategy(PluginTest):
             }
         }
     
-    def test_same_fr_list_object(self):
+    def test_same_fr_set_object(self):
         cfg = self._run_configs['cfg']
         
-        id_before = id(self.w3afcore.strategy._fuzzable_request_list)
+        id_before = id(self.w3afcore.strategy._fuzzable_request_set)
         self._scan(cfg['target'], cfg['plugins'])
-        id_after = id(self.w3afcore.strategy._fuzzable_request_list)
+        id_after = id(self.w3afcore.strategy._fuzzable_request_set)
         
         self.assertEquals(id_before, id_after)
         

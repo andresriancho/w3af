@@ -67,7 +67,7 @@ class oracleDiscovery(baseDiscoveryPlugin):
             for url, regex_string in self.getOracleData():
 
                 oracle_discovery_URL = base_url.urlJoin( url )
-                response = self._urlOpener.GET( oracle_discovery_URL, useCache=True )
+                response = self._uri_opener.GET( oracle_discovery_URL, cache=True )
                 
                 if not is_404( response ):
                     dirs.extend( self._createFuzzableRequests( response ) )

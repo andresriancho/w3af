@@ -111,7 +111,7 @@ class TestHistoryItem(unittest.TestCase):
             h2 = h1.read(i)
         except:
             h2 = None
-        self.assertIsNone(h2)
+        self.assertEqual(h2, None)
 
     def test_clear(self):
         i = random.randint(1, 499)
@@ -128,7 +128,7 @@ class TestHistoryItem(unittest.TestCase):
             h2 = h1.read(i)
         except:
             h2 = None
-        self.assertIsNone(h2)
+        self.assertEqual(h2, None)
         self.assertFalse(os.path.exists(h1._sessionDir))
 
     def test_tag(self):

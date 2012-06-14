@@ -64,7 +64,7 @@ class dnsWildcard(baseDiscoveryPlugin):
                                     fuzzableRequest.getURL().getDomain() ):
                 # Only do all this if this is a domain name!
                 base_url = fuzzableRequest.getURL().baseUrl()
-                original_response = self._urlOpener.GET( base_url, useCache=True )
+                original_response = self._uri_opener.GET( base_url, cache=True )
                 
                 domain = fuzzableRequest.getURL().getDomain()
                 dns_wildcard_url = fuzzableRequest.getURL().copy()
@@ -95,7 +95,7 @@ class dnsWildcard(baseDiscoveryPlugin):
         ip_url.setDomain( ip_address )
 
         try:
-            modified_response = self._urlOpener.GET( ip_url, useCache=True )
+            modified_response = self._uri_opener.GET( ip_url, cache=True )
         except w3afException:
             om.out.debug('An error occurred while fetching IP address URL in dnsWildcard plugin.')
         else:
@@ -128,7 +128,7 @@ class dnsWildcard(baseDiscoveryPlugin):
             return
         
         try:
-            modified_response = self._urlOpener.GET( dns_wildcard_url, useCache=True )
+            modified_response = self._uri_opener.GET( dns_wildcard_url, cache=True )
         except w3afException, w3:
             if 'Failed to resolve' in str(w3):
                 i = info.info()

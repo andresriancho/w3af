@@ -43,7 +43,7 @@ class iis_root_directory(base_payload):
         return self.result
     
     def run_read(self, parameters):
-        hashmap = self.api_read()
+        hashmap = self.api_read(parameters)
         result = []
         for k, v in hashmap.iteritems():
             k = k.replace('_', ' ')

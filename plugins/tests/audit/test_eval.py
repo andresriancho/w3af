@@ -21,18 +21,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from ..helper import PluginTest, PluginConfig
 
+
 class TestEval(PluginTest):
+    
+    target_echo = 'http://moth/w3af/audit/eval/eval.php'
+    target_delay = 'http://moth/w3af/audit/eval/eval-blind.php'
     
     _run_configs = {
         'echo': {
-            'target': 'http://moth/w3af/audit/eval/eval.php?c=',
+            'target': target_echo + '?c=',
             'plugins': {
                  'audit': (PluginConfig('eval',
                                         ('useEcho', True, PluginConfig.BOOL)),
                             ),
                  }
-            }
-        #TODO: Add test for delay
+            },
+
+        'delay': {
+            'target': target_delay + '?c=',
+            'plugins': {
+                 'audit': (PluginConfig('eval',
+                                        ('useEcho', False, PluginConfig.BOOL)),
+                            ),
+                 }
+            }                    
         }
     
     def test_found_eval_echo(self):
@@ -46,4 +58,18 @@ class TestEval(PluginTest):
         vuln = vulns[0]
         self.assertEquals('eval() input injection vulnerability', vuln.getName())
         self.assertEquals("c", vuln.getVar())
+        self.assertEquals(self.target_echo, str(vuln.getURL() ))
+    
+    def test_found_eval_delay(self):
+        cfg = self._run_configs['delay']
+        self._scan(cfg['target'], cfg['plugins'])
+        
+        vulns = self.kb.getData('eval', 'eval')
+        self.assertEquals(1, len(vulns))
+        
+        # Now some tests around specific details of the found vuln
+        vuln = vulns[0]
+        self.assertEquals('eval() input injection vulnerability', vuln.getName())
+        self.assertEquals("c", vuln.getVar())
+        self.assertEquals(self.target_delay, str(vuln.getURL() ))
         

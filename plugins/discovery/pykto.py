@@ -174,7 +174,7 @@ class pykto(baseDiscoveryPlugin):
         
         # fetching remote version
         versions_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
-        res_version = self._urlOpener.GET( versions_url )
+        res_version = self._uri_opener.GET( versions_url )
         
         fetched_version = False
         for line in res_version.getBody().split():
@@ -198,12 +198,12 @@ class pykto(baseDiscoveryPlugin):
             elif local_version > remote_version:
                 msg = 'Local version of scan_database.db is grater than remote version... this is'
                 msg += ' odd... check this.'
-                om.out.information()
+                om.out.information(msg)
             else:
                 msg = 'Updating to scan_database version: "' + str(remote_version) + '".'
                 om.out.information( msg )
                 scan_database_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
-                res = self._urlOpener.GET( scan_database_url )
+                res = self._uri_opener.GET( scan_database_url )
                 try:
                     # Write new scan_database
                     os.unlink( self._db_file )
@@ -449,7 +449,7 @@ class pykto(baseDiscoveryPlugin):
         #
         if expected_response == '200' and method == 'GET':
             try:
-                res = self._urlOpener.HEAD( url, follow_redir=False )
+                res = self._uri_opener.HEAD( url, follow_redir=False )
             except:
                 pass
             else:
@@ -465,7 +465,7 @@ class pykto(baseDiscoveryPlugin):
         #    If the request method is not GET, then
         #    perform the request, analyze the response, etc. 
         #
-        function_reference = getattr( self._urlOpener , method )
+        function_reference = getattr( self._uri_opener , method )
             
         try:
             response = function_reference( url, follow_redir=False )

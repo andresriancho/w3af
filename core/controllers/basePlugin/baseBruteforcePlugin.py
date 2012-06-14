@@ -46,6 +46,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         # Config params
         self._usersFile = 'core'+os.path.sep+'controllers'+os.path.sep+'bruteforce'+os.path.sep+'users.txt'
         self._passwdFile = 'core'+os.path.sep+'controllers'+os.path.sep+'bruteforce'+os.path.sep+'passwords.txt'
+        self._comboFile = ''
+        self._comboSeparator = ":"
         self._useMailUsers = True
         self._useSvnUsers = True
         self._stopOnFirst = True
@@ -71,6 +73,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._bruteforcer.setLeetPasswd( self._l337_p4sswd )
         self._bruteforcer.setUsersFile(self._usersFile)
         self._bruteforcer.setPassFile(self._passwdFile)
+        self._bruteforcer.setComboFile(self._comboFile)
+        self._bruteforcer.setComboSeparator(self._comboSeparator)
         self._bruteforcer.init()
     
     def _fuzzRequests(self, freq ):
@@ -148,10 +152,18 @@ class baseBruteforcePlugin(baseAuditPlugin):
         
         d10 = 'This indicates how many passwords from profiling will be used.'
         o10 = option('profilingNumber', self._profilingNumber, d10, 'integer')
+
+        d11 = 'Combo of username and passord, file to use in bruteforcing'
+        o11 = option('comboFile', self._comboFile, d11, 'string')
+
+        d12 = 'Separator string used in Combo file to split username and password'
+        o12 = option('comboSeparator', self._comboSeparator, d12, 'string')
         
         ol = optionList()
         ol.add(o1)
         ol.add(o2)
+        ol.add(o11)
+        ol.add(o12)
         ol.add(o3)
         ol.add(o4)
         ol.add(o5)
@@ -180,12 +192,14 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._useMails = optionsMap['useMails'].getValue()
         self._useProfiling = optionsMap['useProfiling'].getValue()
         self._profilingNumber = optionsMap['profilingNumber'].getValue()
+        self._comboFile = optionsMap['comboFile'].getValue()
+        self._comboSeparator = optionsMap['comboSeparator'].getValue()
         
 
     def getPluginDeps( self ):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+                the current one.
         '''
         return ['grep.passwordProfiling','grep.getMails']
 
@@ -196,7 +210,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         return '''
         This plugin bruteforces form authentication logins.
         
-        Nine configurable parameters exist:
+        Eleven configurable parameters exist:
             - usersFile
             - stopOnFirst
             - passwdFile
@@ -207,16 +221,25 @@ class baseBruteforcePlugin(baseAuditPlugin):
             - useMails
             - useProfiling
             - profilingNumber
+            - comboFile
+            - comboSeparator
         
-        This plugin will take users from the file pointed by "usersFile", mail users found on the site ( if "useMailUsers" is
-        set to True ), mails found on the site ( if "useMails" is set to True ), and svn users found on the site ( if "useSvnUsers"
-        is set to True ).
+        This plugin will take users from the file pointed by "usersFile", mail 
+        users found on the site ( if "useMailUsers" is set to True ), mails found
+        on the site ( if "useMails" is set to True ), and svn users found on the
+        site ( if "useSvnUsers" is set to True ).
         
-        This plugin will take passwords from the file pointed by "passwdFile" and the result of the password profiling plugin 
-        ( if "useProfiling" is set to True). The profilingNumber sets the number of results from the password profiling plugin
-        to use in the password field.
+        This plugin will take passwords from the file pointed by "passwdFile"
+        and the result of the password profiling plugin ( if "useProfiling" 
+        is set to True). The profilingNumber sets the number of results from
+        the password profiling plugin to use in the password field.
+
+        This plugin will take a combination of user and password from the
+        pointed file by "comboFile". The comboSeparator set the string used to
+        split each combination in the comboFile.
         
-        The "stopOnFirst" parameter indicates if the bruteforce will stop when finding the first valid credentials or not.
+        The "stopOnFirst" parameter indicates if the bruteforce will stop when
+        finding the first valid credentials or not.
         '''
     
     def getType( self ):

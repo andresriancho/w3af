@@ -35,8 +35,6 @@ import core.data.constants.severity as severity
 
 from core.controllers.w3afException import w3afException
 
-import re
-
 
 class LDAPi(baseAuditPlugin):
     '''
@@ -103,7 +101,7 @@ class LDAPi(baseAuditPlugin):
         '''
         om.out.debug( 'LDAPi plugin is testing: ' + freq.getURL() )
         
-        oResponse = self._sendMutant( freq , analyze=False )
+        oResponse = self._uri_opener.send_mutant(freq)
         ldapiStrings = self._get_LDAPi_strings()
         mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )
             
@@ -112,7 +110,10 @@ class LDAPi(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
             
             
@@ -126,9 +127,9 @@ class LDAPi(baseAuditPlugin):
         ldap_strings.append("^(#$!@#$)(()))******")
         return ldap_strings
 
-    def _analyzeResult( self, mutant, response ):
+    def _analyze_result( self, mutant, response ):
         '''
-        Analyze results of the _sendMutant method.
+        Analyze results of the _send_mutant method.
         '''
         with self._plugin_lock:
             

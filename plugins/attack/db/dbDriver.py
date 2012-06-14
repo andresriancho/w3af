@@ -21,14 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
 from plugins.attack.db.dbDriverFunctions import dbDriverFunctions
-from core.controllers.basePlugin.basePlugin import basePlugin
 from plugins.attack.db.dump import SQLMapDump
 from core.data.fuzzer.fuzzer import *
 
 
-class dbDriver(dbDriverFunctions, basePlugin):
+class dbDriver(dbDriverFunctions):
     '''
     This represents a database driver. This class is an "interface" between w3af and sqlmap.
     
@@ -41,7 +39,7 @@ class dbDriver(dbDriverFunctions, basePlugin):
         self.args.injParameter = vuln.getVar()
         self.args.httpMethod = vuln.getMethod()
         
-        self._urlOpener = urlOpener
+        self._uri_opener = urlOpener
         self._vuln = vuln
         
         mutant = vuln.getMutant()
@@ -97,7 +95,7 @@ class dbDriver(dbDriverFunctions, basePlugin):
             mutant = vuln.getMutant()
             mutant.setModValue( possibleFalse )
             
-            res = self._sendMutant( mutant, analyze=False )
+            res = self._uri_opener.send_mutant(mutant)
             if res.getBody() != vuln['trueHtml']:
                 return possibleFalse
             

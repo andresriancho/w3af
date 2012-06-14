@@ -199,7 +199,7 @@ class webDiff(baseDiscoveryPlugin):
         '''
         response = None
         try:
-            response = self._urlOpener.GET( url, useCache=True )
+            response = self._uri_opener.GET( url, cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:

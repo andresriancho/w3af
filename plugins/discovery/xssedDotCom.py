@@ -76,7 +76,7 @@ class xssedDotCom(baseDiscoveryPlugin):
             target_domain = fuzzableRequest.getURL().getRootDomain()
 
             try:
-                response = self._urlOpener.GET( self._xssed_url.urlJoin("/search?key=." + target_domain) )
+                response = self._uri_opener.GET( self._xssed_url.urlJoin("/search?key=." + target_domain) )
             except w3afException, e:
                 msg = 'An exception was raised while running xssedDotCom plugin. Exception: '
                 msg += '"' + str(e) + '".'
@@ -125,7 +125,7 @@ class xssedDotCom(baseDiscoveryPlugin):
             for mirror_relative_link in regex_many_vulns:
                 
                 mirror_url = self._xssed_url.urlJoin( mirror_relative_link )
-                xss_report_response = self._urlOpener.GET( mirror_url )
+                xss_report_response = self._uri_opener.GET( mirror_url )
                 matches = re.findall("URL:.+", xss_report_response.getBody())
                 
                 v = vuln.vuln()

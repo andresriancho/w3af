@@ -89,7 +89,7 @@ class afd(baseDiscoveryPlugin):
         original_url = url_object(original_url_str)
         
         try:
-            original_response_body = self._urlOpener.GET( original_url , useCache=True ).getBody()
+            original_response_body = self._uri_opener.GET( original_url , cache=True ).getBody()
         except Exception:
             msg = 'Active filter detection plugin failed to receive a '
             msg += 'response for the first request. Can not perform analysis.'
@@ -118,7 +118,7 @@ class afd(baseDiscoveryPlugin):
         @return: None, everything is saved to the self._filtered and self._not_filtered lists.
         '''
         try:
-            resp_body = self._urlOpener.GET(offending_URL, useCache=False).getBody()
+            resp_body = self._uri_opener.GET(offending_URL, cache=False).getBody()
         except KeyboardInterrupt, e:
             raise e
         except Exception:

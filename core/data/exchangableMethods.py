@@ -23,39 +23,43 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from .request.httpPostDataRequest import httpPostDataRequest
 from .request.httpQsRequest import HTTPQSRequest
 
-def isExchangable(self, fuzzableRequest):
+
+def isExchangable(uri_opener, freq):
     '''
-    @parameter mutant: The mutant you want to test if sending using
-        querystring or postdata is the same.
+    @param uri_opener: The URI opener to use in order to verify if methods can
+                       be exchanged for this fuzzable request.
+                       
+    @param freq: The fuzzable request you want to test if sending using
+                 querystring or postdata is the same.
+                   
     @return: [True|False]
     '''
-    if not (isinstance(fuzzableRequest, HTTPQSRequest) or
-             isinstance(fuzzableRequest, httpPostDataRequest)) :
+    if not (isinstance(freq, HTTPQSRequest) or
+             isinstance(freq, httpPostDataRequest)) :
         return False
         
-    # I get the mutant as it is
-    response = self._sendMutant(fuzzableRequest, analyze=False)
+    response = uri_opener.send_mutant(freq)
     
-    if fuzzableRequest.getMethod() == 'GET':
+    if freq.getMethod() == 'GET':
         # I have to create a httpPostDataRequest and set all
         # the parameters to it.
         pdr = httpPostDataRequest(
-                          fuzzableRequest.getURL(),
-                          headers=fuzzableRequest.getHeaders(),
-                          cookie=fuzzableRequest.getCookie(),
-                          dc=fuzzableRequest.getDc()
+                          freq.getURL(),
+                          headers=freq.getHeaders(),
+                          cookie=freq.getCookie(),
+                          dc=freq.getDc()
                           )
-        response2 = self._sendMutant(pdr, analyze=False)
+        response2 = uri_opener.send_mutant(pdr)
     
-    elif fuzzableRequest.getMethod() == 'POST':
+    elif freq.getMethod() == 'POST':
         # I have to create a HTTPQSRequest and set all the parameters to it.
         qsr = HTTPQSRequest(
-                    fuzzableRequest.getURL(),
-                    headers=fuzzableRequest.getHeaders(),
-                    cookie=fuzzableRequest.getCookie()
+                    freq.getURL(),
+                    headers=freq.getHeaders(),
+                    cookie=freq.getCookie()
                     )
-        qsr.setDc(fuzzableRequest.getDc())
-        response2 = self._sendMutant(qsr, analyze=False)
+        qsr.setDc(freq.getDc())
+        response2 = uri_opener.send_mutant(qsr)
         
     return response2.getBody() == response.getBody()
 

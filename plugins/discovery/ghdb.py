@@ -94,13 +94,13 @@ class ghdb(baseDiscoveryPlugin):
     def _classic_worker(self, gh, search):
         
         # Init some variables
-        google_se = google(self._urlOpener)
+        google_se = google(self._uri_opener)
         
         google_list = google_se.getNResults( search, 9 )
         
         for result in google_list:
             # I found a vuln in the site!
-            response = self._urlOpener.GET(result.URL, useCache=True )
+            response = self._uri_opener.GET(result.URL, cache=True )
             if not is_404( response ):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())

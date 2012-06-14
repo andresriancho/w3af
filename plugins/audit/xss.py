@@ -167,7 +167,10 @@ class xss(baseAuditPlugin):
             # Only spawn a thread if the mutant has a modified variable
             # that has no reported bugs in the kb
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
         self._join()
     
     def _get_allowed_chars(self, mutant):
@@ -194,7 +197,7 @@ class xss(baseAuditPlugin):
         mutant.setModValue(joined_list)
         
         # send
-        response = self._sendMutant(mutant, analyze=False)
+        response = self._uri_opener.send_mutant(mutant)
         
         # restore the mutant values
         mutant.setModValue(oldValue)
@@ -258,8 +261,13 @@ class xss(baseAuditPlugin):
                 if xss_string.replace('alert', 'fake_alert') in \
                                                     mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
+                    
             if self._has_no_bug(mutant):
-                self._run_async(meth=self._sendMutant, args=(mutant,))
+                args = (mutant,)
+                kwds = {'callback': self._analyze_result }
+                self._run_async(meth=self._uri_opener.send_mutant, args=args,
+                                                                    kwds=kwds)
+                
         self._join()
 
     def _get_xss_tests(self):
@@ -298,7 +306,7 @@ class xss(baseAuditPlugin):
         mutant.setModValue(rndNum)
 
         # send
-        response = self._sendMutant(mutant, analyze=False)
+        response = self._uri_opener.send_mutant(mutant)
         
         # restore the mutant values
         mutant.setModValue(oldValue)
@@ -309,7 +317,7 @@ class xss(baseAuditPlugin):
                      (mutant.getVar(), '' if res else 'NOT '))
         return res
     
-    def _analyzeResult(self, mutant, response):
+    def _analyze_result(self, mutant, response):
         '''
         Do we have a reflected XSS?
         
@@ -407,9 +415,9 @@ class xss(baseAuditPlugin):
         '''
         if self._check_stored_xss:
             for fuzzable_request in self._fuzzableRequests:
-                response = self._sendMutant(fuzzable_request, analyze=False,
-                                            useCache=False)
-                
+                response = self._uri_opener.send_mutant(fuzzable_request,
+                                                         cache=False)
+
                 for mutant, mutant_response_id in self._xssMutants:
                     # Remember that httpResponse objects have a faster "__in__" than
                     # the one in strings; so string in response.getBody() is slower than

