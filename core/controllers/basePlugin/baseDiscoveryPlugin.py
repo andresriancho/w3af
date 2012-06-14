@@ -27,15 +27,14 @@ from core.data.request.frFactory import createFuzzableRequests
 
 class baseDiscoveryPlugin(basePlugin):
     '''
-    This is the base class for discovery plugins, all discovery plugins should inherit from it 
-    and implement the following methods :
+    This is the base class for discovery plugins, all discovery plugins should
+    inherit from it and implement the following methods:
         1. discover(...)
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
         basePlugin.__init__( self )
-        self._uri_opener = None
 
     def discover_wrapper(self, fuzzable_request):
         '''
