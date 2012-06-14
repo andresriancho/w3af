@@ -205,7 +205,7 @@ class sql_webshell(baseAttackPlugin):
         @return: A sql_webshell shell object if sql_webshell could fingerprint 
                  the database.
         '''
-        bsql = blind_sqli_response_diff()
+        bsql = blind_sqli_response_diff(self._uri_opener)
         bsql.set_eq_limit( self._eq_limit )
             
         dbBuilder = dbDriverBuilder( self._uri_opener, bsql.equal_with_limit )
