@@ -95,13 +95,9 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.verifyEnvironment()
         self.w3afcore.start()
     
-    def test_no_exceptions(self):
-        '''
-        I want to make sure that we don't have *any hidden* exceptions in our tests.
-        '''
-        self.assertTrue( len(exception_handler.get_all_exceptions() ), 0)
-    
     def tearDown(self):
+        # I want to make sure that we don't have *any hidden* exceptions in our tests.
+        self.assertEquals( len(exception_handler.get_all_exceptions() ), 0)
         self.w3afcore.quit()
         self.kb.cleanup()
 
