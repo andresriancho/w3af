@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.dependency_check.lazy_load import lazy_load
 
+
 def dependency_check():
     '''
     This function verifies that the dependencies that are needed by the
@@ -56,15 +57,10 @@ def dependency_check():
         try:
             from pybloomfilter import BloomFilter as mmap_filter
         except Exception, e:
-            msg = '    pybloomfiltermmap is a required dependency in *nix systems, please download from '
-            msg += 'http://pypi.python.org/pypi/pybloomfiltermmap/0.2.0 and build using the python2.6-dev '
-            msg += 'package. Follow these steps:\n'
-            msg += '    wget http://pypi.python.org/packages/source/p/pybloomfiltermmap/pybloomfiltermmap-0.2.0.tar.gz\n'
-            msg += '    tar -zxpvf pybloomfiltermmap-0.2.0.tar.gz\n'
-            msg += '    cd pybloomfiltermmap-0.2.0\n'
+            msg = '    pybloomfiltermmap is a required dependency in *nix systems,'
+            msg += '    in order to install it please run the following commands:'
             msg += '    sudo apt-get install python2.6-dev\n'
-            msg += '    sudo python setup.py install\n\n'
-            
+            msg += '    sudo easy_install pybloomfiltermmap'
             additional_information.append(msg)
             reasonForExit = True
     #mem_test('after bloom filter import')

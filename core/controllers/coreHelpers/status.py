@@ -83,9 +83,9 @@ class w3af_core_status(object):
             return 'Not running.'
         else:
             if self.get_phase() != '' and self.get_running_plugin() != '':
-                running = 'Running ' + self.get_phase() + '.' + self.get_running_plugin()
-                running += ' on ' + str(self.get_current_fuzzable_request()).replace('\x00', '') + '.'
-                return running
+                running = 'Running %s.%s on %s.'
+                fr_str = str(self.get_current_fuzzable_request()).replace('\x00', '')
+                return running % ( self.get_phase(), self.get_running_plugin(), fr_str )
             else:
                 return 'Starting scan.'
     

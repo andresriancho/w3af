@@ -20,9 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, gobject
-from . import helpers
 import core.data.kb.knowledgeBase as kb
 import core.data.kb
+
+from . import helpers
+
+from core.ui.gtkUi.exception_handling import handled
         
 
 class _Guarded(object):
@@ -70,8 +73,6 @@ class FoundObjectsGuardian(gtk.HBox):
         self.pack_start(self.shll.label, False, False, padding=2)
 
         # go live
-        self.fullkb = kb.kb.dump()
-        self.kbholder = set()
         gobject.timeout_add(1000, self._update)
         self.show_all()
 
@@ -90,3 +91,37 @@ class FoundObjectsGuardian(gtk.HBox):
         self.vuln.quant = len(vulns)
         return True
 
+
+class FoundExceptionsStatusBar(gtk.EventBox):
+    '''
+    Shows the number of exceptions found during the scan in the status bar
+
+    @author: Andres Riancho <andres.riancho =at= gmail.com>
+    '''
+    def __init__(self, w3af):
+        super(FoundExceptionsStatusBar,self).__init__()
+        self.w3af = w3af
+        
+        self.hbox = gtk.HBox()
+        
+        self.set_tooltip_text(_("Exceptions were raised during the scan"))
+    
+        self.exceptions = _Guarded("excp")
+        self.hbox.pack_start(self.exceptions.icon, False, False, padding=2)
+        self.hbox.pack_start(self.exceptions.label, False, False, padding=2)
+
+        self.add(self.hbox)
+        self.add_events( gtk.gdk.BUTTON_PRESS_MASK )
+
+        self.connect("button-press-event", self._report_bug)
+
+    def show_all(self, num):
+        '''Updates the object and shows all.'''
+        self.exceptions.quant = num
+        super(FoundExceptionsStatusBar,self).show_all()
+
+    def _report_bug(self, widg, evt):
+        '''User clicked on me, he wants to report a bug'''
+        handled.handle_exceptions()
+        # TODO: Hide this status bar if and only if the user DID report
+        # the exceptions to Trac

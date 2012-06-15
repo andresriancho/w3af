@@ -28,6 +28,7 @@ from core.ui.gtkUi import history
 from core.ui.gtkUi import helpers
 from core.data.options.preferences import Preferences
 from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.baseparser import BaseParser
 
 
 class ValidatedEntry(gtk.Entry):
@@ -232,6 +233,32 @@ class FloatOption(ValidatedEntry, ModifiedMixIn):
         except:
             return False
         return True
+
+class EmailEntry(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option email.
+
+    @author: Andres Riancho <andres.riancho =at= gmail.com>
+    '''
+    def __init__(self, alert):
+        ValidatedEntry.__init__(self, '')
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ''
+        self.EMAIL_RE = BaseParser.EMAIL_RE
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return: True if the text is ok.
+        '''
+        if len(text) < 5:
+            return True
+        else:
+            if self.EMAIL_RE.match(text):
+                return True
+            else:
+                return False
+    
 
 class StringOption(ValidatedEntry, ModifiedMixIn):
     '''Class that implements the config option String.

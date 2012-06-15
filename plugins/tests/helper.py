@@ -18,18 +18,21 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
-from itertools import chain
 import os
 import unittest
 
+from itertools import chain
+
+import core.data.kb.knowledgeBase as kb
+
 from core.controllers.w3afCore import w3afCore
 from core.controllers.w3afException import w3afException
+from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption as ComboOption
 from core.data.options.optionList import optionList as OptionList
-import core.data.kb.knowledgeBase as kb
 
 os.chdir(W3AF_LOCAL_PATH)
 
@@ -42,7 +45,7 @@ class PluginTest(unittest.TestCase):
     def setUp(self):
         self.kb.cleanup()        
         self.w3afcore = w3afCore()
-        
+    
     def _scan(self, target, plugins):
         '''
         Setup env and start scan. Typically called from children's
@@ -93,6 +96,8 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.start()
     
     def tearDown(self):
+        # I want to make sure that we don't have *any hidden* exceptions in our tests.
+        self.assertEquals( len(exception_handler.get_all_exceptions() ), 0)
         self.w3afcore.quit()
         self.kb.cleanup()
 

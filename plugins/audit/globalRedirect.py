@@ -49,8 +49,9 @@ class globalRedirect(baseAuditPlugin):
         
         # Internal variables
         self._test_site = 'http://www.w3af.org/'
-        self._scriptre = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 
-                                    re.IGNORECASE | re.DOTALL )
+        self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 
+                                     re.IGNORECASE | re.DOTALL )
+        self._meta_url_re = re.compile('.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
 
     def audit(self, freq ):
         '''
@@ -117,20 +118,24 @@ class globalRedirect(baseAuditPlugin):
             return False
         else:
             for redir in dp.getMetaRedir():
-                if redir.count( self._test_site ):
-                    return True
+                match_url = self._meta_url_re.match(redir)
+                if match_url:
+                    url = match_url.group(1)
+                    if url.startswith( self._test_site ):
+                        return True
+
         #
         # Test for JavaScript redirects, these are some common redirects:
         #     location.href = '../htmljavascript.htm';
         #     window.location = "http://www.w3af.com/"
         #     window.location.href="http://www.w3af.com/";
         #     location.replace('http://www.w3af.com/');
-        res = self._scriptre.search( response.getBody() )
+        res = self._script_re.search( response.getBody() )
         if res:
-            for scriptCode in res.groups():
-                splittedCode = scriptCode.split('\n')
+            for script_code in res.groups():
+                script_code = script_code.split('\n')
                 code = []
-                for i in splittedCode:
+                for i in script_code:
                     code.extend( i.split(';') )
                     
                 for line in code:

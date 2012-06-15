@@ -28,7 +28,7 @@ from core.data.options.optionList import optionList
 from core.controllers.wizard.question import question
 
 # Import the core singleton
-from core.controllers.w3afCore import wCore as w3af_core
+from core.controllers.w3afCore import w3af_core
 
 
 class question_target_1(question):

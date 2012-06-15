@@ -1,7 +1,7 @@
 '''
-config.py
+failing_spider.py
 
-Copyright 2006 Andres Riancho
+Copyright 2012 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -19,30 +19,29 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from plugins.discovery.webSpider import webSpider
 
-class config(dict):
+
+class failing_spider(webSpider):
     '''
-    This class saves config parameters sent by the user.
+    This is a test plugin that will raise exceptions.
+    Only useful for testing, see test_discover_exception_handling.py
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
+    def __init__(self):
+        webSpider.__init__(self)
         
-    def save(self, variableName, value):
+        self.blacklist = ('2.html',)
+
+    def discover(self, fuzzable_req):
         '''
-        This method saves the variableName value to a dict.
+        Raises an exception if the fuzzable_req ends with something in the blacklist.
         '''
-        self[variableName] = value
+        for ending in self.blacklist:
+            if fuzzable_req.getURL().url_string.endswith(ending):
+                raise Exception('Test')
         
-    def getData(self, variableName, default=None):
-        '''
-        @return: Returns the data that was saved to the variableName
-        '''
-        return self.get(variableName, default)
-    
-    def cleanup(self):
-        '''
-        Cleanup internal data.
-        '''
-        self.clear()    
-        
-cf = config()
+        return super(failing_spider, self).discover(fuzzable_req)
+

@@ -82,105 +82,118 @@ class miscSettings(configurable):
             cf.cf.save('localAddress', local_address)
             cf.cf.save('demo', False )
             cf.cf.save('nonTargets', [] )
+            cf.cf.save('stop_on_first_exception', False )
     
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ######## Fuzzer parameters ########
-        d1 = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        o1 = option('fuzzCookie', cf.cf.getData('fuzzableCookie'), d1, 'boolean',
-                            tabid='Fuzzer parameters')
-
-        d2 = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
-        o2 = option('fuzzFileContent', cf.cf.getData('fuzzFileContent'), d2, 'boolean',
-                            tabid='Fuzzer parameters')
-        
-        d3 = 'Indicates if w3af plugins will send fuzzed filenames in order to find vulnerabilities'
-        h3 = 'For example, if the discovered URL is http://test/filename.php, and fuzzFileName'
-        h3 += ' is enabled, w3af will request among other things: http://test/file\'a\'a\'name.php'
-        h3 += ' in order to find SQL injections. This type of vulns are getting more common every'
-        h3 += ' day!'
-        o3 = option('fuzzFileName', cf.cf.getData('fuzzFileName'), d3, 'boolean', help=h3, 
-                            tabid='Fuzzer parameters')
-        
-        d16 = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
-        h16 = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzzURLParts'
-        h16 += ' is enabled, w3af will request among other things: '
-        h16 += 'http://test/foo/bar/<script>alert(document.cookie)</script> in order to find XSS.'
-        o16 = option('fuzzURLParts', cf.cf.getData('fuzzURLParts'), d16, 'boolean', help=h16, 
-                            tabid='Fuzzer parameters')
-
-        d4 = 'Indicates the extension to use when fuzzing file content'
-        o4 = option('fuzzFCExt', cf.cf.getData('fuzzFCExt'), d4, 'string', tabid='Fuzzer parameters')
-
-        d5 = 'A list with all fuzzable header names'
-        o5 = option('fuzzableHeaders', cf.cf.getData('fuzzableHeaders'), d5, 'list',
-                            tabid='Fuzzer parameters')
-
-        d14 = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
-        h14 = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
-        h14 += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
-        h14 += ' values), t (top values), b (bottom values)'
-        o14 = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), d14, 'string',
-                            help=h14, tabid='Fuzzer parameters')
-
-        ######## Core parameters ########
-        d6 = 'Automatic dependency enabling for plugins'
-        h6 = 'If autoDependencies is enabled, and pluginA depends on pluginB that wasn\'t enabled,'
-        h6 += ' then pluginB is automatically enabled.'
-        o6 = option('autoDependencies', cf.cf.getData('autoDependencies'), d6, 'boolean',
-                            help=h6, tabid='Core settings')
-
-        d7 = 'Maximum discovery time (minutes)'
-        h7 = 'Many users tend to enable numerous plugins without actually knowing what they are'
-        h7 += ' and the potential time they will take to run. By using this parameter, users will'
-        h7 += ' be able to set the maximum amount of time the discovery phase will run.'
-        o7 = option('maxDiscoveryTime', cf.cf.getData('maxDiscoveryTime'), d7, 'integer', help=h7,
-                            tabid='Core settings')
-        
-        d8 = 'Maximum number of threads that the w3af process will spawn.'
-        d8 += ' Zero means no threads (recommended)'
-        h8 = 'The maximum valid number of threads is 100.'
-        o8 = option('maxThreads', cf.cf.getData('maxThreads'), d8, 'integer',
-                            tabid='Core settings', help=h8)
-        
-        ######## Network parameters ########
-        d9 = 'Local interface name to use when sniffing, doing reverse connections, etc.'
-        o9 = option('interface', cf.cf.getData('interface'), d9, 'string', tabid='Network settings')
-
-        d10 = 'Local IP address to use when doing reverse connections'
-        o10 = option('localAddress', cf.cf.getData('localAddress'), d10, 'string',
-                                tabid='Network settings')
-        
-        ######### Misc ###########
-        d11 = 'Enable this when you are doing a demo in a conference'
-        o11 = option('demo', cf.cf.getData('demo'), d11, 'boolean', tabid='Misc settings')
-        
-        d12 = 'A comma separated list of URLs that w3af should completely ignore'
-        h12 = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
-        o12 = option('nonTargets', cf.cf.getData('nonTargets'), d12, 'list', tabid='Misc settings')
-        
-        ######### Metasploit ###########
-        d15 = 'Full path of Metasploit framework binary directory (%s in most linux installs)' % cf.cf.getData('msf_location')
-        o15 = option('msf_location', cf.cf.getData('msf_location'), d11, 'string', tabid='Metasploit')
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o5)
-        ol.add(o6)
-        ol.add(o7)
-        ol.add(o8)
-        ol.add(o9)
-        ol.add(o10)
-        ol.add(o11)
-        ol.add(o12)
-        ol.add(o14)
-        ol.add(o15)
-        ol.add(o16)
+
+        ######## Fuzzer parameters ########
+        desc = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
+        opt = option('fuzzCookie', cf.cf.getData('fuzzableCookie'), desc, 'boolean',
+                     tabid='Fuzzer parameters')
+        ol.add(opt)
+
+        desc = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
+        opt = option('fuzzFileContent', cf.cf.getData('fuzzFileContent'), desc, 'boolean',
+                     tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        desc = 'Indicates if w3af plugins will send fuzzed filenames in order to find vulnerabilities'
+        help = 'For example, if the discovered URL is http://test/filename.php, and fuzzFileName'
+        help += ' is enabled, w3af will request among other things: http://test/file\'a\'a\'name.php'
+        help += ' in order to find SQL injections. This type of vulns are getting more common every'
+        help += ' day!'
+        opt = option('fuzzFileName', cf.cf.getData('fuzzFileName'), desc, 'boolean', help=help, 
+                     tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        desc = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
+        help = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzzURLParts'
+        help += ' is enabled, w3af will request among other things: '
+        help += 'http://test/foo/bar/<script>alert(document.cookie)</script> in order to find XSS.'
+        opt = option('fuzzURLParts', cf.cf.getData('fuzzURLParts'), desc, 'boolean', help=help, 
+                     tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        desc = 'Indicates the extension to use when fuzzing file content'
+        opt = option('fuzzFCExt', cf.cf.getData('fuzzFCExt'), desc, 'string', tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        desc = 'A list with all fuzzable header names'
+        opt = option('fuzzableHeaders', cf.cf.getData('fuzzableHeaders'), desc, 'list',
+                            tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        desc = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
+        help = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
+        help += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
+        help += ' values), t (top values), b (bottom values)'
+        opt = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), desc, 'string',
+                     help=help, tabid='Fuzzer parameters')
+        ol.add(opt)
+        
+        ######## Core parameters ########
+        desc = 'Automatic dependency enabling for plugins'
+        help = 'If autoDependencies is enabled, and pluginA depends on pluginB that wasn\'t enabled,'
+        help += ' then pluginB is automatically enabled.'
+        opt = option('autoDependencies', cf.cf.getData('autoDependencies'), desc, 'boolean',
+                    help=help, tabid='Core settings')
+        ol.add(opt)
+        
+        desc = 'Stop scan after first unhandled exception'
+        help =  'This feature is only useful for developers that want their scan'
+        help += ' to stop on the first exception that is raised by a plugin.'
+        help += 'Users should leave this as False in order to get better '
+        help += 'exception handling from w3af\'s core.'
+        opt = option('stop_on_first_exception', cf.cf.getData('stop_on_first_exception'), 
+                     desc, 'boolean', help=help, tabid='Core settings')
+        ol.add(opt)
+
+        desc = 'Maximum discovery time (minutes)'
+        help = 'Many users tend to enable numerous plugins without actually knowing what they are'
+        help += ' and the potential time they will take to run. By using this parameter, users will'
+        help += ' be able to set the maximum amount of time the discovery phase will run.'
+        opt = option('maxDiscoveryTime', cf.cf.getData('maxDiscoveryTime'), desc, 'integer', 
+                     help=help, tabid='Core settings')
+        ol.add(opt)
+                
+        desc = 'Maximum number of threads that the w3af process will spawn.'
+        desc += ' Zero means no threads (recommended)'
+        help = 'The maximum valid number of threads is 100.'
+        opt = option('maxThreads', cf.cf.getData('maxThreads'), desc, 'integer',
+                     tabid='Core settings', help=help)
+        ol.add(opt)
+                
+        ######## Network parameters ########
+        desc = 'Local interface name to use when sniffing, doing reverse connections, etc.'
+        opt = option('interface', cf.cf.getData('interface'), desc, 'string', tabid='Network settings')
+        ol.add(opt)
+        
+        desc = 'Local IP address to use when doing reverse connections'
+        opt = option('localAddress', cf.cf.getData('localAddress'), desc, 'string',
+                     tabid='Network settings')
+        ol.add(opt)
+                
+        ######### Misc ###########
+        desc = 'Enable this when you are doing a demo in a conference'
+        help = 'Delays HTTP requests in sqlmap plugin.'
+        opt = option('demo', cf.cf.getData('demo'), desc, 'boolean', tabid='Misc settings')
+        ol.add(opt)
+                
+        desc = 'A comma separated list of URLs that w3af should completely ignore'
+        help = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
+        opt = option('nonTargets', cf.cf.getData('nonTargets'), desc, 'list', help=help, 
+                     tabid='Misc settings')
+        ol.add(opt)
+                
+        ######### Metasploit ###########
+        desc = 'Full path of Metasploit framework binary directory (%s in most linux installs)' % cf.cf.getData('msf_location')
+        opt = option('msf_location', cf.cf.getData('msf_location'), desc, 'string', tabid='Metasploit')
+        ol.add(opt)
+                
         return ol
     
     def getDesc( self ):
@@ -220,6 +233,8 @@ class miscSettings(configurable):
         cf.cf.save('nonTargets', url_list )
         
         cf.cf.save('msf_location', optionsMap['msf_location'].getValue() )
+        cf.cf.save('stop_on_first_exception', 
+                   optionsMap['stop_on_first_exception'].getValue() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 miscSettings()

@@ -156,4 +156,33 @@ where {type} is one of: vulns, info, shells
             </item>
        </category>
     </topic>
+    <topic name="bug-report">
+        <category name="menu">
+            <item name="list">
+                <head>List exceptions found during the previous scan.</head>
+				<body><![CDATA[Syntax: list {type}
+where {type} is one of w3af's plugin types. If no type is specified all exceptions are listed.
+]]></body>
+            </item>
+            <item name="details">
+                <head>Show the full details for an exception identified by ID</head>
+				<body><![CDATA[Syntax: details {id}
+where {id} is the ID for the exception you want to analyze as returned by the list command.
+]]></body>
+            </item>
+            <item name="summary">
+                <head>Show a summary of the exceptions that were caught during this scan.</head>
+				<body><![CDATA[Syntax: summary
+No parameters are required for this command.
+]]></body>
+            </item>
+            <item name="report">
+                <head>Report an exception to our ticketing server.</head>
+				<body><![CDATA[Syntax: report [id[,id..]]
+If one or more ids are specified in a comma separated list, only those are sent to the ticketing server,
+else all the exceptions are sent.
+]]></body>
+            </item>
+       </category>
+    </topic>
 </help>

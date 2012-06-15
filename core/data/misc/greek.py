@@ -1,5 +1,5 @@
 '''
-config.py
+greek.py
 
 Copyright 2006 Andres Riancho
 
@@ -20,29 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-class config(dict):
-    '''
-    This class saves config parameters sent by the user.
+_abbrevs = [
+    (1<<50L, 'P'),
+    (1<<40L, 'T'), 
+    (1<<30L, 'G'), 
+    (1<<20L, 'M'), 
+    (1<<10L, 'k'),
+    (1, '')
+    ]
+
+def greek(size):
+    """
+    Return a string representing the greek/metric suffix of a size
+    """
+    for factor, suffix in _abbrevs:
+        if size > factor:
+            break
+    return str( int(size/factor) ) + suffix
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
-    '''
-        
-    def save(self, variableName, value):
-        '''
-        This method saves the variableName value to a dict.
-        '''
-        self[variableName] = value
-        
-    def getData(self, variableName, default=None):
-        '''
-        @return: Returns the data that was saved to the variableName
-        '''
-        return self.get(variableName, default)
-    
-    def cleanup(self):
-        '''
-        Cleanup internal data.
-        '''
-        self.clear()    
-        
-cf = config()
