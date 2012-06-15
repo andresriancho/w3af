@@ -66,13 +66,14 @@ class user_reports_bug(simple_base_window, trac_bug_report):
         
         # the buttons
         self.hbox = gtk.HBox()
+        self.butt_cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
+        self.butt_cancel.connect("clicked", self._handle_cancel)
+        self.hbox.pack_start(self.butt_cancel, True, False)
+
         self.butt_send = gtk.Button(stock=gtk.STOCK_OK)
         self.butt_send.connect("clicked", self.report_bug)
         self.hbox.pack_start(self.butt_send, True, False)
         
-        self.butt_cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
-        self.butt_cancel.connect("clicked", self._handle_cancel)
-        self.hbox.pack_start(self.butt_cancel, True, False)
         self.vbox.pack_start(self.hbox, True, False)
         
         #self.resize(400,450)

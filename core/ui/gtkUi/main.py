@@ -43,11 +43,11 @@ from core.controllers.w3afCore import w3af_core
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.gtkUi.splash import Splash
 from core.ui.gtkUi.exception_handling import unhandled
-from core.ui.gtkUi.exception_handling import handled
 from core.ui.gtkUi.exception_handling import user_reports_bug
 from core.ui.gtkUi.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 
@@ -265,7 +265,9 @@ class MainApp(object):
         # status bar
         splash.push(_("Building the status bar..."))
         guard = guardian.FoundObjectsGuardian(self.w3af)
-        self.sb = entries.StatusBar(_("Program started ok"), [guard])
+        self.exceptions_sb = guardian.FoundExceptionsStatusBar(self.w3af)
+        self.sb = entries.StatusBar(_("Program started"), [self.exceptions_sb, 
+                                                           guard])
 
         # Using print so the user can read this in the console, together with 
         # the GTK, python and pygtk versions.
@@ -436,6 +438,7 @@ class MainApp(object):
         # finish it
         self.window.show()
         splash.destroy()
+        self.exceptions_sb.hide_all()
         gtk.main()
 
     def profileChanged(self, *args, **kwargs):
@@ -445,7 +448,9 @@ class MainApp(object):
     def _editMenu( self, widget ):
         '''
         This handles the click action of the user over the edit menu.
-        The main objective of this function is to disable the "Edit Plugin" option, if the user isn't focused over a plugin.
+        
+        The main objective of this function is to disable the "Edit Plugin" 
+        option, if the user isn't focused over a plugin.
         
         @parameter widget: Not used
         '''
@@ -482,7 +487,8 @@ class MainApp(object):
         @param data: optional data to receive.
         '''
         msg = _("Do you really want to quit?")
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, gtk.BUTTONS_YES_NO, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_QUESTION, 
+                                gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
 
@@ -579,6 +585,8 @@ class MainApp(object):
                                            exc_tb, plugins=plugins_str)
                 finally:
                     del exc_tb
+            else:
+                self._scan_finished()
         
         # start real work in background, and start supervising if it ends                
         threading.Thread(target=startScanWrap).start()
@@ -636,7 +644,8 @@ class MainApp(object):
         This is separated because it's called when the process finishes by
         itself or by the user click.
         '''
-        self.startstopbtns.changeInternals(_("Clear"), gtk.STOCK_CLEAR, _("Clear all the obtained results"))
+        self.startstopbtns.changeInternals(_("Clear"), gtk.STOCK_CLEAR, 
+                                           _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
         self.scanShould = "clear"
@@ -645,6 +654,17 @@ class MainApp(object):
             self.sb(_("The scan has stopped by user request"))
         else:
             self.sb(_("The scan has finished"))
+
+    def _scan_finished(self):
+        '''
+        This method is called when the scan finishes successfully. 
+        '''
+        exception_list = exception_handler.get_all_exceptions()
+        if exception_list:
+            # damn...
+            self.sb(_("Scan finished with exceptions"))
+            self.exceptions_sb.show_all(len(exception_list))
+            
 
     def _scan_clear(self):
         '''Clears core and gtkUi, and fixes button to next step.'''

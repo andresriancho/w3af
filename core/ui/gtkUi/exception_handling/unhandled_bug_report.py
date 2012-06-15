@@ -84,13 +84,15 @@ class bug_report_window(simple_base_window, trac_bug_report):
         # the label for the rest of the message
         self.label = gtk.Label()
         self.label.set_line_wrap(True)
-        label_text = _("<i>All this info is in a file called ") + fname + _(" for later review.</i>\n\n")
-        label_text += _('If you wish, <b>you can contribute</b> to the w3af project and submit this')
-        label_text += _(' bug to our bug tracking system from within this window.')
-        label_text += _(' It\'s a simple <i>two step process</i>.\n\n')
-        label_text += _('w3af will only send the exception traceback and the version information to')
-        label_text += _(' Trac, no personal or confidential information is collected.')
-        self.label.set_markup(label_text)
+        label_text = _("<i>All this info is in a file called '%s' for later")
+        label_text += _(' review.</i>\n\nIf you wish, <b>you can contribute')
+        label_text += _('</b> to the w3af project and submit this bug to our')
+        label_text += _(' bug tracking system from within this window. It is')
+        label_text += _(' a simple <i>two step process</i>.\n\n')
+        label_text += _('w3af will only send the exception traceback and the')
+        label_text += _(' version information to Trac, no personal or ')
+        label_text += _(' confidential information is collected.')
+        self.label.set_markup( label_text % fname )
         self.label.show()
         
         self.vbox.pack_start(self.title_label, True, True, 10)
@@ -99,15 +101,17 @@ class bug_report_window(simple_base_window, trac_bug_report):
         
         # the buttons
         self.hbox = gtk.HBox()
-        self.butt_send = gtk.Button(stock=gtk.STOCK_OK)
-        self.butt_send.connect("clicked", self.report_bug)
-        self.hbox.pack_start(self.butt_send, True, False)
         
         self.butt_cancel = gtk.Button(stock=gtk.STOCK_CANCEL)
         self.butt_cancel.connect("clicked", self._handle_cancel)
         self.hbox.pack_start(self.butt_cancel, True, False)
-        self.vbox.pack_start(self.hbox, True, False, 10)
+
+        self.butt_send = gtk.Button(stock=gtk.STOCK_OK)
+        self.butt_send.connect("clicked", self.report_bug)
+        self.hbox.pack_start(self.butt_send, True, False)
         
+        self.vbox.pack_start(self.hbox, True, False, 10)
+                
         #self.resize(400,450)
         self.add(self.vbox)
         self.show_all()

@@ -61,7 +61,7 @@ def cleanup_bug_report( input ):
             input = input.replace(domain, 'domain')
     
         for path in paths:
-            input = input.replace(path, '/path/foo')
+            input = input.replace(path, '/path/foo/')
         
     return input
     

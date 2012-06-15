@@ -232,6 +232,9 @@ class ExceptionData(object):
         res = self.get_summary()
         res += 'The full traceback is:\n%s' % self.traceback_str
         return res
+    
+    def get_where(self):
+        return '%s.%s:%s' % (self.phase, self.plugin, self.lineno)
 
     def __str__(self):
         return self.get_details()

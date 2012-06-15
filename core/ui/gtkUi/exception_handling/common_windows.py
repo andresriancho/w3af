@@ -107,7 +107,11 @@ class report_bug_show_result(gtk.MessageDialog):
         self.set_title('Bug report results')
         self.set_icon_from_file(W3AF_ICON)
 
-    
+        # Disable OK button until the worker finishes the bug reporting process
+        ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
+        ok_button.set_sensitive(False)
+        
+        
     def run(self):
         #
         #    Main text
@@ -116,8 +120,17 @@ class report_bug_show_result(gtk.MessageDialog):
         text += ' scanning engine. If you want to get involved with the project'
         text += ' please send an email to our <a href="mailto:%s">mailing list</a>.'
         text = text % ('w3af-develop@lists.sourceforge.net')
-        self.set_markup( text )
+        # All these lines are here to add a label instead of the easy "set_markup"
+        # in order to avoid a bug where the label text appears selected
+        msg_area = self.get_message_area()
+        [msg_area.remove(c) for c in msg_area.get_children()]
+        label = gtk.Label()
+        label.set_markup( text )
+        label.set_line_wrap(True)
+        label.select_region(0, 0)
+        msg_area.pack_start(label)
         
+
         self.worker = bug_report_worker(self.bug_report_function, self.bugs_to_report)
         self.worker.start()        
         gobject.timeout_add(200, self.add_result_from_worker)
@@ -149,7 +162,7 @@ class report_bug_show_result(gtk.MessageDialog):
         self.status_hbox.pack_end(self.done_icon)
         
         self.vbox.pack_start(self.status_hbox, True, True)
-        
+
         self.add(self.vbox)
         self.show_all()
         self.done_icon.hide()
@@ -176,6 +189,8 @@ class report_bug_show_result(gtk.MessageDialog):
             self.throbber.running(False)
             self.throbber.hide()
             self.done_icon.show()
+            ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
+            ok_button.set_sensitive(True)
             # don't call me anymore !
             return False
         else:
@@ -425,16 +440,16 @@ class dlg_ask_bug_info(gtk.MessageDialog):
 1. 
 2. 
 3. 
-    
+
 What is the expected output? What do you see instead?
-    
-    
+
+
 What operating system are you using?
-    
-    
+
+
 Please provide any additional information below:
-    
-    
+
+
 '''
         
         msg = 'Please provide the following information about the bug\n'
@@ -447,7 +462,8 @@ Please provide any additional information below:
         sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         description_text_view = gtk.TextView()
-        description_text_view.set_size_request(200, 280)
+        description_text_view.set_size_request(240, 300)
+        description_text_view.set_wrap_mode(gtk.WRAP_WORD)
         buffer = description_text_view.get_buffer()
         buffer.set_text(default_text)
         sw.add(description_text_view)
@@ -478,7 +494,7 @@ Please provide any additional information below:
 
 class trac_bug_report(object):
     '''
-    Class that models user interaction with Trac to report a bug.
+    Class that models user interaction with Trac to report ONE bug.
     '''
     
     def __init__(self, tback='', fname=None, plugins=''):
@@ -555,3 +571,44 @@ class trac_bug_report(object):
                 break
             
         return (sf, email)
+
+class trac_multi_bug_report(trac_bug_report):
+    '''
+    Class that models user interaction with Trac to report ONE or MORE bugs.
+    '''
+    
+    def __init__(self, exception_list, scan_id):
+        trac_bug_report.__init__(self)
+        self.sf = None
+        self.exception_list = exception_list
+        self.scan_id = scan_id
+        self.autogen = False
+    
+    def report_bug(self):
+        sf, email = self._login_sf()
+        
+        bug_info_list = []
+        for edata in self.exception_list:
+            tback = edata.get_details()
+            plugins = edata.enabled_plugins
+            bug_info_list.append( (sf, tback, self.scan_id, email, plugins) )
+            
+        rbsr = report_bug_show_result( self._report_bug_to_sf, bug_info_list )
+        rbsr.run()
+    
+    def _report_bug_to_sf(self, sf, tback, scan_id, email, plugins):
+        '''
+        Send bug to Trac.
+        '''
+        userdesc = 'No user description was provided for this bug report given'
+        userdesc += ' that it was related to handled exceptions in scan with id'
+        userdesc += ' %s' % scan_id
+        try:
+            ticket_url, ticket_id = sf.report_bug(None, userdesc, tback=tback,
+                                                  plugins=plugins, 
+                                                  autogen=self.autogen,
+                                                  email=email)
+        except:
+            return None, None
+        else:
+            return ticket_url, ticket_id

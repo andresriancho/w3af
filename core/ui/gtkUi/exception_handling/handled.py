@@ -27,7 +27,7 @@ from core.ui.gtkUi.exception_handling import handled_bug_report
 
 
 
-def handle_exceptions(enabled_plugins=''):
+def handle_exceptions():
     '''
     In w3af's new exception handling method, some exceptions raising from
     plugins are "allowed" and the scan is NOT stopped because of them.
@@ -40,24 +40,24 @@ def handle_exceptions(enabled_plugins=''):
     
     The main class in this game is core.controllers.coreHelpers.exception_handler
     and you should read it before this one.
-    '''    
+    ''' 
+    # Save the info to a file for later analysis by the user   
     for edata in exception_handler.get_all_exceptions():
-        
-        # Save the info to a file for later analysis by the user
         edata_str = edata.get_details()
-        filename = create_crash_file(edata_str)
+        create_crash_file(edata_str)
+
+    msg = 'Complete information related to the exceptions is available at "%s"'
+    print msg  % gettempdir()
     
     # We do this because it would be both awful and useless to simply
     # print all exceptions one below the other in the console
     print exception_handler.generate_summary_str()
-    print 'Complete information related to the exceptions is available at "%s"' % gettempdir()
     
     # Create the dialog that allows the user to send the bugs, potentially more
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Trac.
-    bug_report_win = handled_bug_report.bug_report_window( _('Bug detected!'),
-                                                           edata_str,
-                                                           enabled_plugins)
+    title = _('Handled exceptions to report')
+    bug_report_win = handled_bug_report.bug_report_window( title )
     
     # Blocks waiting for user interaction
     bug_report_win.show()
