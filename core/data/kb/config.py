@@ -38,5 +38,11 @@ class config(dict):
         @return: Returns the data that was saved to the variableName
         '''
         return self.get(variableName, default)
+    
+    def cleanup(self):
+        '''
+        Cleanup internal data.
+        '''
+        self.clear()    
         
 cf = config()

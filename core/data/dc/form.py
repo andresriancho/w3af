@@ -315,10 +315,11 @@ class Form(DataContainer):
                     '''
                     This handles "select" tags that have no options inside.
 
-                    The getVariants method should return a variant with the select tag name
-                    that is always an empty string.
+                    The getVariants method should return a variant with the 
+                    select tag name that is always an empty string.
 
-                    This case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
+                    This case reported by Taras at
+                    https://sourceforge.net/apps/trac/w3af/ticket/171015
                     '''
                     value = ''
                 
@@ -326,8 +327,8 @@ class Form(DataContainer):
                     # FIXME: Needs to support repeated parameter names
                     self_variant[sel_name] = [value]
                 else:
-                    # FIXME: Is it good solution to simply delete unwant to
-                    # send checkboxes?
+                    # FIXME: Is it solution good? Simply delete unwanted
+                    #        send checkboxes?
                     if self_variant.get(sel_name): # We might had removed it b4
                         del self_variant[sel_name]
             

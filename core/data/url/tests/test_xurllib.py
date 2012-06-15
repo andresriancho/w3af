@@ -42,8 +42,9 @@ class TestXUrllib(unittest.TestCase):
     def tearDown(self):
         remove_temp_dir()
         kb.kb.cleanup()
+        cf.cf.cleanup()
         
-    def test_200(self):
+    def test_basic(self):
         url = url_object('http://www.google.com.ar/')
         self.assertTrue( 'Google' in self.uri_opener.GET( url ).getBody() )
     

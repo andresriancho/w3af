@@ -81,7 +81,8 @@ class test_form(unittest.TestCase):
             
             for name, values in clean_data.items():
                 tmb_values = filter_tmb(values)
-                self.assertTrue(form_variant[name][0] in tmb_values)
+                msg = 'Failed to find "%s" in "%s"' % (form_variant[name][0], tmb_values)
+                self.assertTrue(form_variant[name][0] in tmb_values, msg)
             
             variants_set.add(repr(form_variant))
 
@@ -91,7 +92,7 @@ class test_form(unittest.TestCase):
         expected = min(total_variants, f.TOP_VARIANTS)
         self.assertEquals(i, expected)
         
-        # Variants shouldn't duplicated
+        # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), expected)
         
 
