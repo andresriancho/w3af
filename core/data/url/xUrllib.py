@@ -274,32 +274,6 @@ class xUrllib(object):
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in urlOpenerSettings.py .
         
-        #
-        #   Simple tests to verify that everything is working as expected:
-        #
-        >>> x = xUrllib()
-        >>> 'Google' in x.GET(url_object('http://www.google.com.ar/')).getBody()
-        True
-        >>> abc_url = 'http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=abc'
-        >>> 'American Broadcasting Company' in x.GET(url_object(abc_url)).getBody()
-        True
-        >>> def_url = 'http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=def'
-        >>> 'American Broadcasting Company' in x.GET(url_object(def_url)).getBody()
-        False
-
-
-        #
-        #   This test verifies that the gzip_handler.py is properly working. It's very important to
-        #   check this because we've (more than once) disabled it without noticing, and it provides
-        #   a very important performance improvement.
-        #
-        >>> res = x.GET(url_object('http://www.google.com.ar/'))
-        >>> headers = res.getHeaders()
-        >>> content_encoding = headers.get('Content-Encoding', '')
-        >>> 'gzip' in content_encoding or 'compress' in content_encoding
-        True
-
-
         @param uri: This is the URI to GET, with the query string included.
         @param data: Only used if the uri parameter is really a URL. The data will be
         converted into a string and set as the URL object query string before sending.
@@ -620,7 +594,7 @@ class xUrllib(object):
             # Where ('filename', 'line-number', 'function-name')
 
             self._incrementGlobalErrorCount(e, parsed_traceback)
-            
+
             return self._new_no_content_resp(original_url_inst, log_it=True)
 
         else:
