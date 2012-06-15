@@ -169,7 +169,9 @@ class SourceforgeXMLRPC(Sourceforge):
         True
         >>> summary = 'Unittest bug report'
         >>> userdesc = 'Please mark this ticket as invalid' 
-        >>> ticket_url = sf.report_bug(summary,userdesc)
+        >>> ticket_id, ticket_url = sf.report_bug(summary,userdesc)
+        >>> ticket_id.isdigit()
+        True
         >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
         True
         '''
