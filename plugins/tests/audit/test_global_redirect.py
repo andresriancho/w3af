@@ -46,9 +46,8 @@ class TestGlobalRedirect(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.getData('globalRedirect', 'globalRedirect')
-        
         self.assertEquals(3, len(vulns))
-        self.assertEquals(all(['Insecure redirection' == vuln.getName() for vuln in vulns ]) , True)
+        self.assertTrue(all(['Insecure redirection' == vuln.getName() for vuln in vulns ]))
 
         # Verify the specifics about the vulnerabilities
         expected = [

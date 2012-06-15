@@ -637,4 +637,4 @@ class w3af_core_strategy(object):
             except w3afException, e:
                 om.out.error( str(e) )
                 
-        return res
+        return set(res)

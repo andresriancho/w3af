@@ -63,6 +63,10 @@ class TestDiscoverExceptions(PluginTest):
         if os.path.exists(self.dst + 'c'): #pyc file
             os.remove(self.dst + 'c')
 
+        # This is a very special case in which I don't want the assertion in
+        # the original tearDown() to trigger on me!
+        exception_handler.clear()
+        
         super(TestDiscoverExceptions, self).tearDown()
         
     def test_spider_found_urls(self):
