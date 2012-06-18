@@ -279,9 +279,12 @@ class fuzzableRequest(disk_item):
         False
 
         '''
-        return (self._method == other._method and
-                self._uri == other._uri and
-                self._dc == other._dc)
+        if isinstance( other, fuzzableRequest):
+            return (self._method == other._method and
+                    self._uri == other._uri and
+                    self._dc == other._dc)
+        else:
+            return NotImplemented
     
     def get_eq_attrs(self):
         return ['_method', '_uri', '_dc']

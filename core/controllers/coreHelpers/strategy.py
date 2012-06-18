@@ -31,6 +31,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
 from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.coreHelpers.consumers.grep import grep
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
@@ -75,7 +76,9 @@ class w3af_core_strategy(object):
         exception_handler.clear()
         
         try:
-            self._pre_discovery()
+            self._setup_grep()
+            
+            self._seed_discovery()
             
             self._fuzzable_request_set.update( self._discover_and_bruteforce() )
             
@@ -86,16 +89,44 @@ class w3af_core_strategy(object):
 
             self._post_discovery()
             self._audit()
-            self._w3af_core._end()
+            self._end()
             
         except w3afException, e:
-            self._w3af_core._end(e)
+            self._end(e)
             raise
         except KeyboardInterrupt, e:
-            self._w3af_core._end()
+            self._end()
             # I wont handle this, the user interface must know what to do with it
             raise
     
+    def _end(self, exc_inst=None, ignore_err=False):
+        '''
+        End the strategy specific things and then call w3af_core's _end()
+        '''
+        self.teardown_grep()
+        
+        self._w3af_core._end(exc_inst, ignore_err)
+        
+    
+    def _setup_grep(self):
+        '''
+        Setup the grep consumer:
+            * Create a Queue,
+            * Set the Queue in xurllib
+            * Start the consumer
+        '''
+        grep_plugins = self._w3af_core.plugins.plugins['grep']
+        
+        if grep_plugins:
+            grep_in_queue = Queue.Queue(25)
+            self._w3af_core.uriOpener.set_grep_queue( grep_in_queue )
+            self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
+            self._grep_consumer.start()
+        
+    def teardown_grep(self):
+        self._grep_consumer.stop()
+        self._grep_consumer = None
+        
     def _post_discovery(self):
         '''
         This method is called after the discovery and brutefore phases finish
@@ -191,9 +222,9 @@ class w3af_core_strategy(object):
         om.out.information('The list of fuzzable requests is:')
         map(om.out.information, tmp_fr)
               
-    def _pre_discovery(self):
+    def _seed_discovery(self):
         '''
-        Create the first fuzzableRequestList
+        Create the first fuzzable request objects based on the targets
         '''
 
         # We only want to scan pages that in current scope

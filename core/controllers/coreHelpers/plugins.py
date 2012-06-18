@@ -77,9 +77,8 @@ class w3af_core_plugins(object):
                                                              plugin_type)
         
         #
-        # Some extra init steps for grep and mangle plugins
+        # Some extra init steps for mangle plugins
         #
-        self._w3af_core.uriOpener.setGrepPlugins( self.plugins['grep'] )
         self._w3af_core.uriOpener.settings.setManglePlugins( self.plugins['mangle'] )
 
         #

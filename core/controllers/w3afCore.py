@@ -241,10 +241,7 @@ class w3afCore(object):
             
             tm.join(joinAll=True)
             tm.stopAllDaemons()
-            
-            for plugin in self.plugins.plugins['grep']:
-                plugin.end()
-            
+                        
             # Also, close the output manager.
             om.out.endOutputPlugins()
 
@@ -293,8 +290,9 @@ class w3afCore(object):
             
     def _initializeInternalVariables(self):
         '''
-        Init some internal variables; this method is called when the whole process starts, and when the user
-        performs a clear() in the gtk user interface.
+        Init some internal variables; this method is called when the whole 
+        process starts, and when the user performs a clear() in the gtk user
+        interface.
         '''        
         self.plugins.initialized = False
         self.target.clear()
