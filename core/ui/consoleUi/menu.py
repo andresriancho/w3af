@@ -31,12 +31,33 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 
 
-class menu:
+class menu(object):
     '''
     Menu objects handle the commands and completion requests.
     Menus form an hierarchy and are able to delegate requests to their children.
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
+    def __init__(self, name, console, w3af, parent=None, **other):
+        self._name = name
+        self._history = history()
+        
+        self._help = help()
+        self._keysHelp = help()
+        self._w3af = w3af
+        self._handlers = {}
+        self._parent = parent
+        self._console = console
+        self._children = {}
+
+        self._loadHelp('common')
+        helpMainRepository.loadHelp('keys', self._keysHelp)
+#        self._keysHelp = {} 
+
+        self._initHandlers()
+
+#            if cmd not in helpTab:
+                # highlight undocumented items
+#                self._help.addHelpEntry(cmd, 'UNDOCUMENTED', 'menu')
 
     def suggest(self, tokens, part, onlyLocalCommands=False):
         '''
@@ -59,28 +80,6 @@ class menu:
 
     def getHistory(self):
         return self._history
-
-    def __init__(self, name, console, w3af, parent=None, **other):
-        self._name = name
-        self._history = history()
-        
-        self._help = help()
-        self._keysHelp = help()
-        self._w3af = w3af
-        self._handlers = {}
-        self._parent = parent
-        self._console = console
-        self._children = {}
-
-        self._loadHelp('common')
-        helpMainRepository.loadHelp('keys', self._keysHelp)
-#        self._keysHelp = {} 
-
-        self._initHandlers()
-
-#            if cmd not in helpTab:
-                # highlight undocumented items
-#                self._help.addHelpEntry(cmd, 'UNDOCUMENTED', 'menu')
 
     def _initHandlers( self ):
         self._universalCommands = ['back', 'exit', 'keys', 'print']

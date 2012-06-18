@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk
 
+from core.ui.gtkUi.constants import W3AF_ICON
+
+
 class Splash(gtk.Window):
     '''Builds the Splash window.
     
@@ -28,6 +31,12 @@ class Splash(gtk.Window):
     '''
     def __init__(self):
         super(Splash,self).__init__()
+        
+        # These two lines are required here to make sure that unity shows the
+        # correct information in the menu
+        self.set_icon_from_file(W3AF_ICON)
+        self.set_title('w3af - 0wn the Web')
+        
         vbox = gtk.VBox()
         self.add(vbox)
 

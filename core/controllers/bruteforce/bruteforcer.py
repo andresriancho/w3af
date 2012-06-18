@@ -52,7 +52,7 @@ class bruteforcer:
         
         
         # Internal vars
-        self._alreadyInit = False
+        self._already_init = False
         self._usersFD = None
         self._passwordsFD = None
         self._comboFD = None
@@ -66,29 +66,29 @@ class bruteforcer:
         '''
         Open files and init some variables
         '''
-        if not self._alreadyInit:
-            self._alreadyInit = True
+        if not self._already_init:
+            self._already_init = True
 
-        try:
-            if self._usersFile != "":
-                self._usersFD = open( self._usersFile )
-        except:
-            raise w3afException('Can\'t open ' + self._usersFile + ' file.')
+            try:
+                if self._usersFile != "":
+                    self._usersFD = open( self._usersFile )
+            except:
+                raise w3afException('Can\'t open ' + self._usersFile + ' file.')
 
-        try:
-            if self._passwdFile != "":
-                self._passwordsFD = open( self._passwdFile )
-        except:
-            raise w3afException('Can\'t open ' + self._passwdFile + ' file.')
+            try:
+                if self._passwdFile != "":
+                    self._passwordsFD = open( self._passwdFile )
+            except:
+                raise w3afException('Can\'t open ' + self._passwdFile + ' file.')
 
-        try:
-            if self._comboFile != "":
-                self._comboFD = open( self._comboFile )
-        except:
-            raise w3afException('Can\'t open ' + self._comboFile + ' file.')
-            
-        self._genSpecialPasswords()
-        self._genSpecialUsers()
+            try:
+                if self._comboFile != "":
+                    self._comboFD = open( self._comboFile )
+            except:
+                raise w3afException('Can\'t open ' + self._comboFile + ' file.')
+                
+            self._genSpecialPasswords()
+            self._genSpecialUsers()
     
     def _genSpecialUsers( self ):
         '''
@@ -134,12 +134,9 @@ class bruteforcer:
         self._specialPasswords = list(set(self._specialPasswords))
             
     def stop( self ):
-        if self._passwordsFD != None:
-            self._passwordsFD.close()
-        if self._usersFD != None:
-            self._usersFD.close()
-        if self._comboFD != None:
-            self._comboFD.close()
+        for fd in [self._passwordsFD, self._usersFD, self._comboFD]:
+            if fd is not None:
+                fd.close()
     
     def _getPassword( self, user ):
         '''
@@ -290,7 +287,7 @@ class bruteforcer:
         '''
         def sortfunc(x,y):
             return cmp(y[1],x[1])
-        
+            
         kb_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
         
         if not kb_data:
@@ -381,4 +378,5 @@ class bruteforcer:
         self._url = url
     
     def getURL( self ): return self._url
+    
     

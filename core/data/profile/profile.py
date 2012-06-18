@@ -273,8 +273,8 @@ class profile:
         '''
         # I just need the xUrllib configuration, but I import all the core
         # because I want to use the singleton
-        from core.controllers.w3afCore import wCore
-        return self._get_x_settings('http-settings', wCore.uriOpener.settings)
+        from core.controllers.w3afCore import w3af_core
+        return self._get_x_settings('http-settings', w3af_core.uriOpener.settings)
         
     def _get_x_settings( self, section, configurable_instance ):
         '''

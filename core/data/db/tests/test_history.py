@@ -2,20 +2,20 @@
 
 import random
 import unittest
-import string
 import time
 import os.path
-import os
 
-from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
+
+from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
+
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.fuzzer import createRandAlNum
-
 from core.data.request.fuzzableRequest import fuzzableRequest as FuzzReq
-from core.data.url.httpResponse import httpResponse, DEFAULT_CHARSET
 from core.data.parsers.urlParser import url_object
+from core.data.url.httpResponse import httpResponse
+
 
 class TestHistoryItem(unittest.TestCase):
 

@@ -19,10 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
+import pysvn
+import sys
+
 from collections import namedtuple
 
 from pymock import PyMockTestCase, method, override, dontcare, set_count
-import pysvn
 
 from ..auto_update import (
     w3afSVNClient, Revision, VersionMgr, SVNFilesList, StartUpConfig,
@@ -64,6 +66,18 @@ class Testw3afSVNClient(PyMockTestCase):
         self.client = w3afSVNClient(LOCAL_PATH)
         self.client._repourl = REPO_URL
         self.client._svnclient = self.mock()
+    
+    def tearDown(self):
+        '''
+        Given that nosetests test isolation is "incompatible" with w3af's kb, cf, etc.
+        objects, and the tests written here are overwriting some classes that are
+        loaded into sys.modules, I need to clean the mess after I finish.
+        
+        @see: http://mousebender.wordpress.com/2006/12/07/test-isolation-in-nose/
+        '''
+        #print sys.modules['core.controllers.auto_update.w3afSVNClient']
+        #from ..auto_update import w3afSVNClient
+        PyMockTestCase.tearDown(self)
 
     def test_has_repourl(self):
         self.assertTrue(self.client._repourl is not None)

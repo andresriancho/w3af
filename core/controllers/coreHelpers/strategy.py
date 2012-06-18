@@ -23,12 +23,15 @@ import itertools
 import traceback
 import Queue
 import time
+import sys
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
+from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
@@ -67,6 +70,10 @@ class w3af_core_strategy(object):
         
         @return: No value is returned.
         '''
+        # If this is not the first scan, I want to clear the old bug data that
+        # might be stored in the exception_handler.
+        exception_handler.clear()
+        
         try:
             self._pre_discovery()
             
@@ -75,10 +82,11 @@ class w3af_core_strategy(object):
             if not self._fuzzable_request_set:
                 om.out.information('No URLs found during discovery phase.')
                 self._w3af_core._end()
-            else:
-                self._post_discovery()
-                self._audit()
-                self._w3af_core._end()
+                return
+
+            self._post_discovery()
+            self._audit()
+            self._w3af_core._end()
             
         except w3afException, e:
             self._w3af_core._end(e)
@@ -230,11 +238,27 @@ class w3af_core_strategy(object):
                 
     def _auth_login(self):
         '''
-        Make login to the web app when it is needed.
+        Make login to the web application when it is needed.
         '''
         for plugin in self._w3af_core.plugins.plugins['auth']:
-            if not plugin.is_logged():
-                plugin.login()
+
+            try:
+                try:
+                    if not plugin.is_logged():
+                        plugin.login()
+                finally:
+                    tm.join(plugin)
+            except Exception, e:
+                # Smart error handling, much better than just crashing.
+                # Doing this here and not with something similar to:
+                # sys.excepthook = handle_crash because we want to handle
+                # plugin exceptions in this way, and not framework 
+                # exceptions                        
+                exec_info = sys.exc_info()
+                enabled_plugins = pprint_plugins(self._w3af_core)
+                exception_handler.handle( self._w3af_core.status, e , 
+                                          exec_info, enabled_plugins )
+            
 
     def _discover_and_bruteforce( self ):
         '''
@@ -386,8 +410,9 @@ class w3af_core_strategy(object):
                     if self._should_stop_discovery(): return result
                     
                     # Status reporting
-                    self._w3af_core.status.set_running_plugin(plugin.getName())
-                    self._w3af_core.status.set_current_fuzzable_request(fr)
+                    status = self._w3af_core.status
+                    status.set_running_plugin(plugin.getName())
+                    status.set_current_fuzzable_request(fr)
                     
                     try:
                         try:
@@ -402,10 +427,21 @@ class w3af_core_strategy(object):
                     except w3afException,e:
                         om.out.error(str(e))
                     except w3afRunOnce:
-                        # Some plugins are ment to be run only once
+                        # Some plugins are meant to be run only once
                         # that is implemented by raising a w3afRunOnce
                         # exception
                         plugins_to_remove_list.append(plugin)
+                    except Exception, e:
+                        # Smart error handling, much better than just crashing.
+                        # Doing this here and not with something similar to:
+                        # sys.excepthook = handle_crash because we want to handle
+                        # plugin exceptions in this way, and not framework 
+                        # exceptions                        
+                        exec_info = sys.exc_info()
+                        enabled_plugins = pprint_plugins(self._w3af_core)
+                        exception_handler.handle( self._w3af_core.status, e , 
+                                                  exec_info, enabled_plugins )
+                    
                     else:
                         # We don't trust plugins, i'll only work if this
                         # is a list or something else that is iterable
@@ -413,8 +449,6 @@ class w3af_core_strategy(object):
                         if hasattr(plugin_result, '__iter__'):
                             lst.extend(fr for fr in plugin_result)
                                 
-                    om.out.debug('Ending plugin: ' + plugin.getName())
-                    
                     # Finished one loop, inc!
                     self._w3af_core.progress.inc()
             
@@ -503,7 +537,7 @@ class w3af_core_strategy(object):
 
             # For status
             self._w3af_core.status.set_running_plugin( plugin.getName() )
-
+            
             # Before running each plugin let's make sure we're logged in
             self._auth_login()
 
@@ -512,16 +546,30 @@ class w3af_core_strategy(object):
             #      "RuntimeError: Set changed size during iteration" and I had
             #      no time to solve them.
             for fr in set(self._fuzzable_request_set):
+                
                 # Sends each fuzzable request to the plugin
+                self._w3af_core.status.set_current_fuzzable_request( fr )
+                
                 try:
-                    self._w3af_core.status.set_current_fuzzable_request( fr )
-                    plugin.audit_wrapper( fr )
+                    try:
+                        plugin.audit_wrapper( fr )
+                    finally:
+                        tm.join( plugin )
                 except w3afException, e:
                     om.out.error( str(e) )
-                finally:
-                    tm.join( plugin )
                 
-                # I performed one test
+                except Exception, e:
+                    # Smart error handling, much better than just crashing.
+                    # Doing this here and not with something similar to:
+                    # sys.excepthook = handle_crash because we want to handle
+                    # plugin exceptions in this way, and not framework 
+                    # exceptions                    
+                    exec_info = sys.exc_info()
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( self._w3af_core.status, e , 
+                                              exec_info, enabled_plugins )
+                
+                # Performed one test, report it
                 self._w3af_core.progress.inc()
                     
             # Let the plugin know that we are not going to use it anymore
@@ -535,40 +583,58 @@ class w3af_core_strategy(object):
         @parameter fr_list: A list of fr's to be analyzed by the bruteforce plugins
         @return: A list of the URL's that have been successfully bruteforced
         '''
-        om.out.debug('Called _bruteforce()' )
-        
         res = []
         
-        # Progress
+        # Status
+        om.out.debug('Called _bruteforce()' )
         self._w3af_core.status.set_phase('bruteforce')
-        amount_of_tests = len(self._w3af_core.plugins.plugins['bruteforce']) * len(fr_list)
+        
+        # Progress
+        bruteforce_plugin_num = len(self._w3af_core.plugins.plugins['bruteforce'])
+        amount_of_tests = bruteforce_plugin_num * len(fr_list) 
         self._w3af_core.progress.set_total_amount( amount_of_tests )
         
-        for fr in fr_list:
+        for plugin in self._w3af_core.plugins.plugins['bruteforce']:
+
+            # Status
+            self._w3af_core.status.set_running_plugin( plugin.getName() )
             
-            for plugin in self._w3af_core.plugins.plugins['bruteforce']:
-            
-                self._w3af_core.status.set_running_plugin( plugin.getName() )
+            for fr in fr_list:
+                
+                # Status
                 self._w3af_core.status.set_current_fuzzable_request( fr )
                 
-                # Sends each url to the plugin
+                # Sends each URL to the bruteforce plugin
                 try:
-                    fr_list = plugin.bruteforce_wrapper( fr )
-                    tm.join( plugin )
-                except w3afException, e:
-                    tm.join( plugin )
-                    om.out.error( str(e) )
-                    
-                # I performed one test (no matter if it failed or not)
-                self._w3af_core.progress.inc()                    
-                    
-                try:
-                    plugin.end()
+                    try:
+                        new_frs = plugin.bruteforce_wrapper( fr )
+                        
+                    finally:
+                        tm.join( plugin )
                 except w3afException, e:
                     om.out.error( str(e) )
-                    
-                res.extend( fr_list )
+                
+                except Exception, e:
+                    # Smart error handling, much better than just crashing.
+                    # Doing this here and not with something similar to:
+                    # sys.excepthook = handle_crash because we want to handle
+                    # plugin exceptions in this way, and not framework 
+                    # exceptions                    
+                    exec_info = sys.exc_info()
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( self._w3af_core.status, e , 
+                                              exec_info, enabled_plugins )
+                
+                else:
+                    res.extend( new_frs )
+                
+                # Progress, I performed one test (no matter if it failed or not)
+                self._w3af_core.progress.inc()
+            
+            # We're not going to be using this plugin anymore.
+            try:
+                plugin.end()
+            except w3afException, e:
+                om.out.error( str(e) )
                 
         return set(res)
-
-

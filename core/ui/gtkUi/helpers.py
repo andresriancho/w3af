@@ -412,6 +412,7 @@ class SensitiveAnd(object):
         
 import core.data.constants.severity as severity
 KB_ICONS = {
+    ("excp", None): loadImage('warning-black-animated.gif'),
     ("info", None): loadImage('information.png'),
     ("vuln", None):  loadImage('vulnerability.png'),
     ("shell", None):  loadImage('shell.png'),

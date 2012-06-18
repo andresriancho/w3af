@@ -1,5 +1,5 @@
 '''
-exception_handler.py
+unhandled.py
 
 Copyright 2009 Andres Riancho
 
@@ -22,29 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
 import traceback
-import gtk
 
-# w3af crash File creation
-import tempfile
-from core.data.fuzzer.fuzzer import createRandAlNum
-import os
+from core.ui.gtkUi import helpers
+from core.ui.gtkUi.exception_handling import unhandled_bug_report
+from core.controllers.exception_handling.helpers import create_crash_file
+from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
-# w3af crash handling
-from . import bug_report
-from . import helpers
-from core.controllers.misc.get_w3af_version import get_w3af_version
 
-# String containing the versions for python, gtk and pygtk
-VERSIONS = '''
-Python version:\n%s\n
-GTK version:%s
-PyGTK version:%s\n\n
-%s
-''' % \
-    (sys.version,
-    ".".join(str(x) for x in gtk.gtk_version),
-    ".".join(str(x) for x in gtk.pygtk_version),
-    get_w3af_version())
 
 def handle_crash(type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
@@ -55,22 +39,22 @@ def handle_crash(type, value, tb, plugins=''):
         om.out.console(_('Bye!'))
         sys.exit(0)
         return
-        
+    
+    # Print the information to the console so everyone can see it 
     exception = traceback.format_exception(type, value, tb)
     exception = "".join(exception)
     print exception
 
-    # save the info to a file
-    filename = tempfile.gettempdir() + os.path.sep + "w3af_crash-" + createRandAlNum(5) + ".txt"
-    arch = file(filename, "w")
-    arch.write(_('Submit this bug here: https://sourceforge.net/apps/trac/w3af/newticket \n'))
-    arch.write(VERSIONS)
-    arch.write(exception)
-    arch.close()
+    # Do not disclose user information in bug reports
+    clean_exception = cleanup_bug_report(exception)
+
+    # Save the info to a file for later analysis
+    filename = create_crash_file( clean_exception )
     
-    # Create the dialog that allows the user to send the bug to sourceforge
-    bug_report_win = bug_report.bug_report_window(
-                            _('Bug detected!'), exception, filename, plugins)
+    # Create the dialog that allows the user to send the bug to Trac
+    bug_report_win = unhandled_bug_report.bug_report_window( _('Bug detected!'), 
+                                                             clean_exception,
+                                                             filename, plugins)
     
     # Blocks waiting for user interaction
     bug_report_win.show()

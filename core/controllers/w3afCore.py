@@ -36,6 +36,7 @@ from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singlet
 from core.controllers.threads.threadManager import threadManagerObj as tm
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
+from core.controllers.misc.dns_cache import enable_dns_cache
 from core.controllers.misc.homeDir import (create_home_dir,
     verify_dir_has_perm, HOME_DIR)
 from core.controllers.misc.number_generator import consecutive_number_generator
@@ -112,6 +113,7 @@ class w3afCore(object):
                                  self.plugins.getAllPluginOptions())
 
         self.status.start()
+        enable_dns_cache()
         
         try:
             self.strategy.start()
@@ -301,4 +303,4 @@ class w3afCore(object):
         consecutive_number_generator.reset()
         
 # Singleton
-wCore = w3afCore()
+w3af_core = w3afCore()
