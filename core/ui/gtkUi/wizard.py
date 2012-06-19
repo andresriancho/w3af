@@ -67,8 +67,8 @@ class QuestOptions(gtk.VBox):
                 if not opt.widg.isValid():
                     invalid.append(opt.getName())
         if invalid:
-            msg = "The configuration can't be saved, there is a problem in the following parameter(s):\n\n"
-            msg += "\n-".join(invalid)
+            msg = "The configuration can't be saved, there is a problem in the"
+            msg += " following parameter(s):\n\n" + "\n-".join(invalid)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
