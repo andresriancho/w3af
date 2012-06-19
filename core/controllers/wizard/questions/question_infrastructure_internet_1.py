@@ -32,14 +32,14 @@ class question_infrastructure_internet_1(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
-    def __init__(self):
-        question.__init__( self )
+    def __init__(self, w3af_core):
+        question.__init__( self, w3af_core )
     
-        self._questionId = 'infrastructure_internet_1'
+        self._question_id = 'infrastructure_internet_1'
 
-        self._questionTitle = 'Plugin selection'
+        self._question_title = 'Plugin selection'
         
-        self._questionString = 'Please choose from the options below:'
+        self._question_str = 'Please choose from the options below:'
         
     def _getOptionObjects(self):
         '''

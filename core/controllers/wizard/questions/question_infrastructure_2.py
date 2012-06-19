@@ -19,9 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -32,16 +29,16 @@ class question_infrastructure_2(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
-    def __init__(self):
-        question.__init__( self )
+    def __init__(self, w3af_core):
+        question.__init__( self, w3af_core )
     
-        self._questionId = 'infrastructure_2'
+        self._question_id = 'infrastructure_2'
 
-        self._questionTitle = 'Plugin selection'
+        self._question_title = 'Plugin selection'
         
-        self._questionString = 'This step allows you to select from a group of plugins that'
-        self._questionString += ' identify network and HTTP appliances that may be between'
-        self._questionString += ' w3af and the target Web Application.'
+        self._question_str = 'This step allows you to select from a group of plugins that'
+        self._question_str += ' identify network and HTTP appliances that may be between'
+        self._question_str += ' w3af and the target Web Application.'
         
     def _getOptionObjects(self):
         '''

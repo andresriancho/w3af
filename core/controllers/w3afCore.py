@@ -25,6 +25,8 @@ import sys
 import time
 import traceback
 
+import core.controllers.outputManager as om
+import core.data.kb.config as cf
 
 from core.controllers.coreHelpers.progress import progress
 from core.controllers.coreHelpers.status import w3af_core_status
@@ -44,10 +46,9 @@ from core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
     TEMP_DIR)
 from core.controllers.w3afException import (w3afException, w3afMustStopException,
                                             w3afMustStopByUnknownReasonExc)
-import core.controllers.outputManager as om
-import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
+
 from core.data.url.xUrllib import xUrllib
+from core.data.kb.knowledgeBase import KnowledgeBaseServer, KnowledgeBaseClient, kb
 
 
 class w3afCore(object):
@@ -66,6 +67,15 @@ class w3afCore(object):
         # Create some directories
         self._home_directory()
         self._tmp_directory()
+
+        '''        
+        # Start the knowledge base server
+        kb_server = KnowledgeBaseServer()
+        kb_server.start()
+
+        kb_client = KnowledgeBaseClient()
+        kb_client.start()
+        '''
         
         # These are some of the most important moving parts in the w3afCore
         # they basically handle every aspect of the w3af framework:
@@ -93,7 +103,8 @@ class w3afCore(object):
         error handling!
         '''
         om.out.debug('Called w3afCore.start()')
-        
+        # And a client so I can access it from within this thread
+       
         # This will help identify the total scan time
         self._start_time_epoch = time.time()
         

@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 from core.controllers.wizard.wizard import wizard
 
 
@@ -28,13 +26,17 @@ class infrastructure(wizard):
     
     def __init__( self, w3af_core ):
         '''
-        This method should be overwritten by the actual wizards, so they can define what questions they are
-        going to ask.
+        This method should be overwritten by the actual wizards, so they can 
+        define what questions they are going to ask.
         '''
         wizard.__init__( self, w3af_core )
 
-        self._questionList = self._get_instances( ['infrastructure_1','infrastructure_2','infrastructure_3'
-                                                ,'infrastructure_4','infrastructure_internet_1'] )
+        self._question_lst = self._get_instances( ['infrastructure_1',
+                                                   'infrastructure_2',
+                                                   'infrastructure_3',
+                                                   'infrastructure_4',
+                                                   'infrastructure_internet_1'],
+                                                  w3af_core )
         
     def getWizardDescription(self):
         '''
@@ -42,8 +44,8 @@ class infrastructure(wizard):
         
         @return: A string that describes what the wizard will let you configure.
         '''
-        return '''This wizard creates a scan profile that aims to identify the Web infrastructure
-        of the target site.'''
+        return '''This wizard creates a scan profile that aims to identify the
+        Web infrastructure of the target site.'''
 
     def getName(self):
         '''

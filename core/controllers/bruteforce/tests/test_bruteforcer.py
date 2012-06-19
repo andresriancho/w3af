@@ -1,5 +1,5 @@
 '''
-bruteforcer.py
+test_bruteforcer.py
 
 Copyright 2012 Andres Riancho
 

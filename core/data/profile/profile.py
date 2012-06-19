@@ -271,10 +271,9 @@ class profile:
         Get the http settings options.
         @return: The http settings in an optionList object
         '''
-        # I just need the xUrllib configuration, but I import all the core
-        # because I want to use the singleton
-        from core.controllers.w3afCore import w3af_core
-        return self._get_x_settings('http-settings', w3af_core.uriOpener.settings)
+        import core.data.url.urlOpenerSettings as urlOpenerSettings
+        url_settings = urlOpenerSettings.urlOpenerSettings()
+        return self._get_x_settings('http-settings', url_settings)
         
     def _get_x_settings( self, section, configurable_instance ):
         '''
@@ -288,7 +287,8 @@ class profile:
                     value = self._config.get(section, option)
                 except KeyError,k:
                     # We should never get here...
-                    raise w3afException('The option "' + option + '" is unknown for the "'+ section + '" section.')
+                    msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
+                    raise w3afException(msg)
                 else:
                     optionsMap[option].setValue(value)
         except:

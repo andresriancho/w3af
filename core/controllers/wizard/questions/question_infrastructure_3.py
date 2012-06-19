@@ -32,15 +32,15 @@ class question_infrastructure_3(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
-    def __init__(self):
-        question.__init__( self )
+    def __init__(self, w3af_core):
+        question.__init__( self, w3af_core )
     
-        self._questionId = 'infrastructure_3'
+        self._question_id = 'infrastructure_3'
 
-        self._questionTitle = 'Plugin selection'
+        self._question_title = 'Plugin selection'
         
-        self._questionString = 'This step allows you to select from a group of plugins that'
-        self._questionString += ' fingerprint the remote Web server.'
+        self._question_str = 'This step allows you to select from a group of plugins that'
+        self._question_str += ' fingerprint the remote Web server.'
         
     def _getOptionObjects(self):
         '''

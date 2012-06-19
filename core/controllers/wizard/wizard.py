@@ -20,20 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 from core.controllers.misc.factory import factory
 
+
 class wizard:
+    
     def __init__( self, w3af_core ):
         '''
-        This method should be overwritten by the actual wizards, so they can define what questions they are
-        going to ask.
+        This method should be overwritten by the actual wizards, so they can
+        define what questions they are going to ask.
         '''
         # Save the core
         self.w3af_core = w3af_core
         
         # A list of question objects
-        self._questionList = []
+        self._question_lst = []
 
         # Internal variables to mantain state
         self._currentQuestion = None
@@ -42,16 +43,18 @@ class wizard:
         self._already_asked = []
         self._user_options = None
 
-    def _get_instances( self, question_list ):
+    def _get_instances( self, question_list, w3af_core ):
         '''
-        @parameter question_list: A list of question ids
+        @param question_list: A list of question ids
+        @param w3af_core: The w3af core object to pass to the question id
         @return: A list of question objects
         '''
         res = []
+        mod = 'core.controllers.wizard.questions.question_%s'
         for question_id in question_list:
-            question_instance = factory('core.controllers.wizard.questions.question_' + question_id)
-            question_instance.w3af_core = self.w3af_core
-            res.append( question_instance )
+            klass = mod % question_id
+            question_inst = factory( klass, w3af_core )
+            res.append( question_inst )
         return res        
         
     def next(self):
@@ -63,10 +66,10 @@ class wizard:
         # Special case for first iteration
         if self._firstQuestion == True:
             self._firstQuestion = False
-            self._currentQuestion = self._questionList[0]
-            return self._questionList[0]
+            self._currentQuestion = self._question_lst[0]
+            return self._question_lst[0]
 
-        # Save the user completed values, so we can handle previous button of the wizard
+        # Save the user completed values, so we can handle previous button
         self._currentQuestion.setPreviouslyAnsweredValues(self._user_options)
         self._already_asked.append( self._currentQuestion )
 
@@ -75,7 +78,7 @@ class wizard:
             return None
 
         # Find the next one
-        possibleQuestions = [q for q in self._questionList if q.getQuestionId() == self._nextQuestionId ]
+        possibleQuestions = [q for q in self._question_lst if q.getQuestionId() == self._nextQuestionId ]
         if len(possibleQuestions) != 1:
             raise w3afException('We have more than one next question. Please verify your wizard definition.\
                           Possible questions are: ' + str(possibleQuestions) )
@@ -117,11 +120,13 @@ class wizard:
         
     def setAnswer(self, optionsMap):
         '''
-        Saves the answer for the current question, and finds the next question to be performed to the user.
+        Saves the answer for the current question, and finds the next question
+        to be performed to the user.
 
         This method raises an exception if the selected options are invalid.
         
-        @parameter optionsMap: This is a map with the answers for every question that was made to the user.
+        @parameter optionsMap: This is a map with the answers for every question
+                               that was made to the user.
         '''
         # This line may rise a w3afException        
         self._nextQuestionId = self._currentQuestion.getNextQuestionId( optionsMap )

@@ -19,20 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 from core.controllers.wizard.wizard import wizard
+
 
 class short_wizard(wizard):
     
     def __init__( self, w3af_core ):
         '''
-        This method should be overwritten by the actual wizards, so they can define what questions they are
-        going to ask.
+        This method should be overwritten by the actual wizards, so they can 
+        define what questions they are going to ask.
         '''
         wizard.__init__( self, w3af_core )
 
-        self._questionList = self._get_instances( ['target_1','target_2'] )
+        self._question_lst = self._get_instances( ['target_1','target_2'],
+                                                  w3af_core )
         
     def getWizardDescription(self):
         '''

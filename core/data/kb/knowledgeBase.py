@@ -24,11 +24,15 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.kb.shell as shell
 
+from multiprocessing.managers import BaseManager
 
-class knowledgeBase:
+__all__ = ['KnowledgeBaseServer','KnowledgeBaseClient','kb']
+
+
+class KnowledgeBase:
     '''
-    This class saves the data that is sent to it by plugins. It is the only way in which
-    plugins can talk to each other.
+    This class saves the data that is sent to it by plugins. It is the only way
+    in which plugins can talk to each other.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -66,13 +70,16 @@ class knowledgeBase:
         
     def getData( self, pluginWhoSavedTheData, variableName=None ):
         '''
-        @parameter pluginWhoSavedTheData: The plugin that saved the data to the kb.info
-        Typically the name of the plugin, but could also be the plugin instance.
+        @parameter pluginWhoSavedTheData: The plugin that saved the data to the
+                                          kb.info Typically the name of the plugin,
+                                          but could also be the plugin instance.
         
-        @parameter variableName: The name of the variables under which the vuln objects were
-        saved. Typically the same name of the plugin, or something like "vulns", "errors", etc. In
-        most cases this is NOT None. When set to None, a dict with all the vuln objects found by the
-        pluginWhoSavedTheData is returned.
+        @parameter variableName: The name of the variables under which the vuln 
+                                 objects were saved. Typically the same name of
+                                 the plugin, or something like "vulns", "errors",
+                                 etc. In most cases this is NOT None. When set 
+                                 to None, a dict with all the vuln objects found
+                                 by the pluginWhoSavedTheData is returned.
         
         @return: Returns the data that was saved by another plugin.
         '''
@@ -95,8 +102,7 @@ class knowledgeBase:
 
     def getAllEntriesOfClass(self, klass):
         '''
-        @return: A list of all objects of class == klass that are
-            saved in the kb.
+        @return: A list of all objects of class == klass that are saved in the kb.
         '''
         res = []
         
@@ -144,4 +150,47 @@ class knowledgeBase:
         else:
             return data.getName()
 
-kb = knowledgeBase()
+internal_kb = KnowledgeBase()
+
+kb = KnowledgeBase()
+
+class KnowledgeBaseServer(threading.Thread):
+
+    class KnowledgeBaseManagerServer(BaseManager): pass
+    KnowledgeBaseManagerServer.register('getData', callable=internal_kb.getData)
+    KnowledgeBaseManagerServer.register('cleanup', callable=internal_kb.cleanup)
+    KnowledgeBaseManagerServer.register('dump', callable=internal_kb.dump)
+    KnowledgeBaseManagerServer.register('getAllShells', callable=internal_kb.getAllShells)
+    KnowledgeBaseManagerServer.register('getAllInfos', callable=internal_kb.getAllInfos)
+    KnowledgeBaseManagerServer.register('getAllVulns', callable=internal_kb.getAllVulns)
+    KnowledgeBaseManagerServer.register('getAllEntriesOfClass', callable=internal_kb.getAllEntriesOfClass)
+    KnowledgeBaseManagerServer.register('append', callable=internal_kb.append)
+    KnowledgeBaseManagerServer.register('save', callable=internal_kb.save)
+    
+    def run(self):
+        m = self.KnowledgeBaseManagerServer(address=('127.0.0.2', 50000), authkey='letmein')
+        s = m.get_server()
+        s.serve_forever()
+    
+
+class KnowledgeBaseClient(object):
+
+    class KnowledgeBaseManagerClient(BaseManager): pass
+    KnowledgeBaseManagerClient.register('getData')
+    KnowledgeBaseManagerClient.register('cleanup')
+    KnowledgeBaseManagerClient.register('dump')
+    KnowledgeBaseManagerClient.register('getAllShells')
+    KnowledgeBaseManagerClient.register('getAllInfos')
+    KnowledgeBaseManagerClient.register('getAllVulns')
+    KnowledgeBaseManagerClient.register('getAllEntriesOfClass')
+    KnowledgeBaseManagerClient.register('append')
+    KnowledgeBaseManagerClient.register('save')
+    
+    def start(self):
+        client = self.KnowledgeBaseManagerClient(address=('127.0.0.2', 50000), authkey='letmein')
+        client.connect()
+        global kb
+        kb = client
+        return client
+        
+        

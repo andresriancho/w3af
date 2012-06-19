@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import threading
+import multiprocessing
 import time
 import sys
 
@@ -30,8 +30,10 @@ from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
 
+from core.data.kb.knowledgeBase import KnowledgeBaseClient
 
-class grep(threading.Thread):
+
+class grep(multiprocessing.Process):
     '''
     Consumer thread that takes requests and responses from the queue and
     analyzes them using user-configured grep plugins.
@@ -48,6 +50,11 @@ class grep(threading.Thread):
         self._in_queue = in_queue
         self._grep_plugins = grep_plugins
         self._w3af_core = w3af_core
+        
+        # Start a client so I can access the KB from within this process
+        # the server was started in w3afCore.py
+        kb_client = KnowledgeBaseClient()
+        kb_client.start_client()
     
     def run(self):
         '''
@@ -56,7 +63,7 @@ class grep(threading.Thread):
         while True:
            
             request, response = self._in_queue.get()
-            
+
             if request == response == FINISH_CONSUMER:
                 
                 for plugin in self._grep_plugins:
@@ -96,4 +103,3 @@ class grep(threading.Thread):
         #
         time.sleep(0.5)
         
-                                          

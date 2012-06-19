@@ -24,6 +24,7 @@ import traceback
 import Queue
 import time
 import sys
+import multiprocessing
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -118,7 +119,7 @@ class w3af_core_strategy(object):
         grep_plugins = self._w3af_core.plugins.plugins['grep']
         
         if grep_plugins:
-            grep_in_queue = Queue.Queue(25)
+            grep_in_queue = multiprocessing.Queue(25)
             self._w3af_core.uriOpener.set_grep_queue( grep_in_queue )
             self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
             self._grep_consumer.start()

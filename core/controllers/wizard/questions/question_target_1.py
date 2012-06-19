@@ -33,18 +33,18 @@ from core.controllers.w3afCore import w3af_core
 
 class question_target_1(question):
     '''
-    This is the first question of the wizard, where you have to speficy the target.
+    This is the first question of the wizard, where you have to specify the target.
     '''
-    def __init__(self):
-        question.__init__( self )
+    def __init__(self, w3af_core):
+        question.__init__( self, w3af_core )
     
-        self._questionId = 'target_1'
+        self._question_id = 'target_1'
 
-        self._questionTitle = 'Target URL'
+        self._question_title = 'Target URL'
         
-        self._questionString = 'In this step you should specify the URL of the target web application.'
-        self._questionString += ' Remember that you can separate different URLs with commas like this: \n'
-        self._questionString += '    - http://host.tld/a.php , http://host.tld/b.php'
+        self._question_str = 'In this step you should specify the URL of the target web application.'
+        self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
+        self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
         
     def _getOptionObjects(self):
         '''

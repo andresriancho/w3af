@@ -20,36 +20,35 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-class question:
+
+class question(object):
     '''
     This class represents a question that is made to a user through a wizard.
     
     The idea is that a wizard object has a lot of this question objects.
     '''
-    def __init__(self):
-        self._questionId = ''
-        self._questionString = ''
-        self.w3af_core = None
+    def __init__(self, w3af_core):
+        self._question_id = ''
+        self._question_str = ''
+        self.w3af_core = w3af_core
 
         self._previously_answered_values = None
 
     def getQuestionTitle(self):
-        return self._questionTitle
+        return self._question_title
         
     def setQuestionTitle(self, s):
-        self._questionTitle = s    
+        self._question_title = s    
 
     def getQuestionString(self):
-        return self._questionString
+        return self._question_str
         
     def setQuestionString(self, s):
-        self._questionString = s
+        self._question_str = s
         
     def getOptionObjects(self):
         '''
@@ -76,23 +75,24 @@ class question:
     
     def setPreviouslyAnsweredValues(self, values):
         '''
-        This is needed to implement the previous feature!
+        This is needed to implement the previous/back feature!
         '''
         self._previously_answered_values = values
 
     def getQuestionId(self):
-        return self._questionId
+        return self._question_id
         
     def setQuestionId(self, qid):
-        self._questionId = qid
+        self._question_id = qid
         
     def getNextQuestionId(self, optionsMap):
         '''
-        @return: The id of the next question that the wizard has to ask to the user, based on the optionsMap.
-                 None if this is the last question of the wizard.
+        @return: The id of the next question that the wizard has to ask to the
+                 user, based on the optionsMap. None if this is the last
+                 question of the wizard.
         '''
         return None
         
     def __repr__(self):
-        return '<question object '+self._questionId+'>'
+        return '<question object '+self._question_id+'>'
         
