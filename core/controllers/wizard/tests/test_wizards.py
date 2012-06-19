@@ -24,8 +24,7 @@ import os
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
-
-from core.data.options.optionList import optionList
+from core.controllers.w3afException import w3afException
 
 
 class test_wizards(object):
@@ -45,9 +44,12 @@ class test_wizards(object):
             klass = mod % wizard_id
             wizard_inst = factory( klass, w3af_core )
             
-            yield self._test_wizard, wizard_inst
+            yield self._test_wizard_correct, wizard_inst
+            
+            wizard_inst = factory( klass, w3af_core )
+            yield self._test_wizard_fail, wizard_inst
     
-    def _test_wizard(self, wizard_inst):
+    def _test_wizard_correct(self, wizard_inst):
         '''
         @see test_questions.py for a complete test of questions.py and all the
              instances of that class that live in the questions directory.
@@ -68,6 +70,34 @@ class test_wizards(object):
                 filled_opt = self._correctly_fill_options(opt)
                 wizard_inst.setAnswer(filled_opt)
     
+    def _test_wizard_fail(self, wizard_inst):
+        '''
+        @see test_questions.py for a complete test of questions.py and all the
+             instances of that class that live in the questions directory.
+        '''
+        while True:
+            
+            question = wizard_inst.next()
+
+            if question is None:
+                break
+            else:
+                opt = question.getOptionObjects()
+                filled_opt = self._incorrectly_fill_options(opt)
+                try:
+                    wizard_inst.setAnswer(filled_opt)
+                except w3afException:
+                    # Now we correctly fill these values
+                    filled_opt = self._correctly_fill_options(opt)
+                    wizard_inst.setAnswer(filled_opt)
+                except Exception:
+                    # The idea is that even when the user puts invalid
+                    # values in the answer, we handle it with a w3afException
+                    # and show something to him. If we get here then something
+                    # went wrong
+                    assert False
+                    
+
     def _correctly_fill_options(self, option_list):
         '''
         @return: A correctly completed option list, simulates a user that knows
@@ -86,6 +116,21 @@ class test_wizards(object):
         return option_list
     
         
+    def _incorrectly_fill_options(self, option_list):
+        '''
+        @return: Inorrectly completed option list, simulates a user that
+                 doesn't know what he's doing and makes all the mistakes.
+        '''
+        values = {
+                  'target': 'foo://www.w3af.org',
+                  'targetOS': 'Minix',
+                  'targetFramework': 'C++'
+                 }
         
+        for option in option_list:
+            value = values.get( option.getName(), '#FAIL' )
+            option.setValue(value)
+        
+        return option_list        
             
 
