@@ -38,13 +38,13 @@ def dependency_check():
     # Check python version
     major, minor, micro, releaselevel, serial = sys.version_info
     if major == 2:
-        if minor <= 5:
-            print 'Error: Python 2.' +str(minor)+' was found and Python 2.6 is required.'
-            sys.exit( 1 )
-        if minor >= 7:
-            print 'w3af is officially supported under Python 2.6'
+        if minor not in (6, 7):
+            msg = 'Error: Python 2.%s found but Python 2.6 or 2.7 required.' % minor
+            print msg
     elif major > 2:
-        print 'It seems that you are running python 3k, please let us know if w3af works ok =)'
+        msg = 'It seems that you are running Python 3k, please let us know if'
+        msg += ' w3af works as expected at w3af-develop@lists.sourceforge.net !'
+        print msg
         sys.exit( 1 )
         
     reasonForExit = False
