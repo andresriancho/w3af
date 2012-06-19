@@ -85,20 +85,17 @@ class w3af_core_strategy(object):
             
             if not self._fuzzable_request_set:
                 om.out.information('No URLs found during discovery phase.')
-                self._w3af_core._end()
                 return
 
             self._post_discovery()
+            
             self._audit()
-            self._end()
             
         except w3afException, e:
             self._end(e)
             raise
-        except KeyboardInterrupt, e:
+        finally:
             self._end()
-            # I wont handle this, the user interface must know what to do with it
-            raise
     
     def _end(self, exc_inst=None, ignore_err=False):
         '''

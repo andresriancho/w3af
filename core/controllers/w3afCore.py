@@ -48,7 +48,7 @@ from core.controllers.w3afException import (w3afException, w3afMustStopException
                                             w3afMustStopByUnknownReasonExc)
 
 from core.data.url.xUrllib import xUrllib
-from core.data.kb.knowledgeBase import KnowledgeBaseServer, KnowledgeBaseClient, kb
+from core.data.kb.knowledgeBase import kb
 
 
 class w3afCore(object):
@@ -67,15 +67,6 @@ class w3afCore(object):
         # Create some directories
         self._home_directory()
         self._tmp_directory()
-
-        '''        
-        # Start the knowledge base server
-        kb_server = KnowledgeBaseServer()
-        kb_server.start()
-
-        kb_client = KnowledgeBaseClient()
-        kb_client.start()
-        '''
         
         # These are some of the most important moving parts in the w3afCore
         # they basically handle every aspect of the w3af framework:
@@ -172,7 +163,7 @@ class w3afCore(object):
         @return: None
         '''
         # Clean all data that is stored in the kb
-        kb.kb.cleanup()
+        kb.cleanup()
 
         # Zero internal variables from the core
         self._initializeInternalVariables()

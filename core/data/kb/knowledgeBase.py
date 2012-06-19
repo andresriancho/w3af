@@ -24,10 +24,6 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.kb.shell as shell
 
-from multiprocessing.managers import BaseManager
-
-__all__ = ['KnowledgeBaseServer','KnowledgeBaseClient','kb']
-
 
 class KnowledgeBase:
     '''
@@ -150,47 +146,5 @@ class KnowledgeBase:
         else:
             return data.getName()
 
-internal_kb = KnowledgeBase()
-
 kb = KnowledgeBase()
-
-class KnowledgeBaseServer(threading.Thread):
-
-    class KnowledgeBaseManagerServer(BaseManager): pass
-    KnowledgeBaseManagerServer.register('getData', callable=internal_kb.getData)
-    KnowledgeBaseManagerServer.register('cleanup', callable=internal_kb.cleanup)
-    KnowledgeBaseManagerServer.register('dump', callable=internal_kb.dump)
-    KnowledgeBaseManagerServer.register('getAllShells', callable=internal_kb.getAllShells)
-    KnowledgeBaseManagerServer.register('getAllInfos', callable=internal_kb.getAllInfos)
-    KnowledgeBaseManagerServer.register('getAllVulns', callable=internal_kb.getAllVulns)
-    KnowledgeBaseManagerServer.register('getAllEntriesOfClass', callable=internal_kb.getAllEntriesOfClass)
-    KnowledgeBaseManagerServer.register('append', callable=internal_kb.append)
-    KnowledgeBaseManagerServer.register('save', callable=internal_kb.save)
-    
-    def run(self):
-        m = self.KnowledgeBaseManagerServer(address=('127.0.0.2', 50000), authkey='letmein')
-        s = m.get_server()
-        s.serve_forever()
-    
-
-class KnowledgeBaseClient(object):
-
-    class KnowledgeBaseManagerClient(BaseManager): pass
-    KnowledgeBaseManagerClient.register('getData')
-    KnowledgeBaseManagerClient.register('cleanup')
-    KnowledgeBaseManagerClient.register('dump')
-    KnowledgeBaseManagerClient.register('getAllShells')
-    KnowledgeBaseManagerClient.register('getAllInfos')
-    KnowledgeBaseManagerClient.register('getAllVulns')
-    KnowledgeBaseManagerClient.register('getAllEntriesOfClass')
-    KnowledgeBaseManagerClient.register('append')
-    KnowledgeBaseManagerClient.register('save')
-    
-    def start(self):
-        client = self.KnowledgeBaseManagerClient(address=('127.0.0.2', 50000), authkey='letmein')
-        client.connect()
-        global kb
-        kb = client
-        return client
-        
         
