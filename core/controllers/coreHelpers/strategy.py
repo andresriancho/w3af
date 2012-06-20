@@ -24,7 +24,6 @@ import traceback
 import Queue
 import time
 import sys
-import multiprocessing
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
@@ -33,6 +32,8 @@ import core.controllers.outputManager as om
 from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.consumers.grep import grep
+from core.controllers.coreHelpers.consumers.auth import auth
+from core.controllers.coreHelpers.consumers.audit import audit
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import threadManagerObj as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
@@ -60,9 +61,14 @@ class w3af_core_strategy(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
         
-        # Internal variables:
+        # Internal variables
         self._fuzzable_request_set  = set()
         kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
+        
+        # Consumer threads
+        self._grep_consumer = None
+        self._audit_consumer = None
+        self._auth_consumer = None
 
     def start(self):
         '''
@@ -78,6 +84,7 @@ class w3af_core_strategy(object):
         
         try:
             self._setup_grep()
+            self._setup_auth()
             
             self._seed_discovery()
             
@@ -89,7 +96,7 @@ class w3af_core_strategy(object):
 
             self._post_discovery()
             
-            self._audit()
+            self._setup_audit()
             
         except w3afException, e:
             self._end(e)
@@ -102,7 +109,8 @@ class w3af_core_strategy(object):
         End the strategy specific things and then call w3af_core's _end()
         '''
         self.teardown_grep()
-        
+        self.teardown_audit()
+        self.teardown_auth()
         self._w3af_core._end(exc_inst, ignore_err)
         
     
@@ -116,15 +124,26 @@ class w3af_core_strategy(object):
         grep_plugins = self._w3af_core.plugins.plugins['grep']
         
         if grep_plugins:
-            grep_in_queue = multiprocessing.Queue(25)
+            grep_in_queue = Queue.Queue(25)
             self._w3af_core.uriOpener.set_grep_queue( grep_in_queue )
             self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
             self._grep_consumer.start()
         
     def teardown_grep(self):
-        self._grep_consumer.stop()
-        self._grep_consumer = None
+        if self._grep_consumer is not None: 
+            self._grep_consumer.stop()
+            self._grep_consumer = None
+    
+    def teardown_audit(self):
+        if self._audit_consumer is not None:
+            self._audit_consumer.stop()
+            self._audit_consumer = None
         
+    def teardown_auth(self):
+        if self._auth_consumer is not None:
+            self._auth_consumer.stop()
+            self._auth_consumer = None
+
     def _post_discovery(self):
         '''
         This method is called after the discovery and brutefore phases finish
@@ -264,30 +283,30 @@ class w3af_core_strategy(object):
         
         # Load the target URLs to the KB
         update_URLs_in_KB( self._fuzzable_request_set )
-                
-    def _auth_login(self):
+    
+    def _setup_auth(self, timeout=5):
+        '''
+        Start the thread that will make sure the xurllib always has a "fresh"
+        session. The thread will call _force_auth_login every "timeout" seconds.
+        
+        If there is a specific need to make sure that the session is fresh before
+        performing any step, the developer needs to run the _force_auth_login()
+        method.
+        '''
+        auth_plugins = self._w3af_core.plugins.plugins['auth']
+        
+        if auth_plugins:
+            auth_in_queue = Queue.Queue(5)
+            self._auth_consumer = auth(auth_in_queue, auth_plugins,
+                                       self._w3af_core, timeout)
+            self._auth_consumer.start()
+            self._auth_consumer.async_force_login()
+        
+    def force_auth_login(self):
         '''
         Make login to the web application when it is needed.
         '''
-        for plugin in self._w3af_core.plugins.plugins['auth']:
-
-            try:
-                try:
-                    if not plugin.is_logged():
-                        plugin.login()
-                finally:
-                    tm.join(plugin)
-            except Exception, e:
-                # Smart error handling, much better than just crashing.
-                # Doing this here and not with something similar to:
-                # sys.excepthook = handle_crash because we want to handle
-                # plugin exceptions in this way, and not framework 
-                # exceptions                        
-                exec_info = sys.exc_info()
-                enabled_plugins = pprint_plugins(self._w3af_core)
-                exception_handler.handle( self._w3af_core.status, e , 
-                                          exec_info, enabled_plugins )
-            
+        self._auth_consumer.force_login()
 
     def _discover_and_bruteforce( self ):
         '''
@@ -297,6 +316,9 @@ class w3af_core_strategy(object):
         @return: A list with fuzzable requests that were found during discovery
                  and bruteforce.
         '''
+        # Make sure we have a session before we start the discovery process
+        self.force_auth_login()
+        
         res = set()
         add = res.add
         #TODO: This is a horrible thing to do, we consume lots of memory
@@ -429,9 +451,6 @@ class w3af_core_strategy(object):
             
             for plugin in self._w3af_core.plugins.plugins['discovery']:
                 
-                # Login is needed,
-                self._auth_login()
-                
                 for fr in to_walk:
                     
                     # Should I continue with the discovery phase? If not, return
@@ -550,62 +569,24 @@ class w3af_core_strategy(object):
                     msg = 'The plugin "%s" raised an exception in the end() method: "%s"'
                     om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
                         
-    def _audit(self):
-        om.out.debug('Called _audit()' )
+    def _setup_audit(self):
+        om.out.debug('Called _setup_audit()' )
 
         enabled_plugins = self._w3af_core.plugins.getEnabledPlugins('audit')
         audit_plugins = self._w3af_core.plugins.plugin_factory( enabled_plugins, 'audit')
-
-        # For progress reporting
-        self._w3af_core.status.set_phase('audit')
-        amount_of_tests = len(audit_plugins) * len(self._fuzzable_request_set)
-        self._w3af_core.progress.set_total_amount( amount_of_tests )
-
-        # This two loops do all the audit magic [KISS]
-        for plugin in audit_plugins:
-
-            # For status
-            self._w3af_core.status.set_running_plugin( plugin.getName() )
-            
-            # Before running each plugin let's make sure we're logged in
-            self._auth_login()
-
+        
+        if audit_plugins:
+            audit_in_queue = Queue.Queue(25)
+            self._audit_consumer = audit(audit_in_queue, audit_plugins, self._w3af_core)
+            self._audit_consumer.start()
+        
             #TODO: This is a horrible thing to do, we consume lots of memory
             #      for just a loop. The issue is that we had some strange
             #      "RuntimeError: Set changed size during iteration" and I had
             #      no time to solve them.
             for fr in set(self._fuzzable_request_set):
+                audit_in_queue.put(fr)
                 
-                # Sends each fuzzable request to the plugin
-                self._w3af_core.status.set_current_fuzzable_request( fr )
-                
-                try:
-                    try:
-                        plugin.audit_wrapper( fr )
-                    finally:
-                        tm.join( plugin )
-                except w3afException, e:
-                    om.out.error( str(e) )
-                
-                except Exception, e:
-                    # Smart error handling, much better than just crashing.
-                    # Doing this here and not with something similar to:
-                    # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework 
-                    # exceptions                    
-                    exec_info = sys.exc_info()
-                    enabled_plugins = pprint_plugins(self._w3af_core)
-                    exception_handler.handle( self._w3af_core.status, e , 
-                                              exec_info, enabled_plugins )
-                
-                # Performed one test, report it
-                self._w3af_core.progress.inc()
-                    
-            # Let the plugin know that we are not going to use it anymore
-            try:
-                plugin.end()
-            except w3afException, e:
-                om.out.error( str(e) )
             
     def _bruteforce(self, fr_list):
         '''
