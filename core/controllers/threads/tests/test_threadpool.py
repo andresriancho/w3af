@@ -19,102 +19,142 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import unittest
+
 import thread
 import time
 import traceback
+import sys
+import unittest
+
 from core.controllers.threads.threadpool import Pool, TimeoutError
 
 
 
+def f(x):
+    return x*x
+
+def work(seconds):
+    time.sleep(seconds)
+    return (thread.get_ident(), seconds)
+
+
 class TestThreadPool(unittest.TestCase):
+    """
+    Some tests that are based from the original recipe at
+    http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
+    """
     
-    def test_all(self):
-        """
-        Some tests that are based from the original recipe at
-        http://code.activestate.com/recipes/576519-thread-pool-with-same-api-as-multiprocessingpool/
-        """
-        def f(x):
-            return x*x
-        
-        def work(seconds):
-            print "[%d] Start to work for %fs..." % (thread.get_ident(), seconds)
-            time.sleep(seconds)
-            print "[%d] Work done (%fs)." % (thread.get_ident(), seconds)
-            return "%d slept %fs" % (thread.get_ident(), seconds)
+    def setUp(self):
+        self.callback_count = 0
+        self.pool = Pool(9)
     
-        ### Test copy/pasted from multiprocessing
-        # start 9 worker threads
-        pool = Pool(9)                
+    def tearDown(self):
+        self.pool.terminate()
+    
+    def test_basic(self):
     
         # evaluate "f(10)" asynchronously
-        result = pool.apply_async(f, (10,))
-        assert result.get(timeout=1) == 100   
+        result = self.pool.apply_async(f, (10,))
+        self.assertEqual( result.get(timeout=1) , 100 )   
     
         # prints "[0, 1, 4,..., 81]"
-        assert pool.map(f, range(10)) == [f(x) for x in range(10)]     
+        self.assertEqual( self.pool.map(f, range(10)) , [f(x) for x in range(10)] )
     
-        it = pool.imap(f, range(10))
-        # prints "0"
-        assert it.next() == 0
-        # prints "1"
-        assert it.next() == 1    
-        # prints "4" unless slow computer             
-        assert it.next(timeout=1) == 4
-    
-        # Test apply_sync exceptions
-        result = pool.apply_async(time.sleep, (3,))
+        it = self.pool.imap(f, range(10))
+        self.assertEqual( it.next() , 0 )
+        self.assertEqual( it.next() , 1 )                 
+        self.assertEqual( it.next(timeout=1) , 4 )
+
+
+    def test_apply_sync_exceptions(self):
+
+        result = self.pool.apply_async(time.sleep, (3,))
         try:
-            print result.get(timeout=1)           # raises `TimeoutError`
+            # raises `TimeoutError`
+            result.get(timeout=1)
         except TimeoutError:
-            assert True, "Good. Got expected timeout exception."
+            self.assertTrue( True, "Good. Got expected timeout exception." )
         else:
-            assert False, "Expected exception !"
-        print result.get()
+            self.assertTrue( False, "Expected exception !" )
+        result.get()
     
-        def cb(s):
-            print "Result ready: %s" % s
+    def test_imap(self):
+        thread_ids = []
+        start = time.time()
+        
+        for thread_id, wait_time in self.pool.imap(work, xrange(10, 3, -1),
+                                                   chunksize=4):
+            if thread_id not in thread_ids:
+                thread_ids.append(thread_id)
+        
+        end = time.time()
+        
+        # Verify the chunksize parameter
+        self.assertEquals( len(thread_ids) , 2)
+        self.assertTrue( end-start > 34 )
+        self.assertTrue( end-start < 34.3 )
     
-        # Test imap()
-        for res in pool.imap(work, xrange(10, 3, -1), chunksize=4):
-            print "Item:", res
+    def test_imap_unordered(self):
+        start = time.time()
+        
+        for res in self.pool.imap_unordered(work, xrange(10, 3, -1)):
+            res
+        
+        end = time.time()
+        
+        self.assertTrue( end-start > 10 )
+        self.assertTrue( end-start < 10.3 )
+        
+    def callback(self, s):
+        self.callback_count += 1
     
-        # Test imap_unordered()
-        for res in pool.imap_unordered(work, xrange(10, 3, -1)):
-            print "Item:", res
-    
-        # Test map_async()
-        result = pool.map_async(work, xrange(10), callback=cb)
+    def test_map_async(self):
+        result = self.pool.map_async(work, xrange(10), callback=self.callback)
+        
         try:
-            print result.get(timeout=1)           # raises `TimeoutError`
+            # raises `TimeoutError`
+            result.get(timeout=1)
         except TimeoutError:
-            assert True, "Good. Got expected timeout exception."
+            self.assertTrue( True, "Good. Got expected timeout exception." )
         else:
-            assert False, "Expected exception !"
-        print result.get()
+            self.assertTrue( False, "Expected exception !" )
+        result.get()
+        
+        self.assertEqual( self.callback_count, 1)
     
-        # Test imap_async()
-        result = pool.imap_async(work, xrange(3, 10), callback=cb)
+    def test_imap_async(self):
+        result = self.pool.imap_async(work, xrange(3, 10), callback=self.callback)
+        
         try:
-            print result.get(timeout=1)           # raises `TimeoutError`
+            # raises `TimeoutError`
+            result.get(timeout=1)
         except TimeoutError:
-            assert True, "Good. Got expected timeout exception."
+            self.assertTrue( True, "Good. Got expected timeout exception." )
         else:
-            assert False, "Expected exception !"
-        for i in result.get():
-            print "Item:", i
-        print "### Loop again:"
-        for i in result.get():
-            print "Item2:", i
+            self.assertTrue( False, "Expected exception !" )
+        
+        wait_time = 2
+        results = []
+        for thread_id, t_wait_time in result.get():
+            self.assertTrue( t_wait_time, wait_time + 1)
+            wait_time += 1
+            results.append((thread_id, t_wait_time))
+        
+        for thread_id, t_wait_time in result.get():
+            self.assertTrue( (thread_id, t_wait_time) in results )
+            
+        self.assertEqual( self.callback_count, 1)
     
-        # Test imap_unordered_async()
-        result = pool.imap_unordered_async(work, xrange(10, 3, -1), callback=cb)
+    def imap_unordered_async(self):
+        result = self.pool.imap_unordered_async(work, xrange(10, 3, -1),
+                                                callback=self.callback)
         try:
-            print result.get(timeout=1)           # raises `TimeoutError`
+            # raises `TimeoutError`
+            result.get(timeout=1)
         except TimeoutError:
-            print "Good. Got expected timeout exception."
+            self.assertTrue( True, "Good. Got expected timeout exception." )
         else:
-            assert False, "Expected exception !"
+            self.assertTrue( False, "Expected exception !" )
         for i in result.get():
             print "Item1:", i
         for i in result.get():
@@ -126,32 +166,38 @@ class TestThreadPool(unittest.TestCase):
             print "Item4:", i
         for i in r:
             print "Item5:", i
+        
+        self.assertEqual( self.callback_count, 1)
     
-        #
-        # The case for the exceptions
-        #
-    
-        # Exceptions in imap_unordered_async()
-        result = pool.imap_unordered_async(work, xrange(2, -10, -1), callback=cb)
+    def test_exceptions_imap_unordered_async(self):
+        result = self.pool.imap_unordered_async(work, xrange(2, -10, -1),
+                                                callback=self.callback)
         time.sleep(3)
         try:
-            for i in result.get():
-                print "Got item:", i
+            [i for i in result.get()]
         except IOError:
-            print "Good. Got expected exception:"
-            traceback.print_exc()
+            self.assertTrue( True, "Good. Got expected exception." )
+            
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            last_call = traceback.extract_tb(exc_traceback)[-1]
+            _,_,func,call = last_call
+            
+            self.assertEquals('work', func)
+            self.assertEquals('time.sleep(seconds)', call)
     
-        # Exceptions in imap_async()
-        result = pool.imap_async(work, xrange(2, -10, -1), callback=cb)
+    def test_exceptions_imap_async(self):
+        result = self.pool.imap_async(work, xrange(2, -10, -1),
+                                      callback=self.callback)
         time.sleep(3)
         try:
-            for i in result.get():
-                print "Got item:", i
+            [i for i in result.get()]
         except IOError:
-            print "Good. Got expected exception:"
-            traceback.print_exc()
-    
-        # Stop the test: need to stop the pool !!!
-        pool.terminate()
-        print "End of tests"
-    
+            self.assertTrue( True, "Good. Got expected exception." )
+            
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            last_call = traceback.extract_tb(exc_traceback)[-1]
+            _,_,func,call = last_call
+            
+            self.assertEquals('work', func)
+            self.assertEquals('time.sleep(seconds)', call)
+
