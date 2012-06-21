@@ -20,23 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.extrusionScanning.server.extrusionServer import extrusionServer
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-from core.controllers.threads.threadManager import threadManagerObj as tm
-from core.controllers.intrusionTools.execMethodHelpers import *
+import hashlib
+import os
+import socket
+import time
+import threading
+
+import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
+import core.controllers.outputManager as om
+
+from core.controllers.extrusionScanning.server.extrusionServer import extrusionServer
+from core.controllers.w3afException import w3afException
+from core.controllers.intrusionTools.execMethodHelpers import *
 from core.controllers.payloadTransfer.echoWin import echoWin
 from core.controllers.payloadTransfer.echoLnx import echoLnx
-import core.data.kb.config as cf
-
-import time
-import os
-import hashlib
-import socket
 
 
-class extrusionScanner:
+class extrusionScanner(object):
     '''
     This class is a wrapper that performs this process:
         - sends extrusion client to compromised machine
@@ -46,10 +47,14 @@ class extrusionScanner:
     @author: Andres Riancho ( andres.riancho@gmail.com )    
     '''
 
-    def __init__( self, execMethod, forceReRun=False, tcpPortList=[25,80,53,1433,8080], udpPortList=[53,69,139,1025] ):
+    def __init__( self, execMethod, forceReRun=False, 
+                  tcpPortList=[25,80,53,1433,8080],
+                  udpPortList=[53,69,139,1025] ):
         '''
-        @parameter execMethod: The execMethod used to execute commands on the remote host
-        @parameter forceReRun: If forceReRun is True, the extrusion scanner won't fetch the results from the KB
+        @parameter execMethod: The execMethod used to execute commands on the
+                               remote host
+        @parameter forceReRun: If forceReRun is True, the extrusion scanner
+                               won't fetch the results from the KB
         '''
         self._execMethod = execMethod
         self._forceReRun = forceReRun
@@ -97,8 +102,8 @@ class extrusionScanner:
         if savedResults:
             return 1
         else:
-            f00, fileContent, b4r = self._selectExtrusionClient()
-            return self._transferHandler.estimateTransferTime( len(fileContent) ) + 8
+            _, file_content, _ = self._selectExtrusionClient()
+            return self._transferHandler.estimateTransferTime( len(file_content) ) + 8
     
     def getInboundPort( self, desiredProtocol='TCP' ):
         '''
@@ -110,31 +115,41 @@ class extrusionScanner:
             savedResults = kb.kb.getData('extrusionScanner', 'extrusions')
             if remoteId in savedResults:
                 om.out.information('Reusing previous result from the knowledgeBase:' )
-                om.out.information('- Selecting port "'+ str(savedResults[ remoteId ]) + '" for inbound connections from the compromised server to w3af.' )
+                msg = '- Selecting port "%s" for inbound connections from the'
+                msg += ' compromised server to w3af.' % savedResults[ remoteId ]
+                om.out.information( msg )
                 return savedResults[ remoteId ]
             
         om.out.information('Please wait some seconds while w3af performs an extrusion scan.')
         
         es = extrusionServer( self._tcpPortList, self._udpPortList )
         if not es.canSniff():
-            raise w3afException( 'The user running w3af can\'t sniff on the specified interface. Hints: Are you root? Does this interface exist?' )
+            msg = 'The user running w3af can\'t sniff on the specified'
+            msg += ' interface. Hints: Are you root? Does this interface'
+            msg += ' exist?'
+            raise w3afException( msg )
         else:
             # I can sniff, it makes sense to send the extrusion client
             interpreter, remoteFilename = self._sendExtrusionClient()
             
-            tm.startFunction( target=es.sniffAndAnalyze, args=(), ownerObj=self, restrict=False )
-            # Let the sniffer start !
+            # This sniffs for packets in a new thread
+            sniff_thread = threading.Thread(target=es.sniffAndAnalyze)
+            sniff_thread.start()
             time.sleep(1)
             
             self._execExtrusionClient( interpreter, remoteFilename )
             
-            tm.join( self )
             res = es.getResult()
             om.out.information('Finished extrusion scan.')
             
-            if res:
+            if not res:
+                msg = 'No inbound ports have been found. Maybe the extrusion'
+                msg += ' scan failed ?'
+                raise w3afException( msg )
+            else:
                 host = res[0][0]
-                om.out.information('The remote host: "' + host + '" can connect to w3af with these ports:')
+                msg = 'The remote host: "%s" can connect to w3af with these ports:'
+                om.out.information( msg  % host )
                 port = None
                 portList = []
                 for x in res:
@@ -152,7 +167,9 @@ class extrusionScanner:
                 if not localPorts:
                     raise w3afException('All the inbound ports are in use.')
                 else:
-                    om.out.information('The following ports are not bound to a local process and can be used by w3af:')
+                    msg = 'The following ports are not bound to a local process'
+                    msg += ' and can be used by w3af:'
+                    om.out.information( msg )
                     for lp, proto in localPorts:
                         om.out.information('- ' + str(lp) + '/' + proto )
                         
@@ -160,7 +177,9 @@ class extrusionScanner:
                         if desiredProtocol.upper() == proto.upper():
                             port = lp
                     
-                    om.out.information('Selecting port "'+ str(port) + '/'+ proto +'" for inbound connections from the compromised server to w3af.' )
+                    msg = 'Selecting port "%s/%s" for inbound connections from'
+                    msg += ' the compromised server to w3af.'
+                    om.out.information( msg % (port,proto) )
                     
                     if not self._forceReRun:
                         om.out.debug('Saving information in the kb.')
@@ -173,8 +192,7 @@ class extrusionScanner:
                         kb.kb.save('extrusionScanner', 'extrusions', savedResults )
                             
                     return port
-            else:
-                raise w3afException( 'No inbound ports have been found. Maybe the extrusion scan failed ?' )
+                
     
     def _sendExtrusionClient( self ):
         interpreter, extrusionClient, extension = self._selectExtrusionClient()
@@ -205,8 +223,8 @@ class extrusionScanner:
     
     def _selectExtrusionClient( self ):
         '''
-        This method selects the extrusion client to use based on the remote OS and some other factors
-        like:
+        This method selects the extrusion client to use based on the remote OS 
+        and some other factors like:
             - is python installed ?
             - is perl installed ?
             - is phpcli installed ?
@@ -217,18 +235,26 @@ class extrusionScanner:
         if '6' in self._exec('python -c print+3+3'):
             # "python -c 'print 3+3'" fails with magic quotes on... but
             # this trick of the print+3+3 works ( returns 6 ) and ALSO evades magic quotes
-            fileContent = file( 'core' + os.path.sep + 'controllers' + os.path.sep + 'extrusionScanning' + os.path.sep +\
-            'client' + os.path.sep + 'extrusionClient.py' ).read()
+            filename = os.path.join( 'core','controllers','extrusionScanning',
+                                     'client','extrusionClient.py' )
+            fileContent = file( filename ).read()
             extension = 'py'
             interpreter = 'python'
         else:
-            raise w3afException('Failed to find a suitable extrusion scanner client for the remote system.')
+            msg = 'Failed to find a suitable extrusion scanner client for'
+            msg += ' the remote system.'
+            raise w3afException( msg )
         
         return interpreter, fileContent, extension
 
     def _execExtrusionClient( self, interpreter, remoteFilename ):
-        res = self._exec( interpreter + ' ' + remoteFilename + ' ' + cf.cf.getData( 'localAddress' ) + ' ' + ','.join( [ str(x) for x in self._tcpPortList ] ) + \
-        ' ' + ','.join( [ str(x) for x in self._udpPortList ] ) )
+        cmd = interpreter + ' ' + remoteFilename + ' ' + \
+              cf.cf.getData( 'localAddress' ) + ' ' + \
+              ','.join( [ str(x) for x in self._tcpPortList ] ) + \
+              ' ' + ','.join( [ str(x) for x in self._udpPortList ] )
+
+        res = self._exec( cmd )
+        
         if 'OK.' not in res:
             raise w3afException('The extrusion client failed to execute.')
         else:

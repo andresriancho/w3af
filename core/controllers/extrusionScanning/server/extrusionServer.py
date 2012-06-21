@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import socket
+import time
+
 from core.controllers.w3afException import w3afException
 
 from scapy.all import sniff
@@ -41,19 +43,22 @@ class extrusionServer:
     @author: Andres Riancho ( andres.riancho@gmail.com )    
     '''
 
-    def __init__( self, tcpPortList, udpPortList , host=None, iface=None ):
+    def __init__( self, tcp_ports, udp_ports , host=None, iface=None ):
         '''
-        If you don't know whats the IP address used by the remote host ( the one thats running the extrusionClient )
-        you can just say None and the extrusionServer will try to figure it out.
+        If you don't know what the IP address used by the remote host is
+        (the one thats running the extrusionClient ) you can just say None
+        and the extrusionServer will try to figure it out.
         
         @parameter host: The host from where we expect the connections
         @parameter portList: The portList ( as passed to extrusionClient ) to listen for        
         @parameter iface: The interface where scapy is going to listen for packets
         '''
         self._host = host
-        self._udpPortList = udpPortList
-        self._tcpPortList = tcpPortList
-        
+        self._udp_ports = udp_ports
+        self._tcp_ports = tcp_ports
+        self._sniffing = False        
+        self.reverse_ports_allowed = []
+
         if iface:
             self._iface = iface
         else:
@@ -61,10 +66,11 @@ class extrusionServer:
     
     def canSniff( self ):
         '''
-        Determine if the user running w3af can sniff packets on the configured interface.
+        Determine if the user running w3af can sniff packets on the configured
+        interface.
         '''
         try:
-            p = sniff(filter='port 53', iface=self._iface, timeout=1 )
+            p = sniff(filter='port 53', iface=self._iface, timeout=0.3 )
         except Exception:
             return False
         else:
@@ -75,115 +81,135 @@ class extrusionServer:
         Performs the sniffing
         '''
         # Create the filter
-        allPorts = self._tcpPortList[:]
-        allPorts.extend( self._udpPortList )
-        filter = ' or '.join( [ 'port ' + str(p) for p in allPorts ] )
+        all_ports = self._tcp_ports[:]
+        all_ports.extend( self._udp_ports )
+        all_ports = list(set(all_ports))
+        filter = ' or '.join( [ 'port ' + str(p) for p in all_ports ] )
         
         om.out.information('ExtrusionServer listening on interface: ' + self._iface )
+        self._sniffing = True
         try:
-            pList = sniff(filter=filter, iface=self._iface, timeout=5 )
+            packets = sniff(filter=filter, iface=self._iface, timeout=5 )
         except socket.error , e:
-            self._res = []
-            msg = 'Failed to sniff on interface: ' + self._iface + '. Hints: Are you root? Does this interface exist?'
+            msg = 'Failed to sniff on interface: ' + self._iface 
+            msg += '. Hints: Are you root? Does this interface exist?'
             om.out.error( msg )
             raise w3afException( msg )
-        else:
-            if pList:
-                om.out.debug('Analyzing packetlist captured by scapy. The packetlist is:')
-                for p in pList:
-                    om.out.debug( str(p.summary()) )
-            else:
-                om.out.debug('No packets captured by scapy.')
-                self._res = []
-                return self._res
-                
-            self._res = self._analyzePackets( pList )
-            return self._res
+        else:                
+            self.reverse_ports_allowed = self._analyze_packets( packets )
+            return self.reverse_ports_allowed
+        finally:
+            self._sniffing = False
     
     def getResult( self ):
-        return self._res
+        while self._sniffing:
+            time.sleep(0.5)
+        return self.reverse_ports_allowed
     
-    def _analyzePackets( self, packetList ):
+    def _analyze_packets_no_host(self, packets):
         '''
-        Analyze the packets and return a list of ports that can be used by the remote host
-        to connect back to the extrusionServer.
+        Analyze a list of packets for interesting traffic when the host is
+        unknown.
         '''
+        # This is hard to do...
+        possible_packets = []
+        possible_hosts = {}
+        good_ports = []
+        good_hosts = []
         
-        if self._host is None:
-            # This is hard to do...
-            possiblePackets = []
-            possibleHosts = {}
-            goodPorts = []
-            goodHosts = []
+        for p in packets:
             
-            for p in packetList:
-                # Analyze TCP
-                if p[TCP] is not None and p[TCP].dport in self._tcpPortList and p[IP].dst in get_if_addr( self._iface )\
-                and p[TCP].flags == 0x2: # is SYN
-                    possiblePackets.append( p )
-                    if p[IP].src in possibleHosts:
-                        possibleHosts[ p[IP].src ] += 1
-                    else:
-                        possibleHosts[ p[IP].src ] = 1
+            # Analyze TCP
+            if p.haslayer(TCP) and p[TCP].dport in self._tcp_ports and\
+            p[IP].dst in get_if_addr( self._iface ) and p[TCP].flags == 0x2: # is SYN
+            
+                possible_packets.append( p )
+                if p[IP].src in possible_hosts:
+                    possible_hosts[ p[IP].src ] += 1
+                else:
+                    possible_hosts[ p[IP].src ] = 1
+            
+            # Analyze UDP
+            if p.haslayer(UDP) and p[UDP].dport in self._udp_ports and\
+            p[IP].dst in get_if_addr( self._iface ):
+            
+                possible_packets.append( p )
+                if p[IP].src in possible_hosts:
+                    possible_hosts[ p[IP].src ] += 1
+                else:
+                    possible_hosts[ p[IP].src ] = 1
+        
+        for p in possible_packets:
+            om.out.debug('[extrusionServer] Possible packet: ' + p.summary() )
+            
+        # Now get the one that has more probability of being the one... and
+        # report the list of ports
+        def sortfunc(x,y):
+            return cmp(x[1],y[1])
+        items = possible_hosts.items()
+        items.sort(sortfunc)
+        
+        # Now I report the ports for the hosts with more connections
+        i = 0
+        while i < len(items) and items[0][1] == items[i][1]:
+            good_hosts.append( items[i][0] )
+            i += 1
+        
+        for p in possible_packets:
+            if p[IP].src in good_hosts:
+                if p.haslayer(TCP):
+                    tuple = ( p[IP].src , p[TCP].dport, 'TCP' )
+                    if tuple not in good_ports:
+                        good_ports.append( tuple )
+                        om.out.debug('[extrusionServer] Adding ' + str(tuple) )
                 
-                # Analyze UDP
-                if p[UDP] is not None and p[UDP].dport in self._udpPortList and p[IP].dst in get_if_addr( self._iface ):
-                    possiblePackets.append( p )
-                    if p[IP].src in possibleHosts:
-                        possibleHosts[ p[IP].src ] += 1
-                    else:
-                        possibleHosts[ p[IP].src ] = 1
-            
-            for p in possiblePackets:
-                om.out.debug('[extrusionServer] Possible packet: ' + p.summary() )
-                
-            # Now get the one that has more probability of being the one... and report the list of ports
-            def sortfunc(x,y):
-                return cmp(x[1],y[1])
-            items = possibleHosts.items()
-            items.sort(sortfunc)
-            
-            # Now I report the ports for the hosts with more connections
-            i = 0
-            while i < len(items) and items[0][1] == items[i][1]:
-                goodHosts.append( items[i][0] )
-                i += 1
-            
-            for p in possiblePackets:
-                if p[IP].src in goodHosts:
-                    if p[TCP] is not None:
-                        tuple = ( p[IP].src , p[TCP].dport, 'TCP' )
-                        if tuple not in goodPorts:
-                            goodPorts.append( tuple )
-                            om.out.debug('[extrusionServer] Adding ' + str(tuple) )
+                if p.haslayer(UDP):
+                    tuple = ( p[IP].src , p[UDP].dport, 'UDP' )
+                    if tuple not in good_ports:
+                        good_ports.append( tuple )
+                        om.out.debug('[extrusionServer] Adding ' + str(tuple) )
                     
-                    if p[UDP] is not None:
-                        tuple = ( p[IP].src , p[UDP].dport, 'UDP' )
-                        if tuple not in goodPorts:
-                            goodPorts.append( tuple )
-                            om.out.debug('[extrusionServer] Adding ' + str(tuple) )
-                        
-            return goodPorts
-            
-        else:
-            goodPorts = []
-            for p in packetList:
-                if p[TCP] is not None and p[TCP].dport in self._tcpPortList and p[IP].src == self._host \
-                and p[TCP].flags == 0x2:
-                    
-                    if ( p[IP].src , p[TCP].dport, 'TCP') not in goodPorts:
-                        goodPorts.append( ( p[IP].src , p[TCP].dport, 'TCP') )
+        return good_ports
+    
+    def _analyze_packets_with_host(self, packets):
+        '''
+        When the host is known it is easier to identify which packets arrived
+        from it and which ports are the ones that can be used for reverse shell
+        connections. 
+        '''
+        good_ports = []
+        
+        for p in packets:
+            if p[TCP] is not None and p[TCP].dport in self._tcp_ports and\
+            p[IP].src == self._host and p[TCP].flags == 0x2:
                 
-                if p[UDP] is not None and p[UDP].dport in self._udpPortList and p[IP].src == self._host:
+                if ( p[IP].src , p[TCP].dport, 'TCP') not in good_ports:
+                    good_ports.append( ( p[IP].src , p[TCP].dport, 'TCP') )
+            
+            if p[UDP] is not None and p[UDP].dport in self._udp_ports and\
+            p[IP].src == self._host:
 
-                    if ( p[IP].src , p[UDP].dport, 'UDP') not in goodPorts:
-                        goodPorts.append( ( p[IP].src , p[UDP].dport, 'UDP') )
-                        
-            return goodPorts
+                if ( p[IP].src , p[UDP].dport, 'UDP') not in good_ports:
+                    good_ports.append( ( p[IP].src , p[UDP].dport, 'UDP') )
+                    
+        return good_ports
         
-if __name__ == "__main__":
-    # do the work
-    ec = extrusionServer( [80,25,1433], iface='lo' )
-    ec.sniffAndAnalyze()
-    print ec.getResult()
-    
+        
+    def _analyze_packets( self, packets ):
+        '''
+        Analyze the packets and return a list of ports that can be used by the 
+        remote host to connect back to the extrusionServer.
+        '''
+        if not packets:
+            om.out.debug('No packets captured by scapy.')
+            return []
+        else:
+            om.out.debug('Analyzing packets captured by scapy. The packets are:')
+            for pkt in packets:
+                om.out.debug( str(pkt.summary()) )
+        
+            if self._host is None:
+                return self._analyze_packets_no_host(packets)
+            else:
+                return self._analyze_packets_with_host(packets)
+        

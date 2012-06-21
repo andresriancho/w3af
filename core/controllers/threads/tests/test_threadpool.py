@@ -52,7 +52,8 @@ class TestThreadPool(unittest.TestCase):
         self.pool.terminate()
     
     def test_basic(self):
-    
+        start = time.time()
+        
         # evaluate "f(10)" asynchronously
         result = self.pool.apply_async(f, (10,))
         self.assertEqual( result.get(timeout=1) , 100 )   
