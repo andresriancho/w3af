@@ -35,7 +35,8 @@ class TestNetcraft(PluginTest):
     def test_fuzzer_found_urls(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        expected_infos = ( ('netblock_owner', 'Netblock owner', u'Netcraft reports that the netblock owner for the target domain is GoDaddy.com, LLC') ,
+        expected_infos = ( ('netblock_owner', 'Netblock owner', 
+                            u'Netcraft reports that the netblock owner for the target domain is GoDaddy.com, LLC') ,
                          )
 
         for kb_item, ename, edesc in expected_infos:
