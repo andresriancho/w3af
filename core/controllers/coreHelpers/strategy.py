@@ -37,7 +37,7 @@ from core.controllers.coreHelpers.consumers.audit import audit
 from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.threads.threadManager import thread_manager as tm
+from core.controllers.threads.threadManager import thread_manager
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
 
@@ -471,7 +471,7 @@ class w3af_core_strategy(object):
                             # Perform the actual work
                             plugin_result = plugin.discover_wrapper(fr)
                         finally:
-                            tm.join(plugin)
+                            thread_manager.join(plugin)
                     except KeyboardInterrupt:
                         om.out.information('The user interrupted the discovery phase, '
                                            'continuing with audit.')
@@ -657,6 +657,14 @@ class w3af_core_strategy(object):
                     exec_info = sys.exc_info()
                     enabled_plugins = pprint_plugins(self._w3af_core)
                     exception_handler.handle( status, e , exec_info, enabled_plugins )
+                else:
+                    # Please note that this is not perfect, it is showing which
+                    # plugin result was JUST taken from the Queue. The good thing is
+                    # that the "client" reads the status once every 500ms so the user
+                    # will see things "moving" and will be happy
+                    self._w3af_core.status.set_phase('audit')
+                    self._w3af_core.status.set_running_plugin( plugin_name )
+                    self._w3af_core.status.set_current_fuzzable_request( request )
         
             
     def _bruteforce(self, fr_list):
@@ -691,7 +699,7 @@ class w3af_core_strategy(object):
                         new_frs = plugin.bruteforce_wrapper( fr )
                         
                     finally:
-                        tm.join( plugin )
+                        thread_manager.join( plugin )
                 except w3afException, e:
                     om.out.error( str(e) )
                 

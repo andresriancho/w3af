@@ -62,8 +62,6 @@ class audit(threading.Thread):
         
         TODO:
             * Progress
-            * Status
-            * Test error handling status
         '''
 
         while True:

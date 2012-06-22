@@ -192,6 +192,7 @@ class webSpider(baseDiscoveryPlugin):
                                             args=args, ownerObj=self)
                 
                 self._tm.join(self)
+
                         
     def _fill_form(self, fuzzable_req):
         '''

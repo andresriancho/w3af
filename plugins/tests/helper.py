@@ -38,6 +38,10 @@ os.chdir(W3AF_LOCAL_PATH)
 
 
 class PluginTest(unittest.TestCase):
+    '''
+    Remember that nosetests can't find test generators in unittest.TestCase,
+    see http://stackoverflow.com/questions/6689537/nose-test-generators-inside-class ,
+    '''
     
     runconfig = {}
     kb = kb.kb
@@ -96,13 +100,16 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.start()
     
     def tearDown(self):
+        #
         # I want to make sure that we don't have *any hidden* exceptions in our tests.
-        self.assertEquals( len(exception_handler.get_all_exceptions() ), 0,
-                           [e.get_summary() for e in exception_handler.get_all_exceptions()] )
+        #
+        msg = [e.get_summary() for e in exception_handler.get_all_exceptions()]        
+        assert len(exception_handler.get_all_exceptions() ) == 0, msg
+        
         self.w3afcore.quit()
         self.kb.cleanup()
 
-
+    
 class PluginConfig(object):
     
     BOOL = 'boolean'

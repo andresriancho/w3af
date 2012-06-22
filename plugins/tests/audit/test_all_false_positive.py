@@ -46,8 +46,8 @@ class TestAllFP(PluginTest):
                      }
                 }
             
-            # I tried to do this in the right way, with test generators,
-            # but they didn't seem to work for me.
+            # I tried to do this in the right way, with nosetest test generators,
+            # but they have a bug with unittest.TestCase
             self.setUp()
             
             target = run_config['target']
@@ -66,4 +66,7 @@ class TestAllFP(PluginTest):
             self.assertEquals( len(vulns) , 0, msg_v)
             self.assertEquals( len(infos) , 0, msg_i)
             
+            # I tried to do this in the right way, with nosetest test generators,
+            # but they have a bug with unittest.TestCase
+            self.tearDown()
             

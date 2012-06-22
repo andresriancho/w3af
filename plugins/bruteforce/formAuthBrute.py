@@ -22,17 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
-from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
-from core.data.dc import form
-from core.controllers.misc.levenshtein import relative_distance_ge
-from core.data.fuzzer.fuzzer import createRandAlNum
-from core.data.url.xUrllib import xUrllib
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
+from core.controllers.threads.threadManager import thread_manager
+from core.controllers.misc.levenshtein import relative_distance_ge
+
+from core.data.dc import form
+from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.url.xUrllib import xUrllib
 
 
 class formAuthBrute(baseBruteforcePlugin):
@@ -116,7 +117,7 @@ class formAuthBrute(baseBruteforcePlugin):
                     self._bruteforce(freq.copy(), combinations)                    
                 
                 # Wait for all _bruteWorker threads to finish.
-                self._join()
+                thread_manager.join(ownerObj=self)
                 
                 # Report that we've finished.
                 msg = 'Finished bruteforcing "%s".' % freq_url

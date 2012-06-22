@@ -43,9 +43,14 @@ class ThreadManager(object):
         # FIXME: Remove me (and potentially the whole threadmanager object)
         self._results = {}
     
+    @property
+    def threadpool(self):
+        if not self.started:
+            self.start()
+        return self._threadpool
+    
     def start( self ):
-        self._max_threads = self.MAX_THREADS
-        self.threadpool = Pool(self._max_threads, queue_size=200)
+        self._threadpool = Pool(self.MAX_THREADS, queue_size=200)
         
     def apply_async(self, target, args=(), kwds={}, ownerObj=None):
         
@@ -55,11 +60,11 @@ class ThreadManager(object):
             self.started = True
             self.start()
         
-        result = self.threadpool.apply_async(target, args)
+        result = self._threadpool.apply_async(target, args)
         self._results.setdefault(ownerObj, Queue.Queue() ).put(result)
                 
         msg = '[thread manager] Successfully added function to threadpool.'
-        msg += 'Work queue size: %s' % self.threadpool.in_qsize()
+        msg += 'Work queue size: %s' % self._threadpool.in_qsize()
         om.out.debug( msg )
             
     def join( self, ownerObj=None):
@@ -84,8 +89,9 @@ class ThreadManager(object):
         
     
     def terminate(self):
-        self.threadpool.terminate()
-        self.started = False
+        if self.started:
+            self._threadpool.terminate()
+            self.started = False
 
 
 thread_manager = ThreadManager()
