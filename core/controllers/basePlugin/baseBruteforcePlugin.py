@@ -44,8 +44,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._alreadyTested = []
         
         # Config params
-        self._usersFile = 'core'+os.path.sep+'controllers'+os.path.sep+'bruteforce'+os.path.sep+'users.txt'
-        self._passwdFile = 'core'+os.path.sep+'controllers'+os.path.sep+'bruteforce'+os.path.sep+'passwords.txt'
+        self._usersFile = os.path.join('core','controllers','bruteforce','users.txt')
+        self._passwdFile = os.path.join('core','controllers','bruteforce','passwords.txt')
         self._comboFile = ''
         self._comboSeparator = ":"
         self._useMailUsers = True
@@ -201,7 +201,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before
                 the current one.
         '''
-        return ['grep.passwordProfiling','grep.getMails']
+        return ['grep.passwordProfiling','grep.getMails', 'grep.httpAuthDetect']
 
     def getLongDesc( self ):
         '''

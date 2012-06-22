@@ -46,7 +46,8 @@ class basicAuthBrute(baseBruteforcePlugin):
         
         @param freq: A fuzzableRequest
         '''
-        auth_url_list = [ i.getURL().getDomainPath() for i in kb.kb.getData( 'httpAuthDetect', 'auth' )]
+        auth_url_list = [ i.getURL().getDomainPath() for i in 
+                          kb.kb.getData( 'httpAuthDetect', 'auth' )]
         
         domain_path = freq.getURL().getDomainPath()
         
@@ -82,7 +83,6 @@ class basicAuthBrute(baseBruteforcePlugin):
         '''
         # get instance outside loop...
         uriOpener = xUrllib()
-        uriOpener.setGrepPlugins( [] )
         # So uriOpener._init is not called
         uriOpener._cacheOpener = ''
     
@@ -150,13 +150,16 @@ class basicAuthBrute(baseBruteforcePlugin):
             - useProfiling
             - profilingNumber
         
-        This plugin will take users from the file pointed by "usersFile", mail users found on the site ( if "useMailUsers" is
-        set to True ), mails found on the site ( if "useMails" is set to True ), and svn users found on the site ( if "useSvnUsers"
-        is set to True ).
+        This plugin will take users from the file pointed by "usersFile", mail 
+        users found on the site ( if "useMailUsers" is set to True ), mails
+        found on the site ( if "useMails" is set to True ), and svn users found
+        on the site ( if "useSvnUsers" is set to True ).
         
-        This plugin will take passwords from the file pointed by "passwdFile" and the result of the password profiling plugin 
-        ( if "useProfiling" is set to True). The profilingNumber sets the number of results from the password profiling plugin
-        to use in the password field.
+        This plugin will take passwords from the file pointed by "passwdFile" and
+        the result of the password profiling plugin (if "useProfiling" is set to
+        True). The profilingNumber sets the number of results from the password
+        profiling plugin to use in the password field.
         
-        The "stopOnFirst" parameter indicates if the bruteforce will stop when finding the first valid credentials or not.
+        The "stopOnFirst" parameter indicates if the bruteforce will stop when 
+        finding the first valid credentials or not.
         '''
