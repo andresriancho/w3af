@@ -175,7 +175,7 @@ class symfony(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'symfony', 'symfony' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'symfony', 'symfony' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

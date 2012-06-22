@@ -183,7 +183,7 @@ class generic(baseAuditPlugin):
         self._join()
         vulnsAndInfos = kb.kb.getAllVulns()
         vulnsAndInfos.extend( kb.kb.getAllInfos() )
-        self.printUniq( vulnsAndInfos, 'VAR' )
+        self.print_uniq( vulnsAndInfos, 'VAR' )
 
     def getOptions( self ):
         '''

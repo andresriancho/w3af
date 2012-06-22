@@ -137,7 +137,7 @@ class strangeParameters(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'strangeParameters', 'strangeParameters' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'strangeParameters', 'strangeParameters' ), 'VAR' )
 
     def _is_SQL(self, request, parameter, value):
         '''

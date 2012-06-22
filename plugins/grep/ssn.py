@@ -234,7 +234,7 @@ class ssn(baseGrepPlugin):
         This method is called when the plugin won't be used anymore.
         '''
         # Print results
-        self.printUniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
 
     def getOptions(self):
         '''

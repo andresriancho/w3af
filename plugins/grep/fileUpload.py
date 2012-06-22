@@ -94,7 +94,7 @@ class fileUpload(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

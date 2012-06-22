@@ -22,15 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import time
 import sys
+import Queue
 
 import core.controllers.outputManager as om
 
-from .constants import FINISH_CONSUMER
+from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.w3afException import w3afException
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadpool import Pool
 
 
 class audit(threading.Thread):
@@ -49,8 +50,10 @@ class audit(threading.Thread):
         super(audit, self).__init__()
         
         self._in_queue = in_queue
+        self._out_queue = Queue.Queue(40)
         self._audit_plugins = audit_plugins
         self._w3af_core = w3af_core
+        self._threadpool = Pool(10, queue_size=40)
     
     def run(self):
         '''
@@ -62,11 +65,15 @@ class audit(threading.Thread):
             * Test error handling tracebacks
             * Test error handling status
         '''
+
         while True:
            
-            fuzzable_request = self._in_queue.get()
+            workunit = self._in_queue.get()
 
-            if fuzzable_request == FINISH_CONSUMER:
+            if workunit == FINISH_CONSUMER:
+                
+                # Close the pool and wait for everyone to finish
+                self._threadpool.terminate()
                 
                 # End plugins
                 for plugin in self._audit_plugins:
@@ -74,35 +81,29 @@ class audit(threading.Thread):
                         plugin.end()
                     except w3afException, e:
                         om.out.error( str(e) )
+                
+                # Finish this consumer and everyone consuming the output
+                self._out_queue.put( FINISH_CONSUMER )
                 break
                 
             else:
+                
                 for plugin in self._audit_plugins:
-                    try:
-                        try:
-                            plugin.audit_wrapper( fuzzable_request )
-                        finally:
-                            tm.join( plugin )
-                    except w3afException, e:
-                        om.out.error( str(e) )
-                    
-                    except Exception, e:
-                        # Smart error handling, much better than just crashing.
-                        # Doing this here and not with something similar to:
-                        # sys.excepthook = handle_crash because we want to handle
-                        # plugin exceptions in this way, and not framework 
-                        # exceptions                    
-                        exec_info = sys.exc_info()
-                        enabled_plugins = pprint_plugins(self._w3af_core)
-                        exception_handler.handle( self._w3af_core.status, e , 
-                                                  exec_info, enabled_plugins )
+                    result = self._threadpool.apply_async( plugin.audit_wrapper,
+                                                           (workunit,) )
+                    self._out_queue.put( result )
+                    print self.out_queue.qsize()
 
+    @property
+    def out_queue(self):
+        return self._out_queue
                 
     def stop(self):
         '''
         Poison the loop
         '''
         self._in_queue.put( FINISH_CONSUMER )
+        self._out_queue.put( FINISH_CONSUMER )
         #
         #    Allow some time for the plugins to properly end before anything
         #    else is done at the core level.

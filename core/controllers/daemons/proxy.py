@@ -31,7 +31,7 @@ from OpenSSL import SSL
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 from core.controllers.threads.w3afThread import w3afThread
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import url_object

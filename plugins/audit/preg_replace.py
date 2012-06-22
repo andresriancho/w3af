@@ -100,7 +100,7 @@ class preg_replace(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
     
     def _find_preg_error( self, response ):
         '''

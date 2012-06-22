@@ -73,7 +73,7 @@ class fingerBing(baseDiscoveryPlugin):
             self._run_async(meth=self._findAccounts, args=(result,))
         
         self._join()
-        self.printUniq(kb.kb.getData('fingerBing', 'mails'), None)
+        self.print_uniq(kb.kb.getData('fingerBing', 'mails'), None)
         
         return result
 

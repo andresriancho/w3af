@@ -34,8 +34,9 @@ from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.consumers.grep import grep
 from core.controllers.coreHelpers.consumers.auth import auth
 from core.controllers.coreHelpers.consumers.audit import audit
+from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
     w3afMustStopException, w3afMustStopOnUrlError)
 
@@ -111,8 +112,6 @@ class w3af_core_strategy(object):
         self.teardown_grep()
         self.teardown_audit()
         self.teardown_auth()
-        self._w3af_core._end(exc_inst, ignore_err)
-        
     
     def _setup_grep(self):
         '''
@@ -306,7 +305,8 @@ class w3af_core_strategy(object):
         '''
         Make login to the web application when it is needed.
         '''
-        self._auth_consumer.force_login()
+        if self._auth_consumer is not None:
+            self._auth_consumer.force_login()
 
     def _discover_and_bruteforce( self ):
         '''
@@ -363,11 +363,11 @@ class w3af_core_strategy(object):
 
     def quit(self):
         # End all plugins
-        self._w3af_core._end(ignore_err=True)
+        self._end(ignore_err=True)
     
     def stop(self):
         # End all plugins
-        self._w3af_core._end(ignore_err=True)
+        self._end(ignore_err=True)
     
     def pause(self, pause_yes_no):
         pass
@@ -586,6 +586,32 @@ class w3af_core_strategy(object):
             #      no time to solve them.
             for fr in set(self._fuzzable_request_set):
                 audit_in_queue.put(fr)
+            
+            #FIXME: This is just a hack to allow the output queue to be populated
+            import time
+            time.sleep(2)
+            self._audit_consumer.stop()
+        
+        while True:
+            result = self._audit_consumer.out_queue.get()
+            
+            if result == FINISH_CONSUMER:
+                break
+            else:    
+                try:
+                    result.get()
+                except Exception, e:
+                    # Smart error handling, much better than just crashing.
+                    # Doing this here and not with something similar to:
+                    # sys.excepthook = handle_crash because we want to handle
+                    # plugin exceptions in this way, and not framework 
+                    # exceptions
+                    
+                    # FIXME: Maybe I need to setup a fake status or something?
+                    exec_info = sys.exc_info()
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( self._w3af_core.status, e , 
+                                              exec_info, enabled_plugins )
                 
             
     def _bruteforce(self, fr_list):

@@ -446,7 +446,7 @@ class xss(baseAuditPlugin):
                         kb.kb.append(self, 'xss', v)
                         break
         
-        self.printUniq(kb.kb.getData('xss', 'xss'), 'VAR')
+        self.print_uniq(kb.kb.getData('xss', 'xss'), 'VAR')
 
     def getOptions(self):
         '''

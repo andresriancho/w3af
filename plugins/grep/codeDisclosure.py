@@ -148,7 +148,7 @@ class codeDisclosure(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print codeDisclosure
-        self.printUniq( kb.kb.getData( 'codeDisclosure', 'codeDisclosure' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'codeDisclosure', 'codeDisclosure' ), 'URL' )
         
     def getPluginDeps( self ):
         '''

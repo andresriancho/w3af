@@ -119,7 +119,7 @@ class error500(baseGrepPlugin):
                 v.setDesc( msg )
                 kb.kb.append( self, 'error500', v )
                 
-        self.printUniq( kb.kb.getData( 'error500', 'error500' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'error500', 'error500' ), 'VAR' )
 
     def getPluginDeps( self ):
         '''

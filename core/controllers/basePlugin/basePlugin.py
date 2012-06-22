@@ -23,11 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import threading
 
-from core.controllers.configurable import configurable
-from core.controllers.threads.threadManager import threadManagerObj as tm
-from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
+
+from core.controllers.configurable import configurable
+from core.controllers.threads.threadManager import thread_manager
+from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 
 
 class basePlugin(configurable):
@@ -48,7 +49,7 @@ class basePlugin(configurable):
         Create some generic attributes that are going to be used by most plugins.
         '''
         self._uri_opener = None
-        self._tm = tm
+        self._tm = thread_manager
         self._plugin_lock = threading.RLock()
 
     def setUrlOpener( self, urlOpener):
@@ -66,33 +67,34 @@ class basePlugin(configurable):
         @return: No value is returned.
         '''
         self._uri_opener = UrlOpenerProxy(urlOpener, self)
-        
 
     def setOptions( self, optionsMap ):
         '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the options that were
-        retrieved from the plugin using getOptions()
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed
+        using the options that were retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every plugin. 
         
         @return: No value is returned.
         ''' 
-        raise w3afException('Plugin "'+self.getName()+'" is not implementing required method setOptions' )
+        msg = 'Plugin "%s" is not implementing required method setOptions'
+        raise w3afException( msg % self.getName() )
         
     def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''
-        raise w3afException('Plugin "'+self.getName()+'" is not implementing required method getOptions' )
+        msg = 'Plugin "%s" is not implementing required method getOptions'
+        raise w3afException( msg % self.getName() )
 
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be 
         run before the current one.
         '''
-        msg = 'Plugin "%s" is not implementing required method getPluginDeps' % self.getName()
-        raise w3afException( msg )
+        msg = 'Plugin "%s" is not implementing required method getPluginDeps'
+        raise w3afException( msg % self.getName() )
 
     def getDesc( self ):
         '''
@@ -110,7 +112,8 @@ class basePlugin(configurable):
         if self.__doc__ is not None:
             res2 = self.__doc__.replace( '\t' , '' )
             res2 = self.__doc__.replace( '    ' , '' )
-            res = ''.join ( [ i for i in res2.split('\n') if i != '' and '@author' not in i ] )
+            res = ''.join ( [ i for i in res2.split('\n') if i != '' and
+                             '@author' not in i ] )
         else:
             res = ''
         return res
@@ -121,7 +124,7 @@ class basePlugin(configurable):
         '''
         raise w3afException('Plugin is not implementing required method getLongDesc' )
     
-    def printUniq( self, infoObjList, unique ):
+    def print_uniq( self, infoObjList, unique ):
         '''
         Print the items of infoObjList to the user interface
         
@@ -137,7 +140,7 @@ class basePlugin(configurable):
         >>> v2 = vuln.vuln()
         >>> v2.setDesc('world')
         >>> info_obj = [ v1, v2 ]
-        >>> b.printUniq(info_obj, None) is None
+        >>> b.print_uniq(info_obj, None) is None
         True
         '''
 
@@ -161,7 +164,7 @@ class basePlugin(configurable):
             inform = infoObjList
             
         else:
-            om.out.error('basePlugin.printUniq(): Unknown unique parameter value.')
+            om.out.error('basePlugin.print_uniq(): Unknown unique parameter value.')
 
         # Print the list            
         for i in inform:
@@ -206,16 +209,10 @@ class basePlugin(configurable):
                      (url_error.req.get_full_url(), url_error.msg))
         return (False, None)
 
-    def _run_async(self, meth, args=(), kwds={}):
-        self._tm.startFunction(
-                           target=meth,
-                           args=args,
-                           kwds=kwds,
-                           ownerObj=self
-                           )
-    
-    def _join(self):
-        self._tm.join(self)
+    def _send_mutants_async(self, func, iterable, callback):
+        func = return_args(func)
+        for (mutant,), http_response in self._tm.threadpool.imap_unordered(func, iterable):
+            callback(mutant, http_response)
     
 
 class UrlOpenerProxy(object):
@@ -243,3 +240,10 @@ class UrlOpenerProxy(object):
                 return result
         attr = getattr(self._url_opener, name)
         return meth if callable(attr) else attr
+
+class return_args(object):
+    def __init__(self, func):
+        self.func = func
+    
+    def __call__(self, *args):
+        return args, self.func(*args)

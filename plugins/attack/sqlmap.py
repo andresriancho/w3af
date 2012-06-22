@@ -35,7 +35,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 
 from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 
@@ -383,7 +383,7 @@ class sqlShellObj(shell):
                     self.help()
                     return ''
 
-            tm.startFunction( target=self._runCommand, args=(method, command,), ownerObj=self, restrict=False )
+            tm.apply_async( target=self._runCommand, args=(method, command,), ownerObj=self, restrict=False )
             #self._runCommand(method, command)
             return None
             

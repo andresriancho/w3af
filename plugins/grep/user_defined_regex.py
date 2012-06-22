@@ -204,7 +204,7 @@ class user_defined_regex(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
             
     def getPluginDeps( self ):
         '''

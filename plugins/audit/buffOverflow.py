@@ -161,7 +161,7 @@ class buffOverflow(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
         
     def getOptions( self ):
         '''

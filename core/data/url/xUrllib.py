@@ -36,7 +36,7 @@ from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import \
     consecutive_number_generator as seq_gen
-from core.controllers.threads.threadManager import threadManagerObj as \
+from core.controllers.threads.threadManager import thread_manager as \
     thread_manager
 from core.controllers.w3afException import (w3afMustStopException,
     w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,

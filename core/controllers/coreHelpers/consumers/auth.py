@@ -28,7 +28,7 @@ from .constants import FINISH_CONSUMER, FORCE_LOGIN
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 
 
 

@@ -154,8 +154,8 @@ class getMails(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'mails', 'mails' ), None )
-        self.printUniq( kb.kb.getData( 'mails', 'external_mails' ), None )
+        self.print_uniq( kb.kb.getData( 'mails', 'mails' ), None )
+        self.print_uniq( kb.kb.getData( 'mails', 'external_mails' ), None )
     
     def getPluginDeps( self ):
         '''

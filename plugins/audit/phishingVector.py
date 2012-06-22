@@ -122,7 +122,7 @@ class phishingVector(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'phishingVector', 'phishingVector' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'phishingVector', 'phishingVector' ), 'VAR' )
 
     def getOptions( self ):
         '''

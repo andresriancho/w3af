@@ -156,7 +156,7 @@ class LDAPi(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'LDAPi', 'LDAPi' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'LDAPi', 'LDAPi' ), 'VAR' )
         
     def _find_ldap_error( self, response ):
         '''

@@ -35,7 +35,7 @@ from core.controllers.coreHelpers.plugins import w3af_core_plugins
 from core.controllers.coreHelpers.target import w3af_core_target
 from core.controllers.coreHelpers.strategy import w3af_core_strategy
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
 from core.controllers.misc.dns_cache import enable_dns_cache
@@ -152,7 +152,12 @@ class w3afCore(object):
                 # in LiveCDs like Backtrack that don't have "real disk space"  
                 pass
             
+            self.strategy.stop()
+            self.status.stop()
             self.progress.stop()
+            
+            self._end()
+            
     
     def cleanup( self ):
         '''
@@ -241,8 +246,7 @@ class w3afCore(object):
             if exc_inst:
                 om.out.debug(str(exc_inst))
             
-            tm.join(joinAll=True)
-            tm.stopAllDaemons()
+            tm.terminate()
                         
             # Also, close the output manager.
             om.out.endOutputPlugins()

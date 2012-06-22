@@ -128,7 +128,7 @@ class responseSplitting(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq(
+        self.print_uniq(
                kb.kb.getData('responseSplitting', 'responseSplitting'), 'VAR'
                )
     

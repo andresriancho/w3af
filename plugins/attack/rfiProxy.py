@@ -33,7 +33,7 @@ from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 import core.controllers.daemons.webserver as webserver
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from core.controllers.threads.w3afThread import w3afThread
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 import core.data.constants.w3afPorts as w3afPorts
 
 # options

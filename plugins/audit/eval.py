@@ -174,7 +174,7 @@ class eval(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq(kb.kb.getData('eval', 'eval'), 'VAR')
+        self.print_uniq(kb.kb.getData('eval', 'eval'), 'VAR')
 
     def _find_eval_result(self, response):
         '''

@@ -155,7 +155,7 @@ class xpath(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
     
     def _find_xpath_error( self, response ):
         '''

@@ -101,7 +101,7 @@ class objects(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         for obj_type in self._tag_names:
-            self.printUniq( kb.kb.getData( 'objects', obj_type ), 'URL' )
+            self.print_uniq( kb.kb.getData( 'objects', obj_type ), 'URL' )
                 
     def getPluginDeps( self ):
         '''

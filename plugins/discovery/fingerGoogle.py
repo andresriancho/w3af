@@ -73,7 +73,7 @@ class fingerGoogle(baseDiscoveryPlugin):
             else:
                 self._do_complete_search(domain)
             
-            self.printUniq(kb.kb.getData('fingerGoogle', 'mails'), None)
+            self.print_uniq(kb.kb.getData('fingerGoogle', 'mails'), None)
             return []
 
     def _do_fast_search( self, domain ):

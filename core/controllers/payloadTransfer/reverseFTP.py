@@ -54,7 +54,7 @@ class reverseFTP( basePayloadTransfer ):
     def _serve( self, strObject ):
         '''
         Listens for 1 connection on the inbound port, transfers the data and then returns.
-        This function should be called with tm.startFunction ; and afterwards you should exec the ftp
+        This function should be called with tm.apply_async ; and afterwards you should exec the ftp
         client on the remote server.
         '''
         serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

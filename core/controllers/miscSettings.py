@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.configurable import configurable
 import core.data.kb.config as cf
-from core.controllers.threads.threadManager import threadManagerObj as tm
 
 # options
 from core.data.options.option import option
@@ -60,7 +59,6 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('autoDependencies', True )
             cf.cf.save('maxDiscoveryTime', 120 )
-            cf.cf.save('maxThreads', 15 )
             cf.cf.save('fuzzableHeaders', [] )
             cf.cf.save('msf_location', '/opt/metasploit3/bin/' )
             
@@ -160,13 +158,6 @@ class miscSettings(configurable):
                      help=help, tabid='Core settings')
         ol.add(opt)
                 
-        desc = 'Maximum number of threads that the w3af process will spawn.'
-        desc += ' Zero means no threads (recommended)'
-        help = 'The maximum valid number of threads is 100.'
-        opt = option('maxThreads', cf.cf.getData('maxThreads'), desc, 'integer',
-                     tabid='Core settings', help=help)
-        ol.add(opt)
-                
         ######## Network parameters ########
         desc = 'Local interface name to use when sniffing, doing reverse connections, etc.'
         opt = option('interface', cf.cf.getData('interface'), desc, 'string', tabid='Network settings')
@@ -215,12 +206,6 @@ class miscSettings(configurable):
         cf.cf.save('fuzzFormComboValues', optionsMap['fuzzFormComboValues'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )
         cf.cf.save('maxDiscoveryTime', optionsMap['maxDiscoveryTime'].getValue() )
-        
-        if optionsMap['maxThreads'].getValue()  > 100:
-            raise w3afException('The maximum valid number of threads is 100.')
-        max_threads = optionsMap['maxThreads'].getValue()
-        cf.cf.save('maxThreads', max_threads )
-        tm.setMaxThreads( max_threads )
         
         cf.cf.save('fuzzableHeaders', optionsMap['fuzzableHeaders'].getValue() )
         cf.cf.save('interface', optionsMap['interface'].getValue() )

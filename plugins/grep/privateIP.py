@@ -175,8 +175,8 @@ class privateIP(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'privateIP', 'header' ), None )
-        self.printUniq( kb.kb.getData( 'privateIP', 'HTML' ), None )
+        self.print_uniq( kb.kb.getData( 'privateIP', 'header' ), None )
+        self.print_uniq( kb.kb.getData( 'privateIP', 'HTML' ), None )
             
     def getPluginDeps( self ):
         '''

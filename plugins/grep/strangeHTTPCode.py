@@ -162,7 +162,7 @@ class strangeHTTPCode(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'strangeHTTPCode', 'strangeHTTPCode' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'strangeHTTPCode', 'strangeHTTPCode' ), 'URL' )
         
     def _getCommonHTTPCodes(self):
         codes = []

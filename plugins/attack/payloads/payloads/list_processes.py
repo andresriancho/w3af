@@ -1,4 +1,4 @@
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 from plugins.attack.payloads.base_payload import base_payload
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
@@ -58,7 +58,7 @@ class list_processes(base_payload ):
         
         for pid in xrange(1, int(max_pid)):
             targs = (pid, )
-            tm.startFunction( target=self._thread_read, args=targs, ownerObj=self )
+            tm.apply_async( target=self._thread_read, args=targs, ownerObj=self )
         tm.join( self )
         
         return self.result

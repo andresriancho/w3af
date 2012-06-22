@@ -162,7 +162,7 @@ class redos(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'redos', 'redos' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'redos', 'redos' ), 'VAR' )
     
     def _get_wait_patterns( self, run ):
         '''

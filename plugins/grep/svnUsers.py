@@ -99,7 +99,7 @@ class svnUsers(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'svnUsers', 'users' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'svnUsers', 'users' ), 'URL' )
     
     def getPluginDeps( self ):
         '''

@@ -188,8 +188,8 @@ class wsdlGreper(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'wsdlGreper', 'wsdl' ), 'URL' )
-        self.printUniq( kb.kb.getData( 'wsdlGreper', 'disco' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'wsdlGreper', 'wsdl' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'wsdlGreper', 'disco' ), 'URL' )
         
     def getLongDesc( self ):
         '''

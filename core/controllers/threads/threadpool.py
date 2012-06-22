@@ -64,12 +64,16 @@ class Pool(object):
     few different ways
     """
 
-    def __init__(self, nworkers, name="Pool"):
+    def __init__(self, nworkers, queue_size=0, name="Pool"):
         """
         @param nworkers (integer) number of worker threads to start
+        @param queue_size (integer) the number of items to hold in the work queue
+                                    before blocking. Specially useful for avoiding
+                                    high memory usage in the queue. Zero means no
+                                    limit.
         @param name (string) prefix for the worker threads' name
         """
-        self._workq   = Queue.Queue()
+        self._workq   = Queue.Queue(queue_size)
         self._closed  = False
         self._workers = []
         for idx in xrange(nworkers):
@@ -82,6 +86,9 @@ class Pool(object):
                 raise
             else:
                 self._workers.append(thr)
+
+    def in_qsize(self):
+        return self._workq.qsize()
 
     def apply(self, func, args=(), kwds=dict()):
         """Equivalent of the apply() builtin function. It blocks till

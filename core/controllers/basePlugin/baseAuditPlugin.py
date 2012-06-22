@@ -39,6 +39,7 @@ class baseAuditPlugin(basePlugin):
         basePlugin.__init__( self )
         self._uri_opener = None
 
+    # FIXME: This method is awful and returns LOTS of false positives
     def audit_wrapper( self, fuzzable_request ):
         '''
         Receives a fuzzable_request and forwards it to the internal method
@@ -103,22 +104,23 @@ class baseAuditPlugin(basePlugin):
         @param kb_varname: The name of the variable in the kb, where
             the vulnerability was saved. Defaults to self.name.
         '''
-        if not varname:
-            if hasattr(fuzz_req, 'getVar'):
-                varname = fuzz_req.getVar()
-            else:
-                raise ValueError, "Invalid arg 'varname': %s" % varname
-        
-        pname = pname or self.getName()
-        kb_varname = kb_varname or pname
-        vulns = kb.kb.getData(pname, kb_varname)
-
-        for vuln in vulns:
-            if (vuln.getVar() == varname and
+        with self._plugin_lock:
+            if not varname:
+                if hasattr(fuzz_req, 'getVar'):
+                    varname = fuzz_req.getVar()
+                else:
+                    raise ValueError, "Invalid arg 'varname': %s" % varname
+            
+            pname = pname or self.getName()
+            kb_varname = kb_varname or pname
+            vulns = kb.kb.getData(pname, kb_varname)
+    
+            for vuln in vulns:
+                if (vuln.getVar() == varname and
                 fuzz_req.getDc().keys() == vuln.getDc().keys() and
                 are_variants(vuln.getURI(), fuzz_req.getURI())):
-                return False
-        return True
+                    return False
+            return True
         
     def getType( self ):
         return 'audit'

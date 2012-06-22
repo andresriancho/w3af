@@ -144,49 +144,40 @@ class sqli(baseAuditPlugin):
 
         oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants(freq, self.SQLI_STRINGS, oResponse=oResponse)
+        
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_result)
 
-        for mutant in mutants:
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-        self._join()
-            
     def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
-        with self._plugin_lock:
-            if self._has_no_bug(mutant):
+        sql_error_list = self._findsql_error(response)
+        orig_resp_body = mutant.getOriginalResponseBody()
 
-                sql_error_list = self._findsql_error(response)
-                orig_resp_body = mutant.getOriginalResponseBody()
-                
-                for sql_regex, sql_error_string, dbms_type in sql_error_list:
-                    if not sql_regex.search(orig_resp_body):
-                        # Create the vuln,
-                        v = vuln.vuln(mutant)
-                        v.setPluginName(self.getName())
-                        v.setId(response.id)
-                        v.setName('SQL injection vulnerability')
-                        v.setSeverity(severity.HIGH)
-                        v.addToHighlight(sql_error_string)
-                        v['error'] = sql_error_string
-                        v['db'] = dbms_type
-                        v.setDesc('SQL injection in a %s was found at: %s' %
-                                  (v['db'], mutant.foundAt()))
-                        kb.kb.append(self, 'sqli', v)
-                        break
+        for sql_regex, sql_error_string, dbms_type in sql_error_list:
+            if not sql_regex.search(orig_resp_body):
+                if self._has_no_bug(mutant):
+                    # Create the vuln,
+                    v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
+                    v.setId(response.id)
+                    v.setName('SQL injection vulnerability')
+                    v.setSeverity(severity.HIGH)
+                    v.addToHighlight(sql_error_string)
+                    v['error'] = sql_error_string
+                    v['db'] = dbms_type
+                    v.setDesc('SQL injection in a %s was found at: %s' %
+                              (v['db'], mutant.foundAt()))
+                    kb.kb.append(self, 'sqli', v)
+                    break
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
-        self.printUniq(kb.kb.getData('sqli', 'sqli'), 'VAR')
+        self.print_uniq(kb.kb.getData('sqli', 'sqli'), 'VAR')
     
     def _findsql_error(self, response):
         '''

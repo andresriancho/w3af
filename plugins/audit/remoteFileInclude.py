@@ -240,7 +240,7 @@ class remoteFileInclude(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
+        self.print_uniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
 
     def _create_file(self):
         '''

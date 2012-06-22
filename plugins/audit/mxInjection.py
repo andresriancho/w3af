@@ -116,7 +116,7 @@ class mxInjection(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'mxInjection', 'mxInjection' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'mxInjection', 'mxInjection' ), 'VAR' )
     
     def _get_MX_injection_strings( self ):
         '''

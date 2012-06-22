@@ -120,7 +120,7 @@ class dotNetEventValidation(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print alerts
-        self.printUniq( kb.kb.getData( 'dotNetEventValidation', 'dotNetEventValidation' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'dotNetEventValidation', 'dotNetEventValidation' ), 'URL' )
         
     def getPluginDeps( self ):
         '''

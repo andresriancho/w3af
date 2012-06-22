@@ -175,7 +175,7 @@ class ssi(baseAuditPlugin):
             major headache!
             '''
             
-        self.printUniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )
             
     def getOptions( self ):
         '''

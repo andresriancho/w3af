@@ -187,10 +187,12 @@ class webSpider(baseDiscoveryPlugin):
                         possibly_broken = ref in only_re_refs
                         args = (ref, fuzzable_req, originalURL,
                                  possibly_broken)
-                        self._run_async(meth=self._verify_reference, args=args)
-                self._join()
-        
-
+                        
+                        self._tm.apply_async(self._verify_reference,
+                                            args=args, ownerObj=self)
+                
+                self._tm.join(self)
+                        
     def _fill_form(self, fuzzable_req):
         '''
         Fill the HTTP request form that is passed as fuzzable_req.

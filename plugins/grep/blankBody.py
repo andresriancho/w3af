@@ -130,7 +130,7 @@ class blankBody(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'blankBody', 'blankBody' ), None )
+        self.print_uniq( kb.kb.getData( 'blankBody', 'blankBody' ), None )
     
     def getPluginDeps( self ):
         '''

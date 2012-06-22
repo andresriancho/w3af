@@ -250,8 +250,8 @@ class localFileInclude(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq(kb.kb.getData('localFileInclude', 'localFileInclude'), 'VAR')
-        self.printUniq(kb.kb.getData('localFileInclude', 'error'), 'VAR')
+        self.print_uniq(kb.kb.getData('localFileInclude', 'localFileInclude'), 'VAR')
+        self.print_uniq(kb.kb.getData('localFileInclude', 'error'), 'VAR')
 
     def getOptions( self ):
         '''

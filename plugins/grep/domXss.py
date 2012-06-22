@@ -173,7 +173,7 @@ class domXss(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq(kb.kb.getData('domXss', 'domXss'), None)
+        self.print_uniq(kb.kb.getData('domXss', 'domXss'), None)
             
     def getPluginDeps(self):
         '''

@@ -104,7 +104,7 @@ class feeds(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'feeds', 'feeds' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'feeds', 'feeds' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

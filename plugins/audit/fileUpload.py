@@ -181,7 +181,7 @@ class fileUpload(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
         
         # Clean up
         for tmp_file, tmp_file_name in self._file_list:

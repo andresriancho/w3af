@@ -104,7 +104,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @parameter combinations: A list of tuples with (user,pass)
         '''
         targs = (url,combinations)
-        self._tm.startFunction( target=self._bruteWorker, args=targs , ownerObj=self )
+        self._tm.apply_async( target=self._bruteWorker, args=targs , ownerObj=self )
     
     def end( self ):
         self._tm.join( self )

@@ -132,7 +132,7 @@ class creditCards(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print results
-        self.printUniq( kb.kb.getData( 'creditCards', 'creditCards' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'creditCards', 'creditCards' ), 'URL' )
 
 
     def getOptions( self ):

@@ -90,7 +90,7 @@ class globalRedirect(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self._join()
-        self.printUniq( kb.kb.getData( 'globalRedirect', 'globalRedirect' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'globalRedirect', 'globalRedirect' ), 'VAR' )
         
     def _find_redirect( self, response ):
         '''

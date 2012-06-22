@@ -183,7 +183,7 @@ class dav(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.printUniq( kb.kb.getData( 'dav', 'dav' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'dav', 'dav' ), 'VAR' )
         
     def getOptions( self ):
         '''

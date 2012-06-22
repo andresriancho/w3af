@@ -86,7 +86,7 @@ class clickJacking(baseGrepPlugin):
             msg += ' '.join([str(url) + '\n' for url in self._vulns])
             v.setDesc(msg)
             kb.kb.append(self, 'clickJacking', v)
-        self.printUniq(kb.kb.getData( 'clickJacking', 'clickJacking' ), 'URL')
+        self.print_uniq(kb.kb.getData( 'clickJacking', 'clickJacking' ), 'URL')
 
     def getPluginDeps(self):
         return []

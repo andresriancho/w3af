@@ -27,7 +27,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
@@ -112,7 +112,7 @@ class fingerprint_404:
     
                 #   Send the requests using threads:
                 targs = ( url404,  )
-                tm.startFunction( target=self._send_404, args=targs , ownerObj=self )
+                tm.apply_async( target=self._send_404, args=targs , ownerObj=self )
                 
             # Wait for all threads to finish sending the requests.
             tm.join( self )

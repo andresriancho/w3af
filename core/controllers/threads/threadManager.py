@@ -19,104 +19,72 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import Queue
+
 import core.controllers.outputManager as om
-from core.controllers.threads.threadpool import ThreadPool, WorkRequest
-import core.data.kb.config as cf
+
+from core.controllers.threads.threadpool import Pool
 
 
-class threadManager(object):
+class ThreadManager(object):
     '''
     This class manages threads.
+    
+    Note: This is just a wrapper around Pool 
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     ''' 
     
+    MAX_THREADS = 20
+    
     def __init__( self ):
-        self._daemonThreads = []
-        self.informed = False
+        self._informed = False
         self._initialized = False
-        self._waitForJoin = 2
-        self._initPool()
+        # FIXME: Remove me (and potentially the whole threadmanager object)
+        self._results = {}
     
-    def _initPool( self ):
-        self._maxThreads = cf.cf.getData('maxThreads') or 0
+    def _init_pool( self ):
+        self._max_threads = self.MAX_THREADS
+        self.threadpool = Pool(self._max_threads, queue_size=200)
         
-        #
-        #   Please note that I'm using the q_size parameter of the Threadpool. This is what the 
-        #   threadpool documentation says about it:
-        #
-        #        If q_size > 0 the size of the work request is limited and the
-        #       thread pool blocks when queue is full and it tries to put more
-        #       work requests in it.
-        #
-        #   This will basically save me from filling-up all the memory with WorkRequest objects
-        #   when somebody performs something like this:
-        #
-        #   for url in looooooong_list:
-        #       self._tm.startFunction( target=self._do_request, args=(url,) )
-        #
-        if self._maxThreads:
-            self._threadPool = ThreadPool(self._maxThreads, q_size = 200)
-        else:
-            # if I want to use the restrict argument of startFunction, the thread pool 
-            # MUST have some threads
-            self._threadPool = ThreadPool(5, 15)
-    
-    def setMaxThreads(self, num_threads):
-
-        if self._maxThreads > num_threads:
-            self._threadPool.dismissWorkers(self._maxThreads - num_threads)
-            self._maxThreads = num_threads
-
-        elif self._maxThreads < num_threads:
-            self._threadPool.createWorkers(num_threads - self._maxThreads)
-            self._maxThreads = num_threads
-
-    def getMaxThreads(self):
+    def apply_async(self, target, args=(), kwds={}, ownerObj=None):
+        
+        assert len(kwds) == 0, 'The new ThreadPool does NOT support kwds.'
+        
         if not self._initialized:
-            self._initPool()
-        return self._maxThreads
-        
-    def startDaemon(self, threadObj):
-        om.out.debug('Starting daemon thread: ' + str(threadObj) )
-        threadObj.setDaemon(1)
-        threadObj.start()
-        self._daemonThreads.append( threadObj )
-    
-    def stopDaemon( self, threadObj ):
-        for daemon in self._daemonThreads:
-            if daemon == threadObj:
-                threadObj.stop()
-                om.out.debug('Calling join on daemon thread: ' + str(threadObj) )
-                threadObj.join(self._waitForJoin)
-                
-    def stopAllDaemons( self ):
-        om.out.debug('Calling join on all daemon threads')
-        for thread in self._daemonThreads:
-            thread.stop()
-            om.out.debug('Calling join on daemon thread: ' + str(thread) )
-            thread.join(self._waitForJoin)
-        
-    def startFunction(self, target, args=(), kwds={}, restrict=True, ownerObj=None):
-        if not self._initialized:
-            self._initPool()
+            self._init_pool()
             self._initialized = True
         
-        if not self._maxThreads and restrict:
-            # Just start the function
-            if not self.informed:
-                om.out.debug('Threading is disabled.' )
-                self.informed = True
-            target(*args, **kwds)
-        else:
-            # Assign a job to a thread in the thread pool
-            wr = WorkRequest( target, args=args, kwds=kwds, ownerObj=ownerObj )
-            self._threadPool.putRequest( wr )
-            msg = '[thread manager] Successfully added function to threadpool. Work queue size: '
-            msg += str(self._threadPool.requestsQueue.qsize())
-            om.out.debug( msg )
+        result = self.threadpool.apply_async(target, args)
+        self._results.setdefault(ownerObj, Queue.Queue() ).put(result)
+                
+        msg = '[thread manager] Successfully added function to threadpool.'
+        msg += 'Work queue size: %s' % self.threadpool.in_qsize()
+        om.out.debug( msg )
             
     def join( self, ownerObj=None, joinAll=False ):
-        self._threadPool.wait( ownerObj, joinAll )
+        
+        if joinAll:
+            to_join = self._results.keys()
+        else:
+            to_join = [ownerObj,]
+        
+        for owner_obj in to_join:
 
-threadManagerObj = threadManager()
+            while True:
+                try:
+                    result = self._results[owner_obj].get_nowait()
+                except Queue.Empty:
+                    del self._results[owner_obj]
+                    break
+                except KeyError:
+                    break
+                else:
+                    result.get()
+        
+    
+    def terminate(self):
+        self.threadpool.terminate()
+
+
+thread_manager = ThreadManager()

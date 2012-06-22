@@ -7,7 +7,7 @@ License: GPL v2.
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-from core.controllers.threads.threadManager import threadManagerObj as tm
+from core.controllers.threads.threadManager import thread_manager as tm
 from core.data.parsers.urlParser import url_object
 import core.data.kb.config as cf
 
