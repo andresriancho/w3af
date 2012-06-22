@@ -53,7 +53,7 @@ def enable_dns_cache():
             query = (args)
             res = _dns_cache[query]
             #This was too noisy and not so useful
-            om.out.debug('Cached DNS response for domain: ' + query[0] )
+            #om.out.debug('Cached DNS response for domain: ' + query[0] )
             return res
         except KeyError:
             res = socket._getaddrinfo(*args, **kwargs)
