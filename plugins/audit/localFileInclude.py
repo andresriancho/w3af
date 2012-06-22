@@ -95,23 +95,11 @@ class localFileInclude(baseAuditPlugin):
             local_files.extend( self._get_local_file_list(freq.getURL()) )
         
         mutants = createMutants( freq , local_files, oResponse=oResponse )
-            
-        for mutant in mutants:
-            
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                # I don't grep the result, because if I really find a local
-                # file inclusion I will be requesting /etc/passwd and that
-                # would generate A LOT of false positives in the
-                # grep.pathDisclosure plugin
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result,
-                        'grep': False }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-                                                    
-        self._join()
+        
+        # FIXME: Here I was using kwds: grep=False
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_result)
         
     def _get_local_file_list( self, origUrl):
         '''
@@ -163,113 +151,92 @@ class localFileInclude(baseAuditPlugin):
         Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
         '''
-        with self._plugin_lock:
+        #
+        #   I analyze the response searching for a specific PHP error string that tells me
+        #   that open_basedir is enabled, and our request triggered the restriction. If
+        #   open_basedir is in use, it makes no sense to keep trying to read "/etc/passwd",
+        #   that is why this variable is used to determine which tests to send if it was possible
+        #   to detect the usage of this security feature.
+        #
+        if not self._open_basedir:
+            if 'open_basedir restriction in effect' in response\
+            and 'open_basedir restriction in effect' not in mutant.getOriginalResponseBody():
+                self._open_basedir = True
+        
+        #
+        #   I will only report the vulnerability once.
+        #
+        if self._has_no_bug(mutant):
             
             #
-            #   I analyze the response searching for a specific PHP error string that tells me
-            #   that open_basedir is enabled, and our request triggered the restriction. If
-            #   open_basedir is in use, it makes no sense to keep trying to read "/etc/passwd",
-            #   that is why this variable is used to determine which tests to send if it was possible
-            #   to detect the usage of this security feature.
+            #   Identify the vulnerability
             #
-            if not self._open_basedir:
-                if 'open_basedir restriction in effect' in response\
-                and 'open_basedir restriction in effect' not in mutant.getOriginalResponseBody():
-                    self._open_basedir = True
-            
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
-                
-                #
-                #   Identify the vulnerability
-                #
-                file_content_list = self._find_file(response)
-                for file_pattern_match in file_content_list:
-                    if file_pattern_match not in mutant.getOriginalResponseBody():
-                        v = vuln.vuln(mutant)
-                        v.setPluginName(self.getName())
-                        v.setId(response.id)
-                        v.setName('Local file inclusion vulnerability')
-                        v.setSeverity(severity.MEDIUM)
-                        v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
-                        v['file_pattern'] = file_pattern_match
-                        v.addToHighlight(file_pattern_match)
-                        kb.kb.append(self, 'localFileInclude', v)
-                        return
+            file_content_list = self._find_file(response)
+            for file_pattern_match in file_content_list:
+                if file_pattern_match not in mutant.getOriginalResponseBody():
+                    v = vuln.vuln(mutant)
+                    v.setPluginName(self.getName())
+                    v.setId(response.id)
+                    v.setName('Local file inclusion vulnerability')
+                    v.setSeverity(severity.MEDIUM)
+                    v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
+                    v['file_pattern'] = file_pattern_match
+                    v.addToHighlight(file_pattern_match)
+                    kb.kb.append(self, 'localFileInclude', v)
+                    return
 
+            
+            #
+            #   If the vulnerability could not be identified by matching strings that commonly
+            #   appear in "/etc/passwd", then I'll check one more thing...
+            #   (note that this is run if no vulns were identified)
+            #
+            #   http://host.tld/show_user.php?id=show_user.php
+            if mutant.getModValue() == mutant.getURL().getFileName():
+                match, lang = is_source_file( response.getBody() )
+                if match:
+                    #   We were able to read the source code of the file that is vulnerable to
+                    #   local file read
+                    v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
+                    v.setId( response.id )
+                    v.setName( 'Local file read vulnerability' )
+                    v.setSeverity(severity.MEDIUM)
+                    msg = 'An arbitrary local file read vulnerability was found at: '
+                    msg += mutant.foundAt()
+                    v.setDesc( msg )
+                    
+                    #
+                    #    Set which part of the source code to match
+                    #
+                    match_source_code = match.group(0)
+                    v['file_pattern'] = match_source_code
+                    
+                    kb.kb.append( self, 'localFileInclude', v )
+                    return
+                    
+            #
+            #   Check for interesting errors (note that this is run if no vulns were identified)
+            #
+            for regex in self.get_include_errors():
                 
-                #
-                #   If the vulnerability could not be identified by matching strings that commonly
-                #   appear in "/etc/passwd", then I'll check one more thing...
-                #   (note that this is run if no vulns were identified)
-                #
-                #   http://host.tld/show_user.php?id=show_user.php
-                if mutant.getModValue() == mutant.getURL().getFileName():
-                    match, lang = is_source_file( response.getBody() )
-                    if match:
-                        #   We were able to read the source code of the file that is vulnerable to
-                        #   local file read
-                        v = vuln.vuln( mutant )
-                        v.setPluginName(self.getName())
-                        v.setId( response.id )
-                        v.setName( 'Local file read vulnerability' )
-                        v.setSeverity(severity.MEDIUM)
-                        msg = 'An arbitrary local file read vulnerability was found at: '
-                        msg += mutant.foundAt()
-                        v.setDesc( msg )
-                        
-                        #
-                        #    Set which part of the source code to match
-                        #
-                        match_source_code = match.group(0)
-                        v['file_pattern'] = match_source_code
-                        
-                        kb.kb.append( self, 'localFileInclude', v )
-                        return
-                        
-                #
-                #   Check for interesting errors (note that this is run if no vulns were identified)
-                #
-                for regex in self.get_include_errors():
-                    
-                    match = regex.search( response.getBody() )
-                    
-                    if match and not \
-                    regex.search( mutant.getOriginalResponseBody() ):
-                        i = info.info( mutant )
-                        i.setPluginName(self.getName())
-                        i.setId( response.id )
-                        i.setName( 'File read error' )
-                        i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
-                        kb.kb.append( self, 'error', i )        
+                match = regex.search( response.getBody() )
+                
+                if match and not regex.search( mutant.getOriginalResponseBody() ):
+                    i = info.info( mutant )
+                    i.setPluginName(self.getName())
+                    i.setId( response.id )
+                    i.setName( 'File read error' )
+                    i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
+                    kb.kb.append( self, 'error', i )        
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq(kb.kb.getData('localFileInclude', 'localFileInclude'), 'VAR')
         self.print_uniq(kb.kb.getData('localFileInclude', 'error'), 'VAR')
 
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-        
     def _find_file( self, response ):
         '''
         This method finds out if the local file has been successfully included in 
@@ -324,13 +291,6 @@ class localFileInclude(baseAuditPlugin):
             return self._error_compiled_regex
             
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.

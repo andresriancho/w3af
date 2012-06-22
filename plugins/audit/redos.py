@@ -35,9 +35,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
-import core.data.kb.config as cf
 
-import re
 
 
 class redos(baseAuditPlugin):
@@ -86,82 +84,72 @@ class redos(baseAuditPlugin):
         patterns_list = self._get_wait_patterns(run=1)
         mutants = createMutants( freq , patterns_list )
         
-        for mutant in mutants:
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_wait }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_wait)
                 
-        self._join()
-
     def _analyze_wait( self, mutant, response ):
         '''
         Analyze results of the _send_mutant method that was sent in the audit method.
         '''
-        with self._plugin_lock:
+        #
+        #   I will only report the vulnerability once.
+        #
+        if self._has_no_bug(mutant, pname='preg_replace',
+                            kb_varname='preg_replace'):
             
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant, pname='preg_replace',
-                                kb_varname='preg_replace'):
+            if response.getWaitTime() > (self._original_wait_time + self._wait_time) :
                 
-                if response.getWaitTime() > (self._original_wait_time + self._wait_time) :
-                    
-                    # This could be because of a ReDoS vuln, an error that generates a delay in the
-                    # response or simply a network delay; so I'll resend changing the length and see
-                    # what happens.
-                    
-                    first_wait_time = response.getWaitTime()
-                    
-                    # Replace the old pattern with the new one:
-                    original_wait_param = mutant.getModValue()
-                    more_wait_param = original_wait_param.replace( 'X', 'XX' )
-                    more_wait_param = more_wait_param.replace( '9', '99' )
-                    mutant.setModValue( more_wait_param )
-                    
-                    # send
-                    response = self._uri_opener.send_mutant(mutant)
-                    
-                    # compare the times
-                    if response.getWaitTime() > (first_wait_time * 1.5):
-                        # Now I can be sure that I found a vuln, I control the time of the response.
-                        v = vuln.vuln( mutant )
-                        v.setPluginName(self.getName())
-                        v.setName( 'ReDoS vulnerability' )
-                        v.setSeverity(severity.MEDIUM)
-                        v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
-                        v.setDc( mutant.getDc() )
-                        v.setId( response.id )
-                        v.setURI( response.getURI() )
-                        kb.kb.append( self, 'redos', v )
+                # This could be because of a ReDoS vuln, an error that generates a delay in the
+                # response or simply a network delay; so I'll resend changing the length and see
+                # what happens.
+                
+                first_wait_time = response.getWaitTime()
+                
+                # Replace the old pattern with the new one:
+                original_wait_param = mutant.getModValue()
+                more_wait_param = original_wait_param.replace( 'X', 'XX' )
+                more_wait_param = more_wait_param.replace( '9', '99' )
+                mutant.setModValue( more_wait_param )
+                
+                # send
+                response = self._uri_opener.send_mutant(mutant)
+                
+                # compare the times
+                if response.getWaitTime() > (first_wait_time * 1.5):
+                    # Now I can be sure that I found a vuln, I control the time of the response.
+                    v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
+                    v.setName( 'ReDoS vulnerability' )
+                    v.setSeverity(severity.MEDIUM)
+                    v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
+                    v.setDc( mutant.getDc() )
+                    v.setId( response.id )
+                    v.setURI( response.getURI() )
+                    kb.kb.append( self, 'redos', v )
 
-                    else:
-                        # The first delay existed... I must report something...
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Possible ReDoS vulnerability')
-                        i.setId( response.id )
-                        i.setDc( mutant.getDc() )
-                        i.setMethod( mutant.getMethod() )
-                        msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
-                        msg += ' . Please review manually.'
-                        i.setDesc( msg )
-                        
-                        # Just printing to the debug log, we're not sure about this
-                        # finding and we don't want to clog the report with false
-                        # positives
-                        om.out.debug( str(i) )
+                else:
+                    # The first delay existed... I must report something...
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('Possible ReDoS vulnerability')
+                    i.setId( response.id )
+                    i.setDc( mutant.getDc() )
+                    i.setMethod( mutant.getMethod() )
+                    msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
+                    msg += ' . Please review manually.'
+                    i.setDesc( msg )
+                    
+                    # Just printing to the debug log, we're not sure about this
+                    # finding and we don't want to clog the report with false
+                    # positives
+                    om.out.debug( str(i) )
 
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq( kb.kb.getData( 'redos', 'redos' ), 'VAR' )
     
     def _get_wait_patterns( self, run ):
@@ -176,23 +164,6 @@ class redos(baseAuditPlugin):
         patterns.append('1111111111111111111111111111111119!')
         
         return patterns
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
     
     def getPluginDeps( self ):
         '''

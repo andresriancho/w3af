@@ -163,15 +163,11 @@ class xss(baseAuditPlugin):
             for xss_string, affected_browsers in filtered_xss_tests:
                 if xss_string in mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
+        
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutant_list,
+                                 self._analyze_result)
 
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-        self._join()
     
     def _get_allowed_chars(self, mutant):
         '''
@@ -261,14 +257,11 @@ class xss(baseAuditPlugin):
                 if xss_string.replace('alert', 'fake_alert') in \
                                                     mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
-                    
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-                
-        self._join()
+        
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutant_list,
+                                 self._analyze_result)
+
 
     def _get_xss_tests(self):
         '''
@@ -487,13 +480,6 @@ class xss(baseAuditPlugin):
         else:
             msg = 'Please enter a valid numberOfChecks value (1-' + str(self._xss_tests_length) + ').'
             raise w3afException(msg)
-        
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
 
     def getLongDesc(self):
         '''

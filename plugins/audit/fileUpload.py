@@ -80,13 +80,9 @@ class fileUpload(baseAuditPlugin):
                     _, filename = os.path.split( mutant.getModValue().name )
                     mutant.uploaded_file_name = filename
        
-                for mutant in mutants:
-                    args = (mutant,)
-                    kwds = {'callback': self._analyze_result }
-                    self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                        kwds=kwds)
-                    
-            self._join()
+                self._send_mutants_async(self._uri_opener.send_mutant,
+                                         mutants,
+                                         self._analyze_result)            
             
     def _get_files( self ):
         '''
@@ -180,7 +176,6 @@ class fileUpload(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
         
         # Clean up
@@ -226,13 +221,6 @@ class fileUpload(baseAuditPlugin):
         @return: No value is returned.
         ''' 
         self._extensions = optionsMap['extensions'].getValue()
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
     
     def getLongDesc( self ):
         '''

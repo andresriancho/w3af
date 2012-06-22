@@ -58,7 +58,8 @@ class baseAuditPlugin(basePlugin):
         
         self.audit( fuzzable_request_copy )
         
-        # The join is here just in case, because the audit method of each plugin should call it
+        # The join is here just in case, because the audit method of each plugin
+        # should call it
         self._tm.join( self )
         
         after_vuln_dict = kb.kb.getData( self )

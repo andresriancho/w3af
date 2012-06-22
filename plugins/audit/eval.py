@@ -107,17 +107,11 @@ class eval(baseAuditPlugin):
         print_strings = [pstr % (self._rnd,) for pstr in self.PRINT_STRINGS]
             
         mutants = createMutants(freq, print_strings, oResponse=oResponse)
+        
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_echo)
 
-        for mutant in mutants:
-            
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_echo }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)                
-        self._join()
 
     def _fuzz_with_time_delay(self, freq):
         '''
@@ -125,26 +119,29 @@ class eval(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         fake_mutants = createMutants(freq, ['',])
-        
-        for mutant in fake_mutants:
+        self._tm.threadpool.map(self._test_delay, fake_mutants)
+    
+    def _test_delay(self, mutant):
+        '''
+        Try to delay the response and save a vulnerability if successful
+        '''
+        if self._has_bug(mutant):
+            return
+
+        for delay_obj in self.WAIT_OBJ:
             
-            if self._has_bug(mutant):
-                continue
+            ed = exact_delay(mutant, delay_obj, self._uri_opener)
+            success, responses = ed.delay_is_controlled()
 
-            for delay_obj in self.WAIT_OBJ:
-                
-                ed = exact_delay(mutant, delay_obj, self._uri_opener)
-                success, responses = ed.delay_is_controlled()
-
-                if success:
-                    v = vuln.vuln(mutant)
-                    v.setPluginName(self.getName())
-                    v.setId( [r.id for r in responses] )
-                    v.setSeverity(severity.HIGH)
-                    v.setName('eval() input injection vulnerability')
-                    v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
-                    kb.kb.append(self, 'eval', v)
-                    break
+            if success:
+                v = vuln.vuln(mutant)
+                v.setPluginName(self.getName())
+                v.setId( [r.id for r in responses] )
+                v.setSeverity(severity.HIGH)
+                v.setName('eval() input injection vulnerability')
+                v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
+                kb.kb.append(self, 'eval', v)
+                break
                         
     def _analyze_echo(self, mutant, response):
         '''
@@ -173,7 +170,6 @@ class eval(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq(kb.kb.getData('eval', 'eval'), 'VAR')
 
     def _find_eval_result(self, response):
@@ -231,13 +227,6 @@ class eval(baseAuditPlugin):
         '''
         self._use_time_delay = optionsMap['useTimeDelay'].getValue()
         self._use_echo = optionsMap['useEcho'].getValue()
-
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
 
     def getLongDesc(self):
         '''

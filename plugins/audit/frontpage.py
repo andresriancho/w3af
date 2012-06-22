@@ -65,8 +65,8 @@ class frontpage(baseAuditPlugin):
         # Start
         if self._stop_on_first and kb.kb.getData('frontpage', 'frontpage'):
             # Nothing to do, I have found vuln(s) and I should stop on first
-            msg = 'Not verifying if I can upload files to: "' + domain_path + '" using author.dll'
-            msg += '. Because I already found one vulnerability.'
+            msg = 'Not verifying if I can upload files to: "' + domain_path
+            msg += '" using author.dll. Because I already found one vulnerability.'
             om.out.debug(msg)
         else:
             # I haven't found any vulns yet, OR i'm trying to find every
@@ -89,8 +89,8 @@ class frontpage(baseAuditPlugin):
                     upload_id = self._upload_file( domain_path,  randFile )
                     self._verify_upload( domain_path,  randFile,  upload_id )
                 else:
-                    msg = 'frontpage plugin failed to find a 404 page. This is mostly because of an'
-                    msg += ' error in 404 page detection.'
+                    msg = 'frontpage plugin failed to find a 404 page. This is'
+                    msg += ' mostly because of an error in 404 page detection.'
                     om.out.error(msg)
             
     def _upload_file( self, domain_path,  randFile ):

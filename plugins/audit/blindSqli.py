@@ -129,13 +129,6 @@ class blindSqli(baseAuditPlugin):
         ''' 
         self._eq_limit = optionsMap['eq_limit'].getValue()
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.

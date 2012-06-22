@@ -180,7 +180,6 @@ class generic(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         vulnsAndInfos = kb.kb.getAllVulns()
         vulnsAndInfos.extend( kb.kb.getAllInfos() )
         self.print_uniq( vulnsAndInfos, 'VAR' )
@@ -206,19 +205,13 @@ class generic(baseAuditPlugin):
         @return: No value is returned.
         ''' 
         self._diff_ratio = optionsMap['diffRatio'].getValue()
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds all kind of bugs without using a fixed database of errors. This is a new
-        kind of methodology that solves the main problem of most web application security scanners.        
+        This plugin finds all kind of bugs without using a fixed database of
+        errors. This is a new kind of methodology that solves the main problem
+        of most web application security scanners.        
         '''

@@ -26,6 +26,7 @@ import threading
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
 
+from core.data.options.optionList import optionList
 from core.controllers.configurable import configurable
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
@@ -68,33 +69,33 @@ class basePlugin(configurable):
         '''
         self._uri_opener = UrlOpenerProxy(urlOpener, self)
 
-    def setOptions( self, optionsMap ):
+    def setOptions( self, optionsList ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the options that were retrieved from the plugin using getOptions()
         
-        This method MUST be implemented on every plugin. 
+        This method must be implemented in every plugin that wishes to have user
+        configurable options. 
         
         @return: No value is returned.
-        ''' 
-        msg = 'Plugin "%s" is not implementing required method setOptions'
-        raise w3afException( msg % self.getName() )
+        '''
+        pass
         
     def getOptions(self):
         '''
         @return: A list of option objects for this plugin.
         '''
-        msg = 'Plugin "%s" is not implementing required method getOptions'
-        raise w3afException( msg % self.getName() )
+        ol = optionList()
+        return ol
 
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be 
-        run before the current one.
+                 run before the current one. Only plugins with dependencies
+                 should override this method.
         '''
-        msg = 'Plugin "%s" is not implementing required method getPluginDeps'
-        raise w3afException( msg % self.getName() )
+        return []
 
     def getDesc( self ):
         '''

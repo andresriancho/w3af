@@ -59,18 +59,10 @@ class responseSplitting(baseAuditPlugin):
         rsList = self._get_header_inj()
         mutants = createMutants( freq , rsList )
             
-        for mutant in mutants:
-            
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-                
-        self._join()
-            
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_result)
+                    
     def _get_errors( self ):
         '''
         @return: A list of error strings produced by the programming framework when
@@ -86,48 +78,45 @@ class responseSplitting(baseAuditPlugin):
         '''
         Analyze results of the _send_mutant method.
         '''
-        with self._plugin_lock:
-            
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
-                                            
-                # When trying to send a response splitting to php 5.1.2 I get :
-                # Header may not contain more than a single header, new line detected
-                for error in self._get_errors():
+        #
+        #   I will only report the vulnerability once.
+        #
+        if self._has_no_bug(mutant):
+                                        
+            # When trying to send a response splitting to php 5.1.2 I get :
+            # Header may not contain more than a single header, new line detected
+            for error in self._get_errors():
+                
+                if error in response:
+                    msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
+                    msg += ' modifies the headers of the response, but this error was sent while'
+                    msg += ' testing for response splitting: "' + error + '"'
                     
-                    if error in response:
-                        msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
-                        msg += ' modifies the headers of the response, but this error was sent while'
-                        msg += ' testing for response splitting: "' + error + '"'
-                        
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setDesc( msg )
-                        i.setVar( mutant.getVar() )
-                        i.setURI( mutant.getURI() )
-                        i.setDc( mutant.getDc() )
-                        i.setId( response.id )
-                        i.setName( 'Parameter modifies headers' )
-                        kb.kb.append( self, 'responseSplitting', i )
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setDesc( msg )
+                    i.setVar( mutant.getVar() )
+                    i.setURI( mutant.getURI() )
+                    i.setDc( mutant.getDc() )
+                    i.setId( response.id )
+                    i.setName( 'Parameter modifies headers' )
+                    kb.kb.append( self, 'responseSplitting', i )
 
-                        return
-                    
-                if self._header_was_injected( response ):
-                    v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
-                    v.setId( response.id )
-                    v.setSeverity(severity.MEDIUM)
-                    v.setName( 'Response splitting vulnerability' )
-                    kb.kb.append( self, 'responseSplitting', v )
+                    return
+                
+            if self._header_was_injected( response ):
+                v = vuln.vuln( mutant )
+                v.setPluginName(self.getName())
+                v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
+                v.setId( response.id )
+                v.setSeverity(severity.MEDIUM)
+                v.setName( 'Response splitting vulnerability' )
+                kb.kb.append( self, 'responseSplitting', v )
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq(
                kb.kb.getData('responseSplitting', 'responseSplitting'), 'VAR'
                )
@@ -145,23 +134,6 @@ class responseSplitting(baseAuditPlugin):
         responseSplitStrings.append("w3af\r\n" + HEADER_NAME +": " + HEADER_VALUE)
                 
         return responseSplitStrings
-        
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
         
     def _header_was_injected( self, response ):
         '''
@@ -208,13 +180,6 @@ class responseSplitting(baseAuditPlugin):
             
         return False
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.

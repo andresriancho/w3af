@@ -186,60 +186,50 @@ class remoteFileInclude(baseAuditPlugin):
         rfi_url_list = [rfi_url, rfi_url + '\0']
         mutants = createMutants(freq, rfi_url_list, oResponse=oResponse)
         
-        for mutant in mutants:
-            # Only spawn a thread if the mutant has a modified variable
-            # that has no reported bugs in the kb
-            if self._has_no_bug(mutant):
-                args = (mutant,)
-                kwds = {'callback': self._analyze_result }
-                self._run_async(meth=self._uri_opener.send_mutant, args=args,
-                                                                    kwds=kwds)
-        # Wait for threads to finish
-        self._join()
+        self._send_mutants_async(self._uri_opener.send_mutant,
+                                 mutants,
+                                 self._analyze_result)
                 
     def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
-        with self._plugin_lock:
+        #
+        #   I will only report the vulnerability once.
+        #
+        if self._has_no_bug(mutant):
             
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
-                
-                if self._rfi_result in response:
-                    v = vuln.vuln(mutant)
-                    v.setPluginName(self.getName())
-                    v.setId(response.id)
-                    v.setSeverity(severity.HIGH)
-                    v.setName('Remote file inclusion vulnerability')
-                    v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
-                    kb.kb.append(self, 'remoteFileInclude', v)
-                
-                else:
-                    #
-                    #   Analyze some errors that indicate that there is a RFI but with some
-                    #   "configuration problems"
-                    #
-                    rfi_errors = ['php_network_getaddresses: getaddrinfo',
-                                        'failed to open stream: Connection refused in']
-                    for error in rfi_errors:
-                        if error in response and not error in mutant.getOriginalResponseBody():
-                            v = vuln.vuln( mutant )
-                            v.setPluginName(self.getName())
-                            v.setId( response.id )
-                            v.setSeverity(severity.MEDIUM)
-                            v.addToHighlight(error)
-                            v.setName('Remote file inclusion vulnerability')
-                            v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
-                            kb.kb.append(self, 'remoteFileInclude', v)
-    
+            if self._rfi_result in response:
+                v = vuln.vuln(mutant)
+                v.setPluginName(self.getName())
+                v.setId(response.id)
+                v.setSeverity(severity.HIGH)
+                v.setName('Remote file inclusion vulnerability')
+                v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                kb.kb.append(self, 'remoteFileInclude', v)
+            
+            else:
+                #
+                #   Analyze some errors that indicate that there is a RFI but with some
+                #   "configuration problems"
+                #
+                rfi_errors = ['php_network_getaddresses: getaddrinfo',
+                                    'failed to open stream: Connection refused in']
+                for error in rfi_errors:
+                    if error in response and not error in mutant.getOriginalResponseBody():
+                        v = vuln.vuln( mutant )
+                        v.setPluginName(self.getName())
+                        v.setId( response.id )
+                        v.setSeverity(severity.MEDIUM)
+                        v.addToHighlight(error)
+                        v.setName('Remote file inclusion vulnerability')
+                        v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                        kb.kb.append(self, 'remoteFileInclude', v)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self._join()
         self.print_uniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
 
     def _create_file(self):
@@ -311,13 +301,6 @@ class remoteFileInclude(baseAuditPlugin):
         if not self._correctly_configured():
             raise w3afException(CONFIG_ERROR_MSG)
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -330,9 +313,10 @@ class remoteFileInclude(baseAuditPlugin):
             - listenPort
             - usew3afSite
         
-        There are two ways of running this plugin, one is the most common one, by using the w3af
-        site ( w3af.sf.net ) as the place from where the target web application will fetch the
-        remote file. The other way to test for inclusion is to run a webserver on the local machine
-        that is performing the scan. The second option is configured using the "listenAddress" and
+        There are two ways of running this plugin, one is the most common one,
+        by using the w3af site ( w3af.sf.net ) as the place from where the target
+        web application will fetch the remote file. The other way to test for
+        inclusion is to run a webserver on the local machine that is performing
+        the scan. The second option is configured using the "listenAddress" and
         "listenPort" parameters.
         '''
