@@ -21,18 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
+import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
-import core.data.parsers.dpCache as dpCache
+from core.controllers.misc.decorators import runonce
+from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afRunOnce
 
 
@@ -45,25 +45,19 @@ class fingerGoogle(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._run = True
         self._accounts = []
         
         # User configured 
         self._result_limit = 300
         self._fast_search = False
-        
+    
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                    (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        if not self._run:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # This plugin will only run one time. 
-            self._run = False
-            
+        if not is_private_site( fuzzableRequest.getURL().getDomain() ):
             self._google = google(self._uri_opener)
             self._domain = domain = fuzzableRequest.getURL().getDomain()
             self._domain_root = fuzzableRequest.getURL().getRootDomain()
@@ -74,7 +68,8 @@ class fingerGoogle(baseDiscoveryPlugin):
                 self._do_complete_search(domain)
             
             self.print_uniq(kb.kb.getData('fingerGoogle', 'mails'), None)
-            return []
+        
+        return []
 
     def _do_fast_search( self, domain ):
         '''
@@ -110,10 +105,8 @@ class fingerGoogle(baseDiscoveryPlugin):
             # If I found an error, I don't want to be run again
             raise w3afRunOnce()
         else:
-            # Happy happy joy, no error here!
-            for result in result_page_objects:
-                self._run_async(meth=self._find_accounts, args=(result,))
-            self._join()
+            #   Send the requests using threads:
+            self._tm.threadpool.map(self._find_accounts, result_page_objects)            
             
     def _find_accounts(self, googlePage ):
         '''

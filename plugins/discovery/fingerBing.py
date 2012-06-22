@@ -21,20 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+import core.data.parsers.dpCache as dpCache
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.w3afException import w3afRunOnce
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
+from core.controllers.misc.decorators import runonce
+from core.controllers.misc.is_private_site import is_private_site
 
 from core.data.searchEngines.bing import bing as bing
-import core.data.parsers.dpCache as dpCache
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class fingerBing(baseDiscoveryPlugin):
@@ -45,39 +44,34 @@ class fingerBing(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
+        
         # Internal variables
-        self._run = True
         self._accounts = []
-        # User configured 
-        self._resultLimit = 300
 
+        # User configured 
+        self._result_limit = 300
+
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest):
         '''
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
         (among other things) the URL to test.
         '''
-        result = []
-        # This will remove the plugin from the discovery plugins to be run.
-        if not self._run:
-            raise w3afRunOnce()
-
-        # This plugin will only run one time. 
-        self._run = False
-        bingSE = bing(self._uri_opener)
-        self._domain = fuzzableRequest.getURL().getDomain()
-        self._domain_root = fuzzableRequest.getURL().getRootDomain()
-
-        results = bingSE.getNResults('@'+self._domain_root, self._resultLimit)
-
-        for result in results:
-            self._run_async(meth=self._findAccounts, args=(result,))
+        if not is_private_site( fuzzableRequest.getURL().getDomain() ):
+            bingSE = bing(self._uri_opener)
+            self._domain = fuzzableRequest.getURL().getDomain()
+            self._domain_root = fuzzableRequest.getURL().getRootDomain()
         
-        self._join()
-        self.print_uniq(kb.kb.getData('fingerBing', 'mails'), None)
+            results = bingSE.getNResults('@'+self._domain_root, self._result_limit)
         
-        return result
+            #   Send the requests using threads:
+            self._tm.threadpool.map(self._find_accounts, results)            
+        
+            self.print_uniq(kb.kb.getData('fingerBing', 'mails'), None)
+        
+        return []
 
-    def _findAccounts(self, page):
+    def _find_accounts(self, page):
         '''
         Finds mails in bing result.
 
@@ -130,7 +124,7 @@ class fingerBing(baseDiscoveryPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Fetch the first "resultLimit" results from the Bing search'
-        o1 = option('resultLimit', self._resultLimit, d1, 'integer')
+        o1 = option('resultLimit', self._result_limit, d1, 'integer')
         ol = optionList()
         ol.add(o1)
         return ol
@@ -143,14 +137,7 @@ class fingerBing(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._resultLimit = optionsMap['resultLimit'].getValue()
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
+        self._result_limit = optionsMap['resultLimit'].getValue()
 
     def getLongDesc( self ):
         '''
@@ -162,6 +149,6 @@ class fingerBing(baseDiscoveryPlugin):
         One configurable parameter exist:
             - resultLimit
 
-        This plugin searches Bing for : "@domain.com", requests all search results and 
-        parses them in order to find new mail addresses.
+        This plugin searches Bing for : "@domain.com", requests all search results
+        and parses them in order to find new mail addresses.
         '''
