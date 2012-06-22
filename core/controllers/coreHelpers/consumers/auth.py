@@ -70,11 +70,14 @@ class auth(threading.Thread):
                     
                     for plugin in self._auth_plugins:
                         plugin.end()
+                    
+                    self._in_queue.task_done()
                     break
                     
                 elif action == FORCE_LOGIN:
                     
                     self._login()
+                    self._in_queue.task_done()
 
     def _login(self):
         '''
@@ -110,9 +113,5 @@ class auth(threading.Thread):
         Poison the loop
         '''
         self._in_queue.put( FINISH_CONSUMER )
-        #
-        #    Allow some time for the plugins to properly end before anything
-        #    else is done at the core level.
-        #
-        time.sleep(0.5)
+        self._in_queue.join()
         

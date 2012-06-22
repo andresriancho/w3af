@@ -35,7 +35,7 @@ from core.controllers.coreHelpers.plugins import w3af_core_plugins
 from core.controllers.coreHelpers.target import w3af_core_target
 from core.controllers.coreHelpers.strategy import w3af_core_strategy
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-from core.controllers.threads.threadManager import thread_manager as tm
+from core.controllers.threads.threadManager import thread_manager
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
 from core.controllers.misc.dns_cache import enable_dns_cache
@@ -94,7 +94,7 @@ class w3afCore(object):
         error handling!
         '''
         om.out.debug('Called w3afCore.start()')
-        # And a client so I can access it from within this thread
+        thread_manager.start()
        
         # This will help identify the total scan time
         self._start_time_epoch = time.time()
@@ -189,12 +189,15 @@ class w3afCore(object):
         
     def stop( self ):
         '''
-        This method is called by the user interface layer, when the user "clicks" on the stop button.
+        This method is called by the user interface layer, when the user "clicks"
+        on the stop button.
+        
         @return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core.')
         self.strategy.stop()
         self.uriOpener.stop()
+        thread_manager.terminate()
     
     def pause(self, pause_yes_no):
         '''
@@ -211,6 +214,7 @@ class w3afCore(object):
         '''
         self.strategy.quit()
         self.uriOpener.stop()
+        thread_manager.terminate()
         
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
@@ -245,8 +249,6 @@ class w3afCore(object):
             
             if exc_inst:
                 om.out.debug(str(exc_inst))
-            
-            tm.terminate()
                         
             # Also, close the output manager.
             om.out.endOutputPlugins()
@@ -256,6 +258,9 @@ class w3afCore(object):
                 raise
         
         finally:
+            thread_manager.terminate()
+            thread_manager.join()
+
             self.status.stop()
             self.progress.stop()
             

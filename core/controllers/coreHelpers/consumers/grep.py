@@ -61,6 +61,9 @@ class grep(threading.Thread):
                 
                 for plugin in self._grep_plugins:
                     plugin.end()
+                
+                self._in_queue.task_done()
+                
                 break
                 
             else:
@@ -86,15 +89,13 @@ class grep(threading.Thread):
                         exec_info = sys.exc_info()
                         enabled_plugins = pprint_plugins(self._w3af_core)
                         exception_handler.handle( status, e , exec_info, enabled_plugins )
+                    finally:
+                        self._in_queue.task_done()
     
     def stop(self):
         '''
         Poison the loop
         '''
         self._in_queue.put( FINISH_CONSUMER )
-        #
-        #    Allow some time for the plugins to properly end before anything
-        #    else is done at the core level.
-        #
-        time.sleep(0.5)
+        self._in_queue.join()
         

@@ -73,7 +73,8 @@ class audit(threading.Thread):
             if workunit == FINISH_CONSUMER:
                 
                 # Close the pool and wait for everyone to finish
-                self._audit_threadpool.poison_all_join()
+                self._audit_threadpool.poison_all_workers()
+                self._audit_threadpool.join()
                 
                 # End plugins
                 for plugin in self._audit_plugins:
@@ -112,10 +113,5 @@ class audit(threading.Thread):
         Poison the loop
         '''
         self._in_queue.put( FINISH_CONSUMER )
-        self._out_queue.put( FINISH_CONSUMER )
-        #
-        #    Allow some time for the plugins to properly end before anything
-        #    else is done at the core level.
-        #
-        time.sleep(0.5)
-        
+        self._audit_threadpool.join()
+

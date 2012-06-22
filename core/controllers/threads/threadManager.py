@@ -38,22 +38,22 @@ class ThreadManager(object):
     MAX_THREADS = 20
     
     def __init__( self ):
-        self._informed = False
-        self._initialized = False
+        self.started = False
+        
         # FIXME: Remove me (and potentially the whole threadmanager object)
         self._results = {}
     
-    def _init_pool( self ):
+    def start( self ):
         self._max_threads = self.MAX_THREADS
         self.threadpool = Pool(self._max_threads, queue_size=200)
         
     def apply_async(self, target, args=(), kwds={}, ownerObj=None):
         
         assert len(kwds) == 0, 'The new ThreadPool does NOT support kwds.'
-        
-        if not self._initialized:
-            self._init_pool()
-            self._initialized = True
+
+        if not self.started:
+            self.started = True
+            self.start()
         
         result = self.threadpool.apply_async(target, args)
         self._results.setdefault(ownerObj, Queue.Queue() ).put(result)
@@ -62,9 +62,9 @@ class ThreadManager(object):
         msg += 'Work queue size: %s' % self.threadpool.in_qsize()
         om.out.debug( msg )
             
-    def join( self, ownerObj=None, joinAll=False ):
+    def join( self, ownerObj=None):
         
-        if joinAll:
+        if ownerObj is None:
             to_join = self._results.keys()
         else:
             to_join = [ownerObj,]
@@ -85,6 +85,7 @@ class ThreadManager(object):
     
     def terminate(self):
         self.threadpool.terminate()
+        self.started = False
 
 
 thread_manager = ThreadManager()

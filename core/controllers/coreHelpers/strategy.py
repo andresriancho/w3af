@@ -268,7 +268,7 @@ class w3af_core_strategy(object):
                 is_404(response)
 
             except KeyboardInterrupt:
-                self._w3af_core._end()
+                self._end()
                 raise
             except (w3afMustStopOnUrlError, w3afException, w3afMustStopException), w3:
                 om.out.error('The target URL: %s is unreachable.' % url)
@@ -603,7 +603,7 @@ class w3af_core_strategy(object):
         for fr in set(self._fuzzable_request_set):
             self._audit_consumer.in_queue_put(fr)
         
-        self._audit_consumer.in_queue_put( FINISH_CONSUMER )
+        self._audit_consumer.stop()
         
         #FIXME: This is just a hack to allow the input queue to be processed
         while True:
@@ -611,8 +611,6 @@ class w3af_core_strategy(object):
             size = self._audit_consumer.in_queue_size()
             if size == 0:
                 break
-        
-        self._audit_consumer.stop()
         
         self._handle_audit_results()
             
@@ -632,7 +630,7 @@ class w3af_core_strategy(object):
         Each time this method is called it will consume all items in the output
         queue. Note that you might have to call this more than once during the
         strategy execution.
-        '''        
+        '''
         while True:
             queue_item = self._audit_consumer.out_queue.get()
             
@@ -659,7 +657,7 @@ class w3af_core_strategy(object):
                     exec_info = sys.exc_info()
                     enabled_plugins = pprint_plugins(self._w3af_core)
                     exception_handler.handle( status, e , exec_info, enabled_plugins )
-                    
+        
             
     def _bruteforce(self, fr_list):
         '''

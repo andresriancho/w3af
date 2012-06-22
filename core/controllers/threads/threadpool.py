@@ -223,16 +223,14 @@ class Pool(object):
         for thr in self._workers:
             thr.join()
     
-    def poison_all_join(self):
-        """Add a poison pill for each worker in the work queue and then
-        wait for them to join()"""
+    def poison_all_workers(self):
+        """Add a poison pill for each worker in the work queue
+        """
         # Send one sentinel for each worker thread: each thread will die
         # eventually, leaving the next sentinel for the next thread
         for _ in self._workers:
             self._workq.put(SENTINEL)
         
-        self.join()
-
     def _create_sequences(self, func, iterable, chunksize, collector = None):
         """
         Create the WorkUnit objects to process and pushes them on the

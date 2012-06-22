@@ -27,7 +27,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.controllers.threads.threadManager import thread_manager as tm
+from core.controllers.threads.threadManager import thread_manager
 
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
@@ -65,7 +65,8 @@ class fingerprint_404:
         self._lock = thread.allocate_lock()
         self._fingerprinted_paths = scalable_bloomfilter()
         
-        # it is OK to store 500 here, I'm only storing int as the key, and bool as the value.
+        # It is OK to store 500 here, I'm only storing int as the key, and bool
+        # as the value.
         self.is_404_LRU = LRU(500)
         
         self._test_db = test_db
@@ -100,26 +101,23 @@ class fingerprint_404:
             #   This is a list of the most common handlers, in some configurations, the 404
             #   depends on the handler, so I want to make sure that I catch the 404 for each one
             #
-            handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm', extension]
-            handlers += ['pl', 'cgi', 'xhtml', 'htmls']
+            handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm' ]
+            handlers.extend( ['pl', 'cgi', 'xhtml', 'htmls', extension] )
             handlers = list(set(handlers))
             
-            for extension in handlers:
-    
-                rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
-                    
-                url404 = domain_path.urlJoin( rand_alnum_file )
-    
-                #   Send the requests using threads:
-                targs = ( url404,  )
-                tm.apply_async( target=self._send_404, args=targs , ownerObj=self )
-                
-            # Wait for all threads to finish sending the requests.
-            tm.join( self )
+            args_list = []
             
+            for extension in handlers:
+                rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+                url404 = domain_path.urlJoin( rand_alnum_file )
+                args_list.append(url404)
+            
+            thread_manager.threadpool.map( self._send_404, args_list )
+            
+                
             #
-            #   I have the bodies in self._response_body_list , but maybe they all look the same, so I'll
-            #   filter the ones that look alike.
+            #   I have the bodies in self._response_body_list , but maybe they 
+            #    all look the same, so I'll filter the ones that look alike.
             #
             result = [ self._response_body_list[0], ]
             for i in self._response_body_list:
