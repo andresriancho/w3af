@@ -68,7 +68,7 @@ class ConsoleUIUpdater(UIUpdater):
         # Nothing special to do here.
         pass
 
-class consoleUi:
+class consoleUi(object):
     '''
     This class represents the console. 
     It handles the keys pressed and delegate the completion and execution tasks 
