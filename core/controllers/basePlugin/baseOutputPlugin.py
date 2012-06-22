@@ -168,10 +168,3 @@ class baseOutputPlugin(basePlugin):
         except:
             return 'unknown-caller'
 
-        
-    def getMessageCache(self):
-        '''
-        Ouput plugins with caches should implement this method.
-        Used in the webUI.
-        '''
-        return {}

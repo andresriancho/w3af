@@ -156,17 +156,6 @@ class outputManager:
         '''
         self._pluginsOptions[pluginName] = PluginsOptions
     
-    def getMessageCache(self):
-        '''
-        Used for the webUI.
-        @return: returns a list containing messages in plugins caches, only if defined.
-        '''
-        res = []
-        for oPlugin in self._outputPluginList:
-            plugCache = oPlugin.getMessageCache()
-            res.extend(plugCache)
-        return res
-    
     def _call_output_plugins_action(self, actionname, message, *params):
         '''
         Internal method used to invoke the requested action on each plugin
