@@ -24,27 +24,24 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+import md5
+import os.path
 
 import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 # Import options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
-import core.data.constants.severity as severity
-
 from core.controllers.misc.decorators import runonce
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
-import re
-import md5
-import os.path
+
 
 
 # Main class
