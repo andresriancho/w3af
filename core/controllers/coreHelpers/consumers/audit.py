@@ -50,10 +50,11 @@ class audit(threading.Thread):
         super(audit, self).__init__()
         
         self._in_queue = in_queue
+        # See documentation in the properly below
         self._out_queue = Queue.Queue(40)
         self._audit_plugins = audit_plugins
         self._w3af_core = w3af_core
-        self._threadpool = Pool(10, queue_size=40)
+        self._audit_threadpool = Pool(10, queue_size=40)
     
     def run(self):
         '''
@@ -62,7 +63,6 @@ class audit(threading.Thread):
         TODO:
             * Progress
             * Status
-            * Test error handling tracebacks
             * Test error handling status
         '''
 
@@ -73,7 +73,7 @@ class audit(threading.Thread):
             if workunit == FINISH_CONSUMER:
                 
                 # Close the pool and wait for everyone to finish
-                self._threadpool.terminate()
+                self._audit_threadpool.poison_all_join()
                 
                 # End plugins
                 for plugin in self._audit_plugins:
@@ -89,15 +89,24 @@ class audit(threading.Thread):
             else:
                 
                 for plugin in self._audit_plugins:
-                    result = self._threadpool.apply_async( plugin.audit_wrapper,
-                                                           (workunit,) )
-                    self._out_queue.put( result )
-                    print self.out_queue.qsize()
+                    result = self._audit_threadpool.apply_async( plugin.audit_wrapper,
+                                                                 (workunit,) )
+                    self._out_queue.put( (plugin.getName(), workunit, result) )
 
     @property
     def out_queue(self):
+        #
+        #    This output queue can contain one of the following:
+        #        * FINISH_CONSUMER
+        #        * (plugin_name, fuzzable_request, AsyncResult)
         return self._out_queue
-                
+    
+    def in_queue_put(self, work):
+        return self._in_queue.put( work )
+        
+    def in_queue_size(self):
+        return self._in_queue.qsize()
+
     def stop(self):
         '''
         Poison the loop

@@ -155,7 +155,7 @@ class sqli(baseAuditPlugin):
         '''
         sql_error_list = self._findsql_error(response)
         orig_resp_body = mutant.getOriginalResponseBody()
-
+        
         for sql_regex, sql_error_string, dbms_type in sql_error_list:
             if not sql_regex.search(orig_resp_body):
                 if self._has_no_bug(mutant):
@@ -188,7 +188,7 @@ class sqli(baseAuditPlugin):
         '''
         res = []
         
-        for match, regex_str, regex_comp, dbms_type in self._multi_re.query( response.body ):
+        for match, _, regex_comp, dbms_type in self._multi_re.query( response.body ):
             msg = (u'A SQL error was found in the response supplied by '
                'the web application, the error is (only a fragment is '
                'shown): "%s". The error was found on response with id %s.'

@@ -35,6 +35,7 @@ from core.controllers.coreHelpers.consumers.grep import grep
 from core.controllers.coreHelpers.consumers.auth import auth
 from core.controllers.coreHelpers.consumers.audit import audit
 from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
+from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
@@ -370,6 +371,8 @@ class w3af_core_strategy(object):
         self._end(ignore_err=True)
     
     def pause(self, pause_yes_no):
+        # FIXME: Consumers should have something to do with this, most likely
+        # another constant similar to the poison pill
         pass
     
     def _discover(self, to_walk):
@@ -443,7 +446,8 @@ class w3af_core_strategy(object):
             
             # Progress stuff, do this inside the while loop, because the to_walk 
             # variable changes in each loop
-            amount_of_tests = len(self._w3af_core.plugins.plugins['discovery']) * len(to_walk)
+            amount_of_tests = ( len(self._w3af_core.plugins.plugins['discovery']) * 
+                                len(to_walk) )
             self._w3af_core.progress.set_total_amount(amount_of_tests)
             
             plugins_to_remove_list = []
@@ -570,6 +574,9 @@ class w3af_core_strategy(object):
                     om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
                         
     def _setup_audit(self):
+        '''
+        Starts the audit plugin consumer 
+        '''
         om.out.debug('Called _setup_audit()' )
 
         enabled_plugins = self._w3af_core.plugins.getEnabledPlugins('audit')
@@ -579,25 +586,60 @@ class w3af_core_strategy(object):
             audit_in_queue = Queue.Queue(25)
             self._audit_consumer = audit(audit_in_queue, audit_plugins, self._w3af_core)
             self._audit_consumer.start()
-        
-            #TODO: This is a horrible thing to do, we consume lots of memory
-            #      for just a loop. The issue is that we had some strange
-            #      "RuntimeError: Set changed size during iteration" and I had
-            #      no time to solve them.
-            for fr in set(self._fuzzable_request_set):
-                audit_in_queue.put(fr)
             
-            #FIXME: This is just a hack to allow the output queue to be populated
-            import time
-            time.sleep(2)
-            self._audit_consumer.stop()
+            # FIXME: Remove me.
+            self._seed_audit_consumer()
+
+    def _seed_audit_consumer(self):
+        '''
+        FIXME: This method should be merged into start() and removed from
+               _setup_audit()
         
+        '''   
+        #TODO: This is a horrible thing to do, we consume lots of memory
+        #      for just a loop. The issue is that we had some strange
+        #      "RuntimeError: Set changed size during iteration" and I had
+        #      no time to solve them.
+        for fr in set(self._fuzzable_request_set):
+            self._audit_consumer.in_queue_put(fr)
+        
+        self._audit_consumer.in_queue_put( FINISH_CONSUMER )
+        
+        #FIXME: This is just a hack to allow the input queue to be processed
         while True:
-            result = self._audit_consumer.out_queue.get()
-            
-            if result == FINISH_CONSUMER:
+            time.sleep(1)
+            size = self._audit_consumer.in_queue_size()
+            if size == 0:
                 break
-            else:    
+        
+        self._audit_consumer.stop()
+        
+        self._handle_audit_results()
+            
+
+    def _handle_audit_results(self):
+        '''
+        This method handles the results of running audit plugins. The results
+        are put() into self._audit_consumer.out_queue by the consumer and they
+        are basically the ApplyResult objects from the threadpool.
+        
+        Since audit plugins don't really return stuff that we're interested in,
+        these results are mostly interesting to us because of the exceptions
+        that might appear in the plugins. Because of that, the method should be
+        called in the main thread and be seen as a way to "bring thread exceptions
+        to main thread".
+        
+        Each time this method is called it will consume all items in the output
+        queue. Note that you might have to call this more than once during the
+        strategy execution.
+        '''        
+        while True:
+            queue_item = self._audit_consumer.out_queue.get()
+            
+            if queue_item == FINISH_CONSUMER:
+                break
+            else:
+                plugin_name, request, result = queue_item
                 try:
                     result.get()
                 except Exception, e:
@@ -606,13 +648,18 @@ class w3af_core_strategy(object):
                     # sys.excepthook = handle_crash because we want to handle
                     # plugin exceptions in this way, and not framework 
                     # exceptions
+                    class fake_status(w3af_core_status):
+                        pass
+        
+                    status = fake_status()
+                    status.set_running_plugin( plugin_name )
+                    status.set_phase( 'audit' )
+                    status.set_current_fuzzable_request( request )
                     
-                    # FIXME: Maybe I need to setup a fake status or something?
                     exec_info = sys.exc_info()
                     enabled_plugins = pprint_plugins(self._w3af_core)
-                    exception_handler.handle( self._w3af_core.status, e , 
-                                              exec_info, enabled_plugins )
-                
+                    exception_handler.handle( status, e , exec_info, enabled_plugins )
+                    
             
     def _bruteforce(self, fr_list):
         '''

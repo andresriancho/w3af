@@ -34,7 +34,7 @@ from core.controllers.exception_handling.helpers import pprint_plugins
 class grep(threading.Thread):
     '''
     Consumer thread that takes requests and responses from the queue and
-    analyzes them using user-configured grep plugins.
+    analyzes them using the user-enabled grep plugins.
     '''
     
     def __init__(self, in_queue, grep_plugins, w3af_core):
@@ -55,15 +55,17 @@ class grep(threading.Thread):
         '''
         while True:
            
-            request, response = self._in_queue.get()
+            work_unit = self._in_queue.get()
 
-            if request == response == FINISH_CONSUMER:
+            if work_unit == FINISH_CONSUMER:
                 
                 for plugin in self._grep_plugins:
                     plugin.end()
                 break
                 
             else:
+                request, response = work_unit
+
                 for grep_plugin in self._grep_plugins:
                     try:
                         grep_plugin.grep( request, response )
@@ -89,7 +91,7 @@ class grep(threading.Thread):
         '''
         Poison the loop
         '''
-        self._in_queue.put( (FINISH_CONSUMER, FINISH_CONSUMER) )
+        self._in_queue.put( FINISH_CONSUMER )
         #
         #    Allow some time for the plugins to properly end before anything
         #    else is done at the core level.

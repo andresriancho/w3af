@@ -219,9 +219,19 @@ class Pool(object):
 
     def join(self):
         """Wait for the worker processes to exit. One must call
-        close() or terminate() before using join()."""
+-        close() or terminate() before using join()."""
         for thr in self._workers:
             thr.join()
+    
+    def poison_all_join(self):
+        """Add a poison pill for each worker in the work queue and then
+        wait for them to join()"""
+        # Send one sentinel for each worker thread: each thread will die
+        # eventually, leaving the next sentinel for the next thread
+        for _ in self._workers:
+            self._workq.put(SENTINEL)
+        
+        self.join()
 
     def _create_sequences(self, func, iterable, chunksize, collector = None):
         """
