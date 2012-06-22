@@ -115,21 +115,21 @@ def main():
         elif o in ('-n', '--no-update'):
             doupdate = False
         if o in ('-r', '--revision'):
-        	doupdate = True
-        	a = a.upper()
-        	if a in ('HEAD', 'PREV'):
-        		rev = 0 if (a == 'HEAD') else -1
-        	else:
-	        	try:
-	        		rev = int(a)
-	        	except ValueError:
-	        		om.out.error("Invalid value for revision number. Expected int.")
-	        		return -3
+            doupdate = True
+            a = a.upper()
+            if a in ('HEAD', 'PREV'):
+                rev = 0 if (a == 'HEAD') else -1
+            else:
+                try:
+                    rev = int(a)
+                except ValueError:
+                    om.out.error("Invalid revision number, integer expected.")
+                    return -3
     
     # console
     from core.ui.consoleUi.consoleUi import consoleUi
     
-    commandsToRun = []
+    commands_to_run = []
     if scriptFile is not None:
         try:
             fd = open( os.path.join(currentDir, scriptFile)  )
@@ -137,19 +137,19 @@ def main():
             om.out.error('Failed to open file : ' + scriptFile )
             sys.exit(2)
         else:
-            commandsToRun = []
+            commands_to_run = []
             for line in fd:   
                 line = line.strip()
                 if line != '' and line[0] != '#': # if not a comment..
-                    commandsToRun.append( line )
+                    commands_to_run.append( line )
             fd.close() 
     elif profile is not None:
-        commandsToRun = ["profiles use %s %s" % (profile, currentDir)]
+        commands_to_run = ["profiles use %s %s" % (profile, currentDir)]
         if forceProfile is not None:
-            commandsToRun.append("start")
-            commandsToRun.append("exit")
+            commands_to_run.append("start")
+            commands_to_run.append("exit")
 
-    console = consoleUi(commands=commandsToRun, do_upd=doupdate, rev=rev)
+    console = consoleUi(commands=commands_to_run, do_upd=doupdate, rev=rev)
     console.sh()
 
 
