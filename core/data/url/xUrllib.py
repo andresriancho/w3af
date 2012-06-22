@@ -496,10 +496,12 @@ class xUrllib(object):
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            msg = '%s %s returned HTTP code "%s" - id: %s' % \
-                            (req.get_method(), original_url, e.code, e.id)
-            if hasattr(e, 'from_cache'):
-                msg += ' - from cache.'
+            msg = '%s %s returned HTTP code "%s"' % \
+                            (req.get_method(), original_url, e.code)
+
+            from_cache = hasattr(e, 'from_cache')
+            flags = ' (id=%s,from_cache=%i,grep=%i)' % (e.id, from_cache, grep)
+            msg += flags
             om.out.debug(msg)
             
             # Return this info to the caller
@@ -522,9 +524,6 @@ class xUrllib(object):
         
             if grep:
                 self._grep(req, httpResObj)
-            else:
-                om.out.debug('No grep for: "%s", the plugin sent '
-                             'grep=False.' % geturl_instance)
 
             return httpResObj
         except urllib2.URLError, e:
@@ -594,16 +593,16 @@ class xUrllib(object):
             # Everything went well!
             rdata = req.get_data()
             if not rdata:
-                msg = ('%s %s returned HTTP code "%s" - id: %s' % 
-                (req.get_method(), urllib.unquote_plus(original_url), res.code,
-                 res.id))
+                msg = ('%s %s returned HTTP code "%s"' % 
+                       (req.get_method(), urllib.unquote_plus(original_url), res.code) )
             else:                
-                msg = ('%s %s with data: "%s" returned HTTP code "%s" - id: %s'
+                msg = ('%s %s with data: "%s" returned HTTP code "%s"'
                 % (req.get_method(), original_url, urllib.unquote_plus(rdata),
-                   res.code, res.id))
+                   res.code))
 
-            if hasattr(res, 'from_cache'):
-                msg += ' - from cache.'
+            from_cache = hasattr(res, 'from_cache')
+            flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache, grep)
+            msg += flags
             om.out.debug(msg)
 
             httpResObj = from_httplib_resp(res, original_url=original_url_inst)
@@ -623,9 +622,7 @@ class xUrllib(object):
 
             if grep:
                 self._grep(req, httpResObj)
-            else:
-                om.out.debug('No grep for: %s, the plugin sent grep='
-                             'False.' % res.geturl())
+
             return httpResObj
 
     def _readRespose( self, res ):
