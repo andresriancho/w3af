@@ -21,35 +21,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
-
+from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
+from core.controllers.threads.threadManager import one_to_many
 
 
 class userDir(baseDiscoveryPlugin):
     '''
-    Try to find user directories like "http://test/~user/" and identify the remote OS based on the remote users.
+    Try to find user directories like "http://test/~user/" and identify the remote OS based on them.
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
             
-        # Internal variables
-        self._run = True
-        self._run_OS_ident = True
-        self._run_app_ident = True
-        
         # User configured variables
         self._identify_OS = True
         self._identify_applications = True
@@ -57,76 +51,68 @@ class userDir(baseDiscoveryPlugin):
         # For testing
         self._do_fast_search = False
     
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         Searches for user directories.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                    (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        if not self._run:
-            raise w3afRunOnce()
+        self._fuzzable_requests = []
             
-        else:
-            self._run = False
-            self._fuzzable_requests = []
+        base_url = fuzzableRequest.getURL().baseUrl()
+        self._headers = {'Referer': base_url.url_string }
+        
+        # Create a response body to compare with the others
+        non_existent_user = '~_w_3_a_f_/'
+        test_URL = base_url.urlJoin( non_existent_user )
+        try:
+            response = self._uri_opener.GET( test_URL, cache=True, \
+                                                                headers=self._headers )
+            response_body = response.getBody()                
+        except:
+            raise w3afException('userDir failed to create a non existent signature.')
+            
+        self._non_existent = response_body.replace( non_existent_user, '')
+        
+        # Check the users to see if they exist
+        url_user_list = self._create_dirs( base_url )
+        #   Send the requests using threads:
+        self._tm.threadpool.map(one_to_many(self._do_request),
+                                url_user_list)
+        
+        # Only do this if I already know that users can be identified.
+        if kb.kb.getData( 'userDir', 'users' ) != []:
+            if self._identify_OS:
+                self._advanced_identification( base_url, 'os' )
                 
-            base_url = fuzzableRequest.getURL().baseUrl()
-            self._headers = {'Referer': base_url.url_string }
-            
-            # Create a response body to compare with the others
-            non_existant_user = '~_w_3_a_f_/'
-            test_URL = base_url.urlJoin( non_existant_user )
-            try:
-                response = self._uri_opener.GET( test_URL, cache=True, \
-                                                                    headers=self._headers )
-                response_body = response.getBody()                
-            except:
-                raise w3afException('userDir failed to create a non existant signature.')
+            if self._identify_applications:
+                self._advanced_identification( base_url, 'apps' )
                 
-            self._non_existant = response_body.replace( non_existant_user, '')
-            
-            # Check the users to see if they exist
-            url_user_list = self._create_dirs( base_url )
-            for url, user in url_user_list:
-                om.out.debug('userDir is testing ' + url )
-                #   Send the requests using threads:
-                self._run_async(meth=self._do_request, args=(url, user))
-                
-            # Wait for all threads to finish
-            self._join()
-            
-            # Only do this if I already know that users can be identified.
-            if kb.kb.getData( 'userDir', 'users' ) != []:
-                # AND only run once
-                if self._run_OS_ident:
-                    self._run_OS_ident = False
-                    self._advanced_identification( base_url, 'os' )
-                
-                if self._run_app_ident:
-                    self._run_app_ident = False
-                    self._advanced_identification( base_url, 'apps' )
-                    
-                # Report findings of remote OS, applications, users, etc.
-                self._report_findings()
-            
-            return self._fuzzable_requests
+            # Report findings of remote OS, applications, users, etc.
+            self._report_findings()
+        
+        return self._fuzzable_requests
 
-    def _do_request( self, mutant, user ):
+    def _do_request( self, mutated_url, user ):
         '''
         Perform the request and compare.
         
         @return: True when the user was found.
         '''
+        om.out.debug('userDir is testing "%s"' % mutated_url )
+
         try:
-            response = self._uri_opener.GET( mutant, cache=True, headers=self._headers )
+            response = self._uri_opener.GET( mutated_url, cache=True, 
+                                             headers=self._headers )
         except KeyboardInterrupt,e:
             raise e
         else:
-            path = mutant.getPath()
+            path = mutated_url.getPath()
             response_body = response.getBody().replace( path, '')
             
-            if relative_distance_lt(response_body, self._non_existant, 0.7):
+            if relative_distance_lt(response_body, self._non_existent, 0.7):
                 
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.getData( 'userDir', 'users') ]:
@@ -134,6 +120,7 @@ class userDir(baseDiscoveryPlugin):
                     i.setPluginName(self.getName())
                     i.setName('User directory: ' + response.getURL() )
                     i.setId( response.id )
+                    i.setURL( response.getURL() )
                     i.setDesc( 'A user directory was found at: ' + response.getURL() )
                     i['user'] = user
                     
@@ -360,15 +347,17 @@ class userDir(baseDiscoveryPlugin):
             return []
         else:
             # This is the correct return value for this method.
-            return ['discovery.fingerBing', 'discovery.fingerGoogle', 'discovery.fingerPKS' ]
+            return ['discovery.fingerBing', 'discovery.fingerGoogle', 
+                    'discovery.fingerPKS' ]
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will try to find user home directories based on the knowledge gained by other
-        plugins, and an internal knowledge base. For example, if the target URL is:
+        This plugin will try to find user home directories based on the knowledge
+        gained by other plugins, and an internal knowledge base. For example, if
+        the target URL is:
             - http://test/
             
         And other plugins found this valid email accounts:
@@ -381,7 +370,8 @@ class userDir(baseDiscoveryPlugin):
             - http://test/~f00b4r/
             - http://test/f00b4r/
         
-        If the response is not a 404 error, then we have found a new URL. And confirmed the
-        existance of a user in the remote system. This plugin will also identify the remote operating
-        system and installed applications based on the user names that are available.
+        If the response is not a 404 error, then we have found a new URL. And
+        confirmed the existance of a user in the remote system. This plugin 
+        will also identify the remote operating system and installed applications
+        based on the user names that are available.
         '''
