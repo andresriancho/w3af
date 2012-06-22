@@ -1,6 +1,7 @@
 Bye.
 Liked it? Contribute with some lines of code!
-Liked it? Contribute with some money!
+Liked it? Donate some money!
+Liked it? Sponsor the project!
 w3af, better than the regular script kiddie.
 GPL inside.
 got shell?
