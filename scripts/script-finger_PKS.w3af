@@ -14,7 +14,7 @@ discovery fingerPKS
 back
 
 target
-set target http://www.cybsec.com/
+set target http://www.bonsai-sec.com/
 back
 
 start
