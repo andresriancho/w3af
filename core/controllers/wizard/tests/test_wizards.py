@@ -38,7 +38,7 @@ class test_wizards(object):
         for filename in os.listdir('core/controllers/wizard/wizards/'):
             wizard_id, ext = os.path.splitext(filename)
         
-            if wizard_id == '__init__' or ext == '.pyc':
+            if wizard_id in ('__init__', '.svn') or ext == '.pyc':
                 continue
 
             klass = mod % wizard_id
