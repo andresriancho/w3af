@@ -20,6 +20,8 @@ from core.data.url.httpResponse import httpResponse
 class TestHistoryItem(unittest.TestCase):
 
     def setUp(self):
+        kb.kb.cleanup()
+        cf.cf.cleanup()
         cf.cf.save('sessionName',
                 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         create_temp_dir()
@@ -27,6 +29,7 @@ class TestHistoryItem(unittest.TestCase):
     def tearDown(self):
         remove_temp_dir()
         kb.kb.cleanup()
+        cf.cf.cleanup()
 
     def test_single_db(self):
         h1 = HistoryItem()

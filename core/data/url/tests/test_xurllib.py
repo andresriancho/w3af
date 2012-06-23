@@ -34,9 +34,15 @@ from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 class TestXUrllib(unittest.TestCase):
     
     def setUp(self):
-        self.uri_opener = xUrllib()
+        # The next cleanup() calls are here because some other test is leaving
+        # the cf/kb objects in an inconsistent state and I need to clean them
+        # before starting my own tests.
+        cf.cf.cleanup()
+        kb.kb.cleanup()
+        
         cf.cf.save('sessionName',
                 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
+        self.uri_opener = xUrllib()
         create_temp_dir()
         
     def tearDown(self):
@@ -46,7 +52,8 @@ class TestXUrllib(unittest.TestCase):
         
     def test_basic(self):
         url = url_object('http://www.google.com.ar/')
-        self.assertTrue( 'Google' in self.uri_opener.GET( url ).getBody() )
+        body = self.uri_opener.GET( url ).getBody()
+        self.assertTrue( 'Google' in body )
     
     def test_qs_params(self):
         url = url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=google')
