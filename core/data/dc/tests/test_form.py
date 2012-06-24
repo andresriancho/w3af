@@ -23,6 +23,16 @@ form_select_cars = [
 form_select_misc = [
     {'tagname': 'select', 'name': 'colors', 
         'options': ((('value', 'black'),),
+                    (('value', 'red'),))},
+    {'tagname': 'select', 'name': 'letters', 
+        'options': ((('value', 'a'),), (('value', 'b'),),
+                    (('value', 'g'),), (('value', 'h'),),
+                    (('value', 'i'),), (('value', 'j'),))}
+    ]
+
+form_select_misc_large = [
+    {'tagname': 'select', 'name': 'colors', 
+        'options': ((('value', 'black'),),
                     (('value', 'blue'),),
                     (('value', 'yellow'),),
                     (('value', 'green'),),
@@ -32,7 +42,9 @@ form_select_misc = [
                     (('value', 'c'),), (('value', 'd'),),
                     (('value', 'e'),), (('value', 'f'),),
                     (('value', 'g'),), (('value', 'h'),),
-                    (('value', 'i'),), (('value', 'j'),))}
+                    (('value', 'i'),), (('value', 'j'),),
+                    (('value', 'k'),), (('value', 'l'),),
+                    (('value', 'm'),), (('value', 'n'),))}
     ]
 
 form_select_empty = [
@@ -67,10 +79,10 @@ class test_form(unittest.TestCase):
                 values = (values[0], values[len(values)/2], values[-1])
             return values
         
-        bigform_data = form_with_radio + form_select_cars + form_select_misc
+        bigform_data = form_with_radio + form_select_misc
         clean_data = get_gruped_data(bigform_data)
         new_bigform = create_form_helper(bigform_data)
-        total_variants = 2*3*3*3
+        total_variants = 2*2*3
         variants_set = set()
         
         for i, form_variant in enumerate(new_bigform.getVariants(mode="tmb")):
@@ -94,7 +106,59 @@ class test_form(unittest.TestCase):
         
         # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), expected)
+    
+    def test_tmb_variants_large(self):
+        '''
+        Note that this test has several changes from test_tmb_variants:
+            * It uses form_select_misc_large, which exceeds the form's TOP_VARIANTS = 15
+            * Doesn't use filter_tmb since variants are based on a "random pick"
+        '''
+        bigform_data = form_with_radio + form_select_cars + form_select_misc_large
+        clean_data = get_gruped_data(bigform_data)
+        new_bigform = create_form_helper(bigform_data)
+        total_variants = 2*3*3*3
+        variants_set = set()
         
+        # Please note that this depends completely in form.SEED AND form.TOP_VARIANTS
+        RANDOM_PICKS = {1: ('volvo','black', 'd', 'female'),
+                        2: ('volvo', 'blue', 'i', 'male'),
+                        3: ('volvo', 'blue', 'f', 'female'),
+                        4: ('volvo', 'black', 'g', 'female'),
+                        5: ('volvo', 'black', 'm', 'male'),
+                        6: ('volvo', 'black', 'l', 'male'),
+                        7: ('volvo', 'blue', 'b', 'female'),
+                        8: ('volvo', 'blue', 'e', 'female'),
+                        9: ('volvo', 'black', 'c', 'male'),
+                        10: ('volvo', 'black', 'a', 'female'),
+                        11: ('volvo', 'blue', 'e', 'male'),
+                        12: ('volvo', 'black', 'j', 'male'),
+                        13: ('volvo', 'blue', 'c', 'male'),
+                        14: ('volvo', 'black', 'a', 'male'),
+                        15: ('volvo', 'black', 'i', 'female')
+                       }
+        
+        for i, form_variant in enumerate(new_bigform.getVariants(mode="tmb")):
+
+            if i == 0: # First element must be the created `new_bigform`
+                self.assertEquals(id(new_bigform), id(form_variant))
+                continue
+            
+            for name, values in clean_data.items():
+                current_random_values = RANDOM_PICKS[i]
+                msg = 'Failed to find "%s" in "%s"' % (form_variant[name][0], current_random_values)
+                self.assertTrue(form_variant[name][0] in current_random_values, msg)
+            
+            variants_set.add(repr(form_variant))
+
+        
+        # Ensure we actually got the expected number of variants
+        f = form.Form()
+        expected = min(total_variants, f.TOP_VARIANTS)
+        self.assertEquals(i, expected)
+        
+        # Variants shouldn't appear duplicated
+        self.assertEquals(len(variants_set), expected)
+
 
     def test_all_variants(self):
         # 'all' mode variants
