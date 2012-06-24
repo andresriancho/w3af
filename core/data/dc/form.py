@@ -329,12 +329,15 @@ class Form(DataContainer):
                 else:
                     # FIXME: Is it solution good? Simply delete unwanted
                     #        send checkboxes?
-                    if self_variant.get(sel_name): # We might had removed it b4
+                    #
+                    # We might had removed it before
+                    if self_variant.get(sel_name):
                         del self_variant[sel_name]
             
             yield self_variant
 
     def _getSamplePaths(self, mode, matrix):
+
         if mode in ["t", "tb"]:
             yield [0] * len(matrix)
 
@@ -342,13 +345,13 @@ class Form(DataContainer):
             yield [-1] * len(matrix)
         # mode in ["tmb", "all"]
         elif mode in ["tmb", "all"]:
+            
             variants_total = self._getVariantsCount(matrix, mode)
             
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
             # matrix by using `SEED` in the random generation
             if variants_total > self.TOP_VARIANTS:
-                
                 # Inform user
                 om.out.information("w3af found an HTML form that has several"
                    " checkbox, radio and select input tags inside. Testing "
@@ -356,7 +359,10 @@ class Form(DataContainer):
                    "time, the framework will only test %s randomly "
                    "distributed variants." % self.TOP_VARIANTS)
 
-                # Init random object. Set our seed.
+                # Init random object. Set our seed so we get the same variants
+                # in two runs. This is important for users because they expect 
+                # the tool to find the same vulnerabilities in two consecutive
+                # scans!
                 rand = random.Random()
                 rand.seed(self.SEED)
 
