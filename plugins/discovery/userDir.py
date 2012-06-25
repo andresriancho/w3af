@@ -32,7 +32,6 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
-from core.controllers.threads.threadManager import one_to_many
 
 
 class userDir(baseDiscoveryPlugin):
@@ -79,8 +78,8 @@ class userDir(baseDiscoveryPlugin):
         # Check the users to see if they exist
         url_user_list = self._create_dirs( base_url )
         #   Send the requests using threads:
-        self._tm.threadpool.map(one_to_many(self._do_request),
-                                url_user_list)
+        self._tm.threadpool.map_multi_args(self._do_request,
+                                           url_user_list)
         
         # Only do this if I already know that users can be identified.
         if kb.kb.getData( 'userDir', 'users' ) != []:

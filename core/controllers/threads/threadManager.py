@@ -90,15 +90,4 @@ class ThreadManager(object):
         if self._threadpool is not None:
             self._threadpool.terminate()
 
-class one_to_many(object):
-    '''
-    This is a simple wrapper that translates one argument to many in a function
-    call. Useful for passing to the threadpool map function.
-    '''
-    def __init__(self, func):
-        self.func = func
-    
-    def __call__(self, args):
-        return self.func(*args)
-
 thread_manager = ThreadManager()

@@ -24,6 +24,16 @@ them to their caller in a very simple way.
 
 import sys, threading, Queue, traceback
 
+class one_to_many(object):
+    '''
+    This is a simple wrapper that translates one argument to many in a function
+    call. Useful for passing to the threadpool map function.
+    '''
+    def __init__(self, func):
+        self.func = func
+    
+    def __call__(self, args):
+        return self.func(*args)
 
 ## Item pushed on the work queue to tell the worker threads to terminate
 SENTINEL = "QUIT"
@@ -102,8 +112,22 @@ class Pool(object):
         This method chops the iterable into a number of chunks which
         it submits to the process pool as separate tasks. The
         (approximate) size of these chunks can be specified by setting
-        chunksize to a positive integer."""
+        chunksize to a positive integer.
+        
+        If you want to pass multiple parameters to the function use
+        map_multi_args defined below.
+        """
         return self.map_async(func, iterable, chunksize).get()
+
+    def map_multi_args(self, func, iterable, chunksize=None):
+        """A parallel equivalent of the map() builtin function. It
+        blocks till the result is ready.
+
+        This method chops the iterable into a number of chunks which
+        it submits to the process pool as separate tasks. The
+        (approximate) size of these chunks can be specified by setting
+        chunksize to a positive integer."""
+        return self.map_async(one_to_many(func), iterable, chunksize).get()
 
     def imap(self, func, iterable, chunksize=1):
         """
