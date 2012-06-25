@@ -20,21 +20,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import re
+import StringIO
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import re
-import StringIO
+
+from core.data.db.disk_set import disk_set
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
 class findGit(baseDiscoveryPlugin):
@@ -42,58 +40,66 @@ class findGit(baseDiscoveryPlugin):
     Find GIT repositories
     @author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
     '''
-
+    
+    COMPILED_GIT_INFO = []
+    # Don't change the order! the first element is used in a different way
+    COMPILED_GIT_INFO.append( ['.git/HEAD',re.compile('^ref: refs/')])
+    COMPILED_GIT_INFO.append( ['.git/info/refs',re.compile('^[a-f0-9]{40}\s+refs/')])
+    COMPILED_GIT_INFO.append( ['.git/objects/info/packs',re.compile('^P pack-[a-f0-9]{40}\.pack')])
+    COMPILED_GIT_INFO.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
+    COMPILED_GIT_INFO.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
+    
+    
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = []
+        self._analyzed_dirs = disk_set()
         self._fuzzable_requests_to_return = []
-        self._compile_gitRE()
 
     def discover(self, fuzzableRequest ):
         '''
-        For every directory, fetch a list of files and analyze the response using regex.
+        For every directory, fetch a list of files and analyze the response
+        using regex.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         domain_path = fuzzableRequest.getURL().getDomainPath()
         self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.append( domain_path )
+            self._analyzed_dirs.add( domain_path )
 
             #
             #   First we check if the .git/HEAD file exists
             #
-            relative_url, reg_ex = self._compiled_git_info[0]
+            relative_url, reg_ex = self.COMPILED_GIT_INFO[0]
             git_url = domain_path.urlJoin(relative_url)
-            try:
-                response = self._uri_opener.GET( git_url, cache=True )
-            except w3afException:
-                om.out.debug('Failed to GET git file: "' + git_url + '"')
-            else:
-                if not is_404(response):
-                    #
-                    #   It looks like we have a GIT repository!
-                    #
-                    for relative_url, reg_ex in self._compiled_git_info:
-                        git_url = domain_path.urlJoin(relative_url)
-                        args = (domain_path, git_url, reg_ex)
-                        # Note: The .git/HEAD request is only sent once.
-                        # The cache is used.
-                        self._run_async(meth=self._check_if_exists, args=args)
-                    
-                    # Wait for all threads to finish
-                    self._join()
+            if self._check_if_exists(domain_path, git_url, reg_ex):
+                #
+                #   It looks like we have a GIT repository!
+                #
+                requests_args = []
                 
-            return self._fuzzable_requests_to_return
+                for relative_url, reg_ex in self.COMPILED_GIT_INFO[1:]:
+                    git_url = domain_path.urlJoin(relative_url)
+                    requests_args.append( (domain_path, git_url, reg_ex) )
+                
+                # Send all requests, block until all are done
+                self._tm.threadpool.map_multi_args(self._check_if_exists, requests_args)
+                                
+        return self._fuzzable_requests_to_return
     
     def _check_if_exists(self, domain_path, git_url, regular_expression):
         '''
-        Check if the file exists.
+        Check if the file exists and if it matches the regular expression.
         
-        @parameter git_file_url: The URL to check
+        @param git_file_url: The URL to check
+        @param domain_path: The original domain and path
+        @param regular_expression: The regex that verifies that this is a GIT repo
+        
+        @return: True if the file exists and matches the regex
         '''
         try:
             response = self._uri_opener.GET( git_url, cache=True )
@@ -111,57 +117,24 @@ class findGit(baseDiscoveryPlugin):
                         v.setName( 'Possible Git repository found' )
                         v.setSeverity(severity.LOW)
                         v.setURL( response.getURL() )
+                        
                         msg = 'A Git repository file was found at: "' + v.getURL() + '" ; this could'
                         msg += ' indicate that a Git repo is accessible. You might be able to download'
                         msg += ' the Web application source code by running'
                         msg += ' "git clone ' + domain_path + '"'
                         v.setDesc( msg )
-                        kb.kb.append( self, 'GIT', v )
+                        
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                        
+                        kb.kb.append( self, 'GIT', v )
+                        
                         fuzzable_requests = self._createFuzzableRequests( response )
                         self._fuzzable_requests_to_return.extend( fuzzable_requests )
-                    
-    def _compile_gitRE( self ):
-        '''
-        Compile the GIT regular expressions. This is done at the beginning,
-        in order to save CPU power.
-
-        @return: None, the result is saved in "self._compiled_git_info".
-        '''
-        self._compiled_git_info = []
-        #
-        # don't change the order! the first element is used in a different way
-        #
-        self._compiled_git_info.append( ['.git/HEAD',re.compile('^ref: refs/')])
-        self._compiled_git_info.append( ['.git/info/refs',re.compile('^[a-f0-9]{40}\s+refs/')])
-        self._compiled_git_info.append( ['.git/objects/info/packs',re.compile('^P pack-[a-f0-9]{40}\.pack')])
-        self._compiled_git_info.append( ['.git/packed-refs',re.compile('^[a-f0-9]{40} refs/')])
-        self._compiled_git_info.append( ['.git/refs/heads/master',re.compile('^[a-f0-9]{40}')])
-
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
+                        
+                        return True
         
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
+        return False
+                    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
