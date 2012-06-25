@@ -20,18 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import cStringIO
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.daemons.proxy import proxy, w3afProxyHandler
-from core.controllers.misc.decorators import runonce
-from core.controllers.w3afException import w3afException, w3afRunOnce
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
 import core.data.constants.w3afPorts as w3afPorts
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
 
 # Cohny changed the original http://w3af/spiderMan?terminate
 # to http://127.7.7.7/spiderMan?terminate because in Opera we got
@@ -48,12 +47,30 @@ class spiderMan(baseDiscoveryPlugin):
     '''
     def __init__(self):
         # Internal variables
-        self._run = True
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
 
         # User configured parameters
-        self._listenAddress = '127.0.0.1'
-        self._listenPort = w3afPorts.SPIDERMAN
+        self._listen_address = '127.0.0.1'
+        self._listen_port = w3afPorts.SPIDERMAN
+    
+    @runonce(exc_class=w3afRunOnce)
+    def discover(self, freq ):
+        # Create the proxy server
+        self._proxy = proxy(self._listen_address, self._listen_port,
+                            self._uri_opener, self.createPH())
+        self._proxy.targetDomain = freq.getURL().getDomain()
+        
+        # Inform the user
+        msg = ('spiderMan proxy is running on %s:%s.\nPlease configure '
+           'your browser to use these proxy settings and navigate the '
+           'target site.\nTo exit spiderMan plugin please navigate to %s .'
+           % (self._listen_address, self._listen_port, TERMINATE_URL))
+        om.out.information( msg )
+        
+        # Run the server
+        self._proxy.run()
+        
+        return self._fuzzable_requests
 
     def append_fuzzable_request(self, freq):
         '''
@@ -63,15 +80,15 @@ class spiderMan(baseDiscoveryPlugin):
         
         @return: None.
         '''
-        self._fuzzableRequests.append(freq)
+        self._fuzzable_requests.append(freq)
 
-        if len(self._fuzzableRequests) == 1:
+        if len(self._fuzzable_requests) == 1:
             om.out.information('Trapped fuzzable requests:')
         
         om.out.information( str(freq) )
 
     def ext_fuzzable_requests(self, response):
-        self._fuzzableRequests.extend(self._createFuzzableRequests(response))
+        self._fuzzable_requests.extend(self._createFuzzableRequests(response))
 
     def stopProxy(self):
         self._proxy.stop()
@@ -87,38 +104,20 @@ class spiderMan(baseDiscoveryPlugin):
 
         return constructor
     
-    @runonce(exc_class=w3afRunOnce)
-    def discover(self, freq ):
-        # Create the proxy server
-        self._proxy = proxy(self._listenAddress, self._listenPort,
-                            self._uri_opener, self.createPH())
-        self._proxy.targetDomain = freq.getURL().getDomain()
-        
-        # Inform the user
-        msg = ('spiderMan proxy is running on %s:%s.\nPlease configure '
-           'your browser to use these proxy settings and navigate the '
-           'target site.\nTo exit spiderMan plugin please navigate to %s .'
-           % (self._listenAddress, self._listenPort, TERMINATE_URL))
-        om.out.information( msg )
-        
-        # Run the server
-        self._proxy.run()
-        
-        return self._fuzzableRequests
-    
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'IP address that the spiderMan proxy will use to receive requests'
-        o1 = option('listenAddress', self._listenAddress, d1, 'string')
-        
-        d2 = 'Port that the spiderMan HTTP proxy server will use to receive requests'
-        o2 = option('listenPort', self._listenPort, d2, 'integer')
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
+        
+        d = 'IP address that the spiderMan proxy will use to receive requests'
+        o = option('listenAddress', self._listen_address, d, 'string')
+        ol.add(o)
+        
+        d = 'Port that the spiderMan HTTP proxy server will use to receive requests'
+        o = option('listenPort', self._listen_port, d, 'integer')
+        ol.add(o)
+        
         return ol
         
     def setOptions( self, optionsMap ):
@@ -130,33 +129,30 @@ class spiderMan(baseDiscoveryPlugin):
         @return: No value is returned.
         '''
 
-        self._listenAddress = optionsMap['listenAddress'].getValue()
-        self._listenPort  = optionsMap['listenPort'].getValue()
+        self._listen_address = optionsMap['listenAddress'].getValue()
+        self._listen_port  = optionsMap['listenPort'].getValue()
         
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []               
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin is a local proxy that can be used to give the framework knowledge about the web
-        application when it has a lot of client side code like Flash or Java applets. Whenever a w3af needs to
-        test an application with flash or javascript, the user should enable this plugin and use a web browser
-        to navigate the site using spiderMan proxy.
+        This plugin is a local proxy that can be used to give the framework
+        knowledge about the web application when it has a lot of client side 
+        code like Flash or Java applets. Whenever a w3af needs to test an 
+        application with flash or javascript, the user should enable this plugin
+        and use a web browser to navigate the site using spiderMan proxy.
         
-        The proxy will extract information from the user navigation and generate the necesary injection points for the 
-        audit plugins.
+        The proxy will extract information from the user navigation and generate
+        the necesary injection points for the audit plugins.
         
-        Another feature of this plugin is to save the cookies that are sent by the web application, in order to be able to
-        use them in other plugins. So if you have a web application that has a login with cookie session management
-        you should enable this plugin, do the login through the browser and then let the other plugins spider the rest 
-        of the application for you. Important note: If you enable webSpider, you should ignore the "logout" link.
+        Another feature of this plugin is to save the cookies that are sent by 
+        the web application, in order to be able to use them in other plugins.
+        So if you have a web application that has a login with cookie session
+        management you should enable this plugin, do the login through the browser
+        and then let the other plugins spider the rest of the application for
+        you. Important note: If you enable webSpider, you should ignore the "logout"
+        link.
         
         Two configurable parameters exist:
             - listenAddress
@@ -176,7 +172,7 @@ class proxyHandler(w3afProxyHandler):
                 self._spiderMan = server.chainedHandler._spiderMan
         else:
             self._spiderMan = spiderMan
-        self._uri_opener = self._spiderMan._urlOpener
+        self._uri_opener = self._spiderMan._uri_opener
         w3afProxyHandler.__init__(self, request, client_address, server)
     
     def do_ALL(self):
@@ -219,7 +215,7 @@ class proxyHandler(w3afProxyHandler):
                        % response.getHeaders()[h])
                     om.out.information( msg )
             self._sendToBrowser(response)
-        return self._spiderMan._fuzzableRequests
+        return self._spiderMan._fuzzable_requests
 
     do_GET = do_POST = do_HEAD = do_ALL
 
