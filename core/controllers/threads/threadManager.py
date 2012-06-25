@@ -50,7 +50,7 @@ class ThreadManager(object):
         return self._threadpool
     
     def start( self ):
-        self._threadpool = Pool(self.MAX_THREADS, queue_size=200)
+        self._threadpool = Pool(self.MAX_THREADS)
         
     def apply_async(self, target, args=(), kwds={}, ownerObj=None):
         
