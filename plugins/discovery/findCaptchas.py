@@ -20,21 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import sha
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-
-import sha
-import mimetypes
 import core.data.parsers.documentParser as documentParser
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afException
+from core.data.db.disk_set import disk_set
 
 
 class findCaptchas(baseDiscoveryPlugin):
@@ -46,39 +42,54 @@ class findCaptchas(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
-    def discover(self, fuzzableRequest ):
-        '''
-        Find captcha images.
+        self._captchas_found = disk_set()
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+    def discover(self, fuzzable_request ):
+        '''
+        Find CAPTCHA images.
+        
+        @parameter fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         '''
         # GET the document, and fetch the images
-        image_map_1 = self._get_images( fuzzableRequest )
+        images_1 = self._get_images( fuzzable_request )
         
         # Re-GET the document, and fetch the images
-        image_map_2 = self._get_images( fuzzableRequest )
+        images_2 = self._get_images( fuzzable_request )
         
-        # Compare the images (different images may be captchas)
-        changed_images_list = []
-        if image_map_1.keys() != image_map_2.keys():
-            for img_src in image_map_1:
-                if img_src not in image_map_2:
-                    changed_images_list.append( img_src )
-        else:
-            # Compare content
-            for img_src in image_map_1:
-                if image_map_1[ img_src ] != image_map_2[ img_src ]:
-                    changed_images_list.append( img_src )
+        # If the number of images in each response is different, don't even bother
+        # to perform any analysis since our simplistic approach will fail.
+        # TODO: Add something more advanced.
+        if len(images_1) == len(images_2):
+            
+            not_in_2 = []
+            
+            for img_src_1, img_hash_1 in images_1:
+                for _, img_hash_2 in images_2:
+                    if img_hash_1 == img_hash_2:
+                        # The image is in both lists, can't be a CAPTCHA 
+                        break
+                else:
+                    not_in_2.append( (img_src_1, img_hash_1) )
+            
+            # Results
+            #
+            # TODO: This allows for more than one CAPTCHA in the same page. Does
+            #       that make sense? When that's found, should I simply declare
+            #       defeat and don't report anything?
+            for img_src, _ in not_in_2:
                 
-        for img_src in changed_images_list:
-            i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Captcha image detected')
-            i.setURL( img_src )
-            i.setMethod( 'GET' )
-            i.setDesc( 'Found a CAPTCHA image at: "' + img_src + '".')
-            kb.kb.append( self, 'findCaptchas', i )
-            om.out.information( i.getDesc() )
+                if img_src.uri2url() not in self._captchas_found:
+                    self._captchas_found.add( img_src.uri2url() )
+                    
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('Captcha image detected')
+                    i.setURI( img_src )
+                    i.setMethod( 'GET' )
+                    i.setDesc( 'Found a CAPTCHA image at: "%s".' % img_src)
+                    kb.kb.append( self, 'CAPTCHA', i )
+                    om.out.information( i.getDesc() )
             
         return []
     
@@ -87,66 +98,41 @@ class findCaptchas(baseDiscoveryPlugin):
         Get all img tags and retrieve the src.
         
         @parameter fuzzable_request: The request to modify
-        @return: A map with the img src as a key, and a hash of the image contents as the value
+        @return: A list with tuples containing (img_src, image_hash)
         '''
-        res = {}
-        
+        res = []
+
         try:
             response = self._uri_opener.GET( fuzzable_request.getURI(), cache=False )
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
-            # Do not use dpCache here, it's no good.
+            # Do not use dpCache here, it's not good since CAPTCHA implementations
+            # *might* change the image name for each request of the HTML
             #dp = dpCache.dpc.getDocumentParserFor( response )
             try:
                 document_parser = documentParser.documentParser( response )
             except w3afException:
                 pass
             else:
-                image_list = document_parser.getReferencesOfTag('img')
-                image_list = [ i.uri2url() for i in image_list]
-                for img_src in image_list:
-                    # TODO: Use self._run_async
-                    try:
-                        image_response = self._uri_opener.GET( img_src, cache=False )
-                    except:
-                        om.out.debug('Failed to retrieve the image for finding captchas.')
-                    else:
-                        if image_response.is_image():
-                            res[ img_src ] = sha.new(image_response.getBody()).hexdigest()
+                image_path_list = document_parser.getReferencesOfTag('img')
+                
+                GET = self._uri_opener.GET
+                result_iter = self._tm.threadpool.imap_unordered(GET, image_path_list)
+                for image_response in result_iter:
+                    if image_response.is_image():
+                        img_src = image_response.getURI()
+                        img_hash = sha.new(image_response.getBody()).hexdigest()
+                        res.append( (img_src, img_hash) ) 
         
         return res
 
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-        
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds any CAPTCHA images that appear on a HTML document. The
-        discovery is performed by requesting the document two times, and comparing the
-        hashes of the images, if they differ, then they may be a CAPTCHA.
+        discovery is performed by requesting the document two times, and comparing
+        the image hashes, if they differ, then they may be a CAPTCHA.
         '''
