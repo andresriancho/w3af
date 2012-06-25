@@ -198,6 +198,7 @@ class w3afCore(object):
         self.strategy.stop()
         self.uriOpener.stop()
         thread_manager.terminate()
+        thread_manager.join()
     
     def pause(self, pause_yes_no):
         '''
@@ -215,7 +216,7 @@ class w3afCore(object):
         self.strategy.quit()
         self.uriOpener.stop()
         thread_manager.terminate()
-        
+        thread_manager.join()
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
     

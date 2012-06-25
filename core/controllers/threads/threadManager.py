@@ -38,14 +38,14 @@ class ThreadManager(object):
     MAX_THREADS = 20
     
     def __init__( self ):
-        self.started = False
+        self._threadpool = None
         
         # FIXME: Remove me (and potentially the whole threadmanager object)
         self._results = {}
     
     @property
     def threadpool(self):
-        if not self.started:
+        if self._threadpool is None:
             self.start()
         return self._threadpool
     
@@ -56,8 +56,7 @@ class ThreadManager(object):
         
         assert len(kwds) == 0, 'The new ThreadPool does NOT support kwds.'
 
-        if not self.started:
-            self.started = True
+        if self._threadpool is None:
             self.start()
         
         result = self._threadpool.apply_async(target, args)
@@ -68,30 +67,28 @@ class ThreadManager(object):
         om.out.debug( msg )
             
     def join( self, ownerObj=None):
-        
         if ownerObj is None:
-            to_join = self._results.keys()
+            # Means that I want to join all the threads
+            self._threadpool.join()
+            self._results = {}
+            
         else:
-            to_join = [ownerObj,]
-        
-        for owner_obj in to_join:
-
+            # Only join the threads that were created for ownerObj
             while True:
                 try:
-                    result = self._results[owner_obj].get_nowait()
+                    result = self._results[ownerObj].get_nowait()
                 except Queue.Empty:
-                    del self._results[owner_obj]
+                    del self._results[ownerObj]
                     break
                 except KeyError:
                     break
                 else:
                     result.get()
-        
+            
     
     def terminate(self):
-        if self.started:
+        if self._threadpool is not None:
             self._threadpool.terminate()
-            self.started = False
 
 class one_to_many(object):
     '''
