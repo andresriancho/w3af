@@ -116,7 +116,7 @@ class osCommanding(baseAuditPlugin):
         only_command_strings = [ v.get_command() for v in command_list ]
         mutants = createMutants( freq , only_command_strings, oResponse=original_response )
         
-        self._send_mutants_async(self._uri_opener.send_mutant,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutants,
                                  self._analyze_echo)
         

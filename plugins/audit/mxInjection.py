@@ -77,7 +77,7 @@ class mxInjection(baseAuditPlugin):
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
         
-        self._send_mutants_async(self._uri_opener.send_mutant,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutants,
                                  self._analyze_result)
             

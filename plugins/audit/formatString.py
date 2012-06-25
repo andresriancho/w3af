@@ -61,7 +61,7 @@ class formatString(baseAuditPlugin):
         oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants( freq , string_list, oResponse=oResponse )
             
-        self._send_mutants_async(self._uri_opener.send_mutant,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutants,
                                  self._analyze_result)
             

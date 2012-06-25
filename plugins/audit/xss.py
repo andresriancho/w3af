@@ -164,7 +164,7 @@ class xss(baseAuditPlugin):
                 if xss_string in mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
         
-        self._send_mutants_async(self._uri_opener.send_mutant,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutant_list,
                                  self._analyze_result)
 
@@ -258,7 +258,7 @@ class xss(baseAuditPlugin):
                                                     mutant.getModValue():
                     mutant.affected_browsers = affected_browsers
         
-        self._send_mutants_async(self._uri_opener.send_mutant,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutant_list,
                                  self._analyze_result)
 

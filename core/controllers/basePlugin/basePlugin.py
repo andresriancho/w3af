@@ -210,7 +210,11 @@ class basePlugin(configurable):
                      (url_error.req.get_full_url(), url_error.msg))
         return (False, None)
 
-    def _send_mutants_async(self, func, iterable, callback):
+    def _send_mutants_in_threads(self, func, iterable, callback):
+        '''
+        Please note that this method blocks from the caller's point of view
+        but performs all the HTTP requests in paralell threads.
+        '''
         func = return_args(func)
         for (mutant,), http_response in self._tm.threadpool.imap_unordered(func, iterable):
             callback(mutant, http_response)

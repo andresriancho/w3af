@@ -80,7 +80,7 @@ class fileUpload(baseAuditPlugin):
                     _, filename = os.path.split( mutant.getModValue().name )
                     mutant.uploaded_file_name = filename
        
-                self._send_mutants_async(self._uri_opener.send_mutant,
+                self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                          mutants,
                                          self._analyze_result)            
             
