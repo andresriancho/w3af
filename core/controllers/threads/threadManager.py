@@ -67,6 +67,9 @@ class ThreadManager(object):
         om.out.debug( msg )
             
     def join( self, ownerObj=None):
+        if self._threadpool is None:
+            return
+        
         if ownerObj is None:
             # Means that I want to join all the threads
             self._threadpool.join()
