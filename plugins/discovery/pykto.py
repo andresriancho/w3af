@@ -20,27 +20,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import itertools
+import os.path
+import re
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.data.fuzzer.fuzzer import createRandAlNum
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-
-from core.data.parsers.urlParser import url_object
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
-import os.path
-import re
+from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class pykto(baseDiscoveryPlugin):
@@ -54,39 +52,40 @@ class pykto(baseDiscoveryPlugin):
         
         # internal variables
         self._exec = True
-        self._already_visited = scalable_bloomfilter()
-        self._first_time = True
+        self._already_analyzed = scalable_bloomfilter()
         self._show_remote_server = True
         
         # User configured parameters
-        self._db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'pykto'
-        self._db_file += os.path.sep + 'scan_database.db'
+        self._db_file = os.path.join('plugins', 'discovery','pykto','scan_database.db')
         
-        self._extra_db_file = 'plugins' + os.path.sep + 'discovery' + os.path.sep
-        self._extra_db_file += 'pykto' + os.path.sep + 'w3af_scan_database.db'
+        self._extra_db_file = os.path.join('plugins','discovery','pykto',
+                                           'w3af_scan_database.db')
         
         self._cgi_dirs = ['/cgi-bin/']
         self._admin_dirs = ['/admin/', '/adm/'] 
+        
         self._users = ['adm', 'bin', 'daemon', 'ftp', 'guest', 'listen', 'lp',
-        'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp', 'operator',
-        'root', 'smmsp', 'smtp', 'sshd', 'sys', 'test', 'unknown']                  
-        self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/', '/phpBB/', '/forum/']
+                       'mysql', 'noaccess', 'nobody', 'nobody4', 'nuucp', 'operator',
+                       'root', 'smmsp', 'smtp', 'sshd', 'sys', 'test', 'unknown']                  
+        
+        self._nuke = ['/', '/postnuke/', '/postnuke/html/', '/modules/', '/phpBB/',
+                      '/forum/']
 
         self._mutate_tests = False
         self._generic_scan = False
         self._update_scandb = False
         self._source = ''
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Runs pykto to the site.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                      (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
         self._new_fuzzable_requests = []
         
-        if not self._exec:
+        if not self._exec and not self._mutate_tests:
             # dont run anymore
             raise w3afRunOnce()
             
@@ -96,52 +95,101 @@ class pykto(baseDiscoveryPlugin):
                 self._update_db()
             
             # Run the basic scan (only once)
-            if self._first_time:
-                self._first_time = False
+            url = fuzzable_request.getURL().baseUrl()
+            if url not in self._already_analyzed:
+                self._already_analyzed.add( url )
+                self._run( url )
                 self._exec = False
-                url = fuzzableRequest.getURL().baseUrl()
-                self.__run( url )
-            
+                
             # And now mutate if the user configured it...
             if self._mutate_tests:
                 
-                # If mutations are enabled, I should keep running
-                self._exec = True
-                
-                # Tests are to be mutated
-                url = fuzzableRequest.getURL().getDomainPath()
-                if url not in self._already_visited:
-                    # Save the directories I already have tested
-                    self._already_visited.add( url )
-                    self.__run( url )
+                # Tests need to be mutated
+                url = fuzzable_request.getURL().getDomainPath()
+                if url not in self._already_analyzed:
+                    # Save the directories I already have tested in order to avoid
+                    # testing them more than once...
+                    self._already_analyzed.add( url )
+                    self._run( url )
 
         return self._new_fuzzable_requests
                 
-    def __run( self, url ):
+    def _run( self, url ):
         '''
         Really run the plugin.
         
         @parameter url: The URL object I have to test.
         '''
-        try:
-            # read the nikto database.
-            db_file_1 = open(self._db_file, "r")
-            # read the w3af scan database.
-            db_file_2 = open(self._extra_db_file, "r")
-        except Exception, e:
-            raise w3afException('Failed to open the scan databases. Exception: "' + str(e) + '".')
-        else:
-
-            # Put all the tests in a list
-            test_list = db_file_1.readlines()
-            test_list.extend(db_file_2.readlines())
-            # Close the files
-            db_file_1.close()
-            db_file_2.close()
-
-            # pykto that site !
-            self._pykto( url , test_list )
+        for fname in [self._db_file, self._extra_db_file]:
+            try:
+                db_file = open(fname, "r")
+            except Exception, e:
+                msg = 'Failed to open the scan database. Exception: "%s".'
+                raise om.out.error( msg % e )
+            else:
+                
+                test_generator = self._test_generator_method( db_file, url )
+                
+                # Send the requests using threads:
+                self._tm.threadpool.map_multi_args(self._send_and_check, test_generator,
+                                                   chunksize=10)                
+    
+    
+    def _test_generator_method( self, scan_database_file, url ):
+        '''
+        A helper function that takes a scan database file and yields tests.
         
+        @param scan_database_file: The file object for a scan database
+        @param url: The url_object (with the path) that I'm testing
+        
+        @return: ( A modified url_object with the special query from the scan_database,
+                   The parsed parameters from the scan database line)
+        '''
+        for line in scan_database_file:
+            #om.out.debug( 'Read scan_database: '+ line[:len(line)-1] )
+            if self._is_comment( line ):
+                continue
+            
+            # This is a sample scan_database.db line :
+            # "apache","/docs/","200","GET","May give list of installed software"
+            #
+            # A line could generate more than one request... 
+            # (think about @CGIDIRS)
+            for parameters in itertools.ifilter(self._filter_special,
+                                                self._parse_db_line( line ) ):
+                
+                _, query , _, _ , _ = parameters
+
+                om.out.debug('Testing pykto signature: "%s".' % query)
+
+                # I don't use urlJoin here because in some cases pykto needs to
+                # send something like http://abc/../../../../etc/passwd
+                # and after urlJoin the URL would be just http://abc/etc/passwd
+                #
+                # But I do want is to avoid URLs like this one being generated:
+                # http://localhost//f00   <---- Note the double //
+                if len( query ) != 0 and len( url.getPath() ) != 0:
+                    if query[0] == '/' == url.getPath()[-1]:
+                        query = query[1:]
+                        
+                modified_url = url.copy()
+                modified_url.setPath( modified_url.getPath() + query )
+                
+                yield modified_url, parameters
+    
+    def _filter_special(self, parameters):
+        send_test = False
+        server, query , _, _ , _ = parameters
+        
+        if self._generic_scan or self._server_match( server ):
+            send_test = True
+        
+        # Avoid directory self references
+        if query.endswith('/./') or query.endswith('/%2e/'):
+            send_test = False
+        
+        return send_test
+                
     def _update_db( self ):
         '''
         This method updates the scan_database from cirt.net .
@@ -224,87 +272,6 @@ class pykto(baseDiscoveryPlugin):
                     msg = 'There was an error while writing the new scan_database.db file to disk.'
                     msg += ' Exception message: "' + str(e) + '".'
                     raise w3afException( msg )
-                
-    
-    def _pykto(self, url , test_list ):
-        '''
-        This method does all the real work and writes vulns to the KB.
-
-        @parameter url: The base URL
-        @parameter test_list: The list of all the tests that have to be performed        
-        @return: A list with new url's found.
-        '''
-        lines = 0
-        lines_sent = 0
-        for line in test_list:
-            #om.out.debug( 'Read scan_database: '+ line[:len(line)-1] )
-            if not self._is_comment( line ):
-                # This is a sample scan_database.db line :
-                # "apache","/docs/","200","GET","May give list of installed software"
-                to_send = self._parse( line )
-                
-                lines += 1
-                
-                # A line could generate more than one request... 
-                # (think about @CGIDIRS)
-                for parameters in to_send:
-                    
-                    modified_url = url.copy()
-                    
-                    (server, query , expected_response, method , desc) = parameters
-                    
-                    if self._generic_scan or self._server_match( server ):
-                        #
-                        # Avoid some special cases
-                        #
-                        if query.endswith('/./') or query.endswith('/%2e/'):
-                            # avoid directory self references
-                            continue
-                        #
-                        # End of special cases
-                        #
-                        
-                        om.out.debug('Testing pykto signature: "' + query + '".')
-
-                        # I don't use urlJoin here because in some cases pykto needs to
-                        # send something like http://abc/../../../../etc/passwd
-                        # and after urlJoin the URL would be just http://abc/etc/passwd
-                        
-                        # But I do want is to avoid URLs like this one being generated:
-                        # http://localhost//f00
-                        # (please note the double //)
-                        if len( query ) != 0 and len( url.getPath() ) != 0:
-                            if query[0] == '/' == url.getPath()[-1]:
-                                query = query[1:]
-                            
-                        modified_url.setPath( modified_url.getPath() + query )
-                        
-                        lines_sent += len( to_send )
-                        
-                        # Send the request to the remote server and
-                        # check the response.
-                        args = (modified_url, parameters)
-                        try:
-                            # Performing this with different threads adds
-                            # overhead, but works better now.
-                            #   WithOUT threads:
-                            #self._send_and_check(modified_url, parameters)
-                            
-                            # With threads, performed 3630 requests in
-                            # 13 secs =~ 279 req/sec)
-                            self._run_async(
-                                        meth=self._send_and_check,
-                                        args=args
-                                        )
-                            
-                        except w3afException, e:
-                            om.out.information( str(e) )
-                            return
-                
-                self._join()
-        
-        om.out.debug('Read ' + str(lines) + ' from file.' )
-        om.out.debug('Sent ' + str(lines_sent) + ' requests to remote webserver.' )
         
     def _server_match( self, server ):
         '''
@@ -350,16 +317,54 @@ class pykto(baseDiscoveryPlugin):
             return False
         return True
     
-    def _parse( self, line ):
+    def _parse_db_line( self, line ):
         '''
         This method parses a line from the database file
         
-        @ return: A a list of tuples where each tuple has the following data
+        @return: Yield tuples where each tuple has the following data
             1. server
             2. query
             3. expected_response
             4. method
             5. desc
+        
+        Basic Test
+        ==========
+        
+        >>> p = pykto()
+        >>> test_gen = p._parse_db_line('"apache","/docs/","200","GET","Description"')
+        >>> [i for i in test_gen]
+        [('apache', '/docs/', '200', 'GET', 'Description')]
+
+        JUNK Test
+        ==========
+        
+        >>> test_gen = p._parse_db_line('"apache","/docs/JUNK(5)","200","GET","Description"')
+        >>> server, query, expected_response, method , desc = [i for i in test_gen][0]
+        >>> query.startswith('/docs/')
+        True
+        >>> len(query) == len('/docs/') + 5
+        True
+        
+        One variable test
+        =================
+        >>> test_gen = p._parse_db_line('"apache","@CGIDIRS","200","GET","CGI"')
+        >>> [i for i in test_gen]
+        [('apache', '/cgi-bin/', '200', 'GET', 'CGI')]
+        
+        >>> test_gen = p._parse_db_line('"apache","@ADMINDIRS","200","GET","CGI"')
+        >>> [i for i in test_gen]
+        [('apache', '/admin/', '200', 'GET', 'CGI'), ('apache', '/adm/', '200', 'GET', 'CGI')]
+        
+        Two variables test
+        ==================
+        >>> test_gen = p._parse_db_line('"apache","@ADMINDIRS@USERS","200","GET","CGI"')
+        >>> result = [i for i in test_gen]
+        >>> ('apache', '/adm/sys', '200', 'GET', 'CGI') in result
+        True
+        >>> ('apache', '/admin/bin', '200', 'GET', 'CGI') in result
+        True
+        
         '''
         splitted_line = line.split('","')
         
@@ -371,68 +376,42 @@ class pykto(baseDiscoveryPlugin):
         desc = desc.replace('\\n', '')
         desc = desc.replace('\\r', '')
         
-        if original_query.count(' '):
-            return []
-        else:
-            # Now i should replace the @CGIDIRS variable with the user settings
+        if not original_query.count(' '):
+            
+            # Now I should replace the @CGIDIRS variable with the user settings
             # The same goes for every @* variable.
-            to_send = []
-            to_send.append ( (server, original_query, expected_response, method , desc) )
+            VAR_LIST = (
+                            ('@CGIDIRS', self._cgi_dirs),
+                            ('@ADMINDIRS', self._admin_dirs),
+                            ('@NUKE', self._nuke),
+                            ('@USERS', self._users),
+                        )
             
-            to_mutate = []
-            to_mutate.append( original_query )
-            if original_query.count( '@CGIDIRS' ):
-                for cgiDir in self._cgi_dirs:
-                    query2 = original_query.replace('@CGIDIRS' , cgiDir )
-                    to_send.append ( (server, query2, expected_response, method , desc) )
-                    to_mutate.append( query2 )
-                to_mutate.remove( original_query )
-                to_send.remove ( (server, original_query, expected_response, method , desc) )
-                
+            v_list_replace = [v_list for var, v_list in VAR_LIST 
+                                if var in original_query]
             
-            to_mutate2 = []
-            for query in to_mutate:
-                res = re.findall( 'JUNK\((.*?)\)', query )
-                if res:
-                    query2 = re.sub( 'JUNK\((.*?)\)', createRandAlNum( int(res[0]) ), query )
-                    to_send.append ( (server, query2, expected_response, method , desc) )
-                    to_mutate2.append( query2 )
-                    to_send.remove ( (server, query, expected_response, method , desc) )
-                    to_mutate.remove( query )
-            to_mutate.extend( to_mutate2 )
-            
-            to_mutate2 = []
-            for query in to_mutate:
-                if query.count( '@ADMINDIRS' ):
-                    for adminDir in self._admin_dirs:
-                        query2 = query.replace('@ADMINDIRS' , adminDir )
-                        to_send.append ( (server, query2, expected_response, method , desc) )
-                        to_mutate2.append( query2 )
-                    to_mutate.remove( query )
-                    to_send.remove ( (server, query, expected_response, method , desc) )
-            to_mutate.extend( to_mutate2 )
-            
-            to_mutate2 = []
-            for query in to_mutate:
-                if query.count( '@NUKE' ):
-                    for nuke in self._nuke:
-                        query2 = query.replace('@NUKE' , nuke )
-                        to_send.append ( (server, query2, expected_response, method , desc) )
-                        to_mutate2.append( query2 )
-                    to_mutate.remove( query )
-                    to_send.remove ( (server, query, expected_response, method , desc) )
-            to_mutate.extend( to_mutate2 )
-            
-            for query in to_mutate:
-                if query.count( '@USERS' ):         
-                    for user in self._users:
-                        query2 = query.replace('@USERS' , user )
-                        to_send.append ( (server, query2, expected_response, method , desc) )
-                    to_mutate.remove( query )
-                    to_send.remove ( (server, query, expected_response, method , desc) )
+            variable_replace = [var for var, v_list in VAR_LIST 
+                                if var in original_query]
 
-            return to_send
-        
+            for prod_result in apply(itertools.product, v_list_replace):
+                
+                query = self._replace_JUNK(original_query)
+                
+                for i, v_list_item in enumerate(prod_result):
+                    query = query.replace( variable_replace[i], v_list_item )
+            
+                yield server, query, expected_response, method , desc
+            
+    def _replace_JUNK(self, query):
+        # Replace the JUNK(x) variable:
+        match_obj = re.findall( 'JUNK\((.*?)\)', query )
+        if match_obj:
+            query = re.sub( 'JUNK\((.*?)\)', 
+                            createRandAlNum( int(match_obj[0]) ),
+                            query )
+        return query
+    
+    
     def _send_and_check( self , url , parameters ):
         '''
         This method sends the request to the server.
@@ -469,15 +448,13 @@ class pykto(baseDiscoveryPlugin):
             
         try:
             response = function_reference( url, follow_redir=False )
-        except KeyboardInterrupt,e:
-            raise e
         except w3afException, e:
             msg = 'An exception was raised while requesting "'+url+'" , the error message is: '
             msg += str(e)
             om.out.error( msg )
             return False
         
-        if self._analyzeResult( response, expected_response, parameters, url ):
+        if self._analyze_result( response, expected_response, parameters, url ):
             kb.kb.append( self, 'url', response.getURL() )
             
             v = vuln.vuln()
@@ -505,7 +482,7 @@ class pykto(baseDiscoveryPlugin):
             [ fr.getURI().normalizeURL() for fr in fr_list ]
             self._new_fuzzable_requests.extend( fr_list )
         
-    def _analyzeResult( self , response , expected_response, parameters, uri ):
+    def _analyze_result( self , response , expected_response, parameters, uri ):
         '''
         Analyzes the result of a _send()
         
@@ -527,59 +504,60 @@ class pykto(baseDiscoveryPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'CGI-BIN dirs where to search for vulnerable scripts.'
-        h1 = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
-        h1 += ' cgi-bin directory. The cgi-bin directory can be anything and change from install'
-        h1 += ' to install, so its a good idea to make this a user setting. The directories should'
-        h1 += ' be supplied comma separated and with a / at the beggining and one at the end.'
-        h1 += ' Example: "/cgi/,/cgibin/,/bin/"'
-        o1 = option('cgiDirs', self._cgi_dirs , d1, 'list', help=h1)
-        
-        d2 = 'Admin directories where to search for vulnerable scripts.'
-        h2 = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
-        h2 += ' administration directories. The admin directory can be anything and change'
-        h2 += ' from install to install, so its a good idea to make this a user setting. The'
-        h2 += ' directories should be supplied comma separated and with a / at the beggining and'
-        h2 += ' one at the end. Example: "/admin/,/adm/"'
-        o2 = option('adminDirs', self._admin_dirs, d2, 'list', help=h2)
-        
-        d3 = 'PostNuke directories where to search for vulnerable scripts.'
-        h3 = 'The directories should be supplied comma separated and with a / at the'
-        h3 += ' beggining and one at the end. Example: "/forum/,/nuke/"'
-        o3 = option('nukeDirs', self._nuke, d3, 'list', help=h3)
-
-        d4 = 'The path to the nikto scan_databse.db file.'
-        h4 = 'The default scan database file is ok in most cases.'
-        o4 = option('dbFile', self._db_file, d4, 'string', help=h4)
-
-        d5 = 'Test all files with all root directories'
-        h5 = 'Define if we will test all files with all root directories.'
-        o5 = option('mutateTests', self._mutate_tests, d5, 'boolean', help=h5)        
-
-        d6 = 'Verify that pykto is using the latest scan_database from cirt.net.'
-        o6 = option('updateScandb', self._update_scandb, d6, 'boolean')
-
-        d7 = 'If generic scan is enabled all tests are sent to the remote server without'
-        d7 += ' checking the server type.'
-        h7 = 'Pykto will send all tests to the server if generic Scan is enabled. For example,'
-        h7 += ' if a test in the database is marked as "apache" and the remote server reported'
-        h7 += ' "iis" then the test is sent anyway.'
-        o7 = option('genericScan', self._generic_scan, d7, 'boolean', help=h7)        
-
-        d8 = 'The path to the w3af_scan_databse.db file.'
-        h8 = 'This is a file which has some extra checks for files that are not present in the'
-        h8 += ' nikto database.'
-        o8 = option('extra_db_file', self._extra_db_file, d8, 'string', help=h8)
-
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o8)  # Intentionally out of order
-        ol.add(o5)
-        ol.add(o6)
-        ol.add(o7)
+        
+        d = 'CGI-BIN dirs where to search for vulnerable scripts.'
+        h = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
+        h += ' cgi-bin directory. The cgi-bin directory can be anything and change from install'
+        h += ' to install, so its a good idea to make this a user setting. The directories should'
+        h += ' be supplied comma separated and with a / at the beggining and one at the end.'
+        h += ' Example: "/cgi/,/cgibin/,/bin/"'
+        o = option('cgiDirs', self._cgi_dirs , d, 'list', help=h)
+        ol.add(o)
+                
+        d = 'Admin directories where to search for vulnerable scripts.'
+        h = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
+        h += ' administration directories. The admin directory can be anything and change'
+        h += ' from install to install, so its a good idea to make this a user setting. The'
+        h += ' directories should be supplied comma separated and with a / at the beggining and'
+        h += ' one at the end. Example: "/admin/,/adm/"'
+        o = option('adminDirs', self._admin_dirs, d, 'list', help=h)
+        ol.add(o)
+                
+        d = 'PostNuke directories where to search for vulnerable scripts.'
+        h = 'The directories should be supplied comma separated and with a / at the'
+        h += ' beggining and one at the end. Example: "/forum/,/nuke/"'
+        o = option('nukeDirs', self._nuke, d, 'list', help=h)
+        ol.add(o)
+        
+        d = 'The path to the nikto scan_databse.db file.'
+        h = 'The default scan database file is ok in most cases.'
+        o = option('dbFile', self._db_file, d, 'string', help=h)
+        ol.add(o)
+        
+        d = 'The path to the w3af_scan_databse.db file.'
+        h = 'This is a file which has some extra checks for files that are not present in the'
+        h += ' nikto database.'
+        o = option('extra_db_file', self._extra_db_file, d, 'string', help=h)
+        ol.add(o)
+        
+        d = 'Test all files with all root directories'
+        h = 'Define if we will test all files with all root directories.'
+        o = option('mutateTests', self._mutate_tests, d, 'boolean', help=h)        
+        ol.add(o)
+        
+        d = 'Verify that pykto is using the latest scan_database from cirt.net.'
+        o = option('updateScandb', self._update_scandb, d, 'boolean')
+        ol.add(o)
+        
+        d = 'If generic scan is enabled all tests are sent to the remote server without'
+        d += ' checking the server type.'
+        h = 'Pykto will send all tests to the server if generic Scan is enabled. For example,'
+        h += ' if a test in the database is marked as "apache" and the remote server reported'
+        h += ' "iis" then the test is sent anyway.'
+        o = option('genericScan', self._generic_scan, d, 'boolean', help=h)        
+        ol.add(o)
+        
         return ol
         
     def setOptions( self, optionsMap ):
@@ -611,8 +589,8 @@ class pykto(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin is a nikto port to python.
-        It uses the scan_database file from nikto to search for new and vulnerable URL's.
+        This plugin is a nikto port to python. It uses the scan_database file 
+        from nikto to search for new and vulnerable URL's.
         
         Seven configurable parameters exist:
             - updateScandb
@@ -624,7 +602,9 @@ class pykto(baseDiscoveryPlugin):
             - mutateTests
             - genericScan
         
-        This plugin reads every line in the scan_database (and extra_db_file) and based on the configuration 
-        ( "cgiDirs", "adminDirs" , "nukeDirs" and "genericScan" ) it performs requests to the remote server
-        searching for common files that may contain vulnerabilities.
+        This plugin reads every line in the scan_database (and extra_db_file)
+        and based on the configuration ("cgiDirs", "adminDirs" , "nukeDirs" 
+        and "genericScan") it performs requests to the remote server searching
+        for common files that may contain vulnerabilities.
         '''
+
