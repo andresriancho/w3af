@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+from subprocess import call
+import os.path
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afException, w3afRunOnce
@@ -28,32 +30,33 @@ from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
 import core.controllers.outputManager as om
 import core.data.constants.w3afPorts as w3afPorts
-
+from core.controllers.daemons.proxy import proxy
 from plugins.discovery.spiderMan import TERMINATE_URL, spiderMan
 
-class web20Spider(baseDiscoveryPlugin):
+class web20Spider(spiderMan):
 
     def __init__(self):
-        # Internal variables
-        self._run = True
+        self._spider_js = os.path.join('plugins', 'discovery', 'web20Spider','spider.js')
+        self._casperjs_bin = 'casperjs'
+        super(web20Spider, self).__init__()
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, freq ):
         print 'web20Spider is running!'
-        return []
+        self._proxy = proxy(self._listenAddress, self._listenPort,
+                            self._uri_opener, self.createPH())
+        self._proxy.targetDomain = freq.getURL().getDomain()
+        self._proxy.start2()
 
-    def getOptions(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = optionList()
-        return ol
-
-    def setOptions(self, optionsMap):
-        pass
-
-    def getPluginDeps( self ):
-        return []
+        call([
+            self._casperjs_bin,
+            '--proxy='+ self._listenAddress+':'+str(self._listenPort),
+            self._spider_js,
+            str(freq.getURL()),
+            str(TERMINATE_URL)
+            ])
+        print 'web20Spider is finishing!'
+        return self._fuzzableRequests
 
     def getLongDesc( self ):
         '''

@@ -2,7 +2,11 @@
 // TODO
 // 1. Cookie suuport for auth protected web apps
 // 2. forms
-var casper, current_deep, max_deep, process_page, target, target_domain, states, to_visit;
+// 3. maxDiscoveryTime option
+// 4. max_deep from w3af controling
+// 5. replace console.log with casper.log()
+//
+var casper, current_deep, max_deep, process_page, target, target_domain, states, to_visit, terminate_url;
 
 casper = require('casper').create();
 current_deep = 0;
@@ -14,7 +18,9 @@ var casper = require('casper').create({
     verbose: false,
     logLevel: "debug"
 });
-target = 'http://localhost/';
+
+target = casper.cli.get(0);
+terminate_url = casper.cli.get(0);
 to_visit.push(target);
 
 function get_domain(url) {
@@ -105,6 +111,7 @@ casper.then(function() {
         this.each(to_visit, function(self, state) {this.echo(' '+state)});
     }
 });
+casper.thenOpen(terminate_url, function(){});
 casper.run(function() {
     this.echo('Quit').exit();
 });

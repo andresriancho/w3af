@@ -1,0 +1,36 @@
+<html>                                                                  
+<head>                                                                  
+    <title>test page</title>
+    <style>
+    #menu {
+        font-size: large;
+        margin: 1em;
+    }
+    #news_div {
+        margin: 1em;
+        font-style:italic; 
+    }
+    </style>
+<script type="text/javascript" src="jquery.js"></script>          
+<script type="text/javascript">                                         
+$(document).ready(function() {
+    $("#news").click(function(e) {
+        e.preventDefault();
+        $.get("news.php", function(data) {
+            $("#news_div").text(data);
+        });
+     });
+});
+
+</script>                                                               
+</head>                                                                 
+<body>                                                                  
+    <div id="menu">
+        <a id="news" href="#">Show news</a>
+        <a href="page.html">Page</a>
+        <a href="page2.html">Page2</a>
+    </div>
+    <img src="basket.png" id="backet" onclick="document.location='http://localhost/basket.html';" />
+    <div id="news_div"></div>
+</body>                                                                 
+</html>
