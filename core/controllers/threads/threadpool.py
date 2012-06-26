@@ -120,13 +120,7 @@ class Pool(object):
         return self.map_async(func, iterable, chunksize).get()
 
     def map_multi_args(self, func, iterable, chunksize=None):
-        """A parallel equivalent of the map() builtin function. It
-        blocks till the result is ready.
-
-        This method chops the iterable into a number of chunks which
-        it submits to the process pool as separate tasks. The
-        (approximate) size of these chunks can be specified by setting
-        chunksize to a positive integer."""
+        """Same as map() with with multiple arguments for func."""
         return self.map_async(one_to_many(func), iterable, chunksize).get()
 
     def imap(self, func, iterable, chunksize=1):
