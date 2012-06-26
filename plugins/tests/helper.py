@@ -108,6 +108,7 @@ class PluginConfig(object):
     STR = 'string'
     LIST = 'list'
     INT = 'integer'
+    URL = 'url'
     
     def __init__(self, name, *opts):
         self._name = name
