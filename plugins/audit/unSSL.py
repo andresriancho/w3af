@@ -21,17 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.misc.levenshtein import relative_distance_boolean
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.misc.levenshtein import relative_distance_boolean
 
 
 class unSSL(baseAuditPlugin):
@@ -44,78 +39,68 @@ class unSSL(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._first_run = True
-        self._ignore_next_calls = False
+        self._run = True
 
     def audit(self, freq ):
         '''
-        Check if the protocol specified in freq is https and fetch the same URL using http. 
-        ie:
+        Check if the protocol specified in freq is https and fetch the same URL
+        using http. ie:
             - input: https://a/
             - check: http://a/
         
         @param freq: A fuzzableRequest
         '''
-        if self._ignore_next_calls:
+        if not self._run:
             return
-        else:            
-            # Define some variables
-            secure = freq.getURL()
-            insecure = secure.setProtocol('http')
-            
-            if self._first_run:
-                try:
-                    self._uri_opener.GET( insecure )
-                except:
-                    # The request failed because the HTTP port is closed or something like that
-                    # we shouldn't test any other fuzzable requests.
-                    self._ignore_next_calls = True
-                    msg = 'HTTP port seems to be closed. Not testing any other URLs in unSSL.'
-                    om.out.debug( msg )
-                    return
-                else:
-                    # Only perform the initial check once.
-                    self._first_run = False
-                
-            # It seems that we can request the insecure HTTP URL
-            # (checked with the GET request)
-            if 'HTTPS' == freq.getURL().getProtocol().upper():
+        else:
+            self._run = False
 
-                # We are going to perform requests that (in normal cases)
-                # are going to fail, so we set the ignore errors flag to True
-                self._uri_opener.ignore_errors( True )
-                
-                https_response = self._uri_opener.send_mutant(freq)
-                freq.setURL( insecure )
-                http_response = self._uri_opener.send_mutant(freq)
-                
-                if http_response.getCode() == https_response.getCode():
+            # Define some variables
+            initial_url = freq.getURL()
+            insecure_url = initial_url.copy()
+            secure_url = initial_url.copy()
+            
+            insecure_url.setProtocol('http')
+            insecure_fr = freq.copy()
+            insecure_fr.setURL( insecure_url )
+            
+            secure_url.setProtocol('https')
+            secure_fr = freq.copy()
+            secure_fr.setURL( secure_url )
+            
+            try:
+                insecure_response = self._uri_opener.send_mutant(insecure_fr)
+                secure_response = self._uri_opener.send_mutant(secure_fr)
+            except:
+                # No vulnerability to report since one of these threw an error
+                # (because there is nothing listening on that port).
+                pass
+            else:
+                if insecure_response.getCode() == secure_response.getCode():
                     
-                    if relative_distance_boolean( http_response.getBody(),
-                                                  https_response.getBody(),
-                                                  0.97 ):
+                    if relative_distance_boolean( insecure_response.getBody(),
+                                                  secure_response.getBody(),
+                                                  0.95 ):
                         v = vuln.vuln( freq )
                         v.setPluginName(self.getName())
+                        v.setURL(insecure_response.getURL())
                         v.setName( 'Secure content over insecure channel' )
                         v.setSeverity(severity.MEDIUM)
-                        msg = 'Secure content can be accesed using the insecure protocol HTTP.'
-                        msg += ' The vulnerable URLs are: "' + secure + '" - "' + insecure + '" .'
-                        v.setDesc( msg )
-                        v.setId( [http_response.id, https_response.id] )
+                        msg = 'Secure content can be accesed using the insecure'
+                        msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
+                        v.setDesc( msg % (secure_url, insecure_url) )
+                        v.setId( [insecure_response.id, secure_response.id] )
                         kb.kb.append( self, 'unSSL', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-
-                # Disable error ignoring
-                self._uri_opener.ignore_errors( False )
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin verifies that URL's that are available using HTTPS aren't available over an insecure
-        HTTP protocol.
+        This plugin verifies that URL's that are available using HTTPS aren't
+        available over an insecure HTTP protocol.
 
-        To detect this, the plugin simply requests "https://abc/a.asp" and "http://abc.asp" and if both are 
-        equal, a vulnerability is found.
+        To detect this, the plugin simply requests "https://abc/a.asp" and
+        "http://abc.asp" and if both are equal, a vulnerability is found.
         '''
