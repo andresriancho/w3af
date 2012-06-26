@@ -21,17 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
+from core.controllers.misc.decorators import runonce
 
 
 class urllist_txt(baseDiscoveryPlugin):
@@ -43,69 +39,79 @@ class urllist_txt(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
-        # Internal variables
-        self._exec = True
-
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         Get the urllist.txt file and parse it.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                      (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        if not self._exec:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # Only run once
-            self._exec = False
+        self._new_fuzzable_requests = []         
+        
+        base_url = fuzzableRequest.getURL().baseUrl()
+        urllist_url = base_url.urlJoin( 'urllist.txt' )
+        http_response = self._uri_opener.GET( urllist_url, cache=True )
+        
+        if not is_404( http_response ):
+            if self._is_urllist_txt(base_url, http_response.getBody() ):
+                # Save it to the kb!
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('urllist.txt file')
+                i.setURL( urllist_url )
+                i.setId( http_response.id )
+                i.setDesc( 'A urllist.txt file was found at: "%s".' % urllist_url )
+                kb.kb.append( self, 'urllist.txt', i )
+                om.out.information( i.getDesc() )
             
-            dirs = []
-            self._new_fuzzable_requests = []         
+            # Even in the case where it is NOT a valid urllist.txt it might be
+            # the case where some URLs are present, so I'm going to extract them
+            # from the file as if it is a valid urllist.txt
             
-            base_url = fuzzableRequest.getURL().baseUrl()
-            urllist_url = base_url.urlJoin( 'urllist.txt' )
-            http_response = self._uri_opener.GET( urllist_url, cache=True )
+            url_generator = self._extract_urls_generator( base_url, 
+                                                          http_response.getBody() )
             
-            if not is_404( http_response ):
+            # Send the requests using threads:
+            self._tm.threadpool.map(self._get_and_parse, url_generator)
 
-                # Work with it...
-                dirs.append( urllist_url )
-                is_urllist = 5
-                for line in http_response.getBody().split('\n'):
-                    
-                    line = line.strip()
-                    
-                    if not line.startswith('#') and line:    
-                        try:
-                            url = base_url.urlJoin( line )
-                        except:
-                            is_urllist -= 1
-                            if not is_urllist:
-                                break
-                        else:
-                            dirs.append( url )
-
-                if is_urllist:
-                    # Save it to the kb!
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('urllist.txt file')
-                    i.setURL( urllist_url )
-                    i.setId( http_response.id )
-                    i.setDesc( 'A urllist.txt file was found at: "'+ urllist_url +'".' )
-                    kb.kb.append( self, 'urllist.txt', i )
-                    om.out.information( i.getDesc() )
-
-            for url in dirs:
-                #   Send the requests using threads:
-                self._run_async(meth=self._get_and_parse, args=(url,))
-                
-            # Wait for all threads to finish
-            self._join()
+        
+        return self._new_fuzzable_requests
+    
+    def _is_urllist_txt(self, base_url, body):
+        '''
+        @return: True if the body is a urllist.txt
+        '''
+        is_urllist = 5
+        for line in body.split('\n'):
             
-            return self._new_fuzzable_requests
+            line = line.strip()
             
+            if not line.startswith('#') and line:    
+                try:
+                    base_url.urlJoin( line )
+                except:
+                    is_urllist -= 1
+        
+        return bool(is_urllist)
+    
+    def _extract_urls_generator(self, base_url, body):
+        '''
+        @param body: The urllist.txt body
+        @yield: a URL object from the urllist.txt body
+        '''
+        for line in body.split('\n'):
+            
+            line = line.strip()
+            
+            if not line.startswith('#') and line:    
+                try:
+                    url = base_url.urlJoin( line )
+                except:
+                    pass
+                else:
+                    yield url
+    
     def _get_and_parse(self, url):
         '''
         GET and URL that was found in the robots.txt file, and parse it.
@@ -115,8 +121,6 @@ class urllist_txt(baseDiscoveryPlugin):
         '''
         try:
             http_response = self._uri_opener.GET( url, cache=True )
-        except KeyboardInterrupt, k:
-            raise k
         except w3afException, w3:
             msg = 'w3afException while fetching page in discovery.urllist_txt, error: "'
             msg += str(w3) + '"'
@@ -126,35 +130,11 @@ class urllist_txt(baseDiscoveryPlugin):
                 fuzz_reqs = self._createFuzzableRequests( http_response )
                 self._new_fuzzable_requests.extend( fuzz_reqs )
         
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin searches for the urllist.txt file, and parses it. The urllist.txt file is/was used
-        by Yahoo's search engine.
+        This plugin searches for the urllist.txt file, and parses it. The 
+        urllist.txt file is/was used by Yahoo's search engine.
         '''
