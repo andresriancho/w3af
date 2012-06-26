@@ -62,8 +62,13 @@ class option:
     def getName( self ): return self._name
     def getDesc( self ): return self._desc
 
-    # return the object, as it was set using setDefaultValue / setValue or the __init__
-    def getDefaultValue( self ): return self._defaultValue
+    def getDefaultValue( self ):
+        '''
+        @return: The object, as it was set using setDefaultValue / setValue 
+                 or the __init__
+        '''
+        return self._defaultValue
+    
     def getValue( self ): return self._value
 
     # And the string versions of the above methods...
