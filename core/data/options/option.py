@@ -25,7 +25,7 @@ import cgi
 import re
 
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.urlParser import url_object
 
 
 class option:
