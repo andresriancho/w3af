@@ -19,24 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+
+from itertools import chain, repeat, izip
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.kb.info as info
-import re
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.data.db.disk_set import disk_set
 
 
 class phpinfo(baseDiscoveryPlugin):
@@ -54,7 +51,7 @@ class phpinfo(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = []
+        self._analyzed_dirs = disk_set()
         self._has_audited = 0
         self._new_fuzzable_requests = []
 
@@ -62,25 +59,20 @@ class phpinfo(baseDiscoveryPlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         self._new_fuzzable_requests = []
 
         for domain_path in fuzzableRequest.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
+                self._analyzed_dirs.add( domain_path )
 
-                # Save the domain_path so I know I'm not working in vane
-                self._analyzed_dirs.append( domain_path )
-
-                # Work!
-                for php_info_filename in self._get_PHP_infofile():
-                    #   Send the requests using threads:
-                    args = (domain_path, php_info_filename)
-                    self._run_async(meth=self._check_and_analyze, args=args)
-
-                # Wait for all threads to finish
-                self._join()
+                url_repeater = repeat( domain_path )
+                args = izip(url_repeater, self._get_potential_phpinfos())
+                
+                self._tm.threadpool.map_multi_args(self._check_and_analyze, args)
                 
         return self._new_fuzzable_requests
 
@@ -122,7 +114,8 @@ class phpinfo(baseDiscoveryPlugin):
                 old: regex_str = 'alt="PHP Logo" /></a><h1 class="p">PHP Version (.*?)</h1>'
                 new: regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
                 
-                by aungkhant - I've been seeing phpinfo pages which don't print php logo image. One example, ning.com.
+                by aungkhant - I've been seeing phpinfo pages which don't print php logo image.
+                One example, ning.com.
                 
                 '''
                 regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
@@ -658,75 +651,43 @@ class phpinfo(baseDiscoveryPlugin):
         
         ##### [/Useful Informative Settings] #####
     
-    def _get_PHP_infofile( self ):
+    def _get_potential_phpinfos( self ):
         '''
         @return: Filename of the php info file.
         '''
         res = []
-        # TODO: If i'm scanning a windows system, do I really need to request case sensitive
-        # filenames like phpversion and PHPversion ?
+        res.extend( ['phpinfo.php', 'PhpInfo.php','PHPinfo.php','PHPINFO.php'])
+        res.extend( ['phpInfo.php' , 'info.php', 'test.php?mode=phpinfo'] )
+        res.extend( ['index.php?view=phpinfo','index.php?mode=phpinfo'])
+        res.extend( ['TEST.php?mode=phpinfo', '?mode=phpinfo' ,'?view=phpinfo'])
+        res.extend( ['install.php?mode=phpinfo','INSTALL.php?mode=phpinfo'  ] )
+        res.extend( ['admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php'] )
+        res.extend( ['test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php'] )
+        res.extend( ['PHPversion.php', 'x.php', 'xx.php', 'xxx.php'] )            
         
-        # by aungkhant - I solved your todo.
-        # if I detect windows, then remove redundant files
         identified_os = kb.kb.getData('fingerprint_os','operating_system_str')
         ios = ''
         if (len(identified_os) != 0):
             ios = identified_os[0]
         else:
             ios = cf.cf.getData('targetOS')
-            
-        
+       
         if re.match('windows',ios,re.IGNORECASE):
-            res.extend( ['phpinfo.php' , 'info.php','test.php?mode=phpinfo'] )
-            res.extend( ['index.php?view=phpinfo','index.php?mode=phpinfo' , '?mode=phpinfo' , '?view=phpinfo'])
-            res.extend( ['install.php?mode=phpinfo','INSTALL.php?mode=phpinfo'  ] )
-            res.extend( ['admin.php?mode=phpinfo', 'phpversion.php'] )
-            res.extend( ['test1.php', 'phpinfo1.php', 'info1.php'] )
-            res.extend( ['x.php', 'xx.php', 'xxx.php'] )
-        else:
-            res.extend( ['phpinfo.php', 'PhpInfo.php','PHPinfo.php','PHPINFO.php', 'phpInfo.php' , 'info.php'])
-            res.extend( ['test.php?mode=phpinfo','TEST.php?mode=phpinfo'] )
-            res.extend( ['index.php?view=phpinfo','index.php?mode=phpinfo' , '?mode=phpinfo' ,'?view=phpinfo'])
-            res.extend( ['install.php?mode=phpinfo','INSTALL.php?mode=phpinfo'  ] )
-            res.extend( ['admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php','PHPversion.php'] )
-            res.extend( ['test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php'] )
-            res.extend( ['x.php', 'xx.php', 'xxx.php'] )            
+            res = list(set([path.lower() for path in res]))
         
         return res
 
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
 
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin searches for the PHP Info file in all the directories and subdirectories that are sent as input
-        and if it finds it will try to determine the version of the PHP. The PHP Info file holds information about 
-        the PHP and the system (version, environment, modules, extensions, compilation options, etc). For 
-        example, if the input is:
+        This plugin searches for the PHP Info file in all the directories and
+        subdirectories that are sent as input and if it finds it will try to
+        determine the version of the PHP. The PHP Info file holds information
+        about the PHP and the system (version, environment, modules, extensions,
+        compilation options, etc). For example, if the input is:
             - http://localhost/w3af/index.php
             
         The plugin will perform these requests:
@@ -735,7 +696,7 @@ class phpinfo(baseDiscoveryPlugin):
             - ...
             - http://localhost/test.php?mode=phpinfo
         
-        Once the phpinfo(); file is found the plugin also checks for probably insecure php settings
-        and reports findings.
+        Once the phpinfo(); file is found the plugin also checks for probably 
+        insecure php settings and reports findings.
         '''
 
