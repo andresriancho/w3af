@@ -19,17 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import xml.dom.minidom
 
 import core.controllers.outputManager as om
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.misc.decorators import runonce
 from core.data.parsers.urlParser import url_object
 
 
@@ -43,43 +40,37 @@ class sitemapReader(baseDiscoveryPlugin):
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
-        # Internal variables
-        self._exec = True
-
-    def discover(self, fuzzableRequest ):
+    @runonce(exc_class=w3afRunOnce)
+    def discover(self, fuzzable_request ):
         '''
         Get the sitemap.xml file and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                   (among other things) the URL to test.
         '''
-        if not self._exec:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # Only run once
-            self._exec = False
-            self._new_fuzzable_requests = []
+        self._new_fuzzable_requests = []
+        
+        base_url = fuzzable_request.getURL().baseUrl()
+        sitemap_url = base_url.urlJoin( 'sitemap.xml' )
+        response = self._uri_opener.GET( sitemap_url, cache=True )
+        
+        # Remember that httpResponse objects have a faster "__in__" than
+        # the one in strings; so string in response.getBody() is slower than
+        # string in response
+        if '</urlset>' in response and not is_404( response ):
+            om.out.debug('Analyzing sitemap.xml file.')
             
-            base_url = fuzzableRequest.getURL().baseUrl()
-            sitemap_url = base_url.urlJoin( 'sitemap.xml' )
-            response = self._uri_opener.GET( sitemap_url, cache=True )
+            self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
             
-            # Remember that httpResponse objects have a faster "__in__" than
-            # the one in strings; so string in response.getBody() is slower than
-            # string in response
-            if '</urlset>' in response and not is_404( response ):
-                om.out.debug('Analyzing sitemap.xml file.')
-                
-                self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
-                
-                import xml.dom.minidom
-                om.out.debug('Parsing xml file with xml.dom.minidom.')
-                try:
-                    dom = xml.dom.minidom.parseString( response.getBody() )
-                except:
-                    raise w3afException('Error while parsing sitemap.xml')
-                urlList = dom.getElementsByTagName("loc")
-                for url in urlList:
+            om.out.debug('Parsing xml file with xml.dom.minidom.')
+            try:
+                dom = xml.dom.minidom.parseString( response.getBody() )
+            except:
+                raise w3afException('Error while parsing sitemap.xml')
+            else:
+                raw_url_list = dom.getElementsByTagName("loc")
+                parsed_url_list = []
+                for url in raw_url_list:
                     try:
                         url = url.childNodes[0].data
                         url = url_object(url)
@@ -88,11 +79,9 @@ class sitemapReader(baseDiscoveryPlugin):
                     except:
                         om.out.debug('Sitemap file had an invalid format')
                     else:
-                        # Send the requests using threads:
-                        self._run_async(meth=self._get_and_parse, args=(url,))
-            
-                # Wait for all threads to finish
-                self._join()
+                        parsed_url_list.append(url)
+                
+                self._tm.threadpool.map(self._get_and_parse, parsed_url_list)
         
             return self._new_fuzzable_requests
         
@@ -116,30 +105,6 @@ class sitemapReader(baseDiscoveryPlugin):
                 fuzz_reqs = self._createFuzzableRequests( http_response )
                 self._new_fuzzable_requests.extend( fuzz_reqs )
         
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -147,7 +112,7 @@ class sitemapReader(baseDiscoveryPlugin):
         return '''
         This plugin searches for the sitemap.xml file, and parses it.
         
-        The sitemap.xml file is used by the site administrator to give the Google crawler more
-        information about the site. By parsing this file, the plugin finds new URLs and other
-        usefull information.
+        The sitemap.xml file is used by the site administrator to give the 
+        Google crawler more information about the site. By parsing this file,
+        the plugin finds new URLs and other useful information.
         '''
