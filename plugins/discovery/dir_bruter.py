@@ -20,18 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import os
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+from itertools import chain, repeat, izip
+
+import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afRunOnce
-import os
-
 from core.controllers.coreHelpers.fingerprint_404 import is_404
+
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.db.disk_set import disk_set
+
 
 
 class dir_bruter(baseDiscoveryPlugin):
@@ -43,22 +46,24 @@ class dir_bruter(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._exec = True
         
         # User configured parameters
-        self._dir_list = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'dir_bruter'
-        self._dir_list += os.path.sep + 'common_dirs_small.db'
+        self._dir_list = os.path.join('plugins','discovery', 'dir_bruter', 
+                                      'common_dirs_small.db')
         self._be_recursive = True
 
         # Internal variables
         self._fuzzable_requests = []
-        self._tested_base_url = False
+        self._exec = True
+        self._already_tested = disk_set()
+        
 
     def discover(self, fuzzableRequest ):
         '''
         Get the file and parse it.
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                      (among other things) the URL to test.
+        
+        @param fuzzableRequest: A fuzzableRequest instance that contains
+                               (among other things) the URL to test.
         '''
         if not self._exec:
             raise w3afRunOnce()
@@ -73,29 +78,22 @@ class dir_bruter(baseDiscoveryPlugin):
             domain_path = fuzzableRequest.getURL().getDomainPath()
             base_url = fuzzableRequest.getURL().baseUrl()
             
-            to_test = []
-            if not self._tested_base_url:
-                to_test.append( base_url )
-                self._tested_base_url = True
+            if base_url not in self._already_tested:
+                self._bruteforce_directories( base_url )
+                self._already_tested.add( base_url )
                 
-            if domain_path != base_url:
-                to_test.append( domain_path )
-            
-            for base_path in to_test:
-                # Send the requests using threads:
-                self._run_async(
-                            meth=self._bruteforce_directories,
-                            args=(base_path,)
-                            )
-            # Wait for all threads to finish
-            self._join()
+            if self._be_recursive and domain_path not in self._already_tested:
+                self._bruteforce_directories( domain_path )
+                self._already_tested.add( domain_path )
 
         return self._fuzzable_requests
     
-    def _bruteforce_directories(self, base_path):
+    def _dir_name_generator(self, base_path):
         '''
-        @parameter base_path: The base path to use in the bruteforcing process, can be something
-        like http://host.tld/ or http://host.tld/images/ .
+        Simple generator that returns the names of the directories to test. It
+        extracts the information from the user configured wordlist parameter.
+        
+        @yields: (A string with the directory name, an url_object with the dir name) 
         '''
         for directory_name in file(self._dir_list):
             directory_name = directory_name.strip()
@@ -103,48 +101,75 @@ class dir_bruter(baseDiscoveryPlugin):
             # ignore comments and empty lines
             if directory_name and not directory_name.startswith('#'):
                 dir_url = base_path.urlJoin( directory_name +  '/' )
-
-                http_response = self._uri_opener.GET( dir_url, cache=False )
-                
-                if not is_404( http_response ):
+                yield directory_name, dir_url
+    
+    def _send_and_check(self, base_path, (directory_name, dir_url) ):
+        '''
+        Performs a GET and verifies that the response is not a 404.
+        
+        @return: None, data is stored in self._fuzzable_requests 
+        '''
+        try:
+            http_response = self._uri_opener.GET( dir_url, cache=False )
+        except:
+            pass
+        else:
+            if not is_404( http_response ):
+                #
+                #   Looking fine... but lets see if this is a false positive or not...
+                #
+                dir_url = base_path.urlJoin( directory_name + createRandAlNum(5) + '/')
+    
+                invalid_http_response = self._uri_opener.GET( dir_url, cache=False )
+    
+                if is_404( invalid_http_response ):
                     #
-                    #   Looking fine... but lets see if this is a false positive or not...
+                    #    Good, the directory_name + createRandAlNum(5) return a
+                    #    404, the original directory_name is not a false positive.
                     #
-                    dir_url = base_path.urlJoin( directory_name + createRandAlNum(5) + '/')
+                    fuzzable_reqs = self._createFuzzableRequests( http_response )
+                    self._fuzzable_requests.extend( fuzzable_reqs )
+                    
+                    msg = 'Directory bruteforcer plugin found directory "'
+                    msg += http_response.getURL()  + '"'
+                    msg += ' with HTTP response code ' + str(http_response.getCode())
+                    msg += ' and Content-Length: ' + str(len(http_response.getBody()))
+                    msg += '.'
+                    
+                    om.out.information( msg )
+    
+    def _bruteforce_directories(self, base_path):
+        '''
+        @param base_path: The base path to use in the bruteforcing process,
+                          can be something like http://host.tld/ or
+                          http://host.tld/images/ .
+                          
+        @return: None, the data is stored in self._fuzzable_requests
+        '''
+        dir_name_generator = self._dir_name_generator(base_path)
+        base_path_repeater = repeat(base_path)
+        arg_iter = izip(base_path_repeater, dir_name_generator)
+        
+        self._tm.threadpool.map_multi_args(self._send_and_check, arg_iter,
+                                           chunksize=20)
 
-                    invalid_http_response = self._uri_opener.GET( dir_url, cache=False )
-
-                    if is_404( invalid_http_response ):
-                        #
-                        #   Good, the directory_name + createRandAlNum(5) return a 404, the original
-                        #   directory_name is not a false positive.
-                        #
-                        fuzzable_reqs = self._createFuzzableRequests( http_response )
-                        self._fuzzable_requests.extend( fuzzable_reqs )
-                        
-                        msg = 'Directory bruteforcer plugin found directory "'
-                        msg += http_response.getURL()  + '"'
-                        msg += ' with HTTP response code ' + str(http_response.getCode())
-                        msg += ' and Content-Length: ' + str(len(http_response.getBody()))
-                        msg += '.'
-                        
-                        om.out.information( msg )
             
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
-        '''    
-        d1 = 'Wordlist to use in directory bruteforcing process.'
-        o1 = option('wordlist', self._dir_list , d1, 'string')
-        
-        d2 = 'If set to True, this plugin will bruteforce all directories, not only the root'
-        d2 += ' directory.'
-        o2 = option('be_recursive', self._be_recursive , d2, 'boolean')
-
+        '''
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-
+            
+        d = 'Wordlist to use in directory bruteforcing process.'
+        o = option('wordlist', self._dir_list , d, 'string')
+        ol.add(o)
+        
+        d = 'If set to True, this plugin will bruteforce all directories, not only the root'
+        d += ' directory.'
+        h = 'WARNING: Enabling this will make the plugin send LOTS of requests.'
+        o = option('be_recursive', self._be_recursive , d, 'boolean', help=h)
+        ol.add(o)
+        
         return ol
         
 
@@ -162,22 +187,16 @@ class dir_bruter(baseDiscoveryPlugin):
             
         self._be_recursive = OptionList['be_recursive'].getValue()
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds directories on a web server by bruteforcing the names using a list.
+        This plugin finds directories on a web server by bruteforcing the names
+        using a list.
 
         Two configurable parameters exist:
             - wordlist: The wordlist to be used in the directory bruteforce process.
-            - be_recursive: If set to True, this plugin will bruteforce all directories, not only
-            the root directory.
+            - be_recursive: If set to True, this plugin will bruteforce all 
+                            directories, not only the root directory.
         '''
