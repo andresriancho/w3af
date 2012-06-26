@@ -19,7 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from itertools import chain
+from itertools import chain, repeat, izip
+
+import core.controllers.outputManager as om
+import core.data.kb.info as info
+import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -29,9 +33,6 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
-import core.controllers.outputManager as om
-import core.data.kb.info as info
-import core.data.kb.knowledgeBase as kb
 
 
 class urlFuzzer(baseDiscoveryPlugin):
@@ -57,7 +58,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         self._first_time = True
-        self._fuzzImages = False
+        self._fuzz_images = False
         self._headers = {}
         self._seen = scalable_bloomfilter()
         
@@ -65,7 +66,8 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         Searches for new Url's using fuzzing.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         self._fuzzable_requests = []
             
@@ -89,16 +91,17 @@ class urlFuzzer(baseDiscoveryPlugin):
         else:
             response = self._uri_opener.GET(url, cache=True, headers=self._headers)
 
-        if response.is_text_or_html() or self._fuzzImages:
+        if response.is_text_or_html() or self._fuzz_images:
             om.out.debug('urlFuzzer is testing "%s"' % url)
             
-            mutants = chain(self._mutate_by_appending(url),
-                            self._mutate_path(url),
-                            self._mutate_file_type(url),
-                            self._mutate_domain_name(url))
-            for mutant in mutants:
-                self._run_async(meth=self._do_request, args=(url, mutant))
-            self._join()
+            mutants_chain = chain(self._mutate_by_appending(url),
+                                  self._mutate_path(url),
+                                  self._mutate_file_type(url),
+                                  self._mutate_domain_name(url))
+            url_repeater = repeat( url )
+            args = izip(url_repeater, mutants_chain)
+            
+            self._tm.threadpool.map_multi_args(self._do_request, args)
         
         return self._fuzzable_requests
 
@@ -123,7 +126,8 @@ class urlFuzzer(baseDiscoveryPlugin):
                 i.setName('Potentially interesting file')
                 i.setURL(response.getURL())
                 i.setId(response.id)
-                i.setDesc('A potentially interesting file was found at: "' + response.getURL() + '".')
+                desc = 'A potentially interesting file was found at: "%s".'
+                i.setDesc( desc % response.getURL() )
                 kb.kb.append(self, 'files', i)
                 om.out.information(i.getDesc())
                 
@@ -143,9 +147,9 @@ class urlFuzzer(baseDiscoveryPlugin):
             response = self._uri_opener.GET(
                                    uri, cache=True, headers=self._headers)
         except w3afException, e:
-            msg = 'An exception was raised while requesting "' + uri + '" , the error message is: '
-            msg += str(e)
-            om.out.error(msg)
+            msg = 'An exception was raised while requesting "%s", the error' 
+            msg += 'message is: "%s"'
+            om.out.error( msg % (uri, e) )
         else:
             if not is_404(response):
                 return True
@@ -161,7 +165,8 @@ class urlFuzzer(baseDiscoveryPlugin):
             - etc...
         
         @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed as parameter.
+        @return: A list of url_object's that mutate the original url passed
+                 as parameter.
 
         >>> from core.data.parsers.urlParser import url_object
         >>> u = urlFuzzer()
@@ -196,7 +201,8 @@ class urlFuzzer(baseDiscoveryPlugin):
         Adds something to the end of the url (mutate the file being requested)
         
         @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed as parameter.
+        @return: A list of url_object's that mutate the original url passed
+                 as parameter.
 
         >>> from core.data.parsers.urlParser import url_object
         >>> u = urlFuzzer()
@@ -267,7 +273,8 @@ class urlFuzzer(baseDiscoveryPlugin):
         Mutate the path instead of the file.
         
         @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed as parameter.
+        @return: A list of url_object's that mutate the original url passed
+                 as parameter.
 
         >>> from core.data.parsers.urlParser import url_object
         >>> u = urlFuzzer()
@@ -317,12 +324,13 @@ class urlFuzzer(baseDiscoveryPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
-        h1 = 'Don\'t change this unless you read the plugin code.'
-        o1 = option('fuzzImages', self._fuzzImages, d1, 'boolean', help=h1)
-        
         ol = optionList()
-        ol.add(o1)
+        
+        d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
+        h = 'Don\'t change this unless you read the plugin code.'
+        o = option('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
+        ol.add(o)
+        
         return ol
 
     def setOptions(self, optionsMap):
@@ -333,7 +341,7 @@ class urlFuzzer(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzzImages = optionsMap['fuzzImages'].getValue()
+        self._fuzz_images = optionsMap['fuzzImages'].getValue()
     
     def getPluginDeps(self):
         '''
@@ -347,7 +355,8 @@ class urlFuzzer(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will try to find new URL's based on the input. If the input is for example:
+        This plugin will try to find new URL's based on the input. If the input
+        is for example:
             - http://a/a.html
             
         The plugin will request:
@@ -356,9 +365,9 @@ class urlFuzzer(baseDiscoveryPlugin):
             - http://a/a.zip
             ... etc
         
-        If the response is different from the 404 page (whatever it may be, automatic detection is 
-        performed), then we have found a new URL. This plugin searches for backup files, source code
-        , and other common extensions.
+        If the response is different from the 404 page (whatever it may be, 
+        automatic detection is performed), then we have found a new URL. This
+        plugin searches for backup files, source code, and other common extensions.
         
         One configurable parameter exist:
             - fuzzImages
