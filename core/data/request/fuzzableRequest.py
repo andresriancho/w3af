@@ -224,9 +224,14 @@ class fuzzableRequest(disk_item):
         >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
         >>> str(fr)
         'http://www.w3af.com/ | Method: GET'
+
         >>> repr( fr )
         '<fuzzable request | GET | http://www.w3af.com/>'
 
+        >>> fr.setMethod('TRACE')
+        >>> str(fr)
+        'http://www.w3af.com/ | Method: TRACE'
+        
         '''        
         strelems = [unicode(self._url)]
         strelems.append(u' | Method: ' + self._method)
