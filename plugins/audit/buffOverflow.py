@@ -21,19 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
 from core.data.esmre.multi_in import multi_in
 
 
@@ -52,15 +47,24 @@ class buffOverflow(baseAuditPlugin):
     )
 
     _multi_in = multi_in( OVERFLOW_ERRORS )
+    
+    # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
+    # then i get a BadStatusLine exception from urllib2, is seems to be an
+    # internal error. Tested against tomcat 5.5.7
+    BUFFER_TESTS = [ createRandAlpha(l) for l in [ 65 , 257 , 513 , 1025, 2049 ] ]
+
 
     def __init__(self):
         '''
         Some notes:
-            On apache, when an overflow happends on a cgic script, this is written to the log:
-                *** stack smashing detected ***: /var/www/w3af/bufferOverflow/buffOverflow.cgi terminated, referer: http://localhost/w3af/bufferOverflow/buffOverflow.cgi
-                Premature end of script headers: buffOverflow.cgi, referer: http://localhost/w3af/bufferOverflow/buffOverflow.cgi
+            On Apache, when an overflow happends on a cgic script, this is written
+            to the log:
+                *** stack smashing detected ***: /var/www/.../buffOverflow.cgi terminated,
+                referer: http://localhost/w3af/bufferOverflow/buffOverflow.cgi
+                Premature end of script headers: buffOverflow.cgi, referer: ...
 
-            On apache, when an overflow happends on a cgic script, this is returned to the user:
+            On Apache, when an overflow happends on a cgic script, this is
+            returned to the user:
                 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
                 <html><head>
                 <title>500 Internal Server Error</title>
@@ -76,10 +80,11 @@ class buffOverflow(baseAuditPlugin):
                 <p>More information about this error may be available
                 in the server error log.</p>
                 <hr>
-                <address>Apache/2.0.55 (Ubuntu) mod_python/3.2.8 Python/2.4.4c1 PHP/5.1.6 Server at localhost Port 80</address>
+                <address>Apache/2.0.55 (Ubuntu) mod_python/3.2.8 Python/2.4.4c1
+                PHP/5.1.6 Server at localhost Port 80</address>
                 </body></html>
                 
-            Note that this is  an apache error 500, not the more common PHP error 500.
+            Note that this is an Apache error 500, not the more common PHP error 500.
         '''
         baseAuditPlugin.__init__(self)
         
@@ -91,7 +96,6 @@ class buffOverflow(baseAuditPlugin):
         '''
         om.out.debug( 'bufferOverflow plugin is testing: ' + freq.getURL() )
         
-        str_list = self._get_string_list()
         try:
             oResponse = self._uri_opener.send_mutant(freq)
         except:
@@ -99,7 +103,7 @@ class buffOverflow(baseAuditPlugin):
             msg += ' overflow testing'
             om.out.debug( msg )
         else:
-            mutants = createMutants(freq , str_list, oResponse=oResponse)
+            mutants = createMutants(freq , self.BUFFER_TESTS, oResponse=oResponse)
             
             self._tm.threadpool.map(self._send_request, mutants)
             
@@ -122,34 +126,22 @@ class buffOverflow(baseAuditPlugin):
             kb.kb.append( self, 'buffOverflow', i )
         else:
             self._analyze_result( mutant, response )
-        
-    def _get_string_list( self ):
-        '''
-        @return: This method returns a list of strings that could overflow a buffer.
-        '''
-        strings = []
-        lengths = [ 65 , 257 , 513 , 1025, 2049 ]
-        ### TODO !! if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
-        ### then i get a badStatusLine exception from urllib2, is seems to be a internal error.
-        ### tested against tomcat 5.5.7
-        for i in lengths:
-            strings.append( createRandAlpha( i ) )  
-        return strings
-        
+                
     def _analyze_result( self, mutant, response ):
         '''
         Analyze results of the _send_mutant method.
         '''
         for error_str in self._multi_in.query( response.body ):
             # And not in the original response
-            if error_str not in mutant.getOriginalResponseBody():
+            if error_str not in mutant.getOriginalResponseBody() and \
+            self._has_no_bug(mutant):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.getName())
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Buffer overflow vulnerability' )
-                msg = 'A possible buffer overflow (detection is really hard...) was found at: '
-                msg += mutant.foundAt()
+                msg = 'A possible buffer overflow (detection is really hard...)'
+                msg += ' was found at: ' + mutant.foundAt()
                 v.setDesc( msg )
                 v.addToHighlight( error_str )
                 kb.kb.append( self, 'buffOverflow', v )
