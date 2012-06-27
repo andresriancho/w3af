@@ -155,7 +155,7 @@ class htmlFile(baseOutputPlugin):
         to_print = self._cleanString(message)
         self._add_to_debug_table( cgi.escape(to_print), 'console' )
     
-    def logEnabledPlugins(self,  plugins_dict,  options_dict):
+    def log_enabled_plugins(self,  plugins_dict,  options_dict):
         '''
         This method is called from the output manager object. This method should take an action
         for the enabled plugins and their configuration. Usually, write the info to a file or print

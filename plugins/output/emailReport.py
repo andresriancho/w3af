@@ -49,7 +49,7 @@ class emailReport(baseOutputPlugin):
         self.fromAddr = ''
         self._exec = False
 
-    def logEnabledPlugins(self, pluginsDict, optionsDict):
+    def log_enabled_plugins(self, pluginsDict, optionsDict):
         self.targets = cf.cf.getData('targets')
 
     def setOptions(self, OptionList):

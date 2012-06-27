@@ -14,14 +14,15 @@ def backToCurrentDir():
 # Translation stuff
 gettext.install('w3af', 'locales/')
 
-# Now we can load all modules and stuff...
-from core.controllers.w3afException import w3afException
+# Make sure that the output manager is started before doing anything else, since
+# it is used by most w3af modules 
 import core.controllers.outputManager as om
-
 try:
-    om.out.setOutputPlugins( ['console'] )
-except w3afException, w3:
-    print 'Something went wrong, w3af failed to init the output manager. Exception: ', str(w3)
+    om.start_output_manager()
+    om.out.set_output_plugins( ['console'] )
+except Exception, e:
+    print 'Something went wrong, w3af failed to start the output manager.'
+    print 'Exception: "%s"' % e
     sys.exit(-9)
 
 usage_doc = '''
@@ -58,7 +59,7 @@ def usage():
 def main():
     try:
         long_options = ['help', 'no-update', 'force-update', 'profile=']
-        opts, args = getopt.getopt(sys.argv[1:], "ehnfp:", long_options)
+        opts, _ = getopt.getopt(sys.argv[1:], "ehnfp:", long_options)
     except getopt.GetoptError:
         # print help information and exit:
         usage()
@@ -69,7 +70,9 @@ def main():
         if o in ( "-e"  ):
             # easter egg
             import base64
-            om.out.information( base64.b64decode( 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGVzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ==' ) )
+            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'
+            msg += 'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
+            om.out.information( base64.b64decode( msg ) )
         if o == "-s":
             scriptFile = a
         if o in ('-p', '--profile'):

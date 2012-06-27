@@ -92,7 +92,7 @@ class PluginTest(unittest.TestCase):
                     if option.getName() not in unit_test_options:
                         unit_test_options.add(option) 
                     
-                self.w3afcore.plugins.setPluginOptions(ptype, pcfg.name, unit_test_options)
+                self.w3afcore.plugins.set_plugin_options(ptype, pcfg.name, unit_test_options)
                 
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()

@@ -64,7 +64,7 @@ class w3af_core_plugins(object):
         self.initialized = True
         
         # This is inited before all, to have a full logging support.
-        om.out.setOutputPlugins( self._plugin_name_list['output'] )
+        om.out.set_output_plugins( self._plugin_name_list['output'] )
         
         # Create an instance of each requested plugin and add it to the plugin list
         # Plugins are added taking care of plugin dependencies and configuration
@@ -89,7 +89,7 @@ class w3af_core_plugins(object):
         self.plugin_factory( self._plugin_name_list['audit'] , 'audit')
 
 
-    def setPluginOptions(self, pluginType, pluginName, pluginOptions):
+    def set_plugin_options(self, pluginType, pluginName, pluginOptions):
         '''
         @parameter pluginType: The plugin type, like 'audit' or 'discovery'
         @parameter pluginName: The plugin name, like 'sqli' or 'webSpider'
@@ -98,7 +98,7 @@ class w3af_core_plugins(object):
         @return: No value is returned.
         '''
         if pluginType.lower() == 'output':
-            om.out.setPluginOptions(pluginName, pluginOptions)
+            om.out.set_plugin_options(pluginName, pluginOptions)
             
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
@@ -117,7 +117,7 @@ class w3af_core_plugins(object):
         Get the options for a plugin.
         
         IMPORTANT NOTE: This method only returns the options for a plugin
-        that was previously configured using setPluginOptions. If you wan't
+        that was previously configured using set_plugin_options. If you wan't
         to get the default options for a plugin, get a plugin instance and
         perform a plugin.getOptions()
         
@@ -162,7 +162,7 @@ class w3af_core_plugins(object):
             'audit': self._setAuditPlugins,
             'grep': self._setGrepPlugins,
             'evasion': self._setEvasionPlugins,
-            'output': self._setOutputPlugins,
+            'output': self._set_output_plugins,
             'mangle': self._setManglePlugins,
             'bruteforce': self._setBruteforcePlugins,
             'auth': self._setAuthPlugins
@@ -378,7 +378,7 @@ class w3af_core_plugins(object):
         '''
         self._plugin_name_list['mangle'] = manglePlugins
     
-    def _setOutputPlugins( self, outputPlugins ):
+    def _set_output_plugins( self, outputPlugins ):
         '''
         @parameter outputPlugins: A list with the names of output Plugins that will be run.
         @return: No value is returned.

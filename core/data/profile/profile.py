@@ -184,7 +184,7 @@ class profile:
                     res.append(name)
         return res
     
-    def setPluginOptions( self, pluginType, pluginName, options ):
+    def set_plugin_options( self, pluginType, pluginName, options ):
         '''
         Set the plugin options.
         @parameter pluginType: 'audit', 'output', etc.

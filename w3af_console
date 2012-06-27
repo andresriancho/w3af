@@ -3,28 +3,34 @@
 import getopt, sys, os
 import gettext
  
-# First of all, we need to change the working directory to the directory of w3af.
-currentDir = os.getcwd()
-scriptDir = os.path.dirname(sys.argv[0]) or '.'
-os.chdir( scriptDir )
+# First of all, we need to change the working directory to the w3af directory.
+current_dir = os.getcwd()
+script_dir = os.path.dirname(sys.argv[0]) or '.'
+os.chdir( script_dir )
 
-def backToCurrentDir():
-    os.chdir( currentDir )
+def backTocurrent_dir():
+    os.chdir( current_dir )
 
 # Translation stuff
 gettext.install('w3af', 'locales/')
 
-# Now we can load all modules and stuff...
+# Make sure that the output manager is started before doing anything else, since
+# it is used by most w3af modules 
 import core.controllers.outputManager as om
+try:
+    om.start_output_manager()
+    om.out.set_output_plugins( ['console'] )
+except Exception, e:
+    print 'Something went wrong, w3af failed to start the output manager.'
+    print 'Exception: "%s"' % e
+    sys.exit(-9)
+
+# Check if I have all needed dependencies
+from core.controllers.dependency_check.dependency_check import dependency_check
+dependency_check()
+
 from core.controllers.profiling.cpu_usage import dump_cpu_usage
 from core.controllers.misc.get_w3af_version import get_w3af_version
-from core.controllers.w3afException import w3afException
-
-try:
-    om.out.setOutputPlugins( ['console'] )
-except w3afException, w3:
-    print 'Something went wrong, w3af failed to init the output manager. Exception: ', str(w3)
-    sys.exit(-9)
 
 
 usage_doc = '''
@@ -74,13 +80,13 @@ def main():
     try:
         long_options = ['script=', 'help', 'version', 'test-all', 'no-update',
                         'force-update', 'profile=', 'revision=', 'profile-run']
-        opts, args = getopt.getopt(sys.argv[1:], "ehvts:nfpP:r:", long_options)
+        opts, _ = getopt.getopt(sys.argv[1:], "ehvts:nfpP:r:", long_options)
     except getopt.GetoptError, e:
         # print help information and exit:
         usage()
         return -3
-    scriptFile = None
-    forceProfile = None
+    script_file = None
+    force_profile = None
     profile = None
     doupdate = None
     rev = 0 # HEAD revision
@@ -89,17 +95,19 @@ def main():
         if o == "-e":
             # easter egg
             import base64
-            om.out.information( base64.b64decode('R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGVzYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='))
+            msg = 'R3JhY2lhcyBFdWdlIHBvciBiYW5jYXJtZSB0YW50YXMgaG9yYXMgZGUgZGV'
+            msg += 'zYXJyb2xsbywgdGUgYW1vIGdvcmRhIQ=='
+            om.out.information( base64.b64decode( msg ) )
         if o in ('-t', '--test-all'):
             # Test all scripts that have an assert call
             from core.controllers.misc.w3afTest import w3afTest
             w3afTest()
             return 0
         if o in ('-s', '--script'):
-            scriptFile = a
+            script_file = a
         if o in ('-P', '--profile-run'):
             # selected profile
-            forceProfile = True
+            force_profile = True
             profile = a
         if o in ('-p', '--profile'):
             # selected profile
@@ -130,11 +138,11 @@ def main():
     from core.ui.consoleUi.consoleUi import consoleUi
     
     commands_to_run = []
-    if scriptFile is not None:
+    if script_file is not None:
         try:
-            fd = open( os.path.join(currentDir, scriptFile)  )
+            fd = open( os.path.join(current_dir, script_file)  )
         except:
-            om.out.error('Failed to open file : ' + scriptFile )
+            om.out.error('Failed to open file : ' + script_file )
             sys.exit(2)
         else:
             commands_to_run = []
@@ -144,8 +152,8 @@ def main():
                     commands_to_run.append( line )
             fd.close() 
     elif profile is not None:
-        commands_to_run = ["profiles use %s %s" % (profile, currentDir)]
-        if forceProfile is not None:
+        commands_to_run = ["profiles use %s %s" % (profile, current_dir)]
+        if force_profile is not None:
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
@@ -154,8 +162,8 @@ def main():
 
 
 if __name__ == "__main__":
-    errCode = main()
-    backToCurrentDir()
+    err_code = main()
+    backTocurrent_dir()
     dump_cpu_usage()
-    sys.exit(errCode)
+    sys.exit(err_code)
     

@@ -185,7 +185,7 @@ class xmlFile(baseOutputPlugin):
             node.appendChild(pluginNode)  
         self._scanInfo.appendChild(node)
         
-    def logEnabledPlugins(self, pluginsDict, optionsDict):
+    def log_enabled_plugins(self, pluginsDict, optionsDict):
         '''
         This method is called from the output manager object. This method should take an action
         for the enabled plugins and their configuration. Usually, write the info to a file or print

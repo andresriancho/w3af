@@ -99,7 +99,7 @@ class gtkOutput(baseOutputPlugin):
     def logHttp( self, request, response):
         pass
     
-    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+    def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
         '''
         This method is called from the output managerobject. 
         This method should take an action for the enabled plugins 

@@ -45,7 +45,7 @@ class baseOutputPlugin(basePlugin):
         basePlugin.__init__( self )
         self.verbosity = 0
         
-    def logEnabledPlugins(self,  enabledPluginsDict,  pluginOptionsDict):
+    def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
         
@@ -56,7 +56,7 @@ class baseOutputPlugin(basePlugin):
         @parameter pluginOptionsDict: As defined in the w3afCore, looks similar to: 
                    {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
         '''
-        raise w3afException('Plugin is not implementing required method logEnabledPlugins' )
+        raise w3afException('Plugin is not implementing required method log_enabled_plugins' )
         
     def debug(self, message, newLine = True ):
         '''

@@ -111,7 +111,7 @@ class w3afCore(object):
 
         # Let the output plugins know what kind of plugins we're
         # using during the scan
-        om.out.logEnabledPlugins(self.plugins.getAllEnabledPlugins(), 
+        om.out.log_enabled_plugins(self.plugins.getAllEnabledPlugins(), 
                                  self.plugins.getAllPluginOptions())
 
         self.status.start()
@@ -252,7 +252,7 @@ class w3afCore(object):
                 om.out.debug(str(exc_inst))
                         
             # Also, close the output manager.
-            om.out.endOutputPlugins()
+            om.out.end_output_plugins()
 
         except Exception:
             if not ignore_err:

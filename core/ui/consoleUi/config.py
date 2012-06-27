@@ -90,7 +90,7 @@ class configMenu(menu):
             self._plainOptions[name] = value
                             
             if isinstance( self._configurable, basePlugin ):
-                self._w3af.plugins.setPluginOptions( self._configurable.getType(),
+                self._w3af.plugins.set_plugin_options( self._configurable.getType(),
                                                      self._configurable.getName(),
                                                      self._options )
                 if value not in self._memory[name]:

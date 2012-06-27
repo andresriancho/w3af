@@ -78,7 +78,7 @@ class w3af_core_profiles(object):
             for pName in self._w3af_core.plugins.getEnabledPlugins(pType):
                 pOptions = self._w3af_core.plugins.getPluginOptions(pType, pName)
                 if pOptions:
-                    new_profile.setPluginOptions(pType, pName, pOptions)
+                    new_profile.set_plugin_options(pType, pName, pOptions)
                 
         # Save the profile targets
         targets = cf.cf.getData('targets')
@@ -135,7 +135,7 @@ class w3af_core_profiles(object):
                     try:
                         # FIXME: Does this work with output plugin options?
                         # What about target, http-settings, etc?
-                        self._w3af_core.plugins.setPluginOptions( pluginType, 
+                        self._w3af_core.plugins.set_plugin_options( pluginType, 
                                                                   pluginName,
                                                                   pluginOptions )
                     except Exception, e:

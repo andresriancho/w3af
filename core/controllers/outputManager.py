@@ -19,157 +19,153 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+import functools
 import os
+import threading
+import Queue
 
 from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
-# severity constants for vuln messages
-import core.data.constants.severity as severity
+from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 
 
-class outputManager:
+class outputManager(threading.Thread):
     '''
-    This class manages output. 
-    It has a list of output plugins and sends the events to every plugin on that list.
+    This class manages output. It has a list of output plugins and sends the 
+    messages to every plugin on that list.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
+    METHODS = (
+               'debug',
+               'information',
+               'error',
+               'vulnerability',
+               'console',
+               'logHttp',
+              )
+        
     def __init__(self):
-        self._outputPluginList = []
-        self._outputPlugins = []
-        self._pluginsOptions = {}
+        super(outputManager, self).__init__()
+        self.daemon = True
+        
+        # User configured options
+        self._output_plugin_list = []
+        self._output_plugins = []
+        self._plugins_options = {}
         self._echo = True
+        
+        # Internal variables
+        self._in_queue = Queue.Queue(50)
     
-    def endOutputPlugins(self):
-        for oPlugin in self._outputPluginList:
+    def run(self):
+        '''
+        This method is one of the most important ones in the class, since it will
+        consume the work units from the queue and send them to the plugins
+        '''
+        while True:
+            work_unit = self._in_queue.get()
+            
+            if work_unit == FINISH_CONSUMER:
+                
+                self.__end_output_plugins_impl()
+                self._in_queue.task_done()
+                break
+            
+            else:
+                args, kwds = work_unit
+                apply(self._call_output_plugins_action, args, kwds) 
+                self._in_queue.task_done()
+    
+    def end_output_plugins(self):
+        self._in_queue.put(FINISH_CONSUMER)
+        self._in_queue.join()
+    
+    def add_to_queue(self, *args, **kwds):
+        self._in_queue.put((args, kwds))
+    
+    def __end_output_plugins_impl(self):
+        for oPlugin in self._output_plugin_list:
             oPlugin.end()
 
         # This is a neat trick which basically removes all plugin references
         # from memory. Those plugins might have pointers to memory parts that
-        # are not required anymore (since someone is calling endOutputPlugins
+        # are not required anymore (since someone is calling end_output_plugins
         # which indicates that the scan is done).
         #
         # If the console or gtkOutput plugins were enabled, I re-enable them
         # since I don't want to loose the capability of seeing my log messages
         # in the linux console or the message box in the GTK ui.
-        currently_enabled_plugins = self.getOutputPlugins()
+        currently_enabled_plugins = self.get_output_plugins()
         keep_enabled = [pname for pname in currently_enabled_plugins 
                         if pname in ('console', 'gtkOutput')]
-        self.setOutputPlugins( keep_enabled )
+        self.set_output_plugins( keep_enabled )
             
             
-    def logEnabledPlugins(self, enabledPluginsDict, pluginOptionsDict):
+    def log_enabled_plugins(self, enabled_plugins, plugins_options):
         '''
-        This method logs to the output plugins the enabled plugins and their configuration.
+        This method logs to the output plugins the enabled plugins and their
+        configuration.
         
-        @parameter enabledPluginsDict: As returned by w3afCore.getAllEnabledPlugins()
-                   looks similar to:
+        @param enabled_plugins: As returned by w3afCore's
+                                getAllEnabledPlugins() looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'discovery':[],...}
         
-        @parameter pluginOptionsDict: As defined in the w3afCore, looks similar to: 
+        @param plugins_options: As defined in the w3afCore, looks similar to: 
                    {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
         '''
-        for oPlugin in self._outputPluginList:
-            oPlugin.logEnabledPlugins(enabledPluginsDict, pluginOptionsDict)
+        for oPlugin in self._output_plugin_list:
+            oPlugin.log_enabled_plugins(enabled_plugins, plugins_options)
     
-    def debug(self, message, newLine=True):
-        '''
-        Sends a debug message to every output plugin on the list.
-        
-        @parameter message: Message that is sent.
-        '''
-        self._call_output_plugins_action('debug', message, newLine)
-    
-    def information(self, message, newLine=True):
-        '''
-        Sends a informational message to every output plugin on the list.
-        
-        @parameter message: Message that is sent.
-        '''
-        self._call_output_plugins_action('information', message, newLine)
-    
-    def error(self, message, newLine=True):
-        '''
-        Sends an error message to every output plugin on the list.
-        
-        @parameter message: Message that is sent.
-        '''
-        self._call_output_plugins_action('error', message, newLine)
-    
-    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
-        '''
-        Sends a vulnerability message to every output plugin on the list.
-        
-        @parameter message: Message that is sent.
-        '''
-        self._call_output_plugins_action('vulnerability', message,
-                                         newLine, severity)
-    
-    def console(self, message, newLine=True):
-        '''
-        This method is used by the w3af console to print messages
-        to the outside.
-        '''
-        self._call_output_plugins_action('console', message, newLine)
-    
-    def logHttp(self, request, response):
-        '''
-        Sends the request/response object pair to every output plugin
-        on the list.
-        
-        @parameter request: A fuzzable request object
-        @parameter response: A httpResponse object
-        '''
-        for oPlugin in self._outputPluginList:
-            oPlugin.logHttp(request, response)
-    
-    def echo(self, onOff):
-        '''
-        This method is used to enable/disable the output.
-        '''
-        self._echo = onOff
-
-    def setOutputPlugins(self, outputPlugins):
-        '''
-        @parameter outputPlugins: A list with the names of Output Plugins that will be used.
-        @return: No value is returned.
-        '''     
-        self._outputPluginList = []
-        self._outputPlugins = outputPlugins
-        
-        for pluginName in self._outputPlugins:
-            out._addOutputPlugin(pluginName)  
-        
-        out.debug('Exiting setOutputPlugins()')
-    
-    def getOutputPlugins(self):
-        return self._outputPlugins
-    
-    def setPluginOptions(self, pluginName, PluginsOptions):
-        '''
-        @parameter PluginsOptions: A tuple with a string and a dictionary with the options for a plugin. For example:\
-        { console:{'verbosity':7} }
-            
-        @return: No value is returned.
-        '''
-        self._pluginsOptions[pluginName] = PluginsOptions
-    
-    def _call_output_plugins_action(self, actionname, message, *params):
+    def _call_output_plugins_action(self, actionname, *args, **kwds):
         '''
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
         '''
-        if self._echo:
+        print args, kwds
+        encoded_params = []
+        
+        for arg in args:
+            if isinstance(arg, unicode):
+                arg = arg.encode(UTF8, 'replace')
             
-            if isinstance(message, unicode):
-                message = message.encode(UTF8, 'replace')
-            
-            for oPlugin in self._outputPluginList:
-                getattr(oPlugin, actionname)(message, *params)
+            encoded_params.append( arg )
+        
+        args = tuple(encoded_params)
+          
+        for o_plugin in self._output_plugin_list:
+            opl_func_ptr = getattr(o_plugin, actionname)
+            apply(opl_func_ptr, args, kwds)
     
-    def _addOutputPlugin(self, OutputPluginName):
+    def set_output_plugins(self, outputPlugins):
+        '''
+        @parameter outputPlugins: A list with the names of Output Plugins that
+                                  will be used.
+        @return: No value is returned.
+        '''     
+        self._output_plugin_list = []
+        self._output_plugins = outputPlugins
+        
+        for pluginName in self._output_plugins:
+            out._add_output_plugin(pluginName)  
+        
+        out.debug('Exiting set_output_plugins()')
+    
+    def get_output_plugins(self):
+        return self._output_plugins
+    
+    def set_plugin_options(self, pluginName, PluginsOptions):
+        '''
+        @parameter PluginsOptions: A tuple with a string and a dictionary
+                                   with the options for a plugin. For example:\
+                                   { console:{'verbosity':7} }
+            
+        @return: No value is returned.
+        '''
+        self._plugins_options[pluginName] = PluginsOptions
+        
+    def _add_output_plugin(self, OutputPluginName):
         '''
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
@@ -186,18 +182,37 @@ class outputManager:
             for pluginName in strReqPlugins:
                 plugin = factory('plugins.output.' + pluginName)
                 
-                if pluginName in self._pluginsOptions.keys():
-                    plugin.setOptions(self._pluginsOptions[pluginName])
+                if pluginName in self._plugins_options.keys():
+                    plugin.setOptions(self._plugins_options[pluginName])
                 
                 # Append the plugin to the list
-                self._outputPluginList.append(plugin)
+                self._output_plugin_list.append(plugin)
         
         else:
             plugin = factory('plugins.output.' + OutputPluginName)
-            if OutputPluginName in self._pluginsOptions.keys():
-                plugin.setOptions(self._pluginsOptions[OutputPluginName])
+            if OutputPluginName in self._plugins_options.keys():
+                plugin.setOptions(self._plugins_options[OutputPluginName])
 
                 # Append the plugin to the list
-            self._outputPluginList.append(plugin)    
+            self._output_plugin_list.append(plugin)    
+    
+    def __getattr__(self, name):
+        '''
+        This magic method replaces all the previous debug/information/error... ones.
+        It will basically return a func pointer to self.add_to_queue('debug', ...)
+        where ... is completed later by the caller.
         
-out = outputManager()
+        @see: http://docs.python.org/library/functools.html for help on partial.
+        @see: METHODS defined at the top of this class 
+        '''
+        if name in self.METHODS:
+            return functools.partial(self.add_to_queue, name)
+        else:
+            raise NotImplementedError
+
+out = None
+
+def start_output_manager():
+    global out
+    out = outputManager()
+    out.start()

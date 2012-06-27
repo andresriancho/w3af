@@ -46,7 +46,7 @@ class export_requests(baseOutputPlugin):
     def do_nothing(self, *args, **kwds): pass
 
     debug = logHttp = vulnerability = do_nothing
-    information = error = console = debug = logEnabledPlugins = do_nothing
+    information = error = console = debug = log_enabled_plugins = do_nothing
     
     def end(self):
         '''

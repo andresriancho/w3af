@@ -84,14 +84,14 @@ class Test_w3afCore_plugins(unittest.TestCase):
         plugin_inst = w3af_core.plugins.getPluginInstance('webSpider','discovery')
         options_1 = plugin_inst.getOptions()
         
-        w3af_core.plugins.setPluginOptions('discovery', 'webSpider', options_1)
+        w3af_core.plugins.set_plugin_options('discovery', 'webSpider', options_1)
         options_2 = w3af_core.plugins.getPluginOptions('discovery', 'webSpider')
         
         self.assertEquals( options_1, options_2 )
     
     def test_plugin_options_invalid(self):
         w3af_core = w3afCore()
-        self.assertRaises(TypeError, w3af_core.plugins.setPluginOptions, 'discovery', 'webSpider', None)
+        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options, 'discovery', 'webSpider', None)
         
     def test_init_plugins(self):
         w3af_core = w3afCore()
