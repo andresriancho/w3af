@@ -18,21 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import re
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.mutant import mutant
-
 import core.data.kb.vuln as vuln
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
-import re
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.request.fuzzableRequest import fuzzableRequest
 
 
 class xst(baseAuditPlugin):
@@ -40,6 +34,7 @@ class xst(baseAuditPlugin):
     Find Cross Site Tracing vulnerabilities. 
 
     @author: Josh Summitt (ascetik@gmail.com)
+    @author: Andres Riancho (andres@gmail.com) - Rewrite 27 Jul 2012
     '''
 
     def __init__(self):
@@ -60,23 +55,21 @@ class xst(baseAuditPlugin):
             # Only run once
             self._exec = False  
             
-            # Create a mutant based on a fuzzable request
-            # It is really important to use A COPY of the fuzzable request, and not the original.
-            # The reason: I'm changing the method and the URL !
-            fr_copy = freq.copy()
-            fr_copy.setURL( fr_copy.getURL().getDomainPath() )
-            fr_copy.setMethod('TRACE')
-            # Add a header. I search for this value to determine if XST is valid
-            original_headers = freq.getHeaders()
-            original_headers['FalseHeader'] = 'XST'
-            my_mutant = mutant(fr_copy)
-            
-            # send the request to the server and recode the response
-            response = self._uri_opener.send_mutant(my_mutant)
-            
+            uri = freq.getURL().getDomainPath()
+            method = 'TRACE'
+            headers = {}
+            headers['FalseHeader'] = 'XST'
+            fr = fuzzableRequest(uri,
+                                 method=method,
+                                 headers=headers
+                                 )
+
+            # send the request to the server and receive the response
+            response = self._uri_opener.send_mutant(fr)
+
             # create a regex to test the response. 
-            regex = re.compile("[FalseHeader: XST]")
-            if re.match(regex, response.getBody()):
+            regex = re.compile("FalseHeader: *?XST", re.IGNORECASE)
+            if re.search(regex, response.getBody()):
                 # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln( freq )
                 v.setPluginName(self.getName())
@@ -96,7 +89,7 @@ class xst(baseAuditPlugin):
         return '''
         This plugin finds the Cross Site Tracing (XST) vulnerability.
         
-        No Configurable Paramaters.
+        No configurable paramaters are available.
             
         The TRACE method echos back requests sent to it. This plugin sends a 
         TRACE request to the server and if the request is echoed back then XST 
