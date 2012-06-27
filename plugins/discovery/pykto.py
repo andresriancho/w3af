@@ -178,17 +178,16 @@ class pykto(baseDiscoveryPlugin):
                 yield modified_url, parameters
     
     def _filter_special(self, parameters):
-        send_test = False
         server, query , _, _ , _ = parameters
-        
-        if self._generic_scan or self._server_match( server ):
-            send_test = True
         
         # Avoid directory self references
         if query.endswith('/./') or query.endswith('/%2e/'):
-            send_test = False
+            return False
         
-        return send_test
+        if self._generic_scan or self._server_match( server ):
+            return True
+        
+        return False
                 
     def _update_db( self ):
         '''
