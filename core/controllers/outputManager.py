@@ -248,5 +248,6 @@ out = None
 
 def start_output_manager():
     global out
-    out = outputManager()
-    out.start()
+    if out is None:
+        out = outputManager()
+        out.start()

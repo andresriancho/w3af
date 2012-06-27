@@ -21,12 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
-from itertools import chain
-
 import core.data.kb.knowledgeBase as kb
+import core.controllers.outputManager as om
+om.start_output_manager()
 
 from core.controllers.w3afCore import w3afCore
-from core.controllers.w3afException import w3afException
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
