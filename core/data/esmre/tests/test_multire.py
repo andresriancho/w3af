@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from re_multire import re_multire
-from esmre_multire import esmre_multire
+from core.data.esmre.re_multire import re_multire
+from core.data.esmre.esmre_multire import esmre_multire
 
 import re
 import unittest
@@ -123,6 +123,3 @@ class TestReMultire(unittest.TestCase, BaseMultiReTest):
     def __init__(self, testname):
         super(TestReMultire, self).__init__(testname)
         self.klass = re_multire
-
-if __name__ == '__main__':
-    unittest.main()

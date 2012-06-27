@@ -21,10 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from in_multi_in import in_multi_in
-from esm_multi_in import esm_multi_in
+from core.data.esmre.in_multi_in import in_multi_in
+from core.data.esmre.esm_multi_in import esm_multi_in
 
-import re
 import unittest
 
 
@@ -102,6 +101,3 @@ class TestInMultiIn(unittest.TestCase, BaseMultiInTest):
     def __init__(self, testname):
         super(TestInMultiIn, self).__init__(testname)
         self.klass = in_multi_in
-
-if __name__ == '__main__':
-    unittest.main()
