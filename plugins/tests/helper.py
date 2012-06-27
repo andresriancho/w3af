@@ -22,8 +22,6 @@ import os
 import unittest
 
 import core.data.kb.knowledgeBase as kb
-import core.controllers.outputManager as om
-om.start_output_manager()
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.coreHelpers.exception_handler import exception_handler

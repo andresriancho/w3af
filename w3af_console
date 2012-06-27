@@ -18,7 +18,6 @@ gettext.install('w3af', 'locales/')
 # it is used by most w3af modules 
 import core.controllers.outputManager as om
 try:
-    om.start_output_manager()
     om.out.set_output_plugins( ['console'] )
 except Exception, e:
     print 'Something went wrong, w3af failed to start the output manager.'

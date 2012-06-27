@@ -29,6 +29,20 @@ from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
 from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 
+def start_thread_on_demand(func):
+    '''
+    Given that the output manager has been migrated into a producer/consumer model,
+    the messages that are sent to it are added to a Queue and printed "at a random time".
+    The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
+    using the om (see functions below), which ends up with unordered messages printed
+    to the console. 
+    '''
+    def od_wrapper(*args, **kwds):
+        if not out.is_alive():
+            out.start()
+        return func(*args, **kwds)
+    return od_wrapper
+
 
 class outputManager(threading.Thread):
     '''
@@ -55,7 +69,6 @@ class outputManager(threading.Thread):
         self._output_plugin_list = []
         self._output_plugins = []
         self._plugins_options = {}
-        self._echo = True
         
         # Internal variables
         self._in_queue = Queue.Queue()
@@ -87,13 +100,13 @@ class outputManager(threading.Thread):
         self.process_all_messages()
         self.__end_output_plugins_impl()
     
-    def add_to_queue(self, *args, **kwds):
-        self._in_queue.put( (args, kwds) )
-    
     def process_all_messages(self):
         '''Blocks until all messages are processed'''
         self._in_queue.join()
     
+    def _add_to_queue(self, *args, **kwds):
+        self._in_queue.put( (args, kwds) )
+
     def __end_output_plugins_impl(self):
         for o_plugin in self._output_plugin_list:
             o_plugin.end()
@@ -111,7 +124,7 @@ class outputManager(threading.Thread):
                         if pname in ('console', 'gtkOutput')]
         self.set_output_plugins( keep_enabled )
             
-            
+    @start_thread_on_demand
     def log_enabled_plugins(self, enabled_plugins, plugins_options):
         '''
         This method logs to the output plugins the enabled plugins and their
@@ -182,8 +195,6 @@ class outputManager(threading.Thread):
         
         for pluginName in self._output_plugins:
             out._add_output_plugin(pluginName)  
-        
-        out.debug('Exiting set_output_plugins()')
     
     def get_output_plugins(self):
         return self._output_plugins
@@ -229,6 +240,7 @@ class outputManager(threading.Thread):
                 # Append the plugin to the list
             self._output_plugin_list.append(plugin)    
     
+    @start_thread_on_demand
     def __getattr__(self, name):
         '''
         This magic method replaces all the previous debug/information/error... ones.
@@ -239,15 +251,9 @@ class outputManager(threading.Thread):
         @see: METHODS defined at the top of this class 
         '''
         if name in self.METHODS:
-            return functools.partial(self.add_to_queue, name)
+            return functools.partial(self._add_to_queue, name)
         else:
             raise AttributeError("'outputManager' object has no attribute '%s'"
                                  % name)
 
-out = None
-
-def start_output_manager():
-    global out
-    if out is None:
-        out = outputManager()
-        out.start()
+out = outputManager()

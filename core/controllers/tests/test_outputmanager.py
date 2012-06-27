@@ -33,7 +33,6 @@ class TestOutputManager(PyMockTestCase):
 
     def setUp(self):
         PyMockTestCase.setUp(self)
-        om.start_output_manager()
 
     def test_output_plugins_actions(self):
         '''Call all actions on output plugins'''
