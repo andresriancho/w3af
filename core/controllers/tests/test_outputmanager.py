@@ -20,11 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import inspect
-
 from pymock import PyMockTestCase, method
 
-from ..outputManager import outputManager
+from core.controllers.coreHelpers.exception_handler import exception_handler
+import core.controllers.outputManager as om
 
 
 class TestOutputManager(PyMockTestCase):
@@ -34,7 +33,7 @@ class TestOutputManager(PyMockTestCase):
 
     def setUp(self):
         PyMockTestCase.setUp(self)
-        self.om = outputManager()
+        om.start_output_manager()
 
     def test_output_plugins_actions(self):
         '''Call all actions on output plugins'''
@@ -43,42 +42,98 @@ class TestOutputManager(PyMockTestCase):
         
         for action in TestOutputManager.OUTPUT_PLUGIN_ACTIONS:
             plugin = self.mock()
-            self.om._outputPluginList = [plugin]
-            pluginaction = getattr(self.om, action)
-            defvals = inspect.getargspec(pluginaction)[3]
-            method(plugin, action).expects(msg, *defvals) 
+            om.out._output_plugin_list = [plugin,]
+            om_action = getattr(om.out, action)
+            method(plugin, action).expects(msg, True) 
             
             ## Stop recording. Play!
             self.replay()
             
             # Invoke action
-            pluginaction(msg, True)
+            om_action(msg, True)
+            om.out.process_all_messages()
             
             # Verify and reset
             self.verify()
             self.reset()
-    
     
     def test_output_plugins_actions_with_unicode_message(self):
         '''Call all actions on output plugins using a unicode message'''
         
         msg = u'<< ÑñçÇyruZZ!! <<'
         utf8_encoded_msg = msg.encode('utf8')
-        
+
         for action in TestOutputManager.OUTPUT_PLUGIN_ACTIONS:
             plugin = self.mock()
-            self.om._outputPluginList = [plugin]
-            pluginaction = getattr(self.om, action)
-            actiondefvals = inspect.getargspec(pluginaction)[3]
-            method(plugin, action).expects(utf8_encoded_msg, *actiondefvals) 
+            om.out._output_plugin_list = [plugin,]
+            om_action = getattr(om.out, action)
+            method(plugin, action).expects(utf8_encoded_msg, True) 
             
             ## Stop recording. Play!
             self.replay()
             
             # Invoke action
-            pluginaction(msg, True)
+            om_action(msg, True)
+            om.out.process_all_messages()
             
             # Verify and reset
             self.verify()
-            self.reset()
+            self.reset()        
     
+    def test_method_that_not_exists(self):
+        '''The output manager implements __getattr__ and we don't want it to
+        catch-all, just the ones I define!'''
+        try:
+            self.assertRaises(AttributeError, om.out.foobar, ('abc',))
+        except AttributeError:
+            pass
+
+    def test_kwds(self):
+        '''The output manager implements __getattr__ with some added
+        functools.partial magic. This verifies that it works well with kwds'''
+        
+        msg = 'foo bar spam eggs'
+        action = 'information'
+        
+        plugin = self.mock()
+        om.out._output_plugin_list = [plugin,]
+        om_action = getattr(om.out, action)
+        method(plugin, action).expects(msg, newLine=False) 
+        
+        ## Stop recording. Play!
+        self.replay()
+        
+        # Invoke action
+        om_action(msg, newLine=False)
+        om.out.process_all_messages()
+        
+        # Verify and reset
+        self.verify()
+        self.reset()
+    
+    def test_error_handling(self):
+        
+        class InvalidPlugin(object):
+            def information(self, msg, newLine=True):
+                raise Exception('Test')
+            
+            def error(self, msg, newLine=True):
+                pass
+            
+            def getName(self):
+                return 'InvalidPlugin'
+        
+        invalid_plugin = InvalidPlugin() 
+        
+        om.out._output_plugin_list = [invalid_plugin,]
+        om.out.information('abc')
+        om.out.process_all_messages()
+        
+        exc_list = exception_handler.get_all_exceptions()
+        self.assertEqual(len(exc_list), 1, exc_list)
+        
+        edata = exc_list[0]
+        self.assertEqual( str(edata.exception) , 'Test' )
+        
+        self.reset()
+        

@@ -59,82 +59,41 @@ class console(baseOutputPlugin):
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
+        
+        # User configured setting
         self.verbose = False
 
     def _make_printable(self, a_string):
         a_string = str( a_string )
         return ''.join(ch for ch in a_string if ch in string.printable)
 
+    def _print_to_stdout(self, message, newline):
+        to_print = self._make_printable( message )
+        if newline:
+            to_print += '\r\n'
+        sys.stdout.write( to_print )
+        sys.stdout.flush()
+        
     @catch_ioerror
-    def debug(self, message, newLine = True ):
+    def debug(self, message, newLine=True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for debug messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take
+        an action for debug messages.
         '''
         if self.verbose:
-            to_print = self._make_printable( message )
-            if newLine == True:
-                to_print += '\r\n'
-            sys.stdout.write( to_print )
-            sys.stdout.flush()
-
+            self._print_to_stdout(message, newLine)
+            
     @catch_ioerror
-    def information(self, message , newLine = True ):
+    def _generic(self, message , newLine=True, severity=None ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for informational messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take
+        an action for all messages except from debug ones.
         ''' 
-        to_print = self._make_printable( message )
-        if newLine == True:
-            to_print += '\r\n'
-        sys.stdout.write( to_print )
-        sys.stdout.flush()
-
-    @catch_ioerror
-    def error(self, message , newLine = True ):
-        '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for error messages.
-        '''     
-        to_print = self._make_printable( message )
-        if newLine == True:
-            to_print += '\r\n'
-        sys.stderr.write( to_print )
-        sys.stdout.flush()
-
-    @catch_ioerror
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
-        '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action when a vulnerability is found.
-        '''
-        to_print = self._make_printable( message )
-        if newLine == True:
-            to_print += '\r\n'
-        sys.stdout.write( to_print )
-        sys.stdout.flush()
-    
-    @catch_ioerror
-    def console( self, message, newLine = True ):
-        '''
-        This method is used by the w3af console to print messages to the outside.
-        '''
-        to_print = self._make_printable( message )
-        if newLine == True:
-            to_print += '\r\n'
-        sys.stdout.write( to_print )
-        sys.stdout.flush()
-
-    def logHttp( self, request, response):
-        pass
-    
-    def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
-        '''
-        This method is called from the output managerobject. 
-        This method should take an action for the enabled plugins 
-        and their configuration.
-        '''
-        pass
+        self._print_to_stdout(message, newLine)
+        
+    error = console = vulnerability = information = _generic
 
     def getLongDesc( self ):
         '''
@@ -149,9 +108,9 @@ class console(baseOutputPlugin):
 
     def setOptions( self, OptionList ):
         '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptions()
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed 
+        using the XML Options that was retrieved from the plugin using getOptions()
         
         This method MUST be implemented on every plugin. 
         
@@ -163,9 +122,9 @@ class console(baseOutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Enable if verbose output is needed'
-        o1 = option('verbose', self.verbose, d1, 'boolean')
-        
         ol = optionList()
-        ol.add(o1)
+        d = 'Enables verbose output for the console'
+        o = option('verbose', self.verbose, d, 'boolean')
+        ol.add(o)
+        
         return ol

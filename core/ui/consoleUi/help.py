@@ -32,14 +32,15 @@ except ImportError:
         import elementtree.ElementTree as ET
     except ImportError:
         import sys
-        print 'It seems that your python installation doesn\'t have element tree installed. Please install it and run w3af again.'
+        print 'It seems that your python installation doesn\'t have element tree',
+        print 'installed. Please install it and run w3af again.'
         sys.exit(-9)
     
 
-class helpRepository:
+class helpRepository(object):
     '''
-    This class wraps a help file and allows to extract 
-    context-related help objects
+    This class wraps a help file and allows to extract context-related help objects
+    
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     def __init__(self, path=os.path.join('core','ui','consoleUi','help.xml') ):
@@ -85,7 +86,15 @@ class helpRepository:
                 short = subst(short)
                 if full:
                     full = subst(full)
-
+                
+                #    The help.xml file is in unix format, meaning that it only
+                #    has \n for new lines. This will bring some issues when
+                #    printing the data to the console since the \r is required
+                #    there, so I simply add the \r here.
+                short = short.replace('\n','\r\n')
+                if full:
+                    full = full.replace('\n','\r\n')
+                    
                 obj.addHelpEntry(itemName, (short, full), catName)
 
 
@@ -95,7 +104,7 @@ class helpRepository:
 helpMainRepository = helpRepository()
 
     
-class help:
+class help(object):
     '''
     Container for help items.
     '''

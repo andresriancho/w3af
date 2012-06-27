@@ -110,8 +110,8 @@ class ExceptionHandler(object):
                 self._exception_data.append(edata)
 
                 msg = edata.get_summary()
-                msg += ' The scan will continue but some vulnerabilities might not'
-                msg += ' be identified.'
+                msg += ' The scan will continue but some vulnerabilities might'
+                msg += ' not be identified.'
                 om.out.error( msg )
 
     def clear(self):

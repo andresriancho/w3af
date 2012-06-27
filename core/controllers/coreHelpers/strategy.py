@@ -124,7 +124,7 @@ class w3af_core_strategy(object):
         grep_plugins = self._w3af_core.plugins.plugins['grep']
         
         if grep_plugins:
-            grep_in_queue = Queue.Queue(25)
+            grep_in_queue = Queue.Queue()
             self._w3af_core.uriOpener.set_grep_queue( grep_in_queue )
             self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
             self._grep_consumer.start()
@@ -296,7 +296,7 @@ class w3af_core_strategy(object):
         auth_plugins = self._w3af_core.plugins.plugins['auth']
         
         if auth_plugins:
-            auth_in_queue = Queue.Queue(5)
+            auth_in_queue = Queue.Queue()
             self._auth_consumer = auth(auth_in_queue, auth_plugins,
                                        self._w3af_core, timeout)
             self._auth_consumer.start()
@@ -583,7 +583,7 @@ class w3af_core_strategy(object):
         audit_plugins = self._w3af_core.plugins.plugin_factory( enabled_plugins, 'audit')
         
         if audit_plugins:
-            audit_in_queue = Queue.Queue(25)
+            audit_in_queue = Queue.Queue()
             self._audit_consumer = audit(audit_in_queue, audit_plugins, self._w3af_core)
             self._audit_consumer.start()
             
@@ -650,7 +650,7 @@ class w3af_core_strategy(object):
                         pass
         
                     status = fake_status()
-                    status.set_running_plugin( plugin_name )
+                    status.set_running_plugin( plugin_name, log=False )
                     status.set_phase( 'audit' )
                     status.set_current_fuzzable_request( request )
                     
@@ -665,6 +665,8 @@ class w3af_core_strategy(object):
                     self._w3af_core.status.set_phase('audit')
                     self._w3af_core.status.set_running_plugin( plugin_name )
                     self._w3af_core.status.set_current_fuzzable_request( request )
+        
+        om.out.debug('Finished _handle_audit_results.')
         
             
     def _bruteforce(self, fr_list):

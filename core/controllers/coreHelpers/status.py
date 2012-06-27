@@ -104,7 +104,7 @@ class w3af_core_status(object):
         '''
         self._currentPhase = phase
     
-    def set_running_plugin( self, pluginName ):
+    def set_running_plugin( self, plugin_name, log=True ):
         '''
         This method saves the phase, so in the future the UI can use the 
         getPhase() method to show it.
@@ -112,8 +112,9 @@ class w3af_core_status(object):
         @parameter pluginName: The pluginName which the w3afCore is running in
         a given moment
         '''
-        om.out.debug('Starting plugin: ' + pluginName )
-        self._runningPlugin = pluginName
+        if log:
+            om.out.debug('Starting plugin: ' + plugin_name )
+        self._runningPlugin = plugin_name
         
     def get_running_plugin( self ):
         '''

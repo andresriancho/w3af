@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import functools
 import os
+import sys
 import threading
 import Queue
 
@@ -57,37 +58,45 @@ class outputManager(threading.Thread):
         self._echo = True
         
         # Internal variables
-        self._in_queue = Queue.Queue(50)
+        self._in_queue = Queue.Queue()
     
     def run(self):
         '''
         This method is one of the most important ones in the class, since it will
         consume the work units from the queue and send them to the plugins
+        
         '''
         while True:
             work_unit = self._in_queue.get()
             
             if work_unit == FINISH_CONSUMER:
                 
-                self.__end_output_plugins_impl()
-                self._in_queue.task_done()
                 break
             
             else:
                 args, kwds = work_unit
-                apply(self._call_output_plugins_action, args, kwds) 
+                #
+                #    Please note that error handling is done inside:
+                #        _call_output_plugins_action
+                #
+                apply(self._call_output_plugins_action, args, kwds)
+                
                 self._in_queue.task_done()
     
     def end_output_plugins(self):
-        self._in_queue.put(FINISH_CONSUMER)
-        self._in_queue.join()
+        self.process_all_messages()
+        self.__end_output_plugins_impl()
     
     def add_to_queue(self, *args, **kwds):
-        self._in_queue.put((args, kwds))
+        self._in_queue.put( (args, kwds) )
+    
+    def process_all_messages(self):
+        '''Blocks until all messages are processed'''
+        self._in_queue.join()
     
     def __end_output_plugins_impl(self):
-        for oPlugin in self._output_plugin_list:
-            oPlugin.end()
+        for o_plugin in self._output_plugin_list:
+            o_plugin.end()
 
         # This is a neat trick which basically removes all plugin references
         # from memory. Those plugins might have pointers to memory parts that
@@ -115,15 +124,14 @@ class outputManager(threading.Thread):
         @param plugins_options: As defined in the w3afCore, looks similar to: 
                    {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
         '''
-        for oPlugin in self._output_plugin_list:
-            oPlugin.log_enabled_plugins(enabled_plugins, plugins_options)
+        for o_plugin in self._output_plugin_list:
+            o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)
     
     def _call_output_plugins_action(self, actionname, *args, **kwds):
         '''
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
         '''
-        print args, kwds
         encoded_params = []
         
         for arg in args:
@@ -135,8 +143,33 @@ class outputManager(threading.Thread):
         args = tuple(encoded_params)
           
         for o_plugin in self._output_plugin_list:
-            opl_func_ptr = getattr(o_plugin, actionname)
-            apply(opl_func_ptr, args, kwds)
+            try:
+                opl_func_ptr = getattr(o_plugin, actionname)
+                apply(opl_func_ptr, args, kwds)
+            except Exception, e:
+                # Smart error handling, much better than just crashing.
+                # Doing this here and not with something similar to:
+                # sys.excepthook = handle_crash because we want to handle
+                # plugin exceptions in this way, and not framework 
+                # exceptions
+                #
+                # FIXME: I need to import these here because of the awful
+                #        singletons I use all over the framework. If imported
+                #        at the top, they will generate circular import errors
+                from core.controllers.coreHelpers.exception_handler import exception_handler
+                from core.controllers.coreHelpers.status import w3af_core_status
+                
+                class fake_status(w3af_core_status):
+                    pass
+    
+                status = fake_status()
+                status.set_running_plugin( o_plugin.getName(), log=False )
+                status.set_phase( 'output' )
+                status.set_current_fuzzable_request( 'n/a' )
+                
+                exec_info = sys.exc_info()
+                enabled_plugins = 'n/a'
+                exception_handler.handle( status, e , exec_info, enabled_plugins )
     
     def set_output_plugins(self, outputPlugins):
         '''
@@ -159,7 +192,7 @@ class outputManager(threading.Thread):
         '''
         @parameter PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
-                                   { console:{'verbosity':7} }
+                                   { console:{'verbose': True} }
             
         @return: No value is returned.
         '''
@@ -208,7 +241,8 @@ class outputManager(threading.Thread):
         if name in self.METHODS:
             return functools.partial(self.add_to_queue, name)
         else:
-            raise NotImplementedError
+            raise AttributeError("'outputManager' object has no attribute '%s'"
+                                 % name)
 
 out = None
 

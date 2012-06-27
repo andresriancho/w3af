@@ -67,7 +67,6 @@ class grep(threading.Thread):
                 
             else:
                 request, response = work_unit
-                self._in_queue.task_done()
 
                 for grep_plugin in self._grep_plugins:
                     try:
@@ -89,7 +88,8 @@ class grep(threading.Thread):
                         exec_info = sys.exc_info()
                         enabled_plugins = pprint_plugins(self._w3af_core)
                         exception_handler.handle( status, e , exec_info, enabled_plugins )
-                        
+                
+                self._in_queue.task_done()
     
     def stop(self):
         '''

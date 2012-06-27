@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-#import core.controllers.outputManager as om
+import core.controllers.outputManager as om
 import sys
 import os
 
@@ -38,19 +38,37 @@ CTRL_CODES = range(1,27)
 CTRL_CODES.remove(9)
 CTRL_CODES.remove(13)
 
+def sync_with_om(func):
+    '''
+    Given that the output manager has been migrated into a producer/consumer model,
+    the messages that are sent to it are added to a Queue and printed "at a random time".
+    The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
+    using the om (see functions below), which ends up with unordered messages printed
+    to the console. 
+    '''
+    def om_wrapper(*args, **kwds):
+        om.out.process_all_messages()
+        return func(*args, **kwds)
+    return om_wrapper
+
+@sync_with_om
 def write(s):
     if (len(s)):
         sys.stdout.write(s)
 
+@sync_with_om
 def writeln(s=''):
     sys.stdout.write(s+'\n\r')
 
+@sync_with_om
 def bell():
     sys.stdout.write('\x07')
 
+@sync_with_om
 def backspace():
     sys.stdout.write(KEY_BACKSPACE)
 
+@sync_with_om
 def getch(buf=None):
     try:
         ch = read(1)
@@ -65,9 +83,9 @@ def getch(buf=None):
         posixVal = normalizeSequence(strval)
         if posixVal:
             return posixVal
-	elif len(buf)>LONGEST_SEQUENCE:
+        elif len(buf)>LONGEST_SEQUENCE:
             return getch()
-	else:
+        else:
             return getch(buf)
     elif ord(ch) in CTRL_CODES:
         result = '^' + chr(ord(ch)+64)
@@ -126,7 +144,7 @@ except Exception, e:
     except Exception, a:
         print str(e + '\n' + a)
         # We arent on windows nor unix
-        raise w3afException('w3af support for OS X aint available yet! Please contribute.')
+        raise w3afException('w3af support for OS X isn\'t available yet! Please contribute.')
 
 #extKeys = [KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]
 

@@ -20,16 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import threading
-import time
-import sys
 import Queue
 
 import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadpool import Pool
 
@@ -51,7 +47,7 @@ class audit(threading.Thread):
         
         self._in_queue = in_queue
         # See documentation in the properly below
-        self._out_queue = Queue.Queue(40)
+        self._out_queue = Queue.Queue()
         self._audit_plugins = audit_plugins
         self._w3af_core = w3af_core
         self._audit_threadpool = Pool(10, queue_size=40)

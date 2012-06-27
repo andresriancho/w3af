@@ -29,7 +29,8 @@ import core.data.constants.severity as severity
 
 class baseOutputPlugin(basePlugin):
     '''
-    This is the base class for data output, all output plugins should inherit from it and implement the following methods :
+    This is the base class for data output, all output plugins should inherit 
+    from it and implement the following methods :
         1. debug( message, verbose )
         2. information( message, verbose )
         3. error( message, verbose )
@@ -37,14 +38,72 @@ class baseOutputPlugin(basePlugin):
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    def __init__(self):
+        basePlugin.__init__( self )
 
     def getType( self ):
         return 'output'
-
-    def __init__(self):
-        basePlugin.__init__( self )
-        self.verbosity = 0
         
+    def debug(self, message, newLine = True ):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action for debug messages.
+        
+        @return: No value is returned.
+        '''
+        raise w3afException('Plugin is not implementing required method debug' )
+
+    def information(self, message, newLine = True):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action for information messages.
+        
+        @return: No value is returned.
+        '''
+        raise w3afException('Plugin is not implementing required method information' )
+
+    def error(self, message, newLine = True):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action for error messages.
+        
+        @return: No value is returned.
+        '''
+        raise w3afException('Plugin is not implementing required method error' )
+
+    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action for vulnerability messages.
+        
+        @return: No value is returned.
+        '''
+        raise w3afException('Plugin is not implementing required method vulnerability' )
+
+    def console(self, message, newLine = True ):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action for console messages.
+        
+        @return: No value is returned.
+        '''
+        raise w3afException('Plugin is not implementing required method console' )
+    
+    def logHttp(self, request, response ):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an 
+        action to log HTTP requests and responses.
+
+        @return: No value is returned.
+        '''
+        pass
+    
     def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
@@ -56,61 +115,7 @@ class baseOutputPlugin(basePlugin):
         @parameter pluginOptionsDict: As defined in the w3afCore, looks similar to: 
                    {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
         '''
-        raise w3afException('Plugin is not implementing required method log_enabled_plugins' )
-        
-    def debug(self, message, newLine = True ):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action for debug messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method debug' )
-
-    def information(self, message, newLine = True):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action for information messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method information' )
-
-    def error(self, message, newLine = True):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action for error messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method error' )
-
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action for vulnerability messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method vulnerability' )
-
-    def console(self, message, newLine = True ):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action for vulnerability messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method console' )
-    
-    def logHttp(self, request, response ):
-        '''
-        This method is called from the output managerobject. The OM object was called from a plugin
-        or from the framework. This method should take an action to log HTTP requests and responses.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method logHttp.' )
+        pass
 
     def getPluginDeps( self ):
         '''

@@ -87,18 +87,18 @@ def createMutants(freq, mutant_str_list, append=False,
     if isinstance(freq, HTTPQSRequest):
         
         # Query string parameters    
-        om.out.debug('Fuzzing query string')
+        _fuzzing('_createMutantsWorker/QS', freq)
         result.extend(_createMutantsWorker(freq, mutantQs, mutant_str_list,
                                            fuzzableParamList, append))
         
         # File name
         if 'fuzzedFname' in _fuzzable:
-            om.out.debug('Fuzzing file name')
+            _fuzzing('_createFileNameMutants', freq)
             result.extend(_createFileNameMutants(freq, mutantFileName, 
                                  mutant_str_list, fuzzableParamList, append))
 
         if 'fuzzURLParts' in _fuzzable:
-            om.out.debug('Fuzzing URL parts')
+            _fuzzing('_createUrlPartsMutants', freq)
             result.extend(_createUrlPartsMutants(freq, mutantUrlParts, 
                                  mutant_str_list, fuzzableParamList, append))
  
@@ -106,29 +106,31 @@ def createMutants(freq, mutant_str_list, append=False,
     elif isinstance(freq, httpPostDataRequest):
         # If this is a POST request, it could be a JSON request, and I want
         # to fuzz it!
-        om.out.debug('Fuzzing POST data')
+        
         if isJSON(freq):
+            _fuzzing('_createJSONMutants', freq)
             result.extend(_createJSONMutants(freq, mutantJSON, mutant_str_list,
                                              fuzzableParamList, append))
         else:
+            _fuzzing('_createJSONMutants/post-data', freq)
             result.extend(_createMutantsWorker(freq, mutantPostData,
                                    mutant_str_list, fuzzableParamList, append))
         
         # File content of multipart forms
         if 'fuzzFileContent' in _fuzzable:
-            om.out.debug('Fuzzing file content')
+            _fuzzing('_createFileContentMutants', freq)
             result.extend(_createFileContentMutants(freq, mutant_str_list,
                                                     fuzzableParamList, append))
     # Headers
     if 'headers' in _fuzzable:
-        om.out.debug('Fuzzing headers')
+        _fuzzing('_createMutantsWorker/headers', freq)
         result.extend(_createMutantsWorker(freq, mutantHeaders, mutant_str_list,
                                            fuzzableParamList, append, 
                                            dataContainer=_fuzzable['headers']))
         
     # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
-        om.out.debug('Fuzzing cookie')
+        _fuzzing('_createMutantsWorker/cookie', freq)
         mutants = _createMutantsWorker(freq, mutantCookie, mutant_str_list,
                                        fuzzableParamList, append,
                                        dataContainer=freq.getCookie())        
@@ -164,6 +166,9 @@ def createMutants(freq, mutant_str_list, append=False,
                 m.setHeaders(orig_headers) 
         
     return result
+
+def _fuzzing(what, who):
+    om.out.debug('Calling "%s" with "%s" as fuzzable request.' % (what,who) )
 
 def _createJSONMutants(freq, mutantClass, mutant_str_list, fuzzableParamList, append):
     '''
