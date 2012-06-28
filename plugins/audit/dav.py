@@ -21,24 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
-from core.data.parsers.urlParser import url_object
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.coreHelpers.fingerprint_404 import is_404
-
-from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
 class dav(baseAuditPlugin):
@@ -63,12 +53,24 @@ class dav(baseAuditPlugin):
         # Start
         domain_path = freq.getURL().getDomainPath()
         if domain_path not in self._already_tested_dirs:
-            om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
             self._already_tested_dirs.add( domain_path )
+            om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
             
-            self._PUT( domain_path )
-            self._PROPFIND( domain_path )
-            self._SEARCH( domain_path )
+            #
+            #    Send the three requests in different threads, store the apply_result
+            #    objects in order to be able to "join()" in the next for loop
+            #
+            #    TODO: This seems to be a fairly common use case: Send args to N
+            #    functions that need to be run in different threads. If possible
+            #    code this into threadpool.py in order to make this code clearer
+            results = []
+            for func in [self._PUT, self._PROPFIND, self._SEARCH]:
+                apply_res = self._tm.threadpool.apply_async(func, (domain_path,) )
+                results.append( apply_res )
+            
+            for apply_res in results:
+                apply_res.get()
+            
             
     def _SEARCH( self, domain_path ):
         '''
@@ -111,9 +113,6 @@ class dav(baseAuditPlugin):
         content += "</a:propfind>\r\n"
         
         res = self._uri_opener.PROPFIND( domain_path , data=content, headers={'Depth': '1'} )
-        # Remember that httpResponse objects have a faster "__in__" than
-        # the one in strings; so string in response.getBody() is slower than
-        # string in response               
         if "D:href" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
             v.setPluginName(self.getName())
@@ -146,9 +145,9 @@ class dav(baseAuditPlugin):
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
-            msg = 'File upload with HTTP PUT method was found at resource: "' + domain_path + '".'
-            msg += ' A test file was uploaded to: "' + res.getURL() + '".'
-            v.setDesc( msg )
+            msg = 'File upload with HTTP PUT method was found at resource: "%s".'
+            msg += ' A test file was uploaded to: "%s".'
+            v.setDesc( msg % (domain_path, res.getURL()) )
             kb.kb.append( self, 'dav', v )
         
         # Report some common errors
