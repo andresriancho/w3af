@@ -50,7 +50,7 @@ def createFuzzableRequests(resp, request=None, add_self=True):
     @parameter resp: An HTTPResponse instance.
     @parameter request: The HTTP request that generated the resp
     @parameter add_self: If I should add the current HTTP request
-        (@parameter request) to the result on not.
+                         (@parameter request) to the result on not.
     
     @return: A list of fuzzable requests.
     '''
