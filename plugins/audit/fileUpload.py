@@ -20,26 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+import os.path
+import tempfile
+
+from itertools import repeat, izip
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
-
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
-import os.path
-import tempfile
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 
 
 class fileUpload(baseAuditPlugin):
@@ -49,15 +47,14 @@ class fileUpload(baseAuditPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    _template_dir = os.path.join('plugins', 'audit', 'fileUpload')
-    # User configured
-    _extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
+    TEMPLATE_DIR = os.path.join('plugins', 'audit', 'fileUpload')
+    
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
-        # Internal vars
-        self._file_list = []
+        # User configured
+        self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']
 
     def audit(self, freq ):
         '''
@@ -65,15 +62,13 @@ class fileUpload(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        # Start
         if freq.getMethod().upper() == 'POST' and len ( freq.getFileVariables() ) != 0:
             om.out.debug( 'fileUpload plugin is testing: ' + freq.getURL() )
             
-            # I do all this to be able to perform the enumerate() below
             for file_parameter in freq.getFileVariables():
-                self._file_list = self._get_files()
+                fileh_filen_list = self._create_files()
                 # Only file handlers are passed to the createMutants functions
-                file_handlers = [ i[0] for i in self._file_list ]
+                file_handlers = [ i[0] for i in fileh_filen_list ]
                 mutants = createMutants( freq, file_handlers, fuzzableParamList=[file_parameter, ] )
 
                 for mutant in mutants:
@@ -81,108 +76,141 @@ class fileUpload(baseAuditPlugin):
                     mutant.uploaded_file_name = filename
        
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                         mutants,
-                                         self._analyze_result)            
+                                              mutants,
+                                              self._analyze_result)
             
-    def _get_files( self ):
+            self._remove_files(fileh_filen_list)
+            
+    def _create_files( self ):
         '''
         If the extension is in the templates dir, open it and return the handler.
         If the extension isn't in the templates dir, create a file with random 
         content, open it and return the handler.
         
-        @return: A list of open files.
+        @return: A list of tuples with (file handler, file name)
         '''
         result = []
-
-        # All of this work is done in the "/tmp" directory:
-
+        
         for ext in self._extensions:
-            
+            # Open target
+            temp_dir = get_temp_dir()
+            low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', 
+                                                       suffix='.' + ext,
+                                                       dir=temp_dir)
+            file_handler = os.fdopen(low_level_fd, "w+b")
+
             template_filename = 'template.' + ext
-            if template_filename in os.listdir( self._template_dir ):
-                
-                #
-                # Copy to "/tmp"
-                #
-                # Open target
-                temp_dir = get_temp_dir()
-                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext, dir=temp_dir)
-                file_handler = os.fdopen(low_level_fd, "w+b")
-                # Read source
-                template_content = file( os.path.join(self._template_dir, template_filename)).read()
-                # Write content to target
-                file_handler.write(template_content)
-                file_handler.close()
-                
-                # Open the target again:
-                try:
-                    file_handler = file( file_name, 'r')
-                except:
-                    raise w3afException('Failed to open temp file: "' + file_name  + '".')
-                else:
-                    path, file_name = os.path.split(file_name)
-                    result.append( (file_handler, file_name) )
-                    
+            if template_filename in os.listdir( self.TEMPLATE_DIR ):
+                content = file( os.path.join(self.TEMPLATE_DIR, template_filename)).read()
             else:
-                # I dont have a template for this file extension!
-                temp_dir = get_temp_dir()
-                low_level_fd, file_name = tempfile.mkstemp(prefix='w3af_', suffix='.' + ext, dir=temp_dir)
-                file_handler = os.fdopen(low_level_fd, "w+b")
-                file_handler.write( createRandAlNum(32) )
-                file_handler.close()
-                path, file_name = os.path.split(file_name)
-                result.append( (file(file_name), file_name) )
+                # Since I don't have a template for this file extension, I'll simply
+                # put some random alnum inside the file
+                content = createRandAlNum(64)
+                
+            # Write content to target
+            file_handler.write(content)
+            file_handler.close()
+            
+            # Open the target again, should never fail.
+            try:
+                file_handler = file( file_name, 'r')
+            except:
+                raise w3afException('Failed to open temp file: "%s".' % file_name)
+            else:
+                _, file_name = os.path.split(file_name)
+                result.append( (file_handler, file_name) )
         
         return result
+    
+    def _remove_files(self, fileh_filen_list):
+        '''
+        Close all open files and remove them from disk. This is the reverse of 
+        _create_files method.
         
+        @param fileh_filen_list: A list of tuples as generated by _create_files
+        @return: None
+        
+        >>> from core.controllers.misc.temp_dir import create_temp_dir
+        >>> _ = create_temp_dir()
+        >>> fu = fileUpload()
+        >>> dir_before = os.listdir( get_temp_dir() )
+        >>> fileh_filen_list = fu._create_files()
+        >>> fu._remove_files(fileh_filen_list)
+        >>> dir_after = os.listdir( get_temp_dir() )
+        >>> dir_before == dir_after
+        True
+        
+        '''
+        for tmp_file_handle, tmp_file_name in fileh_filen_list:
+            try:
+                tmp_file_handle.close()
+                fname = os.path.join( get_temp_dir() , tmp_file_name )
+                os.remove(fname)
+            except:
+                pass        
+    
     def _analyze_result(self, mutant, mutant_response):
         '''
         Analyze results of the _send_mutant method. 
         
-        In this case, check if the file was uploaded to any of the known directories,
-        or one of the "default" ones like "upload" or "files".
+        In this case, check if the file was uploaded to any of the known
+        directories, or one of the "default" ones like "upload" or "files".
         '''
-        with self._plugin_lock:
-            if self._has_no_bug(mutant):        
-                
-                # Gen expr for directories where I can search for the uploaded file
-                domain_path_list = set(u.getDomainPath() for u in 
-                                       kb.kb.getData('urls' , 'url_objects'))
+        if self._has_no_bug(mutant):        
+            
+            # Gen expr for directories where I can search for the uploaded file
+            domain_path_list = set(u.getDomainPath() for u in 
+                                   kb.kb.getData('urls' , 'url_objects'))
+            
+            # FIXME: Note that in all cases where I'm using kb's url_object info
+            # I'll be making a mistake if the audit plugin is run before all
+            # discovery plugins haven't run yet, since I'm not letting them
+            # find all directories; which will make the current plugin run with
+            # less information.
+
+            url_generator = self._generate_urls(domain_path_list, mutant.uploaded_file_name)
+            mutant_repeater = repeat( mutant )
+            http_response_repeater = repeat( mutant_response )
+            args = izip(url_generator, mutant_repeater, http_response_repeater)
+            
+            self._tm.threadpool.map_multi_args(self._confirm_file_upload,
+                                               args)
+    
+    def _confirm_file_upload(self, path, mutant, http_response):
+        '''
+        Confirms if the file was uploaded to path
         
-                # Try to find the file!
-                for url in domain_path_list:
-                    for path in self._generate_urls(url, mutant.uploaded_file_name):
+        @param path: The URL where we suspect that a file was uploaded to.
+        @param mutant: The mutant that originated the file on the remote end
+        @param http_response: The HTTP response asociated with sending mutant
+        '''
+        get_response = self._uri_opener.GET(path, cache=False)
         
-                        get_response = self._uri_opener.GET(path, cache=False)
-                        if not is_404(get_response):
-                            # This is necesary, if I dont do this, the session
-                            # saver will break cause REAL file objects can't 
-                            # be picked
-                            mutant.setModValue('<file_object>')
-                            v = vuln.vuln(mutant)
-                            v.setPluginName(self.getName())
-                            v.setId([mutant_response.id, get_response.id])
-                            v.setSeverity(severity.HIGH)
-                            v.setName('Insecure file upload')
-                            v['fileDest'] = get_response.getURL()
-                            v['fileVars'] = mutant.getFileVariables()
-                            msg = ('A file upload to a directory inside the '
-                            'webroot was found at: ' + mutant.foundAt())
-                            v.setDesc(msg)
-                            kb.kb.append(self, 'fileUpload', v)
-                            return
+        if not is_404(get_response) and self._has_no_bug(mutant):
+            # This is necessary, if I don't do this, the session
+            # saver will break cause REAL file objects can't 
+            # be picked
+            mutant.setModValue('<file_object>')
+            v = vuln.vuln(mutant)
+            v.setPluginName(self.getName())
+            v.setId([http_response.id, get_response.id])
+            v.setSeverity(severity.HIGH)
+            v.setName('Insecure file upload')
+            v['fileDest'] = get_response.getURL()
+            v['fileVars'] = mutant.getFileVariables()
+            msg = ('A file upload to a directory inside the '
+            'webroot was found at: ' + mutant.foundAt())
+            v.setDesc(msg)
+            kb.kb.append(self, 'fileUpload', v)
+            return
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )        
         
-        # Clean up
-        for tmp_file, tmp_file_name in self._file_list:
-            tmp_file.close()
-        
-    def _generate_urls( self, url, uploaded_file_name ):
+    def _generate_urls( self, domain_path_list, uploaded_file_name ):
         '''
         @parameter url: A URL where the uploaded_file_name could be
         @parameter uploaded_file_name: The name of the file that was uploaded to the server
@@ -190,12 +218,13 @@ class fileUpload(baseAuditPlugin):
         '''
         tmp = ['uploads', 'upload', 'file', 'user', 'files', 'downloads', 
                'download', 'up', 'down']
-
-        for default_path in tmp:
-            for sub_url in url.getDirectories():
-                possible_location = sub_url.urlJoin( default_path + '/' )
-                possible_location = possible_location.urlJoin( uploaded_file_name )
-                yield possible_location
+        
+        for url in domain_path_list:
+            for default_path in tmp:
+                for sub_url in url.getDirectories():
+                    possible_location = sub_url.urlJoin( default_path + '/' )
+                    possible_location = possible_location.urlJoin( uploaded_file_name )
+                    yield possible_location
         
     def getOptions( self ):
         '''
@@ -204,8 +233,8 @@ class fileUpload(baseAuditPlugin):
         ol = optionList()
         
         d = 'Extensions that w3af will try to upload through the form.'
-        h = 'When finding a form with a file upload, this plugin will try to upload a set of files'
-        h += ' with the extensions specified here.'
+        h = 'When finding a form with a file upload, this plugin will try to'
+        h += '  upload a set of files with the extensions specified here.'
         o = option('extensions', self._extensions, d, 'list', help=h)
 
         ol.add(o)
