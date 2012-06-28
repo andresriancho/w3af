@@ -64,6 +64,7 @@ class fingerprint_404:
         self._404_bodies = []
         self._lock = thread.allocate_lock()
         self._fingerprinted_paths = scalable_bloomfilter()
+        self._directory_uses_404_codes = scalable_bloomfilter()
         
         # It is OK to store 500 here, I'm only storing int as the key, and bool
         # as the value.
@@ -89,53 +90,53 @@ class fingerprint_404:
         if self._uri_opener is None:
             raise w3afException('404 fingerprint database was incorrectly initialized.')
         
-        with self._lock:        
-            # Get the filename extension and create a 404 for it
-            extension = url.getExtension()
-            domain_path = url.getDomainPath()
+   
+        # Get the filename extension and create a 404 for it
+        extension = url.getExtension()
+        domain_path = url.getDomainPath()
+        
+        # the result
+        self._response_body_list = []
+        
+        #
+        #   This is a list of the most common handlers, in some configurations, the 404
+        #   depends on the handler, so I want to make sure that I catch the 404 for each one
+        #
+        handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm' ]
+        handlers.extend( ['pl', 'cgi', 'xhtml', 'htmls', extension] )
+        handlers = list(set(handlers))
+        
+        args_list = []
+        
+        for extension in handlers:
+            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+            url404 = domain_path.urlJoin( rand_alnum_file )
+            args_list.append(url404)
+        
+        thread_manager.threadpool.map( self._send_404, args_list )
+        
             
-            # the result
-            self._response_body_list = []
-            
-            #
-            #   This is a list of the most common handlers, in some configurations, the 404
-            #   depends on the handler, so I want to make sure that I catch the 404 for each one
-            #
-            handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm' ]
-            handlers.extend( ['pl', 'cgi', 'xhtml', 'htmls', extension] )
-            handlers = list(set(handlers))
-            
-            args_list = []
-            
-            for extension in handlers:
-                rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
-                url404 = domain_path.urlJoin( rand_alnum_file )
-                args_list.append(url404)
-            
-            thread_manager.threadpool.map( self._send_404, args_list )
-            
+        #
+        #   I have the bodies in self._response_body_list , but maybe they 
+        #    all look the same, so I'll filter the ones that look alike.
+        #
+        result = [ self._response_body_list[0], ]
+        for i in self._response_body_list:
+            for j in self._response_body_list:
                 
-            #
-            #   I have the bodies in self._response_body_list , but maybe they 
-            #    all look the same, so I'll filter the ones that look alike.
-            #
-            result = [ self._response_body_list[0], ]
-            for i in self._response_body_list:
-                for j in self._response_body_list:
-                    
-                    if relative_distance_ge(i, j, IS_EQUAL_RATIO):
-                        # They are equal, we are ok with that
-                        continue
-                    else:
-                        # They are no equal, this means that we'll have to add this to the list
-                        result.append(j)
-            
-            # I don't need these anymore
-            self._response_body_list = None
-            
-            # And I return the ones I need
-            result = list(set(result))
-            om.out.debug('The 404 body result database has a length of ' + str(len(result)) +'.')
+                if relative_distance_ge(i, j, IS_EQUAL_RATIO):
+                    # They are equal, we are ok with that
+                    continue
+                else:
+                    # They are no equal, this means that we'll have to add this to the list
+                    result.append(j)
+        
+        # I don't need these anymore
+        self._response_body_list = None
+        
+        # And I return the ones I need
+        result = list(set(result))
+        om.out.debug('The 404 body result database has a length of ' + str(len(result)) +'.')
         
         self._404_bodies = result 
         self._already_analyzed = True
@@ -211,6 +212,12 @@ class fingerprint_404:
             return True
         elif domain_path in cf.cf.getData('never404'):
             return False        
+
+        #
+        #   The user configured setting. "If this string is in the response, then it is a 404"
+        #
+        if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
+            return True
         
         #
         #   This is the most simple case, we don't even have to think about this.
@@ -221,12 +228,15 @@ class fingerprint_404:
         #
         if http_response.getCode() == 404:
             return True
-            
+        
         #
-        #   The user configured setting. "If this string is in the response, then it is a 404"
+        #    Simple, if the file we requested is in a directory that's known to
+        #    return 404 codes for files that do not exist, AND this is NOT a 404
+        #    then we're return False!
         #
-        if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
-            return True
+        if domain_path in self._directory_uses_404_codes and \
+        http_response.getCode() != 404:
+            return False
             
         #
         #   Before actually working, I'll check if this response is in the LRU, if it is I just return
@@ -235,58 +245,57 @@ class fingerprint_404:
         if http_response.id in self.is_404_LRU:
             return self.is_404_LRU[ http_response.id ]
         
-        if self.need_analysis():
-            self.generate_404_knowledge( http_response.getURL() )
+        with self._lock:
+            if self.need_analysis():
+                self.generate_404_knowledge( http_response.getURL() )
         
         # self._404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one in order to have a fair comparison
         html_body = get_clean_body( http_response )
         
         #
-        #   Compare this response to all the 404's I have in my DB
+        #    Compare this response to all the 404's I have in my DB
         #
-        with self._lock:
-            for body_404_db in self._404_bodies:
-                
-                if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
-                    msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
-                    fmt = (http_response.getURL(), http_response.id, IS_EQUAL_RATIO)
-                    om.out.debug(msg % fmt)
-                    return self._fingerprinted_as_404( http_response )
-                else:
-                    # If it is not qe to one of the 404 responses I have in my DB,
-                    # that does not mean that it won't match the next one, so I simply
-                    # do nothing
-                    pass
+        #    Note: while self._404_bodies is a list, we can perform this for loop
+        #          without "with self._lock", read comments in stackoverflow:
+        #          http://stackoverflow.com/questions/9515364/does-python-freeze-the-list-before-for-loop
+        #
+        for body_404_db in self._404_bodies:
             
-            else:
-                #
-                #    I get here when the for ends and no body_404_db matched with the
-                #    html_body that was sent as a parameter by the user. This means one
-                #    of two things:
-                #        * There is not enough knowledge in self._404_bodies, or
-                #        * The answer is NOT a 404.
-                #
-                #    Because we want to reduce the amount of "false positives" that
-                #    this method returns, we'll perform one extra check before saying
-                #    that this is NOT a 404.
-                if http_response.getURL().getDomainPath() not in self._fingerprinted_paths: 
-                    if self._single_404_check( http_response, html_body ):
-                        self._404_bodies.append( html_body )
-                        self._fingerprinted_paths.add( http_response.getURL().getDomainPath() )
-                        
-                        msg = '"%s" (id:%s) is a 404 (similarity_index > %s). Adding new'
-                        msg += ' knowledge to the 404_bodies database (length=%s).'
-                        fmt = (http_response.getURL(), http_response.id, 
-                               IS_EQUAL_RATIO, len(self._404_bodies)) 
-                        om.out.debug(msg % fmt)
-                        
-                        return self._fingerprinted_as_404( http_response )
-                
-                msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
+            if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
+                msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
                 fmt = (http_response.getURL(), http_response.id, IS_EQUAL_RATIO)
                 om.out.debug(msg % fmt)
-                return self._fingerprinted_as_200( http_response )
+                return self._fingerprinted_as_404( http_response )
+        
+        else:
+            #
+            #    I get here when the for ends and no body_404_db matched with the
+            #    html_body that was sent as a parameter by the user. This means one
+            #    of two things:
+            #        * There is not enough knowledge in self._404_bodies, or
+            #        * The answer is NOT a 404.
+            #
+            #    Because we want to reduce the amount of "false positives" that
+            #    this method returns, we'll perform one extra check before saying
+            #    that this is NOT a 404.
+            if http_response.getURL().getDomainPath() not in self._fingerprinted_paths: 
+                if self._single_404_check( http_response, html_body ):
+                    self._404_bodies.append( html_body )
+                    self._fingerprinted_paths.add( http_response.getURL().getDomainPath() )
+                    
+                    msg = '"%s" (id:%s) is a 404 (similarity_index > %s). Adding new'
+                    msg += ' knowledge to the 404_bodies database (length=%s).'
+                    fmt = (http_response.getURL(), http_response.id, 
+                           IS_EQUAL_RATIO, len(self._404_bodies)) 
+                    om.out.debug(msg % fmt)
+                    
+                    return self._fingerprinted_as_404( http_response )
+            
+            msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
+            fmt = (http_response.getURL(), http_response.id, IS_EQUAL_RATIO)
+            om.out.debug(msg % fmt)
+            return self._fingerprinted_as_200( http_response )
 
     def _fingerprinted_as_404(self, http_response):
         '''
@@ -329,6 +338,10 @@ class fingerprint_404:
 
         response_404 = self._send_404( url_404, store=False )
         clean_response_404_body = get_clean_body(response_404)
+        
+        if response_404.getCode() == 404 and \
+        url_404.getDomainPath() not in self._directory_uses_404_codes:
+            self._directory_uses_404_codes.add( url_404.getDomainPath() )
         
         return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
         
