@@ -23,7 +23,6 @@ import re
 
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
-import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
@@ -36,13 +35,12 @@ from core.data.options.optionList import optionList
 
 
 
-
 class eval(baseAuditPlugin):
     '''
     Find insecure eval() usage.
 
-    @author: Viktor Gazdag ( woodspeed@gmail.com ) &
-        Andres Riancho ( andres.riancho@gmail.com )
+    @author: Viktor Gazdag ( woodspeed@gmail.com )
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     PRINT_STRINGS = (
@@ -109,8 +107,8 @@ class eval(baseAuditPlugin):
         mutants = createMutants(freq, print_strings, oResponse=oResponse)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_echo)
+                                      mutants,
+                                      self._analyze_echo)
 
 
     def _fuzz_with_time_delay(self, freq):
@@ -148,23 +146,17 @@ class eval(baseAuditPlugin):
         Analyze results of the _send_mutant method that was sent in the
         _fuzz_with_echo method.
         '''
-        with self._plugin_lock:
-            
-            #
-            #   I will only report the vulnerability once.
-            #
-            if self._has_no_bug(mutant):
-                
-                eval_error_list = self._find_eval_result(response)
-                for eval_error in eval_error_list:
-                    if not re.search(eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE):
-                        v = vuln.vuln(mutant)
-                        v.setPluginName(self.getName())
-                        v.setId(response.id)
-                        v.setSeverity(severity.HIGH)
-                        v.setName('eval() input injection vulnerability')
-                        v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
-                        kb.kb.append(self, 'eval', v)
+        eval_error_list = self._find_eval_result(response)
+        for eval_error in eval_error_list:
+            if not re.search(eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE)\
+            and self._has_no_bug(mutant):
+                v = vuln.vuln(mutant)
+                v.setPluginName(self.getName())
+                v.setId(response.id)
+                v.setSeverity(severity.HIGH)
+                v.setName('eval() input injection vulnerability')
+                v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
+                kb.kb.append(self, 'eval', v)
 
     def end(self):
         '''
