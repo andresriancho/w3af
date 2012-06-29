@@ -30,7 +30,8 @@ class TestWordnet(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                        'discovery': (PluginConfig('wordnet'),
+                        'discovery': (PluginConfig('wordnet',
+                                         ('wn_results', 20, PluginConfig.INT)),
                                       PluginConfig('webSpider',
                                          ('onlyForward', True, PluginConfig.BOOL)))
                         },

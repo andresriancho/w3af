@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from itertools import chain, repeat, izip
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.misc.levenshtein import relative_distance_lt
 
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.nltk_wrapper.nltk_wrapper import wn
-
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
@@ -42,76 +42,88 @@ class wordnet(baseDiscoveryPlugin):
         baseDiscoveryPlugin.__init__(self)
         
         # User defined parameters
-        self._wordnet_results = 2     
+        self._wordnet_results = 5
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                    (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
         
-        self._original_response = self._uri_opener.send_mutant(fuzzableRequest)        
+        original_response = self._uri_opener.send_mutant(fuzzable_request)        
+        original_response_repeat = repeat(original_response)
         
-        for mutant in self._generate_mutants( fuzzableRequest ):
-            #   Send the requests using threads:
-            self._run_async(meth=self._check_existance, args=(mutant,))
-            
-        # Wait for all threads to finish
-        self._join()
-        return self._fuzzableRequests
+        mutants = self._generate_mutants( fuzzable_request )
+        
+        args = izip(original_response_repeat, mutants)
+        
+        #   Send the requests using threads:
+        self._tm.threadpool.map(self._abc,
+                                args)
+        return self._fuzzable_requests
     
-    def _check_existance( self, mutant ):
+    def _abc(self,x_y):
+        print x_y
+    
+    def _check_existance( self, original_response, mutant ):
         '''
         Actually check if the mutated URL exists.
-        @return: None, all important data is saved to self._fuzzableRequests
+        
+        @return: None, all important data is saved to self._fuzzable_requests
         '''
         response = self._uri_opener.send_mutant(mutant)
-        if not is_404( response ) and self._original_response.getBody() != response.getBody() :
-            fuzzReqs = self._createFuzzableRequests( response )
-            self._fuzzableRequests.extend( fuzzReqs )
+        if not is_404( response ) and \
+        relative_distance_lt(original_response.body, response.body, 0.85):
+            fuzz_reqs = self._createFuzzableRequests( response )
+            self._fuzzable_requests.extend( fuzz_reqs )
     
-    def _generate_mutants( self, fuzzableRequest ):
+    def _generate_mutants( self, fuzzable_request ):
         '''
         Based on the fuzzable request, i'll search the wordnet database and generated
         A LOT of mutants.
         
         @return: A list of mutants.
         '''
-        result = []
-        result.extend( self._generate_fname( fuzzableRequest ) )
-        result.extend( self._generate_qs( fuzzableRequest ) )
-        return result
+        return chain( self._generate_fname( fuzzable_request ) ,
+                      self._generate_qs( fuzzable_request ) )
     
-    def _generate_qs( self, fuzzableRequest ):
+    def _generate_qs( self, fuzzable_request ):
         '''
         Check the URL query string.
         @return: A list of mutants.
         '''     
-        # The result
-        result = []
-
-        query_string = fuzzableRequest.getURI().querystring
+        query_string = fuzzable_request.getURI().querystring
         for parameter_name in query_string:
             # this for loop was added to address the repeated parameter name issue
             for element_index in xrange(len(query_string[parameter_name])):
                 wordnet_result = self._search_wn( query_string[parameter_name][element_index] )
-                result.extend( self._generate_URL_from_result( parameter_name, element_index, wordnet_result, fuzzableRequest ) )
-        return result
-
+                new_urls = self._generate_URL_from_wn_result( parameter_name, element_index, 
+                                                              wordnet_result, fuzzable_request )
+                for u in new_urls:
+                    yield u
+                
+                
     def _search_wn( self, word ):
         '''
         Search the wordnet for this word, based on user options.
+        
         @return: A list of related words.
         
-        >> wn.synsets('blue')[0].hypernyms()
-        [Synset('chromatic_color.n.01')]
-        >> wn.synsets('blue')[0].hypernyms()[0].hyponyms()
-        [Synset('orange.n.02'), Synset('brown.n.01'), Synset('green.n.01'), 
-         Synset('salmon.n.04'), Synset('red.n.01'), Synset('blue.n.01'), Synset('blond.n.02'), 
-         Synset('purple.n.01'), Synset('olive.n.05'), Synset('yellow.n.01'), Synset('pink.n.01'), 
-         Synset('pastel.n.01'), Synset('complementary_color.n.01')]
+        >>> wn = wordnet()
+        >>> wn_result = wn._search_wn('blue')
+        >>> len(wn_result) == wn._wordnet_results
+        True
+        >>> 'red' in wn_result
+        True
+        
         '''
+        if not word:
+            return []
+        
+        if word.isdigit():
+            return []
+        
         result = []
         
         # Now the magic that gets me a lot of results:
@@ -150,8 +162,8 @@ class wordnet(baseDiscoveryPlugin):
         # the most common words, not the strange and unused words.
         result = self._popularity_contest( result )
         
-        # left here for debugging!
-        #print word, result
+        # Respect the user settings
+        result = result[:self._wordnet_results]
         
         return result
     
@@ -170,31 +182,28 @@ class wordnet(baseDiscoveryPlugin):
             
         return result
     
-    def _generate_fname( self, fuzzableRequest ):
+    def _generate_fname( self, fuzzable_request ):
         '''
         Check the URL filenames
         @return: A list mutants.
         '''
-        url = fuzzableRequest.getURL()
+        url = fuzzable_request.getURL()
         fname = self._get_filename( url )
         
         wordnet_result = self._search_wn( fname )
-        result = self._generate_URL_from_result( None, None, wordnet_result, fuzzableRequest )
-                
-        return result
+        new_urls = self._generate_URL_from_wn_result( None, None, wordnet_result, fuzzable_request )
+        return new_urls
     
     def _get_filename( self, url ):
         '''
         @return: The filename, without the extension
         '''
         fname = url.getFileName()
-        splitted_fname = fname.split('.')
-        name = ''
-        if len(splitted_fname) != 0:
-            name = splitted_fname[0]
-        return name
+        ext = url.getExtension()
+        return fname.replace('.' + ext, '')
             
-    def _generate_URL_from_result( self, analyzed_variable, element_index, result_set, fuzzableRequest ):
+    def _generate_URL_from_wn_result( self, analyzed_variable, element_index, 
+                                      result_set, fuzzableRequest ):
         '''
         Based on the result, create the new URLs to test.
         
@@ -231,38 +240,32 @@ class wordnet(baseDiscoveryPlugin):
             return result
             
         else:
-            mutants = createMutants( fuzzableRequest , result_set, \
-                                                    fuzzableParamList=[analyzed_variable,] )
+            mutants = createMutants( fuzzableRequest , result_set,
+                                     fuzzableParamList=[analyzed_variable,] )
             return mutants
         
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Only use the first wnResults (wordnet results) from each category.'
-        o1 = option('wnResults', self._wordnet_results, d1, 'integer')
-        
         ol = optionList()
-        ol.add(o1)
+        
+        d = 'Only use the first wnResults (wordnet results) from each category.'
+        o = option('wn_results', self._wordnet_results, d, 'integer')
+        ol.add(o)
+        
         return ol
 
-    def setOptions( self, optionsMap ):
+    def setOptions( self, optionList ):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptions().
         
-        @parameter OptionList: A dictionary with the options for the plugin.
+        @param optionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        pass
+        self._wordnet_results = optionList['wn_results'].getValue()
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -270,16 +273,18 @@ class wordnet(baseDiscoveryPlugin):
         return '''
         This plugin finds new URL's using wn.
         
-        An example is the best way to explain what this plugin does, let's suppose that the input
-        for this plugin is:
+        An example is the best way to explain what this plugin does, let's 
+        suppose that the input for this plugin is:
             - http://a/index.asp?color=blue
     
-        The plugin will search the wordnet database for words that are related with "blue", and return for
-        example: "black" and "white". So the plugin requests this two URL's:
+        The plugin will search the wordnet database for words that are related
+        with "blue", and return for example: "black" and "white". So the plugin
+        requests this two URL's:
             - http://a/index.asp?color=black
             - http://a/index.asp?color=white
         
-        If the response for those URL's is not a 404 error, and has not the same body content, then we have 
-        found a new URI. The wordnet database is bundled with w3af, more information about wordnet can be
-        found at : http://wn.princeton.edu/
+        If the response for those URL's is not a 404 error, and has not the same
+        body content, then we have found a new URI. The wordnet database is
+        bundled with w3af, more information about wordnet can be found at:
+        http://wn.princeton.edu/
         '''
