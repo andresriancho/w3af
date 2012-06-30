@@ -20,135 +20,129 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import re
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+from itertools import izip, repeat
+
+import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
-
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
-import re
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class digitSum(baseDiscoveryPlugin):
     '''
-    Take an URL with a number ( index2.asp ) and try to find related files (index1.asp, index3.asp).
+    Take an URL with a number (index2.asp) and try to find related files (index1.asp, index3.asp).
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         self._already_visited = scalable_bloomfilter()
-        self._first_time = True
-        
-        # This is for the Referer
-        self._headers = {}
         
         # User options
         self._fuzz_images = False
         self._max_digit_sections = 4
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        Searches for new Url's by adding and substracting numbers to the url and the parameters.
+        Searches for new Url's by adding and substracting numbers to the url
+        and the parameters.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzableRequest instance that contains
+                                     (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
             
-        url = fuzzableRequest.getURL()
-        self._headers = {'Referer': url.url_string }
-        
-        if self._first_time:
-            self._first_time = False
-        
-        om.out.debug('digitSum is testing ' + fuzzableRequest.getURL() )
-        original_response = self._uri_opener.GET( fuzzableRequest.getURL(), \
-                                                 cache=True, headers=self._headers )
+        url = fuzzable_request.getURL()
+        headers = {'Referer': url.url_string }
+                
+        om.out.debug('digitSum is testing ' + fuzzable_request.getURL() )
+        original_response = self._uri_opener.GET( fuzzable_request.getURL(),
+                                                  cache=True, headers=headers )
         
         if original_response.is_text_or_html() or self._fuzz_images:
-            for fr in self._mangle_digits( fuzzableRequest ):
-                if fr.getURL() not in self._already_visited:
-                    self._already_visited.add( fr.getURI() )
-                    self._run_async(
-                                meth=self._do_request,
-                                args=(fr, original_response)
-                                )
-            # Wait for all threads to finish
-            self._join()
+            
+            fr_generator = self._mangle_digits( fuzzable_request )
+            response_repeater = repeat(original_response)
+            header_repeater = repeat(headers)
+            
+            args = izip(fr_generator, response_repeater, header_repeater)
+            
+            self._tm.threadpool.map_multi_args(self._do_request, args)
             
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
-            self._already_visited.add( fuzzableRequest.getURI() )
+            self._already_visited.add( fuzzable_request.getURI() )
                 
-        return self._fuzzableRequests
+        return self._fuzzable_requests
 
-    def _do_request(self, fuzzableRequest, original_resp):
+    def _do_request(self, fuzzable_request, original_resp, headers):
         '''
         Send the request.
-        @parameter fuzzableRequest: The fuzzable request object to modify.
-        @parameter original_resp: The response for the original request that was sent.
+        
+        @param fuzzable_request: The modified fuzzable request
+        @param original_resp: The response for the original request that was
+                              sent.
         '''
-        try:
-            response = self._uri_opener.GET(fuzzableRequest.getURI(), cache=True,
-                                                            headers=self._headers)
-        except KeyboardInterrupt, e:
-            raise e
-        else:
-            if not is_404( response ):
-                # We have two different cases:
-                # - If the URL's are different, then there is nothing to think about, we simply found
-                # something new!
-                #
-                # - If we changed the query string parameters, we have to check the content
-                is_new = False
-                if response.getURL() != original_resp.getURL():
-                    is_new = True
-                elif relative_distance_lt(response.getBody(), original_resp.getBody(), 0.7):
-                    is_new = True
-                
-                # Add it to the result.
-                if is_new:
-                    self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
-                    om.out.debug('digitSum plugin found new URI: "' + fuzzableRequest.getURI() + '".')
+        response = self._uri_opener.GET(fuzzable_request.getURI(),
+                                        cache=True,
+                                        headers=headers)
+        if not is_404( response ):
+            # We have two different cases:
+            #    - If the URLs are different, then there is nothing to think
+            #      about, we simply found something new!
+            #
+            #    - If we changed the query string parameters, we have to check 
+            #      the content
+            if response.getURL() != original_resp.getURL() or \
+            relative_distance_lt(response.getBody(),
+                                 original_resp.getBody(), 0.7):
+                self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
     
-    def _mangle_digits(self, fuzzableRequest):
+    def _mangle_digits(self, fuzzable_request):
         '''
-        Mangle those digits.
+        Mangle the digits (if any) in the fr URL.
+        
         @param fuzzableRequest: The original fuzzableRequest
-        @return: A list of fuzzableRequests.
+        @return: A generator which returns mangled fuzzable requests 
         '''
-        res = []
         # First i'll mangle the digits in the URL file
-        filename = fuzzableRequest.getURL().getFileName()
-        domain_path = fuzzableRequest.getURL().getDomainPath()
+        filename = fuzzable_request.getURL().getFileName()
+        domain_path = fuzzable_request.getURL().getDomainPath()
         for fname in self._do_combinations( filename ):
-            fr_copy = fuzzableRequest.copy()
+            fr_copy = fuzzable_request.copy()
             fr_copy.setURL( domain_path.urlJoin(fname) )
-            res.append( fr_copy )
+            
+            if fr_copy.getURI() not in self._already_visited:
+                self._already_visited.add( fr_copy.getURI() )
+                
+                yield fr_copy
         
         # Now i'll mangle the query string variables
-        if fuzzableRequest.getMethod() == 'GET':
-            for parameter in fuzzableRequest.getDc():
+        if fuzzable_request.getMethod() == 'GET':
+            for parameter in fuzzable_request.getDc():
                 
                 # to support repeater parameter names...
-                for element_index in xrange(len(fuzzableRequest.getDc()[parameter])):
+                for element_index in xrange(len(fuzzable_request.getDc()[parameter])):
                     
-                    for modified_value in self._do_combinations( fuzzableRequest.getDc()[ parameter ][element_index] ):
-                        fr_copy = fuzzableRequest.copy()
+                    combinations = self._do_combinations( fuzzable_request.getDc()
+                                                          [ parameter ][element_index] )
+                    for modified_value in fuzzable_request:
+                        fr_copy = fuzzable_request.copy()
                         new_dc = fr_copy.getDc()
                         new_dc[ parameter ][ element_index ] = modified_value
                         fr_copy.setDc( new_dc )
-                        res.append( fr_copy )
-        
-        return res
+                        if fr_copy.getURI() not in self._already_visited:
+                            self._already_visited.add( fr_copy.getURI() )
+                            
+                            yield fr_copy
         
     def _do_combinations( self, a_string ):
         '''
@@ -195,21 +189,22 @@ class digitSum(baseDiscoveryPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
-        h1 = 'It\'s safe to leave this option as the default.'
-        o1 = option('fuzzImages', self._fuzz_images, d1, 'boolean', help=h1)
-        
-        d2 = 'Set the top number of sections to fuzz'
-        h2 = 'It\'s safe to leave this option as the default. For example, with maxDigitSections'
-        h2 += ' = 1, this string wont be fuzzed: abc123def234 ; but this one will abc23ldd.'
-        o2 = option('maxDigitSections', self._max_digit_sections, d2, 'integer', help=h2)
-
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
+        
+        d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
+        h = 'It\'s safe to leave this option as the default.'
+        o = option('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
+        ol.add(o)
+        
+        d = 'Set the top number of sections to fuzz'
+        h = 'It\'s safe to leave this option as the default. For example, with maxDigitSections'
+        h += ' = 1, this string wont be fuzzed: abc123def234 ; but this one will abc23ldd.'
+        o = option('maxDigitSections', self._max_digit_sections, d, 'integer', help=h)
+        ol.add(o)
+                
         return ol
         
-    def setOptions( self, optionsMap ):
+    def setOptions( self, optionList ):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of getOptions().
@@ -217,34 +212,30 @@ class digitSum(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzz_images = optionsMap['fuzzImages'].getValue()
-        self._max_digit_sections = optionsMap['maxDigitSections'].getValue()
-    
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
+        self._fuzz_images = optionList['fuzzImages'].getValue()
+        self._max_digit_sections = optionList['maxDigitSections'].getValue()
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to find new URL's by changing the numbers that are present on it.
+        This plugin tries to find new URL's by changing the numbers that are
+        present on it.
         
         Two configurable parameters exist:
             - fuzzImages
             - maxDigitSections
         
-        An example will clarify what this plugin does, let's suppose that the input for this plugin is:
+        An example will clarify what this plugin does, let's suppose that the
+        input for this plugin is:
             - http://host.tld/index1.asp
             
         This plugin will request:
             - http://host.tld/index0.asp
             - http://host.tld/index2.asp
             
-        If the response for the newly generated URL's is not an 404 error, then the new URL is a valid one that
-        can contain more information and injection points.      
+        If the response for the newly generated URL's is not an 404 error, then
+        the new URL is a valid one that can contain more information and 
+        injection points.      
         '''
