@@ -20,21 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, gobject
-
 import urllib2
 import sys
-import re, Queue, threading
-from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
+import re, Queue
 import webbrowser
-import core.controllers.outputManager as om
-from extlib.xdot import xdot
 
-# To show request and responses
+from multiprocessing.dummy import Process, Event
+
+from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
+from extlib.xdot import xdot
 from core.data.db.history import HistoryItem
+
 import core.data.kb.knowledgeBase as kb
+import core.controllers.outputManager as om
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"
+
 
 class FullKBTree(kbtree.KBTree):
     '''A tree showing all the info.
@@ -299,8 +301,8 @@ class URLsGraph(gtk.VBox):
 
         # let's draw!
         q = Queue.Queue()
-        evt = threading.Event()
-        th = threading.Thread(target=self._draw_real, args=(q,evt))
+        evt = Event()
+        th = Process(target=self._draw_real, args=(q,evt))
         th.start()
         gobject.timeout_add(500, self._draw_end, q, evt)
         return False

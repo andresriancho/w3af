@@ -19,29 +19,25 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import sys
+import time
+import select
 
+from multiprocessing.dummy import Process, Event
+
+import core.controllers.miscSettings as ms
+import core.ui.consoleUi.io.console as term
+
+from core.ui.consoleUi.util import *
 from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.plugins import *
 from core.ui.consoleUi.profiles import *
 from core.ui.consoleUi.exploit import *
 from core.ui.consoleUi.kbMenu import *
 from core.ui.consoleUi.bug_report import bug_report_menu
-import core.controllers.miscSettings as ms
-#from core.ui.consoleUi.session import *
-from core.ui.consoleUi.util import *
-import core.ui.consoleUi.io.console as term
-
 from core.controllers.w3afException import *
 from core.controllers.misc.get_w3af_version import get_w3af_version
-
-# Provide a progress bar for all plugins.
 from core.ui.consoleUi.progress_bar import progress_bar
-import threading
-import sys
-import time
-
-# This is to perform the "print scan status" in show_progress_on_request()
-import select
 
 
 class rootMenu(menu):
@@ -82,7 +78,11 @@ class rootMenu(menu):
             msg += ' the scan output in the console.'
             print msg
         
-        self._scan_thread = threading.Thread(target=self._real_start)
+        # Note that I'm NOT starting this in a new multiprocess Process
+        # please note the multiprocessing.dummy , this is required because
+        # I want to start new threads inside this thread and there is a bug
+        # with that http://bugs.python.org/issue10015
+        self._scan_thread = Process(target=self._real_start)
         self._scan_thread.start()
         try:
             # let the core start

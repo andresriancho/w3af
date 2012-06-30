@@ -35,6 +35,8 @@ import threading, shelve, os
 import webbrowser, time
 import sys
 
+from multiprocessing.dummy import Process
+
 import core.controllers.outputManager as om
 import core.controllers.miscSettings
 import core.data.kb.config as cf
@@ -589,7 +591,7 @@ class MainApp(object):
                 self._scan_finished()
         
         # start real work in background, and start supervising if it ends                
-        threading.Thread(target=startScanWrap).start()
+        Process(target=startScanWrap).start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
         self.sb(_("The scan has started"))
