@@ -131,13 +131,13 @@ class OnlyOptions(gtk.VBox):
         Also, the configurable widget gets a tooltip for a small description.
         '''
         table = entries.EasyTable(len(options), 3)
-        tooltips = gtk.Tooltips()
+
         for i,opt in enumerate(options):
             titl = gtk.Label(opt.getName())
             titl.set_alignment(0.0, 0.5)
             widg = entries.wrapperWidgets[opt.getType()](self._changedWidget, opt )            
             opt.widg = widg
-            tooltips.set_tip(widg, opt.getDesc())
+            widg.set_tooltip_text( opt.getDesc() )
             if opt.getHelp():
                 helpbtn = entries.SemiStockButton("", gtk.STOCK_INFO)
                 cleanhelp = helpers.cleanDescription(opt.getHelp())

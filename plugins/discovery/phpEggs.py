@@ -19,23 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import hashlib
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.misc.levenshtein import relative_distance
 from core.controllers.w3afException import w3afRunOnce, w3afException
-
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
-
-import md5
+from core.controllers.misc.decorators import runonce
+from core.controllers.w3afException import w3afException, w3afRunOnce
 
 
 class phpEggs(baseDiscoveryPlugin):
@@ -45,7 +40,6 @@ class phpEggs(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._exec = True
         
         # Already analyzed extensions
         self._already_analyzed_ext = scalable_bloomfilter()
@@ -216,84 +210,79 @@ class phpEggs(baseDiscoveryPlugin):
                 ('7675f1d01c927f9e6a4752cf182345a2', 'Zend Logo')]
         self._egg_DB['5.2.14'] = [
                 ('935b67af76c36bd96e59cf6bc158389a', 'PHP Credits')]
-        
-    def discover(self, fuzzableRequest ):
+    
+    @runonce(exc_class=w3afRunOnce)
+    def discover(self, fuzzable_request ):
         '''
         Nothing strange, just do some GET requests to the eggs and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         '''
-        if not self._exec:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # Get the extension of the URL (.html, .php, .. etc)
-            ext = fuzzableRequest.getURL().getExtension()
+        # Get the extension of the URL (.html, .php, .. etc)
+        ext = fuzzable_request.getURL().getExtension()
+        
+        # Only perform this analysis if we haven't already analyzed this type of extension
+        # OR if we get an URL like http://f00b5r/4/     (Note that it has no extension)
+        # This logic will perform some extra tests... but we won't miss some special cases
+        # Also, we aren't doing something like "if 'php' in ext:" because we never depend
+        # on something so changable as extensions to make decisions.
+        if ext == '' or ext not in self._already_analyzed_ext:
             
-            # Only perform this analysis if we haven't already analyzed this type of extension
-            # OR if we get an URL like http://f00b5r/4/     (Note that it has no extension)
-            # This logic will perform some extra tests... but we won't miss some special cases
-            # Also, we aren't doing something like "if 'php' in ext:" because we never depend
-            # on something so changable as extensions to make decisions.
-            if ext == '' or ext not in self._already_analyzed_ext:
-                
-                # Init some internal variables
-                GET_results = []
-                original_response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
-                
-                # Perform the GET requests to see if we have a phpegg
-                for egg, egg_desc in self._get_eggs():
-                    egg_URL = fuzzableRequest.getURL().uri2url().urlJoin( egg )
-                    try:
-                        response = self._uri_opener.GET( egg_URL, cache=True )
-                    except KeyboardInterrupt,e:
-                        raise e
-                    except w3afException, w3:
-                        raise w3
-                    else:
-                        GET_results.append( (response, egg_desc, egg_URL) )
-                        
+            # Init some internal variables
+            GET_results = []
+            original_response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
+            
+            # Perform the GET requests to see if we have a phpegg
+            for egg, egg_desc in self._get_eggs():
+                egg_URL = fuzzable_request.getURL().uri2url().urlJoin( egg )
+                try:
+                    response = self._uri_opener.GET( egg_URL, cache=True )
+                except KeyboardInterrupt,e:
+                    raise e
+                except w3afException, w3:
+                    raise w3
+                else:
+                    GET_results.append( (response, egg_desc, egg_URL) )
+                    
+            #
+            #   Now I analyze if this is really a PHP eggs thing, or simply a response that
+            #   changes a lot on each request. Before, I had something like this:
+            #
+            #       if relative_distance(original_response.getBody(), response.getBody()) < 0.1:
+            #
+            #   But I got some reports about false positives with this approach, so now I'm
+            #   changing it to something a little bit more specific.
+            images = 0
+            not_images = 0
+            for response, egg_desc, egg_URL in GET_results:
+                if 'image' in response.content_type:
+                    images += 1
+                else:
+                    not_images += 1
+            
+            if images == 3 and not_images == 1:
                 #
-                #   Now I analyze if this is really a PHP eggs thing, or simply a response that
-                #   changes a lot on each request. Before, I had something like this:
+                #   The remote web server has expose_php = On. Report all the findings.
                 #
-                #       if relative_distance(original_response.getBody(), response.getBody()) < 0.1:
-                #
-                #   But I got some reports about false positives with this approach, so now I'm
-                #   changing it to something a little bit more specific.
-                images = 0
-                not_images = 0
                 for response, egg_desc, egg_URL in GET_results:
-                    if 'image' in response.content_type:
-                        images += 1
-                    else:
-                        not_images += 1
-                
-                if images == 3 and not_images == 1:
-                    #
-                    #   The remote web server has expose_php = On. Report all the findings.
-                    #
-                    for response, egg_desc, egg_URL in GET_results:
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('PHP Egg - ' + egg_desc)
-                        i.setURL( egg_URL )
-                        desc = 'The PHP framework running on the remote server has a "'
-                        desc += egg_desc +'" easter egg, access to the PHP egg is possible'
-                        desc += ' through the URL: "'+  egg_URL + '".'
-                        i.setDesc( desc )
-                        kb.kb.append( self, 'eggs', i )
-                        om.out.information( i.getDesc() )
-                        
-                        #   Only run once.
-                        self._exec = False
-                
-                    # analyze the info to see if we can identify the version
-                    self._analyze_egg( GET_results )
-                
-                # Now we save the extension as one of the already analyzed
-                if ext != '':
-                    self._already_analyzed_ext.add(ext)
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('PHP Egg - ' + egg_desc)
+                    i.setURL( egg_URL )
+                    desc = 'The PHP framework running on the remote server has a "'
+                    desc += egg_desc +'" easter egg, access to the PHP egg is possible'
+                    desc += ' through the URL: "'+  egg_URL + '".'
+                    i.setDesc( desc )
+                    kb.kb.append( self, 'eggs', i )
+                    om.out.information( i.getDesc() )
+                    
+                # analyze the info to see if we can identify the version
+                self._analyze_egg( GET_results )
+            
+            # Now we save the extension as one of the already analyzed
+            if ext != '':
+                self._already_analyzed_ext.add(ext)
         
         return []
     
@@ -307,7 +296,8 @@ class phpEggs(baseDiscoveryPlugin):
         else:
             cmp_list = []
             for r in response:
-                cmp_list.append( (md5.new(r[0].getBody()).hexdigest(), r[1] ) )
+                hash = hashlib.md5( r[0].getBody() ).hexdigest()
+                cmp_list.append( (hash, r[1] ) )
             cmp_set = set( cmp_list )
             
             found = False
@@ -358,23 +348,6 @@ class phpEggs(baseDiscoveryPlugin):
         res.append( ('?=PHPE9568F36-D428-11d2-A769-00AA001ACF42', 'PHP Logo 2') )
         return res
         
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self, optionsMap ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter optionsMap: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-        
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
@@ -387,12 +360,19 @@ class phpEggs(baseDiscoveryPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to find the documented easter eggs that exist in PHP and identify
-        the remote PHP version using the easter egg content. The easter eggs that this plugin
-        verifies are:
+        This plugin tries to find the documented easter eggs that exist in PHP
+        and identify the remote PHP version using the easter egg content. The
+        easter eggs that this plugin verifies are:
         
-            - http://php.net/?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000 ( PHP Credits )
-            - http://php.net/?=PHPE9568F34-D428-11d2-A769-00AA001ACF42  ( PHP Logo )
-            - http://php.net/?=PHPE9568F35-D428-11d2-A769-00AA001ACF42  ( Zend Logo )
-            - http://php.net/?=PHPE9568F36-D428-11d2-A769-00AA001ACF42  ( PHP Logo 2 )
+        PHP Credits
+            - http://php.net/?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000
+        
+        PHP Logo
+            - http://php.net/?=PHPE9568F34-D428-11d2-A769-00AA001ACF42
+        
+        Zend Logo
+            - http://php.net/?=PHPE9568F35-D428-11d2-A769-00AA001ACF42
+        
+        PHP Logo 2
+            - http://php.net/?=PHPE9568F36-D428-11d2-A769-00AA001ACF42
         '''

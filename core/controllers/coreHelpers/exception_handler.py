@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import md5
+import hashlib
 import random
 import threading
 import traceback
@@ -195,7 +195,7 @@ class ExceptionHandler(object):
             hash_data = ''
             hash_data += str(random.randint(1,50000000) * random.randint(1,50000000)) 
             
-            m = md5.new(hash_data)
+            m = hashlib.md5(hash_data)
             self._scan_id = m.hexdigest()[:10]
         
         return self._scan_id

@@ -476,7 +476,6 @@ class FilterOptions(gtk.HBox, Preferences):
         super(FilterOptions,self).show()
 
     def _initOptionsView(self):
-        tooltips = gtk.Tooltips()
         for section, optList in self.options.items():
             frame = gtk.Frame()
             label = gtk.Label('<b>%s</b>' % self.sections[section])
@@ -492,7 +491,7 @@ class FilterOptions(gtk.HBox, Preferences):
                 widg = wrapperWidgets[opt.getType()](self._changedWidget, opt)
                 titl.set_mnemonic_widget(widg)
                 opt.widg = widg
-                tooltips.set_tip(widg, opt.getHelp())
+                widg.set_tooltip_text( opt.getHelp() )
                 table.autoAddRow(titl, widg)
                 table.show()
             frame.add(table)

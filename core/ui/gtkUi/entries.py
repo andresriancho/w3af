@@ -506,8 +506,8 @@ class AdvisedEntry(gtk.Entry):
         self.alertb = alertb
         if self.alertb is not None:
             self.alertb(self, False)
-        tooltips = gtk.Tooltips()
-        tooltips.set_tip(self, message)
+
+        self.set_tooltip_text( message )
 
         if alertmodif is not None:
             self.alertmodif = alertmodif
@@ -1106,7 +1106,7 @@ class ConfigOptions(gtk.VBox, Preferences):
         super(ConfigOptions,self).show()
 
     def _initOptionsView(self):
-        tooltips = gtk.Tooltips()
+
         for section, optList in self.options.items():
             frame = gtk.Frame()
             label = gtk.Label('<b>%s</b>' % self.sections[section])
@@ -1123,7 +1123,7 @@ class ConfigOptions(gtk.VBox, Preferences):
                 if hasattr(widg, 'set_width_chars'):
                     widg.set_width_chars(50)
                 opt.widg = widg
-                tooltips.set_tip(widg, opt.getHelp())
+                widg.set_tooltip_text( opt.getHelp())
                 table.autoAddRow(titl, widg)
                 self.widgets_status[widg] = (titl, opt.getDesc(), "<b>%s</b>" % opt.getDesc())
                 table.show()

@@ -93,7 +93,6 @@ class Searchable(object):
 
     def _build_search(self, widget):
         '''Builds the search bar.'''
-        tooltips = gtk.Tooltips()
         self.srchtab = gtk.HBox()
         # close button
         close = gtk.Image()
@@ -107,7 +106,7 @@ class Searchable(object):
         self.srchtab.pack_start(label, expand=False, fill=False, padding=3)
         # entry
         self.search_entry = gtk.Entry()
-        tooltips.set_tip(self.search_entry, _("Type here the phrase you want to find"))
+        self.search_entry.set_tooltip_text( _("Type here the phrase you want to find") )
         self.search_entry.connect("activate", self._find, "next")
         self.search_entry.connect("changed", self._find, "find")
         self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
@@ -118,7 +117,7 @@ class Searchable(object):
             but_text = 'Next'
         butn = SemiStockButton(but_text, gtk.STOCK_GO_DOWN)
         butn.connect("clicked", self._find, "next")
-        tooltips.set_tip(butn, _("Find the next ocurrence of the phrase"))
+        butn.set_tooltip_text( _("Find the next ocurrence of the phrase") )
         self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
         # find previous button
         if self.small:
@@ -127,7 +126,7 @@ class Searchable(object):
             but_text = ('Previous')
         butp = SemiStockButton(but_text, gtk.STOCK_GO_UP)
         butp.connect("clicked", self._find, "previous")
-        tooltips.set_tip(butp, _("Find the previous ocurrence of the phrase"))
+        butp.set_tooltip_text( _("Find the previous ocurrence of the phrase"))
         self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
         # make last two buttons equally width
         wn,hn = butn.size_request()

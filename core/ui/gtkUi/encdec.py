@@ -26,8 +26,7 @@ import threading
 import gobject
 import urllib
 import base64
-import sha
-import md5
+import hashlib
 import random
 
 import core.data.parsers.encode_decode as encode_decode
@@ -247,7 +246,7 @@ def sha_encode(t):
     >>> sha_encode("Hola mundo")
     'c083106c930790151165b95bd11860724e3836cb'
     '''
-    s = sha.new(t)
+    s = hashlib.sha1(t)
     return s.hexdigest()
 
 def md5_encode(t):
@@ -256,7 +255,7 @@ def md5_encode(t):
     >>> md5_encode("Hola mundo")
     'f822102f4515609fc31927a84c6db7f8'
     '''
-    m = md5.new(t)
+    m = hashlib.md5(t)
     return m.hexdigest()
 
 def b64encode(t):

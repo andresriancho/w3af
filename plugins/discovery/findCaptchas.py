@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import sha
+import hashlib
 
 import core.controllers.outputManager as om
 
@@ -122,7 +122,7 @@ class findCaptchas(baseDiscoveryPlugin):
                 for image_response in result_iter:
                     if image_response.is_image():
                         img_src = image_response.getURI()
-                        img_hash = sha.new(image_response.getBody()).hexdigest()
+                        img_hash = hashlib.sha1(image_response.getBody()).hexdigest()
                         res.append( (img_src, img_hash) ) 
         
         return res
