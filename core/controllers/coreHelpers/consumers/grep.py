@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import threading
 import sys
+
+from multiprocessing.dummy import Queue, Process
 
 from .constants import FINISH_CONSUMER
 
@@ -30,7 +31,7 @@ from core.controllers.exception_handling.helpers import pprint_plugins
 
 
 
-class grep(threading.Thread):
+class grep(Process):
     '''
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.

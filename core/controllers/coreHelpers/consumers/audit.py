@@ -19,18 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import threading
-import Queue
+from multiprocessing.dummy import Queue, Process, Pool
 
 import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
-
 from core.controllers.w3afException import w3afException
-from core.controllers.threads.threadpool import Pool
 
 
-class audit(threading.Thread):
+class audit(Process):
     '''
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the discovery plugins and identified vulnerabilities by performing various
@@ -47,10 +44,10 @@ class audit(threading.Thread):
         
         self._in_queue = in_queue
         # See documentation in the properly below
-        self._out_queue = Queue.Queue()
+        self._out_queue = Queue()
         self._audit_plugins = audit_plugins
         self._w3af_core = w3af_core
-        self._audit_threadpool = Pool(10, queue_size=40)
+        self._audit_threadpool = Pool(10)
     
     def run(self):
         '''

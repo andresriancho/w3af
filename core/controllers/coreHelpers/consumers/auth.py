@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import threading
 import sys
-import Queue
+
+from multiprocessing.dummy import Queue, Process
 
 from .constants import FINISH_CONSUMER, FORCE_LOGIN
 
@@ -31,7 +31,7 @@ from core.controllers.threads.threadManager import thread_manager as tm
 
 
 
-class auth(threading.Thread):
+class auth(Process):
     '''
     Thread that logins into the application every N seconds.
     '''
