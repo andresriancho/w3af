@@ -71,7 +71,7 @@ class grep(Process):
 
                 for grep_plugin in self._grep_plugins:
                     try:
-                        grep_plugin.grep( request, response )
+                        grep_plugin.grep_wrapper( request, response )
                     except Exception, e:
                         # Smart error handling, much better than just crashing.
                         # Doing this here and not with something similar to:
