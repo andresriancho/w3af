@@ -19,28 +19,25 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.basePlugin.basePlugin import basePlugin
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
+
+from core.controllers.basePlugin.basePlugin import basePlugin
 
 
 class baseGrepPlugin(basePlugin):
     '''
     This is the base class for grep plugins, all grep plugins should
-    inherit from it and implement the following methods :
-        1. testResponse(...)
-        2. setOptions( OptionList )
-        3. getOptions()
+    inherit from it and implement the following method:
+        1. grep(request, response)
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
         basePlugin.__init__(self)
-        self._uri_opener = None
 
-    def grep_wrapper(self, fuzzableRequest, response):
+    def grep_wrapper(self, fuzzable_request, response):
         '''
         This method tries to find patterns on responses.
         
@@ -48,47 +45,27 @@ class baseGrepPlugin(basePlugin):
         do your searches in _testResponse().
         
         @param response: This is the httpResponse object to test.
-        @param fuzzableRequest: This is the fuzzable request object that
+        @param fuzzable_request: This is the fuzzable request object that
             generated the current response being analyzed.
         @return: If something is found it must be reported to the Output
             Manager and the KB.
         '''
         if response.getFromCache():
-            #om.out.debug('Grep plugins not testing: %s cause it was '
-            #             'already tested.' % repr(fuzzableRequest))
-            pass
-        elif fuzzableRequest.getURL().getDomain() in cf.cf.getData('targetDomains'):
-            self.grep(fuzzableRequest, response)
-        else:
-            #om.out.debug('Grep plugins not testing: %s cause it aint a '
-            #             'target domain.' % fuzzableRequest.getURL())
-            pass
+            return
+        
+        if response.getURL().getDomain() in cf.cf.getData('targetDomains'):
+            self.grep(fuzzable_request, response)
     
-    def grep(self, fuzzableRequest, response):
+    def grep(self, fuzzable_request, response):
         '''
         Analyze the response.
         
-        @parameter fuzzableRequest: The request that was sent
-        @parameter response: The HTTP response obj
+        @param fuzzable_request: The request that was sent
+        @param response: The HTTP response obj
         '''
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
-            
-    def _testResponse(self, request, response):
-        '''
-        This method tries to find patterns on responses.
-        
-        This method MUST be implemented on every plugin.
-        
-        @param response: This is the htmlString response to test
-        @param request: This is the request object that generated the
-            current response being analyzed.
-        @return: If something is found it must be reported to the Output
-            Manager and the KB.
-        '''
-        raise NotImplementedError('Plugin "%s" is not implementing required '
-                              'method _testResponse' % self.__class__.__name__)
-        
+                    
     def setUrlOpener(self, foo):
         pass
         
