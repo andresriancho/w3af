@@ -20,50 +20,49 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-'''
-This module defines a factory function that is used around the project.
-
-@author: Andres Riancho ( andres.riancho@gmail.com )
-'''
 import sys
 import traceback
+
 from core.controllers.w3afException import w3afException
 
 
-def factory(moduleName, *args):
+def factory(module_name, *args):
     '''
     This function creates an instance of a class thats inside a module
     with the same name.
     
     Example :
-    >> f00 = factory( 'plugins.discovery.googleSpider' )
-    >> print f00
-    <googleSpider.googleSpider instance at 0xb7a1f28c>
+    >>> spider = factory( 'plugins.discovery.googleSpider' )
+    >>> spider.getName()
+    'googleSpider'
     
-    @parameter moduleName: What plugin type do you need?
+    
+    @param module_name: What plugin type do you need?
     @return: An instance.
     '''
     try:
-        __import__(moduleName)
+        __import__(module_name)
     except ImportError,  ie:
-        raise w3afException('There was an error while importing '+ moduleName + ': "' + str(ie) + '".')
+        msg = 'There was an error while importing %s: "%s".'
+        raise w3afException( msg % (module_name, ie) )
     except Exception, e:
-        raise w3afException('Error while loading plugin "'+ moduleName + '". Exception: ' + str(e) )
+        msg = 'There was an error while importing %s: "%s".'
+        raise w3afException( msg % (module_name, e) )
     else:
         
-        className = moduleName.split('.')[-1]
+        class_name = module_name.split('.')[-1]
         
         try:
-            aModule = sys.modules[moduleName]
-            aClass = getattr(aModule , className)
+            module_inst = sys.modules[module_name]
+            a_class = getattr(module_inst , class_name)
         except:
-            raise w3afException('The requested plugin ("'+ moduleName + '") doesn\'t have a correct format.')
+            msg = 'The requested plugin ("%s") doesn\'t have a correct format.'
+            raise w3afException( msg % module_name)
         else:
             try:
-                inst = aClass(*args)
+                inst = a_class(*args)
             except Exception, e:
-                msg = 'Failed to get an instance of "' + className
-                msg += '". Original exception: "' + str(e) + '".'
-                msg += 'Traceback for this error: ' + str( traceback.format_exc() )
-                raise w3afException(msg)
+                msg = 'Failed to get an instance of "%s". Original exception: '
+                msg += '"%s". Traceback for this error: %s'
+                raise w3afException(msg % (class_name, e, traceback.format_exc()))
             return inst
