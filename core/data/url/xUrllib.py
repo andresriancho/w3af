@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from collections import deque
 import httplib
 import os
 import re
@@ -31,6 +30,7 @@ import traceback
 import urllib, urllib2
 import sqlite3
 
+from collections import deque
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
@@ -66,7 +66,7 @@ class xUrllib(object):
         self.settings = urlOpenerSettings.urlOpenerSettings()
         self._opener = None
         self._memoryUsageCounter = 0
-        self._non_targets = set()
+        self._non_targets = None
         
         # For error handling
         self._lastRequestFailed = False
@@ -83,8 +83,10 @@ class xUrllib(object):
     
     def pause(self, pauseYesNo):
         '''
-        When the core wants to pause a scan, it calls this method, in order to freeze all actions
-        @parameter pauseYesNo: True if I want to pause the scan; False to un-pause it.
+        When the core wants to pause a scan, it calls this method, in order to
+        freeze all actions
+        
+        @param pauseYesNo: True if I want to pause the scan; False to un-pause it.
         '''
         self._paused = pauseYesNo
         
@@ -170,8 +172,9 @@ class xUrllib(object):
         If the user configured w3af to ignore a URL, we are going to be applying
         that configuration here. This is the lowest layer inside w3af.
         '''
-        if not self._non_targets:
+        if self._non_targets is None:
             non_targets = cf.cf.getData('nonTargets') or []
+            self._non_targets = set()
             self._non_targets.update([nt_url.uri2url() for nt_url in non_targets])
              
         if uri.uri2url() in self._non_targets:
@@ -268,11 +271,12 @@ class xUrllib(object):
         that where previously set in urlOpenerSettings.py .
         
         @param uri: This is the URI to GET, with the query string included.
-        @param data: Only used if the uri parameter is really a URL. The data will be
-        converted into a string and set as the URL object query string before sending.
+        @param data: Only used if the uri parameter is really a URL. The data 
+                     will be converted into a string and set as the URL object
+                     query string before sending.
         @param headers: Any special headers that will be sent with this request
-
-        @param cache: Should the library search the local cache for a response before sending it to the wire?
+        @param cache: Should the library search the local cache for a response
+                      before sending it to the wire?
         @param grep: Should grep plugins be applied to this request/response?
 
         @return: An httpResponse object.
@@ -491,7 +495,7 @@ class xUrllib(object):
         res = None
 
         req.get_from_cache = cache
-        
+
         try:
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
@@ -520,7 +524,7 @@ class xUrllib(object):
                 del self._errorCount[req_id]
 
             # Reset errors counter
-            self._zeroGlobalErrorCount()
+            self._zero_global_error_count()
         
             if grep:
                 self._grep(req, httpResObj)
@@ -599,7 +603,7 @@ class xUrllib(object):
                 msg = ('%s %s with data: "%s" returned HTTP code "%s"'
                 % (req.get_method(), original_url, urllib.unquote_plus(rdata),
                    res.code))
-
+            
             from_cache = hasattr(res, 'from_cache')
             flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache, grep)
             msg += flags
@@ -618,7 +622,7 @@ class xUrllib(object):
             req_id = id(req)
             if req_id in self._errorCount:
                 del self._errorCount[req_id]
-            self._zeroGlobalErrorCount()
+            self._zero_global_error_count()
 
             if grep:
                 self._grep(req, httpResObj)
@@ -738,7 +742,7 @@ class xUrllib(object):
         '''
         self._ignore_errors_conf = yes_no
             
-    def _zeroGlobalErrorCount( self ):
+    def _zero_global_error_count( self ):
         if self._lastRequestFailed or self._last_errors:
             self._lastRequestFailed = False
             self._last_errors.clear()
