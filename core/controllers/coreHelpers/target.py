@@ -22,26 +22,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import urllib2
 
-from core.controllers.configurable import configurable
 import core.data.kb.config as cf
 
-from core.data.parsers.urlParser import url_object
+from core.controllers.configurable import configurable
 from core.controllers.w3afException import w3afException
 
-# options
+from core.data.parsers.urlParser import url_object
 from core.data.options.option import option
 from core.data.options.comboOption import comboOption
 from core.data.options.optionList import optionList
 
 cf.cf.save('targets', [] )
-cf.cf.save('targetDomains', [] )
+cf.cf.save('targetDomains', set() )
 cf.cf.save('baseURLs', [] )
 
 
 class w3af_core_target(configurable):
     '''
-    A class that acts as an interface for the user interfaces, so they can configure the target
-    settings using getOptions and SetOptions.
+    A class that acts as an interface for the user interfaces, so they can 
+    configure the target settings using getOptions and SetOptions.
     '''
     
     def __init__( self ):
@@ -50,13 +49,14 @@ class w3af_core_target(configurable):
         
         # Some internal variables
         self._operatingSystems = ['unknown','unix','windows']
-        self._programmingFrameworks = ['unknown', 'php','asp','asp.net','java','jsp','cfm','ruby','perl']
+        self._programmingFrameworks = ['unknown', 'php','asp','asp.net','java',
+                                       'jsp','cfm','ruby','perl']
 
     def clear(self):
         cf.cf.save('targets', [] )
         cf.cf.save('targetOS', 'unknown' )
         cf.cf.save('targetFramework', 'unknown' )
-        cf.cf.save('targetDomains', [] )
+        cf.cf.save('targetDomains', set() )
         cf.cf.save('baseURLs', [] )
         cf.cf.save('sessionName', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
                 
@@ -169,7 +169,7 @@ class w3af_core_target(configurable):
         
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', target_url_objects)
-        cf.cf.save('targetDomains', [ i.getDomain() for i in target_url_objects ] )
+        cf.cf.save('targetDomains', set([ u.getDomain() for u in target_url_objects ]) )
         cf.cf.save('baseURLs', [ i.baseUrl() for i in target_url_objects ] )
         
         if target_url_objects:
