@@ -32,15 +32,15 @@
 __all__ = ('timelimited', 'TimeLimited', 'TimeLimitExpired')
 __version__ = '4  2009-06-08'
 
-from threading import Thread
+from multiprocessing.dummy import Process
 
 # The #PYCHOK marks are intended for postprocessing
 # by <http://code.activestate.com/recipes/546532/>
 
 try:  # UGLY! private method __stop
-    _Thread_stop = Thread._Thread__stop  #PYCHOK false
+    _Thread_stop = Process._Thread__stop  #PYCHOK false
 except AttributeError:  # _stop in Python 3.0
-    _Thread_stop = Thread._stop  #PYCHOK expected
+    _Thread_stop = Process._stop  #PYCHOK expected
 
 
 class TimeLimitExpired(Exception):
@@ -67,7 +67,7 @@ def timelimited(timeout, function, *args, **kwds):
        and any errors occurring inside the function are
        passed along as-is.
     '''
-    class _Timelimited(Thread):
+    class _Timelimited(Process):
         _error_  = TimeLimitExpired  # assume timeout
         _result_ = None
 
@@ -154,92 +154,3 @@ class TimeLimited(object):
                        'Property to get and set the timeout value')
 
 
-if __name__ == '__main__':
-
-    import sys, time, threading  #PYCHOK expected
-
-    _format = '%s test %%d/8 %%s in Python %s: %%s' % (
-               sys.argv[0], sys.version.split()[0])
-    _tests = 0
-
-    def passed(arg='OK'):
-        global _tests
-        _tests += 1
-        print(_format % (_tests, 'passed', arg))
-
-    def failed(fmt, *args):
-        global _tests
-        _tests += 1
-        if args:
-            t = fmt % args
-        else:
-            t = fmt
-        print(_format % (_tests, 'failed', t))
-
-    def check(timeout, sleep, result, arg='OK'):
-        if timeout > sleep:
-            x = None  # time.sleep(0) result
-        elif isinstance(result, TimeLimitExpired):
-            x = result
-        else:
-            x = TimeLimitExpired
-        if result is x:
-            passed(arg)
-        else:
-            failed('expected %r, but got %r', x, result)
-
-
-     # check timelimited function
-    for t, s in ((2.0, 1),
-                 (1.0, 20)):  # note, 20!
-        try:
-            r = timelimited(t, time.sleep, s)
-        except Exception, e:  #XXX as for Python 3.0
-            r = e
-        check(t, s, r, timelimited)
-
-     # check TimeLimited class and property
-    f = TimeLimited(time.sleep)
-    for t, s in ((2.0, 1),
-                 (1.0, 20)):  # note, 20!
-        f.timeout = t
-        try:
-            r = f(s)
-        except Exception, e:  #XXX as for Python 3.0
-            r = e
-        check(t, s, r, f)
-
-     # check TypeError
-    try:
-        t = timelimited(0, None)
-        failed('no %r', TypeError)
-    except TypeError:
-        passed(TypeError)
-    except:
-        failed('expected %r', TypeError)
-
-     # check ValueError
-    try:
-        t = timelimited(-10, time.time)
-        failed('no %r', ValueError)
-    except ValueError:
-        passed(ValueError)
-    except:
-        failed('expected %r', ValueError)
-
-     # check error passing from thread
-    try:
-        r = timelimited(1, lambda x: 1/x, 0)
-        failed('no %r', ZeroDivisionError)
-    except ZeroDivisionError:
-        passed(ZeroDivisionError)
-    except:
-        failed('expected %r', ZeroDivisionError)
-
-     # check that all created threads stopped
-    for t in threading.enumerate():
-        if t.isAlive() and repr(t).startswith('<_Timelimited('):
-           failed('thread %r still alive', t)
-           break
-    else:
-        passed('all _Timelimited threads stopped')
