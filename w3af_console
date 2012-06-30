@@ -8,7 +8,7 @@ current_dir = os.getcwd()
 script_dir = os.path.dirname(sys.argv[0]) or '.'
 os.chdir( script_dir )
 
-def backTocurrent_dir():
+def back_to_current_dir():
     os.chdir( current_dir )
 
 # Translation stuff
@@ -162,7 +162,7 @@ def main():
 
 if __name__ == "__main__":
     err_code = main()
-    backTocurrent_dir()
+    back_to_current_dir()
     dump_cpu_usage()
     sys.exit(err_code)
     

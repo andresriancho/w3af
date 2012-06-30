@@ -4,12 +4,12 @@ import getopt, sys, os
 import gettext
 
 # First of all, we need to change the working directory to the directory of w3af.
-currentDir = os.getcwd()
-scriptDir = os.path.dirname(sys.argv[0]) or '.'
-os.chdir( scriptDir )
+current_dir = os.getcwd()
+script_dir = os.path.dirname(sys.argv[0]) or '.'
+os.chdir( script_dir )
 
-def backToCurrentDir():
-    os.chdir( currentDir )
+def back_to_current_dir():
+    os.chdir( current_dir )
 
 # Translation stuff
 gettext.install('w3af', 'locales/')
@@ -18,7 +18,6 @@ gettext.install('w3af', 'locales/')
 # it is used by most w3af modules 
 import core.controllers.outputManager as om
 try:
-    om.start_output_manager()
     om.out.set_output_plugins( ['console'] )
 except Exception, e:
     print 'Something went wrong, w3af failed to start the output manager.'
@@ -97,7 +96,7 @@ def main():
     core.ui.gtkUi.main.main(profile, doupdate)
 
 if __name__ == "__main__":
-    errCode = main()
-    backToCurrentDir()
-    sys.exit(errCode)
+    err_code = main()
+    back_to_current_dir()
+    sys.exit(err_code)
 
