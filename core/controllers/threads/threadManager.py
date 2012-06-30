@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
-import core.controllers.outputManager as om
+from multiprocessing.dummy import Pool
 
-from core.controllers.threads.threadpool import Pool
+import core.controllers.outputManager as om
 
 
 class ThreadManager(object):
