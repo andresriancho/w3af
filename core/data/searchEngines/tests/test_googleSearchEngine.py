@@ -56,18 +56,16 @@ class test_googleSearchEngine(unittest.TestCase):
         try:
             results = self.gse.getNResults(self.query, self.limit)
         except KeyboardInterrupt:
-            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+            raise Exception('Caught KeyboardInterrupt and avoided nosetests crash.')
         else:
+            # Len of results must be le. than limit
             self.assertTrue(len(results) <= self.limit)
-
-    
-    def test_get_links_results_unique(self):
-        # URLs should be unique
-        try:
-            results = self.gse.getNResults(self.query, self.limit)
-        except KeyboardInterrupt:
-            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
-        else:
+            
+            # I want to get some results...
+            self.assertTrue(len(results) >= 10, results)
+            self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
+            
+            # URLs should be unique
             self.assertTrue(len(results) == len(set([r.URL for r in results])))
     
     def test_page_body(self):
@@ -75,7 +73,7 @@ class test_googleSearchEngine(unittest.TestCase):
         try:
             responses = self.gse.getNResultPages(self.query, self.limit)
         except KeyboardInterrupt:
-            raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
+            raise Exception('Caught KeyboardInterrupt and avoided nosetests crash.')
         else:
             words = self.query.split()
             for resp in responses:
@@ -100,7 +98,6 @@ class test_GoogleAPISearch(unittest.TestCase):
         for _class in self.GOOGLE_API_SEARCHERS:
             searchers_instances.append(_class(URL_OPEN_FUNC, query, start, count))
         return searchers_instances
-        
     
     def test_len_link_results(self):
         # Len of results should be <= count
@@ -138,6 +135,3 @@ class test_GoogleAPISearch(unittest.TestCase):
             for page in searcher.pages:
                 self.assertTrue(isinstance(page, httpResponse))
     
-
-if __name__ == "__main__":
-    unittest.main()
