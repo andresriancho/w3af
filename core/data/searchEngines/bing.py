@@ -30,22 +30,18 @@ from core.data.parsers.urlParser import url_object
 
 class bing(searchEngine):
     '''
-    This class is a wrapper for doing bing searches. It allows the user to use pymsn or simply do GET requests
-    to bing.com.
+    This class is a wrapper for doing bing searches. It allows the user to use
+    GET requests to search bing.com.
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
+    BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com'])
+    
     def __init__(self, urlOpener):
         searchEngine.__init__(self)
         self._uri_opener = urlOpener
 
     def search(self, query, start, count=10):
-        res = self._metSearch(query, start)
-        om.out.debug('Bing search for: ' + query + ' returned ' + str(len(res)) + ' results.')
-        return res
-
-    def _metSearch(self, query, start=0):
         '''
         Search the web with Bing.
 
@@ -63,21 +59,31 @@ class bing(searchEngine):
                     raise ValueError( msg )
 
                 self.URL = url
+            
+            def __repr__(self):
+                return '<bing result %s>' % self.URL
 
         url = 'http://www.bing.com/search?'
-        _query = urllib.urlencode({'q':query, 'first':start+1, 'FORM':'PERE'})
-        url_instance = url_object(url+_query)
+        query = urllib.urlencode({'q':query, 'first':start+1, 'FORM':'PERE'})
+        url_instance = url_object(url+query)
         response = self._uri_opener.GET( url_instance, headers=self._headers,
-                cache=True, grep=False)
+                                         cache=True, grep=False)
+        
+
+        # This regex might become outdated, but the good thing is that we have
+        # test_bing.py which is going to fail and tell us that it's outdated
+        re_match = re.findall('<a href="((http|https)(.*?))" h="ID=SERP,', 
+                              response.getBody())
+        
         results = []
+        
+        for url, _,_ in re_match:
+            try:
+                url = url_object(url)
+            except:
+                pass
+            else:
+                if url.getDomain() not in self.BLACKLISTED_DOMAINS:
+                    results.append(bingResult( url ))
 
-        # This regex MAY become outdated
-        urls = re.findall('<h3><a href="(.*?)" onmousedown', response.getBody())
-
-        if len(urls) == 11:
-            urls = urls[:-1]
-
-        for url in urls:
-            if 'www.bing.com' not in url:
-                results.append(bingResult( url_object(url) ))
         return results
