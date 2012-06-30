@@ -20,21 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-# severity constants for vuln messages
-import core.data.constants.severity as severity
-from core.controllers.w3afException import w3afMustStopByKnownReasonExc
-
-from errno import ENOSPC
 import string
 import sys
 
+from errno import ENOSPC
+
+import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.w3afException import w3afMustStopByKnownReasonExc
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 def catch_ioerror(meth):
     '''
