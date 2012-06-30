@@ -21,16 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
-from multiprocessing.dummy import Pool
-
 import core.controllers.outputManager as om
+
+from core.controllers.threads.threadpool import Pool
 
 
 class ThreadManager(object):
     '''
-    This class manages threads.
-    
-    Note: This is just a wrapper around Pool 
+    This class manages threads. Note: This is just a wrapper around Pool 
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     ''' 
