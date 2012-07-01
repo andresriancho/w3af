@@ -53,7 +53,7 @@ class searchEngine:
                 raise
             except Exception, e:
                 msg = 'An unhandled exception was found in ' \
-                'searchEngines.searchEngine.search(): "%s"' % str(e)
+                'search_engines.searchEngine.search(): "%s"' % str(e)
                 om.out.error(msg)
                 raise w3afException(msg)
             else:
@@ -86,7 +86,7 @@ class searchEngine:
                 om.out.debug(str(w3))
                 raise
             except Exception, e:
-                om.out.debug('Unhandled exception in searchEngines.searchEngine.search(): ' + str(e))
+                om.out.debug('Unhandled exception in search_engines.searchEngine.search(): ' + str(e))
                 raise
             else:
                 result.extend(res_page)

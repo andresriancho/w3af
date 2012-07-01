@@ -1,5 +1,5 @@
 '''
-googleSearchEngine.py
+google.py
 
 Copyright 2006 Andres Riancho
 
@@ -27,17 +27,17 @@ import json
 from core.controllers import outputManager as om
 from core.controllers.w3afException import w3afException
 
-from core.data.searchEngines.searchEngine import searchEngine
+from core.data.search_engines.searchEngine import searchEngine
 from core.data.parsers.urlParser import url_object
 
 
 GOOGLE_SORRY_PAGE = 'http://www.google.com/support/bin/answer.py?answer=86640'
 # Set the order in which the Google API searchers will be called by the 
-# googleSearchEngine
+# google
 GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
                               'GStandardSearch',)
 
-class googleSearchEngine(searchEngine):
+class google(searchEngine):
     '''
     This class is a wrapper for doing google searches. It allows the user to do GET requests
     to the mobile version, the Ajax API and the standard www.google.com page.
@@ -48,9 +48,8 @@ class googleSearchEngine(searchEngine):
     def __init__(self, url_opener):
         searchEngine.__init__(self)
         # url_opener's GET wrapper function
-        self._url_open = lambda url: url_opener.GET(
-                                            url, headers=self._headers,
-                                            cache=True, grep=False)
+        self._url_open = lambda url: url_opener.GET(url, headers=self._headers,
+                                                    cache=True, grep=False)
     
     def getNResults(self, query, limit=0):
         return self.search(query, 0, count=limit)

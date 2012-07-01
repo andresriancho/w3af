@@ -24,7 +24,7 @@ import urllib
 import re
 
 import core.controllers.outputManager as om
-from core.data.searchEngines.searchEngine import searchEngine as searchEngine
+from core.data.search_engines.searchEngine import searchEngine as searchEngine
 from core.data.parsers.urlParser import url_object
 
 

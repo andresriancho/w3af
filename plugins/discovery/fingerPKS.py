@@ -33,7 +33,7 @@ from core.controllers.w3afException import w3afRunOnce
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.searchEngines.pks import pks as pks
+from core.data.search_engines.pks import pks as pks
 from core.data.parsers.urlParser import url_object
 
 

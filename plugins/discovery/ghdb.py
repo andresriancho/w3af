@@ -30,8 +30,8 @@ from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.searchEngines.googleSearchEngine import \
-    googleSearchEngine as google
+from core.data.search_engines.google import \
+    google as google
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb

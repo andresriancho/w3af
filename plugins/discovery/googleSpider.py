@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
+from core.data.search_engines.google import google as google
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-from core.data.searchEngines.searchEngine import searchEngine as searchEngine
+from core.data.search_engines.searchEngine import searchEngine as searchEngine
 from core.data.parsers.urlParser import url_object
 import re
 

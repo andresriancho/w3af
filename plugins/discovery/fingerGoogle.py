@@ -25,7 +25,7 @@ import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.searchEngines.googleSearchEngine import googleSearchEngine as google
+from core.data.search_engines.google import google as google
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 

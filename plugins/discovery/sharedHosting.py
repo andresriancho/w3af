@@ -34,7 +34,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.searchEngines.bing import bing as bing
+from core.data.search_engines.bing import bing as bing
 from core.controllers.misc.is_private_site import is_private_site
 
 import socket

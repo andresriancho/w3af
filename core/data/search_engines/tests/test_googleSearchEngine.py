@@ -1,5 +1,5 @@
 '''
-test_googleSearchEngine.py
+test_google.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,7 +24,7 @@ import random
 import re
 import unittest
 
-from core.data.searchEngines.googleSearchEngine import googleSearchEngine, \
+from core.data.search_engines.google import google, \
     GAjaxSearch, GStandardSearch, GMobileSearch
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
@@ -42,13 +42,13 @@ def URL_OPEN_FUNC( url ):
         raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
 
 
-class test_googleSearchEngine(unittest.TestCase):
+class test_google(unittest.TestCase):
     
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 200),
                                                 ('two and half man', 37),
                                                 ('doctor house', 55)])
-        self.gse = googleSearchEngine(URL_OPENER)
+        self.gse = google(URL_OPENER)
         
     
     def test_get_links_results_len(self):

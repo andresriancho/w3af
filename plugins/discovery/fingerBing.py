@@ -31,7 +31,7 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
 
-from core.data.searchEngines.bing import bing as bing
+from core.data.search_engines.bing import bing as bing
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 

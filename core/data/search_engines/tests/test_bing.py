@@ -23,12 +23,12 @@ import random
 import re
 import unittest
 
-from core.data.searchEngines.bing import bing
+from core.data.search_engines.bing import bing
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
 
 
-class test_googleSearchEngine(unittest.TestCase):
+class test_google(unittest.TestCase):
     
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 200),

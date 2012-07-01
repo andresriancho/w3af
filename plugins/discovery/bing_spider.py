@@ -23,16 +23,15 @@ from urllib2 import URLError
 
 import core.controllers.outputManager as om
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.is_private_site import is_private_site
+from core.controllers.misc.decorators import runonce
 
-from core.data.searchEngines.bing import bing as bing
+from core.data.search_engines.bing import bing as bing
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class bing_spider(baseDiscoveryPlugin):
@@ -43,65 +42,65 @@ class bing_spider(baseDiscoveryPlugin):
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._run = True
+        
         # User variables
-        self._resultLimit = 300
+        self._result_limit = 300
+        
         # Internal variables
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
 
-    def discover(self, fuzzableRequest):
+    @runonce(exc_class=w3afRunOnce)
+    def discover(self, fuzzable_request):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not self._run:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-
-        # I will only run this one time. All calls to bing_spider return the same url's
-        self._run = False
-        bingSE = bing(self._uri_opener)
-        domain = fuzzableRequest.getURL().getDomain()
+        bing_se = bing(self._uri_opener)
+        domain = fuzzable_request.getURL().getDomain()
 
         if is_private_site(domain):
-            msg = 'There is no point in searching Bing for "site:'+ domain + '".'
-            msg += ' Bing doesnt index private pages.'
-            raise w3afException( msg )
+            msg = 'There is no point in searching Bing for "site:%s".'
+            msg += ' Bing does\'nt index private pages.'
+            raise w3afException( msg % domain)
 
-        results = bingSE.getNResults('site:'+ domain, self._resultLimit)
+        try:
+            results = bing_se.getNResults('site:'+ domain, self._result_limit)
+        except:
+            pass
+        else:
+            self._tm.threadpool.map(self._get_fuzzable_requests,
+                                    [r.URL for r in results])
 
-        for res in results:
-            self._run_async(meth=self._genFuzzableRequests, args=(res.URL,))
-        self._join()
+        return self._fuzzable_requests
 
-        return self._fuzzableRequests
-
-    def _genFuzzableRequests(self, url):
+    def _get_fuzzable_requests( self, url ):
         '''
-        GET the URL and then call createFuzzableRequests with the response.
-
-        @parameter url: The URL to GET.
+        Generate the fuzzable requests based on the URL, which is a result from
+        google search.
+        
+        @param url: A URL from google.
         '''
         try:
-            response = self._uri_opener.GET(url, cache=True)
-        except KeyboardInterrupt, k:
-            raise k
+            response = self._uri_opener.GET( url, cache=True)
         except w3afException, w3:
-            om.out.error('Exception while requesting ' + url + ' ' + str(w3))
-        except URLError, url_err:
-            om.out.debug('URL Error while fetching page in bing_spider, error: ' + str(url_err))
+            msg = 'w3afException while fetching page in bing_spider: "%s".'
+            om.out.debug(msg % w3)
+        except URLError, ue:
+            msg = 'URLError while fetching page in bing_spider, error: "%s".'
+            om.out.debug(msg % ue)
         else:
-            fuzzReqs = self._createFuzzableRequests(response)
-            self._fuzzableRequests.extend(fuzzReqs)
+            fuzz_reqs = self._createFuzzableRequests( response )
+            self._fuzzable_requests.extend( fuzz_reqs )
 
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d2 = 'Fetch the first "resultLimit" results from the Google search'
-        o2 = option('resultLimit', self._resultLimit, d2, 'integer')
         ol = optionList()
-        ol.add(o2)
+        d = 'Fetch the first "resultLimit" results from the Google search'
+        o = option('resultLimit', self._result_limit, d, 'integer')
+        ol.add(o)
+        
         return ol
 
     def setOptions( self, optionsMap ):
@@ -112,14 +111,7 @@ class bing_spider(baseDiscoveryPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._resultLimit = optionsMap['resultLimit'].getValue()
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
+        self._result_limit = optionsMap['resultLimit'].getValue()
 
     def getLongDesc( self ):
         '''
@@ -131,6 +123,6 @@ class bing_spider(baseDiscoveryPlugin):
         One configurable parameters exist:
             - resultLimit
 
-        This plugin searches Bing for : "site:domain.com", requests all search results and parses them in order
-        to find new mail addresses.
+        This plugin searches Bing for : "site:domain.com", requests all search
+        results and parses them in order to find new URLs.
         '''
