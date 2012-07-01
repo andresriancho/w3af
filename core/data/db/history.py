@@ -75,7 +75,7 @@ class HistoryItem(object):
         self._ext = '.trace'
         if not kb.kb.getData('history', 'db') == []:
             self._db = kb.kb.getData('history', 'db')
-            self._sessionDir = kb.kb.getData('history', 'sessionDir')
+            self._session_dir = kb.kb.getData('history', 'session_dir')
         else:
             self.initStructure()
 
@@ -105,8 +105,14 @@ class HistoryItem(object):
     
     def initStructure(self):
         '''Init history structure.'''
-        sessionName = cf.cf.getData('sessionName')
-        dbName = os.path.join(get_temp_dir(), 'db_' + sessionName)
+        session_name = cf.cf.getData('session_name')
+        if session_name is None:
+            # This is the case of unittests where we "forget" to set the proper
+            # cf variables. Because I don't want to set the session name in all
+            # unittests, I do it here.
+            session_name = 'unittest-'
+            
+        dbName = os.path.join(get_temp_dir(), 'db_' + session_name)
         self._db = DB()
         # Check if the database already exists
         if os.path.exists(dbName):
@@ -117,7 +123,7 @@ class HistoryItem(object):
                     dbName = newDbName
                     break
         self._db.connect(dbName)
-        self._sessionDir = os.path.join(get_temp_dir(),
+        self._session_dir = os.path.join(get_temp_dir(),
                                         self._db.getFileName() + '_traces')
         tablename = self.getTableName()
         # Init tables
@@ -128,14 +134,14 @@ class HistoryItem(object):
         self._db.createIndex(tablename, self.getIndexColumns())
         # Init dirs
         try:
-            os.mkdir(self._sessionDir)
+            os.mkdir(self._session_dir)
         except OSError, oe:
             # [Errno EEXIST] File exists
             if oe.errno != EEXIST:
                 msg = 'Unable to write to the user home directory: ' + get_temp_dir()
                 raise w3afException(msg)
         kb.kb.save('history', 'db', self._db)
-        kb.kb.save('history', 'sessionDir', self._sessionDir)
+        kb.kb.save('history', 'session_dir', self._session_dir)
 
     def find(self, searchData, resultLimit=-1, orderData=[], full=False):
         '''Make complex search.
@@ -187,7 +193,7 @@ class HistoryItem(object):
 
     def _loadFromFile(self, id):
         
-        fname = os.path.join(self._sessionDir, str(id) + self._ext)
+        fname = os.path.join(self._session_dir, str(id) + self._ext)
         #
         #    Due to some concurrency issues, we need to perform this check
         #    before we try to read the .trace file.
@@ -313,7 +319,7 @@ class HistoryItem(object):
         # 
         # Save raw data to file
         #
-        fname = os.path.join(self._sessionDir, str(self.response.id) + self._ext)
+        fname = os.path.join(self._session_dir, str(self.response.id) + self._ext)
 
         with FileLock(fname, timeout=1):
         
@@ -362,4 +368,4 @@ class HistoryItem(object):
         sql = 'DELETE FROM ' + self._dataTable
         self._db.execute(sql)
         # Delete files
-        rmtree(self._sessionDir)
+        rmtree(self._session_dir)

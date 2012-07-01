@@ -40,7 +40,7 @@ class TestXUrllib(unittest.TestCase):
         cf.cf.cleanup()
         kb.kb.cleanup()
         
-        cf.cf.save('sessionName',
+        cf.cf.save('session_name',
                 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         self.uri_opener = xUrllib()
         create_temp_dir()

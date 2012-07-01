@@ -22,7 +22,7 @@ class TestHistoryItem(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
         cf.cf.cleanup()
-        cf.cf.save('sessionName',
+        cf.cf.save('session_name',
                 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         create_temp_dir()
 
@@ -132,7 +132,7 @@ class TestHistoryItem(unittest.TestCase):
         except:
             h2 = None
         self.assertEqual(h2, None)
-        self.assertFalse(os.path.exists(h1._sessionDir))
+        self.assertFalse(os.path.exists(h1._session_dir))
 
     def test_tag(self):
         tag_id = random.randint(501, 999)

@@ -58,7 +58,7 @@ class w3af_core_target(configurable):
         cf.cf.save('targetFramework', 'unknown' )
         cf.cf.save('targetDomains', set() )
         cf.cf.save('baseURLs', [] )
-        cf.cf.save('sessionName', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
+        cf.cf.save('session_name', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
                 
     def getOptions( self ):
         '''
@@ -178,7 +178,7 @@ class w3af_core_target(configurable):
         else:
             sessName = 'noTarget'
 
-        cf.cf.save('sessionName', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
+        cf.cf.save('session_name', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
         
         # Advanced target selection
         os = optionsMap['targetOS'].getValueStr()
