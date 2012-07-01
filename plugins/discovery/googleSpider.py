@@ -74,7 +74,7 @@ class googleSpider(baseDiscoveryPlugin):
                             
         return self._fuzzable_requests
     
-    def _generate_fuzzable_requests( self, url ):
+    def _get_fuzzable_requests( self, url ):
         '''
         Generate the fuzzable requests based on the URL, which is a result from
         google search.
