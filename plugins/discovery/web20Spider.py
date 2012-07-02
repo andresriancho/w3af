@@ -32,6 +32,8 @@ import core.controllers.outputManager as om
 import core.data.constants.w3afPorts as w3afPorts
 from core.controllers.daemons.proxy import proxy
 from plugins.discovery.spiderMan import TERMINATE_URL, spiderMan
+from core.controllers.misc.temp_dir import get_temp_dir
+import ConfigParser
 
 class web20Spider(spiderMan):
 
@@ -43,6 +45,20 @@ class web20Spider(spiderMan):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, freq ):
         print 'web20Spider is running!'
+
+        cookies_txt = os.path.join(get_temp_dir(), 'cookies.txt')
+        config = ConfigParser.RawConfigParser()
+        config.optionxform = str
+
+        for cookie in self._uri_opener.settings._cookieHandler.cookiejar:
+            if not config.has_section(cookie.domain):
+                config.add_section(cookie.domain)
+            config.set(cookie.domain, cookie.name, cookie.value)
+
+        with open(cookies_txt, 'wb') as configfile:
+            config.write(configfile)
+
+        print cookies_txt
         self._proxy = proxy(self._listenAddress, self._listenPort,
                             self._uri_opener, self.createPH())
         self._proxy.targetDomain = freq.getURL().getDomain()
@@ -51,6 +67,7 @@ class web20Spider(spiderMan):
         call([
             self._casperjs_bin,
             '--proxy='+ self._listenAddress+':'+str(self._listenPort),
+            '--cookies-file=' + cookies_txt,
             self._spider_js,
             str(freq.getURL()),
             str(TERMINATE_URL)

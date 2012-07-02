@@ -5,12 +5,16 @@
 // 3. maxDiscoveryTime option
 // 4. max_deep from w3af controling
 // 5. replace console.log with casper.log()
+// 6. ignoreRegex
+// 
 //
 var casper, current_deep, max_deep, process_page, target, target_domain, states, to_visit, terminate_url;
+var ignoreRegex;
+var ignoreRegex = new RegExp('.*logout.php');
 
 casper = require('casper').create();
 current_deep = 0;
-max_deep = 3;
+max_deep = 2;
 states = [];
 to_visit = []
 
@@ -20,15 +24,27 @@ var casper = require('casper').create({
 });
 
 target = casper.cli.get(0);
-terminate_url = casper.cli.get(0);
+terminate_url = casper.cli.get(1);
+//var ignoreRegex = new RegExp(casper.cli.get(2));
 to_visit.push(target);
 
 function get_domain(url) {
-    chunks = url.split('/');
-    return chunks[2];
+    var chunks = url.split('/');
+    return chunks[2].split(':')[0];
 }
 
 target_domain = get_domain(target);
+console.log('TARGET_DOMAIN:' + target_domain)
+
+function need_follow_url(url) {
+    if (url.match(ignoreRegex)) {
+        return false;
+    }
+    if (url.indexOf('http') != -1 && get_domain(url) != target_domain) {
+        return false;
+    } 
+    return true;
+}
 
 function getClickable() {
     // 
@@ -75,8 +91,12 @@ process_page = function() {
     this.thenOpen(url, function() {
         var links = this.evaluate(getClickable);
         for (var i=0; i<links.length; i++) {
-            this.echo('Click on "' + links[i].path + '" with href "' + links[i].href + '"');
+            this.echo('Click on with href "' + links[i].href + '"');
             if (this.exists(links[i].path)) {
+                if (! need_follow_url(links[i].href)) {
+                    this.echo('Will NOT click on with href "' + links[i].href + '"');
+                    continue;
+                }
                 this.thenClick(links[i].path).then(function(){
                     this.wait(300, function() {
                         var tmp_url = this.getCurrentUrl();
