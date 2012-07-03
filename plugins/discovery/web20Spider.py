@@ -39,13 +39,13 @@ class web20Spider(spiderMan):
 
     def __init__(self):
         self._spider_js = os.path.join('plugins', 'discovery', 'web20Spider','spider.js')
+        # User configured variables
+        self._ignore_regex = ''
         self._casperjs_bin = 'casperjs'
         super(web20Spider, self).__init__()
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, freq ):
-        print 'web20Spider is running!'
-
+    def discover(self, freq):
         cookies_txt = os.path.join(get_temp_dir(), 'cookies.txt')
         config = ConfigParser.RawConfigParser()
         config.optionxform = str
@@ -58,7 +58,6 @@ class web20Spider(spiderMan):
         with open(cookies_txt, 'wb') as configfile:
             config.write(configfile)
 
-        print cookies_txt
         self._proxy = proxy(self._listenAddress, self._listenPort,
                             self._uri_opener, self.createPH())
         self._proxy.targetDomain = freq.getURL().getDomain()
@@ -70,14 +69,35 @@ class web20Spider(spiderMan):
             '--cookies-file=' + cookies_txt,
             self._spider_js,
             str(freq.getURL()),
-            str(TERMINATE_URL)
+            str(TERMINATE_URL),
+            self._ignore_regex
             ])
-        print 'web20Spider is finishing!'
         return self._fuzzableRequests
 
+    def getOptions(self):
+        ol = optionList()
+        d = 'When spidering, DO NOT follow links that match this regular expression '
+        o = option('ignoreRegex', self._ignore_regex, d, 'string')
+        ol.add(o)
+        d = 'CasperJS binary path '
+        o = option('casperjs', self._casperjs_bin, d, 'string')
+        ol.add(o)
+        parent_options = super(web20Spider, self).getOptions()
+        for i in parent_options:
+            ol.add(i)
+        return ol
+
+    def setOptions(self, optionsMap):
+        self._ignore_regex = optionsMap['ignoreRegex'].getValue()
+        self._casperjs_bin = optionsMap['casperjs'].getValue()
+        super(web20Spider, self).setOptions(optionsMap)
+
     def getLongDesc( self ):
-        '''
-        @return: A DETAILED description of the plugin functions and features.
-        '''
-        return '''Purpose of this plugins is crawling of modern web app with help of integrated browser.
+        return '''
+        Purpose of this plugins is crawling of modern web app with help of integrated browser.
+        Configurable parameters are:
+            - CasperJS bin path
+            - ignoreRegex
+            - listenAddress (for spiderMan)
+            - listenPort (for spiderMan)
         '''

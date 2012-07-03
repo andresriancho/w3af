@@ -1,16 +1,12 @@
 // 
 // TODO
-// 1. Cookie suuport for auth protected web apps
 // 2. forms
 // 3. maxDiscoveryTime option
 // 4. max_deep from w3af controling
 // 5. replace console.log with casper.log()
-// 6. ignoreRegex
-// 
 //
 var casper, current_deep, max_deep, process_page, target, target_domain, states, to_visit, terminate_url;
-var ignoreRegex;
-var ignoreRegex = new RegExp('.*logout.php');
+var ignore_regex;
 
 casper = require('casper').create();
 current_deep = 0;
@@ -25,7 +21,7 @@ var casper = require('casper').create({
 
 target = casper.cli.get(0);
 terminate_url = casper.cli.get(1);
-//var ignoreRegex = new RegExp(casper.cli.get(2));
+ignore_regex = new RegExp(casper.cli.get(2));
 to_visit.push(target);
 
 function get_domain(url) {
@@ -37,7 +33,7 @@ target_domain = get_domain(target);
 console.log('TARGET_DOMAIN:' + target_domain)
 
 function need_follow_url(url) {
-    if (url.match(ignoreRegex)) {
+    if (url.match(ignore_regex)) {
         return false;
     }
     if (url.indexOf('http') != -1 && get_domain(url) != target_domain) {
