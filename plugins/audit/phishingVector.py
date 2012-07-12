@@ -21,21 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import re
 from lxml import etree
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.fuzzer.fuzzer import createMutants
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
 class phishingVector(baseAuditPlugin):
@@ -90,10 +87,10 @@ class phishingVector(baseAuditPlugin):
         Find the phishing vectors!
         '''
         dom = response.getDOM()
+        res = []
         
         if response.is_text_or_html() and dom is not None:
-
-            res = []
+            
             elem_list = self._tag_xpath( dom )
             
             for element in elem_list:
@@ -115,7 +112,7 @@ class phishingVector(baseAuditPlugin):
                         v.addToHighlight( src_attr )
                         res.append( v )
                         
-            return res
+        return res
         
     def end(self):
         '''
