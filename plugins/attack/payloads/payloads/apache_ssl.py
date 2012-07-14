@@ -55,4 +55,4 @@ class apache_ssl(base_payload):
                     rows.append( [desc, value] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows

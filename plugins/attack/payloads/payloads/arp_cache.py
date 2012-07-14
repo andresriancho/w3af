@@ -44,4 +44,4 @@ class arp_cache(base_payload):
                 rows.append( [ip_address, hw_addr, device] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows

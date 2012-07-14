@@ -88,5 +88,5 @@ class get_source_code(base_payload):
                 
             result_table = table( rows )
             result_table.draw( 140 )                    
-            return
+            return rows
 

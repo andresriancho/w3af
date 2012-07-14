@@ -45,4 +45,4 @@ class apache_run_group(base_payload):
                     rows.append( [group,] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows
