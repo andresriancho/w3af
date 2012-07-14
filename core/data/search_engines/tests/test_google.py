@@ -85,38 +85,40 @@ class test_google(unittest.TestCase):
                         break
                 self.assertTrue(found)
 
-class test_GoogleAPISearch(unittest.TestCase):
-    
-    GOOGLE_API_SEARCHERS = (GAjaxSearch, GMobileSearch, GStandardSearch)
+class BaseGoogleAPISearchTest(object):
+    '''
+    See below, this base class is not intended to be run by nosetests
+    '''
+    GOOGLE_API_SEARCHER = None
+    RESULT_SIZES = (10, 13, 15, 20, 27, 41, 50, 80)
     
     def setUp(self):
-        self.count = random.choice((10, 13, 15, 20, 27, 41, 50, 80))
-    
-    def _get_google_searchers(self, query, start, count):
-        # Helper method
-        searchers_instances = []
-        for _class in self.GOOGLE_API_SEARCHERS:
-            searchers_instances.append(_class(URL_OPEN_FUNC, query, start, count))
-        return searchers_instances
-    
+        self.count = random.choice( self.RESULT_SIZES )
+        
     def test_len_link_results(self):
         # Len of results should be <= count
         query = "pink red blue"
         start = 0
-        for searcher in self._get_google_searchers(query, start, self.count):
-            # the length of retrieved links should be <= 'count'
-            self.assertTrue(len(searcher.links) <= self.count)
+        searcher = self.GOOGLE_API_SEARCHER(URL_OPEN_FUNC, query, start, count)        
+        
+        # the length of retrieved links should be <= 'count'
+        self.assertTrue(len(searcher.links) <= self.count)
+        
+        # The length of the retrieved links should be >= min(RESULT_SIZES),
+        # this means that we got at least *some* results from Google using
+        # this specific GOOGLE_API_SEARCHER
+        self.assertTrue(len(searcher.links) >= min(self.RESULT_SIZES) )
     
     def test_links_results_domain(self):
         domain = "www.bonsai-sec.com"
         query = "site:%s security" % domain
         start = 0
-        for searcher in self._get_google_searchers(query, start, self.count):
-            # returned URLs' domain should be the expected
-            for link in searcher.links:
-                link_domain = link.URL.getDomain()
-                self.assertTrue(link_domain == domain, 
-                                "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain))
+        searcher = self.GOOGLE_API_SEARCHER(URL_OPEN_FUNC, query, start, count)
+        
+        for link in searcher.links:
+            link_domain = link.URL.getDomain()
+            self.assertTrue(link_domain == domain, 
+                            "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain))
     
     def test_links_results_valid(self):
         # result links should be valid URLs
@@ -134,4 +136,13 @@ class test_GoogleAPISearch(unittest.TestCase):
             # the returned pages should be 'httpResponse' instances
             for page in searcher.pages:
                 self.assertTrue(isinstance(page, httpResponse))
+    
+class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+    GOOGLE_API_SEARCHER = GAjaxSearch
+    
+class test_GMobileSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+    GOOGLE_API_SEARCHER = GMobileSearch
+
+class test_GStandardSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+    GOOGLE_API_SEARCHER = GStandardSearch
     

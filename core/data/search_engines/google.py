@@ -39,10 +39,12 @@ GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
 
 class google(searchEngine):
     '''
-    This class is a wrapper for doing google searches. It allows the user to do GET requests
-    to the mobile version, the Ajax API and the standard www.google.com page.
+    This class is a wrapper for doing google searches. It allows the user to do
+    GET requests to the mobile version, the Ajax API and the standard www.google.com
+    page.
     
-    @author: Andres Riancho (andres.riancho@gmail.com), floyd fuh (floyd_fuh@yahoo.de)
+    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Floyd Fuh (floyd_fuh@yahoo.de)
     '''
     
     def __init__(self, url_opener):
