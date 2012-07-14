@@ -47,20 +47,21 @@ class TestOSCommanding(PluginTest):
         # Assert the general results
         vulns = self.kb.getData('osCommanding', 'osCommanding')
         self.assertEquals(4, len(vulns))
-        self.assertEquals(all(["OS commanding vulnerability" == vuln.getName() for vuln in vulns ]) , True)
+        self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
+                          True)
 
         # Verify the specifics about the vulnerabilities
-        expected = [
+        EXPECTED = [
             ('passthru.php', 'cmd'),
             ('simple_osc.php', 'cmd'),
             ('param_osc.php', 'param'),
             ('blind_osc.php', 'cmd')
         ]
 
-        verified_vulns = 0
-        for vuln in vulns:
-            if ( vuln.getURL().getFileName() , vuln.getMutant().getVar() ) in expected:
-                verified_vulns += 1
+        found_vulns = [ (v.getURL().getFileName() , v.getMutant().getVar()) for v in vulns]
+        
+        self.assertEquals( set(EXPECTED),
+                           set(found_vulns)
+                          )
 
-        self.assertEquals(4, verified_vulns)
-
+        
