@@ -19,23 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
+import xml.dom.minidom
+
+from itertools import chain, repeat, izip
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afRunOnce
-from core.controllers.coreHelpers.fingerprint_404 import is_404
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
-import xml.dom.minidom
-import os
+
+from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class ria_enumerator(baseDiscoveryPlugin):
@@ -45,76 +45,86 @@ class ria_enumerator(baseDiscoveryPlugin):
     '''
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
-        self._exec = True
         
         # User configured parameters
-        self._wordlist = 'plugins' + os.path.sep + 'discovery' + os.path.sep + 'ria_enumerator'
-        self._wordlist += os.path.sep + 'common_filenames.db'
+        self._wordlist = os.path.join('plugins' , 'discovery' , 'ria_enumerator',
+                                      'common_filenames.db')
         
         # This is a list of common file extensions for google gears manifest:
         self._extensions = ['', '.php', '.json', '.txt', '.gears']
-        
-    def discover(self, fuzzableRequest ):
+    
+    @runonce(exc_class=w3afRunOnce)
+    def discover(self, fuzzable_request ):
         '''
         Get the file and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
-                                                      (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         '''
-        if not self._exec:
-            raise w3afRunOnce()
-        else:
-            # Only run once
-            self._exec = False
-
-            base_url = fuzzableRequest.getURL().baseUrl()
-            
-            ### Google Gears
-            for ext in self._extensions:
-                for word in file(self._wordlist):
-
-                    manifest_url = base_url.urlJoin( word.strip() + ext )
-
-                    om.out.debug( 'Google Gears Manifest Testing "%s"' % (manifest_url)  )
-                    http_response = self._uri_opener.GET( manifest_url, cache=True )
-                        
-                    if '"entries":' in http_response and not is_404( http_response ):
-                        # Save it to the kb!
-                        i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Gears Manifest')
-                        i.setURL( manifest_url )
-                        i.setId( http_response.id )
-                        desc = 'A gears manifest file was found at: "'+ manifest_url 
-                        desc += '".  Each file should be manually reviewed for sensitive'
-                        desc += ' information that may get cached on the client.' 
-                        i.setDesc( desc )
-                        kb.kb.append( self, manifest_url, i )
-                        om.out.information( i.getDesc() )
-                            
-            ### CrossDomain.XML
-            cross_domain_url = base_url.urlJoin( 'crossdomain.xml' )
-            om.out.debug( 'Checking crossdomain.xml file')
-            response = self._uri_opener.GET( cross_domain_url, cache=True )
-
-            if not is_404( response ):
-                self._checkResponse(response, 'crossdomain.xml')
-
-            ### CrossAccessPolicy.XML
-            client_access_url = base_url.urlJoin( 'clientaccesspolicy.xml' )
-            om.out.debug( 'Checking clientaccesspolicy.xml file')
-            response = self._uri_opener.GET( client_access_url, cache=True )
-
-            if not is_404( response ):
-                self._checkResponse(response, 'clientaccesspolicy.xml')
-
+        base_url = fuzzable_request.getURL().baseUrl()
+        url_generator = self._url_generator( base_url, self._extensions, 
+                                             self._wordlist )
+        
+        
+        # Send the requests using threads:
+        self._tm.threadpool.map(self._send_and_check, url_generator,
+                                chunksize=10)
+        
         return []
+    
+    def _url_generator(self, base_url, extensions, wordlist):
+        '''
+        Based on different files and user configurations, generate the URLs that
+        need to be tested.
+        
+        @return: URLs
+        '''
+        ### Google Gears
+        for ext in extensions:
+            for word in file(wordlist):
 
-    def _checkResponse(self, response, file_name ):
+                manifest_url = base_url.urlJoin( word.strip() + ext )
+                yield manifest_url
+                        
+        ### CrossDomain.XML
+        cross_domain_url = base_url.urlJoin( 'crossdomain.xml' )
+        yield cross_domain_url
+        
+        ### CrossAccessPolicy.XML
+        client_access_url = base_url.urlJoin( 'clientaccesspolicy.xml' )
+        yield client_access_url
+    
+    def _send_and_check(self, url ):
         '''
         Analyze XML files.
         '''
-        om.out.debug( 'Checking XML response in ria_enumerator.')
+        response = self._uri_opener.GET( url, cache=True )
+        if is_404(response):
+            return
+        
+        file_name = url.getFileName()
+        
+        om.out.debug( 'Checking response for %s in ria_enumerator.' % response)
+
+        self._analyze_gears_manifest(url, response, file_name)
+        self._analyze_crossdomain_clientaccesspolicy(url, response, file_name)
+
+    def _analyze_gears_manifest(self, url, response, file_name):
+        if '"entries":' in response:
+            # Save it to the kb!
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('Gears Manifest')
+            i.setURL( url )
+            i.setId( response.id )
+            desc = 'A gears manifest file was found at: "'+ url 
+            desc += '".  Each file should be manually reviewed for sensitive'
+            desc += ' information that may get cached on the client.' 
+            i.setDesc( desc )
+            kb.kb.append( self, url, i )
+            om.out.information( i.getDesc() )
+    
+    def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
         try:
             dom = xml.dom.minidom.parseString( response.getBody() )
         except Exception:
@@ -164,7 +174,9 @@ class ria_enumerator(baseDiscoveryPlugin):
                     i.setName('Crossdomain allow ACL')
                     i.setURL( response.getURL() )
                     i.setMethod( 'GET' )
-                    i.setDesc( file_name + '" file allows access from: "' + url  + '".')
+                    msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
+                    msg += ' flash/silverlight access from "' + url + '".'
+                    i.setDesc( msg )
                     i.setId( response.id )
                     kb.kb.append( self, 'info', i )
                     om.out.information( i.getDesc() ) 	
@@ -172,16 +184,17 @@ class ria_enumerator(baseDiscoveryPlugin):
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
-        '''    
-        d1 = 'Wordlist to use in the manifest file name bruteforcing process.'
-        o1 = option('wordlist', self._wordlist , d1, 'string')
+        '''
+        ol = optionList()    
         
-        d2 = 'File extensions to use when brute forcing Gears Manifest files'
-        o2 = option('manifestExtensions', self._extensions, d2, 'list')
-
-        ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
+        d = 'Wordlist to use in the manifest file name bruteforcing process.'
+        o = option('wordlist', self._wordlist , d, 'string')
+        ol.add(o)
+        
+        d = 'File extensions to use when brute forcing Gears Manifest files'
+        o = option('manifestExtensions', self._extensions, d, 'list')
+        ol.add(o)
+        
         return ol
         
     def setOptions( self, OptionList ):
@@ -198,31 +211,28 @@ class ria_enumerator(baseDiscoveryPlugin):
         
         self._extensions = OptionList['manifestExtensions'].getValue()
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin searches for various Rich Internet Application files.  It currently searches for:
+        This plugin searches for various Rich Internet Application files.  It
+        currently searches for:
         
         Google gears manifests
-        	These files are used to determine which files are locally cached by google gears.  
-        	They do not get cleared when the browser cache is cleared and may contain sensitive information.
+        	These files are used to determine which files are locally cached by 
+        	google gears. They do not get cleared when the browser cache is cleared 
+        	and may contain sensitive information.
         									 
         Flex crossdomain.xml
-        	This file stores domains which are allowed to make cross domain requests to the server.
+        	This file stores domains which are allowed to make cross domain requests
+        	to the server.
         
         Silverlight clientaccesspolicy.xml
-        	This file determines which clients can access the server in place of the crossdomain.xml.
+        	This file determines which clients can access the server in place 
+        	of the crossdomain.xml.
         	
-       Two configurable parameters exists:
+        Two configurable parameters exists:
             - wordlist: The wordlist to be used in the gears bruteforce process.
             - manifestExtensions: File extensions to use during manifest bruteforcing.
         
