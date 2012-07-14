@@ -35,5 +35,5 @@ class hosts(base_payload):
                     
             result_table = table( rows[:-1] )
             result_table.draw( 160 )
-            return
+            return rows
         

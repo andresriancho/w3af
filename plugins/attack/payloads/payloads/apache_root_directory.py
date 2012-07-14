@@ -65,5 +65,5 @@ class apache_root_directory(base_payload):
                     rows.append( [directory,] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows
 

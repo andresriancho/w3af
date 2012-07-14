@@ -113,5 +113,5 @@ class pixy(base_payload):
                     
             result_table = table( rows )
             result_table.draw( 100 )
-            return
+            return rows
         

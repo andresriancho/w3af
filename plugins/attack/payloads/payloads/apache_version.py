@@ -48,5 +48,5 @@ class apache_version(base_payload):
                     rows.append( [version,] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows
 

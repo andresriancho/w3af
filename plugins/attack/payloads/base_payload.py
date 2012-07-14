@@ -32,8 +32,8 @@ class base_payload(object):
         
     def can_run(self):
         '''
-        @return: True if this payload has any way of running with the "syscalls" provided by the
-        shell_obj.
+        @return: True if this payload has any way of running with the "syscalls"
+                 provided by the shell_obj.
         '''
         #   Get the syscalls that this shell_obj implements
         available_syscalls = dir(self.shell)

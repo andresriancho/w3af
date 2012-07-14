@@ -1227,5 +1227,4 @@ class rootkit_hunter(base_payload ):
                               
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
-
+            return rows

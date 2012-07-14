@@ -33,4 +33,4 @@ class gcc_version(base_payload):
             rows.append( ['GCC Version', api_result['gcc_version'] ] )
             result_table = table( rows )
             result_table.draw( 80 )
-            return
+            return rows

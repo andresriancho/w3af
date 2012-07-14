@@ -56,4 +56,4 @@ class apache_htaccess(base_payload):
                     rows.append( [filename,] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows

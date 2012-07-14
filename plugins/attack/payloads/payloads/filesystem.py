@@ -54,5 +54,5 @@ class filesystem(base_payload):
                               
             result_table = table( rows[:-1] )
             result_table.draw( 80 )                    
-            return
+            return rows
 

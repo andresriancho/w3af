@@ -97,4 +97,4 @@ class apache_modsecurity(base_payload):
                     rows.append( [key_name, k] )
             result_table = table( rows )
             result_table.draw( 90 )               
-            return
+            return rows

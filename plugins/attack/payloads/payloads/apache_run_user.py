@@ -42,4 +42,4 @@ class apache_run_user(base_payload):
                     rows.append( [user,] )
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows

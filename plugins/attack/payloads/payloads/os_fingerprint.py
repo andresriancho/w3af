@@ -28,5 +28,5 @@ class os_fingerprint(base_payload):
             rows.append( ['Remote OS', api_result['os'] ] ) 
             result_table = table( rows )
             result_table.draw( 80 )                    
-            return
+            return rows
 

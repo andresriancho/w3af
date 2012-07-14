@@ -117,3 +117,4 @@ class php_sca(base_payload):
         
         restable = table(rows)
         restable.draw(100)
+        return rows
