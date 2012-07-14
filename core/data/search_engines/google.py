@@ -29,13 +29,16 @@ from core.controllers.w3afException import w3afException
 
 from core.data.search_engines.searchEngine import searchEngine
 from core.data.parsers.urlParser import url_object
+from core.data.user_agent.random_user_agent import get_random_user_agent
 
 
 GOOGLE_SORRY_PAGE = 'http://www.google.com/support/bin/answer.py?answer=86640'
+
 # Set the order in which the Google API searchers will be called by the 
-# google
+# google class
 GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
                               'GStandardSearch',)
+
 
 class google(searchEngine):
     '''
@@ -47,11 +50,9 @@ class google(searchEngine):
     @author: Floyd Fuh (floyd_fuh@yahoo.de)
     '''
     
-    def __init__(self, url_opener):
+    def __init__(self, uri_opener):
         searchEngine.__init__(self)
-        # url_opener's GET wrapper function
-        self._url_open = lambda url: url_opener.GET(url, headers=self._headers,
-                                                    cache=True, grep=False)
+        self._uri_opener = uri_opener
     
     def getNResults(self, query, limit=0):
         return self.search(query, 0, count=limit)
@@ -75,7 +76,7 @@ class google(searchEngine):
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''        
-        return GStandardSearch(self._url_open, query, start, count).pages
+        return GStandardSearch(self._uri_opener, query, start, count).pages
         
     def _do_ordered_search(self, query, start, count):
         '''
@@ -89,7 +90,7 @@ class google(searchEngine):
         for search_class_str in GOOGLE_PRIORITY_SEARCH_SEQ:
            
             g_search_class = _globals[search_class_str]
-            g_searcher = g_search_class(self._url_open, query, 
+            g_searcher = g_search_class(self._uri_opener, query, 
                                         start, curr_count)
             res += g_searcher.links
             len_res = len(res)
@@ -105,15 +106,6 @@ class google(searchEngine):
         return res
         
     
-    def set(self, word_list):
-        '''
-        Performs a google set search.
-        http://labs.google.com/sets
-        '''
-        raise NotImplementedError, "GoogleSets has been shutdown"
-
-
-
 IS_NEW = 0
 FINISHED_OK = 1
 FINISHED_BAD = 2
@@ -125,13 +117,9 @@ class GoogleAPISearch(object):
     shouldn't be instantiated.
     '''
     
-    def __init__(self, url_open_func):
-        '''
-        @parameter url_open_func: function to call by this class to do the
-        request. Accepts 'url' as param and returns a httpResponse object.
-        '''
+    def __init__(self, uri_opener):
         self._status = IS_NEW
-        self._url_open_func = url_open_func
+        self._uri_opener = uri_opener
         # list of httpResponse objects
         self._pages = []
         # list of URLs
@@ -165,7 +153,10 @@ class GoogleAPISearch(object):
             msg += ' be of urlParser.url_object type.'
             raise ValueError( msg )
         
-        return self._url_open_func(url)
+        random_ua = get_random_user_agent()
+        headers = {'User-Agent': random_ua}
+
+        return self._uri_opener.GET(url, headers=headers)
 
     def _do_google_search(self):
         '''
@@ -192,13 +183,13 @@ class GAjaxSearch(GoogleAPISearch):
     GOOGLE_AJAX_MAX_RES_PER_PAGE = 8
     GOOGLE_AJAX_MAX_START_INDEX = 56
 
-    def __init__(self, url_open_func, query, start=0, count=10):
+    def __init__(self, uri_opener, query, start=0, count=10):
         '''
         @parameter query: query to perform
         @parameter start: start index.
         @parameter count: amount of results to fetch
         '''
-        GoogleAPISearch.__init__(self, url_open_func)
+        GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
         self._count = count
@@ -220,12 +211,12 @@ class GAjaxSearch(GoogleAPISearch):
             params = urllib.urlencode(params_dict)
             
             google_url_instance = url_object(self.GOOGLE_AJAX_SEARCH_URL + params)
-            
+
             # Do the request
             try:
                 resp = self._do_GET( google_url_instance )
-            except:
-                raise w3afException('Failed to GET google.com AJAX API.')
+            except Exception, e:
+                raise w3afException('Failed to GET google.com AJAX API: "%s"' % e)
             
             # Parse the response. Convert the json string into a py dict.
             parsed_resp = json.loads(resp.getBody())
@@ -265,13 +256,13 @@ class GStandardSearch(GoogleAPISearch):
     # Used to find out if google will return more items
     NEXT_PAGE_REGEX = 'id=pnnext.*?\>\<span.*?\>\</span\>\<span.*?\>Next\<'
     
-    def __init__(self, url_open_func, query, start=0, count=10):
+    def __init__(self, uri_opener, query, start=0, count=10):
         '''
         @parameter query: query to perform
         @parameter start: start index.
         @parameter count: amount of results to fetch
         '''
-        GoogleAPISearch.__init__(self, url_open_func)
+        GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
         self._count = count
@@ -349,16 +340,13 @@ class GMobileSearch(GStandardSearch):
     NEXT_PAGE_REGEX = '\<a href=".*?" \>Next page'
     
     
-    def __init__(self, url_open_func, query, start=0, count=10):
+    def __init__(self, uri_opener, query, start=0, count=10):
         '''
-        @parameter url_open_func: function to call by this class to do the
-            request. Accepts 'url' as param and returns a httpResponse 
-            object.
         @parameter query: query to perform
         @parameter start: start index.
         @parameter count: amount of results to fetch
         '''
-        GoogleAPISearch.__init__(self, url_open_func)
+        GoogleAPISearch.__init__(self, uri_opener)
         self._query = query
         self._start = start
         self._count = count    
@@ -391,68 +379,6 @@ class GMobileSearch(GStandardSearch):
 
         return res_pages
     
-
-class GSetSearch(GoogleAPISearch):
-    
-    GOOGLE_SEARCH_URL = "http://labs.google.com/sets?hl=en"
-    REGEX = '<font face="Arial, sans-serif" size=-1>' \
-            '<a href="http://www.google.com/search\?hl=en&amp;q=(.*?)">'
-    
-    def __init__(self, url_open_func, word_list):
-        GoogleAPISearch.__init__(self, url_open_func, None)
-        self._word_list = word_list
-        self._set = []
-
-    @property
-    def set(self):
-        if self.status == IS_NEW:
-            self._set = self._extract_set(self.pages)
-        return self._set
-
-    def _do_google_search(self):
-        '''
-        Performs a google set search.
-        http://labs.google.com/sets
-        '''
-        
-        results = []
-        
-        if self._word_list:
-            # I'll use the first 5 inputs
-            _word_list = self._word_list[:5]
-        
-            # This is a search for a set with input blue and white
-            # http://labs.google.com/sets?hl=en&q1=blue&q2=white&q3=&q4=
-            #&q5=&btn=Small+Set+%2815+items+or+fewer%29
-            url = self.GOOGLE_SEARCH_URL
-            q_param = 1
-            
-            for word in _word_list:
-                url += '&q' + str(q_param) + '=' + urllib.quote_plus(word)
-                q_param += 1
-
-            url += '&btn=Small+Set+%2815+items+or+fewer%29'
-            url_instance = url_object( url )
-            # Now I get the results
-            response = self._do_GET(url_instance)
-            results.append(response)
-
-        return results
-    
-    def _extract_set(self, pages):
-        word_set = []
-        for resp in pages:            
-            for word in re.findall(self.REGEX, resp.getBody()):
-                word = urllib.unquote_plus(word.lower())
-                if word not in self._word_list:
-                    word_set.append(word)
-        
-        om.out.debug('Google set search returned:')
-        for i in word_set:
-            om.out.debug('- ' + i )
-
-        return word_set    
-
 
 class googleResult(object):
     '''

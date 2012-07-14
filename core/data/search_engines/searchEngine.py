@@ -36,7 +36,7 @@ class searchEngine:
         #   Based on some tests performed by Nahuel Sanchez, Google will allow us to automate
         #   searches if we use this user agent:
         #
-        self._headers = {'User-Agent': 'Googlebot/2.1 (+http://www.googlebot.com/bot.html)'}
+        self._headers = {'User-Agent': 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)'}
 
     def getNResults(self, query, limit=0):
         '''

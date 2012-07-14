@@ -24,22 +24,12 @@ import random
 import re
 import unittest
 
-from core.data.search_engines.google import google, \
-    GAjaxSearch, GStandardSearch, GMobileSearch
+from core.data.search_engines.google import google, GAjaxSearch, GStandardSearch, GMobileSearch
 from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
 
-# Global vars
-HEADERS = {'User-Agent':'Mozilla/4.0 (compatible; MSIE 7.0b; Windows NT 6.0)'}
-# TODO: This needs to be mocked up!
 URL_OPENER = xUrllib()
 URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
-
-def URL_OPEN_FUNC( url ):
-    try:
-        return URL_OPENER.GET(url, headers=HEADERS, cache=True, grep=False)
-    except KeyboardInterrupt:
-        raise Exception('Catched KeyboardInterrupt and avoided nosetests crash.')
 
 
 class test_google(unittest.TestCase):
@@ -85,35 +75,41 @@ class test_google(unittest.TestCase):
                         break
                 self.assertTrue(found)
 
+
 class BaseGoogleAPISearchTest(object):
     '''
     See below, this base class is not intended to be run by nosetests
     '''
     GOOGLE_API_SEARCHER = None
     RESULT_SIZES = (10, 13, 15, 20, 27, 41, 50, 80)
+    COUNT = random.choice( RESULT_SIZES )
     
-    def setUp(self):
-        self.count = random.choice( self.RESULT_SIZES )
-        
     def test_len_link_results(self):
         # Len of results should be <= count
         query = "pink red blue"
         start = 0
-        searcher = self.GOOGLE_API_SEARCHER(URL_OPEN_FUNC, query, start, count)        
+        searcher = self.GOOGLE_API_SEARCHER(URL_OPENER, query, start, self.COUNT)        
         
         # the length of retrieved links should be <= 'count'
-        self.assertTrue(len(searcher.links) <= self.count)
+        self.assertTrue(len(searcher.links) <= self.COUNT)
         
         # The length of the retrieved links should be >= min(RESULT_SIZES),
         # this means that we got at least *some* results from Google using
         # this specific GOOGLE_API_SEARCHER
-        self.assertTrue(len(searcher.links) >= min(self.RESULT_SIZES) )
+        
+        msg = 'This test fails randomly based on Google\'s anti automation'
+        msg += ' protection, if it fails you should run it again in a couple of'
+        msg += ' minutes. Many consecutive failures show that our code is NOT'
+        msg += ' working anymore.'
+        
+        self.assertTrue(len(searcher.links) >= min(self.RESULT_SIZES),
+                        msg )
     
     def test_links_results_domain(self):
         domain = "www.bonsai-sec.com"
         query = "site:%s security" % domain
         start = 0
-        searcher = self.GOOGLE_API_SEARCHER(URL_OPEN_FUNC, query, start, count)
+        searcher = self.GOOGLE_API_SEARCHER(URL_OPENER, query, start, self.COUNT)
         
         for link in searcher.links:
             link_domain = link.URL.getDomain()
@@ -124,25 +120,21 @@ class BaseGoogleAPISearchTest(object):
         # result links should be valid URLs
         query = "pink red blue"
         start = 0
-        for searcher in self._get_google_searchers(query, start, self.count):
-            for link in searcher.links:
-                self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
         
+        searcher = self.GOOGLE_API_SEARCHER(query, start, self.COUNT)
+        
+        for link in searcher.links:
+            self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
+        
+        for page in searcher.pages:
+            self.assertTrue(isinstance(page, httpResponse))
     
-    def test_pages_results_type(self):
-        query = "pink red blue"
-        start = 0
-        for searcher in self._get_google_searchers(query, start, self.count):
-            # the returned pages should be 'httpResponse' instances
-            for page in searcher.pages:
-                self.assertTrue(isinstance(page, httpResponse))
     
 class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GOOGLE_API_SEARCHER = GAjaxSearch
-    
+
 class test_GMobileSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GOOGLE_API_SEARCHER = GMobileSearch
 
 class test_GStandardSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GOOGLE_API_SEARCHER = GStandardSearch
-    
