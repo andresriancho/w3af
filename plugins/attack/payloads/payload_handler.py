@@ -55,9 +55,9 @@ def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
     '''
     if shell_obj is None:
         #
-        #    I have to go to the KB, and filter the shell objects that are available there
-        #    using the syscalls they provide and the syscalls I need.
-        #
+        #    I have to go to the KB, and filter the shell objects that are
+        #    available there using the syscalls they provide and the syscalls
+        #    I need.
         
         #    The import needs to be here, don't ask why :P
         import core.data.kb.knowledgeBase as kb
@@ -115,6 +115,4 @@ def get_payload_list():
         result.append( p )
     
     return result
-    
-if __name__ == '__main__':
-    print get_payload_instance('hosts', 'a')
+
