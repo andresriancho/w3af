@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-from itertools import chain, repeat, izip
+from itertools import repeat, izip
 
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
