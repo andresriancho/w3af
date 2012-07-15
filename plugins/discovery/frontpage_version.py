@@ -19,21 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-#w3af modules
+import re
+
 import core.controllers.outputManager as om
-from core.data.options.optionList import optionList
+import core.data.kb.info as info
+import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException, w3afRunOnce
-
-import core.data.kb.knowledgeBase as kb
 from core.controllers.coreHelpers.fingerprint_404 import is_404
-import core.data.kb.info as info
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afException
+from core.controllers.misc.decorators import runonce
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-#python modules
-import re
 
 
 class frontpage_version(baseDiscoveryPlugin):
@@ -41,29 +39,25 @@ class frontpage_version(baseDiscoveryPlugin):
     Search FrontPage Server Info file and if it finds it will determine its version.
     @author: Viktor Gazdag ( woodspeed@gmail.com )
     '''
+    VERSION_RE = re.compile('FPVersion="(.*?)"', re.IGNORECASE)
+    ADMIN_URL_RE = re.compile('FPAdminScriptUrl="(.*?)"', re.IGNORECASE )
+    AUTHOR_URL_RE = re.compile('FPAuthorScriptUrl="(.*?)"', re.IGNORECASE )
 
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
         self._analyzed_dirs = scalable_bloomfilter()
-        self._exec = True
 
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         fuzzable_return_value = []
-        
-        if not self._exec:
-            # This will remove the plugin from the discovery plugins to be run.
-            raise w3afRunOnce()
-            
-        else:
-            # Run the plugin.
-            self._exec = False
 
         for domain_path in fuzzableRequest.getURL().getDirectories():
 
@@ -76,17 +70,17 @@ class frontpage_version(baseDiscoveryPlugin):
                 frontpage_info_url = domain_path.urlJoin( "_vti_inf.html" )
                 try:
                     response = self._uri_opener.GET( frontpage_info_url, cache=True )
-                    om.out.debug( '[frontpage_version] Testing "' + frontpage_info_url + '".' )
                 except w3afException,  w3:
                     msg = 'Failed to GET Frontpage Server _vti_inf.html file: "'
                     msg += frontpage_info_url + '". Exception: "' + str(w3) + '".'
                     om.out.debug( msg )
                 else:
-                    # Check if it's a Fronpage Info file
+                    # Check if it's a Frontpage Info file
                     if not is_404( response ):
                         fuzzable_return_value.extend( self._createFuzzableRequests( response ) )
                         self._analyze_response( response )
-                        return fuzzable_return_value
+        
+        return fuzzable_return_value
                         
     def _analyze_response(self, response):
         '''
@@ -95,18 +89,11 @@ class frontpage_version(baseDiscoveryPlugin):
         @parameter response: The http response object for the _vti_inf file.
         @return: None. All the info is saved to the kb.
         '''
-        regex_str = 'FPVersion="(.*?)"'
-        regex_admin = 'FPAdminScriptUrl="(.*?)"'
-        regex_author = 'FPAuthorScriptUrl="(.*?)"'
+        version_mo = self.VERSION_RE.search( response.getBody() )
+        admin_mo = self.ADMIN_URL_RE.search( response.getBody() )
+        author_mo = self.AUTHOR_URL_RE.search( response.getBody() )
         
-        #Get the Frontpage version
-        frontpage_version_match = re.search(regex_str, response.getBody(), re.IGNORECASE)
-        #Get the FPAdminScript url
-        frontpage_admin = re.search(regex_admin, response.getBody(), re.IGNORECASE)
-        #Get the FPAuthorScript url
-        frontpage_author = re.search(regex_author, response.getBody(), re.IGNORECASE)
-        
-        if frontpage_version_match and frontpage_admin and frontpage_author:
+        if version_mo and admin_mo and author_mo:
             #Set the self._exec to false
             self._exec = False
 
@@ -118,24 +105,24 @@ class frontpage_version(baseDiscoveryPlugin):
             desc = 'The FrontPage Configuration Information file was found at: "'
             desc += i.getURL() 
             desc += '" and the version of FrontPage Server Extensions is: "'
-            desc += frontpage_version_match.group(1) + '". '
+            desc += version_mo.group(1) + '". '
             i.setDesc( desc )
-            i['version'] = frontpage_version_match.group(1)
+            i['version'] = version_mo.group(1)
             kb.kb.append( self, 'frontpage_version', i )
             om.out.information( i.getDesc() )
 
             #
             # Handle the admin.exe file
             #
-            self._analyze_admin( response, frontpage_admin )
+            self._analyze_admin( response, admin_mo )
 
             #
             # Handle the author.exe file
             #
-            self._analyze_author( response, frontpage_author )
+            self._analyze_author( response, author_mo )
             
         else:
-            # This is wierd... we found a _vti_inf file, but there is no frontpage
+            # This is strange... we found a _vti_inf file, but there is no frontpage
             # information in it... IPS? WAF? honeypot?                            
             i = info.info()
             i.setPluginName(self.getName())
@@ -157,28 +144,31 @@ class frontpage_version(baseDiscoveryPlugin):
         @parameter frontpage_admin: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
+        admin_location = response.getURL().getDomainPath().urlJoin(
+                                           frontpage_admin.group(1) )
         i = info.info()
         i.setPluginName(self.getName())
         i.setId( response.id )
-        i.setURL( response.getURL() )
+        i.setURL( admin_location )
+        
         # Check for anomalies in the location of admin.exe
         if frontpage_admin.group(1) != '_vti_bin/_vti_adm/admin.exe':
             name = 'Uncommon FrontPage configuration'
             
             desc = 'The FPAdminScriptUrl is at: "'
-            desc += frontpage_admin.group(1)
+            desc += admin_location
             desc += '" instead of the default location: "'
             desc += '_vti_bin/_vti_adm/admin.exe".'
         else:
             name = 'FrontPage FPAdminScriptUrl'
 
             desc = 'The FPAdminScriptUrl is at: "'
-            desc += i.getURL().getDomainPath().urlJoin( frontpage_admin.group(1) )
+            desc += admin_location
             desc += '".'
 
         i.setName( name )
         i.setDesc( desc )
-        i['FPAdminScriptUrl'] = frontpage_admin.group(1)
+        i['FPAdminScriptUrl'] = admin_location
         kb.kb.append( self, 'frontpage_version', i )
         om.out.information( i.getDesc() )
             
@@ -190,63 +180,42 @@ class frontpage_version(baseDiscoveryPlugin):
         @parameter frontpage_author: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
+        author_location = response.getURL().getDomainPath().urlJoin( 
+                                            frontpage_author.group(1) )
+        
         i = info.info()
         i.setPluginName(self.getName())
         i.setId( response.id )
-        i.setURL( response.getURL() )
+        i.setURL( author_location )
         # Check for anomalies in the location of author.exe
         if frontpage_author.group(1) != '_vti_bin/_vti_aut/author.exe':
             name = 'Uncommon FrontPage configuration'
             
             desc = 'The FPAuthorScriptUrl is at: "'
-            desc += frontpage_author.group(1)
+            desc += author_location
             desc += '" instead of the default location: "'
             desc += '/_vti_bin/_vti_adm/author.exe".'
         else:
             name = 'FrontPage FPAuthorScriptUrl'
 
             desc = 'The FPAuthorScriptUrl is at: "'
-            desc += i.getURL().getDomainPath().urlJoin( frontpage_author.group(1) )
+            desc += author_location
             desc += '".'
             
         i.setName( name )
         i.setDesc( desc )
-        i['FPAuthorScriptUrl'] = frontpage_author.group(1)
+        i['FPAuthorScriptUrl'] = author_location
         kb.kb.append( self, 'frontpage_version', i )
         om.out.information( i.getDesc() )        
-
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
 
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin searches for the FrontPage Server Info file and if it finds it will try to
-        determine the version of the Frontpage Server Extensions. The file is located inside the
-        web server webroot. For example:
+        This plugin searches for the FrontPage Server Info file and if it finds
+        it will try to determine the version of the Frontpage Server Extensions.
+        The file is located inside the web server webroot. For example:
         
             - http://localhost/_vti_inf.html
         '''
