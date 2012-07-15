@@ -19,23 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-
 import core.data.parsers.dpCache as dpCache
+
 from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
-import re
 
 
 class globalRedirect(baseAuditPlugin):
@@ -57,15 +52,17 @@ class globalRedirect(baseAuditPlugin):
         '''
         Tests an URL for global redirect vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzableRequest object
         '''
         om.out.debug( 'globalRedirect plugin is testing: ' + freq.getURL() )
         
         mutants = createMutants( freq , [self._test_site, ] )
         
-        self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)            
+        send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(m, follow_redir=False)
+        
+        self._send_mutants_in_threads(send_mutant_no_follow,
+                                      mutants,
+                                      self._analyze_result)            
 
 
     def _analyze_result( self, mutant, response ):
@@ -89,7 +86,7 @@ class globalRedirect(baseAuditPlugin):
         
     def _find_redirect( self, response ):
         '''
-        This method checks if the browser was redirected ( using a 302 code ) 
+        This method checks if the browser was redirected (using a 302 code) 
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
         '''
         #
@@ -98,7 +95,7 @@ class globalRedirect(baseAuditPlugin):
         lheaders = response.getLowerCaseHeaders()
         for header_name in ('location', 'uri'):
             if header_name in lheaders and \
-               lheaders[header_name].startswith( self._test_site ):
+            lheaders[header_name].startswith( self._test_site ):
                 # The script sent a 302, and w3af followed the redirection
                 # so the URL is now the test site
                 return True
@@ -144,12 +141,12 @@ class globalRedirect(baseAuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds global redirection vulnerabilities. This kind of bugs are used for
-        phishing and other identity theft attacks. A common example of a global redirection
-        would be a script that takes a "url" parameter and when requesting this page, a HTTP
-        302 message with the location header to the value of the url parameter is sent in the
-        response.
+        This plugin finds global redirection vulnerabilities. This kind of bugs
+        are used for phishing and other identity theft attacks. A common example
+        of a global redirection would be a script that takes a "url" parameter 
+        and when requesting this page, a HTTP 302 message with the location header
+        to the value of the url parameter is sent in the response.
         
-        Global redirection vulnerabilities can be found in javascript, META tags and 302 / 301 
-        HTTP return codes.
+        Global redirection vulnerabilities can be found in javascript, META tags
+        and 302 / 301 HTTP return codes.
         '''
