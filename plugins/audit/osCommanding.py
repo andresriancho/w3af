@@ -22,22 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.vuln as vuln
+import core.data.constants.severity as severity
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.config as cf
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
-
-# kb stuff
-import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.config as cf
 
 
 class osCommanding(baseAuditPlugin):
