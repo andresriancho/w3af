@@ -39,7 +39,8 @@ from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.w3afException import (w3afException, w3afRunOnce,
-    w3afMustStopException, w3afMustStopOnUrlError)
+                                            w3afMustStopException, 
+                                            w3afMustStopOnUrlError)
 
 from core.data.request.frFactory import createFuzzableRequests
 from core.data.db.disk_set import disk_set
@@ -136,7 +137,8 @@ class w3af_core_strategy(object):
     
     def teardown_audit(self):
         if self._audit_consumer is not None:
-            self._audit_consumer.stop()
+            #FIXME: See comment in audit, search for "self._audit_consumer.stop()" 
+            #self._audit_consumer.stop()
             self._audit_consumer = None
         
     def teardown_auth(self):
@@ -596,22 +598,17 @@ class w3af_core_strategy(object):
                _setup_audit()
         
         '''   
-        #TODO: This is a horrible thing to do, we consume lots of memory
+        #TODO: This set() a horrible thing to do, we consume lots of memory
         #      for just a loop. The issue is that we had some strange
         #      "RuntimeError: Set changed size during iteration" and I had
         #      no time to solve them.
         for fr in set(self._fuzzable_request_set):
             self._audit_consumer.in_queue_put(fr)
-        
+
+        # FIXME: This should be removed or moved around when we complete the whole
+        # refactoring. See the commented stop() in teardown_audit.
         self._audit_consumer.stop()
-        
-        #FIXME: This is just a hack to allow the input queue to be processed
-        while True:
-            time.sleep(1)
-            size = self._audit_consumer.in_queue_size()
-            if size == 0:
-                break
-        
+
         self._handle_audit_results()
             
 
@@ -633,7 +630,7 @@ class w3af_core_strategy(object):
         '''
         while True:
             queue_item = self._audit_consumer.out_queue.get()
-            
+
             if queue_item == FINISH_CONSUMER:
                 break
             else:

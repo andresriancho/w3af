@@ -44,7 +44,7 @@ class audit(Process):
         super(audit, self).__init__()
         
         self._in_queue = in_queue
-        # See documentation in the properly below
+        # See documentation in the property below
         self._out_queue = Queue()
         self._audit_plugins = audit_plugins
         self._w3af_core = w3af_core
@@ -54,8 +54,7 @@ class audit(Process):
         '''
         Consume the queue items and find vulnerabilities
         
-        TODO:
-            * Progress
+        TODO: Report progress to w3afCore somehow.
         '''
 
         while True:
@@ -65,10 +64,11 @@ class audit(Process):
             if workunit == FINISH_CONSUMER:
                 
                 # Close the pool and wait for everyone to finish
-                self._audit_threadpool.poison_all_workers()
+                self._audit_threadpool.close()
                 self._audit_threadpool.join()
                 
                 # End plugins
+                
                 for plugin in self._audit_plugins:
                     try:
                         plugin.end()
@@ -77,6 +77,7 @@ class audit(Process):
                 
                 # Finish this consumer and everyone consuming the output
                 self._out_queue.put( FINISH_CONSUMER )
+                self._in_queue.task_done()
                 break
                 
             else:
@@ -85,6 +86,8 @@ class audit(Process):
                     result = self._audit_threadpool.apply_async( plugin.audit_wrapper,
                                                                  (workunit,) )
                     self._out_queue.put( (plugin.getName(), workunit, result) )
+            
+                self._in_queue.task_done()
 
     @property
     def out_queue(self):
@@ -105,5 +108,6 @@ class audit(Process):
         Poison the loop
         '''
         self._in_queue.put( FINISH_CONSUMER )
-        self._audit_threadpool.join()
+        self._in_queue.join()
+
 
