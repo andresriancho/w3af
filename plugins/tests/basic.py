@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import unittest
+
 from core.controllers.w3afCore import w3afCore
-from core.controllers.w3afException import w3afException
 
 
 class TestBasic(unittest.TestCase):
@@ -51,5 +51,10 @@ class TestBasic(unittest.TestCase):
         for plugin in self.plugins:
             if plugin.getType() == 'attack':
                 plugin.getRootProbability()
+        
+    def test_plugin_type_description(self):
+        for plugin_type in self.w3afcore.plugins.getPluginTypes():
+            self.w3afcore.plugins.getPluginTypesDesc(plugin_type)
+        
 
                 
