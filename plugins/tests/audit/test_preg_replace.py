@@ -39,7 +39,7 @@ class TestPreg(PluginTest):
             }
         }
     
-    def test_found_xpath(self):
+    def test_found_preg(self):
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
