@@ -19,16 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-from core.data.esmre.multi_re import multi_re
-
 import core.controllers.outputManager as om
 import core.data.constants.dbms as dbms
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_re import multi_re
 
 
 class sqli(baseAuditPlugin):
