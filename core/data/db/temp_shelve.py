@@ -19,15 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from __future__ import with_statement
-import shelve
-import threading
-import os
-import sys
-from random import choice
-import string
+
 import cPickle
+import os
+import shelve
+import string
+import sys
+import threading
+
+from random import choice
 
 from core.controllers.misc.temp_dir import get_temp_dir
 
