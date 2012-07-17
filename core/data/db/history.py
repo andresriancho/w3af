@@ -18,8 +18,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
+
 import os
 import time
+
 from shutil import rmtree
 from errno import EEXIST
 
@@ -46,16 +48,17 @@ class HistoryItem(object):
     '''Represents history item.'''
 
     _db = None
-    _dataTable = 'data_table'
-    _columns = [
+    _DATA_TABLE = 'data_table'
+    _COLUMNS = [
         ('id','integer'), ('url', 'text'), ('code', 'integer'),
         ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
         ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
         ('charset', 'text'), ('method', 'text'), ('response_size', 'integer'),
         ('codef', 'integer'), ('alias', 'text'), ('has_qs', 'integer')
     ]
-    _primaryKeyColumns = ('id',)
-    _indexColumns = ('alias',)
+    _PRIMARY_KEY_COLUMNS = ('id',)
+    _INDEX_COLUMNS = ('alias',)
+    
     id = None
     _request = None
     _response = None
@@ -113,16 +116,16 @@ class HistoryItem(object):
             session_name = 'unittest-'
             
         dbName = os.path.join(get_temp_dir(), 'db_' + session_name)
-        self._db = DB()
-        # Check if the database already exists
-        if os.path.exists(dbName):
-            # Find one that doesn't exist
-            for i in xrange(100):
-                newDbName = dbName + '-' + str(i)
-                if not os.path.exists(newDbName):
-                    dbName = newDbName
-                    break
-        self._db.connect(dbName)
+        
+        # Find one database file that does NOT exist
+        for i in xrange(100):
+            newDbName = dbName + '-' + str(i)
+            if not os.path.exists(newDbName):
+                dbName = newDbName
+                break
+                
+        self._db = DB(dbName)
+
         self._session_dir = os.path.join(get_temp_dir(),
                                         self._db.getFileName() + '_traces')
         tablename = self.getTableName()
@@ -151,7 +154,7 @@ class HistoryItem(object):
         if not self._db:
             raise w3afException('The database is not initialized yet.')
         result = []
-        sql = 'SELECT * FROM ' + self._dataTable
+        sql = 'SELECT * FROM ' + self._DATA_TABLE
         where = WhereHelper(searchData)
         sql += where.sql()
         orderby = ""
@@ -167,8 +170,7 @@ class HistoryItem(object):
 
         sql += ' LIMIT '  + str(resultLimit)
         try:
-            rawResult = self._db.retrieve(sql, where.values(), all=True)
-            for row in rawResult:
+            for row in self._db.select(sql, where.values()):
                 item = self.__class__()
                 item._loadFromRow(row, full)
                 result.append(item)
@@ -223,7 +225,7 @@ class HistoryItem(object):
             raise w3afException('The database is not initialized yet.')
         if not id:
             id = self.id
-        sql = 'DELETE FROM ' + self._dataTable + ' WHERE id = ? '
+        sql = 'DELETE FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         self._db.execute(sql, (id,))
         # FIXME 
         # don't forget about files!
@@ -236,9 +238,9 @@ class HistoryItem(object):
         if not id:
             id = self.id
 
-        sql = 'SELECT * FROM ' + self._dataTable + ' WHERE id = ? '
+        sql = 'SELECT * FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         try:
-            row = self._db.retrieve(sql, (id,))
+            row = self._db.select_one(sql, (id,))
         except Exception, e:
             msg = 'An unexpected error occurred while searching for id "%s".'
             msg += ' Original exception: "%s".'
@@ -304,7 +306,7 @@ class HistoryItem(object):
             sql = ('INSERT INTO %s '
             '(id, url, code, tag, mark, info, time, msg, content_type, '
                     'charset, method, response_size, codef, alias, has_qs) '
-            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._dataTable)
+            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._DATA_TABLE)
             self._db.execute(sql, values)
             self.id = self.response.getId()
         else:
@@ -313,7 +315,7 @@ class HistoryItem(object):
             ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, '
                         'time = ?, msg = ?, content_type = ?, charset = ?, '
             'method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
-            ' WHERE id = ?' % self._dataTable)
+            ' WHERE id = ?' % self._DATA_TABLE)
             self._db.execute(sql, values)
         
         # 
@@ -330,20 +332,20 @@ class HistoryItem(object):
             return True
 
     def getColumns(self):
-        return self._columns
+        return self._COLUMNS
 
     def getTableName(self):
-        return self._dataTable
+        return self._DATA_TABLE
 
     def getPrimaryKeyColumns(self):
-        return self._primaryKeyColumns
+        return self._PRIMARY_KEY_COLUMNS
     
     def getIndexColumns(self):
-        return self._indexColumns
+        return self._INDEX_COLUMNS
 
     def _updateField(self, name, value):
         '''Update custom field in DB.'''
-        sql = 'UPDATE ' + self._dataTable
+        sql = 'UPDATE ' + self._DATA_TABLE
         sql += ' SET ' + name + ' = ? '
         sql += ' WHERE id = ?'
         self._db.execute(sql, (value, self.id))
@@ -365,7 +367,7 @@ class HistoryItem(object):
         if not self._db:
             raise w3afException('The database is not initialized yet.')
         # Clear DB
-        sql = 'DELETE FROM ' + self._dataTable
+        sql = 'DELETE FROM ' + self._DATA_TABLE
         self._db.execute(sql)
         # Delete files
         rmtree(self._session_dir)
