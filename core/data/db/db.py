@@ -23,11 +23,8 @@ from __future__ import with_statement
 
 import sqlite3
 import sys
-import threading
 
 from multiprocessing.dummy import Queue, Process
-
-from core.controllers.w3afException import w3afException
 
 
 class DBClient(object):
@@ -94,7 +91,9 @@ class DBClientSQLite(Process, DBClient):
     sequentially in a separate thread (in the same order they arrived).
 
     """
-    def __init__(self, filename, autocommit=False, journal_mode="OFF"):
+    def __init__(self, filename, autocommit=False, journal_mode="OFF", 
+                       cache_size=2000):
+        
         super(DBClientSQLite, self).__init__()
         
         # Convert the filename to UTF-8, this is needed for windows, and special
@@ -106,6 +105,7 @@ class DBClientSQLite(Process, DBClient):
         self.filename = filename
         self.autocommit = autocommit
         self.journal_mode = journal_mode
+        self.cache_size = cache_size
         
         # Setting the size to 50 in order to avoid high memory consumption
         self.reqs = Queue(50)
@@ -151,6 +151,7 @@ class DBClientSQLite(Process, DBClient):
         else:
             conn = sqlite3.connect(self.filename, check_same_thread=True)
         conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
+        conn.execute('PRAGMA cache_size = %s' % self.cache_size)
         conn.text_factory = str
         cursor = conn.cursor()
         cursor.execute('PRAGMA synchronous=OFF')

@@ -31,9 +31,10 @@ from random import choice
 
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.data.db.disk_item import disk_item
+from core.data.db.db import DBClientSQLite
 
 
-class disk_list(object):
+class disk_list(DBClientSQLite):
     '''
     A disk_list is a sqlite3 wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
@@ -63,83 +64,45 @@ class disk_list(object):
         
         @param text_factory: A callable object to handle strings.
         '''
-        # Init some attributes
-        self._conn = None
-        self._filename = None
-        self._current_index = 0
-
-        # Create the lock
-        self._db_lock = threading.RLock()
+        # Get the temp filename to use
+        temp_dir = get_temp_dir()
+        fname = ''.join(starmap(choice, repeat((string.letters,), 18)))
+        self._filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
+                    
+        super(disk_list, self).__init__(self._filename, autocommit=False, 
+                                        journal_mode='OFF', cache_size=200)
         
-        fail_count = 0
-        while True:
-            # Get the temp filename to use
-            tempdir = get_temp_dir()
-            # A 12-chars random string
-            fn = ''.join(starmap(choice, repeat((string.letters,), 12)))
-            self._filename = os.path.join(tempdir, fn + '.w3af.temp_db')
-            
-            if sys.platform in ('win32', 'cygwin'):
-                self._filename = self._filename.decode("MBCS").encode("utf-8")
+        # Create table
+        self.execute('CREATE TABLE data (index_ REAL PRIMARY KEY, eq_attrs BLOB, pickle BLOB)')
 
-            try:
-                # Create the database
-                self._conn = sqlite3.connect(self._filename,
-                                             check_same_thread=False)
-                self._conn.text_factory = str
-                
-                # Modify some default values
-                # http://www.sqlite.org/pragma.html#pragma_cache_size (default: 2000)
-                # less pages in memory
-                self._conn.execute('PRAGMA cache_size = 200')
-                # http://www.sqlite.org/pragma.html#pragma_synchronous (default: 1)
-                # sends data to OS and does NOT wait for it to be on-disk
-                self._conn.execute('PRAGMA synchronous = 0')
-                # http://www.sqlite.org/pragma.html#pragma_synchronous
-                # disables journal -> ROLLBACK
-                self._conn.execute('PRAGMA journal_mode = OFF')
-                 
-                # Create table
-                self._conn.execute(
-                    '''CREATE TABLE data (index_ REAL PRIMARY KEY, eq_attrs BLOB, pickle BLOB)''')
+        # Create index
+        self.execute('CREATE INDEX data_index ON data(eq_attrs)')
 
-                # Create index
-                self._conn.execute(
-                    '''CREATE INDEX data_index ON data(eq_attrs)''')
-                
-            except Exception, e:
-                
-                fail_count += 1
-                if fail_count == 5:
-                    raise Exception('Failed to create database file. '
-                        'Original exception: "%s %s"' % (e, self._filename))
+        self.commit()
 
-                self._filename = None
-
-            else:
-                break
-                
-            # Now we perform a small trick... we remove the temp file directory
-            # entry
-            #
-            # According to the python documentation: On Windows, attempting to
-            # remove a file that is in use causes an exception to be raised;
-            # on Unix, the directory entry is removed but the storage allocated
-            # to the file is not made available until the original file is no
-            # longer in use
-            try:
-                os.remove(self._filename)
-            except Exception:
-                pass
+        # Init some attributes
+        self._current_index = 0
+        
+        # Now we perform a small trick... we remove the temp file directory
+        # entry
+        #
+        # According to the python documentation: On Windows, attempting to
+        # remove a file that is in use causes an exception to be raised;
+        # on Unix, the directory entry is removed but the storage allocated
+        # to the file is not made available until the original file is no
+        # longer in use
+        try:
+            os.remove(self._filename)
+        except Exception:
+            pass
     
     def __del__(self):
         try:
-            with self._db_lock:
-                try:
-                    self.close()
-                    os.remove(self._filename)
-                except:
-                    pass
+            try:
+                self.close()
+                os.remove(self._filename)
+            except:
+                pass
         except:
             pass
     
@@ -184,14 +147,13 @@ class disk_list(object):
         '''
         @return: True if the value is in our list.
         '''
-        with self._db_lock:
-            t = (self._get_eq_attrs_values(value),)
-            # Adding the "limit 1" to the query makes it faster, as it won't 
-            # have to scan through all the table/index, it just stops on the
-            # first match.
-            result = self.select_one(
-                    'SELECT count(*) FROM data WHERE eq_attrs=? limit 1', t)
-            return result
+        t = (self._get_eq_attrs_values(value),)
+        # Adding the "limit 1" to the query makes it faster, as it won't 
+        # have to scan through all the table/index, it just stops on the
+        # first match.
+        r = self.select_one(
+                'SELECT count(*) FROM data WHERE eq_attrs=? limit 1', t)
+        return bool(r[0])
     
     def append(self, value):
         '''
@@ -199,19 +161,15 @@ class disk_list(object):
         
         @param value: The value to append. 
         '''
-        # thread safe here!
-        with self._db_lock:
-            pickled_obj = cPickle.dumps(value)
-            eq_attrs = self._get_eq_attrs_values(value)
-            t = (self._current_index, eq_attrs, pickled_obj)
-            self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
-            self._current_index += 1
+        pickled_obj = cPickle.dumps(value)
+        eq_attrs = self._get_eq_attrs_values(value)
+        t = (self._current_index, eq_attrs, pickled_obj)
+        self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
+        self._current_index += 1
     
     def clear(self):
-        # thread safe here!
-        with self._db_lock:
-            self.execute("DELETE FROM data WHERE 1=1")
-            self._current_index = 0
+        self.execute("DELETE FROM data WHERE 1=1")
+        self._current_index = 0
     
     def extend(self, value_list):
         '''
@@ -253,7 +211,6 @@ class disk_list(object):
             return obj
         
     def __len__(self):
-        with self._db_lock:
-            r = self.select('SELECT count(*) FROM data')
-            return r[0]
+        r = self.select_one('SELECT count(*) FROM data')
+        return r[0]
 

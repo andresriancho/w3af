@@ -202,6 +202,3 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( reverse_iter_res, [3,2,1])
 
-if __name__ == '__main__':
-    unittest.main()
-
