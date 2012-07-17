@@ -20,10 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os
-import sqlite3
 import string
-import sys
-import threading
 import cPickle
 
 from itertools import repeat, starmap 
