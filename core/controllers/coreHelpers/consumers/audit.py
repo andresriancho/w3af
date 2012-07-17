@@ -103,11 +103,24 @@ class audit(Process):
     def in_queue_size(self):
         return self._in_queue.qsize()
 
-    def stop(self):
+    def join(self):
         '''
-        Poison the loop
+        Poison the loop and wait for all queued work to finish this might take
+        some time to process.
         '''
         self._in_queue.put( FINISH_CONSUMER )
         self._in_queue.join()
 
+    def terminate(self):
+        '''
+        Remove all queued work from in_queue and poison the loop so the consumer
+        exits. Should be very fast and called only if we don't care about the
+        queued work anymore (ie. user clicked stop in the UI).
+        '''
+        while not self._in_queue.empty():
+            self._in_queue.get()
+            self._in_queue.task_done()
+        
+        self._in_queue.put( FINISH_CONSUMER )
+        self._in_queue.join()
 

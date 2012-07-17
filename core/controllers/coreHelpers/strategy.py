@@ -132,18 +132,18 @@ class w3af_core_strategy(object):
         
     def teardown_grep(self):
         if self._grep_consumer is not None: 
-            self._grep_consumer.stop()
+            self._grep_consumer.join()
             self._grep_consumer = None
     
     def teardown_audit(self):
         if self._audit_consumer is not None:
-            #FIXME: See comment in audit, search for "self._audit_consumer.stop()" 
-            #self._audit_consumer.stop()
+            #FIXME: See comment in audit, search for "self._audit_consumer.join()" 
+            #self._audit_consumer.join()
             self._audit_consumer = None
         
     def teardown_auth(self):
         if self._auth_consumer is not None:
-            self._auth_consumer.stop()
+            self._auth_consumer.join()
             self._auth_consumer = None
 
     def _post_discovery(self):
@@ -606,8 +606,8 @@ class w3af_core_strategy(object):
             self._audit_consumer.in_queue_put(fr)
 
         # FIXME: This should be removed or moved around when we complete the whole
-        # refactoring. See the commented stop() in teardown_audit.
-        self._audit_consumer.stop()
+        # refactoring. See the commented join() in teardown_audit.
+        self._audit_consumer.join()
 
         self._handle_audit_results()
             

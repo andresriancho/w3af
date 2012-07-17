@@ -20,8 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import sys
+import Queue
 
-from multiprocessing.dummy import Queue, Process
+from multiprocessing.dummy import Process
 
 from .constants import FINISH_CONSUMER, FORCE_LOGIN
 
@@ -107,10 +108,23 @@ class auth(Process):
     def force_login(self):
         self._login()
         
-    def stop(self):
+    def join(self):
         '''
-        Poison the loop
+        Poison the loop and wait for all queued work to finish this might take
+        some time to process.
         '''
         self._in_queue.put( FINISH_CONSUMER )
         self._in_queue.join()
+
+    def terminate(self):
+        '''
+        Remove all queued work from in_queue and poison the loop so the consumer
+        exits. Should be very fast and called only if we don't care about the
+        queued work anymore (ie. user clicked stop in the UI).
+        '''
+        while not self._in_queue.empty():
+            self._in_queue.get()
+            self._in_queue.task_done()
         
+        self._in_queue.put( FINISH_CONSUMER )
+        self._in_queue.join()        
