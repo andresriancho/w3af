@@ -42,13 +42,11 @@ class disk_set(disk_list):
         @param value: The value to append.
         @return: True if the value was added. False if it existed and was not added.
         '''
-        # thread safe here!
-        with self._db_lock:
-            if self.__contains__(value):
-                return False
-            else:
-                self.__append(value)
-                return True
+        if self.__contains__(value):
+            return False
+        else:
+            self.__append(value)
+            return True
     
     def update(self, value_list):
         '''
