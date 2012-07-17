@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from itertools import repeat, starmap 
-from random import choice
 import os
 import sqlite3
 import string
 import sys
 import threading
 import cPickle
+
+from itertools import repeat, starmap 
+from random import choice
 
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.data.db.disk_item import disk_item
