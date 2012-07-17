@@ -136,7 +136,7 @@ class disk_list(object):
         try:
             with self._db_lock:
                 try:
-                    self._conn.close()
+                    self.close()
                     os.remove(self._filename)
                 except:
                     pass
@@ -189,9 +189,9 @@ class disk_list(object):
             # Adding the "limit 1" to the query makes it faster, as it won't 
             # have to scan through all the table/index, it just stops on the
             # first match.
-            cursor = self._conn.execute(
+            result = self.select_one(
                     'SELECT count(*) FROM data WHERE eq_attrs=? limit 1', t)
-            return cursor.fetchone()[0]
+            return result
     
     def append(self, value):
         '''
@@ -204,13 +204,13 @@ class disk_list(object):
             pickled_obj = cPickle.dumps(value)
             eq_attrs = self._get_eq_attrs_values(value)
             t = (self._current_index, eq_attrs, pickled_obj)
-            self._conn.execute("INSERT INTO data VALUES (?, ?, ?)", t)
+            self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
             self._current_index += 1
     
     def clear(self):
         # thread safe here!
         with self._db_lock:
-            self._conn.execute("DELETE FROM data WHERE 1=1")
+            self.execute("DELETE FROM data WHERE 1=1")
             self._current_index = 0
     
     def extend(self, value_list):
@@ -224,29 +224,28 @@ class disk_list(object):
     
     def ordered_iter(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT pickle FROM data ORDER BY eq_attrs ASC')
-        for r in cursor:
+        results = self.select('SELECT pickle FROM data ORDER BY eq_attrs ASC')
+        for r in results:
             obj = cPickle.loads(r[0])
             yield obj        
     
     def __iter__(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT pickle FROM data')
-        for r in cursor:
+        results = self.select('SELECT pickle FROM data')
+        for r in results:
             obj = cPickle.loads(r[0])
             yield obj
 
     def __reversed__(self):
         # TODO: How do I make the __iter__ thread safe?        
-        cursor = self._conn.execute('SELECT pickle FROM data ORDER BY index_ DESC')
-        for r in cursor:
+        results = self.select('SELECT pickle FROM data ORDER BY index_ DESC')
+        for r in results:
             obj = cPickle.loads(r[0])
             yield obj
 
     def __getitem__(self, key):
         try:
-            cursor = self._conn.execute( 'SELECT pickle FROM data WHERE index_ = ?', (key,) )
-            r = cursor.next()
+            r = self.select_one( 'SELECT pickle FROM data WHERE index_ = ?', (key,) )
             obj = cPickle.loads( r[0] )
         except:
             raise IndexError('list index out of range')
@@ -255,6 +254,6 @@ class disk_list(object):
         
     def __len__(self):
         with self._db_lock:
-            cursor = self._conn.execute('SELECT count(*) FROM data')
-            return cursor.fetchone()[0]
+            r = self.select('SELECT count(*) FROM data')
+            return r[0]
 
