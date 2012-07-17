@@ -160,7 +160,7 @@ class ssi(baseAuditPlugin):
             the Net actually allow visitors to enter HTML code as part of their comments. Now, 
             what happens if a malicious visitor decides to do some damage by entering the following:
 
-            <--#exec cmd="/bin/rm -fr /"--> 
+            <!--#exec cmd="ls" -->
 
             If the guestbook CGI program was designed carefully, to strip SSI commands from the
             input, then there is no problem. But, if it was not, there exists the potential for a
