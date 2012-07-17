@@ -21,29 +21,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import os
+import socket
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-from core.controllers.misc.homeDir import get_home_dir
-from core.controllers.misc.get_local_ip import get_local_ip
-from core.controllers.misc.is_private_site import is_private_site
-
-from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-
-from core.controllers.w3afException import w3afException
 import core.controllers.daemons.webserver as webserver
 import core.data.constants.w3afPorts as w3afPorts
 
-import os
-import socket
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.misc.homeDir import get_home_dir
+from core.controllers.misc.get_local_ip import get_local_ip
+from core.controllers.misc.is_private_site import is_private_site
+from core.controllers.w3afException import w3afException
+
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
+from core.data.parsers.urlParser import url_object
 
 CONFIG_ERROR_MSG = ('audit.remoteFileInclude plugin has to be correctly '
 'configured to use. Please set the correct values for local address and '

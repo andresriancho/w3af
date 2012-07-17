@@ -53,8 +53,6 @@ class blindSqli(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug('blindSqli plugin is testing: ' + freq.getURL())
-        
         #
         #    Setup blind SQL injection detector objects
         #

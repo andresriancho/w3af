@@ -21,26 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import re
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-
-from core.controllers.misc.is_source_file import is_source_file
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.misc.is_source_file import is_source_file
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
-
-import re
 
 
 class localFileInclude(baseAuditPlugin):
@@ -84,8 +77,6 @@ class localFileInclude(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'localFileInclude plugin is testing: ' + freq.getURL() )
-        
         oResponse = self._uri_opener.send_mutant(freq)
         
         #   What payloads do I want to send to the remote end?

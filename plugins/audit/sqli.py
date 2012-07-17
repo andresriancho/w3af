@@ -138,8 +138,6 @@ class sqli(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug('SQLi plugin is testing: ' + freq.getURL())
-
         oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants(freq, self.SQLI_STRINGS, oResponse=oResponse)
         

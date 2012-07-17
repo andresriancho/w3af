@@ -79,8 +79,6 @@ class osCommanding(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'osCommanding plugin is testing: ' + freq.getURL() )
-        
         # We are implementing two different ways of detecting OS Commanding
         # vulnerabilities:
         #       - Time delays

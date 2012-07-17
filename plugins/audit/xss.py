@@ -100,8 +100,6 @@ class xss(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug('XSS plugin is testing: ' + freq.getURL())
-        
         # Save it here, so I can search for permanent XSS
         self._fuzzableRequests.append(freq)
         

@@ -68,7 +68,6 @@ class frontpage(baseAuditPlugin):
         # I haven't found any vulns yet, OR i'm trying to find every
         # directory where I can write a file.
         if domain_path not in self._already_tested:
-            om.out.debug( 'frontpage plugin is testing: ' + freq.getURL() )
             self._already_tested.add( domain_path )
             
             # Find a file that doesn't exist and then try to upload it

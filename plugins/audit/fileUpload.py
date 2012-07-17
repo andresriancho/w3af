@@ -63,8 +63,7 @@ class fileUpload(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         if freq.getMethod().upper() == 'POST' and len ( freq.getFileVariables() ) != 0:
-            om.out.debug( 'fileUpload plugin is testing: ' + freq.getURL() )
-            
+
             for file_parameter in freq.getFileVariables():
                 fileh_filen_list = self._create_files()
                 # Only file handlers are passed to the createMutants functions

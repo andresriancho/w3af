@@ -21,19 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-from core.data.fuzzer.fuzzer import createMutants
-import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.data.esmre.multi_in import multi_in
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+import core.controllers.outputManager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.esmre.multi_in import multi_in
+from core.data.fuzzer.fuzzer import createMutants
 
 
 class LDAPi(baseAuditPlugin):
@@ -99,8 +94,6 @@ class LDAPi(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'LDAPi plugin is testing: ' + freq.getURL() )
-        
         oResponse = self._uri_opener.send_mutant(freq)
         ldapiStrings = self._get_LDAPi_strings()
         mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )

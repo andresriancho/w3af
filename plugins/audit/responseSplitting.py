@@ -22,18 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
 
 HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
@@ -54,8 +49,6 @@ class responseSplitting(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'responseSplitting plugin is testing: ' + freq.getURL() )
-        
         rsList = self._get_header_inj()
         mutants = createMutants( freq , rsList )
             

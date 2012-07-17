@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import re
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -89,8 +87,6 @@ class xpath(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'xpath plugin is testing: ' + freq.getURL() )
-        
         oResponse = self._uri_opener.send_mutant(freq)
         xpath_strings = self._get_xpath_strings()
         mutants = createMutants( freq , xpath_strings, oResponse=oResponse )

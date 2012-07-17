@@ -54,8 +54,6 @@ class globalRedirect(baseAuditPlugin):
         
         @param freq: A fuzzableRequest object
         '''
-        om.out.debug( 'globalRedirect plugin is testing: ' + freq.getURL() )
-        
         mutants = createMutants( freq , [self._test_site, ] )
         
         send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(m, follow_redir=False)

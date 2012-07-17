@@ -28,10 +28,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.options.option import option
-from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createMutants
-
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
@@ -62,8 +59,6 @@ class phishingVector(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'phishingVector plugin is testing: ' + freq.getURL() )
-        
         mutants = createMutants( freq , self._test_urls )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,

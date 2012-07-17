@@ -23,19 +23,13 @@ from __future__ import with_statement
 
 import core.controllers.outputManager as om
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-
-# kb stuff
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
 
 
 class redos(baseAuditPlugin):
@@ -73,8 +67,6 @@ class redos(baseAuditPlugin):
         if 'php' in freq.getURL().getExtension().lower():
             return
         
-        om.out.debug( 'redos plugin is testing: ' + freq.getURL() )
-    
         # Send the fuzzableRequest without any fuzzing, so we can measure the response 
         # time of this script in order to compare it later
         res = self._uri_opener.send_mutant(freq, grep=False)

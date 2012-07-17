@@ -22,19 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import createMutants
-from core.data.esmre.multi_in import multi_in
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
 
 
 class mxInjection(baseAuditPlugin):
@@ -71,8 +65,6 @@ class mxInjection(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'mxInjection plugin is testing: ' + freq.getURL() )
-        
         oResponse = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()
         mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )

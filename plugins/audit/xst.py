@@ -50,7 +50,7 @@ class xst(baseAuditPlugin):
     
         if not self._exec:
             # Do nothing
-            pass
+            return
         else:
             # Only run once
             self._exec = False  

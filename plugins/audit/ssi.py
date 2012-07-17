@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-from core.data.options.optionList import optionList
-from core.data.esmre.multi_in import multi_in
-
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.fuzzer.fuzzer import createMutants
+from core.data.esmre.multi_in import multi_in
+from core.data.db.disk_list import disk_list
 
 
 class ssi(baseAuditPlugin):
@@ -60,8 +60,7 @@ class ssi(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._fuzzable_requests = []
-        self._file_compiled_regex = []
+        self._fuzzable_requests = disk_list()
 
     def audit(self, freq ):
         '''
@@ -69,8 +68,6 @@ class ssi(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'ssi plugin is testing: ' + freq.getURL() )
-        
         oResponse = self._uri_opener.send_mutant(freq)
         
         # Used in end() to detect "persistent SSI"
@@ -81,17 +78,19 @@ class ssi(baseAuditPlugin):
         mutants = createMutants( freq , ssi_strings, oResponse=oResponse )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
             
     def _add_persistent_SSI(self, freq, oResponse):
         '''
-        Creates a wrapper object, around the freq variable, and also saves the original response to it.
-        Saves the wrapper to a list, that is going to be used in the end() method to identify persistent
-        SSI vulnerabilities.
+        Creates a wrapper object, around the freq variable, and also saves the
+        original response to it. Saves the wrapper to a list, that is going to
+        be used in the end() method to identify persistent SSI vulnerabilities.
         
-        @parameter freq: The fuzzable request to use in the creation of the wrapper object
-        @parameter oResponse: The original HTML response to use in the creation of the wrapper object
+        @parameter freq: The fuzzable request to use in the creation of the
+                         wrapper object
+        @parameter oResponse: The original HTML response to use in the creation
+                              of the wrapper object
         @return: None
         '''
         freq_copy = freq.copy()
@@ -120,8 +119,8 @@ class ssi(baseAuditPlugin):
         @return: A string, see above.
         '''
         local_files = []
-        local_files.append("<!--#include file=\"/etc/passwd\"-->")   
-        local_files.append("<!--#include file=\"C:\\boot.ini\"-->")
+        local_files.append('<!--#exec cmd="cat /etc/passwd" -->')   
+        local_files.append('<!--#exec cmd="type C:\\boot.ini" -->')
         
         ### TODO: Add mod_perl ssi injection support
         #local_files.append("<!--#perl ")
@@ -141,7 +140,7 @@ class ssi(baseAuditPlugin):
                     v.setPluginName(self.getName())
                     v.setName( 'Server side include vulnerability' )
                     v.setSeverity(severity.HIGH)
-                    v.setDesc( 'Server Side Include was found at: ' + mutant.foundAt() )
+                    v.setDesc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
                     v.setId( response.id )
                     v.addToHighlight( file_pattern )
                     kb.kb.append( self, 'ssi', v )
@@ -151,20 +150,26 @@ class ssi(baseAuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         for fr in self._fuzzable_requests:
-            response = self._uri_opener.send_mutant( fr )
-            # The _analyzeResult is called and "permanent" SSI's are saved there to the kb
-            # Example where this works:
+            # The _analyze_result is called and "permanent" SSI's are saved 
+            # there to the kb
+            self._uri_opener.send_mutant( fr, callback=self._analyze_result )
+            
             '''
-            Say you have a "guestbook" (a CGI application that allows visitors to leave messages
-            for everyone to see) on a server that has SSI enabled. Most such guestbooks around
-            the Net actually allow visitors to enter HTML code as part of their comments. Now, 
-            what happens if a malicious visitor decides to do some damage by entering the following:
+            Example where a persistent SSI can be found:
+            
+            Say you have a "guestbook" (a CGI application that allows visitors
+            to leave messages for everyone to see) on a server that has SSI 
+            enabled. Most such guestbooks around the Net actually allow visitors
+            to enter HTML code as part of their comments. Now, what happens if a
+            malicious visitor decides to do some damage by entering the following:
 
             <!--#exec cmd="ls" -->
 
-            If the guestbook CGI program was designed carefully, to strip SSI commands from the
-            input, then there is no problem. But, if it was not, there exists the potential for a
-            major headache!
+            If the guestbook CGI program was designed carefully, to strip SSI 
+            commands from the input, then there is no problem. But, if it was not,
+            there exists the potential for a major headache!
+            
+            For a working example please see moth VM.
             '''
             
         self.print_uniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )

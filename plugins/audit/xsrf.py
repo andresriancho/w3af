@@ -21,18 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.w3afException import w3afException
-from core.data.exchangableMethods import isExchangable
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.exchangableMethods import isExchangable
 
 
 class xsrf(baseAuditPlugin):
@@ -65,8 +59,6 @@ class xsrf(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'xsrf plugin is testing: ' + freq.getURL() )
-
         # Vulnerable by definition
         if freq.getMethod() == 'GET' and freq.getURI().hasQueryString():
             

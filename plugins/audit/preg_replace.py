@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import re
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -57,8 +55,6 @@ class preg_replace(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'preg_replace plugin is testing: ' + freq.getURL() )
-        
         # First I check If I get the error message from php
         oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )

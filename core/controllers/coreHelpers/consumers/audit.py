@@ -83,6 +83,7 @@ class audit(Process):
             else:
                 
                 for plugin in self._audit_plugins:
+                    om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), workunit ) )
                     result = self._audit_threadpool.apply_async( plugin.audit_wrapper,
                                                                  (workunit,) )
                     self._out_queue.put( (plugin.getName(), workunit, result) )

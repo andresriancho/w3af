@@ -54,8 +54,6 @@ class dav(baseAuditPlugin):
         domain_path = freq.getURL().getDomainPath()
         if domain_path not in self._already_tested_dirs:
             self._already_tested_dirs.add( domain_path )
-            om.out.debug( 'dav plugin is testing: ' + freq.getURL() )
-            
             #
             #    Send the three requests in different threads, store the apply_result
             #    objects in order to be able to "join()" in the next for loop

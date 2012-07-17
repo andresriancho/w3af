@@ -94,8 +94,6 @@ class buffOverflow(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        om.out.debug( 'bufferOverflow plugin is testing: ' + freq.getURL() )
-        
         try:
             oResponse = self._uri_opener.send_mutant(freq)
         except:

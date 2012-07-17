@@ -88,8 +88,6 @@ class eval(baseAuditPlugin):
         Tests an URL for eval() user input injection vulnerabilities.
         @param freq: A fuzzableRequest
         '''
-        om.out.debug('eval plugin is testing: ' + freq.getURL())
-
         if self._use_echo:
             self._fuzz_with_echo(freq)
         
