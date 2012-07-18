@@ -1,5 +1,5 @@
 '''
-gtkOutput.py
+gtk_output.py
 
 Copyright 2008 Andres Riancho
 
@@ -30,20 +30,20 @@ from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.data.options.optionList import optionList
 
 
-class gtkOutput(baseOutputPlugin):
+class gtk_output(baseOutputPlugin):
     '''
-    Saves messages to kb.kb.getData('gtkOutput', 'queue') to be displayed in the UI.
+    Saves messages to kb.kb.getData('gtk_output', 'queue') to be displayed in the UI.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
         baseOutputPlugin.__init__(self)
-        if not kb.kb.getData('gtkOutput', 'queue') == []:
-            self.queue = kb.kb.getData('gtkOutput', 'queue')
+        if not kb.kb.getData('gtk_output', 'queue') == []:
+            self.queue = kb.kb.getData('gtk_output', 'queue')
         else:
             self.queue = Queue.Queue()
-            kb.kb.save('gtkOutput', 'queue' , self.queue)
+            kb.kb.save('gtk_output', 'queue' , self.queue)
 
     def debug(self, msgString, newLine = True ):
         '''
@@ -112,7 +112,7 @@ class gtkOutput(baseOutputPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Saves messages to kb.kb.getData('gtkOutput', 'queue'), messages are saved in the form of
+        Saves messages to kb.kb.getData('gtk_output', 'queue'), messages are saved in the form of
          objects. This plugin was created to be able to communicate with the gtkUi and should be
          enabled if you are using it.
         '''

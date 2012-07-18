@@ -1,5 +1,5 @@
 '''
-emailReport.py
+email_report.py
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -35,7 +35,7 @@ Target: %s has some vulnerabilities.
 
 '''
 
-class emailReport(baseOutputPlugin):
+class email_report(baseOutputPlugin):
     '''Email report to specified addresses.
     '''
 
@@ -95,7 +95,7 @@ class emailReport(baseOutputPlugin):
             server.sendmail(self.fromAddr, self.toAddrs, msg.as_string())
             server.quit()
         except Exception, e:
-            msg = 'The SMTP settings in emailReport plugin seem to be incorrect. Original error: "'
+            msg = 'The SMTP settings in email_report plugin seem to be incorrect. Original error: "'
             msg += str(e) + '".'
             om.out.error( msg )
 

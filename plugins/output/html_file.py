@@ -1,5 +1,5 @@
 '''
-htmlFile.py
+html_file.py
 
 Copyright 2006 Andres Riancho
 
@@ -40,7 +40,7 @@ import codecs
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
 
 
-class htmlFile(baseOutputPlugin):
+class html_file(baseOutputPlugin):
     '''
     Print all messages to a HTML file.
     
@@ -52,7 +52,7 @@ class htmlFile(baseOutputPlugin):
         # Internal variables
         self._initialized = False
         self._style_filename = 'plugins' + os.path.sep + 'output' + os.path.sep
-        self._style_filename += 'htmlFile' + os.path.sep +'style.css'        
+        self._style_filename += 'html_file' + os.path.sep +'style.css'        
         
         # These attributes hold the file pointers
         self._file = None
@@ -431,5 +431,5 @@ class htmlFile(baseOutputPlugin):
             - verbose
 
         If you want to write every HTTP request/response to a text file, you should use the
-        textFile plugin.
+        text_file plugin.
         '''

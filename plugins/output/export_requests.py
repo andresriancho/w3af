@@ -77,7 +77,7 @@ class export_requests(baseOutputPlugin):
         return '''
         This plugin exports all discovered HTTP requests (URL, Method, Params)
         to the given file (CSV) which can then be imported in another scan by
-        using the discovery.importResults.
+        using the discovery.import_results.
         
         One configurable parameter exists:
             - output_file

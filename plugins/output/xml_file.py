@@ -1,5 +1,5 @@
 '''
-xmlFile.py
+xml_file.py
 
 Copyright 2006 Andres Riancho
 
@@ -44,7 +44,7 @@ import core.data.kb.knowledgeBase as kb
 str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
 
-class xmlFile(baseOutputPlugin):
+class xml_file(baseOutputPlugin):
     '''
     Print all messages to a xml file.
     

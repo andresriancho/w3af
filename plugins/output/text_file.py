@@ -1,5 +1,5 @@
 '''
-textFile.py
+text_file.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ import time
 import os
 
 
-class textFile(baseOutputPlugin):
+class text_file(baseOutputPlugin):
     '''
     Prints all messages to a text file.
     
@@ -121,7 +121,7 @@ class textFile(baseOutputPlugin):
             
     def write(self, message, log_type, newLine = True ):
         '''
-        Method that writes stuff to the textFile.
+        Method that writes stuff to the text_file.
         
         @param message: The message to write to the file
         @param log_type: Type of message are we writing to the file

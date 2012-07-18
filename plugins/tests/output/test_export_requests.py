@@ -35,7 +35,7 @@ class TestExportRequests(PluginTest):
             'target': follow_links_url,
             'plugins': {
                 'discovery': (
-                    PluginConfig('webSpider',
+                    PluginConfig('web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                 ),
                 'output': (

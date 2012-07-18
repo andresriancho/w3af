@@ -44,12 +44,12 @@ class TestXMLOutput(PluginTest):
                     ),
                 'discovery': (
                     PluginConfig(
-                        'webSpider',
+                        'web_spider',
                         ('onlyForward', True, PluginConfig.BOOL)),
                 ),
                 'output': (
                     PluginConfig(
-                        'xmlFile',
+                        'xml_file',
                         ('fileName', 'output-unittest.xml', PluginConfig.STR)),
                 )         
             },
