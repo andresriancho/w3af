@@ -34,6 +34,15 @@ class TestUnittestCoverage(unittest.TestCase):
     def test_audit(self):
         self._analyze_unittests('audit')
         
+    def test_attack(self):
+        self._analyze_unittests('attack')
+
+    def test_output(self):
+        self._analyze_unittests('output')
+
+    def test_auth(self):
+        self._analyze_unittests('auth')
+
     def test_discovery(self):
         self._analyze_unittests('discovery')
 
