@@ -158,7 +158,7 @@ class hmap(baseDiscoveryPlugin):
         '''
         # I dont really use the serverType plugin here, but it is nice to have two
         # opinions about what we are dealing with.
-        return ['discovery.serverHeader']
+        return ['discovery.server_header']
     
     def getLongDesc( self ):
         '''

@@ -29,7 +29,7 @@ class TestFindGit(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'discovery': (PluginConfig('findGit'),)}
+            'plugins': {'discovery': (PluginConfig('find_git'),)}
             }
         }
     
@@ -37,7 +37,7 @@ class TestFindGit(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('findGit', 'GIT')
+        vulns = self.kb.getData('find_git', 'GIT')
         
         self.assertEqual( len(vulns), 1, vulns )
         

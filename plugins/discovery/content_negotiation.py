@@ -309,7 +309,7 @@ class content_negotiation(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['discovery.webSpider']
+        return ['discovery.web_spider']
         
     def getLongDesc( self ):
         '''

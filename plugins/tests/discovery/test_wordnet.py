@@ -32,7 +32,7 @@ class TestWordnet(PluginTest):
             'plugins': {
                         'discovery': (PluginConfig('wordnet',
                                          ('wn_results', 20, PluginConfig.INT)),
-                                      PluginConfig('webSpider',
+                                      PluginConfig('web_spider',
                                          ('onlyForward', True, PluginConfig.BOOL)))
                         },
                 }

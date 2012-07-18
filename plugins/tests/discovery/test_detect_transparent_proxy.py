@@ -28,7 +28,7 @@ class TestDetectTransparentProxy(PluginTest):
     _run_config = {
         'cfg': {
             'target': target_url,
-            'plugins': {'discovery': (PluginConfig('detectTransparentProxy'),)}
+            'plugins': {'discovery': (PluginConfig('detect_transparent_proxy'),)}
             }
         }
     

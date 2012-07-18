@@ -29,7 +29,7 @@ class TestUserDir(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'discovery': (PluginConfig('userDir'),)}
+            'plugins': {'discovery': (PluginConfig('user_dir'),)}
             }
         }
     
@@ -37,7 +37,7 @@ class TestUserDir(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        users = self.kb.getData('userDir', 'users')
+        users = self.kb.getData('user_dir', 'users')
         
         self.assertEqual( len(users), 1, users )
         

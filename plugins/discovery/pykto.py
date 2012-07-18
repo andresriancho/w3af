@@ -285,11 +285,11 @@ class pykto(baseDiscoveryPlugin):
             kb_server = kb.kb.getData( 'hmap' , 'serverString' )
             self._source = 'hmap'
 
-        elif kb.kb.getData( 'serverHeader' , 'serverString' ) != []:
-            # Get the server type from the serverHeader plugin. It gets this info
+        elif kb.kb.getData( 'server_header' , 'serverString' ) != []:
+            # Get the server type from the server_header plugin. It gets this info
             # by reading the "server" header of request responses.
-            kb_server = kb.kb.getData( 'serverHeader' , 'serverString' )
-            self._source = 'serverHeader'
+            kb_server = kb.kb.getData( 'server_header' , 'serverString' )
+            self._source = 'server_header'
 
         else:
             self._source = 'not available'
@@ -581,7 +581,7 @@ class pykto(baseDiscoveryPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['discovery.serverHeader']
+        return ['discovery.server_header']
     
     def getLongDesc( self ):
         '''

@@ -1,5 +1,5 @@
 '''
-test_finger_bing.py
+test_urlfuzzer.py
 
 Copyright 2012 Andres Riancho
 
@@ -21,23 +21,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from ..helper import PluginTest, PluginConfig
 
-
-class TestFingerBing(PluginTest):
+class TestURLFuzzer(PluginTest):
     
-    base_url = 'http://www.w3af.org/'
+    base_url = 'http://moth/w3af/discovery/url_fuzzer'
     
     _run_configs = {
-        'cfg': {
-            'target': base_url,
-            'plugins': {'discovery': (PluginConfig('finger_bing'),)}
+        'cfg1': {
+            'target': base_url + '/index.html',
+            'plugins': {'discovery': (PluginConfig('url_fuzzer'),)}
             }
         }
     
-    def test_fuzzer_user(self):
-        cfg = self._run_configs['cfg']
+    def test_fuzzer_found_urls(self):
+        cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        mails = self.kb.getData('finger_bing', 'mails')
-        
-        self.assertEqual( len(mails), 3, mails)
-
+        expected_urls = ('/index.html', '/index.html~',
+                         '/index.html.zip', '.tgz')
+        urls = self.kb.getData('urls', 'url_objects')
+        self.assertEquals(
+                set(str(u) for u in urls),
+                set((self.base_url + end) for end in expected_urls)
+                )

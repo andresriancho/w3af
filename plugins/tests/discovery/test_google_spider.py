@@ -29,7 +29,7 @@ class TestGoogleSpider(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'discovery': (PluginConfig('googleSpider'),)}
+            'plugins': {'discovery': (PluginConfig('google_spider'),)}
             }
         }
     

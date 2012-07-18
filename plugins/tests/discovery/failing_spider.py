@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from plugins.discovery.webSpider import webSpider
+from plugins.discovery.web_spider import web_spider
 
 
-class failing_spider(webSpider):
+class failing_spider(web_spider):
     '''
     This is a test plugin that will raise exceptions.
     Only useful for testing, see test_discover_exception_handling.py
@@ -31,7 +31,7 @@ class failing_spider(webSpider):
     '''
 
     def __init__(self):
-        webSpider.__init__(self)
+        web_spider.__init__(self)
         
         self.blacklist = ('2.html',)
 

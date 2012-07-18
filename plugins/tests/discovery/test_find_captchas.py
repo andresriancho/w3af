@@ -29,7 +29,7 @@ class TestFindCAPTCHAS(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'discovery': (PluginConfig('findCaptchas'),)}
+            'plugins': {'discovery': (PluginConfig('find_captchas'),)}
             }
         }
     
@@ -37,7 +37,7 @@ class TestFindCAPTCHAS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('findCaptchas', 'CAPTCHA')
+        infos = self.kb.getData('find_captchas', 'CAPTCHA')
         
         self.assertEqual( len(infos), 1, infos )
         

@@ -29,7 +29,7 @@ class TestFingerGoogle(PluginTest):
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'discovery': (PluginConfig('fingerGoogle'),)}
+            'plugins': {'discovery': (PluginConfig('finger_google'),)}
             }
         }
     
@@ -37,7 +37,7 @@ class TestFingerGoogle(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        mails = self.kb.getData('fingerGoogle', 'mails')
+        mails = self.kb.getData('finger_google', 'mails')
         
         self.assertEqual( len(mails), 3, mails)
 

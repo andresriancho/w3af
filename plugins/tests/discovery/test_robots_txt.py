@@ -1,5 +1,5 @@
 '''
-test_finger_bing.py
+test_robots_reader.py
 
 Copyright 2012 Andres Riancho
 
@@ -21,23 +21,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from ..helper import PluginTest, PluginConfig
 
-
-class TestFingerBing(PluginTest):
+class TestRobots(PluginTest):
     
-    base_url = 'http://www.w3af.org/'
+    target_url = 'http://moth/'
     
     _run_configs = {
         'cfg': {
-            'target': base_url,
-            'plugins': {'discovery': (PluginConfig('finger_bing'),)}
+            'target': target_url,
+            'plugins': {'discovery': (PluginConfig('robots_txt'),)}
             }
         }
     
-    def test_fuzzer_user(self):
+    def test_robots(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        mails = self.kb.getData('finger_bing', 'mails')
+        urls = self.kb.getData('urls', 'url_objects')
         
-        self.assertEqual( len(mails), 3, mails)
-
+        self.assertEqual( len(urls), 5, urls )
+        
+        hidden_url = 'http://moth/hidden/'
+        
+        for url in urls:
+            if url.url_string == hidden_url:
+                self.assertTrue( True )
+                break
+        else:
+            self.assertTrue( False )
