@@ -1,5 +1,5 @@
 '''
-pathDisclosure.py
+path_disclosure.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ from core.data.constants.common_directories import get_common_directories
 import re
 
 
-class pathDisclosure(baseGrepPlugin):
+class path_disclosure(baseGrepPlugin):
     '''
     Grep every page for traces of path disclosure vulnerabilities.
       
@@ -100,16 +100,16 @@ class pathDisclosure(baseGrepPlugin):
         >>> from core.data.url.httpResponse import httpResponse as httpResponse
         >>> u = url_object('http://www.w3af.com/')
         >>> req = fuzzableRequest(u, method='GET')
-        >>> pd = pathDisclosure()
+        >>> pd = path_disclosure()
         
         >>> res = httpResponse(200, 'header body footer' , {'Content-Type':'text/html'}, u, u)
         >>> pd.grep( req, res )
-        >>> kb.kb.getData('pathDisclosure', 'pathDisclosure')
+        >>> kb.kb.getData('path_disclosure', 'path_disclosure')
         []
 
         >>> res = httpResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, u, u)
         >>> pd.grep( req, res )
-        >>> kb.kb.getData('pathDisclosure', 'pathDisclosure')[0]['path']
+        >>> kb.kb.getData('path_disclosure', 'path_disclosure')[0]['path']
         u'/etc/passwd'
         '''
         if response.is_text_or_html():
@@ -169,7 +169,7 @@ class pathDisclosure(baseGrepPlugin):
                             v.setName( 'Path disclosure vulnerability' )
                             v['path'] = match
                             v.addToHighlight( match )
-                            kb.kb.append( self, 'pathDisclosure', v )
+                            kb.kb.append( self, 'path_disclosure', v )
         
         self._update_KB_path_list()
     
@@ -205,7 +205,7 @@ class pathDisclosure(baseGrepPlugin):
         If a path disclosure was found, I can create a list of full paths to all URLs ever visited.
         This method updates that list.
         '''
-        path_disc_vulns = kb.kb.getData( 'pathDisclosure', 'pathDisclosure' ) 
+        path_disc_vulns = kb.kb.getData( 'path_disclosure', 'path_disclosure' ) 
         if len( path_disc_vulns ) == 0:
             # I can't calculate the list !
             pass
@@ -279,7 +279,7 @@ class pathDisclosure(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        inform = kb.kb.getData( 'pathDisclosure', 'pathDisclosure' )
+        inform = kb.kb.getData( 'path_disclosure', 'path_disclosure' )
         
         tmp = {}
         ids = {}

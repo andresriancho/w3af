@@ -1,5 +1,5 @@
 '''
-domXss.py
+dom_xss.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-class domXss(baseGrepPlugin):
+class dom_xss(baseGrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
       
@@ -108,7 +108,7 @@ class domXss(baseGrepPlugin):
             msg = 'The URL: "' + v.getURL() + '" has a DOM XSS (Risky JavaScript Code) '
             msg += 'bug using: "'+ vulnCode + '".'
             v.setDesc(msg)
-            kb.kb.append(self, 'domXss', v)
+            kb.kb.append(self, 'dom_xss', v)
 
     def _simpleGrep(self, response):
         '''
@@ -173,7 +173,7 @@ class domXss(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('domXss', 'domXss'), None)
+        self.print_uniq(kb.kb.getData('dom_xss', 'dom_xss'), None)
             
     def getPluginDeps(self):
         '''

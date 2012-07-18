@@ -1,5 +1,5 @@
 '''
-strangeReason.py
+strange_reason.py
 
 Copyright 2009 Andres Riancho
 
@@ -31,7 +31,7 @@ from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-class strangeReason(baseGrepPlugin):
+class strange_reason(baseGrepPlugin):
     '''
     Analyze HTTP response reason (Not Found, Ok, Internal Server Error).
       
@@ -105,7 +105,7 @@ class strangeReason(baseGrepPlugin):
                 #
                 #   I check if the kb already has a info object with this code:
                 #
-                strange_reason_infos = kb.kb.getData('strangeReason', 'strangeReason')
+                strange_reason_infos = kb.kb.getData('strange_reason', 'strange_reason')
                 
                 corresponding_info = None
                 for info_obj in strange_reason_infos:
@@ -131,7 +131,7 @@ class strangeReason(baseGrepPlugin):
                     desc += str(response.getMsg()) + '" manual inspection is advised.'
                     i.setDesc( desc )
                     i.addToHighlight( response.getMsg() )
-                    kb.kb.append( self , 'strangeReason' , i )
+                    kb.kb.append( self , 'strange_reason' , i )
     
     def setOptions( self, OptionList ):
         pass
@@ -147,7 +147,7 @@ class strangeReason(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'strangeReason', 'strangeReason' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'strange_reason', 'strange_reason' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

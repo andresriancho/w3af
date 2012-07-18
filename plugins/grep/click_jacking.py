@@ -1,5 +1,5 @@
 '''
-clickJacking.py
+click_jacking.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,7 +29,7 @@ from core.data.db.disk_list import disk_list
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 
-class clickJacking(baseGrepPlugin):
+class click_jacking(baseGrepPlugin):
     '''
     Grep every page for X-Frame-Options header.
 
@@ -77,7 +77,7 @@ class clickJacking(baseGrepPlugin):
             msg = 'The whole target '
             msg += 'has no protection (X-Frame-Options header) against ClickJacking attack'
             v.setDesc(msg)
-            kb.kb.append(self, 'clickJacking', v)
+            kb.kb.append(self, 'click_jacking', v)
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected, but x, y are not.
         if self._total_count > self._vuln_count:
@@ -85,8 +85,8 @@ class clickJacking(baseGrepPlugin):
             msg += 'against ClickJacking attack. Among them:\n '
             msg += ' '.join([str(url) + '\n' for url in self._vulns])
             v.setDesc(msg)
-            kb.kb.append(self, 'clickJacking', v)
-        self.print_uniq(kb.kb.getData( 'clickJacking', 'clickJacking' ), 'URL')
+            kb.kb.append(self, 'click_jacking', v)
+        self.print_uniq(kb.kb.getData( 'click_jacking', 'click_jacking' ), 'URL')
 
     def getPluginDeps(self):
         return []

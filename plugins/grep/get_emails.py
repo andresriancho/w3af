@@ -1,5 +1,5 @@
 '''
-getMails.py
+get_emails.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ import core.data.parsers.dpCache as dpCache
 from core.controllers.w3afException import w3afException
 
 
-class getMails(baseGrepPlugin):
+class get_emails(baseGrepPlugin):
     '''
     Find email accounts.
       

@@ -30,7 +30,7 @@ class TestErrorPages(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                'grep': (PluginConfig('errorPages'),)
+                'grep': (PluginConfig('error_pages'),)
             }
         }
     }
@@ -39,7 +39,7 @@ class TestErrorPages(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        infos = self.kb.getData('errorPages', 'errorPage')
+        infos = self.kb.getData('error_pages', 'errorPage')
         info = infos[0]
 
         self.assertEquals(1, len(infos))
@@ -48,7 +48,7 @@ class TestErrorPages(PluginTest):
         self.assertTrue(info.getName().startswith('Descriptive error page'))
 
         '''
-        infos = self.kb.getData('errorPages', 'server')
+        infos = self.kb.getData('error_pages', 'server')
         info = infos[0]
 
         self.assertEquals(1, len(infos))

@@ -1,5 +1,5 @@
 '''
-wsdlGreper.py
+wsdl_greper.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class wsdlGreper(baseGrepPlugin):
+class wsdl_greper(baseGrepPlugin):
     '''
     Grep every page for web service definition files.
     
@@ -70,9 +70,9 @@ class wsdlGreper(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> w = wsdlGreper()
+        >>> w = wsdl_greper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
+        >>> len(kb.kb.getData('wsdl_greper', 'wsdl'))
         0
 
         One long string
@@ -81,9 +81,9 @@ class wsdlGreper(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> w = wsdlGreper()
+        >>> w = wsdl_greper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
+        >>> len(kb.kb.getData('wsdl_greper', 'wsdl'))
         0
 
         Something interesting to match
@@ -94,9 +94,9 @@ class wsdlGreper(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> w = wsdlGreper()
+        >>> w = wsdl_greper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'wsdl'))
+        >>> len(kb.kb.getData('wsdl_greper', 'wsdl'))
         1
 
         Something interesting to match
@@ -108,9 +108,9 @@ class wsdlGreper(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> w = wsdlGreper()
+        >>> w = wsdl_greper()
         >>> w.grep(request, response)
-        >>> len(kb.kb.getData('wsdlGreper', 'disco'))
+        >>> len(kb.kb.getData('wsdl_greper', 'disco'))
         1
         '''
         url = response.getURL()
@@ -188,8 +188,8 @@ class wsdlGreper(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'wsdlGreper', 'wsdl' ), 'URL' )
-        self.print_uniq( kb.kb.getData( 'wsdlGreper', 'disco' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'wsdl_greper', 'wsdl' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'wsdl_greper', 'disco' ), 'URL' )
         
     def getLongDesc( self ):
         '''
@@ -198,7 +198,7 @@ class wsdlGreper(baseGrepPlugin):
         return '''
         This plugin greps every page for WSDL definitions.
         
-        Not all wsdls are found appending "?WSDL" to the url like discovery.wsdlFinder
+        Not all wsdls are found appending "?WSDL" to the url like discovery.wsdl_finder
         plugin does, this grep plugin will find some wsdl's that arent found by the 
         discovery plugin.
         '''

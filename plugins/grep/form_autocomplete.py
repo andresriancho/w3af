@@ -1,5 +1,5 @@
 '''
-formAutocomplete.py
+form_autocomplete.py
 
 Copyright 2010 Andres Riancho
 
@@ -42,7 +42,7 @@ PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 
-class formAutocomplete(baseGrepPlugin):
+class form_autocomplete(baseGrepPlugin):
     '''
     Grep every page for detection of forms with 'autocomplete' capabilities 
     containing password-type inputs.
@@ -101,7 +101,7 @@ class formAutocomplete(baseGrepPlugin):
                     i.addToHighlight(to_highlight)
                     
                     # Store and print
-                    kb.kb.append(self, 'formAutocomplete', i)
+                    kb.kb.append(self, 'form_autocomplete', i)
                     om.out.information(msg)
                     
                     break

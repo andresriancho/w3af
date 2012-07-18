@@ -1,7 +1,7 @@
 # coding: utf-8
 
 '''
-findComments.py
+html_comments.py
 
 Copyright 2006 Andres Riancho
 
@@ -41,7 +41,7 @@ import core.data.kb.info as info
 import re
 
 
-class findComments(baseGrepPlugin):
+class html_comments(baseGrepPlugin):
     '''
     Find HTML comments.
       
@@ -89,7 +89,7 @@ class findComments(baseGrepPlugin):
             else:
                 for comment in dp.getComments():
                     # These next two lines fix this issue:
-                    # audit.ssi + grep.findComments + web app with XSS = false positive
+                    # audit.ssi + grep.html_comments + web app with XSS = false positive
                     if request.sent( comment ):
                         continue
                     

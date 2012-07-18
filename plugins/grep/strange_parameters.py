@@ -1,5 +1,5 @@
 '''
-strangeParameters.py
+strange_parameters.py
 
 Copyright 2006 Andres Riancho
 
@@ -40,7 +40,7 @@ import core.data.parsers.dpCache as dpCache
 import re
 
 
-class strangeParameters(baseGrepPlugin):
+class strange_parameters(baseGrepPlugin):
     '''
     Grep the HTML response and find URIs that have strange parameters.
       
@@ -98,7 +98,7 @@ class strangeParameters(baseGrepPlugin):
                             i['parameterValue'] = qs[param_name][element_index]
                             i.addToHighlight(qs[param_name][element_index])
 
-                            kb.kb.append( self , 'strangeParameters' , i )
+                            kb.kb.append( self , 'strange_parameters' , i )
                             
                         # To find this kind of vulns
                         # http://thedailywtf.com/Articles/Oklahoma-
@@ -121,7 +121,7 @@ class strangeParameters(baseGrepPlugin):
                             v.setVar( param_name )
                             v['parameterValue'] = qs[param_name][element_index]
                             v.addToHighlight(qs[param_name][element_index])
-                            kb.kb.append( self , 'strangeParameters' , v )
+                            kb.kb.append( self , 'strange_parameters' , v )
     
     def setOptions( self, OptionList ):
         pass
@@ -137,7 +137,7 @@ class strangeParameters(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'strangeParameters', 'strangeParameters' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'strange_parameters', 'strange_parameters' ), 'VAR' )
 
     def _is_SQL(self, request, parameter, value):
         '''

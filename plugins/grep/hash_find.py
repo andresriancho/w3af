@@ -1,5 +1,5 @@
 '''
-hashFind.py
+hash_find.py
 
 Copyright 2006 Andres Riancho
 
@@ -35,7 +35,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import re
 
 
-class hashFind(baseGrepPlugin):
+class hash_find(baseGrepPlugin):
     '''
     Identify hashes in HTTP responses.
       
@@ -87,7 +87,7 @@ class hashFind(baseGrepPlugin):
                                 msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
                                 msg += '". This is uncommon and requires human verification.'
                                 i.setDesc( msg )
-                                kb.kb.append( self, 'hashFind', i )
+                                kb.kb.append( self, 'hash_find', i )
                                 
                                 self._already_reported.add( (possible_hash, response.getURL()) )
     
@@ -97,7 +97,7 @@ class hashFind(baseGrepPlugin):
         @return: True if the possible_hash has an equal (aprox.) distribution 
         of numbers and letters and only has hex characters (0-9, a-f)
         
-        >>> p = hashFind()
+        >>> p = hash_find()
         >>> p._has_hash_distribution( 'cdf13c6f85b216a18665e7bba74cc1a7' )
         True
         
@@ -161,7 +161,7 @@ class hashFind(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'hashFind', 'hashFind' ), None )
+        self.print_uniq( kb.kb.getData( 'hash_find', 'hash_find' ), None )
     
     def getPluginDeps( self ):
         '''

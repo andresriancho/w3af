@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
+from plugins.grep.password_profiling_plugins.basePpPlugin import basePpPlugin
 from core.data.getResponseType import isPDF
 
 # Added this try/except to fix a bug in debian/ubuntu.

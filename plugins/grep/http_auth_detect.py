@@ -1,5 +1,5 @@
 '''
-httpAuthDetect.py
+http_auth_detect.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.parsers.dpCache as dpCache
 
-class httpAuthDetect(baseGrepPlugin):
+class http_auth_detect(baseGrepPlugin):
     '''
     Find responses that indicate that the resource requires auth.
       
@@ -69,11 +69,11 @@ class httpAuthDetect(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> h = httpAuthDetect()
+        >>> h = http_auth_detect()
         >>> h.grep(request, response)
-        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
         0
-        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
         0
 
         One long string
@@ -82,11 +82,11 @@ class httpAuthDetect(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> h = httpAuthDetect()
+        >>> h = http_auth_detect()
         >>> h.grep(request, response)
-        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
         0
-        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
         0
 
         Something interesting to match
@@ -97,11 +97,11 @@ class httpAuthDetect(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> h = httpAuthDetect()
+        >>> h = http_auth_detect()
         >>> h.grep(request, response)
-        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
         0
-        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
         1
 
         Something interesting to match
@@ -111,11 +111,11 @@ class httpAuthDetect(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(401, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> h = httpAuthDetect()
+        >>> h = http_auth_detect()
         >>> h.grep(request, response)
-        >>> len(kb.kb.getData('httpAuthDetect', 'non_rfc_auth'))
+        >>> len(kb.kb.getData('http_auth_detect', 'non_rfc_auth'))
         1
-        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
         0
 
         Something interesting to match
@@ -125,11 +125,11 @@ class httpAuthDetect(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html', 'www-authenticate': 'realm-w3af'}
         >>> response = httpResponse(401, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> h = httpAuthDetect()
+        >>> h = http_auth_detect()
         >>> h.grep(request, response)
-        >>> len(kb.kb.getData('httpAuthDetect', 'auth'))
+        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
         1
-        >>> len(kb.kb.getData('httpAuthDetect', 'userPassUri'))
+        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
         0
         '''
         # If I have a 401 code, and this URL wasn't already reported...
@@ -137,7 +137,7 @@ class httpAuthDetect(baseGrepPlugin):
             
             # Doing this after the other if in order to be faster.
             already_reported = [i.getURL().getDomainPath() for i in \
-                                kb.kb.getData('httpAuthDetect', 'auth')]
+                                kb.kb.getData('http_auth_detect', 'auth')]
             if response.getURL().getDomainPath() not in already_reported:
             
                 # Perform all the work in this method

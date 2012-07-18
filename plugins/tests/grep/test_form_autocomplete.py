@@ -30,9 +30,9 @@ class TestFormAutocomplete(PluginTest):
         'cfg1': {
             'target': target_url,
             'plugins': {
-                'grep': (PluginConfig('formAutocomplete'),),
+                'grep': (PluginConfig('form_autocomplete'),),
                 'discovery': (
-                    PluginConfig('webSpider',
+                    PluginConfig('web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                 )         
             }
@@ -42,7 +42,7 @@ class TestFormAutocomplete(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('formAutocomplete', 'formAutocomplete')
+        vulns = self.kb.getData('form_autocomplete', 'form_autocomplete')
         
         expected_results = [ "index-form-default.html",
                              "index-form-on.html",

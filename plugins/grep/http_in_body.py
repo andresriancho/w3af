@@ -1,5 +1,5 @@
 ''''
-httpInBody.py
+http_in_body.py
 
 Copyright 2008 Andres Riancho
 
@@ -33,7 +33,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class httpInBody (baseGrepPlugin):
+class http_in_body (baseGrepPlugin):
     """
     Search for HTTP request/response string in response body.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -112,10 +112,10 @@ class httpInBody (baseGrepPlugin):
         '''
         for info_type in ['request', 'response']:
             
-            if kb.kb.getData('httpInBody', info_type):
+            if kb.kb.getData('http_in_body', info_type):
                 msg = 'The following URLs have an HTTP '+ info_type +' in the HTTP response body:'
                 om.out.information(msg)
-                for i in kb.kb.getData('httpInBody', info_type):
+                for i in kb.kb.getData('http_in_body', info_type):
                     om.out.information('- ' + i.getURI() + '  (id:' + str(i.getId()) + ')' )
         
     def getPluginDeps( self ):

@@ -1,5 +1,5 @@
 '''
-creditCards.py
+credit_cards.py
 
 Copyright 2008 Andres Riancho
 
@@ -61,7 +61,7 @@ def luhnCheck(value):
     return not (sm % 10)
 
 
-class creditCards(baseGrepPlugin):
+class credit_cards(baseGrepPlugin):
     '''
     This plugin detects the occurence of credit card numbers in web pages.
 
@@ -109,7 +109,7 @@ class creditCards(baseGrepPlugin):
                 msg = 'The URL: "' + v.getURL() + '" discloses the credit card number: "'
                 msg += card + '".'
                 v.setDesc( msg )
-                kb.kb.append( self, 'creditCards', v )
+                kb.kb.append( self, 'credit_cards', v )
      
     def _find_card(self, body):
         '''
@@ -132,7 +132,7 @@ class creditCards(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print results
-        self.print_uniq( kb.kb.getData( 'creditCards', 'creditCards' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'credit_cards', 'credit_cards' ), 'URL' )
 
 
     def getOptions( self ):

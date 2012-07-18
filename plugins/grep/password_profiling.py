@@ -1,5 +1,5 @@
 '''
-passwordProfiling.py
+password_profiling.py
 
 Copyright 2006 Andres Riancho
 
@@ -30,7 +30,7 @@ from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.factory import factory
 
 
-class passwordProfiling(baseGrepPlugin):
+class password_profiling(baseGrepPlugin):
     '''
     Create a list of possible passwords by reading HTTP response bodies.
       
@@ -43,7 +43,7 @@ class passwordProfiling(baseGrepPlugin):
         # thread safe, So i have to create an instance of HTMLParser for every
         # call to testResponse
         #self._htmlParser = htmlParser.HTMLParser()
-        kb.kb.save( self, 'passwordProfiling', {} )
+        kb.kb.save( self, 'password_profiling', {} )
         
         # names of plugins to run
         ### TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata
@@ -89,7 +89,7 @@ class passwordProfiling(baseGrepPlugin):
             data = self._run_plugins(response)
             
             with self._plugin_lock:
-                old_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+                old_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
                 
                 # "merge" both maps and update the repetitions
                 for d in data:
@@ -125,7 +125,7 @@ class passwordProfiling(baseGrepPlugin):
                     new_data = old_data
                 
                 # save the updated map
-                kb.kb.save(self, 'passwordProfiling', new_data)
+                kb.kb.save(self, 'password_profiling', new_data)
 
     
     def _run_plugins( self, response ):
@@ -137,7 +137,7 @@ class passwordProfiling(baseGrepPlugin):
         # Create plugin instances only once
         if not self._plugins:
             for plugin_name in self._plugin_name_list:
-                plugin_instance = factory( 'plugins.grep.passwordProfilingPlugins.' +  plugin_name )
+                plugin_instance = factory( 'plugins.grep.password_profiling_plugins.' +  plugin_name )
                 self._plugins.append( plugin_instance )
         
         res = {}
@@ -168,7 +168,7 @@ class passwordProfiling(baseGrepPlugin):
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
         
-        profiling_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+        profiling_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
         
         # This fixes a very strange bug where for some reason the kb doesn't 
         # have a dict anymore (threading issue most likely) Seen here:

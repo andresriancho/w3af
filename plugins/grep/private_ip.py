@@ -1,5 +1,5 @@
 '''
-privateIP.py
+private_ip.py
 
 Copyright 2006 Andres Riancho
 
@@ -38,7 +38,7 @@ import core.data.constants.severity as severity
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class privateIP(baseGrepPlugin):
+class private_ip(baseGrepPlugin):
     '''
     Find private IP addresses on the response body and headers.
       
@@ -175,8 +175,8 @@ class privateIP(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'privateIP', 'header' ), None )
-        self.print_uniq( kb.kb.getData( 'privateIP', 'HTML' ), None )
+        self.print_uniq( kb.kb.getData( 'private_ip', 'header' ), None )
+        self.print_uniq( kb.kb.getData( 'private_ip', 'HTML' ), None )
             
     def getPluginDeps( self ):
         '''

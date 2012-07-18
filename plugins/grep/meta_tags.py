@@ -1,5 +1,5 @@
 '''
-metaTags.py
+meta_tags.py
 
 Copyright 2006 Andres Riancho
 
@@ -37,7 +37,7 @@ import core.data.kb.info as info
 from core.controllers.w3afException import w3afException
 
 
-class metaTags(baseGrepPlugin):
+class meta_tags(baseGrepPlugin):
     '''
     Grep every page for interesting meta tags.
       
@@ -119,7 +119,7 @@ class metaTags(baseGrepPlugin):
                                     msg += ' The tag is used for '
                                     msg += self._interesting_words[name] + '.'
                                 i.setDesc( msg )
-                                kb.kb.append( self , 'metaTags' , i )
+                                kb.kb.append( self , 'meta_tags' , i )
 
                             else:
                                 # The attribute is not interesting
@@ -153,7 +153,7 @@ class metaTags(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Now print the information objects
-        self.print_uniq( kb.kb.getData( 'metaTags', 'metaTags' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'meta_tags', 'meta_tags' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

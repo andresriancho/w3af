@@ -30,7 +30,7 @@ class TestDirectoryIndexing(PluginTest):
         'cfg1': {
             'target': dir_indexing_url,
             'plugins': {
-                'grep': (PluginConfig('directoryIndexing'),)
+                'grep': (PluginConfig('directory_indexing'),)
             }
         }
     }
@@ -38,7 +38,7 @@ class TestDirectoryIndexing(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('directoryIndexing', 'directory')
+        vulns = self.kb.getData('directory_indexing', 'directory')
         self.assertEquals(1, len(vulns))
         v = vulns[0]
         self.assertEquals(self.dir_indexing_url, str(v.getURL()))

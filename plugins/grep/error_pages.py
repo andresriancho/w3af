@@ -1,5 +1,5 @@
 '''
-errorPages.py
+error_pages.py
 
 Copyright 2006 Andres Riancho
 
@@ -35,7 +35,7 @@ import core.data.kb.info as info
 import re
 
 
-class errorPages(baseGrepPlugin):
+class error_pages(baseGrepPlugin):
     '''
     Grep every page for error pages.
       
@@ -220,7 +220,7 @@ class errorPages(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'errorPages', 'errorPage' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'error_pages', 'errorPage' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

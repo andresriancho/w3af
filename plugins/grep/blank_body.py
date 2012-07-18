@@ -1,5 +1,5 @@
 '''
-blankBody.py
+blank_body.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class blankBody(baseGrepPlugin):
+class blank_body(baseGrepPlugin):
     '''
     Find responses with empty body.
       
@@ -63,12 +63,12 @@ class blankBody(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> b = blankBody()
+        >>> b = blank_body()
         >>> b.grep(request, response)
-        >>> assert len(kb.kb.getData('blankBody', 'blankBody')) == 1
+        >>> assert len(kb.kb.getData('blank_body', 'blank_body')) == 1
 
         With some content.
-        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> kb.kb.save('blank_body','blank_body',[])
         >>> body = 'header body footer'
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
@@ -76,7 +76,7 @@ class blankBody(baseGrepPlugin):
         >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
 
         Strange method, empty body.
-        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> kb.kb.save('blank_body','blank_body',[])
         >>> body = ''
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
@@ -85,7 +85,7 @@ class blankBody(baseGrepPlugin):
         >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
 
         Response codes,
-        >>> kb.kb.save('blankBody','blankBody',[])
+        >>> kb.kb.save('blank_body','blank_body',[])
         >>> body = ''
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(401, body , headers, url, url)
@@ -111,7 +111,7 @@ class blankBody(baseGrepPlugin):
             msg = 'The URL: "'+ response.getURL()  + '" returned an empty body. '
             msg += 'This could indicate an error.'
             i.setDesc(msg)
-            kb.kb.append( self, 'blankBody', i )
+            kb.kb.append( self, 'blank_body', i )
         
     def setOptions( self, OptionList ):
         '''
@@ -130,7 +130,7 @@ class blankBody(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'blankBody', 'blankBody' ), None )
+        self.print_uniq( kb.kb.getData( 'blank_body', 'blank_body' ), None )
     
     def getPluginDeps( self ):
         '''

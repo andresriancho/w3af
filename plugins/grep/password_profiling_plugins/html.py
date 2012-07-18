@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import re
 
-from plugins.grep.passwordProfilingPlugins.basePpPlugin import basePpPlugin
+from plugins.grep.password_profiling_plugins.basePpPlugin import basePpPlugin
 
 words_split_re = re.compile("[^\w]")
 

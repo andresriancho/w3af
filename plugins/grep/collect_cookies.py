@@ -1,5 +1,5 @@
 '''
-collectCookies.py
+collect_cookies.py
 
 Copyright 2006 Andres Riancho
 
@@ -37,7 +37,7 @@ import core.data.constants.severity as severity
 import Cookie
 
 
-class collectCookies(baseGrepPlugin):
+class collect_cookies(baseGrepPlugin):
     '''
     Grep every response for session cookies sent by the web application.
       
@@ -81,11 +81,11 @@ class collectCookies(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collectCookies()
+        >>> c = collect_cookies()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collectCookies', 'cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
         0
-        >>> len(kb.kb.getData('collectCookies', 'invalid-cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
         0
 
         >>> kb.kb.cleanup()
@@ -94,11 +94,11 @@ class collectCookies(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collectCookies()
+        >>> c = collect_cookies()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collectCookies', 'cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
         1
-        >>> len(kb.kb.getData('collectCookies', 'invalid-cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
         0
 
         >>> kb.kb.cleanup()
@@ -107,11 +107,11 @@ class collectCookies(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; HttpOnly'}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collectCookies()
+        >>> c = collect_cookies()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collectCookies', 'cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
         1
-        >>> len(kb.kb.getData('collectCookies', 'invalid-cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
         0
 
         >>> kb.kb.cleanup()
@@ -120,11 +120,11 @@ class collectCookies(baseGrepPlugin):
         >>> headers = {'content-type': 'text/html', 'Set-Cookie': ''}
         >>> response = httpResponse(200, body , headers, url, url)
         >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collectCookies()
+        >>> c = collect_cookies()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collectCookies', 'cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
         1
-        >>> len(kb.kb.getData('collectCookies', 'invalid-cookies'))
+        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
         0
 
         '''
@@ -228,7 +228,7 @@ class collectCookies(baseGrepPlugin):
             The rest of the page is HTTP
         '''
         if request.getURL().getProtocol().lower() == 'http':
-            for cookie in kb.kb.getData( 'collectCookies', 'cookies' ):
+            for cookie in kb.kb.getData( 'collect_cookies', 'cookies' ):
                 if cookie.getURL().getProtocol().lower() == 'https' and \
                 request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
@@ -371,7 +371,7 @@ class collectCookies(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        cookies = kb.kb.getData( 'collectCookies', 'cookies' )
+        cookies = kb.kb.getData( 'collect_cookies', 'cookies' )
             
         # Group correctly
         tmp = []

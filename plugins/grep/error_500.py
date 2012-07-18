@@ -1,5 +1,5 @@
 '''
-error500.py
+error_500.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,7 +32,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 
-class error500(baseGrepPlugin):
+class error_500(baseGrepPlugin):
     '''
     Grep every page for error 500 pages that haven't been identified as bugs by other plugins.
       
@@ -97,7 +97,7 @@ class error500(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         
         The real job of this plugin is done here, where I will try to see if one
-        of the error500 responses were not identified as a vuln by some of my audit plugins
+        of the error_500 responses were not identified as a vuln by some of my audit plugins
         '''
         all_vulns = kb.kb.getAllVulns()
         all_vulns_tuples = [ (v.getURI(), v.getDc()) for v in all_vulns ]
@@ -117,9 +117,9 @@ class error500(baseGrepPlugin):
                 msg += ' Enable all plugins and try again, if the vulnerability still is not'
                 msg += ' identified, please verify manually and report it to the w3af developers.'
                 v.setDesc( msg )
-                kb.kb.append( self, 'error500', v )
+                kb.kb.append( self, 'error_500', v )
                 
-        self.print_uniq( kb.kb.getData( 'error500', 'error500' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'error_500', 'error_500' ), 'VAR' )
 
     def getPluginDeps( self ):
         '''

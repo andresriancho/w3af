@@ -1,5 +1,5 @@
 '''
-fileUpload.py
+file_upload.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ import core.data.kb.info as info
 FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
 
 
-class fileUpload(baseGrepPlugin):
+class file_upload(baseGrepPlugin):
     '''
     Find HTML forms with file upload capabilities.
       
@@ -77,7 +77,7 @@ class fileUpload(baseGrepPlugin):
                     i.setDesc(msg)
                     to_highlight = etree.tostring(input_file)
                     i.addToHighlight(to_highlight)
-                    kb.kb.append(self, 'fileUpload', i)
+                    kb.kb.append(self, 'file_upload', i)
 
     
     def setOptions( self, OptionList ):
@@ -94,7 +94,7 @@ class fileUpload(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'URL' )
 
     def getPluginDeps( self ):
         '''

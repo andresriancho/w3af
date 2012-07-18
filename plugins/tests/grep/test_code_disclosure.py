@@ -1,5 +1,5 @@
 '''
-test_codeDisclosure.py
+test_code_disclosure.py
 
 Copyright 2011 Andres Riancho
 
@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from plugins.grep.codeDisclosure import codeDisclosure
+from plugins.grep.code_disclosure import code_disclosure
 import unittest
 
 from core.data.url.httpResponse import httpResponse
@@ -29,16 +29,16 @@ from core.data.parsers.urlParser import url_object
 import core.data.kb.knowledgeBase as kb
 
 
-class test_codeDisclosure(unittest.TestCase):
+class test_code_disclosure(unittest.TestCase):
     
     def setUp(self):
-        self.plugin = codeDisclosure()
+        self.plugin = code_disclosure()
 
         from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
         from core.data.url.xUrllib import xUrllib
         f = fingerprint_404_singleton( [False, False, False] )
         f.set_urlopener( xUrllib() )
-        kb.kb.save('codeDisclosure', 'codeDisclosure', [])
+        kb.kb.save('code_disclosure', 'code_disclosure', [])
 
         
     def test_ASP_code_disclosure(self):
@@ -48,7 +48,7 @@ class test_codeDisclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1 )
+        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
             
     def test_PHP_code_disclosure(self):
         body = 'header <? echo $a; ?> footer'
@@ -57,7 +57,7 @@ class test_codeDisclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 1 )
+        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
 
 
     def test_no_code_disclosure_blank(self):
@@ -67,7 +67,7 @@ class test_codeDisclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('codeDisclosure', 'codeDisclosure')) == 0 )
+        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 0 )
 
     def test_no_code_disclosure(self):
         # TODO: Add this test

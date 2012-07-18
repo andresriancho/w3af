@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from plugins.grep.fileUpload import fileUpload
+from plugins.grep.file_upload import file_upload
 import unittest
 
 from core.data.url.httpResponse import httpResponse
@@ -32,13 +32,13 @@ import core.data.kb.knowledgeBase as kb
 class test_file_upload(unittest.TestCase):
     
     def setUp(self):
-        self.plugin = fileUpload()
+        self.plugin = file_upload()
 
         from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
         from core.data.url.xUrllib import xUrllib
         f = fingerprint_404_singleton( [False, False, False] )
         f.set_urlopener( xUrllib() )
-        kb.kb.save('fileUpload', 'fileUpload', [])
+        kb.kb.save('file_upload', 'file_upload', [])
 
         
     def test_simple(self):
@@ -49,8 +49,8 @@ class test_file_upload(unittest.TestCase):
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('fileUpload', 'fileUpload')), 1 )
-        i = kb.kb.getData('fileUpload', 'fileUpload')[0]
+        self.assertEquals( len(kb.kb.getData('file_upload', 'file_upload')), 1 )
+        i = kb.kb.getData('file_upload', 'file_upload')[0]
         self.assertEquals( i.getName(), 'File upload form' )
             
     def test_complex(self):
@@ -61,8 +61,8 @@ class test_file_upload(unittest.TestCase):
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('fileUpload', 'fileUpload')), 1 )
-        i = kb.kb.getData('fileUpload', 'fileUpload')[0]
+        self.assertEquals( len(kb.kb.getData('file_upload', 'file_upload')), 1 )
+        i = kb.kb.getData('file_upload', 'file_upload')[0]
         self.assertEquals( i.getName(), 'File upload form' )
 
     def test_none(self):
@@ -73,4 +73,4 @@ class test_file_upload(unittest.TestCase):
         request = fuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('fileUpload', 'fileUpload')), 0 )
+        self.assertEquals( len(kb.kb.getData('file_upload', 'file_upload')), 0 )

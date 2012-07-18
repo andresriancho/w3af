@@ -1,5 +1,5 @@
 '''
-strangeHeaders.py
+strange_headers.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ import core.data.kb.info as info
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
-class strangeHeaders(baseGrepPlugin):
+class strange_headers(baseGrepPlugin):
     '''
     Grep headers for uncommon headers sent in HTTP responses.
       
@@ -59,7 +59,7 @@ class strangeHeaders(baseGrepPlugin):
             if header_name.upper() not in self._common_headers:
                 
                 # I check if the kb already has a info object with this code:
-                strange_header_infos = kb.kb.getData('strangeHeaders', 'strangeHeaders')
+                strange_header_infos = kb.kb.getData('strange_headers', 'strange_headers')
                 
                 corresponding_info = None
                 for info_obj in strange_header_infos:
@@ -86,7 +86,7 @@ class strangeHeaders(baseGrepPlugin):
                     hvalue = response.getHeaders()[header_name]
                     i['header_value'] = hvalue
                     i.addToHighlight( hvalue, header_name )
-                    kb.kb.append( self , 'strangeHeaders' , i )
+                    kb.kb.append( self , 'strange_headers' , i )
 
 
         # Now check for protocol anomalies
@@ -128,7 +128,7 @@ class strangeHeaders(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        headers = kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )
+        headers = kb.kb.getData( 'strange_headers', 'strange_headers' )
         # This is how I saved the data:
         #i['header_name'] = header_name
         #i['header_value'] = response.getHeaders()[header_name]

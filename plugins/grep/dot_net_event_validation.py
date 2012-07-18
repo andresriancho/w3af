@@ -1,5 +1,5 @@
 '''
-dotNetEventValidation.py
+dot_net_event_validation.py
 
 Copyright 2008 Andres Riancho
 
@@ -34,7 +34,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import re
 
 
-class dotNetEventValidation(baseGrepPlugin):
+class dot_net_event_validation(baseGrepPlugin):
     '''
     Grep every page and identify the ones that have viewstate and don't have event validation.
       
@@ -86,7 +86,7 @@ class dotNetEventValidation(baseGrepPlugin):
                     msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled. '
                     msg += 'This programming/configuration error should be manually verified.'
                     i.setDesc( msg )
-                    kb.kb.append( self, 'dotNetEventValidation', i )
+                    kb.kb.append( self, 'dot_net_event_validation', i )
 
                 if not self._encryptedVs.search(response.getBody()):
                     # Nice! We can decode the viewstate! =)
@@ -99,7 +99,7 @@ class dotNetEventValidation(baseGrepPlugin):
                     msg += 'This programming/configuration error could be exploited '
                     msg += 'to decode the viewstate contents.'
                     i.setDesc( msg )
-                    kb.kb.append( self, 'dotNetEventValidation', i )
+                    kb.kb.append( self, 'dot_net_event_validation', i )
 
     
     def setOptions( self, OptionList ):
@@ -120,7 +120,7 @@ class dotNetEventValidation(baseGrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print alerts
-        self.print_uniq( kb.kb.getData( 'dotNetEventValidation', 'dotNetEventValidation' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'dot_net_event_validation', 'dot_net_event_validation' ), 'URL' )
         
     def getPluginDeps( self ):
         '''
