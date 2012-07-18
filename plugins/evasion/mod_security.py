@@ -1,5 +1,5 @@
 '''
-selfReference.py
+mod_security.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,18 +22,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
+
+from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+import urllib2
+import copy
 
 
-class selfReference(baseEvasionPlugin):
+class mod_security(baseEvasionPlugin):
     '''
-    Add a directory self reference.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    Evade detection using a mod_security vulnerability.
+    
+    @author: Francisco Amato ( famato |at| infobyte.com.ar )
     '''
 
     def __init__(self):
@@ -45,45 +50,45 @@ class selfReference(baseEvasionPlugin):
         
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-
+        
         >>> from core.data.parsers.urlParser import url_object
-        >>> import re
-        >>> sr = selfReference()
-
+        >>> modsec = mod_security()
+        
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> sr.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/./'
+        >>> modsec.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/abc/')
-        >>> r = HTTPRequest( u )
-        >>> sr.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/./abc/./'
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u, data='' )
+        >>> modsec.modifyRequest( r ).get_data()
+        ''
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
-        >>> r = HTTPRequest( u )
-        >>> sr.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/./abc/./def.htm?id=1'
+        >>> u = url_object('http://www.w3af.com/')
+        >>> r = HTTPRequest( u, data='a=b' )
+        >>> modsec.modifyRequest( r ).get_data()
+        '\\x00a=b'
 
-        >>> #
-        >>> #    The plugins should not modify the original request
-        >>> #
-        >>> u.url_string
-        u'http://www.w3af.com/abc/def.htm?id=1'
-        
         '''
-        # We mangle the URL
-        path = request.url_object.getPath()
-        path = path.replace('/','/./' )
-        
-        # Finally, we set all the mutants to the request in order to return it
-        new_url = request.url_object.copy()
-        new_url.setPath( path )
-        new_req = HTTPRequest( new_url , request.get_data(), 
-                               request.headers, request.get_origin_req_host() )
-        
-        return new_req
-    
+        # Mangle the postdata
+        data = str(request.get_data())
+        if data:
+            
+            try:
+                # Only mangle the postdata if it is a url encoded string
+                parse_qs( data )
+            except:
+                pass
+            else:
+                data = '\x00' + data 
+                headers_copy = copy.deepcopy(request.headers)
+                headers_copy['content-length'] = str(len(data))
+                
+                request = HTTPRequest( request.url_object, data, headers_copy, 
+                                       request.get_origin_req_host() )
+                
+        return request
+
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -115,16 +120,19 @@ class selfReference(baseEvasionPlugin):
         
         @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
-        return 0
-
+        return 50
+    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This evasion plugin adds a directory self reference.
+        This evasion plugin performs a bypass for mod_security version 2.1.0 or less here:
+            - http://www.php-security.org/MOPB/BONUS-12-2007.html
+        
+        Important: The evasion only works for postdata.
         
         Example:
-            Input:      '/bar/foo.asp'
-            Output :    '/bar/./foo.asp'
+            Postdata Input:      'a=b'
+            Postdata Output :    '\\x00a=b'
         '''

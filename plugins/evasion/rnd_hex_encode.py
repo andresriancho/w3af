@@ -1,5 +1,5 @@
 '''
-rndHexEncode.py
+rnd_hex_encode.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,7 +32,7 @@ from core.data.options.optionList import optionList
 from random import randint
 
 
-class rndHexEncode(baseEvasionPlugin):
+class rnd_hex_encode(baseEvasionPlugin):
     '''
     Add random hex encoding.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -49,7 +49,7 @@ class rndHexEncode(baseEvasionPlugin):
         @return: The modified request
         
         >>> from core.data.parsers.urlParser import url_object
-        >>> rhe = rndHexEncode()
+        >>> rhe = rnd_hex_encode()
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )

@@ -1,5 +1,5 @@
 '''
-rndParam.py
+reversed_slashes.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,9 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-
-from core.data.fuzzer.fuzzer import createRandAlNum
-from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
@@ -32,11 +29,12 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class rndParam(baseEvasionPlugin):
+class reversed_slashes(baseEvasionPlugin):
     '''
-    Add a random parameter.
+    Change the slashes from / to \\
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+
     def __init__(self):
         baseEvasionPlugin.__init__(self)
 
@@ -44,73 +42,46 @@ class rndParam(baseEvasionPlugin):
         '''
         Mangles the request
         
+        
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
         
         >>> from core.data.parsers.urlParser import url_object
-        >>> rp = rndParam()
+        >>> rs = reversed_slashes()
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.querystring
-        >>> len(qs)
-        1
+        >>> rs.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> u = url_object('http://www.w3af.com/abc/def.htm')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.querystring
-        >>> len(qs)
-        2
+        >>> rs.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/abc\\\def.htm'
 
-        >>> u = url_object('http://www.w3af.com/?id=1')
-        >>> r = HTTPRequest( u, data='a=b' )
-        >>> data = parse_qs( rp.modifyRequest( r ).get_data() )
-        >>> len(data)
-        2
-        
-        >>> data = rp.modifyRequest( r ).url_object.querystring
-        >>> len(data)
-        2
+        >>> u = url_object('http://www.w3af.com/abc/123/def.htm')
+        >>> r = HTTPRequest( u )
+        >>> rs.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/abc\\\\123\\\def.htm'
+        >>> #
+        >>> #    The plugins should not modify the original request
+        >>> #
+        >>> u.url_string
+        u'http://www.w3af.com/abc/123/def.htm'
 
         '''
-        # First we mangle the URL        
-        qs = request.url_object.querystring.copy()
-        qs = self._mutate(qs)
+        # We mangle the URL
+        path = request.url_object.getPath()
+        path = path.replace('/', '\\' ).replace('\\', '/', 1)
         
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.querystring = qs
-        
-        # Mangle the postdata
-        post_data = request.get_data()
-        if post_data:
-            
-            try:
-                # Only mangle the postdata if it is a url encoded string
-                post_data = parse_qs( post_data )
-            except:
-                pass
-            else:
-                post_data = str( self._mutate(post_data) ) 
-        
-        new_req = HTTPRequest( new_url , post_data, request.headers, 
-                               request.get_origin_req_host() )
+        new_url.setPath( path )
+        new_req = HTTPRequest( new_url , request.get_data(), 
+                               request.headers, request.get_origin_req_host() )
         
         return new_req
-    
-    
-    def _mutate( self, data ):
-        '''
-        Add a random parameter.
-        
-        @param data: A dict-like object.
-        @return: The same object with one new key-value.
-        '''
-        key = createRandAlNum()
-        value = createRandAlNum()
-        data[key] = value
-        return data
-        
+
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -142,16 +113,16 @@ class rndParam(baseEvasionPlugin):
         
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        return 50
+        return 90
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return '''
-        This evasion plugin adds a random parameter.
+        return r'''
+        This evasion plugin changes the slashes from / to \ .
         
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/bar/foo.asp?alsfkj=f09'
+            Output :    '\bar\foo.asp'
         '''

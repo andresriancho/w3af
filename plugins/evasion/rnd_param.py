@@ -1,5 +1,5 @@
 '''
-fullWidthEncode.py
+rnd_param.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,23 +22,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+
+from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.parsers.urlParser import parse_qs
+from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import urllib
 
-
-class fullWidthEncode(baseEvasionPlugin):
+class rnd_param(baseEvasionPlugin):
     '''
-    Evade detection using full width encoding.
-    
+    Add a random parameter.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
     def __init__(self):
         baseEvasionPlugin.__init__(self)
 
@@ -48,71 +46,71 @@ class fullWidthEncode(baseEvasionPlugin):
         
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-
+        
         >>> from core.data.parsers.urlParser import url_object
-        >>> fwe = fullWidthEncode()
+        >>> rp = rnd_param()
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/'
+        >>> qs = rp.modifyRequest( r ).url_object.querystring
+        >>> len(qs)
+        1
 
-        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> u = url_object('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+        >>> qs = rp.modifyRequest( r ).url_object.querystring
+        >>> len(qs)
+        2
 
-        >>> u = url_object('http://www.w3af.com/hola-mundo')
-        >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
-        >>> #
-        >>> #    The plugins should not modify the original request
-        >>> #
-        >>> u.url_string
-        u'http://www.w3af.com/hola-mundo'
+        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> r = HTTPRequest( u, data='a=b' )
+        >>> data = parse_qs( rp.modifyRequest( r ).get_data() )
+        >>> len(data)
+        2
+        
+        >>> data = rp.modifyRequest( r ).url_object.querystring
+        >>> len(data)
+        2
+
         '''
-        # This is a test URL
-        # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E
-        # This is the content of index.asp :
-        # <%=Request.QueryString("q")%>
-        
         # First we mangle the URL        
-        path = request.url_object.getPath()
-        path = self._mutate( path )
-        
-        # Now we mangle the postdata
-        data = request.get_data()
-        if data:
-            
-            try:
-                # Only mangle the postdata if it is a url encoded string
-                parse_qs( data )
-            except:
-                pass
-            else:
-                # We get here only if the parsing was successful
-                data = self._mutate( data )            
+        qs = request.url_object.querystring.copy()
+        qs = self._mutate(qs)
         
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath( path )
+        new_url.querystring = qs
         
-        new_req = HTTPRequest( new_url , data, request.headers, 
+        # Mangle the postdata
+        post_data = request.get_data()
+        if post_data:
+            
+            try:
+                # Only mangle the postdata if it is a url encoded string
+                post_data = parse_qs( post_data )
+            except:
+                pass
+            else:
+                post_data = str( self._mutate(post_data) ) 
+        
+        new_req = HTTPRequest( new_url , post_data, request.headers, 
                                request.get_origin_req_host() )
         
         return new_req
     
-    def _mutate( self, to_mutate ):
-        to_mutate = urllib.unquote( to_mutate )
-        mutant = ''
-        for char in to_mutate:
-            if char not in ['?', '/', '&', '\\', '=', '%', '+']:
-                # The "- 0x20" was taken from UFF00.pdf
-                char = "%%uFF%02x" % ( ord(char) - 0x20 )
-            mutant += char
-        return mutant
-
+    
+    def _mutate( self, data ):
+        '''
+        Add a random parameter.
+        
+        @param data: A dict-like object.
+        @return: The same object with one new key-value.
+        '''
+        key = createRandAlNum()
+        value = createRandAlNum()
+        data[key] = value
+        return data
+        
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -142,7 +140,7 @@ class fullWidthEncode(baseEvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 0 is run first, 100 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 50
     
@@ -151,10 +149,9 @@ class fullWidthEncode(baseEvasionPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This evasion plugin does full width encoding as described here:
-            - http://www.kb.cert.org/vuls/id/739224
+        This evasion plugin adds a random parameter.
         
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/b%uFF61r/%uFF66oo.asp'
+            Output :    '/bar/foo.asp?alsfkj=f09'
         '''

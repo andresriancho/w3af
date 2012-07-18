@@ -1,7 +1,7 @@
 '''
-shiftOutShiftInBetweenDots.py
+full_width_encode.py
 
-Copyright 2008 Jose Ramon Palanco 
+Copyright 2006 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -23,16 +23,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
+from core.data.parsers.urlParser import parse_qs
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
+import urllib
 
-class shiftOutShiftInBetweenDots(baseEvasionPlugin):
+
+class full_width_encode(baseEvasionPlugin):
     '''
-    Insert between dots shift-in and shift-out control characters which are cancelled each other when they are below 
-    @author: Jose Ramon Palanco( jose.palanco@hazent.com )
+    Evade detection using full width encoding.
+    
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
@@ -46,41 +50,68 @@ class shiftOutShiftInBetweenDots(baseEvasionPlugin):
         @return: The modified request
 
         >>> from core.data.parsers.urlParser import url_object
-        >>> import re
-        >>> sosibd = shiftOutShiftInBetweenDots()
-
+        >>> fwe = full_width_encode()
+        
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> sosibd.modifyRequest( r ).url_object.url_string
+        >>> fwe.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
-        
-        >>> u = url_object('http://www.w3af.com/../')
-        >>> r = HTTPRequest( u )
-        >>> sosibd.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/.%0E%0F./'
 
-        >>> u = url_object('http://www.w3af.com/abc/def/.././jkl.htm')
+        >>> u = url_object('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
-        >>> sosibd.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/abc/def/.%0E%0F././jkl.htm'
+        >>> fwe.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
+
+        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> r = HTTPRequest( u )
+        >>> fwe.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        u'http://www.w3af.com/abc/def/.././jkl.htm'
-
+        u'http://www.w3af.com/hola-mundo'
         '''
-        # We mangle the URL
+        # This is a test URL
+        # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E
+        # This is the content of index.asp :
+        # <%=Request.QueryString("q")%>
+        
+        # First we mangle the URL        
         path = request.url_object.getPath()
-        path = path.replace('/../','/.%0E%0F./' )
+        path = self._mutate( path )
+        
+        # Now we mangle the postdata
+        data = request.get_data()
+        if data:
+            
+            try:
+                # Only mangle the postdata if it is a url encoded string
+                parse_qs( data )
+            except:
+                pass
+            else:
+                # We get here only if the parsing was successful
+                data = self._mutate( data )            
         
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
         new_url.setPath( path )
-        new_req = HTTPRequest( new_url , request.get_data(), 
-                               request.headers, request.get_origin_req_host() )
+        
+        new_req = HTTPRequest( new_url , data, request.headers, 
+                               request.get_origin_req_host() )
         
         return new_req
+    
+    def _mutate( self, to_mutate ):
+        to_mutate = urllib.unquote( to_mutate )
+        mutant = ''
+        for char in to_mutate:
+            if char not in ['?', '/', '&', '\\', '=', '%', '+']:
+                # The "- 0x20" was taken from UFF00.pdf
+                char = "%%uFF%02x" % ( ord(char) - 0x20 )
+            mutant += char
+        return mutant
 
     def getOptions( self ):
         '''
@@ -111,20 +142,19 @@ class shiftOutShiftInBetweenDots(baseEvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
-        return 20
+        return 50
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return r'''
-        This evasion plugin insert between dots shift-in and shift-out control 
-        characters which are cancelled each other when they are below so some 
-        ".." filters are bypassed        
- 
+        return '''
+        This evasion plugin does full width encoding as described here:
+            - http://www.kb.cert.org/vuls/id/739224
+        
         Example:
-            Input:      '../../../../../../../../etc/passwd'
-            Output:     '.%0E%0F./.%0E%0F./.%0E%0F./.%0E%0F./.%0E%0F./.%0E%0F./.%0E%0F./.%0E%0F./etc/passwd'
+            Input:      '/bar/foo.asp'
+            Output :    '/b%uFF61r/%uFF66oo.asp'
         '''

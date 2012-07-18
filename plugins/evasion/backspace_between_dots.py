@@ -1,7 +1,7 @@
 '''
-rndPath.py
+backspace_between_dots.py
 
-Copyright 2006 Andres Riancho
+Copyright 2008 Jose Ramon Palanco 
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -22,21 +22,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
-
-from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import re
 
-
-class rndPath(baseEvasionPlugin):
+class backspace_between_dots(baseEvasionPlugin):
     '''
-    Add a random path to the URI.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    Insert between dots an 'A' and an BS control character which are cancelled each other when they are below 
+    
+    @author: Jose Ramon Palanco( jose.palanco@hazent.com )
     '''
 
     def __init__(self):
@@ -48,52 +45,43 @@ class rndPath(baseEvasionPlugin):
         
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-
+        
         >>> from core.data.parsers.urlParser import url_object
-        >>> import re
-        >>> rp = rndPath()
+        >>> bbd = backspace_between_dots()
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> url_string = rp.modifyRequest( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../', url_string) is not None
-        True
+        >>> bbd.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> u = url_object('http://www.w3af.com/../')
         >>> r = HTTPRequest( u )
-        >>> url_string = rp.modifyRequest( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/', url_string) is not None
-        True
+        >>> bbd.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/.%41%08./'
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> u = url_object('http://www.w3af.com/abc/def/.././jkl.htm')
         >>> r = HTTPRequest( u )
-        >>> url_string = rp.modifyRequest( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm', url_string) is not None
-        True
+        >>> bbd.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/abc/def/.%41%08././jkl.htm'
+        >>> #
+        >>> #    The plugins should not modify the original request
+        >>> #
+        >>> u.url_string
+        u'http://www.w3af.com/abc/def/.././jkl.htm'
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
-        >>> r = HTTPRequest( u )
-        >>> url_string = rp.modifyRequest( r ).url_object.url_string
-        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None
-        True
-        
         '''
         # We mangle the URL
         path = request.url_object.getPath()
-        if re.match('^/', path):
-            random_alnum = createRandAlNum()
-            path = '/' + random_alnum + '/..' + path
-
+        path = path.replace('/../','/.%41%08./' )
+        
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
         new_url.setPath( path )
-        
-        # Finally, we set all the mutants to the request in order to return it
-        new_req = HTTPRequest( new_url , request.data, request.headers, 
-                               request.get_origin_req_host() )
+        new_req = HTTPRequest( new_url , request.get_data(), 
+                               request.headers, request.get_origin_req_host() )
         
         return new_req
-    
+
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -115,7 +103,7 @@ class rndPath(baseEvasionPlugin):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
-        '''        
+        '''
         return []
 
     def getPriority( self ):
@@ -123,18 +111,20 @@ class rndPath(baseEvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 0 is run first, 100 last.
+        @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        return 0
-
+        return 20
+    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return '''
-        This evasion plugin adds a random path to the URI.
-        
+        return r'''
+        This evasion plugin insert between dots an 'A' and a backspace control 
+        character which are cancelled each other when they are below so some 
+        ".." filters are bypassed        
+ 
         Example:
-            Input:      '/bar/foo.asp'
-            Output :    '/aflsasfasfkn/../bar/foo.asp'
+            Input:      '../../../../../../../../etc/passwd'
+            Output:     '.%41%08./.%41%08./.%41%08./.%41%08./.%41%08./.%41%08./.%41%08./.%41%08./etc/passwd'
         '''

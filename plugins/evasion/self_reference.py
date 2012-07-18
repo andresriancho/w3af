@@ -1,5 +1,5 @@
 '''
-reversedSlashes.py
+self_reference.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,9 +29,10 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class reversedSlashes(baseEvasionPlugin):
+
+class self_reference(baseEvasionPlugin):
     '''
-    Change the slashes from / to \\
+    Add a directory self reference.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
@@ -42,37 +43,38 @@ class reversedSlashes(baseEvasionPlugin):
         '''
         Mangles the request
         
-        
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-        
+
         >>> from core.data.parsers.urlParser import url_object
-        >>> rs = reversedSlashes()
-        
+        >>> import re
+        >>> sr = self_reference()
+
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/'
+        >>> sr.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/./'
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> u = url_object('http://www.w3af.com/abc/')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/abc\\\def.htm'
+        >>> sr.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/./abc/./'
 
-        >>> u = url_object('http://www.w3af.com/abc/123/def.htm')
+        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/abc\\\\123\\\def.htm'
+        >>> sr.modifyRequest( r ).url_object.url_string
+        u'http://www.w3af.com/./abc/./def.htm?id=1'
+
         >>> #
         >>> #    The plugins should not modify the original request
         >>> #
         >>> u.url_string
-        u'http://www.w3af.com/abc/123/def.htm'
-
+        u'http://www.w3af.com/abc/def.htm?id=1'
+        
         '''
         # We mangle the URL
         path = request.url_object.getPath()
-        path = path.replace('/', '\\' ).replace('\\', '/', 1)
+        path = path.replace('/','/./' )
         
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
@@ -81,7 +83,7 @@ class reversedSlashes(baseEvasionPlugin):
                                request.headers, request.get_origin_req_host() )
         
         return new_req
-
+    
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -111,18 +113,18 @@ class reversedSlashes(baseEvasionPlugin):
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
         
-        @return: An integer specifying the priority. 100 is run first, 0 last.
+        @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
-        return 90
-    
+        return 0
+
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return r'''
-        This evasion plugin changes the slashes from / to \ .
+        return '''
+        This evasion plugin adds a directory self reference.
         
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '\bar\foo.asp'
+            Output :    '/bar/./foo.asp'
         '''

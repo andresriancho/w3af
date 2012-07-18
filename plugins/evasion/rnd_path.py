@@ -1,5 +1,5 @@
 '''
-modsecurity.py
+rnd_path.py
 
 Copyright 2006 Andres Riancho
 
@@ -23,22 +23,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.parsers.urlParser import parse_qs
+from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-import urllib2
-import copy
+import re
 
 
-class modsecurity(baseEvasionPlugin):
+class rnd_path(baseEvasionPlugin):
     '''
-    Evade detection using a mod_security vulnerability.
-    
-    @author: Francisco Amato ( famato |at| infobyte.com.ar )
+    Add a random path to the URI.
+    @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
@@ -50,45 +48,52 @@ class modsecurity(baseEvasionPlugin):
         
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-        
+
         >>> from core.data.parsers.urlParser import url_object
-        >>> modsec = modsecurity()
+        >>> import re
+        >>> rp = rnd_path()
         
         >>> u = url_object('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> modsec.modifyRequest( r ).url_object.url_string
-        u'http://www.w3af.com/'
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../', url_string) is not None
+        True
 
-        >>> u = url_object('http://www.w3af.com/')
-        >>> r = HTTPRequest( u, data='' )
-        >>> modsec.modifyRequest( r ).get_data()
-        ''
+        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/', url_string) is not None
+        True
 
-        >>> u = url_object('http://www.w3af.com/')
-        >>> r = HTTPRequest( u, data='a=b' )
-        >>> modsec.modifyRequest( r ).get_data()
-        '\\x00a=b'
+        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm', url_string) is not None
+        True
 
+        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
+        >>> r = HTTPRequest( u )
+        >>> url_string = rp.modifyRequest( r ).url_object.url_string
+        >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None
+        True
+        
         '''
-        # Mangle the postdata
-        data = str(request.get_data())
-        if data:
-            
-            try:
-                # Only mangle the postdata if it is a url encoded string
-                parse_qs( data )
-            except:
-                pass
-            else:
-                data = '\x00' + data 
-                headers_copy = copy.deepcopy(request.headers)
-                headers_copy['content-length'] = str(len(data))
-                
-                request = HTTPRequest( request.url_object, data, headers_copy, 
-                                       request.get_origin_req_host() )
-                
-        return request
+        # We mangle the URL
+        path = request.url_object.getPath()
+        if re.match('^/', path):
+            random_alnum = createRandAlNum()
+            path = '/' + random_alnum + '/..' + path
 
+        # Finally, we set all the mutants to the request in order to return it
+        new_url = request.url_object.copy()
+        new_url.setPath( path )
+        
+        # Finally, we set all the mutants to the request in order to return it
+        new_req = HTTPRequest( new_url , request.data, request.headers, 
+                               request.get_origin_req_host() )
+        
+        return new_req
+    
     def getOptions( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -120,19 +125,16 @@ class modsecurity(baseEvasionPlugin):
         
         @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
-        return 50
-    
+        return 0
+
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This evasion plugin performs a bypass for mod_security version 2.1.0 or less here:
-            - http://www.php-security.org/MOPB/BONUS-12-2007.html
-        
-        Important: The evasion only works for postdata.
+        This evasion plugin adds a random path to the URI.
         
         Example:
-            Postdata Input:      'a=b'
-            Postdata Output :    '\\x00a=b'
+            Input:      '/bar/foo.asp'
+            Output :    '/aflsasfasfkn/../bar/foo.asp'
         '''
