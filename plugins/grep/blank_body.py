@@ -19,16 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
 
 
 class blank_body(baseGrepPlugin):
@@ -49,51 +44,6 @@ class blank_body(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
-        Init
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.controllers.misc.temp_dir import create_temp_dir
-        >>> from core.data.parsers.urlParser import url_object
-        >>> o = create_temp_dir()
-
-        Simple test, empty string.
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> b = blank_body()
-        >>> b.grep(request, response)
-        >>> assert len(kb.kb.getData('blank_body', 'blank_body')) == 1
-
-        With some content.
-        >>> kb.kb.save('blank_body','blank_body',[])
-        >>> body = 'header body footer'
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> b.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
-
-        Strange method, empty body.
-        >>> kb.kb.save('blank_body','blank_body',[])
-        >>> body = ''
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='ARGENTINA')
-        >>> b.grep(request, response)
-        >>> assert len(kb.kb.getData('ssn', 'ssn')) == 0
-
-        Response codes,
-        >>> kb.kb.save('blank_body','blank_body',[])
-        >>> body = ''
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(401, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> b.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        0
-
         '''
         if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
         and response.getCode() not in [401, 304, 204] and 'location' not in response.getLowerCaseHeaders()\
@@ -113,37 +63,18 @@ class blank_body(baseGrepPlugin):
             i.setDesc(msg)
             kb.kb.append( self, 'blank_body', i )
         
-    def setOptions( self, OptionList ):
-        '''
-        Nothing to do here, no options.
-        '''
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.getData( 'blank_body', 'blank_body' ), None )
     
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds HTTP responses with a blank body, these responses may indicate errors or
-        misconfigurations in the web application or the web server.
+        This plugin finds HTTP responses with a blank body, these responses may
+        indicate errors or misconfigurations in the web application or the web
+        server.
         '''
