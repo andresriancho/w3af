@@ -28,7 +28,7 @@ class TestBlindSQLI(PluginTest):
         'cfg': {
             'target': None,
             'plugins': {
-                 'audit': (PluginConfig('blindSqli'),),
+                 'audit': (PluginConfig('blind_sqli'),),
                  }
             }
         }
@@ -38,7 +38,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?id=1'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -53,7 +53,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?email=andres@w3af.org'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -68,7 +68,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?email=andres@w3af.org'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -81,7 +81,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?id=1'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -95,7 +95,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?email=andres@w3af.org'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -109,7 +109,7 @@ class TestBlindSQLI(PluginTest):
         qs = '?email=andres@w3af.org'
         self._scan( target_url + qs, self._run_configs['cfg']['plugins'] )
         
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -123,7 +123,7 @@ class TestBlindSQLI(PluginTest):
         self._scan( target_url, self._run_configs['cfg']['plugins'] )
         
         action_url = 'http://moth/w3af/audit/blind_sql_injection/data_receptor.php'
-        vulns = self.kb.getData('blindSqli', 'blindSqli')
+        vulns = self.kb.getData('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -148,6 +148,6 @@ class TestBlindSQLI(PluginTest):
             target = target_path + target_fname + qs
             self._scan( target, self._run_configs['cfg']['plugins'] )
             
-            vulns = self.kb.getData('blindSqli', 'blindSqli')
+            vulns = self.kb.getData('blind_sqli', 'blind_sqli')
             self.assertEquals(0, len(vulns))
                 

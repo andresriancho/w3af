@@ -1,5 +1,5 @@
 '''
-osCommanding.py
+os_commanding.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 
-class osCommanding(baseAuditPlugin):
+class os_commanding(baseAuditPlugin):
     '''
     Find OS Commanding vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -87,7 +87,7 @@ class osCommanding(baseAuditPlugin):
         # of the known techniques
         #
         # Please note that I'm running the echo ones first in order to get them into
-        # the KB before the ones with time delays so that the osCommanding exploit
+        # the KB before the ones with time delays so that the os_commanding exploit
         # can (with a higher degree of confidence) exploit the vulnerability
         #
         # This also speeds-up the detection process a little bit in the cases where
@@ -139,7 +139,7 @@ class osCommanding(baseAuditPlugin):
                     v.setId( response.id )
                     v.setURI( response.getURI() )
                     v.addToHighlight( file_pattern_match )
-                    kb.kb.append( self, 'osCommanding', v )
+                    kb.kb.append( self, 'os_commanding', v )
                     break
     
     def _get_os_separator(self, mutant):
@@ -187,7 +187,7 @@ class osCommanding(baseAuditPlugin):
                     v.setDc( mutant.getDc() )
                     v.setId( [r.id for r in responses] )
                     v.setURI( r.getURI() )
-                    kb.kb.append( self, 'osCommanding', v )
+                    kb.kb.append( self, 'os_commanding', v )
                     
                     break
 
@@ -195,7 +195,7 @@ class osCommanding(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('osCommanding', 'osCommanding'), 'VAR')
+        self.print_uniq(kb.kb.getData('os_commanding', 'os_commanding'), 'VAR')
     
     def _get_echo_commands(self):
         '''

@@ -1,5 +1,5 @@
 '''
-globalRedirect.py
+global_redirect.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
-class globalRedirect(baseAuditPlugin):
+class global_redirect(baseAuditPlugin):
     '''
     Find scripts that redirect the browser to any site.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -74,13 +74,13 @@ class globalRedirect(baseAuditPlugin):
             v.setName( 'Insecure redirection' )
             v.setSeverity(severity.MEDIUM)
             v.setDesc( 'Global redirect was found at: ' + mutant.foundAt() )
-            kb.kb.append( self, 'globalRedirect', v )
+            kb.kb.append( self, 'global_redirect', v )
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'globalRedirect', 'globalRedirect' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'global_redirect', 'global_redirect' ), 'VAR' )
         
     def _find_redirect( self, response ):
         '''

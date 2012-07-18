@@ -30,10 +30,10 @@ class TestPhishingVector(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('phishingVector'),),
+                 'audit': (PluginConfig('phishing_vector'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  
@@ -45,7 +45,7 @@ class TestPhishingVector(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        vulns = self.kb.getData('phishingVector', 'phishingVector')
+        vulns = self.kb.getData('phishing_vector', 'phishing_vector')
         
         self.assertEquals(3, len(vulns))
         self.assertEquals(all(['Phishing vector' == vuln.getName() for vuln in vulns ]) , True)

@@ -1,5 +1,5 @@
 '''
-phishingVector.py
+phishing_vector.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,7 +32,7 @@ from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
-class phishingVector(baseAuditPlugin):
+class phishing_vector(baseAuditPlugin):
     '''
     Find phishing vectors.
     
@@ -72,7 +72,7 @@ class phishingVector(baseAuditPlugin):
         if self._has_no_bug(mutant):
                 vulns = self._find_phishing_vector(mutant, response)
                 for vuln in vulns:
-                    kb.kb.append(self, 'phishingVector', vuln)
+                    kb.kb.append(self, 'phishing_vector', vuln)
     
     def _find_phishing_vector( self, mutant, response ):
         '''
@@ -110,7 +110,7 @@ class phishingVector(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'phishingVector', 'phishingVector' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'phishing_vector', 'phishing_vector' ), 'VAR' )
 
     def getLongDesc( self ):
         '''

@@ -37,7 +37,7 @@ class TestSSLCertificate(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('sslCertificate'),),
+                 'audit': (PluginConfig('ssl_certificate'),),
                  }
             }
         }
@@ -53,7 +53,7 @@ class TestSSLCertificate(PluginTest):
 
         s.stop()
                 
-        vulns = self.kb.getData('sslCertificate', 'invalid_ssl_cert')
+        vulns = self.kb.getData('ssl_certificate', 'invalid_ssl_cert')
 
         self.assertEquals(1, len(vulns))
         

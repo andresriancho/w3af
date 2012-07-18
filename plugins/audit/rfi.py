@@ -1,5 +1,5 @@
 '''
-remoteFileInclude.py
+rfi.py
 
 Copyright 2006 Andres Riancho
 
@@ -42,15 +42,15 @@ from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 from core.data.parsers.urlParser import url_object
 
-CONFIG_ERROR_MSG = ('audit.remoteFileInclude plugin has to be correctly '
+CONFIG_ERROR_MSG = ('audit.rfi plugin has to be correctly '
 'configured to use. Please set the correct values for local address and '
 'port, or use the official w3af site as the target server for remote '
 'inclusions.')
 
-RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/remoteFileInclude.html'
+RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/rfi.html'
 
 
-class remoteFileInclude(baseAuditPlugin):
+class rfi(baseAuditPlugin):
     '''
     Find remote file inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -203,7 +203,7 @@ class remoteFileInclude(baseAuditPlugin):
                 v.setSeverity(severity.HIGH)
                 v.setName('Remote file inclusion vulnerability')
                 v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
-                kb.kb.append(self, 'remoteFileInclude', v)
+                kb.kb.append(self, 'rfi', v)
             
             else:
                 #
@@ -221,13 +221,13 @@ class remoteFileInclude(baseAuditPlugin):
                         v.addToHighlight(error)
                         v.setName('Remote file inclusion vulnerability')
                         v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
-                        kb.kb.append(self, 'remoteFileInclude', v)
+                        kb.kb.append(self, 'rfi', v)
 
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('remoteFileInclude', 'remoteFileInclude'), 'VAR')
+        self.print_uniq(kb.kb.getData('rfi', 'rfi'), 'VAR')
 
     def _create_file(self):
         '''

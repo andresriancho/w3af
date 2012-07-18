@@ -32,7 +32,7 @@ class TestSSI(PluginTest):
                  'audit': (PluginConfig('ssi'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }

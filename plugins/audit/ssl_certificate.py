@@ -1,5 +1,5 @@
 '''
-sslCertificate.py
+ssl_certificate.py
 
 Copyright 2006 Andres Riancho
 
@@ -40,7 +40,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 
-class sslCertificate(baseAuditPlugin):
+class ssl_certificate(baseAuditPlugin):
     '''
     Check the SSL certificate validity (if https is being used).
 
@@ -52,7 +52,7 @@ class sslCertificate(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         self._already_tested = scalable_bloomfilter()
         self._min_expire_days = 30
-        self._ca_file = os.path.join('plugins','audit','sslCertificate','ca.pem')
+        self._ca_file = os.path.join('plugins','audit','ssl_certificate','ca.pem')
 
     def audit(self, freq):
         '''

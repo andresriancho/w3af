@@ -30,10 +30,10 @@ class TestGlobalRedirect(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('globalRedirect'),),
+                 'audit': (PluginConfig('global_redirect'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  
@@ -45,7 +45,7 @@ class TestGlobalRedirect(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        vulns = self.kb.getData('globalRedirect', 'globalRedirect')
+        vulns = self.kb.getData('global_redirect', 'global_redirect')
         
         self.assertEquals(all(['Insecure redirection' == vuln.getName() for vuln in vulns ]) , True)
 

@@ -32,7 +32,7 @@ class TestXPATH(PluginTest):
                  'audit': (PluginConfig('xpath'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }

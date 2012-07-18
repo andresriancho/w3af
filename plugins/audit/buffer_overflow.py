@@ -1,5 +1,5 @@
 '''
-buffOverflow.py
+buffer_overflow.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,7 +32,7 @@ from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
 from core.data.esmre.multi_in import multi_in
 
 
-class buffOverflow(baseAuditPlugin):
+class buffer_overflow(baseAuditPlugin):
     '''
     Find buffer overflow vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -59,9 +59,9 @@ class buffOverflow(baseAuditPlugin):
         Some notes:
             On Apache, when an overflow happends on a cgic script, this is written
             to the log:
-                *** stack smashing detected ***: /var/www/.../buffOverflow.cgi terminated,
-                referer: http://localhost/w3af/bufferOverflow/buffOverflow.cgi
-                Premature end of script headers: buffOverflow.cgi, referer: ...
+                *** stack smashing detected ***: /var/www/.../buffer_overflow.cgi terminated,
+                referer: http://localhost/w3af/bufferOverflow/buffer_overflow.cgi
+                Premature end of script headers: buffer_overflow.cgi, referer: ...
 
             On Apache, when an overflow happends on a cgic script, this is
             returned to the user:
@@ -121,7 +121,7 @@ class buffOverflow(baseAuditPlugin):
             msg += ' %s. The data sent was: "%s".' 
             msg = msg % ( mutant.getURL(), mutant.getMethod(), mutant.getDc())
             i.setDesc( msg )
-            kb.kb.append( self, 'buffOverflow', i )
+            kb.kb.append( self, 'buffer_overflow', i )
         else:
             self._analyze_result( mutant, response )
                 
@@ -142,20 +142,20 @@ class buffOverflow(baseAuditPlugin):
                 msg += ' was found at: ' + mutant.foundAt()
                 v.setDesc( msg )
                 v.addToHighlight( error_str )
-                kb.kb.append( self, 'buffOverflow', v )
+                kb.kb.append( self, 'buffer_overflow', v )
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'buffOverflow', 'buffOverflow' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'buffer_overflow', 'buffer_overflow' ), 'VAR' )
 
     def getPluginDeps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.error500']
+        return ['grep.error_500']
 
     def getLongDesc( self ):
         '''

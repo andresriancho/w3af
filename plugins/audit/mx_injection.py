@@ -1,5 +1,5 @@
 '''
-mxInjection.py
+mx_injection.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,7 +31,7 @@ from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 
-class mxInjection(baseAuditPlugin):
+class mx_injection(baseAuditPlugin):
     '''
     Find MX injection vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -90,20 +90,20 @@ class mxInjection(baseAuditPlugin):
                     v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
                     v.setId( response.id )
                     v.addToHighlight( mx_error )
-                    kb.kb.append( self, 'mxInjection', v )
+                    kb.kb.append( self, 'mx_injection', v )
                     break
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'mxInjection', 'mxInjection' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'mx_injection', 'mx_injection' ), 'VAR' )
     
     def _get_MX_injection_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         
-        @return: A list with all mxInjection strings to test. Example: [ '\"','f00000']
+        @return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
         '''
         mx_injection_strings = []
         mx_injection_strings.append('"')

@@ -1,5 +1,5 @@
 '''
-formatString.py
+format_string.py
 
 Copyright 2006 Andres Riancho
 
@@ -30,7 +30,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.data.fuzzer.fuzzer import createMutants, createFormatString
 
 
-class formatString(baseAuditPlugin):
+class format_string(baseAuditPlugin):
     '''
     Find format string vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -82,13 +82,13 @@ class formatString(baseAuditPlugin):
                     msg += mutant.foundAt()
                     v.setDesc( msg )
                     v.addToHighlight( error )
-                    kb.kb.append( self, 'formatString', v )
+                    kb.kb.append( self, 'format_string', v )
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'formatString', 'formatString' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'format_string', 'format_string' ), 'VAR' )
         
     def _get_string_list( self ):
         '''
@@ -105,7 +105,7 @@ class formatString(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.error500']
+        return ['grep.error_500']
     
     def getLongDesc( self ):
         '''

@@ -60,7 +60,7 @@ class redos(baseAuditPlugin):
         #
         #   TODO: Add other frameworks that are not vulnerable!
         #
-        for powered_by in kb.kb.getData('serverHeader','poweredByString'):
+        for powered_by in kb.kb.getData('server_header','poweredByString'):
             if 'php' in powered_by.lower():
                 return
         
@@ -162,7 +162,7 @@ class redos(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['discovery.serverHeader']
+        return ['discovery.server_header']
     
     def getLongDesc( self ):
         '''

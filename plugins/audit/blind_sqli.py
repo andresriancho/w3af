@@ -1,5 +1,5 @@
 '''
-blindSqli.py
+blind_sqli.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ from core.data.fuzzer.fuzzer import createMutants
 
 
 
-class blindSqli(baseAuditPlugin):
+class blind_sqli(baseAuditPlugin):
     '''
     Identify blind SQL injection vulnerabilities.
     
@@ -87,7 +87,7 @@ class blindSqli(baseAuditPlugin):
                 if found_vuln is not None and \
                 self._has_no_bug(freq, varname=found_vuln.getVar()):
                     om.out.vulnerability(found_vuln.getDesc())
-                    kb.kb.append(self, 'blindSqli', found_vuln)
+                    kb.kb.append(self, 'blind_sqli', found_vuln)
                     break
     
     def _has_sql_injection(self, mutant):

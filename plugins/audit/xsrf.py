@@ -108,7 +108,7 @@ class xsrf(baseAuditPlugin):
         This method is called at the end, when w3afCore aint going to use this plugin anymore.
         '''
         has_persistent_cookie = False
-        cookies = kb.kb.getData( 'collectCookies', 'cookies' )
+        cookies = kb.kb.getData( 'collect_cookies', 'cookies' )
         for cookie in cookies:
             if cookie.has_key('persistent'):
                 if not self._already_reported:
@@ -145,7 +145,7 @@ class xsrf(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.collectCookies']
+        return ['grep.collect_cookies']
 
     def getLongDesc( self ):
         '''

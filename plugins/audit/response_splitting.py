@@ -1,5 +1,5 @@
 '''
-responseSplitting.py
+response_splitting.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
 
 
-class responseSplitting(baseAuditPlugin):
+class response_splitting(baseAuditPlugin):
     '''
     Find response splitting vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -93,7 +93,7 @@ class responseSplitting(baseAuditPlugin):
                     i.setDc( mutant.getDc() )
                     i.setId( response.id )
                     i.setName( 'Parameter modifies headers' )
-                    kb.kb.append( self, 'responseSplitting', i )
+                    kb.kb.append( self, 'response_splitting', i )
 
                     return
                 
@@ -104,14 +104,14 @@ class responseSplitting(baseAuditPlugin):
                 v.setId( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Response splitting vulnerability' )
-                kb.kb.append( self, 'responseSplitting', v )
+                kb.kb.append( self, 'response_splitting', v )
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq(
-               kb.kb.getData('responseSplitting', 'responseSplitting'), 'VAR'
+               kb.kb.getData('response_splitting', 'response_splitting'), 'VAR'
                )
     
     def _get_header_inj( self ):
@@ -154,7 +154,7 @@ class responseSplitting(baseAuditPlugin):
                 i.setDesc( msg )
                 i.setId( response.id )
                 i.setName( 'Parameter modifies headers' )
-                kb.kb.append( self, 'responseSplitting', i )
+                kb.kb.append( self, 'response_splitting', i )
                 return False
                 
             elif HEADER_NAME in value.lower():
@@ -168,7 +168,7 @@ class responseSplitting(baseAuditPlugin):
                 i.setDesc( msg )
                 i.setId( response.id )
                 i.setName( 'Parameter modifies headers' )
-                kb.kb.append( self, 'responseSplitting', i )
+                kb.kb.append( self, 'response_splitting', i )
                 return False
             
         return False

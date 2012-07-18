@@ -32,7 +32,7 @@ class TestPreg(PluginTest):
                  'audit': (PluginConfig('preg_replace'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }

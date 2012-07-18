@@ -1,5 +1,5 @@
 '''
-htaccessMethods.py
+htaccess_methods.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,7 +29,7 @@ import core.data.constants.httpConstants as http_constants
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 
 
-class htaccessMethods(baseAuditPlugin):
+class htaccess_methods(baseAuditPlugin):
     '''
     Find misconfigurations in the "<LIMIT>" configuration of Apache.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -49,7 +49,7 @@ class htaccessMethods(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        auth_URL_list = [ v.getURL() for v in kb.kb.getData( 'httpAuthDetect', 'auth' ) ]
+        auth_URL_list = [ v.getURL() for v in kb.kb.getData( 'http_auth_detect', 'auth' ) ]
         if freq.getURL() in auth_URL_list:
             # Try to get/post/put/index that uri and check that all
             # responses are 401
@@ -61,7 +61,7 @@ class htaccessMethods(baseAuditPlugin):
             if response.getCode() == http_constants.UNAUTHORIZED:
                 self._check_methods( freq.getURL() )
                 # not needed, the grep plugin will do this for us
-                # kb.kb.save( 'httpAuthDetect', 'auth', response )
+                # kb.kb.save( 'http_auth_detect', 'auth', response )
 
     def _check_methods( self, url ):
         '''
@@ -99,7 +99,7 @@ class htaccessMethods(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.httpAuthDetect']
+        return ['grep.http_auth_detect']
     
     def getLongDesc( self ):
         '''

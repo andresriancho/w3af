@@ -38,7 +38,7 @@ class TestXSS(PluginTest):
                     ),
                 'discovery': (
                     PluginConfig(
-                        'webSpider',
+                        'web_spider',
                         ('onlyForward', True, PluginConfig.BOOL)),
                 )
             },

@@ -1,5 +1,5 @@
 '''
-LDAPi.py
+ldapi.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,7 +31,7 @@ from core.data.esmre.multi_in import multi_in
 from core.data.fuzzer.fuzzer import createMutants
 
 
-class LDAPi(baseAuditPlugin):
+class ldapi(baseAuditPlugin):
     '''
     Find LDAP injection bugs.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -95,18 +95,18 @@ class LDAPi(baseAuditPlugin):
         @param freq: A fuzzableRequest
         '''
         oResponse = self._uri_opener.send_mutant(freq)
-        ldapiStrings = self._get_LDAPi_strings()
+        ldapiStrings = self._get_ldapi_strings()
         mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutants,
                                  self._analyze_result)
             
-    def _get_LDAPi_strings( self ):
+    def _get_ldapi_strings( self ):
         '''
         Gets a list of strings to test against the web app.
         
-        @return: A list with all LDAPi strings to test.
+        @return: A list with all ldapi strings to test.
         '''
         ldap_strings = []
         ldap_strings.append("^(#$!@#$)(()))******")
@@ -131,14 +131,14 @@ class LDAPi(baseAuditPlugin):
                     v.setName( 'LDAP injection vulnerability' )
                     v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
                     v.addToHighlight( ldap_error_string )
-                    kb.kb.append( self, 'LDAPi', v )
+                    kb.kb.append( self, 'ldapi', v )
                     break
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'LDAPi', 'LDAPi' ), 'VAR' )
+        self.print_uniq( kb.kb.getData( 'ldapi', 'ldapi' ), 'VAR' )
         
     def _find_ldap_error( self, response ):
         '''
@@ -162,7 +162,7 @@ class LDAPi(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.error500']
+        return ['grep.error_500']
     
     def getLongDesc( self ):
         '''

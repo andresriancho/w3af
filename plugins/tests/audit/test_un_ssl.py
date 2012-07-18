@@ -1,5 +1,5 @@
 '''
-test_remote_file_include.py
+test_unssl.py
 
 Copyright 2012 Andres Riancho
 
@@ -22,29 +22,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from ..helper import PluginTest, PluginConfig
 
 
-class TestRFI(PluginTest):
+class TestUnSSL(PluginTest):
     
-    target_url = 'http://moth/w3af/audit/remoteFileInclusion/vulnerable.php'
+    target_url = 'http://moth/w3af/'
     
     _run_configs = {
         'cfg': {
-            'target': target_url + '?file=section.php',
+            'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('remoteFileInclude'),),
+                 'audit': (PluginConfig('un_ssl'),),
                  }
             }
         }
     
-    def test_found_rfi(self):
-        # Run the scan
+    def test_found_unssl(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-
-        # Assert the general results
-        vulns = self.kb.getData('remoteFileInclude', 'remoteFileInclude')
-        self.assertEquals(len(vulns), 1)
         
+        vulns = self.kb.getData('un_ssl', 'un_ssl')
+        self.assertEquals(1, len(vulns))
+        
+        # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals("Remote file inclusion vulnerability", vuln.getName() )
-        self.assertEquals(self.target_url, vuln.getURL().url_string)
+        self.assertEquals( vuln.getName(), 'Secure content over insecure channel')
+        self.assertEquals( vuln.getURL().url_string, 'http://moth/w3af/')
+        
         

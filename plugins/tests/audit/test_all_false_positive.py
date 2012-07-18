@@ -40,7 +40,7 @@ class TestAllFP(PluginTest):
                      'audit': (PluginConfig(audit_plugin),),
                      'discovery': (
                          PluginConfig(
-                             'webSpider',
+                             'web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                      )                 
                      }

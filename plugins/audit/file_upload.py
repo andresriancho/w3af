@@ -1,5 +1,5 @@
 '''
-fileUpload.py
+file_upload.py
 
 Copyright 2006 Andres Riancho
 
@@ -40,14 +40,14 @@ from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 
 
-class fileUpload(baseAuditPlugin):
+class file_upload(baseAuditPlugin):
     '''
     Uploads a file and then searches for the file inside all known directories.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
-    TEMPLATE_DIR = os.path.join('plugins', 'audit', 'fileUpload')
+    TEMPLATE_DIR = os.path.join('plugins', 'audit', 'file_upload')
     
 
     def __init__(self):
@@ -131,7 +131,7 @@ class fileUpload(baseAuditPlugin):
         
         >>> from core.controllers.misc.temp_dir import create_temp_dir
         >>> _ = create_temp_dir()
-        >>> fu = fileUpload()
+        >>> fu = file_upload()
         >>> dir_before = os.listdir( get_temp_dir() )
         >>> fileh_filen_list = fu._create_files()
         >>> fu._remove_files(fileh_filen_list)
@@ -200,14 +200,14 @@ class fileUpload(baseAuditPlugin):
             msg = ('A file upload to a directory inside the '
             'webroot was found at: ' + mutant.foundAt())
             v.setDesc(msg)
-            kb.kb.append(self, 'fileUpload', v)
+            kb.kb.append(self, 'file_upload', v)
             return
     
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'fileUpload', 'fileUpload' ), 'VAR' )        
+        self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'VAR' )        
         
     def _generate_urls( self, domain_path_list, uploaded_file_name ):
         '''
@@ -267,7 +267,7 @@ class fileUpload(baseAuditPlugin):
     
         Some web applications check the contents of the files being uploaded to
         see if they are really what their extension is telling. To bypass this
-        check, this plugin uses file templates located at "plugins/audit/fileUpload/",
+        check, this plugin uses file templates located at "plugins/audit/file_upload/",
         this templates are valid files for each extension that have a section
         (the comment field in a gif file for example ) that can be replaced
         by scripting code ( PHP, ASP, etc ).

@@ -188,7 +188,7 @@ class dav(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before 
                  the current one.
         '''
-        return ['discovery.allowedMethods', 'discovery.serverHeader']
+        return ['discovery.allowed_methods', 'discovery.server_header']
     
     def getLongDesc( self ):
         '''

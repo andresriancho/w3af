@@ -29,7 +29,7 @@ class TestBufferOverflow(PluginTest):
     _run_config = {
         'target': target + '?buf=',
         'plugins': {
-             'audit': (PluginConfig('buffOverflow',),),
+             'audit': (PluginConfig('buffer_overflow',),),
              }
         }
 
@@ -37,7 +37,7 @@ class TestBufferOverflow(PluginTest):
     def test_found_bo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
         
-        vulns = self.kb.getData('buffOverflow', 'buffOverflow')
+        vulns = self.kb.getData('buffer_overflow', 'buffer_overflow')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln

@@ -1,5 +1,5 @@
 '''
-unSSL.py
+un_ssl.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,7 +29,7 @@ from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 
 
-class unSSL(baseAuditPlugin):
+class un_ssl(baseAuditPlugin):
     '''
     Find out if secure content can also be fetched using http.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -90,7 +90,7 @@ class unSSL(baseAuditPlugin):
                         msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
                         v.setDesc( msg % (secure_url, insecure_url) )
                         v.setId( [insecure_response.id, secure_response.id] )
-                        kb.kb.append( self, 'unSSL', v )
+                        kb.kb.append( self, 'un_ssl', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
     
     def getLongDesc( self ):

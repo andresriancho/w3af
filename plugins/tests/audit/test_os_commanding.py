@@ -29,10 +29,10 @@ class TestOSCommanding(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('osCommanding'),),
+                 'audit': (PluginConfig('os_commanding'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }
@@ -45,7 +45,7 @@ class TestOSCommanding(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('osCommanding', 'osCommanding')
+        vulns = self.kb.getData('os_commanding', 'os_commanding')
         self.assertEquals(4, len(vulns))
         self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
                           True)

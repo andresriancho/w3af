@@ -1,5 +1,5 @@
 '''
-localFileInclude.py
+lfi.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 
-class localFileInclude(baseAuditPlugin):
+class lfi(baseAuditPlugin):
     '''
     Find local file inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -173,7 +173,7 @@ class localFileInclude(baseAuditPlugin):
                     v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
                     v['file_pattern'] = file_pattern_match
                     v.addToHighlight(file_pattern_match)
-                    kb.kb.append(self, 'localFileInclude', v)
+                    kb.kb.append(self, 'lfi', v)
                     return
 
             
@@ -203,7 +203,7 @@ class localFileInclude(baseAuditPlugin):
                     match_source_code = match.group(0)
                     v['file_pattern'] = match_source_code
                     
-                    kb.kb.append( self, 'localFileInclude', v )
+                    kb.kb.append( self, 'lfi', v )
                     return
                     
             #
@@ -225,8 +225,8 @@ class localFileInclude(baseAuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('localFileInclude', 'localFileInclude'), 'VAR')
-        self.print_uniq(kb.kb.getData('localFileInclude', 'error'), 'VAR')
+        self.print_uniq(kb.kb.getData('lfi', 'lfi'), 'VAR')
+        self.print_uniq(kb.kb.getData('lfi', 'error'), 'VAR')
 
     def _find_file( self, response ):
         '''

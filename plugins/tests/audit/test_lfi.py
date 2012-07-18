@@ -29,10 +29,10 @@ class TestLFI(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('localFileInclude'),),
+                 'audit': (PluginConfig('lfi'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
 
@@ -54,7 +54,7 @@ class TestLFI(PluginTest):
         ]
 
         # Assert the general results
-        vulns = self.kb.getData('localFileInclude', 'localFileInclude')
+        vulns = self.kb.getData('lfi', 'lfi')
         self.assertEquals(len(EXPECTED), len(vulns))
         self.assertEquals(all(["Local file inclusion vulnerability" == v.getName() for v in vulns ]),
                           True)
