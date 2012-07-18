@@ -1,5 +1,5 @@
 '''
-basicAuthBrute.py
+basic_auth.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,7 +31,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 
-class basicAuthBrute(baseBruteforcePlugin):
+class basic_auth(baseBruteforcePlugin):
     '''
     Bruteforce HTTP basic authentication.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -47,7 +47,7 @@ class basicAuthBrute(baseBruteforcePlugin):
         @param freq: A fuzzableRequest
         '''
         auth_url_list = [ i.getURL().getDomainPath() for i in 
-                          kb.kb.getData( 'httpAuthDetect', 'auth' )]
+                          kb.kb.getData( 'http_auth_detect', 'auth' )]
         
         domain_path = freq.getURL().getDomainPath()
         
@@ -90,7 +90,7 @@ class basicAuthBrute(baseBruteforcePlugin):
             user = combination[0]
             passwd = combination[1]
             
-            om.out.debug('[basicAuthBrute] Testing ' + user + '/' + passwd)
+            om.out.debug('[basic_auth] Testing ' + user + '/' + passwd)
             
             uriOpener.settings.setBasicAuth( url, user, passwd  )
             # The next line replaces the uriOpener opener with a new one that has

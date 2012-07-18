@@ -23,15 +23,15 @@ from ..helper import PluginTest, PluginConfig
 
 class TestBasicAuth(PluginTest):
     
-    target_url_easy = 'http://moth/w3af/bruteforce/basicAuthBrute/easy_guess/'
-    target_url_impossible = 'http://moth/w3af/bruteforce/basicAuthBrute/impossible_guess/'
+    target_url_easy = 'http://moth/w3af/bruteforce/basic_auth/easy_guess/'
+    target_url_impossible = 'http://moth/w3af/bruteforce/basic_auth/impossible_guess/'
     
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {
-                 'bruteforce': (PluginConfig('basicAuthBrute'),),
-                 'grep': (PluginConfig('httpAuthDetect'),),
+                 'bruteforce': (PluginConfig('basic_auth'),),
+                 'grep': (PluginConfig('http_auth_detect'),),
                  }
             }
         }
@@ -42,7 +42,7 @@ class TestBasicAuth(PluginTest):
         self._scan( self.target_url_easy , cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('basicAuthBrute', 'auth')
+        vulns = self.kb.getData('basic_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
@@ -59,5 +59,5 @@ class TestBasicAuth(PluginTest):
         self._scan( self.target_url_impossible , cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('basicAuthBrute', 'auth')
+        vulns = self.kb.getData('basic_auth', 'auth')
         self.assertEquals(len(vulns), 0)

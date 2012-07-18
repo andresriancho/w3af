@@ -29,10 +29,10 @@ class TestFormAuth(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'bruteforce': (PluginConfig('formAuthBrute'),),
+                 'bruteforce': (PluginConfig('form_auth'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }
@@ -45,7 +45,7 @@ class TestFormAuth(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('formAuthBrute', 'auth')
+        vulns = self.kb.getData('form_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]

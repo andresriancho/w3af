@@ -1,5 +1,5 @@
 '''
-formAuthBrute.py
+form_auth.py
 
 Copyright 2006 Andres Riancho
 
@@ -36,7 +36,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.url.xUrllib import xUrllib
 
 
-class formAuthBrute(baseBruteforcePlugin):
+class form_auth(baseBruteforcePlugin):
     '''
     Bruteforce HTML form authentication.
     @author: Andres Riancho ( andres.riancho@gmail.com )
