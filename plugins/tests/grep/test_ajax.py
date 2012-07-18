@@ -36,7 +36,6 @@ class test_ajax(unittest.TestCase):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = ajax()
-        self.plugin._already_inspected = set()        
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
         
