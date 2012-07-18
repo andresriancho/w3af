@@ -168,13 +168,17 @@ class DBClientSQLite(Process, DBClient):
             elif req == '--commit--':
                 conn.commit()
             else:
-                cursor.execute(req, arg)
-                if res:
-                    for rec in cursor:
-                        res.put(rec)
-                    res.put('--no more--')
-                if self.autocommit:
-                    conn.commit()
+                try:
+                    cursor.execute(req, arg)
+                except Exception, e:
+                    print e, req, arg
+                else:
+                    if res:
+                        for rec in cursor:
+                            res.put(rec)
+                        res.put('--no more--')
+                    if self.autocommit:
+                        conn.commit()
         conn.close()
 
     def execute(self, sql, parameters=None, res=None):
