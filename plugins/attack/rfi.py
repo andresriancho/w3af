@@ -1,5 +1,5 @@
 '''
-remoteFileIncludeShell.py
+rfiShell.py
 
 Copyright 2006 Andres Riancho
 
@@ -52,7 +52,7 @@ SUCCESS_COMPLETE = 1
 SUCCESS_OPEN_PORT = 2
 
 
-class remoteFileIncludeShell(baseAttackPlugin):
+class rfiShell(baseAttackPlugin):
     '''
     Exploit remote file include vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -96,7 +96,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
             msg += ' that can be reached by the vulnerable Web application.'
             raise w3afException(msg)
         
-        rfi_vulns = kb.kb.getData('remoteFileInclude' , 'remoteFileInclude')
+        rfi_vulns = kb.kb.getData('rfi' , 'rfi')
         if vuln_to_exploit is not None:
             rfi_vulns = [v for v in rfi_vulns if v.getId() == vuln_to_exploit]
         
@@ -113,7 +113,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                 xss_vulns = kb.kb.getData('xss', 'xss')
 
                 if not xss_vulns:
-                    msg = 'remoteFileIncludeShell plugin is configured to use a XSS bug to'
+                    msg = 'rfiShell plugin is configured to use a XSS bug to'
                     msg += ' exploit the RFI bug, but no XSS was found.'
                     om.out.console( msg )
                     
@@ -143,7 +143,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
                     # Check If I really got something nice that I can use to exploit
                     # if not, report it to the user
                     if not self._xss_vuln:
-                        msg = 'remoteFileIncludeShell plugin is configured to use a XSS'
+                        msg = 'rfiShell plugin is configured to use a XSS'
                         msg += ' vulnerability to exploit the RFI, but no XSS with the required'
                         msg += ' capabilities was found.'
                         om.out.console( msg )
@@ -165,14 +165,14 @@ class remoteFileIncludeShell(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''
-        return 'remoteFileInclude'
+        return 'rfi'
         
     def _generateShell( self, vuln_obj ):
         '''
@@ -356,7 +356,7 @@ class remoteFileIncludeShell(baseAttackPlugin):
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         
         if self._listen_address == '' and not self._use_XSS_vuln:
-            om.out.error('remoteFileIncludeShell plugin has to be correctly configured to use.')
+            om.out.error('rfiShell plugin has to be correctly configured to use.')
             return False
             
     def getRootProbability( self ):

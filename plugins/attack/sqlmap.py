@@ -122,7 +122,7 @@ class sqlmap(baseAttackPlugin):
         return 'shell'
     
     def getExploitableVulns(self):
-        vulns = list(kb.kb.getData('blindSqli', 'blindSqli'))
+        vulns = list(kb.kb.getData('blind_sqli', 'blind_sqli'))
         vulns.extend(kb.kb.getData('sqli', 'sqli'))
         return vulns
 
@@ -155,7 +155,7 @@ class sqlmap(baseAttackPlugin):
         if not self.canExploit():
             return []
         else:
-            vulns = kb.kb.getData( 'blindSqli' , 'blindSqli' )
+            vulns = kb.kb.getData( 'blind_sqli' , 'blind_sqli' )
             vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
             
             bsql = blind_sqli_response_diff(self._uri_opener)

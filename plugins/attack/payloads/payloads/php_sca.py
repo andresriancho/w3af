@@ -34,9 +34,9 @@ class php_sca(base_payload):
     KB_DATA = {
         'XSS': {'kb_key': ('xss', 'xss'), 'severity': severity.MEDIUM,
             'name': 'Cross site scripting vulnerability'},
-        'OS_COMMANDING': {'kb_key': ('osCommanding', 'osCommanding'),
+        'OS_COMMANDING': {'kb_key': ('os_commanding', 'os_commanding'),
             'severity': severity.HIGH, 'name': 'OS commanding vulnerability'},
-        'FILE_INCLUDE': {'kb_key': ('localFileInclude', 'localFileInclude'),
+        'FILE_INCLUDE': {'kb_key': ('lfi', 'lfi'),
             'severity': severity.MEDIUM, 'name': 'Local file inclusion vulnerability'},
        }
     

@@ -1,5 +1,5 @@
 '''
-fileUploadShell.py
+file_uploadShell.py
 
 Copyright 2006 Andres Riancho
 
@@ -44,7 +44,7 @@ import tempfile
 from core.controllers.misc.temp_dir import get_temp_dir
 
 
-class fileUploadShell(baseAttackPlugin):
+class file_uploadShell(baseAttackPlugin):
     '''
     Exploit applications that allow unrestricted file uploads inside the webroot.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -78,7 +78,7 @@ class fileUploadShell(baseAttackPlugin):
             v.setDc( self._data )
             v['fileVars'] = self._fileVars
             v['fileDest'] = self._fileDest
-            kb.kb.append( 'fileUpload', 'fileUpload', v )
+            kb.kb.append( 'file_upload', 'file_upload', v )
 
     def getAttackType(self):
         '''
@@ -89,14 +89,14 @@ class fileUploadShell(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''                
-        return 'fileUpload'
+        return 'file_upload'
                 
     def _generateShell( self, vuln_obj ):
         '''
@@ -278,4 +278,4 @@ class fuShell(exec_shell):
             om.out.debug('File upload shell cleanup complete; successfully removed file: "' + file_to_del + '"')
     
     def getName( self ):
-        return 'fileUploadShell'
+        return 'file_uploadShell'

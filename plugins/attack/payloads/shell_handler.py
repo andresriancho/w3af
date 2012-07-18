@@ -36,7 +36,7 @@ def get_webshells( extension, forceExtension=False ):
     This method returns a webshell content to be used in exploits, based on the extension, or based
     on the x-powered-by header.
     
-    Plugins calling this function, should depend on "discovery.serverHeader" if they want to use 
+    Plugins calling this function, should depend on "discovery.server_header" if they want to use 
     the complete power if this function.
     '''
     return _get_file_list( 'webshell', extension, forceExtension )
@@ -77,7 +77,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
         real_extension = extension
         known_framework.append( (filename, real_extension) )
     else:
-        poweredByHeaders = kb.kb.getData( 'serverHeader' , 'poweredByString' )
+        poweredByHeaders = kb.kb.getData( 'server_header' , 'poweredByString' )
         filename = ''
         
         file_list = [ x for x in os.listdir( path ) if x.startswith(type_of_list) ]
@@ -93,7 +93,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
                 if h.lower().count( real_extension ):
                     known_framework.append( (filename, real_extension) )
             
-            # extension here is the parameter passed by the user, that can be '' , this happens in davShell
+            # extension here is the parameter passed by the user, that can be '' , this happens in dav
             uncertain_framework.append( (filename, real_extension) )
     
     # We keep the order, first the ones we think could work, then the ones that may

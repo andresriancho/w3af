@@ -502,7 +502,7 @@ class MySQLMap(Common):
         self.log('Writing %s with content: %s' % (filename,content) )
         
         union = self.unionCheck()
-        # union = http://localhost/w3af/blindSqli/blindSqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
+        # union = http://localhost/w3af/blind_sqli/blind_sqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
         if union is None:
             raise Exception('Failed to find a valid SQL UNION.')
         

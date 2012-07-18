@@ -1,5 +1,5 @@
 '''
-localFileReader.py
+local_file_reader.py
 
 Copyright 2006 Andres Riancho
 
@@ -38,7 +38,7 @@ from core.data.parsers.urlParser import parse_qs
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
 
-class localFileReader(baseAttackPlugin):
+class local_file_reader(baseAttackPlugin):
     '''
     Exploit local file inclusion bugs.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -71,7 +71,7 @@ class localFileReader(baseAttackPlugin):
             v.setMethod( self._method )
             v.setDc( self._data )
             v['file_pattern'] = self._file_pattern
-            kb.kb.append( 'localFileInclude', 'localFileInclude', v )
+            kb.kb.append( 'lfi', 'lfi', v )
     
     def getAttackType(self):
         '''
@@ -82,14 +82,14 @@ class localFileReader(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''        
-        return 'localFileInclude'
+        return 'lfi'
         
     def _generateShell( self, vuln_obj ):
         '''
@@ -370,5 +370,5 @@ class fileReaderShell(read_shell):
         '''
         @return: The name of this shell.
         '''
-        return 'localFileReader'
+        return 'local_file_reader'
         

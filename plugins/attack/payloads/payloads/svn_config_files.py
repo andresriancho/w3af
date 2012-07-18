@@ -104,13 +104,13 @@ class svn_config_files(base_payload):
             if file_content:
                 multi_parser(self, file, file_content, True)
     
-        if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
+        if kb.kb.getData('password_profiling', 'password_profiling'):
             users_info = self.exec_payload('users')
             
             for user in users_info:
                 home = users_info[user]['home']
 
-                for dirname in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
+                for dirname in kb.kb.getData('password_profiling', 'password_profiling'):
                     file_content = self.shell.read(home+dirname.lower()+'/conf/svnserve.conf')
                     passwd_content = self.shell.read(home+dirname.lower()+'/conf/passwd')
                     if file_content:
@@ -119,8 +119,8 @@ class svn_config_files(base_payload):
                         multi_parser(self, home+dirname.lower()+'/conf/passwd', passwd_content)
 
         
-        if kb.kb.getData('passwordProfiling', 'passwordProfiling'):
-            for folder in kb.kb.getData('passwordProfiling', 'passwordProfiling'):
+        if kb.kb.getData('password_profiling', 'password_profiling'):
+            for folder in kb.kb.getData('password_profiling', 'password_profiling'):
                 file_content = self.shell.read('/srv/svn/'+folder.lower()+'/conf/svnserve.conf')
                 passwd_content = self.shell.read('/srv/svn/'+folder.lower()+'/conf/passwd')
                 if file_content:

@@ -1,5 +1,5 @@
 '''
-davShell.py
+dav.py
 
 Copyright 2006 Andres Riancho
 
@@ -39,7 +39,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 import urllib
 
 
-class davShell(baseAttackPlugin):
+class dav(baseAttackPlugin):
     '''
     Exploit web servers that have unauthenticated DAV access.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -76,12 +76,12 @@ class davShell(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''        
         return 'dav'
     
@@ -93,7 +93,7 @@ class davShell(baseAttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verifyVuln( vuln_obj ):
             # Create the shell object
-            shell_obj = davShellObj( vuln_obj )
+            shell_obj = davObj( vuln_obj )
             shell_obj.setUrlOpener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit_url )
             return shell_obj
@@ -191,7 +191,7 @@ class davShell(baseAttackPlugin):
             - URL (only used in fastExploit)
         '''
         
-class davShellObj(exec_shell):
+class davObj(exec_shell):
     def setExploitURL( self, eu ):
         self._exploit_url = eu
     
@@ -212,14 +212,14 @@ class davShellObj(exec_shell):
         return response.getBody()
     
     def end( self ):
-        om.out.debug('davShellObj is going to delete the webshell that was uploaded before.')
+        om.out.debug('davObj is going to delete the webshell that was uploaded before.')
         url_to_del = self._exploit_url.uri2url()
         try:
             self._uri_opener.DELETE( url_to_del )
         except w3afException, e:
-            om.out.error('davShellObj cleanup failed with exception: ' + str(e) )
+            om.out.error('davObj cleanup failed with exception: ' + str(e) )
         else:
-            om.out.debug('davShellObj cleanup complete.')
+            om.out.debug('davObj cleanup complete.')
         
     def getName( self ):
-        return 'davShell'
+        return 'dav'

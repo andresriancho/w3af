@@ -30,10 +30,10 @@ class TestOSCommandingShell(PluginTest):
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('osCommanding'),),
+                 'audit': (PluginConfig('os_commanding'),),
                  'discovery': (
                       PluginConfig(
-                          'webSpider',
+                          'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
                   )
                  }
@@ -46,7 +46,7 @@ class TestOSCommandingShell(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('osCommanding', 'osCommanding')
+        vulns = self.kb.getData('os_commanding', 'os_commanding')
         self.assertEquals(4, len(vulns))
         self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
                           True)
@@ -68,7 +68,7 @@ class TestOSCommandingShell(PluginTest):
         vuln_to_exploit_id = [v.getId() for v in vulns 
                               if v.getURL().getFileName() == 'simple_osc.php'][0]
         
-        plugin = self.w3afcore.plugins.getPluginInstance( 'osCommandingShell', 'attack' )
+        plugin = self.w3afcore.plugins.getPluginInstance( 'os_commandingShell', 'attack' )
         
         self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
         

@@ -33,7 +33,7 @@ class apache_config_files(base_payload):
                         result['apache_config'][ dir+file ] = content
                 
                 #TODO: Add target domain name being scanned by w3af.
-                profiled_words_list = kb.kb.getData('passwordProfiling', 'passwordProfiling')
+                profiled_words_list = kb.kb.getData('password_profiling', 'password_profiling')
                 domain_name = self.exec_payload('domainname')['domain_name']
                 hostname = self.exec_payload('hostname')['hostname']
                 

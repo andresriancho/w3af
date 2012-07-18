@@ -1,5 +1,5 @@
 '''
-osCommandingShell.py
+os_commandingShell.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ import core.controllers.outputManager as om
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
-class osCommandingShell(baseAttackPlugin):
+class os_commandingShell(baseAttackPlugin):
     '''
     Exploit OS Commanding vulnerabilities.
     
@@ -54,7 +54,7 @@ class osCommandingShell(baseAttackPlugin):
 
     def fastExploit( self ):
         '''
-        Exploits a web app with osCommanding vuln, the settings are configured using setOptions()
+        Exploits a web app with os_commanding vuln, the settings are configured using setOptions()
         '''
         raise w3afException('Not implemented.')
     
@@ -67,14 +67,14 @@ class osCommandingShell(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''        
-        return 'osCommanding'
+        return 'os_commanding'
 
     def _generateShell( self, vuln ):
         '''
@@ -111,7 +111,7 @@ class osCommandingShell(baseAttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # The vuln was saved to the kb as:
-        # kb.kb.append( self, 'osCommanding', v )
+        # kb.kb.append( self, 'os_commanding', v )
         exploitDc = vuln.getDc()
             
         # Define a test command:
@@ -242,5 +242,5 @@ class osShell(exec_shell):
         om.out.debug('osShell cleanup complete.')
         
     def getName( self ):
-        return 'osCommandingShell'
+        return 'os_commandingShell'
         

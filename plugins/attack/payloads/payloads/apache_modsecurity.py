@@ -3,7 +3,7 @@ from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
 
-class apache_modsecurity(base_payload):
+class apache_mod_security(base_payload):
     '''
     This payload shows ModSecurity version,rules and configuration files.
     '''
@@ -70,10 +70,10 @@ class apache_modsecurity(base_payload):
 
         files.append(dir+'conf/mod_security.conf')
         files.append(dir+'conf.d/mod_security.conf')
-        files.append(dir+'modsecurity.d/modsecurity_crs_10_config.conf')
-        files.append(dir+'modsecurity.d/modsecurity_crs_10_global_config.conf')
-        files.append(dir+'modsecurity.d/modsecurity_localrules.conf')
-        files.append(dir+'conf/modsecurity.conf')
+        files.append(dir+'mod_security.d/mod_security_crs_10_config.conf')
+        files.append(dir+'mod_security.d/mod_security_crs_10_global_config.conf')
+        files.append(dir+'mod_security.d/mod_security_localrules.conf')
+        files.append(dir+'conf/mod_security.conf')
         files.append(dir+'mods-available/mod-security.conf')
 
         for file in files:

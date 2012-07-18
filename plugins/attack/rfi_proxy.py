@@ -1,5 +1,5 @@
 '''
-rfiProxy.py
+rfi_proxy.py
 
 Copyright 2006 Andres Riancho
 
@@ -55,7 +55,7 @@ RFI_SEPARATOR = createRandAlNum( 25 )
 URLOPENER = None
 
 
-class rfiProxy(baseAttackPlugin, w3afThread):
+class rfi_proxy(baseAttackPlugin, w3afThread):
     '''
     Exploits remote file inclusions to create a proxy server.
     
@@ -83,7 +83,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
         
     def fastExploit(self, url, method, data ):
         '''
-        Exploits a web app with osCommanding vuln.
+        Exploits a web app with os_commanding vuln.
         
         @parameter url: A string containing the Url to exploit ( http://somehost.com/foo.php )
         @parameter method: A string containing the method to send the data ( post / get )
@@ -101,14 +101,14 @@ class rfiProxy(baseAttackPlugin, w3afThread):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''        
-        return 'remoteFileInclude'
+        return 'rfi'
                 
       
     def _generateShell( self, vuln ):
@@ -178,7 +178,7 @@ class rfiProxy(baseAttackPlugin, w3afThread):
             # If user failed to configure self._rfiConnGenerator we will run a webserver
             # and configure the _rfiConnGenerator attr for him
             om.out.information('Running a local httpd to serve the RFI connection generator to remote web app.')
-            webroot = os.path.join('plugins', 'attack', 'rfiProxy')
+            webroot = os.path.join('plugins', 'attack', 'rfi_proxy')
             webserver.start_webserver(self._proxyPublicIP, self._httpdPort, webroot)
             self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
             

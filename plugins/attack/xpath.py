@@ -55,7 +55,7 @@ class xpath(baseAttackPlugin):
 
     def fastExploit( self ):
         '''
-        Exploits a web app with osCommanding vuln, the settings are configured using setOptions()
+        Exploits a web app with os_commanding vuln, the settings are configured using setOptions()
         '''
         raise w3afException('Not implemented.')
     
@@ -79,12 +79,12 @@ class xpath(baseAttackPlugin):
     def getVulnName2Exploit( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.osCommanding plugin finds an vuln, and saves it as:
+        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
         
-        kb.kb.append( 'osCommanding' , 'osCommanding', vuln )
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits osCommanding ( attack.osCommandingShell ) should
-        return 'osCommanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        return 'os_commanding' in this method.
         '''        
         return 'xpath'
                 
