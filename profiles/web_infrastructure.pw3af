@@ -2,10 +2,10 @@
 description = Use all the available techniques in w3af to fingerprint the remote Web infrastructure.
 name = web_infrastructure
 
-[discovery.sharedHosting]
+[discovery.shared_hosting]
 resultLimit = 300
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [misc-settings]
 maxThreads = 15
@@ -22,7 +22,7 @@ maxDiscoveryTime = 120
 
 nonTargets = 
 
-[discovery.serverHeader]
+[discovery.server_header]
 execOneTime = True
 
 [discovery.fingerprint_os]
@@ -59,9 +59,9 @@ verbose = False
 
 [discovery.fingerprint_WAF]
 
-[discovery.detectTransparentProxy]
+[discovery.detect_transparent_proxy]
 
-[discovery.findvhost]
+[discovery.find_vhosts]
 
-[discovery.detectReverseProxy]
+[discovery.detect_reverse_proxy]
 

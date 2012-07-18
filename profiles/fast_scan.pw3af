@@ -1,10 +1,10 @@
-[grep.strangeHeaders]
+[grep.strange_headers]
 
-[grep.svnUsers]
+[grep.svn_users]
 
-[grep.passwordProfiling]
+[grep.password_profiling]
 
-[grep.blankBody]
+[grep.blank_body]
 
 [misc-settings]
 maxThreads = 15
@@ -22,7 +22,7 @@ interface = eth0
 localAddress = 192.168.1.100
 nonTargets = 
 
-[grep.strangeHTTPCode]
+[grep.strange_http_codes]
 
 [grep.oracle]
 
@@ -33,19 +33,19 @@ verbose = False
 
 [grep.objects]
 
-[grep.strangeParameters]
+[grep.strange_parameters]
 
-[grep.errorPages]
+[grep.error_pages]
 
-[grep.fileUpload]
+[grep.file_upload]
 
 [grep.ajax]
 
-[grep.creditCards]
+[grep.credit_cards]
 
-[grep.error500]
+[grep.error_500]
 
-[discovery.webSpider]
+[discovery.web_spider]
 
 [grep.feeds]
 
@@ -53,7 +53,7 @@ verbose = False
 checkStored = True
 numberOfChecks = 3
 
-[grep.hashFind]
+[grep.hash_find]
 
 [profile]
 name = fast_scan
@@ -61,37 +61,37 @@ description = Perform a fast scan of the target site, using only a few discovery
 
 [grep.lang]
 
-[grep.findComments]
+[grep.html_comments]
 
-[output.gtkOutput]
+[output.gtk_output]
 
-[grep.formAutocomplete]
+[grep.form_autocomplete]
 
 [grep.ssn]
 
-[grep.dotNetEventValidation]
+[grep.dot_net_event_validation]
 
-[grep.metaTags]
+[grep.meta_tags]
 
 [audit.sqli]
 
-[grep.strangeReason]
+[grep.strange_reason]
 
-[grep.httpInBody]
+[grep.http_in_body]
 
-[grep.domXss]
+[grep.dom_xss]
 
-[grep.directoryIndexing]
+[grep.directory_indexing]
 
-[grep.codeDisclosure]
+[grep.code_disclosure]
 
-[grep.collectCookies]
+[grep.collect_cookies]
 
-[grep.getMails]
+[grep.get_emails]
 
-[grep.privateIP]
+[grep.private_ip]
 
-[grep.pathDisclosure]
+[grep.path_disclosure]
 
 [http-settings]
 proxyPort = 8080
@@ -113,7 +113,7 @@ basicAuthPass =
 404string = 
 cookieJarFile = 
 
-[grep.wsdlGreper]
+[grep.wsdl_greper]
 
-[grep.httpAuthDetect]
+[grep.http_auth_detect]
 

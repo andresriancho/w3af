@@ -8,12 +8,12 @@ useEcho = True
 
 [audit.dav]
 
-[audit.remoteFileInclude]
+[audit.rfi]
 usew3afSite = True
 listenAddress = 
 listenPort = 44449
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [misc-settings]
 maxThreads = 15
@@ -32,7 +32,7 @@ nonTargets =
 
 [audit.sqli]
 
-[audit.osCommanding]
+[audit.os_commanding]
 
 [http-settings]
 proxyPort = 8080
@@ -55,17 +55,17 @@ byDirectoryAndExtension404 = False
 404string = 
 cookieJarFile = 
 
-[audit.blindSqli]
+[audit.blind_sqli]
 eq_limit = 0.9
 
 [output.console]
 verbose = True
 
-[discovery.webSpider]
+[discovery.web_spider]
 followRegex = .*
 ignoreRegex = 
 onlyForward = False
 
-[audit.fileUpload]
+[audit.file_upload]
 extensions = gif,html,bmp,jpg,png,txt
 

@@ -2,9 +2,9 @@
 description = Use different online techniques to create a fast sitemap of the target web application. This plugin will only work if you've got Internet access and the target web application is being spidered by Yahoo!
 name = sitemap
 
-[discovery.sitemapReader]
+[discovery.sitemap_xml]
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [misc-settings]
 maxThreads = 15
@@ -21,7 +21,7 @@ maxDiscoveryTime = 120
 fuzzFormComboValues = tmb
 nonTargets = 
 
-[discovery.robotsReader]
+[discovery.robots_txt]
 
 [http-settings]
 proxyPort = 8080

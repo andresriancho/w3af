@@ -2,7 +2,7 @@
 description = Bruteforce form or basic authentication access controls using default credentials. To run this profile, set the target URL to the resource where the access control is, and then click on Start.
 name = bruteforce
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [misc-settings]
 maxThreads = 15
@@ -39,7 +39,7 @@ basicAuthPass =
 404string = 
 cookieJarFile = 
 
-[bruteforce.formAuthBrute]
+[bruteforce.form_auth]
 profilingNumber = 50
 useMails = True
 useLeetPasswd = True
@@ -51,7 +51,7 @@ usersFile = core/controllers/bruteforce/users.txt
 stopOnFirst = True
 useSvnUsers = True
 
-[bruteforce.basicAuthBrute]
+[bruteforce.basic_auth]
 profilingNumber = 50
 useMails = True
 useLeetPasswd = True

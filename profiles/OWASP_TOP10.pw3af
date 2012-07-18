@@ -10,12 +10,12 @@ useEcho = True
 [grep.motw]
 withoutMOTW = False
 
-[grep.creditCards]
+[grep.credit_cards]
 
-[audit.blindSqli]
+[audit.blind_sqli]
 eq_limit = 0.9
 
-[discovery.allowedMethods]
+[discovery.allowed_methods]
 reportDavOnly = True
 execOneTime = False
 
@@ -23,24 +23,24 @@ execOneTime = False
 
 [discovery.halberd]
 
-[audit.phishingVector]
+[audit.phishing_vector]
 
 
-[grep.pathDisclosure]
+[grep.path_disclosure]
 
 [audit.xsrf]
 
-[grep.hashFind]
+[grep.hash_find]
 
-[discovery.dnsWildcard]
+[discovery.dns_wildcard]
 
-[discovery.detectTransparentProxy]
+[discovery.detect_transparent_proxy]
 
-[audit.mxInjection]
+[audit.mx_injection]
 
 [audit.preg_replace]
 
-[grep.strangeHeaders]
+[grep.strange_headers]
 
 [misc-settings]
 maxThreads = 15
@@ -60,129 +60,129 @@ nonTargets =
 
 [discovery.fingerprint_os]
 
-[audit.localFileInclude]
+[audit.lfi]
 
 [discovery.afd]
 
-[audit.LDAPi]
+[audit.ldapi]
 
-[discovery.dotNetErrors]
+[discovery.dot_net_errors]
 
-[audit.unSSL]
+[audit.un_ssl]
 
-[discovery.sharedHosting]
+[discovery.shared_hosting]
 resultLimit = 300
 
-[discovery.webSpider]
+[discovery.web_spider]
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
 
-[audit.sslCertificate]
+[audit.ssl_certificate]
 
-[audit.osCommanding]
+[audit.os_commanding]
 
 [audit.ssi]
 
-[discovery.serverHeader]
+[discovery.server_header]
 execOneTime = True
 
 [audit.sqli]
 
-[grep.dotNetEventValidation]
+[grep.dot_net_event_validation]
 
-[audit.buffOverflow]
+[audit.buffer_overflow]
 
-[grep.directoryIndexing]
+[grep.directory_indexing]
 
-[grep.collectCookies]
+[grep.collect_cookies]
 
-[grep.getMails]
+[grep.get_emails]
 onlyTargetDomain = True
 
 [grep.oracle]
 
-[grep.metaTags]
+[grep.meta_tags]
 search404 = False
 
-[grep.strangeHTTPCode]
+[grep.strange_http_codes]
 
 [audit.xpath]
 
 [audit.generic]
 diffRatio = 0.35
 
-[grep.httpInBody]
+[grep.http_in_body]
 
-[discovery.sitemapReader]
+[discovery.sitemap_xml]
 
-[grep.fileUpload]
+[grep.file_upload]
 
 [grep.ajax]
 
 [discovery.fingerprint_WAF]
 
-[grep.error500]
+[grep.error_500]
 
-[discovery.detectReverseProxy]
+[discovery.detect_reverse_proxy]
 
 [grep.lang]
 
-[discovery.serverStatus]
+[discovery.server_status]
 
 [grep.objects]
 
 [discovery.hmap]
 genFpF = False
 
-[discovery.userDir]
+[discovery.user_dir]
 identifyOS = True
 identifyApplications = True
 
-[audit.htaccessMethods]
+[audit.htaccess_methods]
 
-[discovery.oracleDiscovery]
+[discovery.oracle_discovery]
 
-[grep.domXss]
+[grep.dom_xss]
 
 [target]
 target = 
 
-[audit.remoteFileInclude]
+[audit.rfi]
 usew3afSite = True
 listenAddress = 
 listenPort = 44449
 
-[grep.wsdlGreper]
+[grep.wsdl_greper]
 
-[discovery.findvhost]
+[discovery.find_vhosts]
 
-[grep.httpAuthDetect]
+[grep.http_auth_detect]
 
-[audit.responseSplitting]
+[audit.response_splitting]
 
-[grep.svnUsers]
+[grep.svn_users]
 
-[grep.passwordProfiling]
+[grep.password_profiling]
 
-[grep.blankBody]
+[grep.blank_body]
 
-[grep.errorPages]
+[grep.error_pages]
 
 [audit.dav]
 
 [output.console]
 verbose = True
 
-[audit.formatString]
+[audit.format_string]
 
-[discovery.phpEggs]
+[discovery.php_eggs]
 
-[grep.strangeParameters]
+[grep.strange_parameters]
 
-[discovery.robotsReader]
+[discovery.robots_txt]
 
-[audit.globalRedirect]
+[audit.global_redirect]
 
 [audit.xst]
 
@@ -194,16 +194,16 @@ numberOfChecks = 3
 description = The Open Web Application Security Project (OWASP) is a worldwide free and open community focused on improving the security of application software. OWASP searched for and published the ten most common security flaws. This profile search for this top 10 security flaws. For more information about the security flaws: http://www.owasp.org/index.php/OWASP_Top_Ten_Project .
 name = OWASP_TOP10
 
-[grep.findComments]
+[grep.html_comments]
 search404 = True
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [grep.ssn]
 
-[grep.codeDisclosure]
+[grep.code_disclosure]
 
-[grep.privateIP]
+[grep.private_ip]
 
 [discovery.phishtank]
 dbFile = plugins/discovery/phishtank/index.xml
@@ -232,6 +232,6 @@ cookieJarFile =
 [discovery.bing_spider]
 resultLimit = 300
 
-[audit.fileUpload]
+[audit.file_upload]
 extensions = gif,html
 

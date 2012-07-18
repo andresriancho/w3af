@@ -1,33 +1,33 @@
 [audit.preg_replace]
 
-[audit.responseSplitting]
+[audit.response_splitting]
 
 [grep.ssn]
 
-[grep.svnUsers]
+[grep.svn_users]
 
-[grep.passwordProfiling]
+[grep.password_profiling]
 
-[grep.blankBody]
+[grep.blank_body]
 
 [grep.lang]
 
-[audit.htaccessMethods]
+[audit.htaccess_methods]
 
 [audit.sqli]
 
-[grep.strangeHeaders]
+[grep.strange_headers]
 
 [output.console]
 verbose = False
 
 [audit.xpath]
 
-[discovery.spiderMan]
+[discovery.spider_man]
 listenPort = 44444
 listenAddress = 127.0.0.1
 
-[audit.LDAPi]
+[audit.ldapi]
 
 [audit.generic]
 diffRatio = 0.35
@@ -35,23 +35,23 @@ diffRatio = 0.35
 [audit.frontpage]
 stopOnFirst = True
 
-[audit.formatString]
+[audit.format_string]
 
 [grep.motw]
 withoutMOTW = False
 
-[audit.unSSL]
+[audit.un_ssl]
 
-[grep.strangeParameters]
+[grep.strange_parameters]
 
-[audit.fileUpload]
+[audit.file_upload]
 extensions = gif,html
 
-[grep.fileUpload]
+[grep.file_upload]
 
 [grep.ajax]
 
-[grep.creditCards]
+[grep.credit_cards]
 
 [http-settings]
 proxyPort = 8080
@@ -73,12 +73,12 @@ basicAuthUser =
 basicAuthPass = 
 cookieJarFile = 
 
-[audit.blindSqli]
+[audit.blind_sqli]
 eq_limit = 0.9
 
-[audit.globalRedirect]
+[audit.global_redirect]
 
-[discovery.webSpider]
+[discovery.web_spider]
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
@@ -89,68 +89,68 @@ onlyForward = False
 checkStored = True
 numberOfChecks = 3
 
-[audit.sslCertificate]
+[audit.ssl_certificate]
 
 [profile]
-description = Perform a manual discovery using the spiderMan plugin, and afterwards scan the site for any known vulnerabilities.
+description = Perform a manual discovery using the spider_man plugin, and afterwards scan the site for any known vulnerabilities.
 name = full_audit_manual_disc
 
-[grep.errorPages]
+[grep.error_pages]
 
-[grep.findComments]
+[grep.html_comments]
 search404 = False
 
 [audit.eval]
 useTimeDelay = True
 useEcho = True
 
-[audit.osCommanding]
+[audit.os_commanding]
 
 [audit.ssi]
 
-[output.gtkOutput]
+[output.gtk_output]
 
 [grep.objects]
 
-[grep.dotNetEventValidation]
+[grep.dot_net_event_validation]
 
-[grep.metaTags]
+[grep.meta_tags]
 search404 = False
 
-[audit.phishingVector]
+[audit.phishing_vector]
 
-[audit.localFileInclude]
+[audit.lfi]
 
-[audit.buffOverflow]
+[audit.buffer_overflow]
 
 [grep.oracle]
 
 
-[grep.httpInBody]
+[grep.http_in_body]
 
 [grep.feeds]
 
-[grep.directoryIndexing]
+[grep.directory_indexing]
 
-[audit.remoteFileInclude]
+[audit.rfi]
 usew3afSite = True
 listenPort = 44449
 listenAddress = 
 
-[grep.error500]
+[grep.error_500]
 
-[grep.collectCookies]
+[grep.collect_cookies]
 
-[grep.getMails]
+[grep.get_emails]
 onlyTargetDomain = True
 
-[grep.privateIP]
+[grep.private_ip]
 
-[grep.pathDisclosure]
+[grep.path_disclosure]
 
 [audit.xsrf]
 
-[bruteforce.formAuthBrute]
+[bruteforce.form_auth]
 profilingNumber = 50
 useMails = True
 useLeetPasswd = True
@@ -178,13 +178,13 @@ maxDiscoveryTime = 120
 
 nonTargets = 
 
-[grep.hashFind]
+[grep.hash_find]
 
-[grep.wsdlGreper]
+[grep.wsdl_greper]
 
-[grep.codeDisclosure]
+[grep.code_disclosure]
 
-[bruteforce.basicAuthBrute]
+[bruteforce.basic_auth]
 profilingNumber = 50
 useMails = True
 useLeetPasswd = True
@@ -198,9 +198,9 @@ useSvnUsers = True
 
 [audit.dav]
 
-[grep.domXss]
+[grep.dom_xss]
 
-[audit.mxInjection]
+[audit.mx_injection]
 
-[grep.httpAuthDetect]
+[grep.http_auth_detect]
 
