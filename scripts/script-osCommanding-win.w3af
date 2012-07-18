@@ -1,10 +1,10 @@
-# This is the osCommanding demo for windows!
+# This is the os_commanding demo for windows!
 
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -14,7 +14,7 @@ back
 back
 
 plugins
-audit osCommanding
+audit os_commanding
 audit
 back
 
@@ -24,6 +24,6 @@ set target http://172.16.1.128/os.php?cmd=abc
 back
 start
 exploit
-exploit osCommandingShell
+exploit os_commanding
 dir
 

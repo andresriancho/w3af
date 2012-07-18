@@ -1,14 +1,14 @@
-# This is the remoteFileInclude demo:
+# This is the rfi demo:
 
 plugins
-audit remoteFileInclude, xss
-audit config remoteFileInclude
+audit rfi, xss
+audit config rfi
 set listenAddress 127.0.0.1
 set usew3afSite False
 back
 
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -20,14 +20,14 @@ back
 
 start
 
-assert len( kb.kb.getData('remoteFileInclude', 'remoteFileInclude') ) == 1
+assert len( kb.kb.getData('rfi', 'rfi') ) == 1
 
 exploit
-exploit config remoteFileIncludeShell
+exploit config rfi
 set useXssBug True
 back
 
-exploit remoteFileIncludeShell
+exploit rfi
 interact 0
 
 execute ls
@@ -37,6 +37,6 @@ payload tcp
 
 exit
 
-assert len( kb.kb.getData('remoteFileIncludeShell', 'shell') ) == 1
+assert len( kb.kb.getData('rfi', 'shell') ) == 1
 
 exit

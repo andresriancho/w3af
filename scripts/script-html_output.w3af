@@ -1,16 +1,16 @@
-# This script is a test for the htmlFile output plugin
+# This script is a test for the html_file output plugin
 
 plugins
-output console, htmlFile
-output config htmlFile
+output console, html_file
+output config html_file
 set fileName output-w3af.html
 set verbose True
 back
 output config console
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 audit xss

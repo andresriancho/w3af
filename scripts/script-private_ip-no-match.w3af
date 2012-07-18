@@ -2,10 +2,10 @@
 
 plugins
 
-output console,textFile
+output console,text_file
 output
 
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -14,7 +14,7 @@ output config console
 set verbose False
 back
 
-grep privateIP
+grep private_ip
 
 back
 
@@ -24,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.getData('privateIP','HTML')) == 0
+assert len(kb.kb.getData('private_ip','HTML')) == 0
 
 exit

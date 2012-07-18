@@ -1,8 +1,8 @@
 # archive.org test plugin
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery archiveDotOrg
-discovery config archiveDotOrg
+discovery archive_dot_org
+discovery config archive_dot_org
 set max_depth 3
 back
 back

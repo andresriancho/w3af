@@ -1,15 +1,15 @@
-# check allowedMethods
+# check allowed_methods
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery allowedMethods
+discovery allowed_methods
 back
 
 target
@@ -18,7 +18,7 @@ back
 
 start
 
-assert len( kb.kb.getData('allowedMethods', 'methods') ) == 1
-assert len( kb.kb.getData('allowedMethods', 'dav-methods') ) == 0
+assert len( kb.kb.getData('allowed_methods', 'methods') ) == 1
+assert len( kb.kb.getData('allowed_methods', 'dav-methods') ) == 0
 
 exit

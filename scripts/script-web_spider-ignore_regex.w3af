@@ -1,17 +1,17 @@
 # webspider
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery allowedMethods,webSpider
+discovery allowed_methods,web_spider
 
-discovery config webSpider
+discovery config web_spider
 set ignoreRegex .*a.html
 set onlyForward True
 back

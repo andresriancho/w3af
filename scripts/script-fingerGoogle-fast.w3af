@@ -1,9 +1,9 @@
-# This scripts tests the fingerGoogle plugin
+# This scripts tests the finger_google plugin
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -11,8 +11,8 @@ output config console
 set verbose False
 back
 
-discovery fingerGoogle
-discovery config fingerGoogle
+discovery finger_google
+discovery config finger_google
 set fastSearch True
 back
 

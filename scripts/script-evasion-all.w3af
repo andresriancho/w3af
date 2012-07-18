@@ -1,7 +1,7 @@
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set verbose True
 back
 output config console

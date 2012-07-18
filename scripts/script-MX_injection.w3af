@@ -1,7 +1,7 @@
 # This is the MX injection demo
 
 plugins
-audit mxInjection
+audit mx_injection
 output console
 output config console
 set verbose False
@@ -14,6 +14,6 @@ back
 
 start
 
-assert len( kb.kb.getData('mxInjection', 'mxInjection') ) == 1
+assert len( kb.kb.getData('mx_injection', 'mx_injection') ) == 1
 
 exit

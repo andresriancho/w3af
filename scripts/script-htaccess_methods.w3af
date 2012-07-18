@@ -1,9 +1,9 @@
-# This is the htaccessMethods demo
+# This is the htaccess_methods demo
 
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -11,17 +11,17 @@ output config console
 set verbose False
 back
 
-audit htaccessMethods
-grep httpAuthDetect
+audit htaccess_methods
+grep http_auth_detect
 back
 
 target
-set target http://moth/w3af/bruteforce/basicAuthBrute/impossible_guess/
+set target http://moth/w3af/bruteforce/basic_auth/impossible_guess/
 back
 
 start
 
-assert len( kb.kb.getData('httpAuthDetect', 'auth') ) == 1
-assert len( kb.kb.getData('htaccessMethods', 'auth') ) == 0
+assert len( kb.kb.getData('http_auth_detect', 'auth') ) == 1
+assert len( kb.kb.getData('htaccess_methods', 'auth') ) == 0
 
 exit

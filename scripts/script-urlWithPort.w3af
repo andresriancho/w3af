@@ -4,13 +4,13 @@ plugins
 audit sqli
 discovery hmap
 
-output console, textFile
+output console, text_file
 
 output config console
 set verbose False
 back
 
-output config textFile
+output config text_file
 set verbose True
 back
 

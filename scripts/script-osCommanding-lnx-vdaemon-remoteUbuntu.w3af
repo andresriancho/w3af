@@ -1,4 +1,4 @@
-# This is the osCommanding demo for linux! ( with w3afAgent )
+# This is the os_commanding demo for linux! ( with w3afAgent )
 
 misc-settings
 set interface vmnet8
@@ -6,9 +6,9 @@ set localAddress 172.16.1.1
 back
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -18,15 +18,15 @@ back
 back
 
 plugins
-audit osCommanding
+audit os_commanding
 audit
 back
 
 target
-set target http://172.16.1.129/w3af/osCommanding/vulnerable.php?command=list
+set target http://172.16.1.129/w3af/os_commanding/vulnerable.php?command=list
 back
 start
 exploit
-exploit osCommandingShell
+exploit os_commanding
 start vdaemon
 

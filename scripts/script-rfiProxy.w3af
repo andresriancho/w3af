@@ -1,16 +1,16 @@
 # This is the rfi proxy demo
 
 plugins
-audit remoteFileInclude
-audit config remoteFileInclude
+audit rfi
+audit config rfi
 view
 set listenAddress 127.0.0.1
 set usew3afSite False
 back
 
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -25,12 +25,12 @@ back
 start
 
 exploit
-exploit config rfiProxy
+exploit config rfi_proxy
 set listenAddress 127.0.0.1
 set proxyPublicIP 127.0.0.1
 # With rfiConnGenerator configured
 #set rfiConnGenerator http://127.0.0.1/attacker/rfip.txt
 back
-exploit rfiProxy
+exploit rfi_proxy
 #back
 #exit

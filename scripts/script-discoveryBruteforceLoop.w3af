@@ -1,13 +1,13 @@
 # This is the basic Auth Bruteforce + discovery demo
 
 plugins
-audit htaccessMethods
-bruteforce basicAuthBrute
-discovery allowedMethods,webSpider,digitSum
-grep httpAuthDetect,passwordProfiling
-output console,textFile
+audit htaccess_methods
+bruteforce basic_auth
+discovery allowed_methods,web_spider,digit_sum
+grep http_auth_detect,password_profiling
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -16,7 +16,7 @@ set verbose False
 back
 back
 target
-set target http://moth/w3af/basicAuthBrute/
+set target http://moth/w3af/basic_auth/
 back
 start
 exit

@@ -1,8 +1,8 @@
 # This script is a test for the mutation option of pykto
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -11,7 +11,7 @@ discovery config pykto
 set updateScandb True
 set mutateTests True
 back
-discovery pykto,serverHeader
+discovery pykto,server_header
 back
 
 target

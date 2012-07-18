@@ -6,9 +6,9 @@ set proxyPort 8081
 back
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back

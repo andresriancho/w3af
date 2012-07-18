@@ -1,8 +1,8 @@
 # This is a demo of the attack plugin sql_shell
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -12,12 +12,12 @@ back
 
 audit sqli
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 
-grep pathDisclosure
+grep path_disclosure
 
 back
 target

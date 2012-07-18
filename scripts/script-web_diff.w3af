@@ -1,8 +1,8 @@
 # webdiff !
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery allowedMethods,webDiff
-discovery config webDiff
+discovery allowed_methods,web_diff
+discovery config web_diff
 ###### PUT LOCAL DIR HERE ######
 set localDir /home/jandalia/follow_links/
 set remotePath http://moth/w3af/discovery/web_spider/follow_links/

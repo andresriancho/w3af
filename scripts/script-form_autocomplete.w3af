@@ -1,8 +1,8 @@
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,10 +10,10 @@ output config console
 set verbose False
 back
 
-grep formAutocomplete
+grep form_autocomplete
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 back
@@ -24,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.getData('formAutocomplete','formAutocomplete')) == 3
+assert len(kb.kb.getData('form_autocomplete','form_autocomplete')) == 3
 
 exit

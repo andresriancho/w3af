@@ -1,8 +1,8 @@
 # This scripts detects a reverse proxy
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-discovery detectReverseProxy
+discovery detect_reverse_proxy
 back
 
 target
@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('detectReverseProxy','detectReverseProxy')) == 0
+assert len(kb.kb.getData('detect_reverse_proxy','detect_reverse_proxy')) == 0
 
 exit

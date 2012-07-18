@@ -1,15 +1,15 @@
 # check if web app is in shared hosting
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery sharedHosting
+discovery shared_hosting
 back
 
 target
@@ -18,6 +18,6 @@ back
 
 start
 
-assert len(kb.kb.getData('sharedHosting','sharedHosting')) == 1
+assert len(kb.kb.getData('shared_hosting','shared_hosting')) == 1
 
 exit

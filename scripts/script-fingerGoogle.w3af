@@ -1,8 +1,8 @@
-# This scripts tests the fingerGoogle plugin
+# This scripts tests the finger_google plugin
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt2
 set verbose True
 back
@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery fingerGoogle
-discovery config fingerGoogle
+discovery finger_google
+discovery config finger_google
 set resultLimit 64
 back
 back
@@ -22,7 +22,7 @@ back
 
 start
 
-assert len( kb.kb.getData( 'fingerGoogle', 'mails' ) ) > 3
+assert len( kb.kb.getData( 'finger_google', 'mails' ) ) > 3
 
 exit
 

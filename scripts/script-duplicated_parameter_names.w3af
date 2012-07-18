@@ -1,8 +1,8 @@
 # Unit test for duplicated parameter names
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back

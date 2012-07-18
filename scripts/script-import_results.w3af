@@ -1,8 +1,8 @@
 # demo that imports results from a file
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery importResults
-discovery config importResults
+discovery import_results
+discovery config import_results
 set input_csv scripts/input-test.csv
 back
 

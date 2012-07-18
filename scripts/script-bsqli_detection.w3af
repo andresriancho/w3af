@@ -1,12 +1,12 @@
 # This is the blind sqli demo
 plugins
-audit blindSqli
-audit config blindSqli
+audit blind_sqli
+audit config blind_sqli
 set equalLimit 0.89
 
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -20,7 +20,7 @@ set target http://moth/w3af/audit/blind_sql_injection/bsqli_integer.php?id=1, ht
 back
 start
 
-assert len( kb.kb.getData('blindSqli', 'blindSqli') ) == 3
+assert len( kb.kb.getData('blind_sqli', 'blind_sqli') ) == 3
 
 exit
 

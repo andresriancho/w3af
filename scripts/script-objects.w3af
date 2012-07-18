@@ -2,15 +2,15 @@
 
 plugins
 output console
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 grep objects

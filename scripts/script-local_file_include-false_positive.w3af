@@ -1,10 +1,10 @@
 # Demo how I evade a false positive ;)
 
 plugins
-audit localFileInclude
-grep pathDisclosure
-output console,textFile
-output config textFile
+audit lfi
+grep path_disclosure
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -16,6 +16,6 @@ back
 
 start
 
-assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 0
+assert len(kb.kb.getData('lfi','lfi')) == 0
 
 exit

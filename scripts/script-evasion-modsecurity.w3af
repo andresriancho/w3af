@@ -7,9 +7,9 @@
 
 plugins
 
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -21,7 +21,7 @@ audit xss
 audit
 # There is no sense in enabling ALLL evasion plugins. IT WONT WORK
 # But i'm enabling them just to test if they raise any exceptions
-evasion modsecurity
+evasion mod_security
 evasion
 back
 

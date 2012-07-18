@@ -1,4 +1,4 @@
-# This is the osCommanding demo for linux!
+# This is the os_commanding demo for linux!
 
 misc-settings
 set interface lo
@@ -6,9 +6,9 @@ set localAddress 127.0.0.1
 back
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -18,14 +18,14 @@ back
 back
 
 plugins
-audit osCommanding
+audit os_commanding
 audit
 back
 
 target
-set target http://moth/w3af/osCommanding/vulnerable.php?command=list
+set target http://moth/w3af/os_commanding/vulnerable.php?command=list
 back
 start
 exploit
-exploit osCommandingShell
+exploit os_commanding
 start vdaemon

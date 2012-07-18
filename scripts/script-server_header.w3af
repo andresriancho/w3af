@@ -1,15 +1,15 @@
-# serverHeader
+# server_header
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery serverHeader
+discovery server_header
 back
 
 target
@@ -18,7 +18,7 @@ back
 
 start
 
-assert 'Apache' in kb.kb.getData('serverHeader', 'serverString')
-assert 'PHP' in kb.kb.getData('serverHeader','poweredByString')[0]
+assert 'Apache' in kb.kb.getData('server_header', 'serverString')
+assert 'PHP' in kb.kb.getData('server_header','poweredByString')[0]
 
 exit

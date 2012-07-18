@@ -1,8 +1,8 @@
 # grep demo for strangeHeader
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-grep strangeHeaders
+grep strange_headers
 back
 
 target
@@ -19,7 +19,7 @@ back
 
 start
 
-assert len(kb.kb.getData( 'strangeHeaders', 'strangeHeaders' )) == 1
+assert len(kb.kb.getData( 'strange_headers', 'strange_headers' )) == 1
 
 exit
 

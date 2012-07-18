@@ -1,8 +1,8 @@
-# errorPages
+# error_pages
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-grep errorPages
+grep error_pages
 
 back
 
@@ -20,6 +20,6 @@ back
 
 start
 
-assert len(kb.kb.getData('errorPages','errorPage')) == 1
+assert len(kb.kb.getData('error_pages','errorPage')) == 1
 
 exit

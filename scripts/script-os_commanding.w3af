@@ -1,9 +1,9 @@
-# This is the osCommanding demo:
+# This is the os_commanding demo:
 
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -13,10 +13,10 @@ back
 back
 
 plugins
-audit osCommanding
+audit os_commanding
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 back
@@ -26,6 +26,6 @@ set target http://moth/w3af/audit/os_commanding/
 back
 start
 
-assert len(kb.kb.getData('osCommanding','osCommanding')) == 3
+assert len(kb.kb.getData('os_commanding','os_commanding')) == 3
 
 exit

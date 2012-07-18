@@ -1,12 +1,12 @@
-# This script is a test for the gtkOutput plugin
+# This script is a test for the gtk_output plugin
 # I only add messages to the queue, I'm not enabling the gtkUi that
 # will read the messages from it.
 
 plugins
-output console,gtkOutput, textFile
+output console,gtk_output, text_file
 output
 
-output config textFile
+output config text_file
 set verbose True
 set fileName out.dbg
 back
@@ -24,8 +24,8 @@ assert len(kb.kb.getData('pykto','vuln')) >= 3
 assert len(kb.kb.getData('urls','url_objects')) >= 3
 
 # Check that message objects are stored here...
-assert kb.kb.getData('gtkOutput','queue').get().getMsg()
-assert kb.kb.getData('gtkOutput','queue').get().getType()
-assert kb.kb.getData('gtkOutput','queue').get().getNewLine()
+assert kb.kb.getData('gtk_output','queue').get().getMsg()
+assert kb.kb.getData('gtk_output','queue').get().getType()
+assert kb.kb.getData('gtk_output','queue').get().getNewLine()
 
 exit

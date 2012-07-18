@@ -1,15 +1,15 @@
-# dnsWildcard
+# dns_wildcard
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery dnsWildcard
+discovery dns_wildcard
 
 back
 target
@@ -20,6 +20,6 @@ back
 
 start
 
-assert len(kb.kb.getData('dnsWildcard','dnsWildcard')) == 2
+assert len(kb.kb.getData('dns_wildcard','dns_wildcard')) == 2
 
 exit

@@ -1,15 +1,15 @@
 # find the captcha image !
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery findCaptchas
+discovery find_captchas
 
 back
 target
@@ -18,6 +18,6 @@ back
 
 start
 
-assert len(kb.kb.getData('findCaptchas','findCaptchas')) == 2
+assert len(kb.kb.getData('find_captchas','find_captchas')) == 2
 
 exit

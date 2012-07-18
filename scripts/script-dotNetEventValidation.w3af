@@ -2,10 +2,10 @@
 
 plugins
 
-output console,textFile
+output console,text_file
 output
 
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -14,7 +14,7 @@ output config console
 set verbose False
 back
 
-grep dotNetEventValidation
+grep dot_net_event_validation
 
 back
 
@@ -24,6 +24,6 @@ back
 
 start
 
-assert len(kb.kb.getData('dotNetEventValidation','dotNetEventValidation')) == 2
+assert len(kb.kb.getData('dot_net_event_validation','dot_net_event_validation')) == 2
 
 exit

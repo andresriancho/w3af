@@ -1,16 +1,16 @@
 # grep demo that searches for strange parameters
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-grep strangeParameters
+grep strange_parameters
 back
 
 target
@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('strangeParameters','strangeParameters')) == 2
+assert len(kb.kb.getData('strange_parameters','strange_parameters')) == 2
 
 exit

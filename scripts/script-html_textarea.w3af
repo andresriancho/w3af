@@ -1,10 +1,10 @@
 # Unit test for html parser
 
 plugins
-discovery allowedMethods
-output console,textFile
+discovery allowed_methods
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back

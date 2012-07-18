@@ -1,10 +1,10 @@
-# This is the osCommanding demo:
+# This is the os_commanding demo:
 
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -14,16 +14,16 @@ back
 back
 
 plugins
-audit osCommanding
+audit os_commanding
 audit
 back
 
 target
-set target http://moth/w3af/osCommanding/vulnerable.php?command=f0as9
+set target http://moth/w3af/os_commanding/vulnerable.php?command=f0as9
 set targetOS windows
 back
 start
 
-assert len(kb.kb.getData('osCommanding','osCommanding')) == 0
+assert len(kb.kb.getData('os_commanding','os_commanding')) == 0
 
 exit

@@ -1,8 +1,8 @@
 # xssed test plugin
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-discovery xssedDotCom
+discovery xssed_dot_com
 back
 
 target
@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('xssedDotCom','xss')) >= 4
+assert len(kb.kb.getData('xssed_dot_com','xss')) >= 4
 
 exit

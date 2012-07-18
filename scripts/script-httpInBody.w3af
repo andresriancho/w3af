@@ -2,17 +2,17 @@
 
 plugins
 output console
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 #set verbose True
 back
-grep httpInBody
+grep http_in_body
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 
@@ -24,7 +24,7 @@ back
 
 start
 
-assert len( kb.kb.getData( 'httpInBody', 'response' ) ) == 1
-assert len( kb.kb.getData( 'httpInBody', 'request' ) ) == 1
+assert len( kb.kb.getData( 'http_in_body', 'response' ) ) == 1
+assert len( kb.kb.getData( 'http_in_body', 'request' ) ) == 1
 
 exit

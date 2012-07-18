@@ -1,8 +1,8 @@
 # Test the lang plugin
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -11,8 +11,8 @@ set verbose False
 back
 grep lang
 
-#discovery webSpider
-#discovery config webSpider
+#discovery web_spider
+#discovery config web_spider
 #set onlyForward true
 #back
 back

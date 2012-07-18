@@ -1,18 +1,18 @@
 # wml support test
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 output config console
 set verbose False
 back
-discovery webSpider,allowedMethods
+discovery web_spider,allowed_methods
 
-discovery config webSpider
+discovery config web_spider
 set onlyForward True
 back
 

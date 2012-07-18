@@ -2,9 +2,9 @@
 
 plugins
 
-output console,textFile
+output console,text_file
 
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -13,13 +13,13 @@ output config console
 set verbose False
 back
 
-grep getMails
-grep config getMails
+grep get_emails
+grep config get_emails
 set onlyTargetDomain False
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 back

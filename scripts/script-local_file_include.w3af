@@ -1,15 +1,15 @@
 # This is the local file inclusion demo:
 
 plugins
-audit localFileInclude
-output console,textFile
-output config textFile
+audit lfi
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 
@@ -21,6 +21,6 @@ back
 
 start
 
-assert len(kb.kb.getData('localFileInclude','localFileInclude')) == 3
+assert len(kb.kb.getData('lfi','lfi')) == 3
 
 exit

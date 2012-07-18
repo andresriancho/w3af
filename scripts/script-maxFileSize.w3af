@@ -1,8 +1,8 @@
 # Test the max file size feature of xUrllib
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 back

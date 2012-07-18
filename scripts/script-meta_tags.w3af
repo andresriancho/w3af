@@ -1,16 +1,16 @@
-# This is the test for grep.metaTags
+# This is the test for grep.meta_tags
 
 plugins
-grep metaTags
+grep meta_tags
 
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
 
@@ -22,6 +22,6 @@ back
 
 start
 
-assert len(kb.kb.getData('metaTags','metaTags')) == 2 
+assert len(kb.kb.getData('meta_tags','meta_tags')) == 2 
 
 exit

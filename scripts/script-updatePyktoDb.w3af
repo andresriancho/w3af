@@ -1,9 +1,9 @@
 # This script show how to update the pykto database
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -12,7 +12,7 @@ discovery config pykto
 set updateScandb True
 view
 back
-discovery pykto,serverHeader
+discovery pykto,server_header
 back
 
 target

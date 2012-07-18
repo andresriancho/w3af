@@ -1,9 +1,9 @@
 # webspider using relative URLs that are catched using regexes
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -11,8 +11,8 @@ output config console
 set verbose False
 back
 
-discovery allowedMethods,webSpider
-discovery config webSpider
+discovery allowed_methods,web_spider
+discovery config web_spider
 set onlyForward True
 back
 

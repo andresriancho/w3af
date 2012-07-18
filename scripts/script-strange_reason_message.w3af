@@ -1,8 +1,8 @@
 # grep demo for strangeHttpCode
 
 plugins
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -10,11 +10,11 @@ output config console
 set verbose False
 back
 
-discovery webSpider
-discovery config webSpider
+discovery web_spider
+discovery config web_spider
 set onlyForward True
 back
-grep strangeReason
+grep strange_reason
 back
 
 target
@@ -23,7 +23,7 @@ back
 
 start
 
-assert len(kb.kb.getData( 'strangeReason', 'strangeReason' )) == 1
+assert len(kb.kb.getData( 'strange_reason', 'strange_reason' )) == 1
 
 exit
 

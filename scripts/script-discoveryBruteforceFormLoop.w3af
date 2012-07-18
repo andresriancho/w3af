@@ -1,13 +1,13 @@
 # This is the form login bruteforce + discovery demo
 
 plugins
-audit htaccessMethods
-bruteforce formAuthBrute
-discovery allowedMethods,webSpider
-grep passwordProfiling
-output console,textFile
+audit htaccess_methods
+bruteforce form_auth
+discovery allowed_methods,web_spider
+grep password_profiling
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back

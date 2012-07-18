@@ -2,8 +2,8 @@
 
 plugins
 
-output console,textFile
-output config textFile
+output console,text_file
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -12,7 +12,7 @@ output config console
 set verbose False
 back
 
-discovery dotNetErrors
+discovery dot_net_errors
 
 back
 
@@ -22,6 +22,6 @@ back
 
 start
 
-print len(kb.kb.getData('dotNetErrors','dotNetErrors'))
+print len(kb.kb.getData('dot_net_errors','dot_net_errors'))
 
 exit

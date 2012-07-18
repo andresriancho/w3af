@@ -10,9 +10,9 @@ set fuzzFileName true
 back
 
 plugins
-output console,textFile
+output console,text_file
 output
-output config textFile
+output config text_file
 set fileName output-w3af.txt
 set verbose True
 back
@@ -21,7 +21,7 @@ set verbose False
 back
 
 #audit xss
-audit blindSqli
+audit blind_sqli
 #audit sqli
 audit
 
