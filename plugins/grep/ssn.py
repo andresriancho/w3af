@@ -23,10 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import itertools
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -60,58 +56,6 @@ class ssn(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None.
-
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
-        
-        Simple test, empty string.
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url)
-        >>> s = ssn()
-        >>> s._already_inspected = set()
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        0
-
-        With "-" separating the SSN parts
-        >>> kb.kb.cleanup(); s._already_inspected = set()
-        >>> body = 'header 771-12-9876 footer'
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        1
-
-        With HTML tags in the middle:
-        >>> kb.kb.cleanup(); s._already_inspected = set()
-        >>> body = 'header <b>771</b>-<b>12</b>-<b>9876</b> footer'
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        1
-
-        All the numbers together:
-        >>> kb.kb.cleanup(); s._already_inspected = set()
-        >>> body = 'header 771129876 footer'
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        1
-
-        One extra number at the end:
-        >>> kb.kb.cleanup(); s._already_inspected = set()
-        >>> body = 'header 7711298761 footer'
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> s.grep(request, response)
-        >>> len(kb.kb.getData('ssn', 'ssn'))
-        0
         '''
         uri = response.getURI()
         if response.is_text_or_html() and response.getCode() == 200 and \
@@ -137,22 +81,6 @@ class ssn(baseGrepPlugin):
     def _find_SSN(self, body_without_tags):
         '''
         @return: SSN as found in the text and SSN in its regular format if the body had an SSN
-
-        >>> s = ssn()
-        >>> s._find_SSN( '' )
-        (None, None)
-        >>> s._find_SSN( 'header 771129876 footer' )
-        ('771129876', '771-12-9876')
-        >>> s._find_SSN( '771129876' )
-        ('771129876', '771-12-9876')
-        >>> s._find_SSN( 'header 771 12 9876 footer' )
-        ('771 12 9876', '771-12-9876')
-        >>> s._find_SSN( 'header 771 12 9876 32 footer' )
-        ('771 12 9876', '771-12-9876')
-        >>> s._find_SSN( 'header 771 12 9876 32 64 footer' )
-        ('771 12 9876', '771-12-9876')
-        >>> s._find_SSN( 'header 771129876 771129875 footer' )
-        ('771129876', '771-12-9876')
         '''
         validated_ssn = None
         ssn = None
@@ -227,8 +155,6 @@ class ssn(baseGrepPlugin):
             return '%s-%s-%s' % (area_number, group_number, serial_number)
         return None
 
-
-
     def end(self):
         '''
         This method is called when the plugin won't be used anymore.
@@ -236,16 +162,6 @@ class ssn(baseGrepPlugin):
         # Print results
         self.print_uniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
 
-    def getOptions(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions(self, opt):
-        pass
-     
     def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -254,11 +170,3 @@ class ssn(baseGrepPlugin):
         This plugins scans every response page to find the strings that are likely to be 
         the US social security numbers. 
         '''
-        
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
- 
