@@ -36,7 +36,7 @@ def getQueueDiverter(reset=False, instance=[]):
             del instance[:]
         return
     if not instance:
-        q = kb.kb.getData("gtkOutput", "queue")
+        q = kb.kb.getData("gtk_output", "queue")
         inst = helpers.IteratedQueue(q)
         instance.append(inst)
     return instance[0]

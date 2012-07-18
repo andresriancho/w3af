@@ -107,7 +107,7 @@ class bruteforcer:
             self._specialUsers.extend(  [ v['mail'] for v in mails ] )
         
         if self._useSvnUsers:
-            users = kb.kb.getData( 'svnUsers', 'users' )
+            users = kb.kb.getData( 'svn_users', 'users' )
             self._specialUsers.extend( [ v['user'] for v in users ]  )
             
         self._specialUsers = list(set(self._specialUsers))
@@ -288,11 +288,11 @@ class bruteforcer:
         def sortfunc(x,y):
             return cmp(y[1],x[1])
             
-        kb_data = kb.kb.getData( 'passwordProfiling', 'passwordProfiling' )
+        kb_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
         
         if not kb_data:
             msg = 'No password profiling information collected, please try to enable'
-            msg += ' discovery.webSpider and grep.passwordProfiling plugins and try again.'
+            msg += ' discovery.web_spider and grep.password_profiling plugins and try again.'
             om.out.information( msg )
             return []
         

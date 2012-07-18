@@ -87,17 +87,17 @@ class TestConsoleUI(unittest.TestCase):
     
     def test_SQL_scan(self):
         commands_to_run = ['plugins',
-                           'output console,textFile',
-                           'output config textFile',
+                           'output console,text_file',
+                           'output config text_file',
                                 'set fileName output-w3af.txt',
                                 'set verbose True', 'back',
                            'output config console',
                                 'set verbose False', 'back', 
                            'audit sqli',
-                           'discovery webSpider',
-                           'discovery config webSpider', 
+                           'discovery web_spider',
+                           'discovery config web_spider', 
                                 'set onlyForward True', 'back',
-                            'grep pathDisclosure',
+                            'grep path_disclosure',
                             'back', 
                             'target',
                                 'set target http://moth/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres', 'back',
@@ -106,7 +106,7 @@ class TestConsoleUI(unittest.TestCase):
         
         expected = ('SQL injection in ',
                     'A SQL error was found in the response supplied by ',
-                    'New URL found by webSpider plugin: http://moth/w3af/audit/sql_injection/select/sql_injection_string.php')
+                    'New URL found by web_spider plugin: http://moth/w3af/audit/sql_injection/select/sql_injection_string.php')
         
         self.mock_sys()
         

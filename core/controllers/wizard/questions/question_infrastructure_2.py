@@ -72,8 +72,8 @@ class question_infrastructure_2(question):
             plugin_list.append('afd')
             
         if optionsMap[self._d2].getValue():
-            plugin_list.append('detectReverseProxy')
-            plugin_list.append('detectTransparentProxy')
+            plugin_list.append('detect_reverse_proxy')
+            plugin_list.append('detect_transparent_proxy')
             
         if optionsMap[self._d3].getValue():
             plugin_list.append('fingerprint_WAF')

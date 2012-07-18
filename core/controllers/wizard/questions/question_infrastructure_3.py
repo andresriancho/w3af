@@ -74,14 +74,14 @@ class question_infrastructure_3(question):
             
         if optionsMap[self._d2].getValue():
             plugin_list.append('hmap')
-            plugin_list.append('serverHeader')
+            plugin_list.append('server_header')
             
         if optionsMap[self._d3].getValue():
-            plugin_list.append('phpEggs')
-            plugin_list.append('dotNetErrors')
+            plugin_list.append('php_eggs')
+            plugin_list.append('dot_net_errors')
             
         if optionsMap[self._d4].getValue():
-            plugin_list.append('findvhost')
+            plugin_list.append('find_vhosts')
         
         # Set the plugins to be run
         old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'discovery' )

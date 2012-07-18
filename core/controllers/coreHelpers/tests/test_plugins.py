@@ -70,7 +70,7 @@ class Test_w3afCore_plugins(unittest.TestCase):
     def test_getAllEnabledPlugins(self):
         w3af_core = w3afCore()
         enabled_audit = ['sqli', 'xss']
-        enabled_grep = ['privateIP']
+        enabled_grep = ['private_ip']
         w3af_core.plugins.setPlugins(enabled_audit,'audit')
         w3af_core.plugins.setPlugins(enabled_grep,'grep')
         
@@ -81,26 +81,26 @@ class Test_w3afCore_plugins(unittest.TestCase):
     
     def test_plugin_options(self):
         w3af_core = w3afCore()
-        plugin_inst = w3af_core.plugins.getPluginInstance('webSpider','discovery')
+        plugin_inst = w3af_core.plugins.getPluginInstance('web_spider','discovery')
         options_1 = plugin_inst.getOptions()
         
-        w3af_core.plugins.set_plugin_options('discovery', 'webSpider', options_1)
-        options_2 = w3af_core.plugins.getPluginOptions('discovery', 'webSpider')
+        w3af_core.plugins.set_plugin_options('discovery', 'web_spider', options_1)
+        options_2 = w3af_core.plugins.getPluginOptions('discovery', 'web_spider')
         
         self.assertEquals( options_1, options_2 )
     
     def test_plugin_options_invalid(self):
         w3af_core = w3afCore()
-        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options, 'discovery', 'webSpider', None)
+        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options, 'discovery', 'web_spider', None)
         
     def test_init_plugins(self):
         w3af_core = w3afCore()
-        enabled = ['webSpider']
+        enabled = ['web_spider']
         w3af_core.plugins.setPlugins(enabled,'discovery')
         w3af_core.plugins.init_plugins()
         
         self.assertEquals( len(w3af_core.plugins.plugins['discovery']), 1 )
         
         plugin_inst = w3af_core.plugins.plugins['discovery'][0]
-        self.assertEquals( plugin_inst.getName(), 'webSpider' )
+        self.assertEquals( plugin_inst.getName(), 'web_spider' )
                 

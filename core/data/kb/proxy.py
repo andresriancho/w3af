@@ -53,7 +53,7 @@ class proxy(exploitResult, commonAttackMethods):
         '''
         This method is called when the proxy is used, in order to create a prompt for the user.
         
-        @return: The name of the proxy ( osCommandingproxy, davproxy, etc )
+        @return: The name of the proxy (rfi_proxy, dav_proxy, etc.)
         '''
         raise w3afException('You should implement the getName method of classes that inherit from "proxy"')
 

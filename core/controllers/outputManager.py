@@ -116,12 +116,12 @@ class outputManager(threading.Thread):
         # are not required anymore (since someone is calling end_output_plugins
         # which indicates that the scan is done).
         #
-        # If the console or gtkOutput plugins were enabled, I re-enable them
+        # If the console or gtk_output plugins were enabled, I re-enable them
         # since I don't want to loose the capability of seeing my log messages
         # in the linux console or the message box in the GTK ui.
         currently_enabled_plugins = self.get_output_plugins()
         keep_enabled = [pname for pname in currently_enabled_plugins 
-                        if pname in ('console', 'gtkOutput')]
+                        if pname in ('console', 'gtk_output')]
         self.set_output_plugins( keep_enabled )
             
     @start_thread_on_demand

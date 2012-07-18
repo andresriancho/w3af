@@ -32,9 +32,9 @@ def factory(module_name, *args):
     with the same name.
     
     Example :
-    >>> spider = factory( 'plugins.discovery.googleSpider' )
+    >>> spider = factory( 'plugins.discovery.google_spider' )
     >>> spider.getName()
-    'googleSpider'
+    'google_spider'
     
     
     @param module_name: What plugin type do you need?

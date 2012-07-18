@@ -201,7 +201,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before
                 the current one.
         '''
-        return ['grep.passwordProfiling','grep.getMails', 'grep.httpAuthDetect']
+        return ['grep.password_profiling','grep.get_emails', 'grep.http_auth_detect']
 
     def getLongDesc( self ):
         '''

@@ -447,7 +447,7 @@ class url_object(disk_item):
         As you may have noticed, the ":80" is redundant, and what's even
         worse, it can confuse w3af because in most cases
         http://host.tld:80/foo/bar != http://host.tld/foo/bar , and 
-        http://host.tld/foo/bar could also be found by the webSpider
+        http://host.tld/foo/bar could also be found by the web_spider
         plugin, so we are analyzing the same thing twice.
     
         So, before the path normalization, I perform a small net location

@@ -71,7 +71,7 @@ class miscSettings(configurable):
             #
             #   This doesn't send any packets, and gives you a nice default setting.
             #   In most cases, it is the "public" IP address, which will work perfectly
-            #   in all plugins that need a reverse connection (rfiProxy)
+            #   in all plugins that need a reverse connection (rfi_proxy)
             #
             local_address = get_local_ip()
             if not local_address:

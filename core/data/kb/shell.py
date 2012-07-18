@@ -209,7 +209,7 @@ class shell(vuln, exploitResult):
         This method is called when the shell is used, in order to create a prompt
         for the user.
         
-        @return: The name of the shell ( osCommandingShell, davShell, etc )
+        @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
         msg = 'You should implement the getName method for classes that inherit'
         msg += ' from "shell"'

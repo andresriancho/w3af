@@ -501,7 +501,7 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
     Due to the wrapper object, the second (wrapped) proxy know almost nothing about
     SSL and works just as with plain sockets.
     Examples of what a second proxy handler would want to know from the original
-    one is the CONNECT method path or urlOpener (see spiderMan).
+    one is the CONNECT method path or urlOpener (see spider_man).
     '''
     def __init__(self, handler, chainedHandler):
         self.RequestHandlerClass = handler

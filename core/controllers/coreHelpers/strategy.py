@@ -359,7 +359,7 @@ class w3af_core_strategy(object):
         '''
         Configure the main urllib with the newly found credentials.
         '''
-        for v in kb.kb.getData( 'basicAuthBrute' , 'auth' ):
+        for v in kb.kb.getData( 'basic_auth' , 'auth' ):
             self._w3af_core.uriOpener.settings.setBasicAuth( v.getURL(),
                                                              v['user'],
                                                              v['pass'] )

@@ -461,7 +461,7 @@ class xUrllib(object):
         #bug bug !
         #
         # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
-        # Too many retries when trying to get: http://localhost/w3af/globalRedirect/2.php?url=javascript%3Aalert
+        # Too many retries when trying to get: http://localhost/w3af/global_redirect/2.php?url=javascript%3Aalert
         #
         ###TODO: The problem is that the urllib2 library fails even if i do this
         #        tests, it fails if it finds javascript: in some part of the URL    

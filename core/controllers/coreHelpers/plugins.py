@@ -92,7 +92,7 @@ class w3af_core_plugins(object):
     def set_plugin_options(self, pluginType, pluginName, pluginOptions):
         '''
         @parameter pluginType: The plugin type, like 'audit' or 'discovery'
-        @parameter pluginName: The plugin name, like 'sqli' or 'webSpider'
+        @parameter pluginName: The plugin name, like 'sqli' or 'web_spider'
         @parameter pluginOptions: An optionList object with the option objects for a plugin.
         
         @return: No value is returned.

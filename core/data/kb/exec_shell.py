@@ -264,7 +264,7 @@ class exec_shell(shell):
         '''
         This method is called when the shell is used, in order to create a prompt for the user.
         
-        @return: The name of the shell ( osCommandingShell, davShell, etc )
+        @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
         raise w3afException('You should implement the getName method of classes that inherit from "shell"')
         

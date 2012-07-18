@@ -262,7 +262,7 @@ class MainApp(object):
         self.w3af = w3af_core
         
         # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugins( ['gtkOutput'] )
+        om.out.set_output_plugins( ['gtk_output'] )
 
         # status bar
         splash.push(_("Building the status bar..."))
@@ -556,7 +556,7 @@ class MainApp(object):
         @param widget: the widget that generated the signal.
         '''
         # This is inited before all, to have a full logging facility.
-        om.out.set_output_plugins( ['gtkOutput'] )
+        om.out.set_output_plugins( ['gtk_output'] )
 
         if not self.saveStateToCore():
             return
@@ -684,7 +684,7 @@ class MainApp(object):
         self.window.set_title(MAIN_TITLE)
         
         # This is done here in order to keep the logging facility.
-        om.out.set_output_plugins( ['gtkOutput'] )
+        om.out.set_output_plugins( ['gtk_output'] )
 
     def _scan_superviseStatus(self):
         '''Handles the waiting until core actually stopped.

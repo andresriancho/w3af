@@ -37,9 +37,9 @@ class Test_w3afCore_profiles(unittest.TestCase):
         enabled_plugins = w3af_core.plugins.getAllEnabledPlugins()
         
         self.assertTrue( 'sqli' in enabled_plugins['audit'])
-        self.assertTrue( 'creditCards' in enabled_plugins['grep'])
-        self.assertTrue( 'privateIP' in enabled_plugins['grep'])
-        self.assertTrue( 'dnsWildcard' in enabled_plugins['discovery'])
+        self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
+        self.assertTrue( 'private_ip' in enabled_plugins['grep'])
+        self.assertTrue( 'dns_wildcard' in enabled_plugins['discovery'])
         
     def test_saveCurrentToNewProfile(self):
         w3af_core = w3afCore()
@@ -50,7 +50,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
         audit = audit[:-1]
         w3af_core.plugins.setPlugins(audit,'audit')
         enabled = w3af_core.plugins.getEnabledPlugins('audit')
-        self.assertEquals(enabled, audit)
+        self.assertEquals(set(enabled), set(audit))
         self.assertTrue(disabled_plugin not in enabled)
 
         w3af_core.profiles.saveCurrentToNewProfile('unittest-OWASP_TOP10')
@@ -64,9 +64,9 @@ class Test_w3afCore_profiles(unittest.TestCase):
         enabled_plugins = w3af_core.plugins.getAllEnabledPlugins()
         
         self.assertTrue( disabled_plugin not in enabled_plugins['audit'])
-        self.assertTrue( 'creditCards' in enabled_plugins['grep'])
-        self.assertTrue( 'privateIP' in enabled_plugins['grep'])
-        self.assertTrue( 'dnsWildcard' in enabled_plugins['discovery'])        
+        self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
+        self.assertTrue( 'private_ip' in enabled_plugins['grep'])
+        self.assertTrue( 'dns_wildcard' in enabled_plugins['discovery'])        
         
         w3af_core.profiles.removeProfile('unittest-OWASP_TOP10')
 

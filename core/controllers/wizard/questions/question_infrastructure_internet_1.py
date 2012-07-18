@@ -57,7 +57,7 @@ class question_infrastructure_internet_1(question):
         plugin_list = []
         
         if optionsMap[self._d1].getValue():
-            plugin_list.append('sharedHosting')
+            plugin_list.append('shared_hosting')
         
         # Set the plugins to be run
         old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'discovery' )

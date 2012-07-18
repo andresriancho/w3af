@@ -215,14 +215,14 @@ class PluginTree(gtk.TreeView):
             raise ValueError("Invalid PluginTree style: %r" % style)
 
         # just build the tree with the plugin names
-        # gtkOutput plugin is enabled at start
+        # gtk_output plugin is enabled at start
         for plugintype in plugins_toshow:
 
             # let's see if some of the children are activated or not
             pluginlist = w3af.plugins.getPluginList(plugintype)
             activated = set(w3af.plugins.getEnabledPlugins(plugintype))
             if plugintype == "output":
-                activated.add("gtkOutput")
+                activated.add("gtk_output")
             if not activated:
                 activ = 0
                 incons = 0
@@ -478,7 +478,7 @@ class PluginTree(gtk.TreeView):
         plugin_fam = treerow[0]
         banned_fams = ('discovery', 'evasion')
         
-        if plugin_fam == "gtkOutput":
+        if plugin_fam == "gtk_output":
             return
 
         # invert the active state and make it consistant
@@ -513,7 +513,7 @@ class PluginTree(gtk.TreeView):
             if user_response == gtk.RESPONSE_YES or plugin_fam not in banned_fams:
                 # father: let's change the value of all children
                 for childtreerow in self._getChildren(path):
-                    if childtreerow[0] == "gtkOutput":
+                    if childtreerow[0] == "gtk_output":
                         childtreerow[1] = True
                         if newvalue is False:
                             # we're putting everything in false, except this plugin
