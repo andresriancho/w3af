@@ -21,7 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 import pprint
-import gtk
+
+try:
+    from gtk import gtk_version, pygtk_version
+except:
+    gtk_version = []
+    pygtk_version = []
+
 import sys
 import tempfile
 import StringIO
@@ -37,11 +43,10 @@ PyGTK version:%s\n\n
 %s
 ''' % \
     (sys.version,
-    ".".join(str(x) for x in gtk.gtk_version),
-    ".".join(str(x) for x in gtk.pygtk_version),
+    ".".join(str(x) for x in gtk_version),
+    ".".join(str(x) for x in pygtk_version),
     get_w3af_version())
     
-
 def pprint_plugins( w3af_core ):
     # Return a pretty-printed string from the plugins dicts
     import copy
