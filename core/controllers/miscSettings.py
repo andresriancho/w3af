@@ -20,27 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.configurable import configurable
 import core.data.kb.config as cf
+
+from core.controllers.configurable import configurable
 from core.controllers.threads.threadManager import threadManagerObj as tm
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.data.parsers.urlParser import url_object
-
-# Raise errors
 from core.controllers.w3afException import w3afException
-
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_net_iface import get_net_iface
+
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
 
 
 class miscSettings(configurable):
     '''
-    A class that acts as an interface for the user interfaces, so they can configure w3af 
-    settings using getOptions and SetOptions.
+    A class that acts as an interface for the user interfaces, so they can
+    configure w3af settings using getOptions and SetOptions.
     '''
     
     def __init__( self ):
@@ -58,6 +54,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzURLParts', False )
             cf.cf.save('fuzzFCExt', 'txt' )
             cf.cf.save('fuzzFormComboValues', 'tmb')
+            cf.cf.save('fuzzRepeatedParameters', 'tmb')
             cf.cf.save('autoDependencies', True )
             cf.cf.save('maxDiscoveryTime', 120 )
             cf.cf.save('maxThreads', 15 )
@@ -134,7 +131,18 @@ class miscSettings(configurable):
         opt = option('fuzzFormComboValues', cf.cf.getData('fuzzFormComboValues'), desc, 'string',
                      help=help, tabid='Fuzzer parameters')
         ol.add(opt)
-        
+
+        desc = 'Indicates which repeated parameters w3af plugins will inject into: all, tb, tmb, t, b'
+        help = 'Indicates which repeated parameters w3af plugins will use for fuzzing:'
+        help += ' all (all values), tb (only top and bottom values), tmb (top, middle and bottom'
+        help += ' values), t (top values), b (bottom values)'
+        help += 'For example, in case of http://example.com/test.php?a=1&a=2&a=3&a=4&a=5 '
+        help += 'and fuzzRepeatedParameters=tmb w3af will inject into the first (a=1), middle'
+        help += '(a=3) and last (a=5) parameters.'
+        opt = option('fuzzRepeatedParameters', cf.cf.getData('fuzzRepeatedParameters'), 
+                     desc, 'string', help=help, tabid='Fuzzer parameters')
+        ol.add(opt)
+
         ######## Core parameters ########
         desc = 'Automatic dependency enabling for plugins'
         help = 'If autoDependencies is enabled, and pluginA depends on pluginB that wasn\'t enabled,'
@@ -213,6 +221,7 @@ class miscSettings(configurable):
         cf.cf.save('fuzzURLParts', optionsMap['fuzzURLParts'].getValue() )
         cf.cf.save('fuzzFCExt', optionsMap['fuzzFCExt'].getValue() )
         cf.cf.save('fuzzFormComboValues', optionsMap['fuzzFormComboValues'].getValue() )
+        cf.cf.save('fuzzRepeatedParameters', optionsMap['fuzzRepeatedParameters'].getValue() )
         cf.cf.save('autoDependencies', optionsMap['autoDependencies'].getValue() )
         cf.cf.save('maxDiscoveryTime', optionsMap['maxDiscoveryTime'].getValue() )
         

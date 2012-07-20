@@ -18,14 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
+from core.data.kb.config import cf
 from ..helper import PluginTest, PluginConfig
+
 
 class TestXSS(PluginTest):
     
     xss_url = 'http://moth/w3af/audit/xss/'
     xss_302_url = 'http://moth/w3af/audit/xss/302/'
-    
+    repeated_url = 'http://moth/w3af/audit/xss/repeated_params/'
+
     _run_configs = {
         'cfg': {
             'target': None,
@@ -90,3 +92,58 @@ class TestXSS(PluginTest):
             set([(self.xss_302_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
             set(res),
         )
+
+    def test_repeated_tmb(self):
+        cf.save('fuzzRepeatedParameters', 'tmb')
+
+        cfg = self._run_configs['cfg']
+        self._scan(self.repeated_url + 'qs_repeat_all.php?a=1&a=2&a=3', cfg['plugins'])
+
+        xssvulns = self.kb.getData('xss', 'xss')
+        self.assertTrue( len(xssvulns), 3 )
+
+        expected = [
+            ('qs_repeat_all.php', 'a', ('a',)),
+        ]
+        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
+                        for m in (xv.getMutant() for xv in xssvulns)]
+        self.assertEquals(
+            set([(self.repeated_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
+            set(res),
+        )
+
+        # Restore the default
+        cf.save('fuzzRepeatedParameters', 'tmb')
+
+    def test_repeated_b(self):
+        cf.save('fuzzRepeatedParameters', 'b')
+        cfg = self._run_configs['cfg']
+        self._scan(self.repeated_url + 'qs_repeat_all.php?a=1&a=2&a=3', cfg['plugins'])
+
+        xssvulns = self.kb.getData('xss', 'xss')
+        self.assertTrue( len(xssvulns), 1 )
+
+        expected = [
+            ('qs_repeat_all.php', 'a', ('a',)),
+        ]
+        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
+                        for m in (xv.getMutant() for xv in xssvulns)]
+        self.assertEquals(
+            set([(self.repeated_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
+            set(res),
+        )
+
+        # Restore the default
+        cf.save('fuzzRepeatedParameters', 'tmb')
+
+    def test_repeated_t(self):
+        cf.save('fuzzRepeatedParameters', 't')
+        cfg = self._run_configs['cfg']
+        self._scan(self.repeated_url + 'qs_repeat.php?a=1&a=2&a=3', cfg['plugins'])
+
+        xssvulns = self.kb.getData('xss', 'xss')
+        self.assertTrue( len(xssvulns), 0 )
+
+        # Restore the default
+        cf.save('fuzzRepeatedParameters', 'tmb')
+

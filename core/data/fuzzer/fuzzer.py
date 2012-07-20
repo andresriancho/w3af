@@ -363,7 +363,59 @@ def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzableParamList
                 if m2.getURL() != m.getURL():
                     res.append(m2)
     return res
-    
+
+
+def _enumRepeatedParams(values):
+    '''
+    Generate a list of values for repeated params depending on configurable limit.
+
+    >>> import core.data.kb.config as cf
+    >>> a = [1,2,3,4]
+
+    all
+    >>> cf.cf.save('fuzzRepeatedParameters', 'all')
+    >>> [(i,v) for i,v in _enumRepeatedParams(a)] 
+    [(0, 1), (1, 2), (2, 3), (3, 4)]
+
+    b
+    >>> cf.cf.save('fuzzRepeatedParameters', 'b')
+    >>> [(i,v) for i,v in _enumRepeatedParams(a)] 
+    [(0, 1)]
+
+    tmb
+    >>> cf.cf.save('fuzzRepeatedParameters', 'tmb')
+    >>> [(i,v) for i,v in _enumRepeatedParams(a)] 
+    [(0, 1), (2, 3), (3, 4)]
+
+    one value
+    >>> a = [1,]
+    >>> cf.cf.save('fuzzRepeatedParameters', 'tmb')
+    >>> [(i,v) for i,v in _enumRepeatedParams(a)] 
+    [(0, 1)]
+    '''
+    fuzzRepeatedParameters = cf.cf.getData('fuzzRepeatedParameters') or 'all'
+
+    if not len(values):
+        return
+ 
+    if len(values) == 1:
+        yield (0, values[0])
+        raise StopIteration
+
+    if fuzzRepeatedParameters == 'all':
+        for i, v in enumerate(values):
+            yield (i, v)
+       
+    if 'b' in fuzzRepeatedParameters:
+        yield (0, values[0])
+
+    if 'm' in fuzzRepeatedParameters and len(values) > 2:
+        i = len(values)/2;
+        yield (i, values[i])
+
+    if 't' in fuzzRepeatedParameters:
+        yield (len(values)-1, values[-1])
+
 def _createMutantsWorker(freq, mutantClass, mutant_str_list,
                          fuzzableParamList, append, dataContainer=None):
     '''
@@ -435,7 +487,7 @@ def _createMutantsWorker(freq, mutantClass, mutant_str_list,
             continue
         
         # This for is to support repeated parameter names
-        for element_index, element_value in enumerate(dataContainer[pname]):
+        for element_index, element_value in _enumRepeatedParams(dataContainer[pname]):
             
             for mutant_str in mutant_str_list:
                 
