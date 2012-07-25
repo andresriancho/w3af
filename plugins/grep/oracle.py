@@ -19,15 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# options
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
 
 
 class oracle(baseGrepPlugin):
@@ -48,48 +44,6 @@ class oracle(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
-        Init
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
-        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-        >>> f = fingerprint_404_singleton( [False, False, False] )
-
-        Simple test, empty string.
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> o = oracle()
-        >>> o.grep(request, response)
-        >>> len(kb.kb.getData('oracle', 'oracle'))
-        0
-
-        One long string
-        >>> body = 'ABC ' * 10000
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> o = oracle()
-        >>> o.grep(request, response)
-        >>> len(kb.kb.getData('oracle', 'oracle'))
-        0
-
-        Something interesting to match
-        >>> body = 'ABC ' * 100
-        >>> body += '<!-- Created by Oracle '
-        >>> body += '</br> ' * 50
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> o = oracle()
-        >>> o.grep(request, response)
-        >>> len(kb.kb.getData('oracle', 'oracle'))
-        1
         '''
         url = response.getURL()
         if response.is_text_or_html() and url not in self._already_analyzed:
@@ -117,29 +71,12 @@ class oracle(baseGrepPlugin):
         res.append('<!-- Created by Oracle ')
         return res
         
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.getData( 'oracle', 'oracle' ), 'URL' )
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
