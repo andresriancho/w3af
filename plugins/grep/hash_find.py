@@ -19,20 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import re
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
-import re
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class hash_find(baseGrepPlugin):
@@ -96,18 +89,6 @@ class hash_find(baseGrepPlugin):
         @parameter possible_hash: A string that may be a hash.
         @return: True if the possible_hash has an equal (aprox.) distribution 
         of numbers and letters and only has hex characters (0-9, a-f)
-        
-        >>> p = hash_find()
-        >>> p._has_hash_distribution( 'cdf13c6f85b216a18665e7bba74cc1a7' )
-        True
-        
-        >>> p._has_hash_distribution( 'AB_Halloween_Wallpaper_1920x1080' )
-        False
-
-        # Note the "h" at the beginning
-        >>> p._has_hash_distribution( 'hdf13c6f85b216a18665e7bba74cc1a7' )
-        False
-        
         '''
         numbers = 0
         letters = 0
@@ -147,28 +128,11 @@ class hash_find(baseGrepPlugin):
         else:
             return None
     
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.getData( 'hash_find', 'hash_find' ), None )
-    
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
     
     def getLongDesc( self ):
         '''
