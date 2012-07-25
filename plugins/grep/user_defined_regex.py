@@ -17,26 +17,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from __future__ import with_statement
 
+import re
+
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
+from core.controllers.w3afException import w3afException
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class user_defined_regex(baseGrepPlugin):
     '''
-    Report a vulnerability if the respose matches a user defined regex.
+    Report a vulnerability if the response matches a user defined regex.
       
     @author: floyd fuh ( floyd_fuh@yahoo.de )
     '''
@@ -61,27 +58,6 @@ class user_defined_regex(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
-        Init
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
-        
-        >>> body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> udr = user_defined_regex()
-        >>> options = udr.getOptions()
-        >>> options['single_regex'].setValue('".*?"')
-        >>> udr.setOptions( options )
-        >>> udr.grep(request, response)
-        >>> assert len(kb.kb.getData('user_defined_regex', 'user_defined_regex')) == 1        
-        >>> info_obj = kb.kb.getData('user_defined_regex', 'user_defined_regex')[0]
-        >>> info_obj.getDesc()
-        'The response matches the user defined regular expression "".*?"":\\n"data.txt"\\n. This information was found in the request with id None.'
-        
         '''
         if self._all_in_one is None:
             return
@@ -181,37 +157,29 @@ class user_defined_regex(baseGrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        optionsList = optionList()
+        ol = optionList()
         
-        description1 = 'Single regex to use in the grep process.'
-        option1 = option('single_regex', self._single_regex , description1, 'string')
-        optionsList.add(option1)
+        d = 'Single regex to use in the grep process.'
+        o = option('single_regex', self._single_regex , d, 'string')
+        ol.add(o)
         
-        description2 = 'Path to file with regular expressions to use in the grep process.'
-        help2 = description2 + '\n\n'
-        help2 += 'Attention: The file will be loaded line by line into '
-        help2 += 'memory, because the regex will be precompiled in order to achieve '
-        help2 += ' better performance during the scan process. \n\n'
-        help2 += 'A list of example regular expressions can be found at '
-        help2 += '"plugins/grep/user_defined_regex/".'
-        option2 = option('regex_file_path', self._regex_file_path , description2, 'string', help=help2)
-
-        optionsList.add(option2)
+        d = 'Path to file with regular expressions to use in the grep process.'
+        h = d + '\n\n'
+        h += 'Attention: The file will be loaded line by line into '
+        h += 'memory, because the regex will be precompiled in order to achieve '
+        h += ' better performance during the scan process. \n\n'
+        h += 'A list of example regular expressions can be found at '
+        h += '"plugins/grep/user_defined_regex/".'
+        o = option('regex_file_path', self._regex_file_path , d, 'string', help=h)
+        ol.add(o)
         
-        return optionsList
+        return ol
         
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
-            
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
     
     def getLongDesc( self ):
         '''
