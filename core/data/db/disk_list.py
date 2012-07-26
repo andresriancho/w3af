@@ -161,8 +161,8 @@ class disk_list(DBClientSQLite):
         pickled_obj = cPickle.dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
         t = (self._current_index, eq_attrs, pickled_obj)
-        self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
         self._current_index += 1
+        self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
     
     def clear(self):
         self.execute("DELETE FROM data WHERE 1=1")
