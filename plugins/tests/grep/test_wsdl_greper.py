@@ -40,6 +40,9 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin = wsdl_greper()
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
+
+    def tearDown(self):
+        self.plugin.end()
     
     def test_wsdl_greper_empty(self):
         body = ''

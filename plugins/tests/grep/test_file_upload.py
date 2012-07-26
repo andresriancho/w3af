@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from plugins.grep.file_upload import file_upload
 import unittest
 
+import core.data.kb.knowledgeBase as kb
+
+from plugins.grep.file_upload import file_upload
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import url_object
-import core.data.kb.knowledgeBase as kb
 
 
 class test_file_upload(unittest.TestCase):
@@ -40,6 +40,8 @@ class test_file_upload(unittest.TestCase):
         f.set_urlopener( xUrllib() )
         kb.kb.save('file_upload', 'file_upload', [])
 
+    def tearDown(self):
+        self.plugin.end()
         
     def test_simple(self):
         body = 'header <form><input type="file"></form> footer'

@@ -38,7 +38,10 @@ class test_oracle(unittest.TestCase):
         kb.kb.cleanup()
         fingerprint_404_singleton( [False, False, False] )
         self.plugin = oracle()
-        
+
+    def tearDown(self):
+        self.plugin.end()
+                
     def test_oracle_empty(self):
         body = ''
         url = url_object('http://www.w3af.com/')

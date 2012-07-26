@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from plugins.grep.code_disclosure import code_disclosure
 import unittest
 
+import core.data.kb.knowledgeBase as kb
+
+from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import url_object
-import core.data.kb.knowledgeBase as kb
 
 
 class test_code_disclosure(unittest.TestCase):
@@ -39,7 +39,9 @@ class test_code_disclosure(unittest.TestCase):
         f = fingerprint_404_singleton( [False, False, False] )
         f.set_urlopener( xUrllib() )
         kb.kb.save('code_disclosure', 'code_disclosure', [])
-
+    
+    def tearDown(self):
+        self.plugin.end()
         
     def test_ASP_code_disclosure(self):
         body = 'header <% Response.Write("Hello World!") %> footer'

@@ -53,7 +53,10 @@ class test_symfony(unittest.TestCase):
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
         self.http_resp = partial(httpResponse, code=200, geturl=self.url, original_url=self.url) 
-    
+
+    def tearDown(self):
+        self.plugin.end()
+            
     def test_symfony_positive(self):
         response = self.http_resp(read=self.EMPTY_BODY, info=self.SYMFONY_HEADERS)
         self.assertTrue( self.plugin.symfonyDetected(response) )

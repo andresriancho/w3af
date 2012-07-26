@@ -98,7 +98,9 @@ class test_all(unittest.TestCase):
                     request = fuzzableRequest(self.url_inst)
                     for pinst in self._plugins:
                         pinst.grep( request, response )
-
+            
+            for pinst in self._plugins:
+                pinst.end()
         #
         #   The only test here is that we don't get any traceback
         #

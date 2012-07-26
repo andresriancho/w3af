@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from plugins.grep.feeds import feeds
 import unittest
 
+import core.data.kb.knowledgeBase as kb
+
+from plugins.grep.feeds import feeds
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import url_object
-import core.data.kb.knowledgeBase as kb
 
 
 class test_feeds(unittest.TestCase):
@@ -40,6 +40,8 @@ class test_feeds(unittest.TestCase):
         f.set_urlopener( xUrllib() )
         kb.kb.save('feeds', 'feeds', [])
 
+    def tearDown(self):
+        self.plugin.end()
         
     def test_rss(self):
         body = 'header <rss version="3"> footer'

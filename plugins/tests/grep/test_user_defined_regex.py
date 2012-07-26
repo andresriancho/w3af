@@ -31,21 +31,25 @@ from plugins.grep.user_defined_regex import user_defined_regex
 
 class test_user_defined_regex(unittest.TestCase):
     
+    def setUp(self):
+        self.plugin = user_defined_regex()
+        
     def test_user_defined_regex(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
-        udr = user_defined_regex()
-        options = udr.getOptions()
-        options['single_regex'].setValue('".*?"')
-        udr.setOptions( options )
         
-        udr.grep(request, response)
+        options = self.plugin.getOptions()
+        options['single_regex'].setValue('".*?"')
+        self.plugin.setOptions( options )
+        
+        self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('user_defined_regex', 'user_defined_regex')) , 1 )
         
         info_obj = kb.kb.getData('user_defined_regex', 'user_defined_regex')[0]
         self.assertTrue( info_obj.getDesc().startswith('The response matches the user defined regular expression') )
         
-        
+    def tearDown(self):
+        self.plugin.end()        

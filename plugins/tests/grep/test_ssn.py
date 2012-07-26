@@ -37,7 +37,10 @@ class test_ssn(unittest.TestCase):
         self.plugin._already_inspected = set()        
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
-         
+
+    def tearDown(self):
+        self.plugin.end()
+                 
     def test_ssn_empty_string(self):
         body = ''
         headers = {'content-type': 'text/html'}

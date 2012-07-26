@@ -37,7 +37,10 @@ class test_strange_http_codes(unittest.TestCase):
         create_temp_dir()
         self.plugin = strange_http_codes()
         fingerprint_404_singleton( [False, False, False] )
-            
+
+    def tearDown(self):
+        self.plugin.end()
+                    
     def test_strange_http_codes(self):
         body = ''
         url = url_object('http://www.w3af.com/')

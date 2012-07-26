@@ -38,6 +38,9 @@ class test_blank_body(unittest.TestCase):
         self.plugin = blank_body()
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
+
+    def tearDown(self):
+        self.plugin.end()
     
     def test_blank_body(self):
         body = ''
