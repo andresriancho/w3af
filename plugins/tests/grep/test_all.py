@@ -24,9 +24,10 @@ import unittest
 import os
 import cProfile
 
-import core.controllers.w3afCore
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from itertools import repeat
 
+from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.w3afCore import w3af_core
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.parsers.urlParser import url_object
@@ -35,20 +36,13 @@ from core.data.parsers.urlParser import url_object
 class test_all(unittest.TestCase):
     
     def setUp(self):
-        #
-        #   Init
-        #
-        self.url_str = 'http://localhost:631/'
+        self.url_str = 'http://www.w3af.com/'
         self.url_inst = url_object( self.url_str )
-        spam = httpResponse(200, '', {}, self.url_inst, self.url_inst)
+        
+        # This makes the is_404 return False to all calls made by plugins
+        fingerprint_404_singleton( repeat(False), override_instance=True )
 
-        try:
-            spam = httpResponse(200, '', {}, self.url_inst, self.url_inst)
-            is_404(spam)
-        except:
-            pass
-
-        self._w3af = core.controllers.w3afCore.w3afCore()
+        self._w3af = w3af_core
         self._plugins = []
         for pname in self._w3af.plugins.getPluginList('grep'):
             self._plugins.append( self._w3af.plugins.getPluginInstance(pname, 'grep') )
@@ -75,10 +69,10 @@ class test_all(unittest.TestCase):
                 
     def test_all_grep_plugins(self):
         '''
-        Run a set of 5 html files through all grep plugins. As with the previous
-        test, the only thing we want to see is if the grep plugin crashes or not.
+        Run a set of 5 html files through all grep plugins.
         
-        We're not asserting any results. 
+        As with the previous test, the only thing we want to see is if the grep
+        plugin crashes or not. We're not asserting any results. 
         '''
         def profile_me():
             '''

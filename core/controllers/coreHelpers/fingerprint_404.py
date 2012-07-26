@@ -50,7 +50,7 @@ class fingerprint_404:
 
     _instance = None
     
-    def __init__( self, test_db=[] ):
+    def __init__( self, test_db=None ):
         #
         #   Set the opener, I need it to perform some tests and gain 
         #   the knowledge about the server's 404 response bodies.
@@ -70,8 +70,10 @@ class fingerprint_404:
         # as the value.
         self.is_404_LRU = LRU(500)
         
-        self._test_db = test_db
-        self._test_db_index = 0
+        if test_db is not None:
+            self._test_db = iter(test_db)
+        else:
+            self._test_db = None
 
     def set_urlopener(self, urlopener):
         self._uri_opener = urlopener
@@ -192,17 +194,12 @@ class fingerprint_404:
         
         @parameter http_response: The HTTP response which we want to know if it is a 404 or not.
         '''
-    
-        #   This is here for testing.
-        if self._test_db:
-            i = self._test_db_index
+        #   This is here for testing
+        if self._test_db is not None:
             try:
-                result = self._test_db[ i ]
-                self._test_db_index = i + 1
-            except:
+                return self._test_db.next()
+            except StopIteration:
                 raise Exception('Your test_db is incomplete!')
-            else:
-                return result
 
         #
         #   First we handle the user configured exceptions:
@@ -345,8 +342,10 @@ class fingerprint_404:
         
         return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
         
-def fingerprint_404_singleton( test_db=[] ):
+def fingerprint_404_singleton( test_db=None, override_instance=False ):
     if not fingerprint_404._instance:
+        fingerprint_404._instance = fingerprint_404( test_db )
+    elif override_instance:
         fingerprint_404._instance = fingerprint_404( test_db )
     return fingerprint_404._instance
 
