@@ -22,19 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.parsers.dpCache as dpCache
+
+from core.controllers.w3afException import w3afException
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 
 class http_auth_detect(baseGrepPlugin):
     '''
@@ -55,82 +51,6 @@ class http_auth_detect(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
-        Init
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
-        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-        >>> f = fingerprint_404_singleton( [False, False, False] )
-
-        Simple test, empty string.
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> h = http_auth_detect()
-        >>> h.grep(request, response)
-        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
-        0
-        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
-        0
-
-        One long string
-        >>> body = 'ABC ' * 10000
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> h = http_auth_detect()
-        >>> h.grep(request, response)
-        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
-        0
-        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
-        0
-
-        Something interesting to match
-        >>> body = 'ABC ' * 100
-        >>> body += 'http://abc:def@www.w3af.com/foo.bar'
-        >>> body += '</br> ' * 50
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> h = http_auth_detect()
-        >>> h.grep(request, response)
-        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
-        0
-        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
-        1
-
-        Something interesting to match
-        >>> kb.kb.cleanup()
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(401, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> h = http_auth_detect()
-        >>> h.grep(request, response)
-        >>> len(kb.kb.getData('http_auth_detect', 'non_rfc_auth'))
-        1
-        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
-        0
-
-        Something interesting to match
-        >>> kb.kb.cleanup()
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html', 'www-authenticate': 'realm-w3af'}
-        >>> response = httpResponse(401, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> h = http_auth_detect()
-        >>> h.grep(request, response)
-        >>> len(kb.kb.getData('http_auth_detect', 'auth'))
-        1
-        >>> len(kb.kb.getData('http_auth_detect', 'userPassUri'))
-        0
         '''
         # If I have a 401 code, and this URL wasn't already reported...
         if response.getCode() == 401:
@@ -253,23 +173,6 @@ class http_auth_detect(baseGrepPlugin):
             
         om.out.information( i.getDesc() )
         
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
