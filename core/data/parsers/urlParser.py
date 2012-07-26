@@ -169,6 +169,10 @@ class url_object(disk_item):
         >>> u.path
         u'/foo/bar.txt'
 
+        >>> u = url_object(u'http://w3af.com')
+        >>> u.path
+        u'/'
+
         >>> u = url_object('http://w3af.org/?foo=http://w3af.com')
         >>> u.netloc
         'w3af.org'
@@ -209,7 +213,7 @@ class url_object(disk_item):
         
         self.scheme = scheme or u''
         self.netloc = netloc or u''
-        self.path = path or u''
+        self.path = path or u'/'
         self.params = params or u''
         self.querystring = qs or u''
         self.fragment = fragment or u''
@@ -415,7 +419,7 @@ class url_object(disk_item):
         
         >>> u = url_object('http://www.w3af.com/foo/bar.txt?id=3#foobar')
         >>> u.baseUrl().url_string
-        u'http://www.w3af.com'
+        u'http://www.w3af.com/'
         '''
         params = (self.scheme, self.netloc, None, None, None, None)
         return url_object.from_parts(*params, encoding=self._encoding)
@@ -883,6 +887,8 @@ class url_object(disk_item):
         u'http://w3af.com:443/xyz/'
         >>> url_object('https://w3af.com:443/xyz/def.html').getDomainPath().url_string
         u'https://w3af.com:443/xyz/'
+        >>> url_object('http://w3af.com').getDomainPath().url_string
+        u'http://w3af.com/'
         '''
         if self.path:
             res = self.scheme + '://' +self.netloc+ self.path[:self.path.rfind('/')+1]
@@ -1026,7 +1032,7 @@ class url_object(disk_item):
 
     @set_changed    
     def setPath(self, path):
-        self.path = path
+        self.path = path or u'/'
 
     def getPathWithoutFile( self ):
         '''
@@ -1087,7 +1093,7 @@ class url_object(disk_item):
         >>> url_object(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
         'http://w3af.com/x.py;id=1?y=3'
         >>> url_object(u'http://w3af.com').urlEncode()
-        'http://w3af.com'
+        'http://w3af.com/'
         '''
         self_str = str(self)
         qs = ''
