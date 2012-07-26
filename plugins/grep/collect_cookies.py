@@ -19,22 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import Cookie
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-import Cookie
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
 class collect_cookies(baseGrepPlugin):
@@ -44,111 +38,79 @@ class collect_cookies(baseGrepPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
+    COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')
+
+    COOKIE_FINGERPRINT = (
+            ('st8id=','Teros web application firewall'),
+            ('ASINFO=','F5 TrafficShield'),
+            ('NCI__SessionId=','Netcontinuum'),
+                    
+            # oracle
+            ('$OC4J_','Oracle container for java'),
+                    
+            # Java
+            ('JSESSIONID=','Jakarta Tomcat / Apache'),
+            ('JServSessionIdroot=','Apache JServ'),
+                    
+            # ASP
+            ('ASPSESSIONID','ASP'),
+            ('ASP.NET_SessionId=','ASP.NET'),
+            ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT',
+                                                    'Outlook Web Access'),
+                    
+            # PHP
+            ('PHPSESSID=','PHP'),
+                    
+            # SAP
+            ('sap-usercontext=sap-language=','SAP'),
+                    
+            # Others
+            ('WebLogicSession=','BEA Logic'),
+            ('SaneID=','Sane NetTracker'),
+            ('ssuid=','Vignette'),
+            ('vgnvisitor=','Vignette'),
+            ('SESSION_ID=','IBM Net.Commerce'),
+            ('NSES40Session=','Netscape Enterprise Server'),
+            ('iPlanetUserId=','iPlanet'),
+            ('RMID=','RealMedia OpenADStream'),
+            ('cftoken=','Coldfusion'),
+            ('PORTAL-PSJSESSIONID=','PeopleSoft'),
+            ('WEBTRENDS_ID=','WebTrends'),
+            ('sesessionid=','IBM WebSphere'),
+            ('CGISESSID=','Perl CGI::Session'),
+            ('GX_SESSION_ID','GeneXus'),
+            ('WC_SESSION_ESTABLISHED','WSStore'),
+
+        )
+
     def __init__(self):
         baseGrepPlugin.__init__(self)
         self._already_reported_server = []
-        self._cookieHeaders = ['Set-Cookie'.upper(), 'Cookie'.upper(), 'Cookie2'.upper()]
 
-    def _setCookieToRep(self, inst, cobj=None, cstr=None):
-        if cobj is not None:
-            obj = cobj
-            inst['cookie-object'] = obj
-            cstr = obj.output(header='')
-        
-        if cstr is not None:
-            inst['cookie-string'] = cstr
-        
-            if cstr:
-                inst.addToHighlight(cstr)
-    
     def grep(self, request, response):
         '''
         Plugin entry point, search for cookies.
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None
-
-        Init
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
-        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
-        >>> f = fingerprint_404_singleton( [False, False, False] )
-
-        Simple test, empty string, no cookies.
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collect_cookies()
-        >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
-        0
-        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
-        0
-
-        >>> kb.kb.cleanup()
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collect_cookies()
-        >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
-        1
-        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
-        0
-
-        >>> kb.kb.cleanup()
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; HttpOnly'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collect_cookies()
-        >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
-        1
-        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
-        0
-
-        >>> kb.kb.cleanup()
-        >>> body = ''
-        >>> url = url_object('http://www.w3af.com/')
-        >>> headers = {'content-type': 'text/html', 'Set-Cookie': ''}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzableRequest(url, method='GET')
-        >>> c = collect_cookies()
-        >>> c.grep(request, response)
-        >>> len(kb.kb.getData('collect_cookies', 'cookies'))
-        1
-        >>> len(kb.kb.getData('collect_cookies', 'invalid-cookies'))
-        0
-
         '''
         headers = response.getHeaders()
         
-        for key in headers:  
-            if key.upper() in self._cookieHeaders:
+        for header_name in headers:  
+            if header_name.lower() in self.COOKIE_HEADERS:
 
-                #
-                # save if not already in kb
-                #
-                
                 # Create the object to save the cookie in the kb
                 i = info.info()
                 i.setPluginName(self.getName())
                 i.setName('Cookie')
                 i.setURL( response.getURL() )
 
-                self._setCookieToRep(i, cstr=headers[key].strip())
+                self._set_cookie_to_rep(i, cstr=headers[header_name].strip())
                  
                 cookie_object = Cookie.SimpleCookie()
                 try:
                     # Note to self: This line may print some chars to the console
-                    cookie_object.load( headers[ key ].strip() )
+                    cookie_object.load( headers[ header_name ].strip() )
                 except Cookie.CookieError:
                     # The cookie is invalid, this is worth mentioning ;)
                     msg = 'The cookie that was sent by the remote web application'
@@ -159,15 +121,11 @@ class collect_cookies(baseGrepPlugin):
                     kb.kb.append( self, 'invalid-cookies', i )
                 else:
                     
-                    store_in_kb = True
                     for cookie_info in kb.kb.getData( self, 'cookies' ):
                         stored_cookie_obj = cookie_info['cookie-object']
-                        
                         if cookie_object == stored_cookie_obj:
-                            store_in_kb = False
                             break
-
-                    if store_in_kb:
+                    else:
                         i['cookie-object'] = cookie_object
     
                         '''
@@ -190,12 +148,12 @@ class collect_cookies(baseGrepPlugin):
                         kb.kb.append( self, 'cookies', i )
                         
                         # Find if the cookie introduces any vulnerability, or discloses information
-                        self._analyzeCookie( request, response, cookie_object )
+                        self._analyze_cookie( request, response, cookie_object )
         
         # do this check every time
         self._sslCookieValueUsedInHTTP( request, response )
     
-    def _analyzeCookie( self, request, response, cookieObj ):
+    def _analyze_cookie( self, request, response, cookieObj ):
         '''
         In this method I call all the other methods that perform a specific
         analysis of the already catched cookie.
@@ -222,8 +180,8 @@ class collect_cookies(baseGrepPlugin):
             
     def _sslCookieValueUsedInHTTP( self, request, response ):
         '''
-        Analyze if a cookie value, sent in a HTTPS request, is now used for identifying the user in an insecure page.
-        Example:
+        Analyze if a cookie value, sent in a HTTPS request, is now used for 
+        identifying the user in an insecure page. Example:
             Login is done over SSL
             The rest of the page is HTTP
         '''
@@ -247,7 +205,7 @@ class collect_cookies(baseGrepPlugin):
                                         v = vuln.vuln()
                                         v.setPluginName(self.getName())
                                         v.setURL( response.getURL() )
-                                        self._setCookieToRep(v, cobj=cookie)
+                                        self._set_cookie_to_rep(v, cobj=cookie)
                                         v.setSeverity(severity.HIGH)
                                         v.setId( response.id )
                                         v.setName( 'Secure cookies over insecure channel' )
@@ -262,7 +220,7 @@ class collect_cookies(baseGrepPlugin):
         Now we analize and try to guess the remote web server based on the
         cookie that was sent.
         '''
-        for cookie in self._get_fingerprint_db():
+        for cookie in self.COOKIE_FINGERPRINT:
             if cookie[0] in cookieObj.output(header=''):
                 if cookie[1] not in self._already_reported_server:
                     i = info.info()
@@ -270,7 +228,7 @@ class collect_cookies(baseGrepPlugin):
                     i.setId( response.id )
                     i.setName('Identified cookie')
                     i.setURL( response.getURL() )
-                    self._setCookieToRep(i, cobj=cookieObj)
+                    self._set_cookie_to_rep(i, cobj=cookieObj)
                     i['httpd'] = cookie[1]
                     i.setDesc( 'A cookie matching the cookie fingerprint DB ' +
                     'has been found when requesting "' + response.getURL() + '" . ' +
@@ -299,7 +257,7 @@ class collect_cookies(baseGrepPlugin):
             v.setPluginName(self.getName())
             v.setURL( response.getURL() )
             v.setId( response.getId() )
-            self._setCookieToRep(v, cobj=cookieObj)
+            self._set_cookie_to_rep(v, cobj=cookieObj)
             v.setSeverity(severity.HIGH)
             v.setName( 'Secure cookies over insecure channel' )
             msg = 'A cookie marked as secure was sent over an insecure channel'
@@ -307,66 +265,6 @@ class collect_cookies(baseGrepPlugin):
             v.setDesc( msg )
             kb.kb.append( self, 'cookies', v )
         
-    def _get_fingerprint_db(self):
-        '''
-        @return: A list of tuples with ( CookieString, WebServerType )
-        '''
-        # This is a simplificated version of ramon's cookie db.
-        cookie_db = []
-        
-        # Web application firewalls
-        cookie_db.append( ('st8id=','Teros web application firewall') )
-        cookie_db.append( ('ASINFO=','F5 TrafficShield') )
-        cookie_db.append( ('NCI__SessionId=','Netcontinuum') )
-        
-        # oracle
-        cookie_db.append( ('$OC4J_','Oracle container for java') )
-        
-        # Java
-        cookie_db.append( ('JSESSIONID=','Jakarta Tomcat / Apache') )
-        cookie_db.append( ('JServSessionIdroot=','Apache JServ') )
-        
-        # ASP
-        cookie_db.append( ('ASPSESSIONID','ASP') )
-        cookie_db.append( ('ASP.NET_SessionId=','ASP.NET') )
-        cookie_db.append( ('cadata=; path=/; expires=Thu, 01-Jan-1970 00:00:00 GMT',
-                                        'Outlook Web Access') )
-        
-        # PHP
-        cookie_db.append( ('PHPSESSID=','PHP') )
-        
-        # SAP
-        cookie_db.append( ('sap-usercontext=sap-language=','SAP') )
-        
-        # Others
-        cookie_db.append( ('WebLogicSession=','BEA Logic') )
-        cookie_db.append( ('SaneID=','Sane NetTracker') )
-        cookie_db.append( ('ssuid=','Vignette') )
-        cookie_db.append( ('vgnvisitor=','Vignette') )
-        cookie_db.append( ('SESSION_ID=','IBM Net.Commerce') )
-        cookie_db.append( ('NSES40Session=','Netscape Enterprise Server') )
-        cookie_db.append( ('iPlanetUserId=','iPlanet') )
-        cookie_db.append( ('RMID=','RealMedia OpenADStream') )
-        cookie_db.append( ('cftoken=','Coldfusion') )
-        cookie_db.append( ('PORTAL-PSJSESSIONID=','PeopleSoft') )
-        cookie_db.append( ('WEBTRENDS_ID=','WebTrends') )
-        cookie_db.append( ('sesessionid=','IBM WebSphere') )
-        cookie_db.append( ('CGISESSID=','Perl CGI::Session') )
-        cookie_db.append( ('GX_SESSION_ID','GeneXus') )
-        cookie_db.append( ('WC_SESSION_ESTABLISHED','WSStore') )
-        
-        return cookie_db
-        
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -393,20 +291,26 @@ class collect_cookies(baseGrepPlugin):
             om.out.information(msg % k)
             for i in resDict[k]:
                 om.out.information('- ' + i )
-            
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
+
+    def _set_cookie_to_rep(self, inst, cobj=None, cstr=None):
+        if cobj is not None:
+            obj = cobj
+            inst['cookie-object'] = obj
+            cstr = obj.output(header='')
+        
+        if cstr is not None:
+            inst['cookie-string'] = cstr
+        
+            if cstr:
+                inst.addToHighlight(cstr)
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every response for session cookies that the web application sends
-        to the client, and analyzes them in order to identify potential vulnerabilities, the
-        remote web application framework and other interesting information.
+        This plugin greps every response for session cookies that the web 
+        application sends to the client, and analyzes them in order to identify
+        potential vulnerabilities, the remote web application framework and
+        other interesting information.
         '''
