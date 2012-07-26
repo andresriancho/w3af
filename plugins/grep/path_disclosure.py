@@ -19,21 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.constants.common_directories import get_common_directories
 
-import re
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.constants.common_directories import get_common_directories
 
 
 class path_disclosure(baseGrepPlugin):
@@ -95,18 +89,6 @@ class path_disclosure(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, the result is saved in the kb.
         
-        >>> from core.data.parsers.urlParser import url_object
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest as fuzzableRequest
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
-        >>> u = url_object('http://www.w3af.com/')
-        >>> req = fuzzableRequest(u, method='GET')
-        >>> pd = path_disclosure()
-        
-        >>> res = httpResponse(200, 'header body footer' , {'Content-Type':'text/html'}, u, u)
-        >>> pd.grep( req, res )
-        >>> kb.kb.getData('path_disclosure', 'path_disclosure')
-        []
-
         >>> res = httpResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, u, u)
         >>> pd.grep( req, res )
         >>> kb.kb.getData('path_disclosure', 'path_disclosure')[0]['path']
@@ -265,16 +247,6 @@ class path_disclosure(baseGrepPlugin):
                     
                     kb.kb.save( self, 'listFiles', remote_locations )
         
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -324,13 +296,6 @@ class path_disclosure(baseGrepPlugin):
         #path_disclosure_strings.append(r"file:///?[A-Z]\|")
         path_disclosure_strings.extend( get_common_directories() )
         return path_disclosure_strings
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
     
     def getLongDesc( self ):
         '''
@@ -342,6 +307,6 @@ class path_disclosure(baseGrepPlugin):
             - C:\\www\\files\...
             - /var/www/htdocs/...
             
-        The results are saved to the KB, and used by all the plugins that need to know the location
-        of a file inside the remote web server.
+        The results are saved to the KB, and used by all the plugins that need
+        to know the location of a file inside the remote web server.
         '''
