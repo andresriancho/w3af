@@ -19,16 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from itertools import chain
-
 from lxml import etree
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 import core.controllers.outputManager as om
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import core.data.kb.knowledgeBase as kb
-from core.data.options.optionList import optionList
+
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.kb.info import info
 
 # Find all form elements that don't include the'autocomplete' attribute;
@@ -107,26 +105,9 @@ class form_autocomplete(baseGrepPlugin):
                     break
 
 
-    def setOptions(self, OptionList):
-        pass
-
-    def getOptions(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = optionList()
-        return ol
-
     def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return "This plugin greps every page for autocomplete-able forms " \
         "containing password-type inputs."
-
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run
-        before the current one.
-        '''
-        return []
