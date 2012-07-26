@@ -43,7 +43,7 @@ class redos(baseAuditPlugin):
         baseAuditPlugin.__init__(self)
         
         # Some internal variables
-        # The wait time of the unfuzzed request
+        # The wait time of the unmodified request
         self._original_wait_time = 0
         
         # The wait time of the first test I'm going to perform
@@ -67,8 +67,8 @@ class redos(baseAuditPlugin):
         if 'php' in freq.getURL().getExtension().lower():
             return
         
-        # Send the fuzzableRequest without any fuzzing, so we can measure the response 
-        # time of this script in order to compare it later
+        # Send the fuzzableRequest without any fuzzing, so we can measure the
+        # response time of this script in order to compare it later
         res = self._uri_opener.send_mutant(freq, grep=False)
         self._original_wait_time = res.getWaitTime()
         
@@ -171,5 +171,5 @@ class redos(baseAuditPlugin):
         return '''
         This plugin finds ReDoS (regular expression DoS) vulnerabilities as
         explained here:
-                    - http://www.checkmarx.com/NewsDetails.aspx?id=23 
+                    - http://www.checkmarx.com/white_papers/redos-regular-expression-denial-of-service/ 
         '''
