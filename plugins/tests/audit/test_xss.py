@@ -44,6 +44,17 @@ class TestXSS(PluginTest):
                         ('onlyForward', True, PluginConfig.BOOL)),
                 )
             },
+        },
+        'cfg2': {
+            'target': None,
+            'plugins': {
+                'audit': (
+                    PluginConfig(
+                         'xss',
+                         ('checkStored', True, PluginConfig.BOOL),
+                         ('numberOfChecks', 3, PluginConfig.INT)),
+                    )
+            },
         }
     }
     
@@ -95,15 +106,42 @@ class TestXSS(PluginTest):
 
     def test_repeated_tmb(self):
         cf.save('fuzzRepeatedParameters', 'tmb')
-
-        cfg = self._run_configs['cfg']
+        cfg = self._run_configs['cfg2']
         self._scan(self.repeated_url + 'qs_repeat_all.php?a=1&a=2&a=3', cfg['plugins'])
 
         xssvulns = self.kb.getData('xss', 'xss')
-        self.assertTrue( len(xssvulns), 3 )
-
+        for xss in xssvulns:
+            print xss
+        #  
+        # FIXME
+        # Very strange but because of
+        # fake_mutants = createMutants(freq, ['',]) in xss plugin
+        # we have here 6 vulns
+        #
+        self.assertEquals( len(xssvulns), 3 )
         expected = [
             ('qs_repeat_all.php', 'a', ('a',)),
+        ]
+        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
+                        for m in (xv.getMutant() for xv in xssvulns)]
+
+        self.assertEquals(
+            set([(self.repeated_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
+            set(res),
+        )
+
+        # Restore the default
+        cf.save('fuzzRepeatedParameters', 'tmb')
+
+    def test_repeated_t(self):
+        cf.save('fuzzRepeatedParameters', 't')
+        cfg = self._run_configs['cfg2']
+        self._scan(self.repeated_url + 'qs_repeat.php?a=1&a=2&a=3', cfg['plugins'])
+
+        xssvulns = self.kb.getData('xss', 'xss')
+        self.assertEquals( len(xssvulns), 1 )
+        expected = [
+            ('qs_repeat.php', 'a', ('a',)),
         ]
         res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
                         for m in (xv.getMutant() for xv in xssvulns)]
@@ -117,32 +155,11 @@ class TestXSS(PluginTest):
 
     def test_repeated_b(self):
         cf.save('fuzzRepeatedParameters', 'b')
-        cfg = self._run_configs['cfg']
-        self._scan(self.repeated_url + 'qs_repeat_all.php?a=1&a=2&a=3', cfg['plugins'])
-
-        xssvulns = self.kb.getData('xss', 'xss')
-        self.assertTrue( len(xssvulns), 1 )
-
-        expected = [
-            ('qs_repeat_all.php', 'a', ('a',)),
-        ]
-        res = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
-                        for m in (xv.getMutant() for xv in xssvulns)]
-        self.assertEquals(
-            set([(self.repeated_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
-            set(res),
-        )
-
-        # Restore the default
-        cf.save('fuzzRepeatedParameters', 'tmb')
-
-    def test_repeated_t(self):
-        cf.save('fuzzRepeatedParameters', 't')
-        cfg = self._run_configs['cfg']
+        cfg = self._run_configs['cfg2']
         self._scan(self.repeated_url + 'qs_repeat.php?a=1&a=2&a=3', cfg['plugins'])
 
         xssvulns = self.kb.getData('xss', 'xss')
-        self.assertTrue( len(xssvulns), 0 )
+        self.assertEquals( len(xssvulns), 0 )
 
         # Restore the default
         cf.save('fuzzRepeatedParameters', 'tmb')
