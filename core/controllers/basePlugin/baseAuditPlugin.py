@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import core.data.kb.knowledgeBase as kb
 
 from core.controllers.w3afException import w3afException
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.data.request.variant_identification import are_variants
-import core.data.kb.knowledgeBase as kb
 
 
 class baseAuditPlugin(basePlugin):
