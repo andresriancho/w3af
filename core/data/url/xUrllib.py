@@ -558,7 +558,7 @@ class xUrllib(object):
             # Then retry!
             return self._retry(req, e, cache)
         except KeyboardInterrupt:
-            # Correct control+c handling...
+            # TODO: Fix control+c handling...
             raise
         except sqlite3.Error, e:
             msg = 'A sqlite3 error was raised: "%s".' % e
