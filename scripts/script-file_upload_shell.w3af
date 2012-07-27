@@ -22,7 +22,7 @@ start
 assert len( kb.kb.getData('file_upload', 'file_upload') ) == 1
 
 exploit
-exploit file_uploadShell
+exploit file_upload
 interact 0
 
 execute w
@@ -36,6 +36,6 @@ exit
 
 back
 
-assert len( kb.kb.getData('file_uploadShell', 'shell') ) == 1
+assert len( kb.kb.getData('file_upload', 'shell') ) == 1
 
 exit

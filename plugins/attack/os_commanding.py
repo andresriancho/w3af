@@ -1,5 +1,5 @@
 '''
-os_commandingShell.py
+os_commanding.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,7 +34,7 @@ import core.controllers.outputManager as om
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
-class os_commandingShell(baseAttackPlugin):
+class os_commanding(baseAttackPlugin):
     '''
     Exploit OS Commanding vulnerabilities.
     
@@ -71,7 +71,7 @@ class os_commandingShell(baseAttackPlugin):
         
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''        
         return 'os_commanding'
@@ -242,5 +242,5 @@ class osShell(exec_shell):
         om.out.debug('osShell cleanup complete.')
         
     def getName( self ):
-        return 'os_commandingShell'
+        return 'os_commanding'
         

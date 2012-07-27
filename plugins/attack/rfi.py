@@ -1,5 +1,5 @@
 '''
-rfiShell.py
+rfi.py
 
 Copyright 2006 Andres Riancho
 
@@ -52,7 +52,7 @@ SUCCESS_COMPLETE = 1
 SUCCESS_OPEN_PORT = 2
 
 
-class rfiShell(baseAttackPlugin):
+class rfi(baseAttackPlugin):
     '''
     Exploit remote file include vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -113,7 +113,7 @@ class rfiShell(baseAttackPlugin):
                 xss_vulns = kb.kb.getData('xss', 'xss')
 
                 if not xss_vulns:
-                    msg = 'rfiShell plugin is configured to use a XSS bug to'
+                    msg = 'rfi plugin is configured to use a XSS bug to'
                     msg += ' exploit the RFI bug, but no XSS was found.'
                     om.out.console( msg )
                     
@@ -143,7 +143,7 @@ class rfiShell(baseAttackPlugin):
                     # Check If I really got something nice that I can use to exploit
                     # if not, report it to the user
                     if not self._xss_vuln:
-                        msg = 'rfiShell plugin is configured to use a XSS'
+                        msg = 'rfi plugin is configured to use a XSS'
                         msg += ' vulnerability to exploit the RFI, but no XSS with the required'
                         msg += ' capabilities was found.'
                         om.out.console( msg )
@@ -169,7 +169,7 @@ class rfiShell(baseAttackPlugin):
         
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''
         return 'rfi'
@@ -356,7 +356,7 @@ class rfiShell(baseAttackPlugin):
         self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
         
         if self._listen_address == '' and not self._use_XSS_vuln:
-            om.out.error('rfiShell plugin has to be correctly configured to use.')
+            om.out.error('rfi plugin has to be correctly configured to use.')
             return False
             
     def getRootProbability( self ):

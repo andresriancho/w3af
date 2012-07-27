@@ -1,5 +1,5 @@
 '''
-file_uploadShell.py
+file_upload.py
 
 Copyright 2006 Andres Riancho
 
@@ -44,7 +44,7 @@ import tempfile
 from core.controllers.misc.temp_dir import get_temp_dir
 
 
-class file_uploadShell(baseAttackPlugin):
+class file_upload(baseAttackPlugin):
     '''
     Exploit applications that allow unrestricted file uploads inside the webroot.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -93,7 +93,7 @@ class file_uploadShell(baseAttackPlugin):
         
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''                
         return 'file_upload'
@@ -278,4 +278,4 @@ class fuShell(exec_shell):
             om.out.debug('File upload shell cleanup complete; successfully removed file: "' + file_to_del + '"')
     
     def getName( self ):
-        return 'file_uploadShell'
+        return 'file_upload'

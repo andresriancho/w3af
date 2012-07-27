@@ -80,7 +80,7 @@ class dav(baseAttackPlugin):
         
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits os_commanding ( attack.os_commandingShell ) should
+        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''        
         return 'dav'

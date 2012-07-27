@@ -68,7 +68,7 @@ class TestOSCommandingShell(PluginTest):
         vuln_to_exploit_id = [v.getId() for v in vulns 
                               if v.getURL().getFileName() == 'simple_osc.php'][0]
         
-        plugin = self.w3afcore.plugins.getPluginInstance( 'os_commandingShell', 'attack' )
+        plugin = self.w3afcore.plugins.getPluginInstance( 'os_commanding', 'attack' )
         
         self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
         
