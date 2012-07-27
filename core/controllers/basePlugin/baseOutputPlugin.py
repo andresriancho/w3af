@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import inspect
+
+import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.w3afException import w3afException
-import core.data.constants.severity as severity
 
 
 class baseOutputPlugin(basePlugin):
