@@ -46,7 +46,7 @@ class http_auth_detect(baseGrepPlugin):
 
     def grep(self, request, response):
         '''
-        Verify if I find 401 or authentication URIs like http://user:pass@domain.com/
+        Finds 401 or authentication URIs like http://user:pass@domain.com/
         
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
