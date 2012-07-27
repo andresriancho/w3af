@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+from itertools import izip, repeat
+
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -28,12 +30,9 @@ import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
-from core.controllers.threads.threadManager import thread_manager
 from core.controllers.misc.levenshtein import relative_distance_ge
-
 from core.data.dc import form
 from core.data.fuzzer.fuzzer import createRandAlNum
-from core.data.url.xUrllib import xUrllib
 
 
 class form_auth(baseBruteforcePlugin):
@@ -44,11 +43,8 @@ class form_auth(baseBruteforcePlugin):
 
     def __init__(self):
         baseBruteforcePlugin.__init__(self)        
-        # To store failed responses for later comparison
-        self._login_failed_result_list = []
         
-        self._user_field_name = None
-        self._passwd_field_name = None
+        self._found = set()
         
     def audit(self, freq):
         '''
@@ -58,73 +54,49 @@ class form_auth(baseBruteforcePlugin):
         '''
         freq_url = freq.getURL()
         
-        if self._isLoginForm(freq) and freq_url not in self._alreadyTested:
-                
-            # Save it (we don't want dups!)
-            self._alreadyTested.append(freq_url)
+        if self._is_login_form(freq) and freq_url not in self._already_tested:
             
-            try:
-                self._user_field_name, self._passwd_field_name = \
-                                            self._getLoginFieldNames(freq)
-            except w3afException, w3:
-                om.out.error(str(w3))
+            self._already_tested.append(freq_url)
+            
+            user_field, passwd_field = self._get_login_field_names(freq)
+            login_failed_result_list = self._id_failed_login_page(freq, user_field, passwd_field)
+            
+            # Let the user know what we are doing
+            om.out.information('Found a form login. The action of the '
+                               'form is: "%s".' % freq_url)
+            if user_field is not None:
+                om.out.information('The username field to be used is: '
+                                   '"%s".' % user_field)
+            om.out.information('The password field to be used is: "%s".'
+                               % passwd_field)
+            om.out.information('Starting form authentication bruteforce'
+                               ' on URL: "%s".' % freq_url)
+            
+            if user_field is not None:
+                generator = self._create_user_pass_generator( freq_url )
             else:
-                # Init
-                self._initBruteforcer(freq_url)
-                self._idFailedLoginPage(freq)
+                generator = self._create_pass_generator( freq_url )
             
-                # Let the user know what we are doing
-                om.out.information('Found a form login. The action of the '
-                                   'form is: "%s".' % freq_url)
-                if self._user_field_name is not None:
-                    om.out.information('The username field to be used is: '
-                                       '"%s".' % self._user_field_name)
-                om.out.information('The password field to be used is: "%s".'
-                                   % self._passwd_field_name)
-                om.out.information('Starting form authentication bruteforce'
-                                   ' on URL: "%s".' % freq_url)
-                
-                # Work until something is found, or no more passwords
-                # are available
-                more_passwords = True
-                
-                while not (self._found and self._stopOnFirst) and \
-                                                            more_passwords:
-                    combinations = []
-                    
-                    for i in xrange(30):                            
-                        #
-                        # Two different cases, one for user/password forms, the
-                        # other for password only forms.
-                        #
-                        if self._user_field_name is not None:
-                            # user/pass form:
-                            try:
-                                combinations.append(self._bruteforcer.getNext())
-                            except w3afException:
-                                more_passwords = False
-                                break
-                        else:
-                            # password only form:
-                            try:
-                                c = ['dummy-placeholder',
-                                        self._bruteforcer.getNextPassword()]
-                                combinations.append(c)
-                            except w3afException:
-                                more_passwords = False
-                                break
+            self._bruteforce_test(freq, user_field, passwd_field, 
+                             login_failed_result_list, generator)                    
 
-                    self._bruteforce(freq.copy(), combinations)                    
-                
-                # Wait for all _bruteWorker threads to finish.
-                thread_manager.join(ownerObj=self)
-                
-                # Report that we've finished.
-                msg = 'Finished bruteforcing "%s".' % freq_url
-                om.out.information( msg )
+            # Report that we've finished.
+            msg = 'Finished bruteforcing "%s".' % freq_url
+            om.out.information( msg )
 
-
-    def _idFailedLoginPage(self, freq):
+    def _bruteforce( self, url, user_field, passwd_field, 
+                           login_failed_result_list, generator ):
+        args_iter = izip( repeat(url), repeat(user_field), repeat(passwd_field),
+                          repeat(login_failed_result_list), generator )
+        self._tm.threadpool.map_multi_args( self._brute_worker, args_iter, chunksize=100 )
+    
+    def _bruteforce_test(self, url, user_field, passwd_field, 
+                           login_failed_result_list, generator ):
+        for combination in generator:
+            self._brute_worker(url, user_field, passwd_field, 
+                               login_failed_result_list, combination)
+        
+    def _id_failed_login_page(self, freq, user_field, passwd_field):
         '''
         Generate TWO different response bodies that are the result of failed
         logins.
@@ -132,23 +104,23 @@ class form_auth(baseBruteforcePlugin):
         The first result is for logins with filled user and password fields;
         the second one is for a filled user and a blank passwd.
         '''
+        # The result is going to be stored here
+        login_failed_result_list = []
+
         data_container = freq.getDc()
-        data_container = self._true_extra_fields(data_container)
+        data_container = self._true_extra_fields(data_container, user_field, passwd_field)
         
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
         tests = [(createRandAlNum(8), createRandAlNum(8)), 
                  (createRandAlNum(8), '')]
         
-        # The result is going to be stored here
-        self._login_failed_result_list = []
-        
         for user, passwd in tests:
             # Setup the data_container
             # Remember that we can have password only forms!
-            if self._user_field_name is not None:
-                data_container[self._user_field_name][0] = user
-            data_container[self._passwd_field_name][0] = passwd
+            if user_field is not None:
+                data_container[user_field][0] = user
+            data_container[passwd_field][0] = passwd
             freq.setDc(data_container)
             
             response = self._uri_opener.send_mutant(freq, grep=False)
@@ -158,7 +130,7 @@ class form_auth(baseBruteforcePlugin):
             body = body.replace(passwd, '')
             
             # Save it
-            self._login_failed_result_list.append(body)
+            login_failed_result_list.append(body)
         
         # Now I perform a self test, before starting with the actual bruteforcing
         # The first tuple is an invalid username and a password
@@ -169,35 +141,35 @@ class form_auth(baseBruteforcePlugin):
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
             #   Remember that we can have password only forms!
-            if self._user_field_name is not None:
-                data_container[self._user_field_name][0] = user
-            data_container[self._passwd_field_name][0] = passwd
+            if user_field is not None:
+                data_container[user_field][0] = user
+            data_container[passwd_field][0] = passwd
             freq.setDc(data_container)
             response = self._uri_opener.send_mutant(freq, grep=False)
             
             body = response.getBody()
             body = body.replace(user, '')
             body = body.replace(passwd, '')
-            
-            if not self._matchesFailedLogin(body):
+
+            if not self._matches_failed_login(body, login_failed_result_list):
                 raise w3afException('Failed to generate a response that '
                                     'matches the failed login page.')
+        
+        return login_failed_result_list
     
-    def _matchesFailedLogin(self, resp_body):
+    def _matches_failed_login(self, resp_body, login_failed_result_list):
         '''
         @return: True if the resp_body matches the previously created 
         responses that are stored in self._login_failed_result_list.
         '''
-        lfrl = self._login_failed_result_list
-        # 0.65 gives a good measure of similarity
-        if relative_distance_ge(resp_body, lfrl[0], 0.65) or \
-                relative_distance_ge(resp_body, lfrl[1], 0.65):
-            return True
+        for login_failed_result in login_failed_result_list:
+            if relative_distance_ge(resp_body, login_failed_result, 0.65):
+                return True
         else:
             # I'm happy! The response_body *IS NOT* a failed login page.
             return False
 
-    def _isLoginForm(self, freq):
+    def _is_login_form(self, freq):
         '''
         @return: True if this fuzzableRequest is a loginForm.
         '''
@@ -235,7 +207,7 @@ class form_auth(baseBruteforcePlugin):
                 om.out.information(freq.getURL() + ' is a password change form.')
             return False
                 
-    def _getLoginFieldNames(self, freq):
+    def _get_login_field_names(self, freq):
         '''
         @return: The names of the form fields where to input the user and the 
             password. Please remember that maybe user_parameter might be None,
@@ -255,7 +227,7 @@ class form_auth(baseBruteforcePlugin):
 
         return user_parameter, passwd_parameter
     
-    def _true_extra_fields(self, data_container):
+    def _true_extra_fields(self, data_container, user_field, passwd_field):
         '''
         Some login forms have "extra" parameters. In some cases I've seen 
         login forms that have an "I agree with the terms and conditions" 
@@ -267,101 +239,78 @@ class form_auth(baseBruteforcePlugin):
             and password) set to 1,
         '''
         for parameter_name in data_container:
-            if parameter_name not in (self._user_field_name, self._passwd_field_name):
-                data_container[parameter_name ][0] = 1
+            if parameter_name not in (user_field, passwd_field):
+                for element_index, element_value in enumerate(data_container[parameter_name]):
+                    if not element_value:
+                        data_container[parameter_name][element_index] = '1'
         return data_container
         
-    def _bruteWorker(self, freq, combinations):
+    def _brute_worker(self, freq, user_field, passwd_field, 
+                      login_failed_result_list, combination):
         '''
         @parameter freq: A fuzzableRequest
-        @parameter combinations: A list of tuples with (user, pass)
+        @parameter combination: A tuple with (user, pass) or a pass if this is a
+                                password only form.
         '''
-        
-        def _do_req_without_cookies(fuzz_req):
-            url = fuzz_req.getURI()
-            data = fuzz_req.getData()
-            headers = fuzz_req.getHeaders()
-            # Typically GET and POST
-            meth = getattr(xUrllib(), fuzz_req.getMethod().upper())
-            resp = meth(url, data, headers, grep=False, cache=False)
-            return resp
-        
-        data_container = freq.getDc()
-        data_container = self._true_extra_fields(data_container)
-        
-        # Ok, now we start with the real bruteforcing!
-        for combination in combinations:
-            
-            username = combination[0]
-            userpwd = combination[1]
-            
-            # Remember that we can have password only forms!
-            if self._user_field_name is not None:
-                data_container[self._user_field_name][0] = username
-            data_container[self._passwd_field_name][0] = userpwd
-            freq.setDc(data_container)
-            
-            # This "if" is for multithreading
-            if not self._found or not self._stopOnFirst:
-                
-                # TODO: This is a *hack*. This logic shouldn't be implemented
-                # in the plugin but in xUrllib
-                try:
-                    resp = _do_req_without_cookies(freq)
-                except w3afMustStopOnUrlError:
-                    return
-                
-                body = resp.getBody()
-                body = body.replace(username, '').replace(userpwd, '')
-                
-                with self._plugin_lock:                
-                    if not self._matchesFailedLogin(body):
-                        # Ok, this might be a valid combination.
-                        # Now test with a new invalid password to ensure our
-                        # previous possible found credentials are valid                        
-                        data_container[self._passwd_field_name][0] = \
-                                                            createRandAlNum(8)
-                        freq.setDc(data_container)
-                        verif_resp = _do_req_without_cookies(freq)
-                        body = verif_resp.getBody()
-                        body = body.replace(username, '').replace(userpwd, '')
-    
-                        if self._matchesFailedLogin(body):
-                            self._found = True
-                            freq_url = freq.getURL()
-                            v = vuln.vuln()
-                            v.setId(resp.id)
-                            v.setPluginName(self.getName())
-                            v.setURL(freq.getURL())
-                            if self._user_field_name is not None:
-                                msg = ('Found authentication credentials to: '
-                                '"%s". A correct user and password combination'
-                                ' is: %s/%s' % (freq_url, username, userpwd))
-                            else:
-                                # There is no user field!
-                                msg = ('Found authentication credentials to: '
-                                '"%s". The correct password is: "%s".'
-                                % (freq_url, userpwd))
-        
-                            v.setDesc(msg)
-                            v['user'] = username
-                            v['pass'] = combination[1]
-                            v['response'] = resp
-                            v.setSeverity(severity.HIGH)
-                            v.setName('Guessable credentials')
-                            kb.kb.append(self, 'auth', v)
-        
-                            # Save cookies in the 'main' urlOpenet so the rest
-                            # of active plugins use them. This is part of the
-                            # previously mentioned hack.
-                            headers = resp.getHeaders()
-                            additionalHeaders = []
-                            for header_name in headers:
-                                if 'cookie' in header_name.lower():
-                                    additionalHeaders.append(
-                                            (header_name, headers[header_name]))                            
-                            self._uri_opener.settings.setHeadersList(
-                                                            additionalHeaders)
+        if freq.getURL() not in self._found or not self._stop_on_first:
+            freq = freq.copy()
+            data_container = freq.getDc()
+            data_container = self._true_extra_fields(data_container, user_field, passwd_field)
+                        
+            # Handle password-only forms!
+            if user_field is not None:
+                user, pwd = combination
+                data_container[user_field][0] = user
+                data_container[passwd_field][0] = pwd
+            else:
+                user = 'password-only-form'
+                pwd = combination
+                data_container[passwd_field][0] = pwd
 
-                            om.out.vulnerability(msg, severity=severity.HIGH)
-                            return
+            freq.setDc(data_container)
+
+            try:
+                resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
+            except w3afMustStopOnUrlError:
+                return
+            else:
+                body = resp.getBody()
+                body = body.replace(user, '').replace(pwd, '')
+                
+                if not self._matches_failed_login(body, login_failed_result_list):
+                    # Ok, this might be a valid combination.
+                    # Now test with a new invalid password to ensure our
+                    # previous possible found credentials are valid                        
+                    data_container[passwd_field][0] = createRandAlNum(8)
+                    freq.setDc(data_container)
+                    verif_resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
+                    body = verif_resp.getBody()
+                    body = body.replace(user, '').replace(pwd, '')
+
+                    if self._matches_failed_login(body, login_failed_result_list):
+                        freq_url = freq.getURL()
+                        self._found.add(freq_url)
+                        v = vuln.vuln()
+                        v.setId(resp.id)
+                        v.setPluginName(self.getName())
+                        v.setURL(freq.getURL())
+                        if user_field is not None:
+                            msg = ('Found authentication credentials to: '
+                            '"%s". A correct user and password combination'
+                            ' is: %s/%s' % (freq_url, user, pwd))
+                        else:
+                            # There is no user field!
+                            msg = ('Found authentication credentials to: '
+                            '"%s". The correct password is: "%s".'
+                            % (freq_url, pwd))
+
+                        v.setDesc(msg)
+                        v['user'] = user
+                        v['pass'] = pwd
+                        v['response'] = resp
+                        v.setSeverity(severity.HIGH)
+                        v.setName('Guessable credentials')
+                        kb.kb.append(self, 'auth', v)
+    
+                        om.out.vulnerability(msg, severity=severity.HIGH)
+                        return

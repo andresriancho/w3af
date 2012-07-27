@@ -18,31 +18,42 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 
 from ..helper import PluginTest, PluginConfig
 
+
 class TestFormAuth(PluginTest):
+    small_users_negative = os.path.join('plugins','tests','bruteforce','small-users-negative.txt')
+    small_users_positive = os.path.join('plugins','tests','bruteforce','small-users-positive.txt')
     
-    target_url = 'http://moth/w3af/bruteforce/form_login/with_post.html'
+    target_post_url = 'http://moth/w3af/bruteforce/form_login/with_post.html'
+    target_get_url = 'http://moth/w3af/bruteforce/form_login/with_get.html'
+    target_password_only_url = 'http://moth/w3af/bruteforce/form_login/only-password.html'
+    target_negative_url = 'http://moth/w3af/bruteforce/form_login/impossible_login.html'
     
-    _run_configs = {
-        'cfg': {
-            'target': target_url,
+    target_web_spider_url = 'http://moth/w3af/bruteforce/form_login/'
+    
+    positive_test = {
+            'target': None,
             'plugins': {
-                 'bruteforce': (PluginConfig('form_auth'),),
-                 'discovery': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
+                 'bruteforce': (PluginConfig('form_auth',
+                                             ('usersFile', small_users_positive, PluginConfig.STR)),
+                                ),
                  }
-            }
         }
     
-    def test_found_credentials(self):
-        # Run the scan
-        cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+    negative_test = {
+            'target': None,
+            'plugins': {
+                 'bruteforce': (PluginConfig('form_auth',
+                                             ('usersFile', small_users_negative, PluginConfig.STR)),
+                                )
+                 }
+        }
+    
+    def test_found_credentials_post(self):
+        self._scan(self.target_post_url, self.positive_test['plugins'])
 
         # Assert the general results
         vulns = self.kb.getData('form_auth', 'auth')
@@ -51,8 +62,46 @@ class TestFormAuth(PluginTest):
         vuln = vulns[0]
         
         self.assertEquals(vuln.getName(), 'Guessable credentials')
-        vuln_url = 'http://moth/w3af/bruteforce/form_login/dataReceptor.php'
+        vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
         self.assertEquals(vuln.getURL().url_string, vuln_url)
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], '1234')
+        
+    def test_found_credentials_get(self):
+        self._scan(self.target_get_url, self.positive_test['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.getData('form_auth', 'auth')
+        self.assertEquals(len(vulns), 1)
+        
+        vuln = vulns[0]
+        
+        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
+        self.assertEquals(vuln.getURL().url_string, vuln_url)
+        self.assertEquals(vuln['user'], 'admin')
+        self.assertEquals(vuln['pass'], '1234')
+        
+    def test_found_credentials_password_only(self):
+        self._scan(self.target_password_only_url, self.positive_test['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.getData('form_auth', 'auth')
+        self.assertEquals(len(vulns), 1)
+        
+        vuln = vulns[0]
+        
+        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        vuln_url = 'http://moth/w3af/bruteforce/form_login/login-password-only.php'
+        self.assertEquals(vuln.getURL().url_string, vuln_url)
+        self.assertEquals(vuln['user'], 'password-only-form')
+        self.assertEquals(vuln['pass'], '1234')
+        
+    def test_negative(self):
+        self._scan(self.target_negative_url, self.negative_test['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.getData('form_auth', 'auth')
+        self.assertEquals(len(vulns), 0)
+        
         
