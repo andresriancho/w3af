@@ -28,7 +28,6 @@ import urllib2
 from ..MultipartPostHandler import MultipartPostHandler 
 from core.controllers.misc.io import NamedStringIO
 
-## IMPORTANT! This test requires HTTP access to MOTH ##
 
 class TestMultipartPostHandler(unittest.TestCase):
     

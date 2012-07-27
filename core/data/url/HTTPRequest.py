@@ -27,7 +27,7 @@ class HTTPRequest(urllib2.Request):
     
     def __init__(self, url, data=None, headers={},
                  origin_req_host=None, unverifiable=False,
-                 follow_redir=True):
+                 follow_redir=True, cookies=True):
         '''
         This is a simple wrapper around a urllib2 request object.
         >>> from core.data.parsers.urlParser import url_object
@@ -41,6 +41,7 @@ class HTTPRequest(urllib2.Request):
         #
         self.url_object = url
         self.follow_redir = follow_redir
+        self.cookies = cookies
         
         # Call the base class
         urllib2.Request.__init__(self, url.urlEncode(), data,

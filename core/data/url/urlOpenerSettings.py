@@ -19,27 +19,31 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import urllib2
+import socket
+import urlparse
+import cookielib
 
-# Some misc imports
+import core.controllers.outputManager as om
+import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
+import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
+import core.data.url.handlers.localCache as localCache
+import core.data.url.handlers.mangleHandler as mangleHandler
+
 from core.controllers.configurable import configurable
 from core.controllers.w3afException import w3afException
 from core.data.kb.config import cf as cfg
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
-from core.data.url.handlers.FastHTTPBasicAuthHandler import \
-    FastHTTPBasicAuthHandler
+from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
+from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
-from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP, \
-    HTTPSHandler as kAHTTPS
+from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP 
+from core.data.url.handlers.keepalive import HTTPSHandler as kAHTTPS
 from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
-import core.controllers.outputManager as om
-import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
-import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
-import core.data.url.handlers.localCache as localCache
-import core.data.url.handlers.mangleHandler as mangleHandler
 
 
 class urlOpenerSettings( configurable ):
@@ -48,15 +52,6 @@ class urlOpenerSettings( configurable ):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    
-    import urllib2 as _ulib
-    import socket as _socket
-    import urlparse as _uparse
-    from time import sleep as _sleep
-    from random import random as _random
-    from robotparser import RobotFileParser as _rparser
-    import cookielib as _cookielib
-    
     def __init__(self):
         
         # Set the openers to None
@@ -93,7 +88,7 @@ class urlOpenerSettings( configurable ):
             # This is the first time we are executed...
         
             cfg.save('timeout', 15 )
-            self._socket.setdefaulttimeout(cfg.getData('timeout'))
+            socket.setdefaulttimeout(cfg.getData('timeout'))
             cfg.save('headersFile', '' )
             cfg.save('cookieJarFile', '' )
             cfg.save('User-Agent', 'w3af.sourceforge.net' )
@@ -163,13 +158,13 @@ class urlOpenerSettings( configurable ):
         om.out.debug( 'Called SetCookie')
         
         if CookieJarFile != '':
-            cj = self._cookielib.MozillaCookieJar()
+            cj = cookielib.MozillaCookieJar()
             try:
                 cj.load( CookieJarFile )
             except Exception, e:
                 raise w3afException( 'Error while loading cookiejar file. Description: ' + str(e) )
                 
-            self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
+            self._cookieHandler = CookieHandler(cj)
             cfg.save('cookieJarFile', CookieJarFile )
         
     def getCookieJarFile( self ):
@@ -184,7 +179,7 @@ class urlOpenerSettings( configurable ):
             
             # Set the default timeout
             # I dont need to use timeoutsocket.py , it has been added to python sockets
-            self._socket.setdefaulttimeout(cfg.getData('timeout'))
+            socket.setdefaulttimeout(cfg.getData('timeout'))
         
     def getTimeout( self ):
         return cfg.getData('timeout')
@@ -235,7 +230,7 @@ class urlOpenerSettings( configurable ):
         #    makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
         #    The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
         proxyMap = { 'http' : "http://" + ip + ":" + str(port) }
-        self._proxyHandler = self._ulib.ProxyHandler( proxyMap )
+        self._proxyHandler = urllib2.ProxyHandler( proxyMap )
 
     def getProxy( self ):
         return cfg.getData('proxyAddress') + ':' + str(cfg.getData('proxyPort'))
@@ -255,7 +250,7 @@ class urlOpenerSettings( configurable ):
         else:
             if not hasattr(self, '_password_mgr'):
                 # Create a new password manager
-                self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
+                self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
     
             # Add the username and password
             domain = url.getDomain()
@@ -274,11 +269,11 @@ class urlOpenerSettings( configurable ):
         cfg.save('basicAuthDomain', url)
 
     def getBasicAuth( self ):
-        scheme, domain, path, x1, x2, x3 = self._uparse.urlparse( cfg.getData('basicAuthDomain') )
+        scheme, domain, path, x1, x2, x3 = urlparse.urlparse( cfg.getData('basicAuthDomain') )
         res = scheme + '://' + cfg.getData('basicAuthUser') + ':' 
         res += cfg.getData('basicAuthPass') + '@' + domain + '/'
         return res
-    
+        
     def setNtlmAuth( self, url, ntlm_domain, username, password ):
 
         cfg.save('ntlmAuthPass', password )
@@ -290,7 +285,7 @@ class urlOpenerSettings( configurable ):
 
         if not hasattr( self, '_password_mgr' ):
             # create a new password manager
-            self._password_mgr = self._ulib.HTTPPasswordMgrWithDefaultRealm()
+            self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
         # HTTPNtmlAuthHandler expects username to have the domain name
         # separated with a '\', so that's what we do here:
@@ -305,8 +300,8 @@ class urlOpenerSettings( configurable ):
         om.out.debug('Called buildOpeners')
         
         if self._cookieHandler is None and not cfg.getData('ignoreSessCookies'):
-            cj = self._cookielib.MozillaCookieJar()
-            self._cookieHandler = self._ulib.HTTPCookieProcessor(cj)
+            cj = cookielib.MozillaCookieJar()
+            self._cookieHandler = CookieHandler(cj)
         
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
@@ -326,7 +321,7 @@ class urlOpenerSettings( configurable ):
             if handler:
                 handlers.append(handler)
         
-        self._nonCacheOpener = self._ulib.build_opener(*handlers)
+        self._nonCacheOpener = urllib2.build_opener(*handlers)
         
         # Prevent the urllib from putting his user-agent header
         self._nonCacheOpener.addheaders = [ ('Accept', '*/*') ]
