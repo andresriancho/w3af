@@ -171,5 +171,5 @@ class redos(baseAuditPlugin):
         return '''
         This plugin finds ReDoS (regular expression DoS) vulnerabilities as
         explained here:
-                    - http://www.checkmarx.com/white_papers/redos-regular-expression-denial-of-service/ 
+                    - http://en.wikipedia.org/wiki/ReDoS 
         '''
