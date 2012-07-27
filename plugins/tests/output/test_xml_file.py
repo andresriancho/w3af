@@ -1,5 +1,5 @@
 '''
-test_xml_output.py
+test_xml_file.py
 
 Copyright 2012 Andres Riancho
 
@@ -62,6 +62,8 @@ class TestXMLOutput(PluginTest):
         
         xss_vulns = self.kb.getData('xss', 'xss')
         file_vulns = self._from_xml_get_vulns()
+        
+        self.assertGreaterEqual(len(xss_vulns), 3)
         
         self.assertEquals(
             set(sorted([v.getURL() for v in xss_vulns])),
