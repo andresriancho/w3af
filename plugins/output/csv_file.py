@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import csv
 import itertools
 
@@ -27,8 +26,6 @@ import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.w3afException import w3afException
-
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
