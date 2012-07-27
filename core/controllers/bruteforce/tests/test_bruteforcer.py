@@ -19,16 +19,27 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
 import unittest
 
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.bruteforce.bruteforcer import bruteforcer
+from core.controllers.bruteforce.bruteforcer import password_bruteforcer, user_password_bruteforcer
 from core.data.parsers.urlParser import url_object
 
 
-class test_bruteforcer(unittest.TestCase):
+class test_password_bruteforcer(unittest.TestCase):
+
+    def test_contains(self):
+        url = url_object('http://www.w3af.org/')
+        
+        pwd_bf = password_bruteforcer(url)
+        
+        self.assertTrue( 'password' in pwd_bf.generator() )
+        self.assertTrue( '123456' in pwd_bf.generator() )
+        self.assertTrue( '12345' in pwd_bf.generator() )
+        
+
+class test_user_password_bruteforcer(unittest.TestCase):
 
     def setUp(self):
         self.temp_dir = create_temp_dir()
@@ -36,9 +47,7 @@ class test_bruteforcer(unittest.TestCase):
     def test_bruteforcer_default(self):
         url = url_object('http://www.w3af.org/')
         
-        bf = bruteforcer()
-        bf.setURL(url)
-        bf.init()
+        bf = user_password_bruteforcer(url)
         
         expected_combinations = [
                                  ('prueba1', '123abc'),
@@ -51,16 +60,11 @@ class test_bruteforcer(unittest.TestCase):
                                 ]
         generated = []
         
-        next = True
-        while next:
-            try:
-                gen_comb = bf.getNext()
-                generated.append( gen_comb )
-            except:
-                break
+        for (user, pwd) in bf.generator():
+            generated.append( (user, pwd) )
 
-        for gen_comb in expected_combinations:
-            self.assertTrue( gen_comb in generated )
+        for expected_comb in expected_combinations:
+            self.assertTrue( expected_comb in generated )
 
     def test_bruteforcer_combo(self):
 
@@ -81,22 +85,14 @@ class test_bruteforcer(unittest.TestCase):
         
         url = url_object('http://www.w3af.org/')
         
-        bf = bruteforcer()
-        bf.setURL(url)
-        bf.setComboFile( combo_filename )
-        bf.setComboSeparator(':')
-        bf.init()
+        bf = user_password_bruteforcer(url)
+        bf.combo_file = combo_filename
+        bf.combo_separator = ':'
         
         generated = []
         
-        next = True
-        while next:
-            try:
-                gen_comb = bf.getNext()
-                generated.append( gen_comb )
-            except:
-                break
+        for (user, pwd) in bf.generator():
+            generated.append( (user, pwd) )
 
-        for gen_comb in expected_combinations:
-            self.assertTrue( gen_comb in generated )
-
+        for expected_comb in expected_combinations:
+            self.assertTrue( expected_comb in generated )
