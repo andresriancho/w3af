@@ -19,11 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from functools import partial
 import base64
 import os
 import time
 import xml.dom.minidom
+
+from functools import partial
+
+import core.data.constants.severity as severity
+import core.data.kb.config as cf
+import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
 from core.controllers.misc import get_w3af_version
@@ -33,9 +38,6 @@ from core.data.db.history import HistoryItem
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.request.fuzzableRequest import fuzzableRequest
-import core.data.constants.severity as severity
-import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
 
 # Override builtin 'str' function in order to avoid encoding
 # errors while generating objects' utf8 bytestring representations.
@@ -235,15 +237,16 @@ class xml_file(baseOutputPlugin):
         actionStatus = self._xmldoc.createTextNode(status.strip())
         actionStatusNode.appendChild(actionStatus)
         parentNode.appendChild(actionStatusNode)
-
+        
         # Put out the headers as XML entity
         actionHeaderNode = self._xmldoc.createElement("headers")
         for (header, header_content) in headers.iteritems():
             headerdetail = self._xmldoc.createElement("header")
-            headerdetail.setAttribute("field", header)
-            headerdetail.setAttribute("content", header_content)
+            headerdetail.setAttribute("content", str(header_content) )
+            headerdetail.setAttribute("field", str(header) )            
             actionHeaderNode.appendChild(headerdetail)
         parentNode.appendChild(actionHeaderNode)
+        
         # if the body is defined, put it out
         if body:
             actionBodyNode = self._xmldoc.createElement("body")
@@ -314,11 +317,11 @@ class xml_file(baseOutputPlugin):
                     actionset = self._xmldoc.createElement("http-transaction")
                     actionset.setAttribute("id", str(requestid))
                     transaction_set.appendChild(actionset)
-
+                    
                     requestNode = self._xmldoc.createElement("httprequest")
                     self.report_http_action(requestNode, details.request)
                     actionset.appendChild(requestNode)
-
+                    
                     responseNode = self._xmldoc.createElement("httpresponse")
                     self.report_http_action(responseNode, details.response)
                     actionset.appendChild(responseNode)
@@ -369,6 +372,7 @@ class xml_file(baseOutputPlugin):
         # Write xml report
         self._init()
         self._xmldoc.appendChild(self._topElement)
+
         try:
             self._xmldoc.writexml(self._file, addindent=" "*4,
                                   newl="\n", encoding="UTF-8")  
