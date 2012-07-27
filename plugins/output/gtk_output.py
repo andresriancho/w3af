@@ -27,7 +27,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
-from core.data.options.optionList import optionList
 
 
 class gtk_output(baseOutputPlugin):
@@ -95,37 +94,16 @@ class gtk_output(baseOutputPlugin):
         Adds a message object to the queue. If the queue isn't there, it creates one.
         '''
         self.queue.put( m )
-    
-    def logHttp( self, request, response):
-        pass
-    
-    def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
-        '''
-        This method is called from the output managerobject. 
-        This method should take an action for the enabled plugins 
-        and their configuration.
-        '''
-        pass
         
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Saves messages to kb.kb.getData('gtk_output', 'queue'), messages are saved in the form of
-         objects. This plugin was created to be able to communicate with the gtkUi and should be
-         enabled if you are using it.
+        Saves messages to kb.kb.getData('gtk_output', 'queue'), messages are
+        saved in the form of objects. This plugin was created to be able to
+        communicate with the gtkUi and should be enabled if you are using it.
         '''
-        
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-    
-    def setOptions( self, OptionList ):
-        pass
 
 
 class message:
