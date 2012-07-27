@@ -19,16 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
+import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.xUrllib import xUrllib
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
-import core.data.constants.severity as severity
 
 
 class basic_auth(baseBruteforcePlugin):
@@ -50,86 +48,74 @@ class basic_auth(baseBruteforcePlugin):
                           kb.kb.getData( 'http_auth_detect', 'auth' )]
         
         domain_path = freq.getURL().getDomainPath()
-        
-        if domain_path in auth_url_list:
-            if domain_path not in self._alreadyTested:
+        if domain_path in auth_url_list and domain_path not in self._already_tested:
                 
                 # Save it (we don't want dups!)
-                self._alreadyTested.append( domain_path )
+                self._already_tested.append( domain_path )
                 
                 # Let the user know what we are doing
                 msg = 'Starting basic authentication bruteforce on URL: "' + domain_path + '".'
                 om.out.information( msg )
-                self._initBruteforcer( domain_path )
 
-                while not self._found or not self._stopOnFirst:
-                    combinations = []
-                    
-                    for i in xrange( 30 ):
-                        try:
-                            combinations.append( self._bruteforcer.getNext() )
-                        except:
-                            om.out.information('No more user/password combinations available.')
-                            return
-                    
-                    # wraps around bruteWorker
-                    # the wrapper starts a new thread
-                    self._bruteforce( domain_path, combinations )
-    
-    def _bruteWorker( self, url, combinations ):
-        '''
-        @parameter url: A string representation of an URL
-        @parameter combinations: A list of tuples with (user,pass)
-        '''
-        # get instance outside loop...
-        uriOpener = xUrllib()
-        # So uriOpener._init is not called
-        uriOpener._cacheOpener = ''
-    
-        for combination in combinations:
-            user = combination[0]
-            passwd = combination[1]
-            
-            om.out.debug('[basic_auth] Testing ' + user + '/' + passwd)
-            
-            uriOpener.settings.setBasicAuth( url, user, passwd  )
-            # The next line replaces the uriOpener opener with a new one that has
-            # the basic auth settings configured
-            
-            #IMPORTANT: This line also calls __init__ on all urllib2 handlers, to have in mind:
-            # the localCache clears the cache when you call init...
-            # this creates problem with multithreading
-            uriOpener.settings.buildOpeners()
-            uriOpener._opener = uriOpener.settings.getCustomUrlopen()
-            
-            # This "if" is for multithreading
-            if not self._found or not self._stopOnFirst:
+                up_generator = self._create_user_pass_generator( domain_path )
 
-                try:
-                    response = uriOpener.GET( url, cache=False, grep=False )
-                except w3afException, w3:
-                    msg = 'Exception while bruteforcing basic authentication, error message: ' 
-                    msg += str(w3)
-                    om.out.debug( msg )
-                else:
-                    # GET was OK
-                    if response.getCode() == 200:
-                        self._found = True
-                        v = vuln.vuln()
-                        v.setId(response.id)
-                        v.setPluginName(self.getName())
-                        v.setURL( url )
-                        v.setDesc( 'Found authentication credentials to: "'+ url +
-                        '". A correct user and password combination is: ' + user + '/' + passwd)
-                        v['user'] = user
-                        v['pass'] = passwd
-                        v['response'] = response
-                        v.setSeverity(severity.HIGH)
-                        v.setName( 'Guessable credentials' )
+                self._bruteforce( domain_path, up_generator )
                 
-                        kb.kb.append( self , 'auth' , v )
-                        om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                        break
+                om.out.information('No more user/password combinations available.')
+    
+    def _brute_worker( self, url, combination ):
+        '''
+        Try a user/password combination with HTTP basic authentication against
+        a specific URL.
+        
+        @parameter url: A string representation of an URL
+        @parameter combination: A tuple that contains (user,pass)
+        '''
+        # Remember that this worker is called from a thread which lives in a 
+        # threadpool. If the worker finds something, it has to let the rest know
+        # and the way we do that is by setting self._found.
+        #
+        # If one thread sees that we already bruteforced the access, the rest will
+        # simply no-op
+        if not self._found or not self._stop_on_first:
+            user, passwd = combination
+            
+            #
+            # TODO: These four lines make the whole process *very* CPU hungry
+            #       since we're creating a new xUrllib() for each user/password
+            #       combination! In my test environment I achieve 100% CPU usage
+            #
+            uri_opener = xUrllib()
+            uri_opener.settings.setBasicAuth( url, user, passwd  )
+            # The next lines replace the uri_opener opener with a new one that has
+            # the basic auth settings configured
+            uri_opener.settings.buildOpeners()
+            uri_opener._opener = uri_opener.settings.getCustomUrlopen()
+            
+            try:
+                response = uri_opener.GET( url, cache=False, grep=False )
+            except w3afException, w3:
+                msg = 'Exception while bruteforcing basic authentication, error'
+                msg += ' message: "%s"' 
+                om.out.debug( msg % w3 )
+            else:
+                # GET was OK
+                if response.getCode() != 401:
+                    self._found = True
+                    v = vuln.vuln()
+                    v.setId(response.id)
+                    v.setPluginName(self.getName())
+                    v.setURL( url )
+                    v.setDesc( 'Found authentication credentials to: "'+ url +
+                    '". A correct user and password combination is: ' + user + '/' + passwd)
+                    v['user'] = user
+                    v['pass'] = passwd
+                    v['response'] = response
+                    v.setSeverity(severity.HIGH)
+                    v.setName( 'Guessable credentials' )
+            
+                    kb.kb.append( self , 'auth' , v )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 
     def getLongDesc( self ):
         '''
@@ -144,16 +130,14 @@ class basic_auth(baseBruteforcePlugin):
             - passwdFile
             - passEqUser
             - useLeetPasswd
-            - useMailUsers
             - useSvnUsers
-            - useMails
+            - useEmails
             - useProfiling
             - profilingNumber
         
         This plugin will take users from the file pointed by "usersFile", mail 
-        users found on the site ( if "useMailUsers" is set to True ), mails
-        found on the site ( if "useMails" is set to True ), and svn users found
-        on the site ( if "useSvnUsers" is set to True ).
+        users found on the site and email addresses (if "useEmails" is set to True)
+        and svn users found on the site ( if "useSvnUsers" is set to True ).
         
         This plugin will take passwords from the file pointed by "passwdFile" and
         the result of the password profiling plugin (if "useProfiling" is set to

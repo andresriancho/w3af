@@ -19,18 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os.path
 
+from itertools import izip, repeat
+
+import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.bruteforce.bruteforcer import bruteforcer
-import core.controllers.outputManager as om
+from core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
+                                                     password_bruteforcer)
 from core.data.request.frFactory import createFuzzableRequests
-import core.data.kb.knowledgeBase as kb
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-import os.path
 
 
 class baseBruteforcePlugin(baseAuditPlugin):
@@ -41,75 +41,70 @@ class baseBruteforcePlugin(baseAuditPlugin):
 
     def __init__(self):
         baseAuditPlugin.__init__(self)
-        self._alreadyTested = []
         
         # Config params
-        self._usersFile = os.path.join('core','controllers','bruteforce','users.txt')
-        self._passwdFile = os.path.join('core','controllers','bruteforce','passwords.txt')
-        self._comboFile = ''
-        self._comboSeparator = ":"
-        self._useMailUsers = True
-        self._useSvnUsers = True
-        self._stopOnFirst = True
-        self._passEqUser = True
+        self._users_file = os.path.join('core','controllers','bruteforce','users.txt')
+        self._passwd_file = os.path.join('core','controllers','bruteforce','passwords.txt')
+        self._combo_file = ''
+        self._combo_separator = ":"
+        self._use_emails = True
+        self._use_SVN_users = True
+        self._pass_eq_user = True
         self._l337_p4sswd = True
         self._useMails = True
-        self._useProfiling = True
-        self._profilingNumber = 50
-        
+        self._use_profiling = True
+        self._profiling_number = 50
+        self._stop_on_first = True
+                
         # Internal vars
         self._found = False
-        self._alreadyReported = []
-        
-        self._bruteforcer = bruteforcer()
+        self._already_reported = []
+        self._already_tested = []
 
-    def _initBruteforcer( self, url ):
-        self._bruteforcer.setURL( url )
-        self._bruteforcer.setUseMailUsers( self._useMailUsers )
-        self._bruteforcer.setUseMails( self._useMails )
-        self._bruteforcer.setUseProfiling( self._useProfiling )
-        self._bruteforcer.setProfilingNumber( self._profilingNumber )
-        self._bruteforcer.setUseSvnUsers( self._profilingNumber )
-        self._bruteforcer.setLeetPasswd( self._l337_p4sswd )
-        self._bruteforcer.setUsersFile(self._usersFile)
-        self._bruteforcer.setPassFile(self._passwdFile)
-        self._bruteforcer.setComboFile(self._comboFile)
-        self._bruteforcer.setComboSeparator(self._comboSeparator)
-        self._bruteforcer.init()
+    def _create_user_pass_generator( self, url ):
+        up_bf = user_password_bruteforcer(url)
+        up_bf.use_emails = self._use_emails
+        up_bf.use_profiling = self._use_profiling
+        up_bf.profiling_number = self._profiling_number
+        up_bf.use_SVN_users = self._use_SVN_users
+        up_bf.l337_p4sswd = self._l337_p4sswd
+        up_bf.users_file = self._users_file
+        up_bf.passwd_file = self._passwd_file
+        up_bf.combo_file = self._combo_file
+        up_bf.combo_separator = self._combo_separator
+        up_bf.pass_eq_user = self._pass_eq_user
+        return up_bf.generator()
     
-    def _fuzzRequests(self, freq ):
-        '''
-        This method is the entry point of the plugin.
-        
-        THIS METHOD MUST BE IMPLEMENTED BY EVERY BRUTEFORCE PLUGIN!
-        
-        @param freq: A fuzzable_request
-        '''
-        raise NotImplementedError, ('Bruteforce plugins MUST override '
-                                    'method _fuzzRequests.')
-    
+    def _create_pass_generator( self, url ):
+        p_bf = password_bruteforcer(url)
+        p_bf.use_profiling = self._use_profiling
+        p_bf.profiling_number = self._profiling_number
+        p_bf.l337_p4sswd = self._l337_p4sswd
+        p_bf.passwd_file = self._passwd_file
+        return p_bf.generator()
+
     def bruteforce_wrapper( self, fuzzable_request ):
         self.audit_wrapper( fuzzable_request.copy() )
         
         res = []
         for v in kb.kb.getData( self.getName(), 'auth' ):
-            if v.getURL() not in self._alreadyReported:
-                self._alreadyReported.append( v.getURL() )
+            if v.getURL() not in self._already_reported:
+                self._already_reported.append( v.getURL() )
                 res.extend( createFuzzableRequests(v['response']) )
         return res
     
     def _bruteforce( self, url, combinations ):
         '''
         @parameter url: A string representation of an URL
-        @parameter combinations: A list of tuples with (user,pass)
+        @parameter combinations: A generator with tuples that contain (user,pass)
         '''
-        targs = (url,combinations)
-        self._tm.apply_async( target=self._bruteWorker, args=targs , ownerObj=self )
+        args_iter = izip( repeat(url), combinations )
+        self._tm.threadpool.map_multi_args( self._brute_worker, args_iter, chunksize=100 )
     
     def end( self ):
-        self._tm.join( self )
+        pass
             
-    def _bruteWorker( self, url, combinations ):
+    def _brute_worker( self, url, combination ):
         '''
         This is the method that sends the request to the remote server.
         
@@ -123,55 +118,52 @@ class baseBruteforcePlugin(baseAuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Users file to use in bruteforcing'
-        o1 = option('usersFile', self._usersFile, d1, 'string')
-        
-        d2 = 'Passwords file to use in bruteforcing'
-        o2 = option('passwdFile', self._passwdFile, d2, 'string')
-        
-        d3 = 'This indicates if we will use usernames from emails collected by w3af plugins in bruteforce.'
-        o3 = option('useMailUsers', self._useMailUsers, d3, 'boolean')
-        
-        d4 = 'This indicates if we will use usernames from SVN headers collected by w3af plugins in bruteforce.'
-        o4 = option('useSvnUsers', self._useSvnUsers, d4, 'boolean')
-        
-        d5 = 'This indicates if the bruteforce should stop after finding the first correct user and password.'
-        o5 = option('stopOnFirst', self._stopOnFirst, d5, 'boolean')
-        
-        d6 = 'This indicates if the bruteforce should try password equal user in logins.'
-        o6 = option('passEqUser', self._passEqUser, d6, 'boolean')
-        
-        d7 = 'This indicates if the bruteforce should try l337 passwords'
-        o7 = option('useLeetPasswd', self._l337_p4sswd, d7, 'boolean')
-        
-        d8 = 'This indicates if the bruteforcer should use emails collected by w3af plugins as users.'
-        o8 = option('useMails', self._useMails, d8, 'boolean')
-        
-        d9 = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
-        o9 = option('useProfiling', self._useProfiling, d9, 'boolean')
-        
-        d10 = 'This indicates how many passwords from profiling will be used.'
-        o10 = option('profilingNumber', self._profilingNumber, d10, 'integer')
-
-        d11 = 'Combo of username and passord, file to use in bruteforcing'
-        o11 = option('comboFile', self._comboFile, d11, 'string')
-
-        d12 = 'Separator string used in Combo file to split username and password'
-        o12 = option('comboSeparator', self._comboSeparator, d12, 'string')
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o11)
-        ol.add(o12)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o5)
-        ol.add(o6)
-        ol.add(o7)
-        ol.add(o8)
-        ol.add(o9)
-        ol.add(o10)
+        
+        d = 'Users file to use in bruteforcing'
+        o = option('usersFile', self._users_file, d, 'string')
+        ol.add(o)
+        
+        d = 'Passwords file to use in bruteforcing'
+        o = option('passwdFile', self._passwd_file, d, 'string')
+        ol.add(o)
+        
+        d = 'This indicates if we will use usernames from SVN headers collected by w3af plugins in bruteforce.'
+        o = option('useSvnUsers', self._use_SVN_users, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates if the bruteforce should stop after finding the first correct user and password.'
+        o = option('stopOnFirst', self._stop_on_first, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates if the bruteforce should try password equal user in logins.'
+        o = option('passEqUser', self._pass_eq_user, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates if the bruteforce should try l337 passwords'
+        o = option('useLeetPasswd', self._l337_p4sswd, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates if the bruteforcer should use emails collected by w3af plugins as users.'
+        o = option('useEmails', self._useMails, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates if the bruteforce should use password profiling to collect new passwords.'
+        o = option('useProfiling', self._use_profiling, d, 'boolean')
+        ol.add(o)
+        
+        d = 'This indicates how many passwords from profiling will be used.'
+        o = option('profilingNumber', self._profiling_number, d, 'integer')
+        ol.add(o)
+        
+        d = 'Combo of username and passord, file to use in bruteforcing'
+        o = option('comboFile', self._combo_file, d, 'string')
+        ol.add(o)
+        
+        d = 'Separator string used in Combo file to split username and password'
+        o = option('comboSeparator', self._combo_separator, d, 'string')
+        ol.add(o)
+        
         return ol
         
     def setOptions( self, optionsMap ):
@@ -182,18 +174,17 @@ class baseBruteforcePlugin(baseAuditPlugin):
         @parameter optionsMap: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._usersFile = optionsMap['usersFile'].getValue()
-        self._stopOnFirst = optionsMap['stopOnFirst'].getValue()
-        self._passwdFile = optionsMap['passwdFile'].getValue()
-        self._passEqUser = optionsMap['passEqUser'].getValue()
+        self._users_file = optionsMap['usersFile'].getValue()
+        self._stop_on_first = optionsMap['stopOnFirst'].getValue()
+        self._passwd_file = optionsMap['passwdFile'].getValue()
+        self._pass_eq_user = optionsMap['passEqUser'].getValue()
         self._l337_p4sswd = optionsMap['useLeetPasswd'].getValue()
-        self._useMailUsers = optionsMap['useMailUsers'].getValue()
-        self._useSvnUsers = optionsMap['useSvnUsers'].getValue()
-        self._useMails = optionsMap['useMails'].getValue()
-        self._useProfiling = optionsMap['useProfiling'].getValue()
-        self._profilingNumber = optionsMap['profilingNumber'].getValue()
-        self._comboFile = optionsMap['comboFile'].getValue()
-        self._comboSeparator = optionsMap['comboSeparator'].getValue()
+        self._use_emails = optionsMap['useEmails'].getValue()
+        self._use_SVN_users = optionsMap['useSvnUsers'].getValue()
+        self._use_profiling = optionsMap['useProfiling'].getValue()
+        self._profiling_number = optionsMap['profilingNumber'].getValue()
+        self._combo_file = optionsMap['comboFile'].getValue()
+        self._combo_separator = optionsMap['comboSeparator'].getValue()
         
 
     def getPluginDeps( self ):
