@@ -50,6 +50,11 @@ class TestCookieHandler(unittest.TestCase):
         no_cookie_req = HTTPRequest(self.URL_CHECK_COOKIE, cookies=False)
         no_cookie_res = opener.open(no_cookie_req).read()
         self.assertTrue('Cookie was NOT sent.' in no_cookie_res)
+
+        # And now it will send it because we're setting cookie to True
+        with_cookie_req = HTTPRequest(self.URL_CHECK_COOKIE, cookies=True)
+        with_cookie_res = opener.open(with_cookie_req).read()
+        self.assertTrue('Cookie was sent.' in with_cookie_res)
         
     def test_xurllib(self):
         create_temp_dir()
@@ -61,4 +66,7 @@ class TestCookieHandler(unittest.TestCase):
         
         resp = uri_opener.GET(self.URL_CHECK_COOKIE, cookies=False)
         self.assertTrue('Cookie was NOT sent.' in resp)
+
+        resp = uri_opener.GET(self.URL_CHECK_COOKIE, cookies=True)
+        self.assertTrue('Cookie was sent.' in resp)
     
