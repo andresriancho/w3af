@@ -21,22 +21,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import cgi
+import thread
+import urllib
+
 import core.data.kb.config as cf
+import core.controllers.outputManager as om
+
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import createRandAlNum
 
-import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.threads.threadManager import thread_manager
-
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
 from core.controllers.misc.decorators import retry
 
-
-import urllib
-import thread
-import cgi
 
 IS_EQUAL_RATIO = 0.90
 
@@ -66,9 +66,9 @@ class fingerprint_404:
         self._fingerprinted_paths = scalable_bloomfilter()
         self._directory_uses_404_codes = scalable_bloomfilter()
         
-        # It is OK to store 500 here, I'm only storing int as the key, and bool
-        # as the value.
-        self.is_404_LRU = LRU(500)
+        # It is OK to store 200 here, I'm only storing path+filename as the key,
+        # and bool as the value.
+        self.is_404_LRU = LRU(200)
         
         if test_db is not None:
             self._test_db = iter(test_db)
@@ -114,13 +114,12 @@ class fingerprint_404:
             rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
             url404 = domain_path.urlJoin( rand_alnum_file )
             args_list.append(url404)
-        
+
         thread_manager.threadpool.map( self._send_404, args_list )
-        
-            
+
         #
         #   I have the bodies in self._response_body_list , but maybe they 
-        #    all look the same, so I'll filter the ones that look alike.
+        #   all look the same, so I'll filter the ones that look alike.
         #
         result = [ self._response_body_list[0], ]
         for i in self._response_body_list:
@@ -239,8 +238,8 @@ class fingerprint_404:
         #   Before actually working, I'll check if this response is in the LRU, if it is I just return
         #   the value stored there.
         #
-        if http_response.id in self.is_404_LRU:
-            return self.is_404_LRU[ http_response.id ]
+        if http_response.getURL().getPath() in self.is_404_LRU:
+            return self.is_404_LRU[ http_response.getURL().getPath() ]
         
         with self._lock:
             if self.need_analysis():
@@ -299,7 +298,7 @@ class fingerprint_404:
         Convenience function so that I don't forget to update the LRU
         @return: True
         '''
-        self.is_404_LRU[ http_response.id ] = True
+        self.is_404_LRU[ http_response.getURL().getPath() ] = True
         return True
     
     def _fingerprinted_as_200(self, http_response):
@@ -307,7 +306,7 @@ class fingerprint_404:
         Convenience function so that I don't forget to update the LRU
         @return: False
         '''
-        self.is_404_LRU[ http_response.id ] = False
+        self.is_404_LRU[ http_response.getURL().getPath() ] = False
         return False
 
     def _single_404_check(self, http_response, html_body):
