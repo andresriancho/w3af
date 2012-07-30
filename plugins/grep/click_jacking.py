@@ -81,7 +81,7 @@ class click_jacking(baseGrepPlugin):
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected, but x, y are not.
         if self._total_count > self._vuln_count:
-            msg = 'Some URLs has no protection (X-Frame-Options header) '
+            msg = 'Some URLs have no protection (X-Frame-Options header) '
             msg += 'against ClickJacking attack. Among them:\n '
             msg += ' '.join([str(url) + '\n' for url in self._vulns])
             v.setDesc(msg)
