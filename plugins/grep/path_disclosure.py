@@ -88,11 +88,6 @@ class path_disclosure(baseGrepPlugin):
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
         @return: None, the result is saved in the kb.
-        
-        >>> res = httpResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, u, u)
-        >>> pd.grep( req, res )
-        >>> kb.kb.getData('path_disclosure', 'path_disclosure')[0]['path']
-        u'/etc/passwd'
         '''
         if response.is_text_or_html():
             
