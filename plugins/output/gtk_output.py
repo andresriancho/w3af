@@ -62,7 +62,7 @@ class gtk_output(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for informational messages.
         ''' 
-        m = message( 'information', self._cleanString(msgString), time.time(), newLine )
+        m = message( 'information', self._clean_string(msgString), time.time(), newLine )
         self._addToQueue( m )
 
     def error(self, msgString , newLine = True ):
@@ -70,7 +70,7 @@ class gtk_output(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action for error messages.
         '''     
-        m = message( 'error', self._cleanString(msgString), time.time(), newLine )
+        m = message( 'error', self._clean_string(msgString), time.time(), newLine )
         self._addToQueue( m )
 
     def vulnerability(self, msgString , newLine=True, severity=severity.MEDIUM ):
@@ -78,7 +78,7 @@ class gtk_output(baseOutputPlugin):
         This method is called from the output object. The output object was called from a plugin
         or from the framework. This method should take an action when a vulnerability is found.
         '''     
-        m = message( 'vulnerability', self._cleanString(msgString), time.time(), newLine )
+        m = message( 'vulnerability', self._clean_string(msgString), time.time(), newLine )
         m.setSeverity( severity )
         self._addToQueue( m )
         
@@ -86,7 +86,7 @@ class gtk_output(baseOutputPlugin):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        m = message( 'console', self._cleanString(msgString), time.time(), newLine )
+        m = message( 'console', self._clean_string(msgString), time.time(), newLine )
         self._addToQueue( m )
     
     def _addToQueue( self, m ):

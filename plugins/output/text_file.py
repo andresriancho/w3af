@@ -97,7 +97,7 @@ class text_file(baseOutputPlugin):
         @parameter msg: The text to write.
         '''
         try:
-            self._file.write( self._cleanString(msg) )
+            self._file.write( self._clean_string(msg) )
         except Exception, e:
             print 'An exception was raised while trying to write to the output file:', e
             sys.exit(1)
@@ -106,7 +106,8 @@ class text_file(baseOutputPlugin):
         '''
         Write to the HTTP log file.
         
-        @parameter msg: The text to write (a string representation of the HTTP req and res)
+        @parameter msg: The text to write (a string representation of the HTTP
+                        request and response)
         '''
         try:
             self._http.write(msg)
@@ -144,30 +145,34 @@ class text_file(baseOutputPlugin):
     
     def debug(self, message, newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for debug messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for debug messages.
         '''
         if self.verbose:
             self.write( message, 'debug', newLine)
             
     def information(self, message , newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for informational messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for informational messages.
         '''
         self.write( message, 'information', newLine)
 
     def error(self, message , newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for error messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for error messages.
         '''
         self.write( message, 'error', newLine)     
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action when a vulnerability is found.
+        This method is called from the output object. The output object was 
+        called from a plugin or from the framework. This method should take an
+        action when a vulnerability is found.
         '''
         self.write( message, 'vulnerability', newLine)
         
@@ -179,12 +184,12 @@ class text_file(baseOutputPlugin):
         
     def log_enabled_plugins(self,  plugins_dict,  options_dict):
         '''
-        This method is called from the output manager object. This method should take an action
-        for the enabled plugins and their configuration. Usually, write the info to a file or print
-        it somewhere.
+        This method is called from the output manager object. This method should
+        take an action for the enabled plugins and their configuration. Usually,
+        write the info to a file or print it somewhere.
         
-        @parameter pluginsDict: A dict with all the plugin types and the enabled plugins for that
-                                               type of plugin.
+        @parameter pluginsDict: A dict with all the plugin types and the enabled
+                                plugins for that type of plugin.
         @parameter optionsDict: A dict with the options for every plugin.
         '''
         now = time.localtime(time.time())
@@ -194,8 +199,9 @@ class text_file(baseOutputPlugin):
         to_print = ''
         
         for plugin_type in plugins_dict:
-            to_print += self._create_plugin_info( plugin_type, plugins_dict[plugin_type], 
-                                                                  options_dict[plugin_type])
+            to_print += self._create_plugin_info( plugin_type, 
+                                                  plugins_dict[plugin_type], 
+                                                  options_dict[plugin_type])
         
         # And now the target information
         str_targets = ', '.join( [u.url_string for u in cf.cf.getData('targets')] )
@@ -206,37 +212,6 @@ class text_file(baseOutputPlugin):
         to_print = to_print.replace('\n', '\n' + timestamp ) + '\n'
         
         self._write_to_file( timestamp + to_print )
-    
-    def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
-        '''
-        @return: A string with the information about enabled plugins and their options.
-        
-        @parameter plugin_type: audit, discovery, etc.
-        @parameter plugins_list: A list of the names of the plugins of plugin_type that are enabled.
-        @parameter plugins_options: The options for the plugins
-        '''
-        response = ''
-        
-        # Only work if something is enabled
-        if plugins_list:
-            response = 'plugins\n'
-            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
-            
-            for plugin_name in plugins_list:
-                if plugins_options.has_key(plugin_name):
-                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
-                    
-                    for plugin_option in plugins_options[plugin_name]:
-                        name = str(plugin_option.getName())
-                        value = str(plugin_option.getValue())
-                        response += '        set ' + name + ' ' + value + '\n'
-                    
-                    response += '        back\n'
-            
-            response += '    back\n'
-            
-        # The response
-        return response
     
     def _flush(self):
         '''
@@ -254,9 +229,10 @@ class text_file(baseOutputPlugin):
             
     def setOptions( self, OptionList ):
         '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptions()
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed 
+        using the XML Options that was retrieved from the plugin using
+        getOptions()
         
         This method MUST be implemented on every plugin. 
         
@@ -272,19 +248,20 @@ class text_file(baseOutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Enable if verbose output is needed'
-        o1 = option('verbose', self.verbose, d1, 'boolean')
-        
-        d2 = 'File name where this plugin will write to'
-        o2 = option('fileName', self._file_name, d2, 'string')
-        
-        d3 = 'File name where this plugin will write HTTP requests and responses'
-        o3 = option('httpFileName', self._http_file_name, d3, 'string')
-        
         ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
+        
+        d = 'Enable if verbose output is needed'
+        o = option('verbose', self.verbose, d, 'boolean')
+        ol.add(o)
+        
+        d = 'File name where this plugin will write to'
+        o = option('fileName', self._file_name, d, 'string')
+        ol.add(o)
+        
+        d = 'File name where this plugin will write HTTP requests and responses'
+        o = option('httpFileName', self._http_file_name, d, 'string')
+        ol.add(o)
+        
         return ol
 
     def logHttp(self, request, response):

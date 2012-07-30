@@ -124,13 +124,13 @@ class baseOutputPlugin(basePlugin):
         '''
         return []
     
-    def _cleanString( self, stringToClean ):
+    def _clean_string( self, string_to_clean ):
         '''
-        @parameter stringToClean: A string that should be cleaned before using it in a message object.
+        @parameter string_to_clean: A string that should be cleaned before using it in a message object.
         '''
         for char, replace in [('\0','\\0'),('\t','\\t')]: #('\n','\\n'),('\r','\\r'),
-            stringToClean = stringToClean.replace(char,replace)
-        return stringToClean
+            string_to_clean = string_to_clean.replace(char,replace)
+        return string_to_clean
 
     def getCaller( self, which_stack_item=4 ):
         '''
@@ -173,3 +173,35 @@ class baseOutputPlugin(basePlugin):
         except:
             return 'unknown-caller'
 
+    def _create_plugin_info(self, plugin_type, plugins_list, plugins_options):
+        '''
+        @return: A string with the information about enabled plugins and their
+                 options.
+        
+        @parameter plugin_type: audit, discovery, etc.
+        @parameter plugins_list: A list of the names of the plugins of 
+                                 plugin_type that are enabled.
+        @parameter plugins_options: The options for the plugins
+        '''
+        response = ''
+        
+        # Only work if something is enabled
+        if plugins_list:
+            response = 'plugins\n'
+            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
+            
+            for plugin_name in plugins_list:
+                if plugins_options.has_key(plugin_name):
+                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
+                    
+                    for plugin_option in plugins_options[plugin_name]:
+                        name = str(plugin_option.getName())
+                        value = str(plugin_option.getValue())
+                        response += '        set ' + name + ' ' + value + '\n'
+                    
+                    response += '        back\n'
+            
+            response += '    back\n'
+            
+        # The response
+        return response
