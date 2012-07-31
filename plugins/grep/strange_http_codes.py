@@ -32,10 +32,10 @@ class strange_http_codes(baseGrepPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
-    COMMON_HTTP_CODES = ( 200,
-                          301, 302, 303, 304,
-                          401, 403, 404,
-                          500, 501 )
+    COMMON_HTTP_CODES = set([ 200,
+                              301, 302, 303, 304,
+                              401, 403, 404,
+                              500, 501] )
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
