@@ -183,9 +183,7 @@ class httpResponse(object):
             # Calculate the clear text body
             dom = self.getDOM()
             if dom is not None:
-                ff = lambda ele: '\n' if (ele.tag == 'br') else (ele.text or '')
-                clear_text_body = self._clear_text_body = \
-                                            ''.join(map(ff, dom.getiterator()))
+                clear_text_body = self._clear_text_body = ''.join(dom.itertext())
         
         return clear_text_body
 

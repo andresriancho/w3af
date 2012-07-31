@@ -166,4 +166,10 @@ class TestHTTPResponse(unittest.TestCase):
         domid = id(resp.getDOM())
         self.assertEquals(domid, id(resp.getDOM()))
     
+    def test_get_clear_text_body(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        clear_text = 'header ABC-DEF-XYZ footer'
+        headers = {'Content-Type': 'text/html'}
+        resp = self.create_resp(headers, html)
+        self.assertEquals(clear_text, resp.getClearTextBody())        
     
