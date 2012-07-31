@@ -69,8 +69,8 @@ class un_ssl(baseAuditPlugin):
             secure_fr.setURL( secure_url )
             
             try:
-                insecure_response = self._uri_opener.send_mutant(insecure_fr)
-                secure_response = self._uri_opener.send_mutant(secure_fr)
+                insecure_response = self._uri_opener.send_mutant(insecure_fr, follow_redir=False)
+                secure_response = self._uri_opener.send_mutant(secure_fr, follow_redir=False)
             except:
                 # No vulnerability to report since one of these threw an error
                 # (because there is nothing listening on that port).
