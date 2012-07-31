@@ -23,21 +23,21 @@ import socket
 import ssl
 import re
 import os
+
 from time import gmtime
 from datetime import date
 from pprint import pformat
 
 import core.controllers.outputManager as om
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class ssl_certificate(baseAuditPlugin):
@@ -268,12 +268,12 @@ def match_hostname(cert, hostname):
                         return
                     dnsnames.append(value)
     if len(dnsnames) > 1:
-        raise CertificateError("hostname %r "
+        raise CertificateError("hostname %s "
             "doesn't match either of %s"
-            % (hostname, ', '.join(map(repr, dnsnames))))
+            % (hostname, ', '.join(map(str, dnsnames))))
     elif len(dnsnames) == 1:
-        raise CertificateError("hostname %r "
-            "doesn't match %r"
+        raise CertificateError("hostname %s "
+            "doesn't match %s"
             % (hostname, dnsnames[0]))
     else:
         raise CertificateError("no appropriate commonName or "
