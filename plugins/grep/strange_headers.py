@@ -21,16 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
@@ -40,10 +34,48 @@ class strange_headers(baseGrepPlugin):
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
+    
+    # Remember that this headers are only the ones SENT BY THE SERVER TO THE
+    # CLIENT. Headers must be uppercase in order to compare them
+    COMMON_HEADERS = set([
+                "ACCEPT-RANGES",
+                "AGE",
+                "ALLOW",
+                "CONNECTION",
+                "CONTENT-ENCODING",        
+                "CONTENT-LENGTH",
+                "CONTENT-TYPE",
+                "CONTENT-LANGUAGE",
+                "CONTENT-LOCATION",
+                "CACHE-CONTROL",
+                "DATE",
+                "EXPIRES",
+                "ETAG",
+                "KEEP-ALIVE",
+                "LAST-MODIFIED",
+                "LOCATION",
+                "PUBLIC",
+                "PRAGMA",
+                "PROXY-CONNECTION",
+                "SET-COOKIE",    
+                "SERVER",
+                "STRICT-TRANSPORT-SECURITY",        
+                "TRANSFER-ENCODING",
+                "VIA",        
+                "VARY",
+                "WWW-AUTHENTICATE",
+                "X-FRAME-OPTIONS", 
+                "X-CONTENT-TYPE-OPTIONS",         
+                "X-POWERED-BY",
+                "X-ASPNET-VERSION",
+                "X-CACHE",
+                "X-UA-COMPATIBLE",
+                "X-PAD",
+                "X-XSS-Protection"]
+                      )
+                      
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._common_headers = self._getCommonHeaders()
 
     def grep(self, request, response):
         '''
@@ -56,22 +88,18 @@ class strange_headers(baseGrepPlugin):
 
         # Check if the header names are common or not
         for header_name in response.getHeaders().keys():
-            if header_name.upper() not in self._common_headers:
+            if header_name.upper() not in self.COMMON_HEADERS:
                 
-                # I check if the kb already has a info object with this code:
+                # Check if the kb already has a info object with this code:
                 strange_header_infos = kb.kb.getData('strange_headers', 'strange_headers')
                 
-                corresponding_info = None
                 for info_obj in strange_header_infos:
                     if info_obj['header_name'] == header_name:
-                        corresponding_info = info_obj
+                        # Work with the "old" info object:
+                        id_list = info_obj.getId()
+                        id_list.append( response.id )
+                        info_obj.setId( id_list )
                         break
-                
-                if corresponding_info:
-                    # Work with the "old" info object:
-                    id_list = corresponding_info.getId()
-                    id_list.append( response.id )
-                    corresponding_info.setId( id_list )
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
@@ -114,24 +142,14 @@ class strange_headers(baseGrepPlugin):
             i.addToHighlight( 'content-location' )
             kb.kb.append( self , 'anomaly' , i )
 
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         headers = kb.kb.getData( 'strange_headers', 'strange_headers' )
         # This is how I saved the data:
-        #i['header_name'] = header_name
-        #i['header_value'] = response.getHeaders()[header_name]
+        #    i['header_name'] = header_name
+        #    i['header_value'] = response.getHeaders()[header_name]
         
         # Group correctly
         tmp = []
@@ -153,59 +171,12 @@ class strange_headers(baseGrepPlugin):
             om.out.information(msg % k)
             for i in resDict[k]:
                 om.out.information('- ' + i )
-        
-    def _getCommonHeaders(self):
-        headers = []
-        ### TODO: verify if I need to add more values here
-        # Remember that this headers are only the ones SENT BY THE SERVER TO THE CLIENT
-        # Headers must be uppercase in order to compare them
-        headers.append("ACCEPT-RANGES")
-        headers.append("AGE")
-        headers.append("ALLOW")
-        headers.append("CONNECTION")
-        headers.append("CONTENT-ENCODING")        
-        headers.append("CONTENT-LENGTH")
-        headers.append("CONTENT-TYPE")
-        headers.append("CONTENT-LANGUAGE")
-        headers.append("CONTENT-LOCATION")
-        headers.append("CACHE-CONTROL")
-        headers.append("DATE")
-        headers.append("EXPIRES")
-        headers.append("ETAG")
-        headers.append("KEEP-ALIVE")
-        headers.append("LAST-MODIFIED")
-        headers.append("LOCATION")
-        headers.append("PUBLIC")
-        headers.append("PRAGMA")
-        headers.append("PROXY-CONNECTION")
-        headers.append("SET-COOKIE")    
-        headers.append("SERVER")
-        headers.append("STRICT-TRANSPORT-SECURITY")        
-        headers.append("TRANSFER-ENCODING")
-        headers.append("VIA")        
-        headers.append("VARY")
-        headers.append("WWW-AUTHENTICATE")
-        headers.append("X-FRAME-OPTIONS") 
-        headers.append("X-CONTENT-TYPE-OPTIONS")         
-        headers.append("X-POWERED-BY")
-        headers.append("X-ASPNET-VERSION")
-        headers.append("X-CACHE")
-        headers.append("X-UA-COMPATIBLE")
-        headers.append("X-PAD")
-        return headers
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
+            
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps all headers for non-common headers. This could be usefull to identify special modules
-        and features added to the server.
+        This plugin greps all headers for non-common headers. This could be useful
+        to identify special modules and features added to the server.
         '''
