@@ -57,13 +57,29 @@ class test_ssn(unittest.TestCase):
         self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 1 )
     
     def test_ssn_with_html(self):
-        self.plugin._already_inspected = set()
-        body = 'header <b>771</b>-<b>12</b>-<b>9876</b> footer'
+        body = 'header <b>771</b>-<b>12</b>-<b>9878</b> footer'
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 1 )
     
+    def test_ssn_with_complex_html(self):
+        '''
+        Test for false positive "...discloses a US Social Security Number: "12-56-1011"..."
+        '''
+        body = '''<select name="servers">
+                    <option value="0" selected="selected">0</option>
+                    <option value="1">1</option>
+                    <option value="2-5">2-5</option>
+                    <option value="6-10">6-10</option>
+                    <option value="11-19">11-19</option>
+                    <option value="20+">20+</option>
+                </select>'''
+        headers = {'content-type': 'text/html'}
+        response = httpResponse(200, body , headers, self.url, self.url)
+        self.plugin.grep(self.request, response)
+        self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 0 )
+                
     def test_ssn_together(self):
         body = 'header 771129876 footer'
         headers = {'content-type': 'text/html'}

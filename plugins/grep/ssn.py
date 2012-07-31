@@ -38,8 +38,8 @@ class ssn(baseGrepPlugin):
 
     @author: dliz <dliz !at! users.sourceforge.net>
     '''
-    # match numbers of the form: 'nnn-nn-nnnn', 'nnnnnnnnn', 'nnn nn nnnn'
-    regex = '(?:^|[^\d])(\d{3})(?:[\- ]?)(\d{2})(?:[\- ]?)(\d{4})(?:[^\d]|$)'
+    # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
+    regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012])) ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
     ssn_regex = re.compile(regex)
     
 
@@ -47,7 +47,6 @@ class ssn(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
         
         self._already_inspected = scalable_bloomfilter()
-        self._ssnResponses = []
                 
     def grep(self, request, response):
         '''
@@ -58,12 +57,14 @@ class ssn(baseGrepPlugin):
         @return: None.
         '''
         uri = response.getURI()
-        if response.is_text_or_html() and response.getCode() == 200 and \
-            response.getClearTextBody() is not None and \
-            uri not in self._already_inspected:
+        
+        if response.is_text_or_html() and response.getCode() == 200 \
+        and response.getClearTextBody() is not None \
+        and uri not in self._already_inspected:
             
             # Don't repeat URLs
             self._already_inspected.add(uri)
+            
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
@@ -80,7 +81,8 @@ class ssn(baseGrepPlugin):
      
     def _find_SSN(self, body_without_tags):
         '''
-        @return: SSN as found in the text and SSN in its regular format if the body had an SSN
+        @return: SSN as found in the text and SSN in its regular format if the
+                 body had an SSN
         '''
         validated_ssn = None
         ssn = None
@@ -108,9 +110,12 @@ class ssn(baseGrepPlugin):
 
         Source of information: wikipedia and socialsecurity.gov
         '''
-        area_number = int(potential_ssn.group(1))
-        group_number = int(potential_ssn.group(2))
-        serial_number = int(potential_ssn.group(3))
+        try:
+            area_number = int(potential_ssn.group(2))
+            group_number = int(potential_ssn.group(4))
+            serial_number = int(potential_ssn.group(5))
+        except:
+            return False
 
         if not group_number:
             return False
@@ -153,6 +158,7 @@ class ssn(baseGrepPlugin):
         
         if isSSN:
             return '%s-%s-%s' % (area_number, group_number, serial_number)
+        
         return None
 
     def end(self):
@@ -167,6 +173,6 @@ class ssn(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugins scans every response page to find the strings that are likely to be 
-        the US social security numbers. 
+        This plugins scans every response page to find the strings that are likely
+        to be the US social security numbers. 
         '''
