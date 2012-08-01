@@ -19,9 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import Queue
 import time
+import Queue
 
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
@@ -41,52 +40,56 @@ class gtk_output(baseOutputPlugin):
         if not kb.kb.getData('gtk_output', 'queue') == []:
             self.queue = kb.kb.getData('gtk_output', 'queue')
         else:
-            self.queue = Queue.Queue()
+            self.queue = Queue.Queue(500)
             kb.kb.save('gtk_output', 'queue' , self.queue)
 
-    def debug(self, msgString, newLine = True ):
+    def debug(self, msg_string, newLine=True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for debug messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for debug messages.
         '''
         #
         #   I don't really want to add debug messages to the queue, as they are only used
         #   in the time graph that's displayed under the log. In order to save some memory
         #   I'm only creating the object, but without any msg.
         #
-        m = message( 'debug', '', time.time(), newLine )
+        m = message( 'debug', '', newLine )
         self._addToQueue( m )
     
-    def information(self, msgString , newLine = True ):
+    def information(self, msg_string , newLine=True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for informational messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for informational messages.
         ''' 
-        m = message( 'information', self._clean_string(msgString), time.time(), newLine )
+        m = message( 'information', self._clean_string(msg_string), newLine )
         self._addToQueue( m )
 
-    def error(self, msgString , newLine = True ):
+    def error(self, msg_string , newLine=True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for error messages.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action for error messages.
         '''     
-        m = message( 'error', self._clean_string(msgString), time.time(), newLine )
+        m = message( 'error', self._clean_string(msg_string), newLine )
         self._addToQueue( m )
 
-    def vulnerability(self, msgString , newLine=True, severity=severity.MEDIUM ):
+    def vulnerability(self, msg_string , newLine=True, severity=severity.MEDIUM ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action when a vulnerability is found.
+        This method is called from the output object. The output object was
+        called from a plugin or from the framework. This method should take an
+        action when a vulnerability is found.
         '''     
-        m = message( 'vulnerability', self._clean_string(msgString), time.time(), newLine )
+        m = message( 'vulnerability', self._clean_string(msg_string), newLine )
         m.setSeverity( severity )
         self._addToQueue( m )
         
-    def console( self, msgString, newLine = True ):
+    def console( self, msg_string, newLine=True ):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        m = message( 'console', self._clean_string(msgString), time.time(), newLine )
+        m = message( 'console', self._clean_string(msg_string), newLine )
         self._addToQueue( m )
     
     def _addToQueue( self, m ):
@@ -107,17 +110,16 @@ class gtk_output(baseOutputPlugin):
 
 
 class message:
-    def __init__( self, msg_type, msg , msg_time, newLine=True ):
+    def __init__( self, msg_type, msg, newLine=True ):
         '''
         @parameter msg_type: console, information, vulnerability, etc
         @parameter msg: The message itself
-        @parameter msg_time: The time when the message was produced
         @parameter newLine: Should I print a newline ? True/False
         '''
         self._type = msg_type
         self._msg = msg
         self._newLine = newLine
-        self._time = msg_time
+        self._time = time.time()
         self._severity = None
     
     def getSeverity( self ):
