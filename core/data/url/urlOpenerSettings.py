@@ -57,12 +57,14 @@ class urlOpenerSettings( configurable ):
         # Set the openers to None
         self._basicAuthHandler = None
         self._proxyHandler = None
-        self._cookieHandler = None
         self._httpsHandler = None
         self._mangleHandler = None
         self._urlParameterHandler = None
         self._ntlmAuthHandler = None
         # Keep alive handlers are created on buildOpeners()
+        
+        cj = cookielib.MozillaCookieJar()
+        self._cookieHandler = CookieHandler(cj)
         
         # Openers
         self._nonCacheOpener = None
@@ -174,10 +176,7 @@ class urlOpenerSettings( configurable ):
         '''
         @return: The cookies that were collected during this scan.
         '''
-        if self._cookieHandler is None:
-            return set()
-        else:
-            return self._cookieHandler.cookiejar
+        return self._cookieHandler.cookiejar
     
     def setTimeout( self, timeout ):
         om.out.debug( 'Called SetTimeout(' + str(timeout)  + ')' )
@@ -308,10 +307,6 @@ class urlOpenerSettings( configurable ):
     def buildOpeners(self):
         om.out.debug('Called buildOpeners')
         
-        if self._cookieHandler is None and not cfg.getData('ignoreSessCookies'):
-            cj = cookielib.MozillaCookieJar()
-            self._cookieHandler = CookieHandler(cj)
-        
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
         self._kAHTTPS = kAHTTPS(self.getProxy())
@@ -329,6 +324,9 @@ class urlOpenerSettings( configurable ):
                         self._cache_hdler]:
             if handler:
                 handlers.append(handler)
+        
+        if cfg.getData('ignoreSessCookies'):
+            handlers.remove(self._cookieHandler)
         
         self._nonCacheOpener = urllib2.build_opener(*handlers)
         
