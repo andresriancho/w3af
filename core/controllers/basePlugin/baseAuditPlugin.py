@@ -28,8 +28,8 @@ from core.data.request.variant_identification import are_variants
 
 class baseAuditPlugin(basePlugin):
     '''
-    This is the base class for audit plugins, all audit plugins should inherit from it 
-    and implement the following methods :
+    This is the base class for audit plugins, all audit plugins should inherit
+    from it and implement the following methods :
         1. audit(...)
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -57,10 +57,6 @@ class baseAuditPlugin(basePlugin):
         before_vuln_dict = kb.kb.getData( self )
         
         self.audit( fuzzable_request_copy )
-        
-        # The join is here just in case, because the audit method of each plugin
-        # should call it
-        self._tm.join( self )
         
         after_vuln_dict = kb.kb.getData( self )
         
