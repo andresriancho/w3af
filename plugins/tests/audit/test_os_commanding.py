@@ -47,8 +47,7 @@ class TestOSCommanding(PluginTest):
         # Assert the general results
         vulns = self.kb.getData('os_commanding', 'os_commanding')
         self.assertEquals(4, len(vulns))
-        self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
-                          True)
+        self.assertTrue(all(["OS commanding vulnerability" == v.getName() for v in vulns ]))
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
