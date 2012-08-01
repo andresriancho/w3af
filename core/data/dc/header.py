@@ -25,7 +25,7 @@ from core.data.dc.dataContainer import DataContainer
 
 class Header(DataContainer):
     '''
-    This class represents a Request Header.
+    This class represents the set of HTTP request headers. 
     
     @author: Javier Andalia (jandalia AT gmail DOT com)
     '''
