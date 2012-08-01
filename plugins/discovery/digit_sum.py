@@ -24,10 +24,7 @@ import re
 
 from itertools import izip, repeat
 
-import core.controllers.outputManager as om
-
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
-from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
@@ -63,8 +60,7 @@ class digit_sum(baseDiscoveryPlugin):
         url = fuzzable_request.getURL()
         headers = {'Referer': url.url_string }
                 
-        om.out.debug('digit_sum is testing ' + fuzzable_request.getURL() )
-        original_response = self._uri_opener.GET( fuzzable_request.getURL(),
+        original_response = self._uri_opener.GET( fuzzable_request.getURI(),
                                                   cache=True, headers=headers )
         
         if original_response.is_text_or_html() or self._fuzz_images:
@@ -80,7 +76,7 @@ class digit_sum(baseDiscoveryPlugin):
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
             self._already_visited.add( fuzzable_request.getURI() )
-                
+
         return self._fuzzable_requests
 
     def _do_request(self, fuzzable_request, original_resp, headers):
@@ -91,20 +87,46 @@ class digit_sum(baseDiscoveryPlugin):
         @param original_resp: The response for the original request that was
                               sent.
         '''
+        
         response = self._uri_opener.GET(fuzzable_request.getURI(),
                                         cache=True,
                                         headers=headers)
+
+        add = False
+
         if not is_404( response ):
-            # We have two different cases:
+            # We have different cases:
             #    - If the URLs are different, then there is nothing to think
             #      about, we simply found something new!
-            #
+            if response.getURL() != original_resp.getURL():
+                add = True
+            
+            #    - If the content type changed, then there is no doubt that
+            #      we've found something new!
+            elif response.doc_type != original_resp.doc_type:
+                add = True
+            
             #    - If we changed the query string parameters, we have to check 
             #      the content
-            if response.getURL() != original_resp.getURL() or \
-            relative_distance_lt(response.getBody(),
-                                 original_resp.getBody(), 0.7):
-                self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+            elif relative_distance_lt(response.getClearTextBody(), 
+                                      original_resp.getClearTextBody(), 
+                                      0.8):
+                # In this case what might happen is that the number we changed
+                # is "out of range" and when requesting that it will trigger an
+                # error in the web application, or show us a non-interesting
+                # response that holds no content.
+                #
+                # We choose to return these to the core because they might help
+                # with the code coverage efforts. Think about something like:
+                #     foo.aspx?id=OUT_OF_RANGE&foo=inject_here
+                # vs.
+                #     foo.aspx?id=IN_RANGE&foo=inject_here
+                #
+                # This relates to the EXPECTED_URLS in test_digit_sum.py
+                add = True
+                
+        if add:
+            self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
     
     def _mangle_digits(self, fuzzable_request):
         '''
@@ -134,26 +156,26 @@ class digit_sum(baseDiscoveryPlugin):
                     
                     combinations = self._do_combinations( fuzzable_request.getDc()
                                                           [ parameter ][element_index] )
-                    for modified_value in fuzzable_request:
+                    for modified_value in combinations:
+
                         fr_copy = fuzzable_request.copy()
                         new_dc = fr_copy.getDc()
                         new_dc[ parameter ][ element_index ] = modified_value
                         fr_copy.setDc( new_dc )
+                        
                         if fr_copy.getURI() not in self._already_visited:
                             self._already_visited.add( fr_copy.getURI() )
-                            
                             yield fr_copy
         
     def _do_combinations( self, a_string ):
         '''
-        Example:
-            - input: 'abc123'
-            - output: ['abc122','abc124']
-        
-        Example:
-            - input: 'abc123def01'
-            - output: ['abc122def01','abc124def01','abc123def00','abc123def02']
-        
+        >>> ds = digit_sum()
+        >>> ds._do_combinations( 'abc123' )
+        ['abc124', 'abc122']
+
+        >>> ds._do_combinations( 'abc123def56' )
+        ['abc124def56', 'abc122def56', 'abc123def57', 'abc123def55']
+       
         '''
         res = []
         splitted = self._find_digits( a_string )
@@ -164,6 +186,8 @@ class digit_sum(baseDiscoveryPlugin):
                     res.append( ''.join(splitted) )
                     splitted[ i ] = str( int(splitted[ i ]) - 2 )
                     res.append( ''.join(splitted) )
+                    
+                    # restore the initial value for next loop
                     splitted[ i ] = str( int(splitted[ i ]) + 1 )
                     
         return res
@@ -171,17 +195,16 @@ class digit_sum(baseDiscoveryPlugin):
     def _find_digits( self, a_string ):
         '''
         Finds digits in a string and returns a list with string sections.
-        For example:
-            - input: 'foob45'
-            - output: ['foo', '45']
-            
-        Another example:
-            - input: 'f001bar112'
-            - output: ['f', '00', 'bar', '112']
         
+        >>> ds = digit_sum()
+        >>> ds._find_digits('foo45')
+        ['foo', '45']
+        
+        >>> ds._find_digits('f001bar112')
+        ['f', '001', 'bar', '112']
+                
         @return: A list of strings.
         '''
-        
         # regexes are soooooooooooooo cool !
         return [ x for x in re.split( r'(\d+)', a_string ) if x != '' ]
         

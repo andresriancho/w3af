@@ -20,13 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from ..helper import PluginTest, PluginConfig
-from nose.plugins.skip import Skip, SkipTest
 
 
 class TestDigitSum(PluginTest):
     
-    qs_url = 'http://moth/w3af/discovery/digit_sum/index1.php?id=22'
-    fname_url = 'http://moth/w3af/discovery/digit_sum/index-3-1.html'
+    digit_sum_url = 'http://moth/w3af/discovery/digit_sum/'
     
     _run_config = {
             'target': None,
@@ -34,26 +32,27 @@ class TestDigitSum(PluginTest):
         }
     
     def test_found_fname(self):
-        self._scan(self.fname_url, self._run_config['plugins'])
+        self._scan(self.digit_sum_url + 'index-3-1.html', self._run_config['plugins'])
         urls = self.kb.getData('urls', 'url_objects')
         
-        EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html', '')        
+        EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html')        
         
         self.assertEquals(
                 set(str(u) for u in urls),
-                set((self.fname_url + end) for end in EXPECTED_URLS),
-                urls
+                set((self.digit_sum_url + end) for end in EXPECTED_URLS)
                 )
     
     def test_found_qs(self):
-        self._scan(self.fname_url, self._run_config['plugins'])
-        urls = self.kb.getData('urls', 'url_objects')
+        self._scan(self.digit_sum_url + 'index1.php?id=22', self._run_config['plugins'])
+        frs = self.kb.getData('urls', 'fuzzable_requests')
         
-        EXPECTED_URLS = ('index1.php?id=22', 'index1.php?id=21', '')        
-        
+        EXPECTED_URLS = ('index1.php?id=22', 'index1.php?id=21',
+                         # These last two look very uninteresting, but please take
+                         # a look at the comment in digit_sum._do_request()
+                         'index1.php?id=23', 'index1.php?id=20')
+
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.qs_url + end) for end in EXPECTED_URLS),
-                urls
+                set(str(fr.getURI()) for fr in frs),
+                set((self.digit_sum_url + end) for end in EXPECTED_URLS)
                 )
-        
+    
