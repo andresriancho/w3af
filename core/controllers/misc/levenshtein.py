@@ -27,13 +27,14 @@ from upper_bounds import UPPER_BOUNDS
 
 def relative_distance_boolean(a_str, b_str, threshold=0.6):
     '''
-    Indicates if the strings to compare are enough "similar". This (optimized)
+    Indicates if the strings to compare are similar enough. This (optimized)
     function is equivalent to the expression:
-    relative_distance(x, y) > threshold
+        relative_distance(x, y) > threshold
     
     @param a_str: A string object
     @param b_str: A string object
-    @param threshold: Float value indicating the expected "similarity". Must be 0 <= threshold <= 1.0
+    @param threshold: Float value indicating the expected "similarity". Must be
+                      0 <= threshold <= 1.0
     @return: A boolean value
     '''
 
