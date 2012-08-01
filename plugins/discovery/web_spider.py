@@ -28,6 +28,7 @@ import core.controllers.outputManager as om
 import core.data.dc.form as form
 import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
+import core.data.constants.httpConstants as http_constants
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -53,7 +54,9 @@ class web_spider(baseDiscoveryPlugin):
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
+    NOT_404 = set([ http_constants.UNAUTHORIZED, 
+                    http_constants.FORBIDDEN])
+    
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
 
@@ -296,14 +299,22 @@ class web_spider(baseDiscoveryPlugin):
             pass
         else:
             fuzz_req_list = []
-            # Note: I WANT to follow links that are in the 404 page, but
-            # if the page I fetched is a 404 then it should be ignored.
+
             if is_404(resp):
-                # add_self == False, because I don't want to return a 404
-                # to the core
+                # Note: I WANT to follow links that are in the 404 page, but
+                # if the page I fetched is a 404 then it should be ignored.
+                #
+                # add_self will be True when the response code is 401 or 403
+                # which is something needed for other plugins to keep poking
+                # at that URL
+                #
+                # add_self will be False in all the other cases, for example
+                # in the case where the response code is a 404, because we don't
+                # want to return a 404 to the core.
+                add_self = resp.getCode() in self.NOT_404
                 fuzz_req_list = self._createFuzzableRequests(resp,
-                                 request=original_request, add_self=False)
-                if not possibly_broken:
+                                 request=original_request, add_self=add_self)
+                if not possibly_broken and not add_self:
                     t = (resp.getURL(), original_request.getURI())
                     self._broken_links.add(t)
             else:

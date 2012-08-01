@@ -27,41 +27,96 @@ import core.data.constants.severity as severity
 import core.data.constants.httpConstants as http_constants
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class htaccess_methods(baseAuditPlugin):
     '''
-    Find misconfigurations in the "<LIMIT>" configuration of Apache.
+    Find misconfigurations in Apache's "<LIMIT>" configuration.
+    
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
+    BAD_METHODS = set([ http_constants.UNAUTHORIZED, 
+                        http_constants.NOT_IMPLEMENTED, 
+                        http_constants.METHOD_NOT_ALLOWED,
+                        http_constants.FORBIDDEN])
     
     def __init__(self):
         baseAuditPlugin.__init__(self)
+        self._already_tested = scalable_bloomfilter()
         
-        # Internal variables
-        self._authURIs = []
-        self._bad_methods = [ http_constants.UNAUTHORIZED, 
-                    http_constants.NOT_IMPLEMENTED, http_constants.METHOD_NOT_ALLOWED]
-
     def audit(self, freq ):
         '''
         Tests an URL for htaccess misconfigurations.
         
         @param freq: A fuzzableRequest
         '''
-        auth_URL_list = [ v.getURL() for v in kb.kb.getData( 'http_auth_detect', 'auth' ) ]
-        if freq.getURL() in auth_URL_list:
-            # Try to get/post/put/index that uri and check that all
-            # responses are 401
-            self._check_methods( freq.getURL() )
+        response = self._uri_opener.GET( freq.getURL() , cache=True )
+
+        if response.getCode() in self.BAD_METHODS:
+            for url in filter(self._uniq, self._generate_urls(freq.getURL())):
+                self._check_methods( url )
+
+    def _uniq(self, url):
+        return not url.url_string in self._already_tested
+
+    def _generate_urls(self, url):
+        '''
+        Generate the URLs to test based on the initial URL we get from the core.
+        
+        Please note that I don't care much about duplicates coming out of this
+        function since I'm filtering using the _unique method.
+        
+        I want to test URLs with PHP extensions because they are handled in a
+        different way by Apache:
+        
+        andres@workstation:~/workspace/threading2$ nc moth 80 -v -v
+        Connection to moth 80 port [tcp/http] succeeded!
+        GGET /w3af/audit/htaccess_methods/index.html HTTP/1.1
+        Host: moth
+        
+        HTTP/1.1 501 Method Not Implemented
+        Date: Wed, 01 Aug 2012 12:10:13 GMT
+        Server: Apache/2.2.22 (Ubuntu)
+        Allow: POST,OPTIONS,GET,HEAD,TRACE
+        Vary: Accept-Encoding
+        Content-Length: 314
+        Connection: close
+        Content-Type: text/html; charset=iso-8859-1
+        
+        ...
+        
+        andres@workstation:~/workspace/threading2$ nc moth 80 -v -v
+        Connection to moth 80 port [tcp/http] succeeded!
+        GGET /w3af/audit/htaccess_methods/index.php HTTP/1.1
+        Host: moth
+        
+        HTTP/1.1 200 OK
+        Date: Wed, 01 Aug 2012 12:11:22 GMT
+        Server: Apache/2.2.22 (Ubuntu)
+        X-Powered-By: PHP/5.3.10-1ubuntu3.2
+        Vary: Accept-Encoding
+        Content-Length: 4
+        Content-Type: text/html
+        
+        ABC
+        '''
+        yield url
+        
+        if url.getExtension():
+            tmp_url = url.copy()
+            tmp_url.setExtension('php')
+            yield tmp_url
+        
+        if url.getFileName():
+            tmp_url = url.copy()
+            tmp_url.setExtension('php')
+            tmp_url.setFileName('index')
+            yield tmp_url
         else:
-            # Just in case grep plugin did not find this before
-            # this only happends if the page wasnt requested
-            response = self._uri_opener.GET( freq.getURL() , cache=True )
-            if response.getCode() == http_constants.UNAUTHORIZED:
-                self._check_methods( freq.getURL() )
-                # not needed, the grep plugin will do this for us
-                # kb.kb.save( 'http_auth_detect', 'auth', response )
+            tmp_url = url.copy()
+            yield tmp_url.urlJoin('index.php')
+            
 
     def _check_methods( self, url ):
         '''
@@ -77,47 +132,42 @@ class htaccess_methods(baseAuditPlugin):
             except:
                 pass
             else:
-                if code not in self._bad_methods:
-                    allowed_methods.append( method )
+                if code not in self.BAD_METHODS:
+                    allowed_methods.append( (method, response.id) )
         
         if len(allowed_methods)>0:
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( url )
+            v.setId([i for m, i in allowed_methods])
             v.setName( 'Misconfigured access control' )
             v.setSeverity(severity.MEDIUM)
             msg = 'The resource: "'+ url + '" requires authentication but the access'
             msg += ' is misconfigured and can be bypassed using these methods: ' 
-            msg += ', '.join(allowed_methods) + '.'
+            msg += ', '.join([m for m, i in allowed_methods]) + '.'
             v.setDesc( msg )
             v['methods'] = allowed_methods
             kb.kb.append( self , 'auth' , v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )             
                 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return ['grep.http_auth_detect']
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds .htaccess misconfigurations in the LIMIT configuration parameter.
+        This plugin finds .htaccess misconfigurations in the LIMIT configuration
+        parameter.
         
         This plugin is based on a paper written by Frame and madjoker from 
         kernelpanik.org. The paper is called : "htaccess: bilbao method exposed"
         
-        The idea of the technique (and the plugin) is to exploit common misconfigurations
-        of .htaccess files like this one:
+        The idea of the technique (and the plugin) is to exploit common
+        misconfigurations of .htaccess files like this one:
         
             <LIMIT GET>
-                require valid-used
+                require valid-user
             </LIMIT>
         
-        The configuration only allows authenticated users to perform GET requests, but POST
-        requests (for example) can be performed by any user.
+        The configuration only allows authenticated users to perform GET requests,
+        but POST requests (for example) can be performed by any user.
         '''
