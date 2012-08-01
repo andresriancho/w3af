@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import os
 import cProfile
+import random
 
 from itertools import repeat
 
@@ -87,7 +88,8 @@ class test_all(unittest.TestCase):
                     body = file( file_path ).read()
                     response = httpResponse(200, body, {'Content-Type': 'text/html'},
                                             url_object( self.url_str + str(counter) ),
-                                            url_object( self.url_str + str(counter) ) )
+                                            url_object( self.url_str + str(counter) ),
+                                            id=random.randint(1,5000) )
 
                     request = fuzzableRequest(self.url_inst)
                     for pinst in self._plugins:
