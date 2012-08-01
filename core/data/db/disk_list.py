@@ -113,6 +113,9 @@ class disk_list(DBClientSQLite):
         '''
         result = ''
         
+        if obj is None:
+            return obj
+        
         if isinstance(obj, basestring):
             return obj
         
