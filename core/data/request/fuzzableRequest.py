@@ -19,9 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import copy
+
 from itertools import chain, izip_longest
 from urllib import unquote
-import copy
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.controllers.w3afException import w3afException

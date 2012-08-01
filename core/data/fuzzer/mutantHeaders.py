@@ -71,7 +71,7 @@ class mutantHeaders(mutant):
         '''
         try:
             self._freq._headers[ self.getVar() ] = val
-        except Exception, e:
+        except:
             raise w3afException('The headers mutant object wasn\'t  correctly initialized.')
 
     def getModValue( self ):
