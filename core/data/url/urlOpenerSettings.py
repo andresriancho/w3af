@@ -170,6 +170,15 @@ class urlOpenerSettings( configurable ):
     def getCookieJarFile( self ):
         return cfg.getData('cookieJarFile')
     
+    def get_cookies(self):
+        '''
+        @return: The cookies that were collected during this scan.
+        '''
+        if self._cookieHandler is None:
+            return set()
+        else:
+            return self._cookieHandler.cookiejar
+    
     def setTimeout( self, timeout ):
         om.out.debug( 'Called SetTimeout(' + str(timeout)  + ')' )
         if timeout > 60 or timeout < 1:

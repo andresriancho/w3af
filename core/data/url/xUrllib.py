@@ -183,6 +183,12 @@ class xUrllib(object):
 
         return False
     
+    def get_cookies(self):
+        '''
+        @return: The cookies that this uri opener has collected during this scan.
+        '''
+        return self.settings.get_cookies()
+    
     def sendRawRequest(self, head, postdata, fixContentLength=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed 

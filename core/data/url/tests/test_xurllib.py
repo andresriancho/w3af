@@ -68,3 +68,13 @@ class TestXUrllib(unittest.TestCase):
         headers = res.getHeaders()
         content_encoding = headers.get('Content-Encoding', '')
         self.assertTrue('gzip' in content_encoding or 'compress' in content_encoding )
+    
+    def test_get_cookies(self):
+        self.assertEqual( self.uri_opener.get_cookies() , set() )
+        
+        url_sends_cookie = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
+        self.uri_opener.GET( url_sends_cookie )
+        
+        self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 1 )
+        cookie = [c for c in self.uri_opener.get_cookies()][0]
+        self.assertEqual( 'moth.local', cookie.domain )
