@@ -53,7 +53,7 @@ class basePlugin(configurable):
         self._tm = thread_manager
         self._plugin_lock = threading.RLock()
 
-    def setUrlOpener( self, urlOpener):
+    def set_url_opener( self, urlOpener):
         '''
         This method should not be overwritten by any plugin (but you are free
         to do it, for example a good idea is to rewrite this method to change

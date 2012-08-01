@@ -234,7 +234,7 @@ class w3af_core_plugins(object):
         @return: An instance of a plugin.
         '''
         pluginInst = factory('plugins.' + pluginType + '.' + pluginName)
-        pluginInst.setUrlOpener(self._w3af_core.uriOpener)
+        pluginInst.set_url_opener(self._w3af_core.uriOpener)
         if pluginName in self._plugins_options[ pluginType ].keys():
             pluginInst.setOptions(self._plugins_options[pluginType ][pluginName])
         
@@ -298,7 +298,7 @@ class w3af_core_plugins(object):
                     if depPlugin not in self._plugin_name_list[depType]:
                         if cf.cf.getData('autoDependencies'):
                             dependObj = factory( 'plugins.' + depType + '.' + depPlugin )
-                            dependObj.setUrlOpener( self._w3af_core.uriOpener )
+                            dependObj.set_url_opener( self._w3af_core.uriOpener )
                             if dependObj not in self.plugins[depType]:
                                 self.plugins[depType].insert( 0, dependObj )
                                 self._plugin_name_list[depType].append( depPlugin )
@@ -318,7 +318,7 @@ class w3af_core_plugins(object):
                 plugin.setOptions( pOptions )
                 
             # This sets the url opener for each module that is called inside the for loop
-            plugin.setUrlOpener( self._w3af_core.uriOpener )
+            plugin.set_url_opener( self._w3af_core.uriOpener )
             # Append the plugin to the list
             requestedPluginsList.append ( plugin )
 

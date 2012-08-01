@@ -97,7 +97,7 @@ class os_commanding(baseAttackPlugin):
             
             # Create the shell object
             shell_obj = osShell( vuln )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             return shell_obj
             

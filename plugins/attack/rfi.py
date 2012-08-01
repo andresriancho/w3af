@@ -185,7 +185,7 @@ class rfi(baseAttackPlugin):
 
             # Create the shell object
             shell_obj = rfi_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setExploitDc( self._exploit_dc )
             return shell_obj
@@ -194,7 +194,7 @@ class rfi(baseAttackPlugin):
 
             # Create the portscan shell object
             shell_obj = portscan_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             return shell_obj
 
         else:

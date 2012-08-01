@@ -108,7 +108,7 @@ class file_upload(baseAttackPlugin):
             
             # Set shell parameters
             shell_obj = fuShell( vuln_obj )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit )
             return shell_obj
         else:

@@ -37,7 +37,7 @@ class test_objects(unittest.TestCase):
         from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
         from core.data.url.xUrllib import xUrllib
         f = fingerprint_404_singleton( [False, False, False] )
-        f.set_urlopener( xUrllib() )
+        f.set_url_opener( xUrllib() )
         kb.kb.save('objects', 'objects', [])
 
     def tearDown(self):

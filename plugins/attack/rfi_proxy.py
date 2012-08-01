@@ -278,7 +278,7 @@ class rfi_proxy(baseAttackPlugin, w3afThread):
         self._proxyPublicIP = optionsMap['proxyPublicIP'].getValue()
         self._rfiConnGenerator = optionsMap['rfiConnGenerator'].getValue()
     
-    def setUrlOpener( self, urlOpener):
+    def set_url_opener( self, urlOpener):
         '''
         This method should not be overwritten by any plugin (but you are free to do it, for example
         a good idea is to rewrite this method to change the UrlOpener to do some IDS evasion technic).

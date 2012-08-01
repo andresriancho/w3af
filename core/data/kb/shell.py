@@ -65,7 +65,7 @@ class shell(vuln, exploitResult):
         '''
         return self._rSystemName
     
-    def setUrlOpener( self, uo ):
+    def set_url_opener( self, uo ):
         self._uri_opener = uo
         
     def getUrlOpener( self ):

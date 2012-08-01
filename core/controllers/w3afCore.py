@@ -84,7 +84,7 @@ class w3afCore(object):
         # I init the 404 detection for the whole framework
         self.uriOpener = xUrllib()
         fp_404_db = fingerprint_404_singleton()
-        fp_404_db.set_urlopener( self.uriOpener )
+        fp_404_db.set_url_opener( self.uriOpener )
         
     def start(self):
         '''

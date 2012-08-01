@@ -115,7 +115,7 @@ class xpath(baseAttackPlugin):
             
             # Create the shell object
             shell_obj = xpath_reader( vuln )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.STR_DEL = self.STR_DEL
             shell_obj.TRUE_COND = self.TRUE_COND
             shell_obj.FALSE_COND = self.FALSE_COND

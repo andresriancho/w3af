@@ -224,7 +224,7 @@ class sql_webshell(baseAttackPlugin):
                 # Create the shell object
                 # Set shell parameters
                 shell_obj = sql_web_shell( vuln_obj )
-                shell_obj.setUrlOpener( self._uri_opener )
+                shell_obj.set_url_opener( self._uri_opener )
                 shell_obj.setWebShellURL( webshell_url )
                 shell_obj.set_cut( self._header_length, self._footer_length )
                 kb.kb.append( self, 'shell', shell_obj )

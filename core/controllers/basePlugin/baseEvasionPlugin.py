@@ -49,7 +49,7 @@ class baseEvasionPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method modifyRequest' )
 
-    def setUrlOpener(self, foo):
+    def set_url_opener(self, foo):
         pass
         
     def getPriority( self ):

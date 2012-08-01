@@ -94,7 +94,7 @@ class dav(baseAttackPlugin):
         if self._verifyVuln( vuln_obj ):
             # Create the shell object
             shell_obj = davObj( vuln_obj )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit_url )
             return shell_obj
         else:

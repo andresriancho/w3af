@@ -66,7 +66,7 @@ class baseGrepPlugin(basePlugin):
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
                     
-    def setUrlOpener(self, foo):
+    def set_url_opener(self, foo):
         pass
         
     def getType(self):

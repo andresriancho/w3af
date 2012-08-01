@@ -98,7 +98,7 @@ class eval(baseAttackPlugin):
         if self._verify_vuln( vuln_obj ):
             # Create the shell object
             shell_obj = eval_shell( vuln_obj )
-            shell_obj.setUrlOpener( self._uri_opener )
+            shell_obj.set_url_opener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setCode( self._shell_code )
             return shell_obj

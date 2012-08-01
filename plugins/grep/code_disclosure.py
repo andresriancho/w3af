@@ -70,7 +70,7 @@ class code_disclosure(baseGrepPlugin):
         >>> from core.data.url.xUrllib import xUrllib
         >>> xurllib = xUrllib()
         >>> f = fingerprint_404_singleton( [False, False, False] )
-        >>> f.set_urlopener( xurllib )
+        >>> f.set_url_opener( xurllib )
         >>> o = create_temp_dir()
 
         Simple test, empty string.

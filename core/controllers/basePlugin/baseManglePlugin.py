@@ -64,7 +64,7 @@ class baseManglePlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method mangleResponse' )
         
-    def setUrlOpener(self, foo):
+    def set_url_opener(self, foo):
         pass
         
     def __gt__( self, other ):

@@ -75,7 +75,7 @@ class fingerprint_404:
         else:
             self._test_db = None
 
-    def set_urlopener(self, urlopener):
+    def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
             
     def generate_404_knowledge( self, url ):
