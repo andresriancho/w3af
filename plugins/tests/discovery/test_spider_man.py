@@ -22,7 +22,7 @@ import threading
 import time
 import urllib2
 
-from nose.plugins.skip import Skip, SkipTest
+from nose.plugins.skip import SkipTest
 
 from ..helper import PluginTest, PluginConfig
 
