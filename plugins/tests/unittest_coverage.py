@@ -60,7 +60,7 @@ class TestUnittestCoverage(unittest.TestCase):
         
         if missing:
             msg = 'The following %s plugins dont have unittests: %s' %  \
-                  (plugin_type, ', '.join(missing) )
+                  (plugin_type, ', '.join(sorted(missing)) )
             self.assertTrue( False, msg )
     
     def _has_test(self, plugin_type, plugin_name):
