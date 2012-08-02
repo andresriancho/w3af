@@ -467,6 +467,7 @@ class w3af_core_strategy(object):
                     status = self._w3af_core.status
                     status.set_running_plugin(plugin.getName())
                     status.set_current_fuzzable_request(fr)
+                    om.out.debug('%s is testing "%s"' % (plugin.getName(), fr.getURI() ) )
                     
                     try:
                         try:

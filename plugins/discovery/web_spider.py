@@ -82,9 +82,6 @@ class web_spider(baseDiscoveryPlugin):
         @param fuzzable_req: A fuzzable_req instance that contains
                              (among other things) the URL to test.
         '''
-        om.out.debug('web_spider plugin is testing: %s' %
-                     fuzzable_req.getURL())
-        
         if self._first_run:
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature

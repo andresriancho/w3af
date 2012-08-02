@@ -100,8 +100,6 @@ class user_dir(baseDiscoveryPlugin):
         
         @return: True when the user was found.
         '''
-        om.out.debug('user_dir is testing "%s"' % mutated_url )
-
         try:
             response = self._uri_opener.GET( mutated_url, cache=True, 
                                              headers=self._headers )

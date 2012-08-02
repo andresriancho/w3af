@@ -52,10 +52,8 @@ class slash(baseDiscoveryPlugin):
         
         url = fuzzableRequest.getURL()
         if url not in self._already_visited:
-            om.out.debug('slash plugin is testing: "%s".' % 
-                         fuzzableRequest.getURI())
-            
             self._already_visited.add(url)
+
             fr = self._get_fuzzed_request(fuzzableRequest)
             orig_resp = self._uri_opener.GET(
                                         fuzzableRequest.getURL(),

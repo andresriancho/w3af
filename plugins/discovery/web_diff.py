@@ -72,7 +72,6 @@ class web_diff(baseDiscoveryPlugin):
             # This will remove the plugin from the discovery plugins to be run.
             raise w3afRunOnce()
         else:
-            om.out.debug( 'web_diff plugin is testing: ' + fuzzableRequest.getURL() )
             self._run = False
                     
             if self._local_dir != '' and self._remote_path:
