@@ -413,8 +413,8 @@ class httpResponse(object):
             assert charset is not None, ("httpResponse objects containing "
                              "unicode body must have an associated charset")
         elif not 'content-type' in lowerCaseHeaders:
-            om.out.debug("hmmm... wtf?! The remote web server failed to "
-                         "send the 'content-type' header.")
+            om.out.debug("The remote web server failed to send the 'content-type'"
+                         " header in HTTP response with id %s" % self.id)
             _body = rawbody
             charset = DEFAULT_CHARSET
         elif not self.is_text_or_html():
