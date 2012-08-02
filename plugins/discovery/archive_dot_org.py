@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
+from itertools import izip, repeat
+
 import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseDiscoveryPlugin import baseDiscoveryPlugin
@@ -137,16 +139,16 @@ class archive_dot_org(baseDiscoveryPlugin):
         # Start the recursive spidering         
         res = []
 
-        for url in url_list:
+        def spider_worker(url, max_depth, domain):
             if url in self._already_crawled:
-                continue
+                return []
             
             self._already_crawled.add( url )
                 
             try:
                 http_response = self._uri_opener.GET( url, cache=True )
             except:
-                continue
+                return []
 
             # Filter the ones we need
             url_regex_str = self.INTERESTING_URLS_RE % domain
@@ -165,6 +167,10 @@ class archive_dot_org(baseDiscoveryPlugin):
                 msg += ' because of the configured max_depth.'
                 om.out.debug(msg)
                 return new_urls
+        
+        url_list, max_depth, domain
+        args = izip(url_list, repeat(max_depth), repeat(domain))
+        self._tm.threadpool.map_multi_args( spider_worker, args) 
         
         return list(set(res))
     
