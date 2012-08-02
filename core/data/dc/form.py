@@ -168,14 +168,11 @@ class Form(DataContainer):
         
     def addInput(self, attrs):
         '''
-        Adds a input to the Form
+        Adds an input to the Form object. Input examples:
+            <INPUT type="text" name="email"><BR>
+            <INPUT type="radio" name="sex" value="Male"> Male<BR>
         
         @parameter attrs: attrs=[("class", "screen")]
-        '''
-
-        '''
-        <INPUT type="text" name="email"><BR>
-        <INPUT type="radio" name="sex" value="Male"> Male<BR>
         '''
         # Set the default input type to text.
         attr_type = 'text'
