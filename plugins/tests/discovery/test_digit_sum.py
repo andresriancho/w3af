@@ -1,5 +1,5 @@
 '''
-test_digitsum.py
+test_digit_sum.py
 
 Copyright 2012 Andres Riancho
 
