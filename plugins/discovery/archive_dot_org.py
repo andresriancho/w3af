@@ -30,7 +30,6 @@ from core.controllers.w3afException import w3afRunOnce
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.request.httpQsRequest import HTTPQSRequest
-from core.data.parsers.dpCache import dpc as dpc
 from core.data.parsers.urlParser import url_object
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -45,13 +44,16 @@ class archive_dot_org(baseDiscoveryPlugin):
     '''
     
     ARCHIVE_START_URL = 'http://web.archive.org/web/*/%s'
-    INTERESTING_URLS_RE = 'http://web\.archive\.org/web/.*/http[s]?://%s/.*' 
+    INTERESTING_URLS_RE = '<a href="(http://web\.archive\.org/web/\d*?/https?://%s/.*?)"' 
+    NOT_IN_ARCHIVE = '<p>Wayback Machine doesn&apos;t have that page archived.</p>'
     
     def __init__(self):
         baseDiscoveryPlugin.__init__(self)
         
         # Internal variables
-        self._already_visited = scalable_bloomfilter()
+        self._already_crawled = scalable_bloomfilter()
+        self._already_verified = scalable_bloomfilter()
+        self._fuzzable_requests = []
         
         # User configured parameters
         self._max_depth = 3
@@ -64,20 +66,30 @@ class archive_dot_org(baseDiscoveryPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        # Get the domain and set some parameters
+        self._fuzzable_requests = []
         domain = fuzzableRequest.getURL().getDomain()
+        
         if is_private_site( domain ):
-            msg = 'There is no point in searching archive.org for "'+ domain + '"'
+            msg = 'There is no point in searching archive.org for "%s"'
             msg += ' because it is a private site that will never be indexed.'
-            om.out.information(msg)
+            om.out.information(msg % domain)
             raise w3afRunOnce(msg)
 
-        # Work
+        # Initial check to verify if domain in archive
         start_url = self.ARCHIVE_START_URL % fuzzableRequest.getURL()
         start_url = url_object( start_url )
-        references = self._spider_archive( [ start_url, ] , self._max_depth, domain )
+        http_response = self._uri_opener.GET( start_url, cache=True )
         
-        return self._analyze_urls( references )
+        if self.NOT_IN_ARCHIVE in http_response.body:
+            msg = 'There is no point in searching archive.org for "%s"'
+            msg += ' because they are not indexing this site.'
+            om.out.information(msg % domain)
+            raise w3afRunOnce(msg)
+            
+        references = self._spider_archive( [start_url,] , self._max_depth, domain )
+        self._analyze_urls( references )
+        
+        return self._fuzzable_requests 
             
     def _analyze_urls(self, references):
         '''
@@ -86,17 +98,12 @@ class archive_dot_org(baseDiscoveryPlugin):
         @return: A list of query string objects for the URLs that are in
                  the cache AND are in the target web site.
         '''
-        res = []
         real_URLs = []
         
         # Translate archive.org URL's to normal URL's
         for url in references:
-            try:
-                url = url.url_string[url.url_string.url.index('http', 1):]
-            except Exception:
-                pass
-            else:
-                real_URLs.append( url_object(url) )
+            url = url.url_string[url.url_string.index('http', 1):]
+            real_URLs.append( url_object(url) )
         real_URLs = list(set(real_URLs))
         
         if len( real_URLs ):
@@ -107,23 +114,18 @@ class archive_dot_org(baseDiscoveryPlugin):
             om.out.debug('Archive.org did not find any pages.')
         
         # Verify if they exist in the target site and add them to
-        # the result if they do.
-        for real_url in real_URLs:
-            if self._exists_in_target(real_url):
-                qsr = HTTPQSRequest(real_url)
-                res.append(qsr)
+        # the result if they do. Send the requests using threads:
+        self._tm.threadpool.map(self._exists_in_target, real_URLs)            
         
-        if not res:
+        if not self._fuzzable_requests:
             om.out.debug('All pages found in archive.org cache are '
                          'missing in the target site.')
         else:
             om.out.debug('The following pages are in Archive.org cache '
                          'and also in the target site:')
-            for req in res:
+            for req in self._fuzzable_requests:
                 om.out.debug('- %s' % req.getURI())
 
-        return res
-    
     def _spider_archive( self, url_list, max_depth, domain ):
         '''
         Perform a classic web spidering process.
@@ -134,32 +136,22 @@ class archive_dot_org(baseDiscoveryPlugin):
         '''
         # Start the recursive spidering         
         res = []
-        
+
         for url in url_list:
-            if url in self._already_visited:
+            if url in self._already_crawled:
                 continue
             
-            self._already_visited.add( url )
+            self._already_crawled.add( url )
                 
             try:
                 http_response = self._uri_opener.GET( url, cache=True )
-                document_parser = dpc.getDocumentParserFor( http_response )
             except:
                 continue
 
-            # Note:
-            # - With parsed_references I'm 100% that it's really something in 
-            #   the HTML that the developer intended to add.
-            #
-            # - The re_references are the result of regular expressions, which
-            #   in some cases are just false positives.
-            parsed_references, _ = document_parser.getReferences()
-            
             # Filter the ones we need
             url_regex_str = self.INTERESTING_URLS_RE % domain
-            url_regex = re.compile(url_regex_str)
-            new_urls = [ u for u in parsed_references if 
-                         url_regex.match(u.url_string ) ]
+            matched_urls = re.findall(url_regex_str, http_response.body)
+            new_urls = set([url_object(u).removeFragment() for u in matched_urls])
             
             # Go recursive
             if max_depth -1 > 0:
@@ -174,29 +166,31 @@ class archive_dot_org(baseDiscoveryPlugin):
                 om.out.debug(msg)
                 return new_urls
         
-        return res
+        return list(set(res))
     
     def _exists_in_target( self, url ):
         '''
         Check if a resource still exists in the target web site.
         
-        @parameter url: The resource.
+        @param url: The resource to verify.
+        @return: None, the result is stored in self._fuzzable_requests
         '''
-        try:
-            response = self._uri_opener.GET( url, cache=True )
-        except:
-            return False
+        if url in self._already_verified:
+            return
+        
+        self._already_verified.add(url)
+        
+        response = self._uri_opener.GET( url, cache=True )
+
+        if not is_404( response ):
+            msg = 'The URL: "' + url + '" was found at archive.org and is'
+            msg += ' STILL AVAILABLE in the target site.'
+            om.out.debug( msg )
+            self._fuzzable_requests.extend( self._createFuzzableRequests(response) )
         else:
-            if not is_404( response ):
-                msg = 'The URL: "' + url + '" was found at archive.org and is'
-                msg += ' STILL AVAILABLE in the target site.'
-                om.out.debug( msg )
-                return True
-            else:
-                msg = 'The URL: "' + url + '" was found at archive.org and was'
-                msg += ' DELETED from the target site.'
-                om.out.debug( msg )
-                return False
+            msg = 'The URL: "' + url + '" was found at archive.org and was'
+            msg += ' DELETED from the target site.'
+            om.out.debug( msg )
             
     def getOptions( self ):
         '''
