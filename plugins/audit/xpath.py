@@ -68,10 +68,6 @@ class xpath(baseAuditPlugin):
         # This error appears when you put wierd chars in a lotus notes document
         # search ( nsf files ).
         '4005 Notes error: Query is not understandable',
-            
-        # This one will generate some false positives, but i'll leve it here for now
-        # until i have a complete list of errors.
-        'xpath'
     )
     _multi_in = multi_in( XPATH_PATTERNS )
 
