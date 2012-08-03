@@ -115,13 +115,16 @@ class profile:
         try:
             os.unlink( self._profile_file_name )
         except Exception, e:
-            raise w3afException('An exception occurred while removing the profile. Exception: ' + str(e))
+            msg = 'An exception occurred while removing the profile. Exception:'
+            msg += ' "%s".' % e
+            raise w3afException( msg )
         else:
             return True
             
     def copy( self, copyProfileName ):
         '''
-        Create a copy of the profile file into copyProfileName. The directory of the profile is kept unless specified.
+        Create a copy of the profile file into copyProfileName. The directory 
+        of the profile is kept unless specified.
         '''
         newProfilePathAndName = copyProfileName
         
@@ -137,7 +140,9 @@ class profile:
         try:
             shutil.copyfile( self._profile_file_name, newProfilePathAndName )
         except Exception, e:
-            raise w3afException('An exception occurred while copying the profile. Exception: ' + str(e))
+            msg = 'An exception occurred while copying the profile. Exception:'
+            msg += ' "%s".' % e
+            raise w3afException( msg % e)
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
             pNew = profile( newProfilePathAndName )
@@ -149,6 +154,7 @@ class profile:
     def setEnabledPlugins( self, pluginType, pluginNameList ):
         '''
         Set the enabled plugins of type pluginType.
+        
         @parameter pluginType: 'audit', 'output', etc.
         @parameter pluginNameList: ['xss', 'sqli'] ...
         @return: None
@@ -218,7 +224,7 @@ class profile:
                     for option in self._config.options(section):
                         try:
                             value = self._config.get(section, option)
-                        except KeyError,k:
+                        except KeyError:
                             # We should never get here...
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
                             raise w3afException( msg % (option, pluginName) )

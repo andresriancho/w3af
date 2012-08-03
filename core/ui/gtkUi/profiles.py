@@ -374,7 +374,6 @@ class ProfileList(gtk.TreeView):
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3) )
             dlg.run()
             dlg.destroy()
-            return
 
         if profile_obj is not None:
             profdesc = profile_obj.getDesc()

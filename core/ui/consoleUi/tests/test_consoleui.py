@@ -120,7 +120,48 @@ class TestConsoleUI(unittest.TestCase):
         
         self._mock_stdout.clear()
         
-    
+    def test_load_profile_exists(self):
+        commands_to_run = ['profiles',
+                           'help',
+                           'use OWASP_TOP10',
+                           'exit']
+        
+        expected = ('The plugins configured by the scan profile have been enabled',
+                    'Please set the target URL',
+                    '| use                            | Use a profile.')
+        
+        self.mock_sys()
+        
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
+        
+        self.restore_sys()
+        
+        self.assertTrue( self.startswith_expected_in_output(expected), 
+                         self._mock_stdout.messages )
+        
+        self._mock_stdout.clear()
+
+    def test_load_profile_not_exists(self):
+        commands_to_run = ['profiles',
+                           'help',
+                           'use do_not_exist',
+                           'exit']
+        
+        expected = ('Unknown profile name: "do_not_exist"',)
+        
+        self.mock_sys()
+        
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
+        
+        self.restore_sys()
+        
+        self.assertTrue( self.startswith_expected_in_output(expected), 
+                         self._mock_stdout.messages )
+        
+        self._mock_stdout.clear()
+        
     def startswith_expected_in_output(self, expected):
         for line in expected:
             for (sys_line,) in self._mock_stdout.messages:

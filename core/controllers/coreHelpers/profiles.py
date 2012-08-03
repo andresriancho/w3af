@@ -47,10 +47,10 @@ class w3af_core_profiles(object):
         @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
         '''
         # Create the new profile.
-        profileInstance = profile()
-        profileInstance.setDesc( profileDesc )
-        profileInstance.setName( profile_name )
-        profileInstance.save( profile_name )
+        profile_inst = profile()
+        profile_inst.setDesc( profileDesc )
+        profile_inst.setName( profile_name )
+        profile_inst.save( profile_name )
         
         # Save current to profile
         return self.saveCurrentToProfile( profile_name, profileDesc )
@@ -111,59 +111,72 @@ class w3af_core_profiles(object):
             self._w3af_core.plugins.zero_enabled_plugins()
             return
         
-        try:            
-            profileInstance = profile(profile_name, workdir) 
-        except w3afException:
-            # The profile doesn't exist!
-            raise
-        else:
-            # It exists, work with it!
-            for pluginType in self._w3af_core.plugins.getPluginTypes():
-                pluginNames = profileInstance.getEnabledPlugins( pluginType )
+        # This might raise an exception (which we don't want to handle) when
+        # the profile does not exist
+        profile_inst = profile(profile_name, workdir)
+        
+        # It exists, work with it!
+        
+        # Set the target settings of the profile to the core
+        self._w3af_core.target.setOptions( profile_inst.getTarget() )
+        
+        # Set the misc and http settings
+        #
+        # IGNORE the following parameters from the profile:
+        #   - miscSettings.localAddress
+        #
+        profile_misc_settings = profile_inst.getMiscSettings()
+        if 'localAddress' in profile_inst.getMiscSettings():
+            profile_misc_settings['localAddress'].setValue(get_local_ip())
+        
+        misc_settings = miscSettings.miscSettings()
+        misc_settings.setOptions( profile_misc_settings )
+        self._w3af_core.uriOpener.settings.setOptions( profile_inst.getHttpSettings() )
+        
+        #
+        #    Handle plugin options
+        #
+        error_fmt = ('The profile you are trying to load (%s) seems to be'
+                     ' outdated, this is a common issue which happens when the'
+                     ' framework is updated and one of its plugins adds/removes'
+                     ' one of the configuration parameters referenced by a profile'
+                     ', or the plugin is removed all together.\n\n'
+                     'The profile was loaded but some of your settings might'
+                     ' have been lost. This is the list of issues that were found:\n\n'
+                     '    - %s\n'
+                     '\nWe recommend you review the specific plugin configurations,'
+                     ' apply the required changes and save the profile in order'
+                     ' to update it and avoid this message. If this warning does not'
+                     ' disappear you can manually edit the profile file to fix it.')
+        
+        error_messages = []
+        
+        for plugin_type in self._w3af_core.plugins.getPluginTypes():
+            plugin_names = profile_inst.getEnabledPlugins( plugin_type )
+            
+            # Handle errors that might have been triggered from a possibly invalid profile
+            unknown_plugins = self._w3af_core.plugins.setPlugins( plugin_names, plugin_type )
+            for unknown_plugin in unknown_plugins:
+                msg = 'The profile references the "%s.%s" plugin which is unknown.'
+                error_messages.append( msg % (plugin_type, unknown_plugin))
                 
-                # Handle errors that might have been triggered from a possibly invalid profile
-                unknown_plugins = self._w3af_core.plugins.setPlugins( pluginNames, pluginType )
-                if unknown_plugins:
-                    om.out.error('The profile references the following missing plugins:')
-                    for unknown_plugin_name in unknown_plugins:
-                        om.out.error('- ' + unknown_plugin_name)
-                    
-                # Now we set the plugin options, which can also trigger errors with "outdated"
-                # profiles that users could have in their ~/.w3af/ directory.
-                for pluginName in profileInstance.getEnabledPlugins( pluginType ):
-                    pluginOptions = profileInstance.getPluginOptions( pluginType, pluginName )
-                    try:
-                        # FIXME: Does this work with output plugin options?
-                        # What about target, http-settings, etc?
-                        self._w3af_core.plugins.set_plugin_options( pluginType, 
-                                                                  pluginName,
-                                                                  pluginOptions )
-                    except Exception, e:
-                        # This is because of an invalid plugin, or something like that...
-                        # Added as a part of the fix of bug #1937272
-                        msg = ('The profile you are trying to load seems to be'
-                        ' outdated, one of the enabled plugins has a bug or an'
-                        ' plugin option that was valid when you created the '
-                        'profile was now removed from the framework. The plugin'
-                        ' that triggered this exception is "%s", and the '
-                        'original exception is: "%s"' % (pluginName, e))
-                        om.out.error(msg)
-                    
-            # Set the target settings of the profile to the core
-            self._w3af_core.target.setOptions( profileInstance.getTarget() )
-            
-            # Set the misc and http settings
-            #
-            # IGNORE the following parameters from the profile:
-            #   - miscSettings.localAddress
-            #
-            profile_misc_settings = profileInstance.getMiscSettings()
-            if 'localAddress' in profileInstance.getMiscSettings():
-                profile_misc_settings['localAddress'].setValue(get_local_ip())
-            
-            misc_settings = miscSettings.miscSettings()
-            misc_settings.setOptions( profile_misc_settings )
-            self._w3af_core.uriOpener.settings.setOptions( profileInstance.getHttpSettings() )
+            # Now we set the plugin options, which can also trigger errors with "outdated"
+            # profiles that users could have in their ~/.w3af/ directory.
+            for plugin_name in set(plugin_names) - set(unknown_plugins):
+                
+                try:
+                    plugin_options = profile_inst.getPluginOptions( plugin_type, plugin_name )
+                    self._w3af_core.plugins.set_plugin_options( plugin_type, 
+                                                                plugin_name,
+                                                                plugin_options )
+                except:
+                    msg = 'Setting the options for plugin "%s.%s" raised an'
+                    msg += ' exception due to unknown configuration parameters.'
+                    error_messages.append( msg % (plugin_type, plugin_name))
+                                
+        if error_messages:
+            msg = error_fmt % (profile_name, '\n    - '.join(error_messages) )
+            raise w3afException( msg ) 
             
     def getProfileList( self ):
         '''
@@ -199,7 +212,7 @@ class w3af_core_profiles(object):
         '''
         @return: True if the profile was successfully removed. Else, raise a w3afException.
         '''
-        profileInstance = profile( profile_name )
-        profileInstance.remove()
+        profile_inst = profile( profile_name )
+        profile_inst.remove()
         return True
     

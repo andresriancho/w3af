@@ -19,12 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# Import w3af
-import core.controllers.w3afCore
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
 from core.ui.consoleUi.menu import *
+from core.controllers.w3afException import w3afException
+
 
 class profilesMenu(menu):
     '''
@@ -53,15 +50,18 @@ class profilesMenu(menu):
             self._cmd_help(['use'])
         else:
             profile = params[0]
-            if not profile:
-                raise w3afException('Unknown profile: ' + profile)
+            if profile not in self._profiles:
+                raise w3afException('Unknown profile name: "%s"' % profile)
             
             try:
                 workdir = params[1] 
             except IndexError:
                 workdir = None            
             
-            self._w3af.profiles.useProfile(profile, workdir=workdir)
+            try:
+                self._w3af.profiles.useProfile(profile, workdir=workdir)
+            except w3afException, w3:
+                om.out.console( str(w3) )
             
             om.out.console('The plugins configured by the scan profile have '
                            'been enabled, and their options configured.')
