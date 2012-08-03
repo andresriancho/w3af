@@ -19,27 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.configurable import configurable
 import core.data.kb.config as cf
 
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.data.parsers.urlParser import url_object
-
-# Raise errors
-from core.controllers.w3afException import w3afException
-
+from core.controllers.configurable import configurable
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_net_iface import get_net_iface
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.parsers.urlParser import url_object
 
 
 class miscSettings(configurable):
     '''
-    A class that acts as an interface for the user interfaces, so they can configure w3af 
-    settings using getOptions and SetOptions.
+    A class that acts as an interface for the user interfaces, so they can
+    configure w3af settings using getOptions and SetOptions.
     '''
     
     def __init__( self ):
