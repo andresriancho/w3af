@@ -19,19 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 
 
 class motw (baseGrepPlugin):
@@ -107,11 +104,12 @@ class motw (baseGrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
+        ol = optionList()
+        
         d1 = 'List the pages that don\'t have a MOTW'
         o1 = option('withoutMOTW', self._withoutMOTW, d1, 'boolean')
-        
-        ol = optionList()
         ol.add(o1)
+        
         return ol
             
     def end(self):
@@ -136,26 +134,22 @@ class motw (baseGrepPlugin):
                         msg = '- ' + i.getURL() + ' [Executed in Local machine context]'
                         om.out.information( msg )
     
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will specify whether the page is compliant against the MOTW standard. The standard is explained in:
+        This plugin will specify whether the page is compliant against the MOTW
+        standard. The standard is explained in:
             - http://msdn2.microsoft.com/en-us/library/ms537628.aspx
             
-        This plugin tests if the length of the URL specified by "(XYZW)" is lower, equal or greater than the length of the
-        URL; and also reports the existance of this tag in the body of all analyzed pages.
+        This plugin tests if the length of the URL specified by "(XYZW)" is
+        lower, equal or greater than the length of the URL; and also reports the
+        existence of this tag in the body of all analyzed pages.
         
         One configurable parameter exists:
             - withoutMOTW
             
-        If "withoutMOTW" is enabled, the plugin will show all URLs that don't contain a MOTW.
+        If "withoutMOTW" is enabled, the plugin will show all URLs that don't
+        contain a MOTW.
         '''
