@@ -48,5 +48,20 @@ class test_shelve(unittest.TestCase):
         self.assertEqual( abc2 , 'abc' )
         self.assertEqual( two , 2 )
     
-if __name__ == '__main__':
-    unittest.main()
+    def test_keys(self):
+        tshelve = temp_shelve()
+        
+        tshelve['a'] = 'abc'
+        tshelve['b'] = 'abc'
+        tshelve['c'] = 'abc'
+        
+        self.assertEqual( set(tshelve.keys()), set(['a','b','c']) )
+    
+    def test_iterkeys(self):
+        tshelve = temp_shelve()
+        
+        tshelve['a'] = 'abc'
+        tshelve['b'] = 'abc'
+        tshelve['c'] = 'abc'
+        
+        self.assertEqual( set(tshelve.iterkeys()), set(['a','b','c']) )

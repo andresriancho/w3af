@@ -97,6 +97,9 @@ class temp_shelve(object):
     def keys(self):
         return [cPickle.loads(k) for k in self._shelve.keys()]
     
+    def iterkeys(self):
+        return (cPickle.loads(k) for k in self._shelve.keys())
+    
     def __contains__(self, key):
         return cPickle.dumps(key) in self._shelve
     
