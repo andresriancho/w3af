@@ -40,6 +40,16 @@ class response_splitting(baseAuditPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
+    HEADER_INJECTION_TESTS = ( "w3af\r\n" + HEADER_NAME +": " + HEADER_VALUE,
+                               "w3af\r" + HEADER_NAME +": " + HEADER_VALUE,
+                               "w3af\n" + HEADER_NAME +": " + HEADER_VALUE )
+
+    # A list of error strings produced by the programming framework
+    # when we try to modify a header, and the HTML output is already being 
+    # written to the cable, or something similar.
+    HEADER_ERRORS = ( 'Header may not contain more than a single header, new line detected' ,
+                      'Cannot modify header information - headers already sent')
+
     def __init__(self):
         baseAuditPlugin.__init__(self)
 
@@ -49,23 +59,11 @@ class response_splitting(baseAuditPlugin):
         
         @param freq: A fuzzableRequest
         '''
-        rsList = self._get_header_inj()
-        mutants = createMutants( freq , rsList )
+        mutants = createMutants( freq , self.HEADER_INJECTION_TESTS )
             
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                  mutants,
                                  self._analyze_result)
-                    
-    def _get_errors( self ):
-        '''
-        @return: A list of error strings produced by the programming framework when
-        we try to modify a header, and the HTML output is already being written to
-        the cable, or something similar.
-        '''
-        res = []
-        res.append( 'Header may not contain more than a single header, new line detected' )
-        res.append( 'Cannot modify header information - headers already sent' )
-        return res
     
     def _analyze_result( self, mutant, response ):
         '''
@@ -78,7 +76,7 @@ class response_splitting(baseAuditPlugin):
                                         
             # When trying to send a response splitting to php 5.1.2 I get :
             # Header may not contain more than a single header, new line detected
-            for error in self._get_errors():
+            for error in self.HEADER_ERRORS:
                 
                 if error in response:
                     msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
@@ -113,20 +111,6 @@ class response_splitting(baseAuditPlugin):
         self.print_uniq(
                kb.kb.getData('response_splitting', 'response_splitting'), 'VAR'
                )
-    
-    def _get_header_inj( self ):
-        '''
-        With setOptions the user entered a URL that is the one to be included.
-        This method returns that URL.
-        
-        @return: A string, see above.
-        '''
-        responseSplitStrings = []
-        # This will simply add a header saying : "Vulnerable: Yes"  (if vulnerable)
-        # \r\n will be encoded to %0d%0a
-        responseSplitStrings.append("w3af\r\n" + HEADER_NAME +": " + HEADER_VALUE)
-                
-        return responseSplitStrings
         
     def _header_was_injected( self, response ):
         '''
@@ -180,6 +164,7 @@ class response_splitting(baseAuditPlugin):
         return '''
         This plugin will find response splitting vulnerabilities. 
         
-        The detection is done by sending "w3af\\r\\nVulnerable: Yes" to every injection point, and reading the
-        response headers searching for a header with name "Vulnerable" and value "Yes".
+        The detection is done by sending "w3af\\r\\nVulnerable: Yes" to every
+        injection point, and reading the response headers searching for a header
+        with name "Vulnerable" and value "Yes".
         '''
