@@ -23,7 +23,7 @@ from ..helper import PluginTest, PluginConfig
 import core.data.constants.severity as severity
 
 
-class TestClickJacking(PluginTest):
+class TestDOMXSS(PluginTest):
     
     dom_xss_url = 'https://moth/w3af/grep/dom_xss/'
     
