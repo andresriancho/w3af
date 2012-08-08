@@ -54,6 +54,8 @@ class TestGlobalRedirect(PluginTest):
             ('java.php', 'url'),
             ('meta.php', 'url'),
             ('302.php', 'url'),
+            ('refresh-header.php', 'url'),
+            ('302-filtered.php', 'url')
         ]
 
         found = [ (str(v.getURL()), v.getVar()) for v in vulns]

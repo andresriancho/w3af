@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -39,11 +37,13 @@ class global_redirect(baseAuditPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
+    TEST_URLS = ('http://www.w3af.org/',
+                 '//w3af.org')
+
     def __init__(self):
         baseAuditPlugin.__init__(self)
         
         # Internal variables
-        self._test_site = 'http://www.w3af.org/'
         self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 
                                      re.IGNORECASE | re.DOTALL )
         self._meta_url_re = re.compile('.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
@@ -54,7 +54,7 @@ class global_redirect(baseAuditPlugin):
         
         @param freq: A fuzzableRequest object
         '''
-        mutants = createMutants( freq , [self._test_site, ] )
+        mutants = createMutants( freq , self.TEST_URLS )
         
         send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(m, follow_redir=False)
         
@@ -92,12 +92,27 @@ class global_redirect(baseAuditPlugin):
         #
         lheaders = response.getLowerCaseHeaders()
         for header_name in ('location', 'uri'):
-            if header_name in lheaders and \
-            lheaders[header_name].startswith( self._test_site ):
-                # The script sent a 302, and w3af followed the redirection
-                # so the URL is now the test site
-                return True
-
+            if header_name in lheaders:
+                header_value = lheaders[header_name]
+                for test_url in self.TEST_URLS:
+                    if header_value.startswith( test_url ):
+                        # The script sent a 302, and w3af followed the redirection
+                        # so the URL is now the test site
+                        return True
+        
+        # Check for the *very strange* Refresh HTTP header, which looks like a
+        # <meta refresh> in the header context!
+        # http://stackoverflow.com/questions/283752/refresh-http-header
+        if 'refresh' in lheaders:
+            refresh = lheaders['refresh']
+            # Format is 0;url=my_view_page.php
+            splitted_refresh = refresh.split('=',1)
+            if len(splitted_refresh) == 2:
+                _, url = splitted_refresh
+                for test_url in self.TEST_URLS:
+                    if url.startswith( test_url ):
+                        return True
+        
         #
         # Test for meta redirects
         #
@@ -111,8 +126,9 @@ class global_redirect(baseAuditPlugin):
                 match_url = self._meta_url_re.match(redir)
                 if match_url:
                     url = match_url.group(1)
-                    if url.startswith( self._test_site ):
-                        return True
+                    for test_url in self.TEST_URLS:
+                        if url.startswith( test_url ):
+                            return True                    
 
         #
         # Test for JavaScript redirects, these are some common redirects:
@@ -122,6 +138,9 @@ class global_redirect(baseAuditPlugin):
         #     location.replace('http://www.w3af.com/');
         res = self._script_re.search( response.getBody() )
         if res:
+            
+            url_group_re = '(%s)' % '|'.join(self.TEST_URLS)
+            
             for script_code in res.groups():
                 script_code = script_code.split('\n')
                 code = []
@@ -129,7 +148,7 @@ class global_redirect(baseAuditPlugin):
                     code.extend( i.split(';') )
                     
                 for line in code:
-                    if re.search( '(window\.location|location\.).*' + self._test_site, line ):
+                    if re.search( '(window\.location|location\.).*' + url_group_re, line ):
                         return True
         
         return False
