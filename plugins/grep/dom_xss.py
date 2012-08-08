@@ -21,15 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
-
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+
 
 class dom_xss(baseGrepPlugin):
     '''
@@ -38,47 +35,27 @@ class dom_xss(baseGrepPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
+    JS_FUNCTIONS = ('document.write',
+                    'document.writeln',
+                    'document.execCommand',
+                    'document.open',
+                    'window.open',
+                    'eval',
+                    'window.execScript')
+    JS_FUNCTIONS = [re.compile(js_f+ ' *\((.*?)\)', re.IGNORECASE) for js_f in JS_FUNCTIONS]
+    
+    DOM_USER_CONTROLLED = ('document.URL',
+                           'document.URLUnencoded',
+                           'document.location',
+                           'document.referrer',
+                           'window.location',
+                          )
+    
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        # User configured parameters
-        self._useSmartGrep = True
-        self._useSimpleGrep = False
+        
         # Compile the regular expressions
         self._scriptRe = re.compile('< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
-        # Function regular expressions
-        self._functionNamesRe = [ re.compile(i, re.IGNORECASE) for i in self._getFunctionNames(True) ]
-        
-    def _getFunctionNames(self, re=False):
-        '''
-        @return: A list of function names that can be used as an attack
-        vector in DOM XSS
-        '''
-        res = []
-        res.append('document.write')
-        res.append('document.writeln')
-        res.append('document.execCommand')
-        res.append('document.open')
-        res.append('window.open')
-        res.append('eval')
-        res.append('window.execScript')
-        # Add the function invocation regex that matches:
-        # eval( a ), eval ( abc ), eval( 'def' )
-        if re:
-            res = [ i + ' *\((.*?)\)' for i in res ]
-        return res
-    
-    def _getDomUserControlled(self):
-        '''
-        @return: A list of user controlled variables that can be used as an attack 
-        vector in DOM XSS.
-        '''
-        res = []
-        res.append('document.URL')
-        res.append('document.URLUnencoded')
-        res.append('document.location')
-        res.append('document.referrer')
-        res.append('window.location')
-        return res
         
     def grep(self, request, response):
         '''
@@ -87,47 +64,23 @@ class dom_xss(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        res = []
-
         if not response.is_text_or_html():
             return
 
-        if self._useSimpleGrep:
-            res.extend(self._simpleGrep(response))
-        if self._useSmartGrep:
-            res.extend(self._smartGrep(response))
-
-        for vulnCode in res:
+        for vuln_code in self._smart_grep(response):
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.addToHighlight(vulnCode)
+            v.addToHighlight(vuln_code)
             v.setURL(response.getURL())
             v.setId(response.id)
             v.setSeverity(severity.LOW)
             v.setName('DOM Cross site scripting (Risky JavaScript Code)')
             msg = 'The URL: "' + v.getURL() + '" has a DOM XSS (Risky JavaScript Code) '
-            msg += 'bug using: "'+ vulnCode + '".'
+            msg += 'bug using: "'+ vuln_code + '".'
             v.setDesc(msg)
             kb.kb.append(self, 'dom_xss', v)
 
-    def _simpleGrep(self, response):
-        '''
-        Search for the DOM XSS vulns using simple grep.
-        @parameter response: The HTTP response object
-        @return: list of risky code items
-        '''
-        res = []
-        riskyCodes = []
-        riskyCodes.extend(self._getDomUserControlled())
-        riskyCodes.extend(self._getFunctionNames())
-        body = response.getBody()
-
-        for riskyCode in riskyCodes:
-            if riskyCode in body:
-                res.append(riskyCode)
-        return res
-
-    def _smartGrep(self, response):
+    def _smart_grep(self, response):
         '''
         Search for the DOM XSS vulns using smart grep (context regex).
         @parameter response: The HTTP response object
@@ -139,35 +92,14 @@ class dom_xss(baseGrepPlugin):
         if not match:
             return res
 
-        for scriptCode in match.groups():
-            for functionRe in self._functionNamesRe:
-                parameters = functionRe.search(scriptCode)
+        for script_code in match.groups():
+            for function_re in self.JS_FUNCTIONS:
+                parameters = function_re.search(script_code)
                 if parameters:
-                    for userControlled in self._getDomUserControlled():
-                        if userControlled in parameters.groups()[0]:
-                            res.append(userControlled)
+                    for user_controlled in self.DOM_USER_CONTROLLED:
+                        if user_controlled in parameters.groups()[0]:
+                            res.append(user_controlled)
         return res
-
-    def setOptions(self, optionsMap):
-        self._useSimpleGrep = optionsMap['simpleGrep'].getValue()
-        self._useSmartGrep = optionsMap['smartGrep'].getValue()
-        
-    def getOptions(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Use simple grep mechanism'
-        h1 = 'Plugin will simply grep responses for risky JavaScript code'
-        o1 = option('simpleGrep', self._useSimpleGrep, d1, 'boolean', help=h1)
-
-        d2 = 'Use smart grep mechanism'
-        h2 = 'Plugin will use grep templates depended on context to find risky JavaScript code in responses'
-        o2 = option('smartGrep', self._useSmartGrep, d2, 'boolean', help=h2)
-        
-        ol = optionList()
-        ol.add(o1)
-        ol.add(o2)
-        return ol
 
     def end(self):
         '''
@@ -175,13 +107,6 @@ class dom_xss(baseGrepPlugin):
         '''
         self.print_uniq(kb.kb.getData('dom_xss', 'dom_xss'), None)
             
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
