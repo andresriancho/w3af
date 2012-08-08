@@ -19,17 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.data.db.disk_set import disk_set
 
 
 class error_500(baseGrepPlugin):
@@ -45,7 +40,7 @@ class error_500(baseGrepPlugin):
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._error_500_responses = set()
+        self._error_500_responses = disk_set()
 
     def grep(self, request, response):
         '''
@@ -56,10 +51,10 @@ class error_500(baseGrepPlugin):
         @return: None
         '''
         if response.is_text_or_html() \
-            and response.getCode() in xrange(400, 600) \
-            and response.getCode() not in (404 , 403, 401, 405, 400, 501)\
-            and not self._is_false_positive(response):
-            self._error_500_responses.add((request, response))
+        and response.getCode() in xrange(400, 600) \
+        and response.getCode() not in (404 , 403, 401, 405, 400, 501)\
+        and not self._is_false_positive(response):
+            self._error_500_responses.add((request, response.id))
 
     
     def _is_false_positive( self, response ):
@@ -79,37 +74,24 @@ class error_500(baseGrepPlugin):
                 return True
         return False
     
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self , o ):
-        '''
-        Do nothing, I don't have options.
-        '''  
-        pass
-        
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         
-        The real job of this plugin is done here, where I will try to see if one
-        of the error_500 responses were not identified as a vuln by some of my audit plugins
+        The real job of this plugin is done here, where I will try to see if 
+        one of the error_500 responses were not identified as a vuln by some
+        of my audit plugins
         '''
         all_vulns = kb.kb.getAllVulns()
         all_vulns_tuples = [ (v.getURI(), v.getDc()) for v in all_vulns ]
 
-        for request, error_500_response in self._error_500_responses:
-            if ( error_500_response.getURI() , request.getDc() ) not in all_vulns_tuples:
+        for request, error_500_response_id in self._error_500_responses:
+            if ( request.getURI() , request.getDc() ) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setURI( error_500_response.getURI() )
-                v.setURL( error_500_response.getURL() )
-                v.setId( error_500_response.id )
+                v.setURI( request.getURI() )
+                v.setId( error_500_response_id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unhandled error in web application' )
                 msg = 'An unidentified web application error (HTTP response code 500)'
@@ -121,18 +103,13 @@ class error_500(baseGrepPlugin):
                 
         self.print_uniq( kb.kb.getData( 'error_500', 'error_500' ), 'VAR' )
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for error 500 pages that havent been catched by other plugins. By enabling this,
-        you are enabling a "safety net" that will catch all bugs that havent been catched by other plugins.
+        This plugin greps every page for error 500 pages that have'nt been caught
+        by other plugins. By enabling this, you are enabling a "safety net" that
+        will catch all interesting HTTP responses which might lead to a bug or
+        vulnerability.
         '''
