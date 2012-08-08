@@ -38,6 +38,7 @@ class test_ajax(unittest.TestCase):
         self.plugin = ajax()
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
+        kb.kb.save('ajax','ajax',[])
         
     def test_ajax_empty(self):
         body = ''
@@ -58,7 +59,6 @@ class test_ajax(unittest.TestCase):
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
     def test_ajax_broken_html(self):
-        kb.kb.save('ajax','ajax',[])
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
@@ -68,7 +68,6 @@ class test_ajax(unittest.TestCase):
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
     def test_ajax_broken_2(self):
-        kb.kb.save('ajax','ajax',[])
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
@@ -78,18 +77,15 @@ class test_ajax(unittest.TestCase):
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
     def test_ajax_find_2(self):
-        kb.kb.save('ajax','ajax',[])
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
-        a = ajax()
-        a.grep(request, response)
+        self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
     def test_ajax_two(self):
-        kb.kb.save('ajax','ajax',[])
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
