@@ -24,7 +24,6 @@ from __future__ import with_statement
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
-from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.factory import factory
@@ -36,36 +35,31 @@ class password_profiling(baseGrepPlugin):
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-
+    COMMON_WORDS = {'en': set([ 'type', 'that', 'from', 'this', 'been', 'there',
+                                'which', 'line', 'error', 'warning', 'file',
+                                'fatal', 'failed', 'open', 'such', 'required', 
+                                'directory', 'valid', 'result', 'argument',
+                                'there', 'some']),
+                    
+                    'es': set([ 'otro', 'otra', 'para', 'pero', 'hacia', 'algo',
+                                'poder','error']),
+                    
+                    }
+    COMMON_WORDS['unknown'] = COMMON_WORDS['en']
+    
+    BANNED_WORDS = set(['forbidden', 'browsing', 'index'])
+    
+    
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        # This is nicer, but HTMLParser inherits from SGMLParser that IS NOT
-        # thread safe, So i have to create an instance of HTMLParser for every
-        # call to testResponse
-        #self._htmlParser = htmlParser.HTMLParser()
         kb.kb.save( self, 'password_profiling', {} )
         
-        # names of plugins to run
-        ### TODO: develop more plugins, there is a nice ( all python ) metadata reader named hachoir-metadata
-        ### it will be usefull for doing A LOT of plugins
+        #TODO: develop more plugins, there is a, pure-python metadata reader named
+        #      hachoir-metadata it will be useful for writing A LOT of plugins
+        
+        # Plugins to run
         self._plugin_name_list = ['html', 'pdf']
-        
-        # plugin instances, they are created in the first call to self._run_plugins
         self._plugins = []
-        
-        # This are common words I dont want to use as passwords
-        self._commonWords = {}
-        self._commonWords['en'] = [ 'type', 'that', 'from', 'this', 'been', 'there', 'which', 
-        'line', 'error', 'warning', 'file', 'fatal', 'failed', 'open', 'such', 'required', 
-        'directory', 'valid', 'result', 'argument', 'there', 'some']
-        
-        self._commonWords['es'] = [ 'otro', 'otra', 'para', 'pero', 'hacia', 'algo', 'poder',
-        'error']
-        
-        self._commonWords['unknown'] = self._commonWords['en']
-        
-        # Some words that are banned
-        self._banned_words = [ 'forbidden', 'browsing', 'index' ]
         
         
     def grep(self, request, response):
@@ -76,15 +70,14 @@ class password_profiling(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None.
         '''
-        
         # Initial setup
-        lang = kb.kb.getData( 'lang', 'lang' )
-        if lang == []:
-            lang = 'unknown'
+        lang = kb.kb.getData( 'lang', 'lang' ) or 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.getCode() not in [500, 401, 403, 404] and \
-            not is_404(response) and request.getMethod() in ['POST', 'GET']:
+        if response.getCode() not in [500, 401, 403, 404] \
+        and not is_404(response) \
+        and request.getMethod() in ['POST', 'GET']:
+            
             # Run the plugins
             data = self._run_plugins(response)
             
@@ -96,8 +89,8 @@ class password_profiling(baseGrepPlugin):
                     
                     if len(d) >= 4 and d.isalnum() and \
                         not d.isdigit() and \
-                        d.lower() not in self._banned_words and \
-                        d.lower() not in self._commonWords[lang] and \
+                        d.lower() not in self.BANNED_WORDS and \
+                        d.lower() not in self.COMMON_WORDS[lang] and \
                         not request.sent( d ):
                         
                         if d in old_data:
@@ -137,7 +130,8 @@ class password_profiling(baseGrepPlugin):
         # Create plugin instances only once
         if not self._plugins:
             for plugin_name in self._plugin_name_list:
-                plugin_instance = factory( 'plugins.grep.password_profiling_plugins.' +  plugin_name )
+                plugin_klass = 'plugins.grep.password_profiling_plugins.%s'
+                plugin_instance = factory( plugin_klass % plugin_name )
                 self._plugins.append( plugin_instance )
         
         res = {}
@@ -145,22 +139,13 @@ class password_profiling(baseGrepPlugin):
             wordMap = plugin.getWords( response )
             if wordMap is not None:
                 # If a plugin returned something thats not None, then we are done.
-                # this plugins only return a something different of None of they found something
+                # this plugins only return a something different of None of they 
+                # found something
                 res = wordMap
                 break
         
         return res
         
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -205,6 +190,6 @@ class password_profiling(baseGrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin creates a list of possible passwords by reading responses and counting the most 
-        common words.
+        This plugin creates a list of possible passwords by reading responses
+        and counting the most common words.
         '''
