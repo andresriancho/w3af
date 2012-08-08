@@ -78,8 +78,9 @@ class BaseParser(object):
 
     def getEmails(self, domain=None):
         '''
-        @param domain: Indicates what email addresses I want to
-            retrieve: "*@domain".
+        @param domain: Indicates what email addresses I want to retrieve.
+                       All are returned if the domain is not set.
+                       
         @return: A list of email accounts that are inside the document.
         
         >>> from core.data.url.httpResponse import httpResponse as httpResponse
@@ -191,6 +192,7 @@ class BaseParser(object):
         >>> a._findEmails(u'header abc4def@w3af.com footer')
         [u'abc4def@w3af.com']
         '''
+        
         # Revert url-encoded sub-strings
         doc_str = urllib.unquote_plus(doc_str)
         
@@ -199,14 +201,14 @@ class BaseParser(object):
         
         # Perform a fast search for the @. In w3af, if we don't have an @ we
         # don't have an email
-        # We don't support mails like myself <at> gmail !dot! com
+        # We don't support emails like myself <at> gmail !dot! com
         if doc_str.find('@') != -1:
             compiled_re = re.compile('[^\w@\-\\.]', re.UNICODE)
             doc_str = re.sub(compiled_re, ' ', doc_str)
             for email, domain in re.findall(self.EMAIL_RE, doc_str):
                 if email not in self._emails:
                     self._emails.append(email)
-                    
+            
         return self._emails
     
     def _regex_url_parse(self, doc_str):

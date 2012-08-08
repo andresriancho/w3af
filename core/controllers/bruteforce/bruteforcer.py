@@ -140,12 +140,12 @@ class user_password_bruteforcer(object):
         yield self._url.getDomain()
         
         if self.use_emails:
-            mails = kb.kb.getData( 'mails', 'mails' )
-            for user in [ v['user'] for v in mails ]:
+            emails = kb.kb.getData( 'emails', 'emails' )
+            for user in [ v['user'] for v in emails ]:
                 yield user
             
-            mails = kb.kb.getData( 'mails', 'mails' )
-            for user in [ v['mail'] for v in mails ]:
+            emails = kb.kb.getData( 'emails', 'emails' )
+            for user in [ v['mail'] for v in emails ]:
                 yield user
         
         if self.use_SVN_users:

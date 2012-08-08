@@ -298,7 +298,7 @@ class user_dir(baseDiscoveryPlugin):
         '''
         res = []
         
-        infoList = kb.kb.getData( 'mails', 'mails' )
+        infoList = kb.kb.getData( 'emails', 'emails' )
         
         for i in infoList:
             res.append( i['user'] )

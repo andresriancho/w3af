@@ -5,7 +5,7 @@ from core.ui.consoleUi.tables import table
 
 class read_mail(base_payload):
     '''
-    This payload shows local mails stored on /var/mail/
+    This payload shows local emails stored on /var/mail/
     '''
     def api_read(self, parameters):
         result = {}

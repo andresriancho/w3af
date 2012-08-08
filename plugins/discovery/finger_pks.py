@@ -77,9 +77,9 @@ class finger_pks(baseDiscoveryPlugin):
                 i['user'] = result.username
                 i['name'] = result.name
                 i['url_list'] = ['http://pgp.mit.edu:11371/', ]
-                kb.kb.append( 'mails', 'mails', i )
+                kb.kb.append( 'emails', 'emails', i )
                 #   Don't save duplicated information in the KB. It's useless.
-                #kb.kb.append( self, 'mails', i )
+                #kb.kb.append( self, 'emails', i )
                 om.out.information( i.getDesc() )
 
         return []

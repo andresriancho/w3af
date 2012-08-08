@@ -25,6 +25,6 @@ def getLongDescription():
     @return: The description for the plugin type.
     '''    
     return '''Grep plugins analyze every request and response in order to
-     find errors, cookies, mails, comments and much more information about 
+     find errors, cookies, emails, comments and much more information about 
     the target web application.
     '''

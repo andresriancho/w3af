@@ -19,12 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
-from core.data.parsers.sgmlParser import SGMLParser
-from core.data.parsers.urlParser import url_object
-
 import core.data.dc.form as form
+
+from core.data.parsers.sgmlParser import SGMLParser
 
 
 class HTMLParser(SGMLParser):

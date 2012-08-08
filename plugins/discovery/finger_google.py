@@ -67,7 +67,7 @@ class finger_google(baseDiscoveryPlugin):
             else:
                 self._do_complete_search(domain)
             
-            self.print_uniq(kb.kb.getData('finger_google', 'mails'), None)
+            self.print_uniq(kb.kb.getData('finger_google', 'emails'), None)
         
         return []
 
@@ -110,13 +110,13 @@ class finger_google(baseDiscoveryPlugin):
             
     def _find_accounts(self, googlePage ):
         '''
-        Finds mails in google result page.
+        Finds emails in google result page.
         
         @return: A list of valid accounts
         '''
         try:
             gpuri = googlePage.getURI()
-            om.out.debug('Searching for mails in: ' + gpuri)
+            om.out.debug('Searching for emails in: ' + gpuri)
             
             grep_res = True if (gpuri.getDomain() == self._domain) else False
             response = self._uri_opener.GET(gpuri, cache=True,
@@ -154,8 +154,8 @@ class finger_google(baseDiscoveryPlugin):
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
                     i['url_list'] = [response.getURI(), ]
-                    kb.kb.append( 'mails', 'mails', i )
-                    kb.kb.append( self, 'mails', i )
+                    kb.kb.append( 'emails', 'emails', i )
+                    kb.kb.append( self, 'emails', i )
     
     def getOptions( self ):
         '''

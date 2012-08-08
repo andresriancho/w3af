@@ -216,7 +216,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
             - comboSeparator
         
         This plugin will take users from the file pointed by "usersFile", mail 
-        users found on the site ( if "useMailUsers" is set to True ), mails found
+        users found on the site ( if "useMailUsers" is set to True ), emails found
         on the site ( if "useMails" is set to True ), and svn users found on the
         site ( if "useSvnUsers" is set to True ).
         

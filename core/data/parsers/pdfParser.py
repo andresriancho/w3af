@@ -36,7 +36,7 @@ import re
 
 class pdfParser(BaseParser):
     '''
-    This class parses pdf documents to find mails and URLs. It's based in the pyPdf library.
+    This class parses pdf documents to find emails and URLs. It's based in the pyPdf library.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

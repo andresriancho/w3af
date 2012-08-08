@@ -67,19 +67,19 @@ class finger_bing(baseDiscoveryPlugin):
             #   Send the requests using threads:
             self._tm.threadpool.map(self._find_accounts, results)            
         
-            self.print_uniq(kb.kb.getData('finger_bing', 'mails'), None)
+            self.print_uniq(kb.kb.getData('finger_bing', 'emails'), None)
         
         return []
 
     def _find_accounts(self, page):
         '''
-        Finds mails in bing result.
+        Finds emails in bing result.
 
         @return: A list of valid accounts
         '''
         try:
             url = page.URL
-            om.out.debug('Searching for mails in: %s' % url)
+            om.out.debug('Searching for emails in: %s' % url)
             
             grep = True if self._domain == url.getDomain() else False
             response = self._uri_opener.GET(page.URL, cache=True,
@@ -116,8 +116,8 @@ class finger_bing(baseDiscoveryPlugin):
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
                         i['url_list'] = [page.URL, ]
-                        kb.kb.append( 'mails', 'mails', i )
-                        kb.kb.append( 'finger_bing', 'mails', i )
+                        kb.kb.append( 'emails', 'emails', i )
+                        kb.kb.append( 'finger_bing', 'emails', i )
 
     def getOptions( self ):
         '''

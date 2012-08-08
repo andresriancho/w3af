@@ -37,7 +37,7 @@ class TestFingerGoogle(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        mails = self.kb.getData('finger_google', 'mails')
+        emails = self.kb.getData('finger_google', 'emails')
         
-        self.assertEqual( len(mails), 3, mails)
+        self.assertEqual( len(emails), 3, emails)
 
