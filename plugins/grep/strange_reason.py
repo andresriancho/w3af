@@ -19,17 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
 
 class strange_reason(baseGrepPlugin):
     '''
@@ -37,9 +31,7 @@ class strange_reason(baseGrepPlugin):
       
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def __init__(self):
-        baseGrepPlugin.__init__(self)
-        self._w3c_reasons = {
+    W3C_REASONS = {
             100: ['continue',],
             101: ['switching protocols',],
 
@@ -87,6 +79,9 @@ class strange_reason(baseGrepPlugin):
             505: ['http version not supported',],
         }
         
+    def __init__(self):
+        baseGrepPlugin.__init__(self)
+        
     def grep(self, request, response):
         '''
         Plugin entry point. Analyze if the HTTP response reason messages are strange.
@@ -95,13 +90,14 @@ class strange_reason(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.getCode() in self._w3c_reasons:
-            
-            w3c_reason_list = self._w3c_reasons[ response.getCode() ]
+        response_code = response.getCode()
+        msg_list = self.W3C_REASONS.get(response_code, None)
+        
+        if msg_list is not None:
             
             response_reason = response.getMsg().lower()
             
-            if response_reason not in w3c_reason_list:
+            if response_reason not in msg_list:
                 #
                 #   I check if the kb already has a info object with this code:
                 #
@@ -132,35 +128,17 @@ class strange_reason(baseGrepPlugin):
                     i.setDesc( desc )
                     i.addToHighlight( response.getMsg() )
                     kb.kb.append( self , 'strange_reason' , i )
-    
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.getData( 'strange_reason', 'strange_reason' ), 'URL' )
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Analyze HTTP response reason messages sent by the remote web application and report uncommon
-        findings.
+        Analyze HTTP response reason messages sent by the remote web application
+        and report uncommon findings.
         '''
