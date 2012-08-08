@@ -21,20 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.data.parsers.dpCache as dpCache
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class meta_tags(baseGrepPlugin):
@@ -44,28 +37,27 @@ class meta_tags(baseGrepPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
+    '''
+    Can someone explain what this meta tag does?
+    <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2LXYrdnnK50g7kdY=" /> 
+    
+    Answer:
+    That's one of the verification elements used by Google Sitemaps. When you sign up
+    for Sitemaps you have to add that element to a root page to demonstrate to Google that
+    you're the site owner. So there is probably a Sitemaps account for the site, if you 
+    haven't found it already. 
+    '''
+    INTERESTING_WORDS = {'user':None, 'pass':None, 'microsoft':None,
+                         'visual':None, 'linux':None, 'source':None,
+                         'author':None, 'release':None,'version':None,
+                         'verify-v1':'Google Sitemap' }
+
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
-        self._comments = {}
-        self._search404 = False
-        
-        self._interesting_words = {'user':None, 'pass':None, 'microsoft':None,
-        'visual':None, 'linux':None, 'source':None, 'author':None, 'release':None,
-        'version':None, 'verify-v1':'Google Sitemap' }
         self._already_inspected = scalable_bloomfilter()
         
-        '''
-        Can someone explain what this meta tag does?
-        <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2LXYrdnnK50g7kdY=" /> 
-        
-        Answer:
-        That's one of the verification elements used by Google Sitemaps. When you sign up
-        for Sitemaps you have to add that element to a root page to demonstrate to Google that
-        you're the site owner. So there is probably a Sitemaps account for the site, if you 
-        haven't found it already. 
-        '''
-        
+       
     def grep(self, request, response):
         '''
         Plugin entry point, search for meta tags.
@@ -76,8 +68,8 @@ class meta_tags(baseGrepPlugin):
         '''
         uri = response.getURI()
         
-        if response.is_text_or_html() and not is_404( response ) and \
-            uri not in self._already_inspected:
+        if response.is_text_or_html() and not is_404( response ) \
+        and uri not in self._already_inspected:
 
             self._already_inspected.add(uri)
             
@@ -89,22 +81,26 @@ class meta_tags(baseGrepPlugin):
                 meta_tag_list = dp.getMetaTags()
                 
                 for tag in meta_tag_list:
-                    name = self._find_name( tag )
+                    tag_name = self._find_name( tag )
                     for attr in tag:
-                        for word in self._interesting_words:
+                        
+                        key = attr[0].lower()
+                        val = attr[1].lower()
+                        
+                        for word in self.INTERESTING_WORDS:
 
                             # Check if we have something interesting
                             # and WHERE that thing actually is
-                            where = value = None
-                            if ( word in attr[0].lower() ):
+                            where = content = None
+                            if ( word in key ):
                                 where = 'name'
-                                value = attr[0].lower()
-                            elif ( word in attr[1].lower() ):
+                                content = key
+                            elif ( word in val ):
                                 where = 'value'
-                                value = attr[1].lower()
+                                content = val
                             
                             # Now... if we found something, report it =)
-                            if where:
+                            if where is not None:
                                 # The atribute is interesting!
                                 i = info.info()
                                 i.setPluginName(self.getName())
@@ -112,18 +108,15 @@ class meta_tags(baseGrepPlugin):
                                 i.setURI( response.getURI() )
                                 i.setId( response.id )
                                 msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
-                                msg += 'attribute '+ where +' "'+ value +'" which'
+                                msg += 'attribute '+ where +' "'+ content +'" which'
                                 msg += ' looks interesting.'
-                                i.addToHighlight( where, value )
-                                if self._interesting_words.get(name, None):
+                                i.addToHighlight( where, content )
+                                if self.INTERESTING_WORDS.get(tag_name, None):
                                     msg += ' The tag is used for '
-                                    msg += self._interesting_words[name] + '.'
+                                    msg += self.INTERESTING_WORDS[tag_name] + '.'
                                 i.setDesc( msg )
                                 kb.kb.append( self , 'meta_tags' , i )
 
-                            else:
-                                # The attribute is not interesting
-                                pass
     
     def _find_name( self, tag ):
         '''
@@ -134,39 +127,17 @@ class meta_tags(baseGrepPlugin):
                 return attr[1]
         return ''
         
-    def setOptions( self, optionsMap ):
-        self._search404 = optionsMap['search404'].getValue()
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Search for meta tags in 404 pages.'
-        o1 = option('search404', self._search404, d1, 'boolean')
-        
-        ol = optionList()
-        ol.add(o1)
-        return ol
-    
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        # Now print the information objects
         self.print_uniq( kb.kb.getData( 'meta_tags', 'meta_tags' ), 'URL' )
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for interesting meta tags. Some interesting meta tags are the ones
-        that contain : 'microsoft', 'visual', 'linux' .
+        This plugin greps every page for interesting meta tags. Some interesting
+        meta tags are the ones that contain : 'microsoft', 'visual', 'linux' .
         '''

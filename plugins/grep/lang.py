@@ -22,18 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 
-import re
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.data.esmre.multi_in import multi_in
 
+def whole_words(l):
+    return [' %s ' % w for w in l ]
 
 class lang(baseGrepPlugin):
     '''
@@ -42,40 +38,47 @@ class lang(baseGrepPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
+    PREPOSITIONS = { 'en': multi_in(whole_words(['aboard', 'about', 'above',
+                                     'absent', 'across', 'after', 'against', 'along',
+                                     'alongside', 'amid', 'amidst', 'among',
+                                     'amongst', 'around', 'as', 'astride', 'at',
+                                     'atop', 'before', 'behind', 'below',
+                                     'beneath', 'beside', 'besides', 'between',
+                                     'beyond', 'but', 'by', 'despite', 'down',
+                                     'during', 'except', 'following', 'for', 
+                                     'from', 'in', 'inside', 'into', 'like',
+                                     'mid', 'minus', 'near', 'nearest', 'notwithstanding',
+                                     'of', 'off', 'on', 'onto', 'opposite', 'out',
+                                     'outside', 'over', 'past', 're', 'round',
+                                     'save', 'since', 'than', 'through', 'throughout',
+                                     'till', 'to', 'toward', 'towards', 'under',
+                                     'underneath', 'unlike', 'until', 'up', 
+                                     'upon', 'via', 'with', 'within', 'without'])),
+                    
+                    # The 'a' preposition was removed, cause its also used in english
+                     'es': multi_in(whole_words(['ante', 'bajo', 'cabe', 'con' , 
+                                     'contra', 'de', 'desde', 'en', 'entre', 'hacia',
+                                     'hasta', 'para', 'por' , 'segun', 'si',
+                                     'so', 'sobre', 'tras'])),
+                    
+                    # Turkish
+                    # Sertan Kolat <sertan@gmail.com>
+                     'tr': multi_in(whole_words(['ancak', 'burada', 'duyuru', 'evet', 
+                                     'fakat', 'gibi', 'haber', 'kadar', 'karar', 'kaynak',
+                                     'olarak', 'sayfa', 'siteye', 'sorumlu', 
+                                     'tamam', 'yasak', 'zorunlu'])),
+                     }
+
     def __init__(self):
         baseGrepPlugin.__init__(self)
         
         # Internal variables
         self._exec = True
         
-        # Some constants
-        self._prepositions = {}
-        
-        self._prepositions[ 'en' ] = ['aboard', 'about', 'above', 'absent', 'across', 'after', 
-        'against', 'along', 'alongside', 'amid', 'amidst', 'among', 'amongst', 'around', 'as', 
-        'astride', 'at', 'atop', 'before', 'behind', 'below', 'beneath', 'beside', 'besides',
-        'between', 'beyond', 'but', 'by', 'despite', 'down', 'during', 'except', 'following',
-        'for', 'from', 'in', 'inside', 'into', 'like', 'mid', 'minus', 'near', 'nearest', 
-        'notwithstanding', 'of', 'off', 'on', 'onto', 'opposite', 'out', 'outside', 'over', 
-        'past', 're', 'round', 'save', 'since', 'than', 'through', 'throughout', 'till', 'to',
-        'toward', 'towards', 'under', 'underneath', 'unlike', 'until', 'up', 'upon', 'via',
-        'with', 'within', 'without']
-
-        
-        # The 'a' preposition was removed, cause its also used in english
-        self._prepositions[ 'es' ] = ['ante', 'bajo', 'cabe', 'con' , 'contra' , 'de',
-        'desde', 'en', 'entre', 'hacia', 'hasta', 'para', 'por' , 'segun', 'si', 'so', 
-        'sobre', 'tras']
-        
-        # Turkish
-        # Sertan Kolat <sertan@gmail.com>
-        self._prepositions[ 'tr' ] = ['ancak', 'burada', 'duyuru', 'evet', 'fakat', 
-        'gibi', 'haber', 'kadar', 'karar', 'kaynak', 'olarak', 'sayfa', 'siteye', 
-        'sorumlu', 'tamam', 'yasak', 'zorunlu']
-        
     def grep(self, request, response):
         '''
-        Get the page indicated by the fuzzableRequest and determine the language using the preposition list.
+        Get the page indicated by the fuzzableRequest and determine the language
+        using the preposition list.
         
         @parameter request: The HTTP request object.
         @parameter response: The HTTP response object
@@ -84,37 +87,25 @@ class lang(baseGrepPlugin):
             if self._exec and not is_404( response ) and response.is_text_or_html():
                 kb.kb.save( self, 'lang', 'unknown' )
                 
-                number_of_matches = {}
+                matches = {}
+                body = response.getClearTextBody().lower()
                 
-                for lang_string in self._prepositions:
-                    # Init the count map
-                    number_of_matches[ lang_string ] = 0
-                    
-                    # Create regular expression
-                    # I add the ' 's because I want the whole word.
-                    prepositions = [' ' + i + ' ' for i in self._prepositions[lang_string]]
-                    preposition_regex = '(' + '|'.join(prepositions) + ')'
-                    
-                    # Find all the matches for this regular expression
-                    matches = re.findall(preposition_regex, response.getBody().lower())
-                    number_of_matches[ lang_string ] = len(matches)
+                for lang_string, m_in_obj in self.PREPOSITIONS.iteritems():
+                    matches[ lang_string ] = len( m_in_obj.query(body) )
                             
                 # Determine who is the winner
                 def sortfunc(x,y):
                     return cmp(y[1],x[1])
                     
-                items = number_of_matches.items()
+                items = matches.items()
                 items.sort( sortfunc )
                 
                 if items[0][1] > items[1][1] * 2:
                     # Only run once
                     self._exec = False
-                    
-                    # This if was added so no duplicated messages are printed
-                    # to the user, when w3af runs with multithreading.
-                    if kb.kb.getData( 'lang', 'lang' ) == 'unknown':
-                        om.out.information('The page language is: '+ items[0][0] )
-                        kb.kb.save( self, 'lang', items[0][0] )
+                    identified_lang = items[0][0]
+                    om.out.information('The page is written in: "%s".' % identified_lang )
+                    kb.kb.save( self, 'lang', identified_lang )
                 
                 else:
                     msg = 'Could not determine the page language using ' + response.getURL() 
@@ -122,44 +113,18 @@ class lang(baseGrepPlugin):
                     om.out.debug(msg)
                     # Keep running until giving a good response...
                     self._exec = True
-            
-            return []
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
     
     def end( self ):
         if self._exec:
             # I never got executed !
             om.out.information('Could not determine the language of the site.')
     
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin reads N pages and determines the language the site is written in. This is done
-        by saving a list of prepositions in different languages, and counting the number of matches
-        on every page.
+        This plugin reads N pages and determines the language the site is written
+        in. This is done by saving a list of prepositions in different languages,
+        and counting the number of matches on every page.
         '''
