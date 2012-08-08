@@ -19,21 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-
 import core.data.parsers.dpCache as dpCache
+import core.controllers.outputManager as om
+
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.controllers.w3afException import w3afException
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class get_emails(baseGrepPlugin):
@@ -45,9 +40,10 @@ class get_emails(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
+        self._already_inspected = scalable_bloomfilter()
+        
         # User configured variables
         self._only_target_domain = True
-        self._already_inspected = scalable_bloomfilter()
 
     def grep(self, request, response):
         '''
@@ -60,10 +56,11 @@ class get_emails(baseGrepPlugin):
         uri = response.getURI()
         if uri not in self._already_inspected:
             self._already_inspected.add(uri)
-            self._grep_worker(request, response, 'mails', response.getURL().getRootDomain() )
+            
+            self._grep_worker(request, response, 'emails', response.getURL().getRootDomain() )
     
             if not self._only_target_domain:
-                self._grep_worker(request, response, 'external_mails')
+                self._grep_worker(request, response, 'external_emails')
             
     def _grep_worker(self, request, response, kb_key, domain=None):
         '''
@@ -78,14 +75,14 @@ class get_emails(baseGrepPlugin):
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
-            msg = 'If I can\'t parse the document, I won\'t be able to find any emails.'
-            msg += ' Ignoring the response for "' + response.getURL() + '".'
-            om.out.debug( msg )
+            msg = 'If I can\'t parse the document, I won\'t be able to find any'
+            msg += ' emails. Ignoring the response for "%s".'
+            om.out.debug( msg % response.getURL() )
             return
 
-        mails = dp.getEmails(domain)
-        
-        for mail_address in mails:
+        emails = dp.getEmails(domain)
+
+        for mail_address in emails:
             # Reduce false positives
             if request.sent( mail_address ):
                 continue
@@ -95,7 +92,7 @@ class get_emails(baseGrepPlugin):
             url = response.getURL()
 
             email_map = {}
-            for info_obj in kb.kb.getData( 'mails', 'mails'):
+            for info_obj in kb.kb.getData( 'emails', 'emails'):
                 mail_string = info_obj['mail']
                 email_map[ mail_string ] = info_obj
 
@@ -114,7 +111,7 @@ class get_emails(baseGrepPlugin):
                 i['url_list'] = [url]
                 i['user'] = mail_address.split('@')[0]
                 i.addToHighlight( mail_address )
-                kb.kb.append( 'mails', kb_key, i )
+                kb.kb.append( 'emails', kb_key, i )
             
             else:
             
@@ -143,32 +140,26 @@ class get_emails(baseGrepPlugin):
         @return: A list of option objects for this plugin.
         '''    
         ol = optionList()
-        d1 = 'When greping, only search mails for domain of target'
+
+        d1 = 'When greping, only search emails for domain of target'
         o1 = option('onlyTargetDomain', self._only_target_domain, d1, 'boolean')
-        
-        ol = optionList()
         ol.add(o1)
+        
         return ol
 
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'mails', 'mails' ), None )
-        self.print_uniq( kb.kb.getData( 'mails', 'external_mails' ), None )
-    
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
+        self.print_uniq( kb.kb.getData( 'emails', 'emails' ), None )
+        self.print_uniq( kb.kb.getData( 'emails', 'external_emails' ), None )
     
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for mails, this mails can be later used for bruteforce plugins and are
-        of great value when doing a complete penetration test.
+        This plugin greps every page for emails, these can be used in other places,
+        like bruteforce plugins, and are of great value when doing a complete
+        penetration test.
         '''
