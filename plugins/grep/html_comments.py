@@ -1,5 +1,4 @@
 # coding: utf-8
-
 '''
 html_comments.py
 
@@ -23,22 +22,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import re
+
 import core.controllers.outputManager as om
 import core.data.parsers.dpCache as dpCache
-from core.data.esmre.multi_in import multi_in
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.w3afException import w3afException
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
+from core.data.esmre.multi_in import multi_in
+from core.data.db.temp_shelve import temp_shelve
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.w3afException import w3afException
+from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
 class html_comments(baseGrepPlugin):
@@ -67,11 +63,8 @@ class html_comments(baseGrepPlugin):
         baseGrepPlugin.__init__(self)
 
         # Internal variables
-        self._comments = {}
-        self._already_reported_interesting = []
-        
-        # User configurations
-        self._search404 = False
+        self._comments = temp_shelve()
+        self._already_reported_interesting = scalable_bloomfilter()
         
     def grep(self, request, response):
         '''
@@ -81,7 +74,7 @@ class html_comments(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html() and (not is_404( response ) or self._search404):
+        if response.is_text_or_html():
             try:
                 dp = dpCache.dpc.getDocumentParserFor( response )
             except w3afException:
@@ -96,7 +89,7 @@ class html_comments(baseGrepPlugin):
                     # show nice comments ;)
                     comment = comment.strip()
                     
-                    if self._is_new( comment, response):
+                    if self._is_new(comment, response):
                         
                         self._interesting_word( comment, request, response )
                         self._html_in_comment( comment, request, response )
@@ -118,9 +111,9 @@ class html_comments(baseGrepPlugin):
                 i.setDc( request.getDc )
                 i.setURI( response.getURI() )
                 i.addToHighlight( word )
-                kb.kb.append( self, 'interestingComments', i )
+                kb.kb.append( self, 'interesting_comments', i )
                 om.out.information( i.getDesc() )
-                self._already_reported_interesting.append( ( word, response.getURL() ) )
+                self._already_reported_interesting.add( ( word, response.getURL() ) )
 
     def _html_in_comment(self, comment, request, response):                    
         '''
@@ -142,9 +135,9 @@ class html_comments(baseGrepPlugin):
             i.setDc( request.getDc )
             i.setURI( response.getURI() )
             i.addToHighlight( html_in_comment.group(0) )
-            kb.kb.append( self, 'htmlCommentsHideHtml', i )
+            kb.kb.append( self, 'html_comment_hides_html', i )
             om.out.information( i.getDesc() )
-            self._already_reported_interesting.append( ( comment, response.getURL() ) )
+            self._already_reported_interesting.add( ( comment, response.getURL() ) )
                             
     def _is_new(self, comment, response):
         '''
@@ -162,27 +155,13 @@ class html_comments(baseGrepPlugin):
         
         return False        
     
-    def setOptions( self, optionsMap ):
-        self._search404 = optionsMap['search404'].getValue()
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Search for HTML comments in 404 pages.'
-        o1 = option('search404', self._search404, d1, 'boolean')
-        
-        ol = optionList()
-        ol.add(o1)
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         @return: None
         '''
         inform = []
-        for comment in self._comments.keys():
+        for comment in self._comments.iterkeys():
             urls_with_this_comment = self._comments[comment]
             stick_comment = ' '.join(comment.split())
             if len(stick_comment) > 40:
@@ -199,18 +178,11 @@ class html_comments(baseGrepPlugin):
             for i in inform:
                 om.out.information( i )
 
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for HTML comments, special comments like the ones containing
-        the words "password" or "user" are specially reported.
+        This plugin greps every page for HTML comments, special comments like 
+        the ones containing the words "password" or "user" are specially reported.
         '''
