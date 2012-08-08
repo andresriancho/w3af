@@ -19,19 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import re
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
-import re
 
 
 class dot_net_event_validation(baseGrepPlugin):
@@ -55,7 +50,7 @@ class dot_net_event_validation(baseGrepPlugin):
         encryptedVsRegex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
         self._encryptedVs = re.compile( encryptedVsRegex, re.IGNORECASE|re.DOTALL)
 
-        self._already_reported = scalable_bloomfilter()
+        self._already_analyzed = scalable_bloomfilter()
 
     def grep(self, request, response):
         '''
@@ -66,17 +61,17 @@ class dot_net_event_validation(baseGrepPlugin):
         '''
         if response.is_text_or_html():
 
-            # First verify if we havent greped this yet
-            if request.getURI() in self._already_reported:
+            # First verify if we havent analyzed this URI yet
+            if request.getURL() in self._already_analyzed:
                 return
-            else:
-                self._already_reported.add(request.getURI())
+            
+            self._already_analyzed.add(request.getURL())
 
             res = self._viewstate.search(response.getBody())
             if res:
+                
                 # I have __viewstate!, verify if event validation is enabled
                 if not self._eventvalidation.search(response.getBody()):
-                    # Nice! We found a possible bug =)
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('.NET Event Validation is disabled')
@@ -102,42 +97,26 @@ class dot_net_event_validation(baseGrepPlugin):
                     kb.kb.append( self, 'dot_net_event_validation', i )
 
     
-    def setOptions( self, OptionList ):
-        '''
-        Do nothing, I don't have any options.
-        '''
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        # Print alerts
-        self.print_uniq( kb.kb.getData( 'dot_net_event_validation', 'dot_net_event_validation' ), 'URL' )
+        self.print_uniq( kb.kb.getData( 'dot_net_event_validation', 
+                                        'dot_net_event_validation' ), 'URL' )
         
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        ASP.NET implements a method to verify that every postback comes from the corresponding control, which is called EventValidation.
-        In some cases the developers disable this kind of verifications by adding EnableEventValidation="false" to the .aspx file header, or
-        in the web.config/system.config file.
+        ASP.NET implements a method to verify that every postback comes from the
+        corresponding control, which is called EventValidation. In some cases the
+        developers disable this kind of verifications by adding 
+        EnableEventValidation="false" to the .aspx file header, or in the web.config
+        or system.config files.
 
-        This plugin finds pages that have event validation disabled. In some cases, if you analyze the logic of the program and event validation
-        is disabled, you'll be able to bypass authorizations or some other controls.
+        This plugin finds pages that have event validation disabled. In some
+        cases, if you analyze the logic of the program and event validation
+        is disabled, you'll be able to bypass authorizations or some other
+        controls.
         '''
