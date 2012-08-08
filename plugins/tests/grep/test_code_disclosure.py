@@ -23,6 +23,7 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
+from nose.plugins.skip import SkipTest
 from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
@@ -72,10 +73,8 @@ class test_code_disclosure(unittest.TestCase):
         self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 0 )
 
     def test_no_code_disclosure(self):
-        # TODO: Add this test
-        self.assertTrue( True )
+        raise SkipTest('Add this test')
     
     def test_no_code_disclosure_xml(self):
-        # TODO: Add this test
-        self.assertTrue( True )
+        raise SkipTest('Add this test')
 
