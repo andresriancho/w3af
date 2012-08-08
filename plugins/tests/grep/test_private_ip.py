@@ -25,7 +25,6 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzableRequest import fuzzableRequest
-from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.private_ip import private_ip
 
@@ -37,6 +36,9 @@ class test_private_ip(unittest.TestCase):
         self.plugin = private_ip()
         self.url = url_object('http://www.w3af.com/')
         self.request = fuzzableRequest(self.url)
+
+    def tearDown(self):
+        self.plugin.end()
         
     def test_private_ip_empty(self):
         body = ''
