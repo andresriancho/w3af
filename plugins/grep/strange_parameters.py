@@ -19,32 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-
+import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
 from core.controllers.w3afException import w3afException
-import core.data.parsers.dpCache as dpCache
-
-import re
 
 
 class strange_parameters(baseGrepPlugin):
     '''
     Grep the HTML response and find URIs that have strange parameters.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -123,16 +114,6 @@ class strange_parameters(baseGrepPlugin):
                             v.addToHighlight(qs[param_name][element_index])
                             kb.kb.append( self , 'strange_parameters' , v )
     
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -183,21 +164,13 @@ class strange_parameters(baseGrepPlugin):
         
         return False
     
-        
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps all responses and tries to identify URIs with strange parameters, some examples of strange
-        parameters are:
+        This plugin greps all responses and tries to identify URIs with strange
+        parameters, some examples of strange parameters are:
             - http://a/?b=method(a,c)
             - http://a/?c=x|y|z|d
         '''
