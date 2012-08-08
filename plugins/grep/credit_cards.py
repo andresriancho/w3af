@@ -19,21 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+import re
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-import re
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 
 
 def luhnCheck(value):
@@ -63,7 +55,7 @@ def luhnCheck(value):
 
 class credit_cards(baseGrepPlugin):
     '''
-    This plugin detects the occurence of credit card numbers in web pages.
+    This plugin detects the occurrence of credit card numbers in web pages.
 
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
@@ -71,9 +63,8 @@ class credit_cards(baseGrepPlugin):
 
     def __init__(self):
         baseGrepPlugin.__init__(self)
-        self._cardResponses = []
 
-        cc_regex = '((^|[^\d])\d{4}[- ]?(\d{4}[- ]?\d{4}|\d{6})[- ]?(\d{5}|\d{4})($|[^\d]))'
+        cc_regex = '((^|\s)\d{4}[- ]?(\d{4}[- ]?\d{4}|\d{6})[- ]?(\d{5}|\d{4})($|\s))'
         #    (^|[^\d])                        Match the start of the string, or something that's NOT a digit
         #    \d{4}[- ]?                       Match four digits, and then (optionally) a "-" or a space
         #    (\d{4}[- ]?\d{4}|\d{6})          Match one of the following:
@@ -106,9 +97,8 @@ class credit_cards(baseGrepPlugin):
                 v.setSeverity(severity.LOW)
                 v.setName( 'Credit card number disclosure' )
                 v.addToHighlight(card)
-                msg = 'The URL: "' + v.getURL() + '" discloses the credit card number: "'
-                msg += card + '".'
-                v.setDesc( msg )
+                msg = 'The URL: "%s" discloses the credit card number: "%s"'
+                v.setDesc( msg % (v.getURL(), card) )
                 kb.kb.append( self, 'credit_cards', v )
      
     def _find_card(self, body):
@@ -131,34 +121,16 @@ class credit_cards(baseGrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        # Print results
         self.print_uniq( kb.kb.getData( 'credit_cards', 'credit_cards' ), 'URL' )
 
-
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self, opt ):
-        pass
      
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugins scans every response page to find the strings that are likely to be 
-        credit card numbers. It can be tested against the following URL:
+        This plugins scans every response page to find the strings that are 
+        likely to be credit card numbers. It can be tested against the following
+        URL:
             - https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
         '''
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
- 
