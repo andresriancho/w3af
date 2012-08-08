@@ -19,22 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 import socket
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.misc.get_local_ip import get_local_ip
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.misc.get_local_ip import get_local_ip
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -55,7 +48,7 @@ class private_ip(baseGrepPlugin):
         regex_str += '254|172\.0?(?:1[6-9]|2[0-9]|3[01]))(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-'
         regex_str += '9]?)){2}(?!\d)(?!\.)'
         self._private_ip_address = re.compile(regex_str)
-        self._regex_list = [self._private_ip_address ]
+        self._regex_list = [self._private_ip_address, ]
 
         self._already_inspected = scalable_bloomfilter()
         self._ignore_if_match = None
@@ -68,6 +61,8 @@ class private_ip(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, results are saved to the kb.
         '''
+        if self._ignore_if_match is None:
+            self._generate_ignores( response )
         
         if not ( request.getURL() , request.getData() ) in self._already_inspected:
 
@@ -80,14 +75,12 @@ class private_ip(baseGrepPlugin):
             #
             headers_string = response.dumpHeaders()
 
-            if self._ignore_if_match is None:
-                self._generate_ignores( response )
-
             #   Match the regular expressions
             for regex in self._regex_list:
                 for match in regex.findall(headers_string):
 
-                    # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
+                    # If i'm requesting 192.168.2.111 then I don't want to be
+                    # alerted about it
                     if match not in self._ignore_if_match:
                         v = vuln.vuln()
                         v.setPluginName(self.getName())
@@ -104,14 +97,11 @@ class private_ip(baseGrepPlugin):
                         kb.kb.append( self, 'header', v )       
 
             #
-            #   Search for IP addresses on HTML
+            #   Search for IP addresses in the HTML
             #
             if response.is_text_or_html():
                 
                 # Performance improvement!
-                # Remember that httpResponse objects have a faster "__in__" than
-                # the one in strings; so string in response.getBody() is slower than
-                # string in response; and regular expression matching is way slower!
                 if not (('10.' in response) or ('172.' in response) or \
                     ('192.168.' in response) or ('169.254.' in response)):
                     return
@@ -119,7 +109,7 @@ class private_ip(baseGrepPlugin):
                 for regex in self._regex_list:
                     for match in regex.findall(response.getBody()):
                         match = match.strip()
-                                                
+
                         # Some proxy servers will return errors that include headers in the body
                         # along with the client IP which we want to ignore
                         if re.search("^.*X-Forwarded-For: .*%s" % match, response.getBody(), re.M):
@@ -146,31 +136,22 @@ class private_ip(baseGrepPlugin):
         '''
         Generate the list of strings we want to ignore as private IP addresses
         '''
-        self._ignore_if_match = []
+        if self._ignore_if_match is None: 
+            self._ignore_if_match = set()
+            
+            requested_domain = response.getURL().getDomain()
+            self._ignore_if_match.add( requested_domain )
+            
+            self._ignore_if_match.add( get_local_ip(requested_domain) )
+            self._ignore_if_match.add( get_local_ip() )
+            
+            try:
+                ip_address = socket.gethostbyname(requested_domain)
+            except:
+                pass
+            else:
+                self._ignore_if_match.add( ip_address )
         
-        requested_domain = response.getURL().getDomain()
-        self._ignore_if_match.append( requested_domain )
-        
-        self._ignore_if_match.append( get_local_ip(requested_domain) )
-        self._ignore_if_match.append( get_local_ip() )
-        
-        try:
-            ip_address = socket.gethostbyname(requested_domain)
-        except:
-            pass
-        else:
-            self._ignore_if_match.append( ip_address )
-        
-    def setOptions( self, OptionList ):
-        pass
-    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -178,13 +159,6 @@ class private_ip(baseGrepPlugin):
         self.print_uniq( kb.kb.getData( 'private_ip', 'header' ), None )
         self.print_uniq( kb.kb.getData( 'private_ip', 'HTML' ), None )
             
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
