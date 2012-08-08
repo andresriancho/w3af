@@ -71,6 +71,57 @@ def set_changed(meth):
 
     return wrapper
 
+def parse_qsl(qs, keep_blank_values=0, strict_parsing=0):
+    """This is a slightly modified version of the function with the same name
+    that is defined in urlparse.py . I had to modify it in order to have
+    '+' handled in the way w3af needed it. Note that the only change is:
+    
+    -        name = unquote(nv[0].replace('+', ' '))
+    -        value = unquote(nv[1].replace('+', ' '))
+    +        name = unquote(nv[0])
+    +        value = unquote(nv[1])
+    
+    In other words, keep those + !
+    
+    Parse a query given as a string argument.
+
+    Arguments:
+
+    qs: percent-encoded query string to be parsed
+
+    keep_blank_values: flag indicating whether blank values in
+        percent-encoded queries should be treated as blank strings.  A
+        true value indicates that blanks should be retained as blank
+        strings.  The default false value indicates that blank values
+        are to be ignored and treated as if they were  not included.
+
+    strict_parsing: flag indicating what to do with parsing errors. If
+        false (the default), errors are silently ignored. If true,
+        errors raise a ValueError exception.
+
+    Returns a list, as G-d intended.
+    """
+    pairs = [s2 for s1 in qs.split('&') for s2 in s1.split(';')]
+    r = []
+    for name_value in pairs:
+        if not name_value and not strict_parsing:
+            continue
+        nv = name_value.split('=', 1)
+        if len(nv) != 2:
+            if strict_parsing:
+                raise ValueError, "bad query field: %r" % (name_value,)
+            # Handle case of a control-name with no equal sign
+            if keep_blank_values:
+                nv.append('')
+            else:
+                continue
+        if len(nv[1]) or keep_blank_values:
+            name = urlparse.unquote(nv[0])
+            value = urlparse.unquote(nv[1])
+            r.append((name, value))
+
+    return r
+
 def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     '''
     Parse a url encoded string (a=b&c=d) into a QueryString object.
@@ -80,6 +131,8 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
 
     >>> parse_qs('id=3')
     QueryString({u'id': [u'3']})
+    >>> parse_qs('id=3+1')
+    QueryString({u'id': [u'3+1']})
     >>> parse_qs('id=3&id=4')
     QueryString({u'id': [u'3', u'4']})
     >>> parse_qs('id=3&ff=4&id=5')
@@ -99,9 +152,9 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
             qstr = qstr.encode(encoding, 'ignore')
         try:
             odict = OrderedDict()
-            for name, value in urlparse.parse_qsl(qstr,
-                                                  keep_blank_values=True,
-                                                  strict_parsing=False):
+            for name, value in parse_qsl(qstr,
+                                         keep_blank_values=True,
+                                         strict_parsing=False):
                 if name in odict:
                     odict[name].append(value)
                 else:
@@ -1071,6 +1124,13 @@ class url_object(disk_item):
     
     def urlDecode(self):
         '''
+        >>> False
+        True
+
+        This is just a reminder to myself to make sure I fix the '+' handling.
+        The examples below might be broken, and the usage of the modified parse_qsl
+        might also be a bug. 
+        
         >>> str(url_object(u'https://w3af.com:443/xyz/file.asp?id=1').urlDecode())
         'https://w3af.com:443/xyz/file.asp?id=1'
         >>> url_object(u'https://w3af.com:443/xyz/file.asp?id=1%202').urlDecode().url_string
@@ -1088,6 +1148,8 @@ class url_object(disk_item):
         '''
         >>> url_object(u'https://w3af.com:443/file.asp?id=1 2').urlEncode()
         'https://w3af.com:443/file.asp?id=1%202'
+        >>> url_object(u'https://w3af.com:443/file.asp?id=1+2').urlEncode()
+        'https://w3af.com:443/file.asp?id=1%2B2'
         >>> url_object(u'http://w3af.com/x.py?ec=x*y/2==3').urlEncode()
         'http://w3af.com/x.py?ec=x%2Ay%2F2%3D%3D3'
         >>> url_object(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
@@ -1103,7 +1165,7 @@ class url_object(disk_item):
             qs = '?' + str(self.querystring)
             self_str = self_str[:qs_start_index]
         
-        return "%s%s" % (urllib.quote(self_str, safe=self.ALWAYS_SAFE), qs)
+        return "%s%s" % (urllib.quote_plus(self_str, safe=self.ALWAYS_SAFE), qs)
     
     def getDirectories( self ):
         '''
