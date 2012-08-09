@@ -148,7 +148,7 @@ onlyTargetDomain = True
 
 [grep.path_disclosure]
 
-[audit.xsrf]
+[audit.csrf]
 
 [bruteforce.form_auth]
 profilingNumber = 50

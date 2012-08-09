@@ -1,5 +1,5 @@
 '''
-test_xsrf.py
+test_csrf.py
 
 Copyright 2012 Andres Riancho
 
@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from ..helper import PluginTest, PluginConfig
+from nose.plugins.skip import SkipTest
 
-from plugins.audit.xsrf import xsrf
+from plugins.audit.csrf import csrf
 
 from core.data.url.httpResponse import httpResponse
 from core.data.parsers.urlParser import url_object
@@ -30,13 +31,13 @@ from core.data.url.xUrllib import xUrllib
 
 class TestXSRF(PluginTest):
     
-    target_url = 'http://moth/w3af/audit/xsrf/'
+    target_url = 'http://moth/w3af/audit/csrf/'
     
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('xsrf'),),
+                 'audit': (PluginConfig('csrf'),),
                  'discovery': (
                       PluginConfig(
                           'web_spider',
@@ -47,7 +48,7 @@ class TestXSRF(PluginTest):
         }
     
     def test_resp_is_equal(self):
-        x = xsrf()
+        x = csrf()
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         
@@ -64,7 +65,7 @@ class TestXSRF(PluginTest):
         self.assertTrue( x._is_resp_equal(r1,r2) )
         
     def test_is_suitable(self):
-        x = xsrf()
+        x = csrf()
         uri_opener = xUrllib()
         x.set_url_opener( uri_opener )
         
@@ -83,14 +84,16 @@ class TestXSRF(PluginTest):
         req = fuzzableRequest(url, method='GET')
         self.assertTrue( x._is_suitable( req )[0] )
 
-'''    
-    def test_found_xsrf(self):
+
+    def test_found_csrf(self):
+        raise SkipTest('Still need to work on this in order to make it work')
+
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('xsrf', 'xsrf')
+        vulns = self.kb.getData('csrf', 'csrf')
         self.assertEquals(2, len(vulns))
 
         EXPECTED = [
@@ -102,4 +105,4 @@ class TestXSRF(PluginTest):
                            set([ v.getURL().getFileName() for v in vulns]) )
         self.assertTrue(all(['CSRF vulnerability' == v.getName() for v in vulns ]) )
 
-   '''     
+

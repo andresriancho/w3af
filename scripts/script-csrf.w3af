@@ -1,7 +1,7 @@
 # This is the XSRF demo:
 
 plugins
-audit xsrf
+audit csrf
 output console,text_file
 output
 output config text_file
@@ -10,10 +10,10 @@ set verbose True
 back
 back
 target
-set target http://moth/w3af/audit/xsrf/xsrf.php?abc=2 
+set target http://moth/w3af/audit/csrf/csrf.php?abc=2 
 back
 start
 
-assert len(kb.kb.getData('xsrf','get_xsrf')) == 1
+assert len(kb.kb.getData('csrf','get_csrf')) == 1
 
 exit

@@ -28,7 +28,7 @@ execOneTime = False
 
 [grep.path_disclosure]
 
-[audit.xsrf]
+[audit.csrf]
 
 [grep.hash_find]
 

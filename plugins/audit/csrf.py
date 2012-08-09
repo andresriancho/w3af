@@ -1,5 +1,5 @@
 '''
-xsrf.py
+csrf.py
 
 Copyright 2006 Andres Riancho
 
@@ -37,7 +37,7 @@ COMMON_CSRF_NAMES = [
         'token'
         ]
 
-class xsrf(baseAuditPlugin):
+class csrf(baseAuditPlugin):
     '''
     Identify Cross-Site Request Forgery vulnerabilities.
     @author: Taras (oxdef@oxdef.info)
@@ -78,11 +78,11 @@ class xsrf(baseAuditPlugin):
         v.setSeverity(severity.HIGH)
         msg = 'Cross Site Request Forgery has been found at: ' + freq.getURL()
         v.setDesc(msg)
-        kb.kb.append(self, 'xsrf', v)
+        kb.kb.append(self, 'csrf', v)
 
     def _is_resp_equal(self, res1, res2):
         '''
-        @see: unittest for this method in test_xsrf.py
+        @see: unittest for this method in test_csrf.py
         '''
         if res1.getCode() != res2.getCode():
             return False
@@ -201,16 +201,16 @@ class xsrf(baseAuditPlugin):
         This method is called at the end, when w3afCore aint going to use this
         plugin anymore.
         '''
-        self.printUniq(kb.kb.getData('xsrf', 'xsrf'), None)
+        self.printUniq(kb.kb.getData('csrf', 'csrf'), None)
 
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds Cross Site Request Forgeries (xsrf) vulnerabilities.
+        This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.
         
-        The simplest type of xsrf is checked to be vulnerable, the web application
+        The simplest type of csrf is checked to be vulnerable, the web application
         must have sent a permanent cookie, and the aplicacion must have query
         string parameters.
         '''
