@@ -141,20 +141,6 @@ class response_splitting(baseAuditPlugin):
                 kb.kb.append( self, 'response_splitting', i )
                 return False
                 
-            elif HEADER_NAME in value.lower():
-                msg = 'The vulnerable header wasn\'t added to the HTTP response, '
-                msg += 'but the value of one of the headers was successfully modified.'
-                msg += ' Please verify manually.'
-                om.out.information(msg)
-
-                i = info.info()
-                i.setPluginName(self.getName())
-                i.setDesc( msg )
-                i.setId( response.id )
-                i.setName( 'Parameter modifies headers' )
-                kb.kb.append( self, 'response_splitting', i )
-                return False
-            
         return False
 
     def getLongDesc( self ):
