@@ -19,39 +19,43 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# Import options
+import hashlib
+import os
 import re
 
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
-import core.data.constants.severity as severity
-
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
-# Main class
 class wordpress_fingerprint(baseCrawlPlugin):
     '''
     Finds the version of a WordPress installation.
     @author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
     '''
-
+    # Wordpress version unique data, file/data/version
+    WP_FINGERPRINT = [('wp-includes/js/tinymce/tiny_mce.js','2009-05-25','2.8'), 
+                      ('wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'), 
+                      ('wp-admin/css/farbtastic.css','.farbtastic','2.7'),
+                      ('wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'),
+                      ('wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'),
+                      ('wp-admin/async-upload.php','200','2.5'),
+                      ('wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'),
+                      ('readme.html','2.3','2.3'),
+                      ('wp-includes/rtl.css','#adminmenu a','2.2.3'),
+                      ('wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'),
+                      ('wp-app.php','200','2.2')
+                      ]
+        
     def __init__(self):
         baseCrawlPlugin.__init__(self)
         
         # Internal variables
         self._exec = True
-        self._version = None
 
     def crawl(self, fuzzableRequest ):
         '''
@@ -59,20 +63,14 @@ class wordpress_fingerprint(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
         (among other things) the URL to test.
         '''
-        dirs = []
-  
         if not self._exec :
             # This will remove the plugin from the crawl plugins to be run.
             raise w3afRunOnce()
-            
+           
         else:
-
-            #########################
-            ## Check if the server is running wp ##
-            #########################
-            
-            self._fuzzableRequests = []  
-            
+            #
+            # Check if the server is running wp
+            #
             domain_path = fuzzableRequest.getURL().getDomainPath()
             
             # Main scan URL passed from w3af + unique wp file
@@ -81,112 +79,166 @@ class wordpress_fingerprint(baseCrawlPlugin):
 
             # If wp_unique_url is not 404, wordpress = true
             if not is_404( response ):
+                # It was possible to analyze wp-login.php, don't run again
+                self._exec = False
+                
+                # Analyze the identified wordpress installation
+                self._fingerprint_wordpress( domain_path, wp_unique_url, response)
+                
+                # Extract the links
+                dirs = []
                 dirs.extend( self._createFuzzableRequests( response ) )
+                return dirs
+    
+    def _fingerprint_wordpress(self, domain_path, wp_unique_url, response):
+        '''
+        Fingerprint wordpress using various techniques.
+        '''
+        self._fingerprint_meta(domain_path, wp_unique_url, response)
+        self._fingerprint_data(domain_path, wp_unique_url, response)
+        self._fingerprint_readme(domain_path, wp_unique_url, response)
+        self._fingerprint_installer(domain_path, wp_unique_url, response)
+    
+    def _fingerprint_installer(self, domain_path, wp_unique_url, response):
+        '''
+        GET latest.zip and latest.tar.gz and compare with the hashes from the
+        release.db that was previously generated from wordpress.org [0]
+        and contains all release hashes.
 
-                ##############################
-                ## Check if the wp version is in index header ##
-                ##############################
+        This gives the initial wordpress version, not the current one.
+        
+        [0] http://wordpress.org/download/release-archive/
+        '''
+        zip_url = domain_path.urlJoin( 'latest.zip' )
+        tar_gz_url = domain_path.urlJoin( 'latest.tar.gz' )
+        install_urls = [zip_url, tar_gz_url]
+        
+        for install_url in install_urls:
+            response = self._uri_opener.GET( install_url, cache=True, 
+                                             respect_size_limit=False )
+
+            # md5sum the response body
+            m = hashlib.md5()
+            m.update( response.getBody() )
+            remote_release_hash = m.hexdigest()
             
-                # Main scan URL passed from w3af + wp index page
-                wp_index_url = domain_path.urlJoin( 'index.php' )
-                response = self._uri_opener.GET( wp_index_url, cache=True )
-
-                # Find the string in the response html
-                find = '<meta name="generator" content="[Ww]ord[Pp]ress (\d\.\d\.?\d?)" />'
-                m = re.search(find, response.getBody())
-
-                # If string found, group version
-                if m:
-                    m = m.group(1)
-                    self._version = m
-
+            release_db = os.path.join('plugins', 'crawl', 'wordpress_fingerprint',
+                                      'release.db')
+            
+            for line in file(release_db):
+                try:
+                    line = line.strip()
+                    release_db_hash, release_db_name = line.split(',')
+                except:
+                    continue
+                
+                if release_db_hash ==  remote_release_hash:
+    
                     # Save it to the kb!
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('WordPress version')
-                    i.setURL( wp_index_url )
+                    i.setURL( install_url )
                     i.setId( response.id )
-                    i.setDesc( 'WordPress version "'+ self._version +'" found in the index header.' )
+                    msg = 'The sysadmin used WordPress version "%s" during the'
+                    msg += ' installation, which was found by matching the contents'
+                    msg += ' of "%s" with the hashes of known releases. If the'
+                    msg += ' sysadmin did not update wordpress, the current version'
+                    msg += ' will still be the same.'
+                    i.setDesc( msg % (release_db_name, install_url) )
                     kb.kb.append( self, 'info', i )
                     om.out.information( i.getDesc() )
+    
+    def _fingerprint_readme(self, domain_path, wp_unique_url, response):
+        '''
+        GET the readme.html file and extract the version information from there.
+        '''
+        wp_readme_url = domain_path.urlJoin( 'readme.html' )
+        response = self._uri_opener.GET( wp_readme_url, cache=True )
 
-                #########################
-                ## Find wordpress version from data ##
-                #########################
+        # Find the string in the response html
+        find = '<br /> Version (\d\.\d\.?\d?)'
+        m = re.search(find, response.getBody())
 
-                # Wordpress version unique data, file/data/version
-                self._wp_fingerprint = [ ('wp-includes/js/tinymce/tiny_mce.js','2009-05-25','2.8'), 
-                        ('wp-includes/js/thickbox/thickbox.css','-ms-filter:','2.7.1'), 
-                        ('wp-admin/css/farbtastic.css','.farbtastic','2.7'),
-                        ('wp-includes/js/tinymce/wordpress.css','-khtml-border-radius:','2.6.1, 2.6.2, 2.6.3 or 2.6.5'),
-                        ('wp-includes/js/tinymce/tiny_mce.js','0.7','2.5.1'),
-                        ('wp-admin/async-upload.php','200','2.5'),
-                        ('wp-includes/images/rss.png','200','2.3.1, 2.3.2 or 2.3.3'),
-                        ('readme.html','2.3','2.3'),
-                        ('wp-includes/rtl.css','#adminmenu a','2.2.3'),
-                        ('wp-includes/js/wp-ajax.js','var a = $H();','2.2.1'),
-                        ('wp-app.php','200','2.2')]
+        # If string found, group version
+        if m:
+            version = m.group(1)
 
-                for row in self._wp_fingerprint:
-                    test_url = domain_path.urlJoin( row[0] )
-                    response = self._uri_opener.GET( test_url, cache=True )
+            # Save it to the kb!
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('WordPress version')
+            i.setURL( wp_readme_url )
+            i.setId( response.id )
+            msg = 'WordPress version "%s" found in the readme.html file.'
+            i.setDesc( msg % version )
+            kb.kb.append( self, 'info', i )
+            om.out.information( i.getDesc() )
+        
+    
+    def _fingerprint_meta(self, domain_path, wp_unique_url, response):
+        '''
+        Check if the wp version is in index header
+        '''
+        # Main scan URL passed from w3af + wp index page
+        wp_index_url = domain_path.urlJoin( 'index.php' )
+        response = self._uri_opener.GET( wp_index_url, cache=True )
 
-                    if row[1] == '200' and not is_404(response):
-                        self._version = row[2]
-                        break
-                    elif row[1] in response.getBody():
-                        self._version = row[2]
-                        break
-                    else:
-                        self._version = 'lower than 2.2'
+        # Find the string in the response html
+        find = '<meta name="generator" content="[Ww]ord[Pp]ress (\d\.\d\.?\d?)" />'
+        m = re.search(find, response.getBody())
 
-                # Save it to the kb!
-                i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('WordPress version')
-                i.setURL( test_url )
-                i.setId( response.id )
-                i.setDesc( 'WordPress version "'+ self._version +'" found from data.' )
-                kb.kb.append( self, 'info', i )
-                om.out.information( i.getDesc() )
+        # If string found, group version
+        if m:
+            version = m.group(1)
 
-                # Only run once
-                self._exec = False
+            # Save it to the kb!
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('WordPress version')
+            i.setURL( wp_index_url )
+            i.setId( response.id )
+            msg = 'WordPress version "%s" found in the index header.'
+            i.setDesc( msg % version )
+            kb.kb.append( self, 'info', i )
+            om.out.information( i.getDesc() )
 
-        return dirs
+    def _fingerprint_data(self, domain_path, wp_unique_url, response):
+        '''
+        Find wordpress version from data
+        '''
+        version = 'lower than 2.2'
+        
+        for url, match_string, wp_version in self.WP_FINGERPRINT:
+            test_url = domain_path.urlJoin( url )
+            response = self._uri_opener.GET( test_url, cache=True )
+
+            if match_string == '200' and not is_404(response):
+                version = wp_version
+                break
+            elif match_string in response.getBody():
+                version = wp_version
+                break
+
+        # Save it to the kb!
+        i = info.info()
+        i.setPluginName(self.getName())
+        i.setName('WordPress version')
+        i.setURL( test_url )
+        i.setId( response.id )
+        i.setDesc( 'WordPress version "'+ version +'" found from data.' )
+        kb.kb.append( self, 'info', i )
+        om.out.information( i.getDesc() )
   
-    # W3af options and output    
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-        
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds the version of a WordPress installation by fingerprinting it.
+        This plugin finds the version of a WordPress installation by fingerprinting
+        it.
 
-        It first checks whether or not the version is in the index header and then it checks for 
-        the "real version" through the existance of files that are only present in specific versions.
+        It first checks whether or not the version is in the index header and
+        then it checks for the "real version" through the existance of files
+        that are only present in specific versions.
         '''
