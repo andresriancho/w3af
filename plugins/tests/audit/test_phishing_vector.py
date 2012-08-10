@@ -31,7 +31,7 @@ class TestPhishingVector(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('phishing_vector'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

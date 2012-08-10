@@ -32,7 +32,7 @@ class TestPasswordProfiling(PluginTest):
             'target': password_profiling_url,
             'plugins': {
                 'grep': (PluginConfig('password_profiling'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

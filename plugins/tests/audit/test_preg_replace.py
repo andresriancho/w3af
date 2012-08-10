@@ -30,7 +30,7 @@ class TestPreg(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('preg_replace'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

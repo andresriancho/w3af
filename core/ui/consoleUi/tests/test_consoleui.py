@@ -30,8 +30,8 @@ class mock_stdout(object):
     def __init__(self):
         self.messages = []
     
-    def write(self, *args):
-        self.messages.append( args )
+    def write(self, msg):
+        self.messages.extend( msg.split('\n\r') )
     
     flush = do_nothing
     
@@ -85,6 +85,28 @@ class TestConsoleUI(unittest.TestCase):
             
             self._mock_stdout.clear()
     
+    def test_menu_plugin_desc(self):
+        commands_to_run = ['plugins',
+                           'infrastructure desc zone_h',
+                           'back', 
+                           'exit']
+        
+        expected = ('This plugin searches the zone-h.org',
+                    'result. The information stored in',
+                    'previous defacements to the target website.')
+        
+        self.mock_sys()
+        
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
+        
+        self.restore_sys()
+        
+        self.assertTrue( self.startswith_expected_in_output(expected), 
+                         self._mock_stdout.messages )
+        
+        self._mock_stdout.clear()        
+    
     def test_SQL_scan(self):
         commands_to_run = ['plugins',
                            'output console,text_file',
@@ -94,8 +116,8 @@ class TestConsoleUI(unittest.TestCase):
                            'output config console',
                                 'set verbose False', 'back', 
                            'audit sqli',
-                           'discovery web_spider',
-                           'discovery config web_spider', 
+                           'crawl web_spider',
+                           'crawl config web_spider', 
                                 'set onlyForward True', 'back',
                             'grep path_disclosure',
                             'back', 
@@ -164,7 +186,7 @@ class TestConsoleUI(unittest.TestCase):
         
     def startswith_expected_in_output(self, expected):
         for line in expected:
-            for (sys_line,) in self._mock_stdout.messages:
+            for sys_line in self._mock_stdout.messages:
                 if sys_line.startswith(line):
                     break
             else:
@@ -174,7 +196,7 @@ class TestConsoleUI(unittest.TestCase):
             
     def all_expected_in_output(self, expected):
         for line in expected:
-            if (line,) not in self._mock_stdout.messages:
+            if line not in self._mock_stdout.messages:
                 return False
         else:
             return True

@@ -43,8 +43,11 @@ class TestUnittestCoverage(unittest.TestCase):
     def test_auth(self):
         self._analyze_unittests('auth')
 
-    def test_discovery(self):
-        self._analyze_unittests('discovery')
+    def test_crawl(self):
+        self._analyze_unittests('crawl')
+
+    def test_infrastructure(self):
+        self._analyze_unittests('infrastructure')
 
     def test_grep(self):
         self._analyze_unittests('grep')

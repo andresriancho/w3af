@@ -32,7 +32,7 @@ class TestMOTW(PluginTest):
             'target': motw_url,
             'plugins': {
                 'grep': (PluginConfig('motw'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

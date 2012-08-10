@@ -34,7 +34,6 @@ from core.data.db.temp_shelve import temp_shelve
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
 from core.controllers.w3afException import w3afException
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 
 class html_comments(baseGrepPlugin):

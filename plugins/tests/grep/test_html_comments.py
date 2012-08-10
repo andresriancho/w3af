@@ -32,7 +32,7 @@ class TestHTMLComments(PluginTest):
             'target': html_comments_url,
             'plugins': {
                 'grep': (PluginConfig('html_comments'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

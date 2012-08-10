@@ -31,7 +31,7 @@ class TestFormAutocomplete(PluginTest):
             'target': target_url,
             'plugins': {
                 'grep': (PluginConfig('form_autocomplete'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                 )         

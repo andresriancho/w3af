@@ -70,11 +70,11 @@ class w3af_core_status(object):
         >>> s.start()
         >>> s.get_status()
         'Starting scan.'
-        >>> s.set_phase('discovery')
+        >>> s.set_phase('crawl')
         >>> s.set_running_plugin('doctest_plugin')
         >>> s.set_current_fuzzable_request('doctest_request')
         >>> s.get_status()
-        'Running discovery.doctest_plugin on doctest_request.'
+        'Running crawl.doctest_plugin on doctest_request.'
         
         '''
         if self._paused:

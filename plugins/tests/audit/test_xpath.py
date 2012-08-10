@@ -30,7 +30,7 @@ class TestXPATH(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('xpath'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

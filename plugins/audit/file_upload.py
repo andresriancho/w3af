@@ -162,7 +162,7 @@ class file_upload(baseAuditPlugin):
             
             # FIXME: Note that in all cases where I'm using kb's url_object info
             # I'll be making a mistake if the audit plugin is run before all
-            # discovery plugins haven't run yet, since I'm not letting them
+            # crawl plugins haven't run yet, since I'm not letting them
             # find all directories; which will make the current plugin run with
             # less information.
 

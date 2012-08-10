@@ -43,7 +43,7 @@ class TestTextFile(PluginTest):
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 3, PluginConfig.INT)),
                     ),
-                'discovery': (
+                'crawl': (
                     PluginConfig(
                         'web_spider',
                         ('onlyForward', True, PluginConfig.BOOL)),

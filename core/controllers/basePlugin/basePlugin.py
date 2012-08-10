@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
 import threading
+import textwrap
 
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln

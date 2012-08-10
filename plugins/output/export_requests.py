@@ -34,7 +34,7 @@ from core.data.request.wsPostDataRequest import wsPostDataRequest
 
 class export_requests(baseOutputPlugin):
     '''
-    Export the fuzzable requests found during discovery to a file.
+    Export the fuzzable requests found during crawl to a file.
     
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -77,7 +77,7 @@ class export_requests(baseOutputPlugin):
         return '''
         This plugin exports all discovered HTTP requests (URL, Method, Params)
         to the given file (CSV) which can then be imported in another scan by
-        using the discovery.import_results.
+        using the crawl.import_results.
         
         One configurable parameter exists:
             - output_file

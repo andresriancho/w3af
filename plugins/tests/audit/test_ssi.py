@@ -30,7 +30,7 @@ class TestSSI(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('ssi'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),
@@ -44,7 +44,7 @@ class TestSSI(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.getData('ssi', 'ssi')
         
-        self.assertEquals(1, len(vulns))
+        self.assertEquals(1, len(vulns), vulns)
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]

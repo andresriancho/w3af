@@ -37,7 +37,7 @@ class TestLang(PluginTest):
             'target': 'http://moth/w3af/grep/',
             'plugins': {
                 'grep': (PluginConfig('lang'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

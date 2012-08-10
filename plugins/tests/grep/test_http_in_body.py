@@ -31,7 +31,7 @@ class TestHttpInBody(PluginTest):
             'target': target_url,
             'plugins': {
                  'grep': (PluginConfig('http_in_body'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

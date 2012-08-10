@@ -94,9 +94,9 @@ class frontpage(baseAuditPlugin):
         file_path = domain_path.getPath() + rand_file
         
         # TODO: The frontpage version should be obtained from the information saved in the kb
-        # by the discovery.frontpage_version plugin!
+        # by the infrastructure.frontpage_version plugin!
         # The 4.0.2.4715 version should be dynamic!
-        # The information is already saved in the discovery plugin in the line:
+        # The information is already saved in the crawl plugin in the line:
         # i['version'] = version_match.group(1)
         content = "method=put document:4.0.2.4715&service_name=&document=[document_name="
         content += file_path
@@ -106,7 +106,7 @@ class frontpage(baseAuditPlugin):
         content += rand_file[::-1]
         
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
-        # inside the discovery.frontpage_version plugin, and then used here
+        # inside the infrastructure.frontpage_version plugin, and then used here
         target_url = domain_path.urlJoin( '_vti_bin/_vti_aut/author.dll' )
 
         try:
@@ -190,7 +190,7 @@ class frontpage(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['discovery.frontpage_version']
+        return ['infrastructure.frontpage_version']
     
     def getLongDesc( self ):
         '''

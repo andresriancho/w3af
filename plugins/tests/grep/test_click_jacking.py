@@ -32,7 +32,7 @@ class TestClickJacking(PluginTest):
             'target': click_jacking_url,
             'plugins': {
                 'grep': (PluginConfig('click_jacking'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                 )         

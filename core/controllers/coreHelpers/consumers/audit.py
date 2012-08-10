@@ -31,7 +31,7 @@ from core.controllers.w3afException import w3afException
 class audit(Process):
     '''
     Consumer thread that takes fuzzable requests from a Queue that's populated
-    by the discovery plugins and identified vulnerabilities by performing various
+    by the crawl plugins and identified vulnerabilities by performing various
     requests.
     '''
     

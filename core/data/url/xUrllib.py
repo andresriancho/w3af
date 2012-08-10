@@ -119,7 +119,7 @@ class xUrllib(object):
             if self._must_stop:
                 self._must_stop = False
                 self._paused = False
-                # This raises a keyboard interrupt in the middle of the discovery process.
+                # This raises a keyboard interrupt in the middle of the crawl process.
                 # It has almost the same effect that a ctrl+c by the user if in consoleUi
                 raise KeyboardInterrupt
         
@@ -127,7 +127,7 @@ class xUrllib(object):
         if self._must_stop:
             self._must_stop = False
             self._paused = False
-            # This raises a keyboard interrupt in the middle of the discovery process.
+            # This raises a keyboard interrupt in the middle of the crawl process.
             # It has almost the same effect that a ctrl+c by the user if in consoleUi
             # TODO: THIS SUCKS
             raise KeyboardInterrupt

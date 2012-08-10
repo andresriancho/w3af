@@ -27,7 +27,7 @@ class TestREDoS(PluginTest):
     
     _run_configs = {
         'cfg': {
-            'target': target_url
+            'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('redos'),),
                  }

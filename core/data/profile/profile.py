@@ -180,7 +180,7 @@ class profile:
         '''
         res = []
         for section in self._config.sections():
-            # Section is something like audit.xss or discovery.web_spider
+            # Section is something like audit.xss or crawl.web_spider
             try:
                 type, name = section.split('.')
             except:
@@ -214,7 +214,7 @@ class profile:
         optionsMap = pluginInstance.getOptions()
         
         for section in self._config.sections():
-            # Section is something like audit.xss or discovery.web_spider
+            # Section is something like audit.xss or crawl.web_spider
             try:
                 type, name = section.split('.')
             except:
@@ -320,7 +320,7 @@ class profile:
         @return: The profile name; as stated in the [profile] section
         '''
         for section in self._config.sections():
-            # Section is something like audit.xss or discovery.web_spider
+            # Section is something like audit.xss or crawl.web_spider
             # or [profile]
             if section == 'profile':
                 for option in self._config.options(section):
@@ -350,7 +350,7 @@ class profile:
         options = targetInstance.getOptions()
 
         for section in self._config.sections():
-            # Section is something like audit.xss or discovery.web_spider
+            # Section is something like audit.xss or crawl.web_spider
             # or [profile] or [target]
             if section == 'target':
                 for option in self._config.options(section):
@@ -374,7 +374,7 @@ class profile:
         @return: The profile description; as stated in the [profile] section
         '''
         for section in self._config.sections():
-            # Section is something like audit.xss or discovery.web_spider
+            # Section is something like audit.xss or crawl.web_spider
             # or [profile]
             if section == 'profile':
                 for option in self._config.options(section):

@@ -94,7 +94,7 @@ class w3af_core_strategy(object):
             self._fuzzable_request_set.update( self._discover_and_bruteforce() )
             
             if not self._fuzzable_request_set:
-                om.out.information('No URLs found during discovery phase.')
+                om.out.information('No URLs found during crawl phase.')
                 return
 
             self._post_discovery()
@@ -148,16 +148,17 @@ class w3af_core_strategy(object):
 
     def _post_discovery(self):
         '''
-        This method is called after the discovery and brutefore phases finish
+        This method is called after the crawl and brutefore phases finish
         and performs these things:
             * Cleanup
             * Report results to the user
             * Filter duplicate fuzzable requests
             * Return 
         '''
-        # Remove the discovery and bruteforce plugins from memory
+        # Remove the crawl and bruteforce plugins from memory
         # This is a performance enhancement.
-        self._w3af_core.plugins.plugins['discovery'] = []
+        self._w3af_core.plugins.plugins['crawl'] = []
+        self._w3af_core.plugins.plugins['infrastructure'] = []
         self._w3af_core.plugins.plugins['bruteforce'] = []
 
         # Filter out the fuzzable requests that aren't important 
@@ -319,7 +320,7 @@ class w3af_core_strategy(object):
         @return: A list with fuzzable requests that were found during discovery
                  and bruteforce.
         '''
-        # Make sure we have a session before we start the discovery process
+        # Make sure we have a session before we start the crawl process
         self.force_auth_login()
         
         res = set()
@@ -385,9 +386,9 @@ class w3af_core_strategy(object):
         @return: A list of fuzzable requests.
         '''
         # Init some internal variables
-        self._w3af_core.status.set_phase('discovery')
+        self._w3af_core.status.set_phase('crawl')
 
-        # Run all the discovery plugins        
+        # Run all the crawl plugins        
         result = self._discover_worker( to_walk )
         
         # Let the plugins know that they won't be used anymore
@@ -397,18 +398,20 @@ class w3af_core_strategy(object):
     
     def _end_discovery( self ):
         '''
-        Let the discovery plugins know that they won't be used anymore.
+        Let the crawl plugins know that they won't be used anymore.
         '''
-        for p in self._w3af_core.plugins.plugins['discovery']:
-            try:
-                p.end()
-            except Exception, e:
-                om.out.error('The plugin "%s" raised an exception in the '
-                             'end() method: %s' % (p.getName(), e))
+        # TODO: Hack hack, remove!
+        for plugin_type in ('crawl', 'infrastructure'):
+            for p in self._w3af_core.plugins.plugins[plugin_type]:
+                try:
+                    p.end()
+                except Exception, e:
+                    om.out.error('The plugin "%s" raised an exception in the '
+                                 'end() method: %s' % (p.getName(), e))
     
     def get_discovery_time(self):
         '''
-        @return: The time between now and the start of the discovery phase in
+        @return: The time between now and the start of the crawl phase in
                  minutes.
         '''
         now = time.time()
@@ -417,9 +420,9 @@ class w3af_core_strategy(object):
     
     def _should_stop_discovery(self):
         '''
-        @return: True if we should stop the discovery phase because of time limit
+        @return: True if we should stop the crawl phase because of time limit
                  set by the user, or simply because the user wants to stop the
-                 discovery phase.
+                 crawl phase.
         '''
         # If the user wants to stop, I have to stop and at least
         # return the findings I've got until now.
@@ -427,14 +430,14 @@ class w3af_core_strategy(object):
             return True
         
         if self.get_discovery_time() > cf.cf.getData('maxDiscoveryTime'):
-            om.out.information('Maximum discovery time limit hit.')
+            om.out.information('Maximum crawl time limit hit.')
             return True
         
         return False
     
     def _discover_worker(self, to_walk):
         '''
-        This method will run discovery plugins in a loop until no new knowledge
+        This method will run crawl plugins in a loop until no new knowledge
         (ie fuzzable requests) is found.
         
         TODO: unit-test this method
@@ -446,20 +449,25 @@ class w3af_core_strategy(object):
         
         while to_walk:
             
+            #TODO: This is just a hack, this should be removed when I rewrite
+            #      the discovery phase as a consumer/producer
+            plugins_to_run = self._w3af_core.plugins.plugins['crawl'] + \
+                             self._w3af_core.plugins.plugins['infrastructure']
+            
             # Progress stuff, do this inside the while loop, because the to_walk 
             # variable changes in each loop
-            amount_of_tests = ( len(self._w3af_core.plugins.plugins['discovery']) * 
+            amount_of_tests = ( len(plugins_to_run) * 
                                 len(to_walk) )
             self._w3af_core.progress.set_total_amount(amount_of_tests)
             
             plugins_to_remove_list = []
             fuzz_reqs = {}
             
-            for plugin in self._w3af_core.plugins.plugins['discovery']:
+            for plugin in plugins_to_run:
                 
                 for fr in to_walk:
                     
-                    # Should I continue with the discovery phase? If not, return
+                    # Should I continue with the crawl phase? If not, return
                     # what I know for now and forget about all the remaining work
                     if self._should_stop_discovery(): return result
                     
@@ -472,11 +480,15 @@ class w3af_core_strategy(object):
                     try:
                         try:
                             # Perform the actual work
-                            plugin_result = plugin.discover_wrapper(fr)
+                            # TODO: Hack hack, FIXME!
+                            if plugin.getType() == 'crawl':
+                                plugin_result = plugin.crawl_wrapper(fr)
+                            else:
+                                plugin_result = plugin.discover_wrapper(fr)
                         finally:
                             thread_manager.join(plugin)
                     except KeyboardInterrupt:
-                        om.out.information('The user interrupted the discovery phase, '
+                        om.out.information('The user interrupted the crawl phase, '
                                            'continuing with audit.')
                         return result
                     except w3afException,e:
@@ -529,7 +541,7 @@ class w3af_core_strategy(object):
         @param fuzz_reqs: A dict with plugin name as key and fuzzable requests
                           found by the plugin during the last run.
         @param result: The fuzzable requests that were already identified by
-                       other discovery plugins during this or previous discovery
+                       other crawl plugins during this or previous discovery
                        loops.
         @return: A list with the NEW fuzzable requests that were found, these
                  have been filtered based on the target url, if they are new
@@ -561,20 +573,23 @@ class w3af_core_strategy(object):
     def _remove_discovery_plugin(self, plugins_to_remove_list):            
         '''
         Remove plugins that don't want to be run anymore and raised a w3afRunOnce
-        exception during the discovery phase.
+        exception during the crawl phase.
         '''
         for plugin_to_remove in plugins_to_remove_list:
-            if plugin_to_remove in self._w3af_core.plugins.plugins['discovery']:
-                
-                # Remove it from the plugin list, and run the end() method
-                self._w3af_core.plugins.plugins['discovery'].remove( plugin_to_remove )
-                msg = 'The discovery plugin: "%s" wont be run anymore.'
-                om.out.debug( msg % plugin_to_remove.getName() )
-                try:
-                    plugin_to_remove.end()
-                except Exception, e:
-                    msg = 'The plugin "%s" raised an exception in the end() method: "%s"'
-                    om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
+            # TODO: This for loop is also a hack and should be removed when rewriting
+            #       the discovery loop as a consumer/producer
+            for plugin_type in ('crawl', 'infrastructure'):
+                if plugin_to_remove in self._w3af_core.plugins.plugins[plugin_type]:
+                    
+                    # Remove it from the plugin list, and run the end() method
+                    self._w3af_core.plugins.plugins[plugin_type].remove( plugin_to_remove )
+                    msg = 'The %s plugin: "%s" wont be run anymore.'
+                    om.out.debug( msg % (plugin_type, plugin_to_remove.getName() ) )
+                    try:
+                        plugin_to_remove.end()
+                    except Exception, e:
+                        msg = 'The plugin "%s" raised an exception in the end() method: "%s"'
+                        om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
                         
     def _setup_audit(self):
         '''

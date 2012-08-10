@@ -30,7 +30,7 @@ class TestOSCommanding(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('os_commanding'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

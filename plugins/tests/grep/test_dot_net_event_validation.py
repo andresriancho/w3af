@@ -31,7 +31,7 @@ class TestEventValidation(PluginTest):
             'target': dot_net_event_validation_url,
             'plugins': {
                 'grep': (PluginConfig('dot_net_event_validation'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

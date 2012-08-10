@@ -19,11 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib
 import re
 
-import core.controllers.outputManager as om
 from core.data.search_engines.searchEngine import searchEngine as searchEngine
 from core.data.parsers.urlParser import url_object
 
@@ -35,7 +33,8 @@ class bing(searchEngine):
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com'])
+    BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
+                               'onlinehelp.microsoft.com', 'go.microsoft.com'])
     
     def __init__(self, urlOpener):
         searchEngine.__init__(self)

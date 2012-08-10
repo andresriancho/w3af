@@ -19,14 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import copy
+import sys
+import textwrap
+
+import core.controllers.outputManager as om
+
 from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.config import *
 from core.ui.consoleUi.util import *
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-import sys
+
 
 class pluginsMenu(menu):
     '''
@@ -211,7 +213,10 @@ class pluginsTypeMenu(menu):
             raise w3afException("Unknown plugin: '%s'" % pluginName)
 
         plugin = self._w3af.plugins.getPluginInstance(pluginName, self._name)
-        om.out.console( str(plugin.getLongDesc()) )
+        long_desc = plugin.getLongDesc()
+        long_desc = textwrap.dedent(long_desc)
+        long_desc = long_desc.replace('\n','\n\r')
+        om.out.console( long_desc )
 
 
     def _para_desc(self, params, part):

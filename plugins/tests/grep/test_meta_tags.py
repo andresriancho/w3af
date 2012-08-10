@@ -32,7 +32,7 @@ class TestMetaTags(PluginTest):
             'target': meta_tags_url,
             'plugins': {
                 'grep': (PluginConfig('meta_tags'),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

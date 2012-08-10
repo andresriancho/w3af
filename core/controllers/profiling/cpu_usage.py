@@ -45,7 +45,7 @@ def dump_cpu_usage():
     else:
         
         # Where data is stored, entries look like:
-        # ('/home/dz0/workspace/w3af/plugins/discovery/afd.py.getOptions:183', 
+        # ('/home/dz0/workspace/w3af/plugins/infrastructure/afd.py.getOptions:183', 
         #  1, 3.1150000000000002e-06, 2.4320000000000002e-06)
         entries = []
         

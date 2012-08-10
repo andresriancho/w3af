@@ -33,7 +33,7 @@ class TestGeneric(PluginTest):
     _run_config = {
             'target': base_url,
             'plugins': {
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL),
                                  ('ignoreRegex', '.*logout.*', PluginConfig.STR)),
@@ -56,7 +56,7 @@ class TestGeneric(PluginTest):
     demo_testfire_net = {
             'target': demo_testfire,
             'plugins': {
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL),
                                  ('ignoreRegex', '.*logout.*', PluginConfig.STR),

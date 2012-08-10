@@ -84,9 +84,9 @@ class question_infrastructure_3(question):
             plugin_list.append('find_vhosts')
         
         # Set the plugins to be run
-        old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'discovery' )
+        old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'crawl' )
         plugin_list.extend(old_discovery)
-        self.w3af_core.plugins.setPlugins( plugin_list, 'discovery' )
+        self.w3af_core.plugins.setPlugins( plugin_list, 'crawl' )
         
         # Next question
         return 'infrastructure_4'

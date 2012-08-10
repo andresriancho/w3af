@@ -1,202 +1,279 @@
-[audit.preg_replace]
-
-[audit.response_splitting]
-
-[grep.svn_users]
-
-[grep.password_profiling]
-
-[grep.blank_body]
-
-[grep.lang]
-
-[audit.htaccess_methods]
-
-[grep.strange_headers]
+[profile]
+description = This profile performs a full audit of the target website, using only the web_spider plugin for crawling.
+name = full_audit
 
 [output.console]
 verbose = False
 
-[audit.xpath]
+[output.gtk_output]
 
-[audit.ldapi]
-
-[audit.generic]
-diffRatio = 0.35
-
-[audit.frontpage]
-stopOnFirst = True
-
-[audit.format_string]
-
-[audit.lfi]
-
-[grep.file_upload]
-
-[grep.objects]
-
-[audit.un_ssl]
-
-[grep.strange_parameters]
-
-[grep.motw]
-withoutMOTW = False
-
-[grep.ajax]
-
-[grep.credit_cards]
-
-[http-settings]
-proxyPort = 8080
-urlParameter = 
-never404 = 
-headersFile = 
-maxFileSize = 400000
-proxyAddress = 
-basicAuthDomain = 
-always404 = 
-maxRetrys = 2
-ntlmAuthUser = 
-ntlmAuthPass = 
-ignoreSessCookies = False
-timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-404string = 
-cookieJarFile = 
-
-[audit.blind_sqli]
-eq_limit = 0.9
-
-[audit.global_redirect]
-
-[discovery.web_spider]
-followRegex = .*
-ignoreRegex = None
-onlyForward = False
-
-[audit.xst]
-
-[audit.xss]
-checkStored = True
-numberOfChecks = 3
-
-[audit.ssl_certificate]
-
-[profile]
-description = This profile performs a full audit of the target website, using only the web_spider plugin for discovery.
-name = full_audit
-
-[grep.error_pages]
-
-[grep.html_comments]
-search404 = False
+[audit.file_upload]
+extensions = gif,html
 
 [audit.eval]
 useTimeDelay = True
 useEcho = True
 
+[audit.un_ssl]
+
 [audit.os_commanding]
 
-[audit.ssi]
-
-[output.gtk_output]
-
-[grep.ssn]
-
-[grep.dot_net_event_validation]
-
-[grep.meta_tags]
-search404 = False
-
-[audit.phishing_vector]
+[audit.lfi]
 
 [audit.sqli]
 
+[audit.preg_replace]
+
+[audit.phishing_vector]
+
+[audit.generic]
+diffRatio = 0.35
+
+[audit.format_string]
+
+[audit.ldapi]
+
 [audit.buffer_overflow]
 
-[grep.oracle]
+[audit.redos]
 
+[audit.global_redirect]
 
-[grep.http_in_body]
+[audit.xpath]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[audit.htaccess_methods]
+
+[audit.dav]
+
+[audit.ssi]
+
+[audit.csrf]
+
+[audit.ssl_certificate]
+minExpireDays = 30
+caFileName = plugins/audit/ssl_certificate/ca.pem
+
+[audit.xst]
+
+[audit.blind_sqli]
+eq_limit = 0.9
 
 [audit.mx_injection]
 
-[grep.feeds]
-
-[grep.directory_indexing]
+[audit.response_splitting]
 
 [audit.rfi]
-usew3afSite = True
-listenPort = 44449
 listenAddress = 
+listenPort = 44449
+usew3afSite = True
+
+[audit.frontpage]
+stopOnFirst = True
+
+[crawl.web_spider]
+onlyForward = False
+followRegex = .*
+ignoreRegex = 
+
+[bruteforce.basic_auth]
+usersFile = core/controllers/bruteforce/users.txt
+passwdFile = core/controllers/bruteforce/passwords.txt
+useSvnUsers = True
+stopOnFirst = True
+passEqUser = True
+useLeetPasswd = True
+useEmails = True
+useProfiling = True
+profilingNumber = 50
+comboFile = 
+comboSeparator = :
+
+[bruteforce.form_auth]
+usersFile = core/controllers/bruteforce/users.txt
+passwdFile = core/controllers/bruteforce/passwords.txt
+useSvnUsers = True
+stopOnFirst = True
+passEqUser = True
+useLeetPasswd = True
+useEmails = True
+useProfiling = True
+profilingNumber = 50
+comboFile = 
+comboSeparator = :
+
+[grep.symfony]
+override = False
+
+[grep.file_upload]
+
+[grep.wsdl_greper]
+
+[grep.form_autocomplete]
+
+[grep.http_in_body]
+
+[grep.svn_users]
+
+[grep.private_ip]
+
+[grep.motw]
+withoutMOTW = False
+
+[grep.code_disclosure]
+
+[grep.blank_body]
+
+[grep.path_disclosure]
+
+[grep.strange_http_codes]
+
+[grep.http_auth_detect]
+
+[grep.credit_cards]
+
+[grep.user_defined_regex]
+single_regex = 
+regex_file_path = 
+
+[grep.dom_xss]
+
+[grep.collect_cookies]
+
+[grep.html_comments]
+
+[grep.click_jacking]
+
+[grep.strange_parameters]
+
+[grep.dot_net_event_validation]
+
+[grep.objects]
 
 [grep.error_500]
 
-[grep.collect_cookies]
+[grep.password_profiling]
+
+[grep.feeds]
+
+[grep.hash_find]
+
+[grep.lang]
 
 [grep.get_emails]
 onlyTargetDomain = True
 
-[grep.private_ip]
+[grep.meta_tags]
 
-[grep.path_disclosure]
+[grep.error_pages]
 
-[audit.csrf]
+[grep.strange_reason]
 
-[bruteforce.form_auth]
-profilingNumber = 50
-useMails = True
-useLeetPasswd = True
-useProfiling = True
-passwdFile = core/controllers/bruteforce/passwords.txt
-useMailUsers = True
-passEqUser = True
-usersFile = core/controllers/bruteforce/users.txt
-stopOnFirst = True
-useSvnUsers = True
+[grep.ajax]
+
+[grep.strange_headers]
+
+[grep.ssn]
+
+[grep.oracle]
+
+[grep.directory_indexing]
+
+[infrastructure.zone_h]
+
+[infrastructure.netcraft]
+
+[infrastructure.finger_google]
+resultLimit = 300
+fastSearch = False
+
+[infrastructure.favicon_identification]
+
+[infrastructure.server_header]
+execOneTime = True
+
+[infrastructure.shared_hosting]
+resultLimit = 300
+
+[infrastructure.fingerprint_os]
+
+[infrastructure.find_vhosts]
+
+[infrastructure.detect_reverse_proxy]
+
+[infrastructure.afd]
+
+[infrastructure.dns_wildcard]
+
+[infrastructure.server_status]
+
+[infrastructure.http_vs_https_dist]
+httpPort = 80
+httpsPort = 443
+
+[infrastructure.detect_transparent_proxy]
+
+[infrastructure.find_jboss]
+
+[infrastructure.finger_bing]
+resultLimit = 300
+
+[infrastructure.halberd]
+
+[infrastructure.domain_dot]
+
+[infrastructure.finger_pks]
+
+[infrastructure.fingerprint_WAF]
+
+[infrastructure.allowed_methods]
+execOneTime = True
+reportDavOnly = True
+
+[infrastructure.hmap]
+genFpF = False
+
+[infrastructure.xssed_dot_com]
 
 [misc-settings]
-maxThreads = 15
-fuzzFormComboValues = tmb
-fuzzFCExt = txt
-autoDependencies = True
-demo = False
-fuzzableHeaders = 
-showProgressBar = True
 fuzzCookie = False
-
 fuzzFileContent = True
 fuzzFileName = False
+fuzzURLParts = False
+fuzzFCExt = txt
+fuzzableHeaders = 
+fuzzFormComboValues = tmb
+autoDependencies = True
+stop_on_first_exception = False
 maxDiscoveryTime = 120
-
+interface = ppp0
+localAddress = 10.5.6.18
+demo = False
 nonTargets = 
+msf_location = /opt/metasploit3/bin/
 
-[grep.hash_find]
-
-[grep.wsdl_greper]
-
-[grep.code_disclosure]
-
-[bruteforce.basic_auth]
-profilingNumber = 50
-useMails = True
-useLeetPasswd = True
-useProfiling = True
-passwdFile = core/controllers/bruteforce/passwords.txt
-useMailUsers = True
-passEqUser = True
-usersFile = core/controllers/bruteforce/users.txt
-stopOnFirst = True
-useSvnUsers = True
-
-[audit.dav]
-
-[grep.dom_xss]
-
-[audit.file_upload]
-extensions = gif,html
-
-[grep.http_auth_detect]
+[http-settings]
+timeout = 10
+headersFile = 
+basicAuthUser = 
+basicAuthPass = 
+basicAuthDomain = 
+ntlmAuthDomain = 
+ntlmAuthUser = 
+ntlmAuthPass = 
+ntlmAuthURL = 
+cookieJarFile = 
+ignoreSessCookies = False
+proxyPort = 8080
+proxyAddress = 
+userAgent = w3af.sourceforge.net
+maxFileSize = 400000
+maxRetrys = 2
+always404 = 
+never404 = 
+404string = 
+urlParameter = 
 

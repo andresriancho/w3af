@@ -371,9 +371,9 @@ class sql_webshell(baseAttackPlugin):
         d = 'Enable or disable the good samaritan module'
         h = 'The good samaritan module is a the best way to speed up blind sql exploitations.'
         h += ' It\'s really simple, you see messages in the console that show the status of the'
-        h += ' discovery and you can help the discovery. For example, if you see "Micros" you'
+        h += ' crawl and you can help the process. For example, if you see "Micros" you'
         h += ' could type "oft", and if it\'s correct, you have made your good action of the day'
-        h += ', speeded up the discovery AND had fun doing it.'
+        h += ', speeded up the crawl AND had fun doing it.'
         o = option('goodSamaritan', self._goodSamaritan, d, 'boolean', help=h)
         ol.add(o)
         

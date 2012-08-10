@@ -23,7 +23,6 @@ import os
 
 import core.data.kb.config as cf
 import core.controllers.miscSettings as miscSettings
-import core.controllers.outputManager as om
 
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_file_list import get_file_list

@@ -39,7 +39,8 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertTrue( 'sqli' in enabled_plugins['audit'])
         self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
         self.assertTrue( 'private_ip' in enabled_plugins['grep'])
-        self.assertTrue( 'dns_wildcard' in enabled_plugins['discovery'])
+        self.assertTrue( 'dns_wildcard' in enabled_plugins['infrastructure'])
+        self.assertTrue( 'web_spider' in enabled_plugins['crawl'])
         
     def test_saveCurrentToNewProfile(self):
         w3af_core = w3afCore()
@@ -66,7 +67,8 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertTrue( disabled_plugin not in enabled_plugins['audit'])
         self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
         self.assertTrue( 'private_ip' in enabled_plugins['grep'])
-        self.assertTrue( 'dns_wildcard' in enabled_plugins['discovery'])        
+        self.assertTrue( 'dns_wildcard' in enabled_plugins['infrastructure'])
+        self.assertTrue( 'web_spider' in enabled_plugins['crawl'])
         
         w3af_core.profiles.removeProfile('unittest-OWASP_TOP10')
 

@@ -181,7 +181,7 @@ def get_profiling_results(self, max_items=50):
     
     if not kb_data:
         msg = 'No password profiling information collected for using during'
-        msg += ' the bruteforce process, please try to enable discovery.web_spider'
+        msg += ' the bruteforce process, please try to enable crawl.web_spider'
         msg += ' and grep.password_profiling plugins and try again.'
         om.out.debug( msg )
         return []

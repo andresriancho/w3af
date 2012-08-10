@@ -24,7 +24,7 @@ def getLongDescription():
     '''
     @return: The description for the plugin type.
     '''    
-    return '''Bruteforce plugins automatically discovery logins and bruteforce 
+    return '''Bruteforce plugins automatically crawl logins and bruteforce 
     them using the knowledge about the remote web application (users, password 
     profiling, etc).    
     '''

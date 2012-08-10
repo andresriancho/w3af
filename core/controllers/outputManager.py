@@ -132,10 +132,10 @@ class outputManager(threading.Thread):
         
         @param enabled_plugins: As returned by w3afCore's
                                 getAllEnabledPlugins() looks similar to:
-                   {'audit':[],'grep':[],'bruteforce':[],'discovery':[],...}
+                   {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
         
         @param plugins_options: As defined in the w3afCore, looks similar to: 
-                   {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
+                   {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         for o_plugin in self._output_plugin_list:
             o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)

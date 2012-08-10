@@ -31,7 +31,7 @@ class TestGlobalRedirect(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('global_redirect'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

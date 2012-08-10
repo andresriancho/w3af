@@ -110,10 +110,10 @@ class baseOutputPlugin(basePlugin):
         
         @parameter enabledPluginsDict: As returned by w3afCore.getAllEnabledPlugins()
                    looks similar to:
-                   {'audit':[],'grep':[],'bruteforce':[],'discovery':[],...}
+                   {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
         
         @parameter pluginOptionsDict: As defined in the w3afCore, looks similar to: 
-                   {'audit':{},'grep':{},'bruteforce':{},'discovery':{},...}
+                   {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         pass
 
@@ -178,7 +178,7 @@ class baseOutputPlugin(basePlugin):
         @return: A string with the information about enabled plugins and their
                  options.
         
-        @parameter plugin_type: audit, discovery, etc.
+        @parameter plugin_type: audit, crawl, etc.
         @parameter plugins_list: A list of the names of the plugins of 
                                  plugin_type that are enabled.
         @parameter plugins_options: The options for the plugins

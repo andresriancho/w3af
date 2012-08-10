@@ -38,7 +38,7 @@ class TestAllFP(PluginTest):
                 'target': self.target_url,
                 'plugins': {
                      'audit': (PluginConfig(audit_plugin),),
-                     'discovery': (
+                     'crawl': (
                          PluginConfig(
                              'web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),

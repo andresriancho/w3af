@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -188,7 +186,7 @@ class dav(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before 
                  the current one.
         '''
-        return ['discovery.allowed_methods', 'discovery.server_header']
+        return ['infrastructure.allowed_methods', 'infrastructure.server_header']
     
     def getLongDesc( self ):
         '''

@@ -1,0 +1,207 @@
+[profile]
+description = Perform a manual discovery using the spider_man plugin, and afterwards scan the site for any known vulnerabilities.
+name = full_audit_spider_man
+
+[output.console]
+verbose = False
+
+[output.gtk_output]
+
+[audit.file_upload]
+extensions = gif,html
+
+[audit.eval]
+useTimeDelay = True
+useEcho = True
+
+[audit.un_ssl]
+
+[audit.os_commanding]
+
+[audit.lfi]
+
+[audit.sqli]
+
+[audit.preg_replace]
+
+[audit.phishing_vector]
+
+[audit.generic]
+diffRatio = 0.35
+
+[audit.format_string]
+
+[audit.ldapi]
+
+[audit.buffer_overflow]
+
+[audit.redos]
+
+[audit.global_redirect]
+
+[audit.xpath]
+
+[audit.xss]
+checkStored = True
+numberOfChecks = 3
+
+[audit.htaccess_methods]
+
+[audit.dav]
+
+[audit.ssi]
+
+[audit.csrf]
+
+[audit.ssl_certificate]
+minExpireDays = 30
+caFileName = plugins/audit/ssl_certificate/ca.pem
+
+[audit.xst]
+
+[audit.blind_sqli]
+eq_limit = 0.9
+
+[audit.mx_injection]
+
+[audit.response_splitting]
+
+[audit.rfi]
+listenAddress = 
+listenPort = 44449
+usew3afSite = True
+
+[audit.frontpage]
+stopOnFirst = True
+
+[crawl.spider_man]
+
+[bruteforce.basic_auth]
+usersFile = core/controllers/bruteforce/users.txt
+passwdFile = core/controllers/bruteforce/passwords.txt
+useSvnUsers = True
+stopOnFirst = True
+passEqUser = True
+useLeetPasswd = True
+useEmails = True
+useProfiling = True
+profilingNumber = 50
+comboFile = 
+comboSeparator = :
+
+[bruteforce.form_auth]
+
+[grep.symfony]
+override = False
+
+[grep.file_upload]
+
+[grep.wsdl_greper]
+
+[grep.form_autocomplete]
+
+[grep.http_in_body]
+
+[grep.svn_users]
+
+[grep.private_ip]
+
+[grep.motw]
+withoutMOTW = False
+
+[grep.code_disclosure]
+
+[grep.blank_body]
+
+[grep.path_disclosure]
+
+[grep.strange_http_codes]
+
+[grep.http_auth_detect]
+
+[grep.credit_cards]
+
+[grep.user_defined_regex]
+
+[grep.dom_xss]
+
+[grep.collect_cookies]
+
+[grep.html_comments]
+
+[grep.click_jacking]
+
+[grep.strange_parameters]
+
+[grep.dot_net_event_validation]
+
+[grep.objects]
+
+[grep.error_500]
+
+[grep.password_profiling]
+
+[grep.feeds]
+
+[grep.hash_find]
+
+[grep.lang]
+
+[grep.get_emails]
+onlyTargetDomain = True
+
+[grep.meta_tags]
+
+[grep.error_pages]
+
+[grep.strange_reason]
+
+[grep.ajax]
+
+[grep.strange_headers]
+
+[grep.ssn]
+
+[grep.oracle]
+
+[grep.directory_indexing]
+
+[misc-settings]
+fuzzCookie = False
+fuzzFileContent = True
+fuzzFileName = False
+fuzzURLParts = False
+fuzzFCExt = txt
+fuzzableHeaders = 
+fuzzFormComboValues = tmb
+autoDependencies = True
+stop_on_first_exception = False
+maxDiscoveryTime = 120
+interface = ppp0
+localAddress = 10.5.6.18
+demo = False
+nonTargets = 
+msf_location = /opt/metasploit3/bin/
+
+[http-settings]
+timeout = 10
+headersFile = 
+basicAuthUser = 
+basicAuthPass = 
+basicAuthDomain = 
+ntlmAuthDomain = 
+ntlmAuthUser = 
+ntlmAuthPass = 
+ntlmAuthURL = 
+cookieJarFile = 
+ignoreSessCookies = False
+proxyPort = 8080
+proxyAddress = 
+userAgent = w3af.sourceforge.net
+maxFileSize = 400000
+maxRetrys = 2
+always404 = 
+never404 = 
+404string = 
+urlParameter = 
+

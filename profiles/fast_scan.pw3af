@@ -12,15 +12,18 @@ fuzzFormComboValues = tmb
 fuzzFCExt = txt
 autoDependencies = True
 demo = False
-maxDiscoveryTime = 60
+maxDiscoveryTime = 120
 fuzzableHeaders = 
 showProgressBar = True
 fuzzCookie = False
 fuzzFileContent = True
 fuzzFileName = False
-interface = eth0
-localAddress = 192.168.1.100
+interface = ppp0
+localAddress = 10.5.6.18
 nonTargets = 
+fuzzURLParts = False
+stop_on_first_exception = False
+msf_location = /opt/metasploit3/bin/
 
 [grep.strange_http_codes]
 
@@ -30,6 +33,7 @@ nonTargets =
 verbose = False
 
 [grep.motw]
+withoutMOTW = False
 
 [grep.objects]
 
@@ -88,6 +92,7 @@ description = Perform a fast scan of the target site, using only a few discovery
 [grep.collect_cookies]
 
 [grep.get_emails]
+onlyTargetDomain = True
 
 [grep.private_ip]
 
@@ -112,8 +117,22 @@ basicAuthUser =
 basicAuthPass = 
 404string = 
 cookieJarFile = 
+ntlmAuthDomain = 
+ntlmAuthURL = 
 
 [grep.wsdl_greper]
 
 [grep.http_auth_detect]
+
+[crawl.web_spider]
+onlyForward = False
+followRegex = .*
+ignoreRegex = 
+
+[grep.symfony]
+override = False
+
+[grep.user_defined_regex]
+
+[grep.click_jacking]
 

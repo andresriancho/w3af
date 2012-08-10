@@ -24,9 +24,6 @@ from random import randint
 import re
 import difflib
 
-from core.data.kb.knowledgeBase import kb
-from core.data.parsers.urlParser import url_object
-
 from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
@@ -38,7 +35,12 @@ THRESHOLD = 0.8
 
 
 class xpath(baseAttackPlugin):
-
+    '''
+    Exploit XPATH injections with the objective of retrieving the complete XML text.
+    
+    @author: Nahuel Sanchez
+    @author: Andres Riancho
+    '''
     def __init__(self):
         baseAttackPlugin.__init__(self)
         

@@ -476,7 +476,7 @@ class PluginTree(gtk.TreeView):
         # can not play with this particular plugin
         treerow = self.treestore[path]
         plugin_fam = treerow[0]
-        banned_fams = ('discovery', 'evasion')
+        banned_fams = ('crawl', 'evasion')
         
         if plugin_fam == "gtk_output":
             return
@@ -488,24 +488,24 @@ class PluginTree(gtk.TreeView):
     
         # path can be "?" if it's a father or "?:?" if it's a child
         if ":" not in path:
-            # father, lets check if it's the discovery/evasion plugin type
+            # father, lets check if it's the crawl/evasion plugin type
             # if yes, ask for confirmation
             user_response = gtk.RESPONSE_YES
             
             if plugin_fam in banned_fams and treerow[1] == True:
-                # The discovery/evasion family is enabled, and the user is
+                # The crawl/evasion family is enabled, and the user is
                 # disabling it we shouldn't ask this when disabling all the family
-                if plugin_fam == 'discovery':
-                    msg = _("Enabling all discovery plugins will result in a scan process of several" \
+                if plugin_fam == 'crawl':
+                    msg = _("Enabling all crawl plugins will result in a scan process of several" \
                     " hours, and sometimes days. Are you sure that you want to do enable ALL" \
-                    " discovery plugins?")
+                    " crawl plugins?")
                 else: # evasion family
                     msg = _("Using any of the evasion plugins is highly " \
                             "discouraged in our current version. Are you " \
                             "sure that you want to enable ALL of them?")
 
                 # If the user says NO, then remove the checkbox that was added when the
-                # user clicked over the "enable all discovery plugins".
+                # user clicked over the "enable all crawl plugins".
                 user_response = self._askUser(msg)
                 if user_response != gtk.RESPONSE_YES:
                     treerow[1] = False

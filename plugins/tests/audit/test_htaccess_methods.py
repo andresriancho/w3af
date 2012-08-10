@@ -30,7 +30,7 @@ class TestHTAccess(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('htaccess_methods'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

@@ -25,7 +25,6 @@ execOneTime = False
 
 [audit.phishing_vector]
 
-
 [grep.path_disclosure]
 
 [audit.csrf]
@@ -51,12 +50,15 @@ demo = False
 fuzzableHeaders = 
 showProgressBar = True
 fuzzCookie = False
-
 fuzzFileContent = True
 fuzzFileName = False
 maxDiscoveryTime = 120
-
 nonTargets = 
+fuzzURLParts = False
+stop_on_first_exception = False
+interface = ppp0
+localAddress = 10.5.6.18
+msf_location = /opt/metasploit3/bin/
 
 [discovery.fingerprint_os]
 
@@ -79,6 +81,8 @@ ignoreRegex = None
 onlyForward = False
 
 [audit.ssl_certificate]
+minExpireDays = 30
+caFileName = plugins/audit/ssl_certificate/ca.pem
 
 [audit.os_commanding]
 
@@ -103,7 +107,6 @@ onlyTargetDomain = True
 [grep.oracle]
 
 [grep.meta_tags]
-search404 = False
 
 [grep.strange_http_codes]
 
@@ -195,7 +198,6 @@ description = The Open Web Application Security Project (OWASP) is a worldwide f
 name = OWASP_TOP10
 
 [grep.html_comments]
-search404 = True
 
 [output.gtk_output]
 
@@ -228,10 +230,28 @@ basicAuthUser =
 basicAuthPass = 
 404string = 
 cookieJarFile = 
+ntlmAuthDomain = 
+ntlmAuthURL = 
 
 [discovery.bing_spider]
 resultLimit = 300
 
 [audit.file_upload]
 extensions = gif,html
+
+[audit.redos]
+
+[crawl.web_spider]
+
+[grep.symfony]
+
+[grep.form_autocomplete]
+
+[grep.click_jacking]
+
+[grep.strange_reason]
+
+[infrastructure.allowed_methods]
+
+[infrastructure.server_header]
 

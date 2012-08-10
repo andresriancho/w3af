@@ -110,7 +110,7 @@ class wsdl_greper(baseGrepPlugin):
         return '''
         This plugin greps every page for WSDL definitions.
         
-        Not all wsdls are found appending "?WSDL" to the url like discovery.wsdl_finder
+        Not all wsdls are found appending "?WSDL" to the url like crawl.wsdl_finder
         plugin does, this grep plugin will find some wsdl's that arent found by the 
-        discovery plugin.
+        crawl plugin.
         '''

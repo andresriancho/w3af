@@ -24,6 +24,6 @@ def getLongDescription():
     '''
     @return: The description for the plugin type.
     '''    
-    return '''Audit plugins use the knowledge created by discovery plugins to 
+    return '''Audit plugins use the knowledge created by crawl plugins to 
     find vulnerabilities on the remote web application and web server.    
     '''

@@ -28,13 +28,13 @@ from core.data.parsers.urlParser import url_object
 
 class TestExportRequests(PluginTest):
     
-    follow_links_url = 'http://moth/w3af/discovery/web_spider/follow_links/1.html'
+    follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/1.html'
     
     _run_configs = {
         'cfg': {
             'target': follow_links_url,
             'plugins': {
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
                 ),

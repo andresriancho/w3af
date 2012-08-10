@@ -30,7 +30,7 @@ class TestLFI(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('lfi'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

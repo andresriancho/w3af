@@ -234,9 +234,10 @@ class w3afCore(object):
             raise w3afException( 'No target URI configured.' )
             
         if not len( self.plugins.getEnabledPlugins('audit') )\
-        and not len( self.plugins.getEnabledPlugins('discovery') )\
+        and not len( self.plugins.getEnabledPlugins('crawl') )\
+        and not len( self.plugins.getEnabledPlugins('infrastructure') )\
         and not len( self.plugins.getEnabledPlugins('grep') ):
-            raise w3afException( 'No audit, grep or discovery plugins configured to run.' )            
+            raise w3afException( 'No audit, grep or crawl plugins configured to run.' )            
     
     def _end(self, exc_inst=None, ignore_err=False):
         '''

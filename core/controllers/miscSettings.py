@@ -143,10 +143,10 @@ class miscSettings(configurable):
                      desc, 'boolean', help=help, tabid='Core settings')
         ol.add(opt)
 
-        desc = 'Maximum discovery time (minutes)'
+        desc = 'Maximum crawl time (minutes)'
         help = 'Many users tend to enable numerous plugins without actually knowing what they are'
         help += ' and the potential time they will take to run. By using this parameter, users will'
-        help += ' be able to set the maximum amount of time the discovery phase will run.'
+        help += ' be able to set the maximum amount of time the crawl phase will run.'
         opt = option('maxDiscoveryTime', cf.cf.getData('maxDiscoveryTime'), desc, 'integer', 
                      help=help, tabid='Core settings')
         ol.add(opt)

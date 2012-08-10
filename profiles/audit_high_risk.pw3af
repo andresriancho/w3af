@@ -26,9 +26,12 @@ fuzzCookie = False
 fuzzFileName = False
 fuzzFileContent = True
 maxDiscoveryTime = 120
-
-
 nonTargets = 
+fuzzURLParts = False
+stop_on_first_exception = False
+interface = ppp0
+localAddress = 10.5.6.18
+msf_location = /opt/metasploit3/bin/
 
 [audit.sqli]
 
@@ -54,6 +57,8 @@ basicAuthPass =
 byDirectoryAndExtension404 = False
 404string = 
 cookieJarFile = 
+ntlmAuthDomain = 
+ntlmAuthURL = 
 
 [audit.blind_sqli]
 eq_limit = 0.9
@@ -68,4 +73,8 @@ onlyForward = False
 
 [audit.file_upload]
 extensions = gif,html,bmp,jpg,png,txt
+
+[audit.lfi]
+
+[crawl.web_spider]
 

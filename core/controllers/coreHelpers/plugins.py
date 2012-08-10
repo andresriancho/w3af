@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import sys
 
+from functools import partial
+
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
@@ -44,16 +46,18 @@ class w3af_core_plugins(object):
         '''
         # A dict with plugin types as keys and a list of plugin names as values
         self._plugin_name_list = {'audit': [], 'grep': [], 'bruteforce': [],
-                                  'discovery': [], 'evasion': [], 'mangle': [],
-                                  'output': [], 'auth': []}
+                                  'crawl': [], 'evasion': [], 'mangle': [],
+                                  'output': [], 'auth': [], 'infrastructure': []}
 
         self._plugins_options = {'audit': {}, 'grep': {}, 'bruteforce': {},
-                                'discovery': {}, 'evasion': {}, 'mangle': {},
-                                'output': {}, 'attack': {}, 'auth': {}}
+                                'crawl': {}, 'evasion': {}, 'mangle': {},
+                                'output': {}, 'attack': {}, 'auth': {},
+                                'infrastructure': {}}
 
         # A dict with plugin types as keys and a list of plugin instances as values
-        self.plugins = {'audit':[], 'grep':[], 'bruteforce':[], 'discovery':[],
-                        'evasion':[], 'mangle':[], 'output':[], 'auth': []}
+        self.plugins = {'audit':[], 'grep':[], 'bruteforce':[], 'crawl':[],
+                        'evasion':[], 'mangle':[], 'output':[], 'auth': [],
+                        'infrastructure': []}
         
     
     def init_plugins( self ):
@@ -72,7 +76,7 @@ class w3af_core_plugins(object):
         #
         # Create the plugins that are needed during the initial discovery+bruteforce phase
         #
-        for plugin_type in ('discovery', 'bruteforce', 'grep', 'mangle', 'auth'):
+        for plugin_type in ('crawl', 'infrastructure', 'bruteforce', 'grep', 'mangle', 'auth'):
             self.plugins[plugin_type] = self.plugin_factory( self._plugin_name_list[plugin_type], 
                                                              plugin_type)
         
@@ -91,7 +95,7 @@ class w3af_core_plugins(object):
 
     def set_plugin_options(self, pluginType, pluginName, pluginOptions):
         '''
-        @parameter pluginType: The plugin type, like 'audit' or 'discovery'
+        @parameter pluginType: The plugin type, like 'audit' or 'crawl'
         @parameter pluginName: The plugin name, like 'sqli' or 'web_spider'
         @parameter pluginOptions: An optionList object with the option objects for a plugin.
         
@@ -137,7 +141,7 @@ class w3af_core_plugins(object):
     def setPlugins( self, pluginNames, pluginType ):
         '''
         This method sets the plugins that w3afCore is going to use. Before this plugin
-        existed w3afCore used setDiscoveryPlugins() / setAuditPlugins() / etc , this wasnt
+        existed w3afCore used setcrawl_plugins() / setAuditPlugins() / etc , this wasnt
         really extensible and was replaced with a combination of setPlugins and getPluginTypes.
         This way the user interface isnt bound to changes in the plugin types that are added or
         removed.
@@ -158,14 +162,15 @@ class w3af_core_plugins(object):
                 unknown_plugins.append( p )
         
         setMap = {
-            'discovery': self._setDiscoveryPlugins,
-            'audit': self._setAuditPlugins,
-            'grep': self._setGrepPlugins,
+            'crawl': partial(self._set_plugin_generic, 'crawl'),
+            'audit': partial(self._set_plugin_generic, 'audit'),
+            'grep': partial(self._set_plugin_generic, 'grep'),
+            'output': partial(self._set_plugin_generic, 'output'),
+            'mangle': partial(self._set_plugin_generic, 'mangle'),
+            'bruteforce': partial(self._set_plugin_generic, 'bruteforce'),
+            'auth': partial(self._set_plugin_generic, 'auth'),
+            'infrastructure': partial(self._set_plugin_generic, 'infrastructure'),
             'evasion': self._setEvasionPlugins,
-            'output': self._set_output_plugins,
-            'mangle': self._setManglePlugins,
-            'bruteforce': self._setBruteforcePlugins,
-            'auth': self._setAuthPlugins
             }
         
         func = setMap[pluginType]
@@ -179,7 +184,7 @@ class w3af_core_plugins(object):
         inside the core have to be "reloaded" so, if the plugin code was changed,
         the core reflects that change.
         
-        @parameter pluginType: The plugin type of the modified plugin ('audit','discovery', etc)
+        @parameter pluginType: The plugin type of the modified plugin ('audit','crawl', etc)
         @parameter pluginName: The plugin name of the modified plugin ('xss', 'sqli', etc)
         '''
         try:
@@ -225,9 +230,8 @@ class w3af_core_plugins(object):
         '''
         @return: A string list of the names of all available plugins by type.
         '''
-        strPluginList = get_file_list( 'plugins' + os.path.sep + pluginType + os.path.sep )
+        strPluginList = get_file_list( os.path.join('plugins', pluginType) )
         return strPluginList
-        
         
     def getPluginInstance(self, pluginName, pluginType):
         '''
@@ -364,47 +368,12 @@ class w3af_core_plugins(object):
 
         return orderedPluginList
     
-    def _setBruteforcePlugins( self, bruteforcePlugins ):
+    def _set_plugin_generic(self, plugin_type, plugin_list):
         '''
-        @parameter manglePlugins: A list with the names of output Plugins that will be run.
-        @return: No value is returned.
+        @parameter plugin_type: The plugin type where to store the @plugin_list.
+        @parameter plugin_list: A list with the names of @plugin_type plugins to be run.
         '''
-        self._plugin_name_list['bruteforce'] = bruteforcePlugins
-    
-    def _setManglePlugins( self, manglePlugins ):
-        '''
-        @parameter manglePlugins: A list with the names of output Plugins that will be run.
-        @return: No value is returned.
-        '''
-        self._plugin_name_list['mangle'] = manglePlugins
-    
-    def _set_output_plugins( self, outputPlugins ):
-        '''
-        @parameter outputPlugins: A list with the names of output Plugins that will be run.
-        @return: No value is returned.
-        '''
-        self._plugin_name_list['output'] = outputPlugins
-        
-    def _setDiscoveryPlugins( self, discoveryPlugins ):
-        '''
-        @parameter discoveryPlugins: A list with the names of Discovery Plugins that will be run.
-        @return: No value is returned.
-        '''         
-        self._plugin_name_list['discovery'] = discoveryPlugins
-    
-    def _setAuditPlugins( self, auditPlugins ):
-        '''
-        @parameter auditPlugins: A list with the names of Audit Plugins that will be run.
-        @return: No value is returned.
-        '''         
-        self._plugin_name_list['audit'] = auditPlugins
-        
-    def _setGrepPlugins( self, grepPlugins):
-        '''
-        @parameter grepPlugins: A list with the names of Grep Plugins that will be used.
-        @return: No value is returned.
-        '''     
-        self._plugin_name_list['grep'] = grepPlugins
+        self._plugin_name_list[plugin_type] = plugin_list
         
     def _setEvasionPlugins( self, evasionPlugins ):
         '''
@@ -415,9 +384,3 @@ class w3af_core_plugins(object):
         self.plugins['evasion'] = self.plugin_factory( evasionPlugins , 'evasion')
         self._w3af_core.uriOpener.setEvasionPlugins( self.plugins['evasion'] )
         
-    def _setAuthPlugins( self, authPlugins ):
-        '''
-        @parameter authlugins: A list with the names of Auth Plugins that will be used.
-        @return: No value is returned.
-        '''
-        self._plugin_name_list['auth'] = authPlugins

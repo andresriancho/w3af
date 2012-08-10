@@ -34,17 +34,23 @@ class Test_w3afCore_plugins(unittest.TestCase):
     def test_getPluginTypes(self):
         w3af_core = w3afCore()
         plugin_types = w3af_core.plugins.getPluginTypes()
-        expected = set( ['grep', 'output', 'mangle', 'audit', 'discovery',
-                    'evasion', 'bruteforce', 'auth'] )
+        expected = set( ['grep', 'output', 'mangle', 'audit', 'crawl',
+                    'evasion', 'bruteforce', 'auth', 'infrastructure'] )
         self.assertEquals( set(plugin_types), expected )
         
-    def test_getPluginList(self):
+    def test_getPluginListAudit(self):
         w3af_core = w3afCore()
         plugin_list = w3af_core.plugins.getPluginList('audit')
 
-        expected = ['sqli', 'xss', 'eval']
-        for plugin_name in expected:
-            self.assertTrue( plugin_name in plugin_list )   
+        expected = set(['sqli', 'xss', 'eval'])
+        self.assertTrue( set(plugin_list).issuperset(expected) )   
+
+    def test_getPluginListCrawl(self):
+        w3af_core = w3afCore()
+        plugin_list = w3af_core.plugins.getPluginList('crawl')
+
+        expected = set(['web_spider', 'spider_man'])
+        self.assertTrue( set(plugin_list).issuperset(expected) )   
 
     def test_getPluginInstance(self):
         w3af_core = w3afCore()
@@ -81,26 +87,26 @@ class Test_w3afCore_plugins(unittest.TestCase):
     
     def test_plugin_options(self):
         w3af_core = w3afCore()
-        plugin_inst = w3af_core.plugins.getPluginInstance('web_spider','discovery')
+        plugin_inst = w3af_core.plugins.getPluginInstance('web_spider','crawl')
         options_1 = plugin_inst.getOptions()
         
-        w3af_core.plugins.set_plugin_options('discovery', 'web_spider', options_1)
-        options_2 = w3af_core.plugins.getPluginOptions('discovery', 'web_spider')
+        w3af_core.plugins.set_plugin_options('crawl', 'web_spider', options_1)
+        options_2 = w3af_core.plugins.getPluginOptions('crawl', 'web_spider')
         
         self.assertEquals( options_1, options_2 )
     
     def test_plugin_options_invalid(self):
         w3af_core = w3afCore()
-        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options, 'discovery', 'web_spider', None)
+        self.assertRaises(TypeError, w3af_core.plugins.set_plugin_options, 'crawl', 'web_spider', None)
         
     def test_init_plugins(self):
         w3af_core = w3afCore()
         enabled = ['web_spider']
-        w3af_core.plugins.setPlugins(enabled,'discovery')
+        w3af_core.plugins.setPlugins(enabled,'crawl')
         w3af_core.plugins.init_plugins()
         
-        self.assertEquals( len(w3af_core.plugins.plugins['discovery']), 1 )
+        self.assertEquals( len(w3af_core.plugins.plugins['crawl']), 1 )
         
-        plugin_inst = w3af_core.plugins.plugins['discovery'][0]
+        plugin_inst = w3af_core.plugins.plugins['crawl'][0]
         self.assertEquals( plugin_inst.getName(), 'web_spider' )
                 

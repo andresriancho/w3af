@@ -29,7 +29,7 @@ from core.data.request.fuzzableRequest import fuzzableRequest
 from core.data.url.xUrllib import xUrllib
 
 
-class TestXSRF(PluginTest):
+class TestCSRF(PluginTest):
     
     target_url = 'http://moth/w3af/audit/csrf/'
     
@@ -38,7 +38,7 @@ class TestXSRF(PluginTest):
             'target': target_url,
             'plugins': {
                  'audit': (PluginConfig('csrf'),),
-                 'discovery': (
+                 'crawl': (
                       PluginConfig(
                           'web_spider',
                           ('onlyForward', True, PluginConfig.BOOL)),

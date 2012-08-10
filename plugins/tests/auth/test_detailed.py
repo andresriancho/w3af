@@ -30,7 +30,7 @@ class TestDetailed(PluginTest):
     _run_config = {
             'target': base_url,
             'plugins': {
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL),
                                  ('ignoreRegex', '.*logout.*', PluginConfig.STR)),

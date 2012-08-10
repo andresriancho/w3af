@@ -21,13 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 # This module is a collection of useful code snippets for the GTK gui
 
-import threading, re, Queue
-import  webbrowser
+import threading
+import Queue
+import webbrowser
+import textwrap
 import gtk
 import os
+
 from core.controllers.w3afException import w3afException
 
-RE_TRIM_SPACES = re.compile( "([\w.]) {1,}")
 
 class PropagateBuffer(object):
     '''Buffer to don't propagate signals when it's not necessary.
@@ -101,7 +103,7 @@ def cleanDescription(desc):
     '''Cleans a description.
 
     Normally a plugin generates these descriptions with a lot of
-    spaces at the beggining of each line; this function tries to
+    spaces at the begining of each line; this function tries to
     eliminate all these spaces.
 
     Also trims more than one space between words.
@@ -111,31 +113,7 @@ def cleanDescription(desc):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    # convert spaces to tabs, and all to lines
-    desc = desc.expandtabs(4)
-    desc = desc.splitlines()
-
-    # find indentation of first line used
-    firstline = 0
-    while len(desc[firstline].strip()) == 0:
-        firstline += 1
-    initialindent = 0
-    while desc[firstline][initialindent] == " ":
-        initialindent += 1
-        
-    # strip initial indentation if it's all spaces
-    lines = []
-    for lin in desc:
-        indent = lin[:initialindent]
-        if indent == " "*len(indent):
-            lines.append(lin[initialindent:])
-
-    desc = "\n".join(lines)
-
-    # trim spaces
-    desc = RE_TRIM_SPACES.sub("\\1 ", desc)
-
-    return desc
+    return textwrap.dedent(desc)
 
 
 

@@ -162,7 +162,7 @@ class redos(baseAuditPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['discovery.server_header']
+        return ['crawl.server_header']
     
     def getLongDesc( self ):
         '''

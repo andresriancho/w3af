@@ -32,7 +32,7 @@ class TestGetEmails(PluginTest):
             'plugins': {
                 'grep': (PluginConfig('get_emails',
                                       ('onlyTargetDomain', False, PluginConfig.BOOL)),),
-                'discovery': (
+                'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
                 )         

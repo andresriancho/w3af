@@ -37,7 +37,7 @@ class wordnet_loader(LazyCorpusLoader):
 
     def __load(self):
         # Find the corpus root directory.
-        zip_location = os.path.join('plugins', 'discovery', 'wordnet','wordnet.zip')
+        zip_location = os.path.join('plugins', 'crawl', 'wordnet','wordnet.zip')
         root = ZipFilePathPointer(zip_location, 'wordnet/')
 
         # Load the corpus.
