@@ -37,7 +37,8 @@
         <xs:element ref="evasion"/>
         <xs:element ref="output"/>
         <xs:element ref="mangle"/>
-        <xs:element ref="discovery"/>
+        <xs:element ref="crawl"/>
+        <xs:element ref="infrastructure"/>
       </xs:all>
       <xs:attribute name="target" use="required" type="xs:string"/>
     </xs:complexType>
@@ -105,7 +106,7 @@
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="discovery">
+  <xs:element name="crawl">
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
@@ -113,6 +114,14 @@
     </xs:complexType>
   </xs:element>
   
+  <xs:element name="infrastructure">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="plugin" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="vulnerability">
     <xs:complexType mixed="true">
       <xs:sequence>
@@ -195,7 +204,7 @@
         <xs:element name="headers" minOccurs="1" maxOccurs="1" type="headers"/>
         <xs:element ref="body" minOccurs="0" maxOccurs="1"/>
       </xs:sequence>
-      <xs:attribute name="id" use="required" type="xs:string"/>
+      <xs:attribute name="id" use="optional" type="xs:string"/>
     </xs:complexType>
   </xs:element>
 

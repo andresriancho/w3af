@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import os
+import StringIO
+
 from lxml import etree
 
 import core.data.kb.vuln as vuln
@@ -31,6 +33,8 @@ from ..helper import PluginTest, PluginConfig
 class TestXMLOutput(PluginTest):
     
     xss_url = 'http://moth/w3af/audit/xss/'
+    filename = 'output-unittest.xml'
+    xsd = os.path.join('plugins', 'output', 'xml_file', 'report.xsd')
     
     _run_configs = {
         'cfg': {
@@ -50,7 +54,7 @@ class TestXMLOutput(PluginTest):
                 'output': (
                     PluginConfig(
                         'xml_file',
-                        ('fileName', 'output-unittest.xml', PluginConfig.STR)),
+                        ('fileName', filename, PluginConfig.STR)),
                 )         
             },
         }
@@ -79,17 +83,20 @@ class TestXMLOutput(PluginTest):
             set(sorted([v.getPluginName() for v in xss_vulns])),
             set(sorted([v.getPluginName() for v in file_vulns]))
         )
+        
+        self.assertEqual( validate_XML(file(self.filename).read(), self.xsd) ,
+                          '')
 
     def _from_xml_get_vulns(self):
         xp = XMLParser()
         parser = etree.XMLParser(target=xp)
-        vulns = etree.fromstring(file('output-unittest.xml').read(), parser)
+        vulns = etree.fromstring(file(self.filename).read(), parser)
         return vulns
         
     def tearDown(self):
         super(TestXMLOutput, self).tearDown()
         try:
-            os.remove('output-unittest.xml')
+            os.remove(self.filename)
         except:
             pass
 
@@ -110,3 +117,22 @@ class XMLParser:
     
     def close(self):
         return self.vulns     
+
+def validate_XML(content, schema_content):
+    '''
+    Validate an XML against an XSD.
+    
+    @return: The validation error log as a string, an empty string is returned
+             when there are no errors.
+    '''
+    xml_schema_doc = etree.parse(schema_content);
+    xml_schema = etree.XMLSchema(xml_schema_doc);
+    xml = etree.parse(StringIO.StringIO(content));
+    
+    # Validate the content against the schema.
+    try:
+        xml_schema.assertValid(xml)
+    except etree.DocumentInvalid:
+        return xml_schema.error_log
+
+    return ''
