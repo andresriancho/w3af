@@ -53,10 +53,14 @@ class TestWordnet(PluginTest):
                 set((self.target_url + end) for end in expected_urls)
                 )
     
-    # FIXME: There is an ugly bug in the wordnet plugin that returns many
-    # URIs to the core. Example:
-    #- http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="bay window")
-    #- http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="car window")
-    #- http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="casement w...")
-    #- http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="clerestory")
+    def test_fix_bug(self):
+        '''
+         FIXME: There is an ugly bug in the wordnet plugin that returns many
+         URIs to the core. Example:
+        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="bay window")
+        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="car window")
+        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="casement w...")
+        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="clerestory")
+        '''
+        self.assertTrue(False)
 
