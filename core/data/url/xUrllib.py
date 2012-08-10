@@ -270,7 +270,7 @@ class xUrllib(object):
         return res
             
     def GET(self, uri, data=None, headers={}, cache=False,
-            grep=True, follow_redir=True, cookies=True):
+            grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in urlOpenerSettings.py .
@@ -300,7 +300,13 @@ class xUrllib(object):
 
         if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-
+        
+        # TODO: This is an UGLY hack that allows me to download oversized files,
+        #       but it shouldn't be implemented like this! It should look more
+        #       like the follow_redir parameter.
+        if not respect_size_limit:
+            max_file_size = cf.cf.getData('maxFileSize')
+            cf.cf.save('maxFileSize', 10**10)
         #
         # Create and send the request
         #
@@ -310,7 +316,13 @@ class xUrllib(object):
             
         req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies)
         req = self._add_headers(req, headers)
-        return self._send(req, cache=cache, grep=grep)
+        try:
+            http_response = self._send(req, cache=cache, grep=grep)
+        finally:
+            if not respect_size_limit:
+                # restore the original value
+                cf.cf.save('maxFileSize', max_file_size)
+            return http_response
     
     def _new_no_content_resp(self, uri, log_it=False):
         '''
