@@ -137,7 +137,7 @@ class dot_net_errors(baseCrawlPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['grep.errorPages']
+        return ['grep.error_pages']
         
     def getLongDesc( self ):
         '''

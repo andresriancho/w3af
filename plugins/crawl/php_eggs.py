@@ -26,8 +26,6 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-from core.controllers.misc.levenshtein import relative_distance
-from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afException, w3afRunOnce
@@ -353,7 +351,7 @@ class php_eggs(baseCrawlPlugin):
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
-        return ['crawl.server_header']
+        return ['infrastructure.server_header']
     
     def getLongDesc( self ):
         '''

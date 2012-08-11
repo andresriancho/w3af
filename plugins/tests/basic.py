@@ -65,7 +65,22 @@ class TestBasic(unittest.TestCase):
             for plugin in self.plugins[plugin_type]:
                 opt1 = plugin.getOptions()
 
-    def test_plugin_deps_desc(self):
+    def test_plugin_deps(self):
+        for plugin_type in self.plugins:
+            for plugin in self.plugins[plugin_type]:
+                dependencies = plugin.getPluginDeps()
+                self.assertTrue( isinstance(dependencies, list) )
+                
+                for dep in dependencies:
+                    self.assertTrue( isinstance(dep, basestring) )
+                    plugin_type, plugin_name = dep.split('.')
+                    
+                    self.assertTrue( plugin_type in self.w3afcore.plugins.getPluginTypes() )
+                    
+                    msg = '%s is not of type %s in %s plugin dependency.' % (plugin_name, plugin_type, plugin)
+                    self.assertTrue( plugin_name in self.w3afcore.plugins.getPluginList( plugin_type ), msg )
+                
+    def test_plugin_desc(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
                 self.assertTrue( isinstance(plugin.getPluginDeps(), list) )
