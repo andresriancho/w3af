@@ -19,17 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-from core.data.parsers.urlParser import url_object
 
+from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.data.parsers.urlParser import url_object
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.levenshtein import relative_distance_ge
 
@@ -43,26 +38,25 @@ class fingerprint_os(baseInfrastructurePlugin):
     def __init__(self):
         baseInfrastructurePlugin.__init__(self)
         
-        # Control flow
-        self._found_OS = False
         self._exec = True
         
     def discover(self, fuzzableRequest ):
         '''
-        It calls the "main" from fingerprint_os and writes the results to the kb.
+        It calls the "main" and writes the results to the kb.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
-            # This will remove the plugin from the infrastructure plugins to be run.
             raise w3afRunOnce()
         
         self._exec = not self._find_OS(fuzzableRequest)
     
     def _find_OS(self, fuzzableRequest):
         '''
-        Analyze responses and determine if remote web server runs on windows or *nix
+        Analyze responses and determine if remote web server runs on windows
+        or *nix.
+        
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
         found_os = False
@@ -90,7 +84,7 @@ class fingerprint_os(baseInfrastructurePlugin):
                 i.setMethod( 'GET' )
                 i.setDesc('Fingerprinted this host as a Microsoft Windows system.' )
                 i.setId( [windows_response.id, original_response.id] )
-                kb.kb.append( self, 'operating_system_str', 'windows' )
+                kb.kb.save( self, 'operating_system_str', 'windows' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
             else:
@@ -99,11 +93,11 @@ class fingerprint_os(baseInfrastructurePlugin):
                 i.setName('Operating system')
                 i.setURL( original_response.getURL() )
                 i.setMethod( 'GET' )
-                msg = 'Fingerprinted this host as a *nix system. Detection for this operating'
-                msg += ' system is weak, "if not windows: is linux".'
+                msg = 'Fingerprinted this host as a *nix system. Detection for'
+                msg += '  this operating system is weak, "if not windows: is linux".'
                 i.setDesc( msg )
                 i.setId( [original_response.id, windows_response.id] )
-                kb.kb.append( self, 'operating_system_str', 'unix' )
+                kb.kb.save( self, 'operating_system_str', 'unix' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
         

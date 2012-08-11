@@ -666,13 +666,11 @@ class phpinfo(baseCrawlPlugin):
         res.extend( ['PHPversion.php', 'x.php', 'xx.php', 'xxx.php'] )            
         
         identified_os = kb.kb.getData('fingerprint_os','operating_system_str')
-        ios = ''
-        if (len(identified_os) != 0):
-            ios = identified_os[0]
-        else:
-            ios = cf.cf.getData('targetOS')
+        
+        if not isinstance(identified_os, basestring):
+            identified_os = cf.cf.getData('targetOS')
        
-        if re.match('windows',ios,re.IGNORECASE):
+        if re.match('windows', identified_os, re.IGNORECASE):
             res = list(set([path.lower() for path in res]))
         
         return res
