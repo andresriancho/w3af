@@ -9,7 +9,7 @@ back
 output config console
 set verbose False
 back
-discovery find_vhosts
+infrastructure find_vhosts
 back
 
 target

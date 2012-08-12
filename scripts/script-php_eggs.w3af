@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-discovery php_eggs
+infrastructure php_eggs
 back
 
 target

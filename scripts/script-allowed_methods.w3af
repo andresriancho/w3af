@@ -9,7 +9,7 @@ back
 output config console
 set verbose False
 back
-discovery allowed_methods
+infrastructure allowed_methods
 back
 
 target

@@ -10,7 +10,7 @@ back
 output config console
 set verbose True
 back
-discovery spider_man
+crawl spider_man
 discovery
 audit sqli
 audit

@@ -15,7 +15,7 @@ output config console
 set verbose False
 back
 
-discovery fingerprint_WAF
+infrastructure fingerprint_WAF
 
 back
 

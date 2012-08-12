@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery allowed_methods,web_spider
-discovery config web_spider
+infrastructure allowed_methods,web_spider
+crawl config web_spider
 set onlyForward True
 back
 

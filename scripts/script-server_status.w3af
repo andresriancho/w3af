@@ -10,7 +10,7 @@ output config console
 set verbose False
 back
 
-discovery server_status
+infrastructure server_status
 back
 
 target

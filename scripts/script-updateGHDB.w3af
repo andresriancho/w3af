@@ -8,7 +8,7 @@ set fileName output-w3af.txt
 set verbose True
 back
 
-discovery config ghdb
+crawl config ghdb
 set updateGHDB True
 view
 back

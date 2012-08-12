@@ -2,7 +2,7 @@
 
 plugins
 audit sqli
-discovery hmap
+infrastructure hmap
 
 output console, text_file
 

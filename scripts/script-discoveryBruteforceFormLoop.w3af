@@ -3,7 +3,7 @@
 plugins
 audit htaccess_methods
 bruteforce form_auth
-discovery allowed_methods,web_spider
+infrastructure allowed_methods,web_spider
 grep password_profiling
 output console,text_file
 output

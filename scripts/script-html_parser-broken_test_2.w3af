@@ -1,7 +1,7 @@
 # Unit test for html parser
 
 plugins
-discovery allowed_methods
+infrastructure allowed_methods
 output console,text_file
 output
 output config text_file

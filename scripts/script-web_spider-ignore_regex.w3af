@@ -9,9 +9,9 @@ back
 output config console
 set verbose False
 back
-discovery allowed_methods,web_spider
+infrastructure allowed_methods,web_spider
 
-discovery config web_spider
+crawl config web_spider
 set ignoreRegex .*a.html
 set onlyForward True
 back

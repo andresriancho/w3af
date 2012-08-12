@@ -1,8 +1,8 @@
 # generate a hmap fingerprint file
 
 plugins
-discovery server_header,hmap
-discovery config hmap
+infrastructure server_header,hmap
+infrastructure config hmap
 set genFpF True
 back
 

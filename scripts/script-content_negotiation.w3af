@@ -11,7 +11,7 @@ set verbose False
 back
 
 discovery content_negotiation, web_spider
-discovery config web_spider
+crawl config web_spider
 set onlyForward true
 back
 back

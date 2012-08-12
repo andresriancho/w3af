@@ -1,8 +1,8 @@
 # This is the test for the pdf document parser
 
 plugins
-discovery web_spider
-discovery config web_spider
+crawl web_spider
+crawl config web_spider
 set onlyForward True
 back
 

@@ -8,8 +8,8 @@ set fileName output-w3af.txt
 set verbose True
 back
 
-discovery web_spider
-discovery config web_spider
+crawl web_spider
+crawl config web_spider
 set onlyForward True
 back
 

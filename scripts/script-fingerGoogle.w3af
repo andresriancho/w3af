@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery finger_google
-discovery config finger_google
+infrastructure finger_google
+infrastructure config finger_google
 set resultLimit 64
 back
 back

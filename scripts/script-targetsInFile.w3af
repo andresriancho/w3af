@@ -1,7 +1,7 @@
 # Targets can be specified in a file like this:
 
 plugins
-discovery allowed_methods,web_spider
+infrastructure allowed_methods,web_spider
 discovery
 output console,text_file
 output

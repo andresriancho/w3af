@@ -9,7 +9,7 @@ back
 output config console
 set verbose False
 back
-discovery server_header
+infrastructure server_header
 back
 
 target

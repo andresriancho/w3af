@@ -10,8 +10,8 @@ output config console
 set verbose False
 back
 
-discovery finger_bing
-discovery config finger_bing
+infrastructure finger_bing
+infrastructure config finger_bing
 set resultLimit 100
 back
 back

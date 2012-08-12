@@ -11,7 +11,7 @@ set verbose False
 back
 
 discovery import_results
-discovery config import_results
+crawl config import_results
 set input_csv scripts/input-test.csv
 back
 
