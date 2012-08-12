@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import sys
 import threading
-import textwrap
 
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
@@ -30,6 +28,7 @@ import core.data.kb.vuln as vuln
 from core.data.options.optionList import optionList
 from core.controllers.configurable import configurable
 from core.controllers.threads.threadManager import thread_manager
+from core.controllers.threads.threadpool import return_args
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 
 
@@ -247,9 +246,4 @@ class UrlOpenerProxy(object):
         attr = getattr(self._url_opener, name)
         return meth if callable(attr) else attr
 
-class return_args(object):
-    def __init__(self, func):
-        self.func = func
-    
-    def __call__(self, *args):
-        return args, self.func(*args)
+

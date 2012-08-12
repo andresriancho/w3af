@@ -38,6 +38,16 @@ class one_to_many(object):
     def __call__(self, args):
         return self.func(*args)
 
+class return_args(object):
+    '''
+    Utility function that returns the args in the result, useful when calling
+    functions like imap_unordered().
+    '''
+    def __init__(self, func):
+        self.func = func
+    
+    def __call__(self, *args):
+        return args, self.func(*args)
     
 class Pool(ThreadPool):
     def map_multi_args(self, func, iterable, chunksize=None):
