@@ -19,14 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from functools import partial 
+
+import core.controllers.outputManager as om
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt
+
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
-import core.controllers.outputManager as om
 
 
 class slash(baseCrawlPlugin):
@@ -41,38 +43,42 @@ class slash(baseCrawlPlugin):
         baseCrawlPlugin.__init__(self)
         self._already_visited = scalable_bloomfilter()
         
-    def crawl(self, fuzzableRequest):
+    def crawl(self, fuzzable_request):
         '''
         Generates a new URL by adding or substracting the '/' character.      
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
             (among other things) the URL to test.
         '''     
-        self._fuzzableRequests = []
-        
-        url = fuzzableRequest.getURL()
-        if url not in self._already_visited:
-            self._already_visited.add(url)
+        if fuzzable_request.getURL() not in self._already_visited:
+            fr_slash = self._get_fuzzed_request(fuzzable_request)
+            
+            self._already_visited.add(fuzzable_request.getURL())
+            self._already_visited.add(fr_slash.getURL())
+            
+            if fr_slash.getURL() != fuzzable_request.getURL():
 
-            fr = self._get_fuzzed_request(fuzzableRequest)
-            orig_resp = self._uri_opener.GET(
-                                        fuzzableRequest.getURL(),
-                                        cache=True
-                                        )
-            self._do_request(fr, orig_resp)
-            self._already_visited.add(fr.getURL())
+                http_response_list = []
+                add_http_response = partial(self._add_http_responses, http_response_list)
+            
+                self._send_mutants_in_threads(self._uri_opener.send_mutant,
+                                              [fuzzable_request,fr_slash],
+                                              callback=add_http_response)
+            
+                return self._analyze(http_response_list)
                 
-        return self._fuzzableRequests
+        return []
 
-    def _get_fuzzed_request(self, fuzzableRequest):
+    def _get_fuzzed_request(self, fuzzable_request):
         '''
         Generate a new Url by adding or substracting the '/' character.
-        @param fuzzableRequest: The original fuzzableRequest
-        @return: The modified fuzzableRequest.
-        '''
-        fr = fuzzableRequest.copy()
         
-        url_string = str(fuzzableRequest.getURL()) 
+        @param fuzzable_request: The original fuzzable_request
+        @return: The modified fuzzable_request.
+        '''
+        fr = fuzzable_request.copy()
+        
+        url_string = str(fuzzable_request.getURL()) 
         
         if url_string.endswith('/'):
             new_url = url_object(url_string.rstrip('/'))
@@ -82,48 +88,26 @@ class slash(baseCrawlPlugin):
         fr.setURL(new_url)
         return fr
 
-    def _do_request(self, fuzzableRequest, orig_resp):
+    def _add_http_responses(self, response_list, fr, http_response):
+        response_list.append(http_response)
+
+    def _analyze(self, http_response_list):
         '''
-        Sends the request.
+        Analyze the HTTP responses which come inside and return new fuzzable
+        requests (if any).
+        '''
+        if len(http_response_list) == 2:
+            http_response_a = http_response_list[0]
+            http_response_b = http_response_list[1]
+            a_body = http_response_b.getBody()
+            b_body = http_response_a.getBody()
+            if relative_distance_lt(a_body, b_body, 0.7) \
+            and not is_404(http_response_a) and not is_404(http_response_b):
+                res = []
+                res.extend(self._createfuzzable_requests(http_response_a))
+                res.extend(self._createfuzzable_requests(http_response_b))
+                return res
         
-        @parameter fuzzableRequest: The fuzzable request object to modify.
-        @parameter orig_resp: The response for the original request
-            that was sent.
-        '''
-        try:
-            resp = self._uri_opener.GET(fuzzableRequest.getURI(), cache=True)
-        except KeyboardInterrupt, e:
-            raise e
-        else:
-            resp_body = resp.getBody()
-            orig_resp = orig_resp.getBody()
-            if relative_distance_lt(resp_body, orig_resp, 0.7) and \
-                not is_404(resp):
-                self._fuzzableRequests.extend(self._createFuzzableRequests(resp))
-                om.out.debug('slash plugin found new URI: "' + fuzzableRequest.getURI() + '".')
-        
-    def getOptions(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = optionList()
-        return ol
-        
-    def setOptions(self, OptionList):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-    
-    def getPluginDeps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
         return []
     
     def getLongDesc(self):
@@ -131,5 +115,6 @@ class slash(baseCrawlPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Identify if the resource http://host.tld/spam/ and http://host.tld/spam are the same.      
+        Identify if the resource http://host.tld/spam/ and http://host.tld/spam
+        are the same.      
         '''
