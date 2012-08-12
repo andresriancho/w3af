@@ -213,7 +213,7 @@ class basePlugin(configurable):
     def _send_mutants_in_threads(self, func, iterable, callback):
         '''
         Please note that this method blocks from the caller's point of view
-        but performs all the HTTP requests in paralell threads.
+        but performs all the HTTP requests in parallel threads.
         '''
         func = return_args(func)
         for (mutant,), http_response in self._tm.threadpool.imap_unordered(func, iterable):
