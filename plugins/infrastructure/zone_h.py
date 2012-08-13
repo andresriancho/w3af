@@ -19,24 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
-from core.controllers.w3afException import w3afException, w3afRunOnce
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
+from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.misc.decorators import runonce
 from core.data.parsers.urlParser import url_object
-
-import re
 
 
 class zone_h(baseInfrastructurePlugin):
@@ -48,50 +42,36 @@ class zone_h(baseInfrastructurePlugin):
     def __init__(self):
         baseInfrastructurePlugin.__init__(self)
         
-        # Internal variables
-        self._exec = True
-        
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         Search zone_h and parse the output.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
-                                                    (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        if not self._exec :
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # Only run once
-            self._exec = False
-                        
-            target_domain = fuzzableRequest.getURL().getRootDomain()
-            
-            # Example URL:
-            # http://www.zone-h.org/archive/domain=cyprus-stones.com
+        target_domain = fuzzableRequest.getURL().getRootDomain()
         
-            # TODO: Keep this URL updated!
-            zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
-            zone_h_url = url_object( zone_h_url_str )
+        # Example URL:
+        # http://www.zone-h.org/archive/domain=cyprus-stones.com
+    
+        # TODO: Keep this URL updated!
+        zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
+        zone_h_url = url_object( zone_h_url_str )
 
-            try:
-                response = self._uri_opener.GET( zone_h_url )
-            except w3afException, e:
-                msg = 'An exception was raised while running zone-h plugin. Exception: ' + str(e)
-                om.out.debug( msg )
-            else:
-                # This handles some wierd cases in which zone-h responds with a blank page
-                if response.getBody() == '':
-                    om.out.debug('Zone-h responded with a blank body.')
-                    
-                    # Run again in the next infrastructure loop
-                    self._exec = True
-                else:
-                    self._parse_zone_h_result( response )
+        try:
+            response = self._uri_opener.GET( zone_h_url )
+        except w3afException, e:
+            msg = 'An exception was raised while running zone-h plugin.'
+            msg += ' Exception: "%s"' % e
+            om.out.debug( msg )
+        else:
+            self._parse_zone_h_result( response )
     
     def _parse_zone_h_result(self, response):
         '''
-        Parse the result from the zone_h site and create the corresponding info objects.
+        Parse the result from the zone_h site and create the corresponding info
+        objects.
         
         @return: None
         '''
