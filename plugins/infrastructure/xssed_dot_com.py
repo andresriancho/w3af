@@ -19,23 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+import urllib2
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
-from core.controllers.w3afException import w3afException, w3afRunOnce
-from core.data.parsers.urlParser import url_object
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-import re, urllib2
+from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.misc.decorators import runonce
+from core.data.parsers.urlParser import url_object
 
 
 class xssed_dot_com(baseInfrastructurePlugin):
@@ -48,50 +43,40 @@ class xssed_dot_com(baseInfrastructurePlugin):
     def __init__(self):
         baseInfrastructurePlugin.__init__(self)
         
-        # Internal variables
-        self._exec = True
-        self._fuzzable_requests_to_return = []
-        
         #
         #   Could change in time,
         #
         self._xssed_url = url_object("http://www.xssed.com")
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
-        
+    
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzableRequest ):
         '''
         Search in xssed.com and parse the output.
         
         @parameter fuzzableRequest: A fuzzableRequest instance that contains 
-                                                    (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
+        target_domain = fuzzableRequest.getURL().getRootDomain()
 
-        if not self._exec :
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
+        try:
+            check_url = self._xssed_url.urlJoin("/search?key=." + target_domain)
+            response = self._uri_opener.GET( check_url )
+        except w3afException, e:
+            msg = 'An exception was raised while running xssed_dot_com plugin.'
+            msg += 'Exception: "%s".' % e
+            om.out.debug( msg )
         else:
-            # Only run once
-            self._exec = False
-                        
-            target_domain = fuzzableRequest.getURL().getRootDomain()
-
+            #
+            #   Only parse the xssed result if we have it,
+            #
             try:
-                response = self._uri_opener.GET( self._xssed_url.urlJoin("/search?key=." + target_domain) )
+                return self._parse_xssed_result( response )
             except w3afException, e:
-                msg = 'An exception was raised while running xssed_dot_com plugin. Exception: '
-                msg += '"' + str(e) + '".'
+                self._exec = True
+                msg = 'An exception was raised while running xssed_dot_com plugin. '
+                msg += 'Exception: "%s".' % e
                 om.out.debug( msg )
-            else:
-                #
-                #   Only parse the xssed result if we have it,
-                #
-                try:
-                    return self._parse_xssed_result( response )
-                except w3afException, e:
-                    self._exec = True
-                    msg = 'An exception was raised while running xssed_dot_com plugin. Exception: '
-                    msg += '"' + str(e) + '".'
-                    om.out.debug( msg )
 
     def _decode_xssed_url(self, url):
         '''
@@ -111,9 +96,10 @@ class xssed_dot_com(baseInfrastructurePlugin):
     
     def _parse_xssed_result(self, response):
         '''
-        Parse the result from the xssed site and create the corresponding info objects.
+        Parse the result from the xssed site and create the corresponding info
+        objects.
         
-        @return: None
+        @return: Fuzzable requests pointing to the XSS (if any)
         '''
         html_body = response.getBody()
         
@@ -139,7 +125,7 @@ class xssed_dot_com(baseInfrastructurePlugin):
                     msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
                 else:
                     v.setSeverity( severity.HIGH )
-                    msg = 'According to xssed.com , this script contains a XSS vulnerability: "'
+                    msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
                     msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
 
                 v.setDesc( msg )
@@ -150,42 +136,18 @@ class xssed_dot_com(baseInfrastructurePlugin):
                 #   Add the fuzzable request, this is useful if I have the XSS plugin enabled
                 #   because it will re-test this and possibly confirm the vulnerability
                 #
-                fuzzable_requests = self._createFuzzableRequests( xss_report_response )
-                self._fuzzable_requests_to_return.extend( fuzzable_requests )
+                fuzzable_requests = self._create_fuzzable_requests( xss_report_response )
+                return fuzzable_requests
         else:
             #   Nothing to see here...
             om.out.debug('xssed_dot_com did not find any previously reported XSS vulnerabilities.')
 
-        return self._fuzzable_requests_to_return
-
-                
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = optionList()
-        return ol
-        
-    def setOptions( self, options ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-        
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
         return []
 
+                
     def getLongDesc( self ):
         return '''
-        This plugin searches the xssed.com database and parses the result. The information
-        stored in that database is useful to know about previous XSS vulnerabilities in the target
-        website.
+        This plugin searches the xssed.com database and parses the result. The
+        information stored in that database is useful to know about previous XSS
+        vulnerabilities in the target website.
         '''
