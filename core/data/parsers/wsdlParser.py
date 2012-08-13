@@ -56,6 +56,7 @@ class wsdlParser:
         @parameter data: A string that might represent a WSDL
         @return: True if the data parameter is a WSDL document.
         '''
+        return False
         if '<definitions' in data[:150] or '<wsdl:definitions' in data[:150]:
             return True
         else:
