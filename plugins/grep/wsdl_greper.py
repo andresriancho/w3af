@@ -53,12 +53,9 @@ class wsdl_greper(baseGrepPlugin):
         @parameter response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        url = response.getURL()
-        if response.is_text_or_html() and response.getCode() == 200  and \
-        url not in self._already_inspected:
-        
-            # Don't repeat URLs
-            self._already_inspected.add(url)
+        uri = response.getURI()
+        if response.getCode() == 200  and uri not in self._already_inspected:
+            self._already_inspected.add(uri)
             
             match_list = self._multi_in.query(response.body)
             if len(match_list):
