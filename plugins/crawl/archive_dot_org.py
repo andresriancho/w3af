@@ -192,7 +192,7 @@ class archive_dot_org(baseCrawlPlugin):
             msg = 'The URL: "' + url + '" was found at archive.org and is'
             msg += ' STILL AVAILABLE in the target site.'
             om.out.debug( msg )
-            self._fuzzable_requests.extend( self._createFuzzableRequests(response) )
+            self._fuzzable_requests.extend( self._create_fuzzable_requests(response) )
         else:
             msg = 'The URL: "' + url + '" was found at archive.org and was'
             msg += ' DELETED from the target site.'

@@ -40,10 +40,10 @@ import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
 
 
-__all__ = ['createFuzzableRequests', 'create_fuzzable_request']
+__all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
 
 
-def createFuzzableRequests(resp, request=None, add_self=True):
+def create_fuzzable_requests(resp, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an http response instance.
     

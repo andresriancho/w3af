@@ -172,7 +172,7 @@ class find_backdoors(baseCrawlPlugin):
                 kb.kb.append(self, 'backdoors', v)
                 om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
 
-                fuzzable_requests = self._createFuzzableRequests(response)
+                fuzzable_requests = self._create_fuzzable_requests(response)
                 self._fuzzable_requests_to_return += fuzzable_requests
             
     def _is_possible_backdoor(self, response):

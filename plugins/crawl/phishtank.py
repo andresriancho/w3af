@@ -80,7 +80,7 @@ class phishtank(baseCrawlPlugin):
             phishtank_matches = self._is_in_phishtank( to_check_list )
             for ptm in phishtank_matches:
                 response = self._uri_opener.GET( ptm.url )
-                self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+                self._fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
             
             # Only create the vuln object once
             if phishtank_matches:

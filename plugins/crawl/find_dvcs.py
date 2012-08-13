@@ -91,7 +91,7 @@ class find_dvcs(baseCrawlPlugin):
                                 v.setDesc( msg )
                                 kb.kb.append( self, repo.upper(), v )
                                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                                fuzzable_requests = self._createFuzzableRequests( response )
+                                fuzzable_requests = self._create_fuzzable_requests( response )
                                 self._fuzzable_requests_to_return.extend( fuzzable_requests )
 
             return self._fuzzable_requests_to_return

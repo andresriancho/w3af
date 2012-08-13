@@ -60,7 +60,7 @@ class sitemap_xml(baseCrawlPlugin):
         if '</urlset>' in response and not is_404( response ):
             om.out.debug('Analyzing sitemap.xml file.')
             
-            self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+            self._new_fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
             
             om.out.debug('Parsing xml file with xml.dom.minidom.')
             try:
@@ -102,7 +102,7 @@ class sitemap_xml(baseCrawlPlugin):
             om.out.debug( msg )
         else:
             if not is_404( http_response ):
-                fuzz_reqs = self._createFuzzableRequests( http_response )
+                fuzz_reqs = self._create_fuzzable_requests( http_response )
                 self._new_fuzzable_requests.extend( fuzz_reqs )
         
     def getLongDesc( self ):

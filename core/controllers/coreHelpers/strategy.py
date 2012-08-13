@@ -42,7 +42,7 @@ from core.controllers.w3afException import (w3afException, w3afRunOnce,
                                             w3afMustStopException, 
                                             w3afMustStopOnUrlError)
 
-from core.data.request.frFactory import createFuzzableRequests
+from core.data.request.frFactory import create_fuzzable_requests
 from core.data.db.disk_set import disk_set
 
 
@@ -259,7 +259,7 @@ class w3af_core_strategy(object):
                 #
                 response = self._w3af_core.uriOpener.GET(url, cache=True)
                 self._fuzzable_request_set.update( filter(
-                    get_curr_scope_pages, createFuzzableRequests(response)) )
+                    get_curr_scope_pages, create_fuzzable_requests(response)) )
 
                 #
                 #    NOTE: I need to perform this test here in order to avoid some weird

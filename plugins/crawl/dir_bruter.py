@@ -127,7 +127,7 @@ class dir_bruter(baseCrawlPlugin):
                     #    Good, the directory_name + createRandAlNum(5) return a
                     #    404, the original directory_name is not a false positive.
                     #
-                    fuzzable_reqs = self._createFuzzableRequests( http_response )
+                    fuzzable_reqs = self._create_fuzzable_requests( http_response )
                     self._fuzzable_requests.extend( fuzzable_reqs )
                     
                     msg = 'Directory bruteforcer plugin found directory "'

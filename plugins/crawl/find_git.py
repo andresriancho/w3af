@@ -128,7 +128,7 @@ class find_git(baseCrawlPlugin):
                         
                         kb.kb.append( self, 'GIT', v )
                         
-                        fuzzable_requests = self._createFuzzableRequests( response )
+                        fuzzable_requests = self._create_fuzzable_requests( response )
                         self._fuzzable_requests_to_return.extend( fuzzable_requests )
                         
                         return True

@@ -75,7 +75,7 @@ class wordnet(baseCrawlPlugin):
         response = self._uri_opener.send_mutant(mutant)
         if not is_404( response ) and \
         relative_distance_lt(original_response.body, response.body, 0.85):
-            fuzz_reqs = self._createFuzzableRequests( response )
+            fuzz_reqs = self._create_fuzzable_requests( response )
             self._fuzzable_requests.extend( fuzz_reqs )
     
     def _generate_mutants( self, fuzzable_request ):

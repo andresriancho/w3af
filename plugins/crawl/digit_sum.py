@@ -126,7 +126,7 @@ class digit_sum(baseCrawlPlugin):
                 add = True
                 
         if add:
-            self._fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+            self._fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
     
     def _mangle_digits(self, fuzzable_request):
         '''

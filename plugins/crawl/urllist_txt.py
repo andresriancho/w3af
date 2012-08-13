@@ -127,7 +127,7 @@ class urllist_txt(baseCrawlPlugin):
             om.out.debug( msg )
         else:
             if not is_404( http_response ):
-                fuzz_reqs = self._createFuzzableRequests( http_response )
+                fuzz_reqs = self._create_fuzzable_requests( http_response )
                 self._new_fuzzable_requests.extend( fuzz_reqs )
         
     def getLongDesc( self ):

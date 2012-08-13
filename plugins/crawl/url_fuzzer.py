@@ -113,7 +113,7 @@ class url_fuzzer(baseCrawlPlugin):
         if not (is_404(response) or
                 response.getCode() in (403, 401) or
                 self._return_without_eval(mutant)):
-            fr_list = self._createFuzzableRequests(response)
+            fr_list = self._create_fuzzable_requests(response)
             self._fuzzable_requests.extend(fr_list)
             #
             #   Save it to the kb (if new)!

@@ -78,7 +78,7 @@ class server_status(baseInfrastructurePlugin):
                 om.out.information( msg )
                 
                 # Create some simple fuzzable requests
-                res.extend( self._createFuzzableRequests( response ) )
+                res.extend( self._create_fuzzable_requests( response ) )
 
                 # Get the server version
                 # <dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>
@@ -111,7 +111,7 @@ class server_status(baseInfrastructurePlugin):
                         # They are equal, request the URL and create the fuzzable requests
                         tmp_res = self._uri_opener.GET( found_url, cache=True )
                         if not is_404( tmp_res ):
-                            res.extend( self._createFuzzableRequests( tmp_res ) )
+                            res.extend( self._create_fuzzable_requests( tmp_res ) )
                     else:
                         # This is a shared hosting server
                         self._shared_hosting_hosts.append( domain )

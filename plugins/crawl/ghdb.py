@@ -116,7 +116,7 @@ class ghdb(baseCrawlPlugin):
                 om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
                         
                 # Create the fuzzable requests
-                self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+                self._fuzzableRequests.extend( self._create_fuzzable_requests( response ) )
     
     def _read_ghdb( self ):
         '''

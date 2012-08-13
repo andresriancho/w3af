@@ -77,7 +77,7 @@ class frontpage_version(baseInfrastructurePlugin):
                 else:
                     # Check if it's a Frontpage Info file
                     if not is_404( response ):
-                        fuzzable_return_value.extend( self._createFuzzableRequests( response ) )
+                        fuzzable_return_value.extend( self._create_fuzzable_requests( response ) )
                         self._analyze_response( response )
         
         return fuzzable_return_value

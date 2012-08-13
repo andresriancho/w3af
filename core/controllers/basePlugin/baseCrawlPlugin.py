@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.w3afException import w3afException
-from core.data.request.frFactory import createFuzzableRequests
+from core.data.request.frFactory import create_fuzzable_requests
 
 
 class baseCrawlPlugin(basePlugin):
@@ -59,7 +59,7 @@ class baseCrawlPlugin(basePlugin):
         raise w3afException('Plugin is not implementing required method crawl' )
 
     def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
-        return createFuzzableRequests( httpResponse, request, add_self )
+        return create_fuzzable_requests( httpResponse, request, add_self )
     
     def getType( self ):
         return 'crawl'

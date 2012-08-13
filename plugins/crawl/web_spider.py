@@ -120,7 +120,7 @@ class web_spider(baseCrawlPlugin):
         if resp.getCode() == 401:
             return []
 
-        fuzz_req_list = self._createFuzzableRequests(
+        fuzz_req_list = self._create_fuzzable_requests(
                                              resp,
                                              request=fuzzable_req,
                                              add_self=False
@@ -309,7 +309,7 @@ class web_spider(baseCrawlPlugin):
                 # in the case where the response code is a 404, because we don't
                 # want to return a 404 to the core.
                 add_self = resp.getCode() in self.NOT_404
-                fuzz_req_list = self._createFuzzableRequests(resp,
+                fuzz_req_list = self._create_fuzzable_requests(resp,
                                  request=original_request, add_self=add_self)
                 if not possibly_broken and not add_self:
                     t = (resp.getURL(), original_request.getURI())
@@ -317,7 +317,7 @@ class web_spider(baseCrawlPlugin):
             else:
                 om.out.debug('Adding relative reference "%s" '
                              'to the result.' % reference)
-                frlist = self._createFuzzableRequests(resp, request=original_request)
+                frlist = self._create_fuzzable_requests(resp, request=original_request)
                 fuzz_req_list.extend(frlist)
                             
             # Process the list.

@@ -163,7 +163,7 @@ class web_diff(baseCrawlPlugin):
             
                 if not is_404( response ):
                     if response.is_text_or_html():
-                        self._fuzzableRequests.extend( self._createFuzzableRequests( response ) )
+                        self._fuzzableRequests.extend( self._create_fuzzable_requests( response ) )
                     self._check_content( response, directory + os.path.sep + fname )
                     self._eq.append( url )
                 else:

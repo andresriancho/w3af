@@ -88,7 +88,7 @@ class spider_man(baseCrawlPlugin):
         om.out.information( str(freq) )
 
     def ext_fuzzable_requests(self, response):
-        self._fuzzable_requests.extend(self._createFuzzableRequests(response))
+        self._fuzzable_requests.extend(self._create_fuzzable_requests(response))
 
     def stopProxy(self):
         self._proxy.stop()

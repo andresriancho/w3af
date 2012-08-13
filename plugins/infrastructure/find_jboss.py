@@ -99,7 +99,7 @@ class find_jboss(baseInfrastructurePlugin):
                     v.setDesc(vuln_db_instance['desc'])
                     kb.kb.append(self, vuln_db_instance['name'], v)
                 
-                fuzzable_requests = self._createFuzzableRequests(response)
+                fuzzable_requests = self._create_fuzzable_requests(response)
                 self._fuzzable_requests_to_return.extend(fuzzable_requests)
       
         return self._fuzzable_requests_to_return

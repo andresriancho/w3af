@@ -89,7 +89,7 @@ class bing_spider(baseCrawlPlugin):
             msg = 'URLError while fetching page in bing_spider, error: "%s".'
             om.out.debug(msg % ue)
         else:
-            fuzz_reqs = self._createFuzzableRequests( response )
+            fuzz_reqs = self._create_fuzzable_requests( response )
             self._fuzzable_requests.extend( fuzz_reqs )
 
     def getOptions( self ):

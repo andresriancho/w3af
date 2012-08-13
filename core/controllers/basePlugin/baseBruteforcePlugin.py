@@ -28,7 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
                                                      password_bruteforcer)
-from core.data.request.frFactory import createFuzzableRequests
+from core.data.request.frFactory import create_fuzzable_requests
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
@@ -90,7 +90,7 @@ class baseBruteforcePlugin(baseAuditPlugin):
         for v in kb.kb.getData( self.getName(), 'auth' ):
             if v.getURL() not in self._already_reported:
                 self._already_reported.append( v.getURL() )
-                res.extend( createFuzzableRequests(v['response']) )
+                res.extend( create_fuzzable_requests(v['response']) )
         return res
     
     def _bruteforce( self, url, combinations ):

@@ -216,7 +216,7 @@ class content_negotiation(baseCrawlPlugin):
             full_url = base_url.urlJoin(alternate)
             response = self._uri_opener.GET( full_url )
                 
-            result.extend( self._createFuzzableRequests( response ) )
+            result.extend( self._create_fuzzable_requests( response ) )
             
         return result
 
