@@ -123,7 +123,7 @@ class user_dir(baseCrawlPlugin):
                     
                     kb.kb.append( self, 'users', i )
                     
-                    fuzzable_request_list = self._createFuzzableRequests( response )
+                    fuzzable_request_list = self._create_fuzzable_requests( response )
                     self._fuzzable_requests.extend( fuzzable_request_list )
                     
                 return True

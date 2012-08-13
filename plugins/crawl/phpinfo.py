@@ -107,7 +107,7 @@ class phpinfo(baseCrawlPlugin):
             if not is_404( response ):
                 
                 # Create the fuzzable request
-                self._new_fuzzable_requests.extend( self._createFuzzableRequests( response ) )
+                self._new_fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
                 
                 '''
                 |Modified|

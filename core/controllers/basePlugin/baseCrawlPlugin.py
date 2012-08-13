@@ -58,7 +58,7 @@ class baseCrawlPlugin(basePlugin):
         '''
         raise w3afException('Plugin is not implementing required method crawl' )
 
-    def _createFuzzableRequests( self, httpResponse, request=None, add_self=True ):
+    def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
         return createFuzzableRequests( httpResponse, request, add_self )
     
     def getType( self ):

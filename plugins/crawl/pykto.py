@@ -477,7 +477,7 @@ class pykto(baseCrawlPlugin):
             kb.kb.append( self, 'vuln', v )
             om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
             
-            fr_list = self._createFuzzableRequests( response )
+            fr_list = self._create_fuzzable_requests( response )
             [ fr.getURI().normalizeURL() for fr in fr_list ]
             self._new_fuzzable_requests.extend( fr_list )
         

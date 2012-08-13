@@ -70,7 +70,7 @@ class oracle_discovery(baseCrawlPlugin):
                 response = self._uri_opener.GET( oracle_discovery_URL, cache=True )
                 
                 if not is_404( response ):
-                    dirs.extend( self._createFuzzableRequests( response ) )
+                    dirs.extend( self._create_fuzzable_requests( response ) )
                     if re.match( regex_string , response.getBody(), re.DOTALL):
                         i = info.info()
                         i.setPluginName(self.getName())
