@@ -19,83 +19,77 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
+import re
+import Queue
+
+from itertools import izip, repeat
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.w3afException import w3afRunOnce
-
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-import os
-import re
 
 
 class content_negotiation(baseCrawlPlugin):
     '''
     Use content negotiation to find new resources.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         baseCrawlPlugin.__init__(self)
         
         # User configured parameters
-        self._wordlist = 'plugins' + os.path.sep + 'crawl' + os.path.sep + 'content_negotiation'
-        self._wordlist += os.path.sep + 'common_filenames.db'
+        self._wordlist = os.path.join('plugins', 'crawl', 'content_negotiation',
+                                      'common_filenames.db')
         
         # Internal variables
-        self._exec = True
         self._already_tested_dir = scalable_bloomfilter()
         self._already_tested_resource = scalable_bloomfilter()
-        self._is_vulnerable_result = None
-        self._to_bruteforce = []
+        self._content_negotiation_enabled = None
+        self._to_bruteforce = Queue.Queue()
         # I want to try 3 times to see if the remote host is vulnerable
         # detection is not thaaat accurate!
         self._tries_left = 3
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         1- Check if HTTP server is vulnerable
-        2- Exploit using fuzzableRequest
+        2- Exploit using fuzzable_request
         3- Perform bruteforce for each new directory
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                                     (among other things) the URL to test.
         '''
-        if not self._exec :
-            # This will remove the plugin from the crawl plugins to be run.
-            # This is true only when the remote web server is not vulnerable
-            raise w3afRunOnce()
+        if self._content_negotiation_enabled is not None \
+        and self._content_negotiation_enabled == False:
+            return []
             
         else:
+            con_neg_result = self._verify_content_neg_enabled( fuzzable_request )
             
-            if self._is_vulnerable( fuzzableRequest ) is None:
-                # I can't say if it's vulnerable or not (yet), save the current directory to be
-                # included in the bruteforcing process, and return.
-                self._to_bruteforce.append(fuzzableRequest.getURL())
+            if con_neg_result is None:
+                # I can't say if it's vulnerable or not (yet), save the current
+                # directory to be included in the bruteforcing process, and return.
+                self._to_bruteforce.put(fuzzable_request.getURL())
                 return []
             
-            elif self._is_vulnerable( fuzzableRequest ) == False:
+            elif con_neg_result == False:
                 # Not vulnerable, nothing else to do.
-                self._exec = False
                 return []
                 
-            else:
+            elif con_neg_result == True:
                 # Happy, happy, joy!
                 # Now we can test if we find new resources!
-                new_resources = self._find_new_resources( fuzzableRequest )
+                new_resources = self._find_new_resources( fuzzable_request )
                 
                 # and we can also perform a bruteforce:
-                self._to_bruteforce.append(fuzzableRequest.getURL())
+                self._to_bruteforce.put(fuzzable_request.getURL())
                 bruteforce_result = self._bruteforce()
                 
                 result = []
@@ -104,41 +98,43 @@ class content_negotiation(baseCrawlPlugin):
                 
                 return result
     
-    def _find_new_resources(self, fuzzableRequest):
+    def _find_new_resources(self, fuzzable_request):
         '''
         Based on a request like http://host.tld/backup.php , this method will find
-        files like backup.zip , backup.old, etc. Using the content negotiation technique.
+        files like backup.zip , backup.old, etc. Using the content negotiation
+        technique.
         
         @return: A list of new fuzzable requests.
         '''
         result = []
         
         # Get the file name
-        filename = fuzzableRequest.getURL().getFileName()
+        filename = fuzzable_request.getURL().getFileName()
         if filename == '':
-            # We need a filename to work with!
             return []
         else:
-            # Ok, we have a file name.
-            # The thing here is that I've found that if these files exist in the directory:
+            # The thing here is that I've found that if these files exist in
+            # the directory:
             # - backup.asp.old
             # - backup.asp
             #
-            # And I request "/backup" , then both are returned. So I'll request the "leftmost"
-            # filename.
+            # And I request "/backup" , then both are returned. So I'll request
+            #  the "leftmost" filename.
             filename = filename.split('.')[0]
             
             # Now I simply perform the request:
-            alternate_resource = fuzzableRequest.getURL().urlJoin(filename)
-            original_headers = fuzzableRequest.getHeaders()
+            alternate_resource = fuzzable_request.getURL().urlJoin(filename)
+            original_headers = fuzzable_request.getHeaders()
             
             if alternate_resource not in self._already_tested_resource:
                 self._already_tested_resource.add( alternate_resource )
 
-                alternates = self._request_and_get_alternates( alternate_resource, original_headers)
+                _, alternates = self._request_and_get_alternates(alternate_resource,
+                                                              original_headers)
            
                 # And create the new fuzzable requests
-                result = self._create_new_fuzzablerequests( fuzzableRequest.getURL(), alternates )
+                result = self._create_new_fuzzable_requests( fuzzable_request.getURL(),
+                                                             alternates )
         
         return result
     
@@ -150,36 +146,50 @@ class content_negotiation(baseCrawlPlugin):
         @return: A list of new fuzzable requests.
         '''
         result = []
-        to_analyze = []
         
-        # Create the list of directories to analyze:
-        for url in self._to_bruteforce:
-            directories = url.getDirectories()
-            
-            for directory_url in directories:
-                if directory_url not in to_analyze and directory_url not in self._already_tested_dir:
-                    to_analyze.append( directory_url )
-        
-        # Really bruteforce:
-        for directory_url in to_analyze:
-            self._already_tested_dir.add( directory_url )
-            
-            for word in file(self._wordlist):
-                alternate_resource = directory_url.urlJoin( word.strip() )
-                alternates = self._request_and_get_alternates( alternate_resource, {})
-                result = self._create_new_fuzzablerequests( directory_url,  alternates )
-        
-        # I already analyzed them, zeroing.
-        self._to_bruteforce = []
-        
+        wl_url_generator = self._wordlist_url_generator()
+        args_generator = izip(wl_url_generator, repeat({}))
+        # Send the requests using threads:
+        for base_url, alternates in self._tm.threadpool.map_multi_args(
+                                                    self._request_and_get_alternates,
+                                                    args_generator,
+                                                    chunksize=10):
+            result = self._create_new_fuzzable_requests( base_url,  alternates )
+
         return result
+    
+    def _wordlist_url_generator(self):
+        '''
+        Generator that returns alternate URLs to test by combining the following
+        sources of information:
+            - URLs in self._bruteforce
+            - Words in the bruteforce wordlist file
+        '''
+        while True:
+            try:
+                bf_url = self._to_bruteforce.get_nowait()
+            except Queue.Empty:
+                break
+            else:
+                directories = bf_url.getDirectories()
+                
+                for directory_url in directories:
+                    if directory_url not in self._already_tested_dir:
+                        self._already_tested_dir.add( directory_url )
+            
+                        for word in file(self._wordlist):
+                            word = word.strip()
+                            yield directory_url.urlJoin( word )
     
     def _request_and_get_alternates(self, alternate_resource, headers):
         '''
-        Performs a request to an alternate resource, using the fake accept trick in order to
-        retrieve the list of alternates, which is then returned.
+        Performs a request to an alternate resource, using the fake accept 
+        trick in order to retrieve the list of alternates, which is then
+        returned.
         
-        @return: A list of strings containing the alternates.
+        @return: A tuple with:
+                    - alternate_resource parameter (unmodified)
+                    - a list of strings containing the alternates.
         '''
         headers['Accept'] = 'w3af/bar'
         response = self._uri_opener.GET( alternate_resource, headers = headers )
@@ -195,13 +205,13 @@ class content_negotiation(baseCrawlPlugin):
             #                   {"backup.zip" 1 {type application/zip} {length 0}}
             #
             # All in the same line.
-            return re.findall( '"(.*?)"', alternates )
+            return alternate_resource, re.findall( '"(.*?)"', alternates )
         
         else:
             # something failed
-            return []
+            return alternate_resource, []
 
-    def _create_new_fuzzablerequests(self, base_url, alternates):
+    def _create_new_fuzzable_requests(self, base_url, alternates):
         '''
         With a list of alternate files, I create new fuzzable requests
         
@@ -220,38 +230,40 @@ class content_negotiation(baseCrawlPlugin):
             
         return result
 
-    def _is_vulnerable(self, fuzzableRequest):
+    def _verify_content_neg_enabled(self, fuzzable_request):
         '''
         Checks if the remote website is vulnerable or not. Saves the result in
-        self._is_vulnerable_result , because we want to perform this test only once.
+        self._content_negotiation_enabled , because we want to perform this test
+        only once.
         
         @return: True if vulnerable.
         '''
-        if self._is_vulnerable_result is not None:
+        if self._content_negotiation_enabled is not None:
             # The test was already performed, we return the old response
-            return self._is_vulnerable_result
+            return self._content_negotiation_enabled
             
         else:
             # We perform the test, for this we need a URL that has a filename, URL's
             # that don't have a filename can't be used for this.
-            filename = fuzzableRequest.getURL().getFileName()
+            filename = fuzzable_request.getURL().getFileName()
             if filename == '':
                 return None
         
             filename = filename.split('.')[0]
             
             # Now I simply perform the request:
-            alternate_resource = fuzzableRequest.getURL().urlJoin(filename)
-            headers = fuzzableRequest.getHeaders()
+            alternate_resource = fuzzable_request.getURL().urlJoin(filename)
+            headers = fuzzable_request.getHeaders()
             headers['Accept'] = 'w3af/bar'
             response = self._uri_opener.GET( alternate_resource, headers = headers )
             
             if 'alternates' in response.getLowerCaseHeaders():
-                # Even if there is only one file, with an unique mime type, the content negotiation
-                # will return an alternates header. So this is pretty safe.
+                # Even if there is only one file, with an unique mime type, 
+                # the content negotiation will return an alternates header.
+                # So this is pretty safe.
                 
                 # Save the result internally
-                self._is_vulnerable_result = True
+                self._content_negotiation_enabled = True
                 
                 # Save the result as an info in the KB, for the user to see it:
                 i = info.info()
@@ -259,7 +271,7 @@ class content_negotiation(baseCrawlPlugin):
                 i.setName('HTTP Content Negotiation enabled')
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )
-                desc = 'HTTP Content negotiation is enabled in the remote web server. This '
+                desc = 'HTTP Content negotiation is enabled in the remote web server. This'
                 desc += ' could be used to bruteforce file names and find new resources.'
                 i.setDesc( desc )
                 i.setId( response.id )
@@ -273,13 +285,12 @@ class content_negotiation(baseCrawlPlugin):
                 self._tries_left -= 1
                 if self._tries_left == 0:
                     # Save the FALSE result internally
-                    self._is_vulnerable_result = False
+                    self._content_negotiation_enabled = False
                 else:
                     # None tells the plugin to keep trying with the next URL
                     return None
             
-            # return the result =)
-            return self._is_vulnerable_result
+            return self._content_negotiation_enabled
     
     def getOptions( self ):
         '''
@@ -320,16 +331,19 @@ class content_negotiation(baseCrawlPlugin):
         
         The plugin has three distinctive phases:
 
-            - Idenfity if the web has content negotiation enabled.
-            - For every resource found by any other plugin, perform a request to find new related
-                resources. For example, if another plugin finds "index.php", this plugin will perform a
-                request for "/index" with customized headers that will return a list of all files that have
-                "index" as the file name.
+            - Identify if the web server has content negotiation enabled.
+            
+            - For every resource found by any other plugin, perform a request
+            to find new related resources. For example, if another plugin finds
+            "index.php", this plugin will perform a request for "/index" with
+            customized headers that will return a list of all files that have
+            "index" as the file name.
+            
             - Perform a brute force attack in order to find new resources.
         
         One configurable parameter exists:
             - wordlist: The wordlist to be used in the bruteforce process.
         
-        As far as I can tell, the first reference to this technique was written by Stefano Di Paola
-        in his blog (http://www.wisec.it/sectou.php?id=4698ebdc59d15).
+        As far as I can tell, the first reference to this technique was written
+        by Stefano Di Paola in his blog (http://www.wisec.it/sectou.php?id=4698ebdc59d15).
         '''
