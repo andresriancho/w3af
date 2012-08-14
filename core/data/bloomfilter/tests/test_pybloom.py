@@ -2,7 +2,7 @@ import random
 import unittest
 import string
 
-from pybloom import BloomFilter
+from ..pybloom import BloomFilter
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -13,7 +13,9 @@ class TestBloomFilter(unittest.TestCase):
 
         for i in xrange(0, f.capacity):
              _ = f.add(i)
-
+            
+        self.assertEqual( len(f), f.capacity)
+        
         for i in xrange(0, f.capacity / 2 ):
             r = random.randint(0,f.capacity-1)
             self.assertEqual(r in f, True)
@@ -44,7 +46,9 @@ class TestScalableBloomfilter(unittest.TestCase):
 
         for i in xrange(0, 10000):
              _ = f.add(i)
-             
+        
+        self.assertEqual( len(f), 10000)
+        
         for i in xrange(0, 10000):
             self.assertEqual(i in f, True)
 
@@ -69,7 +73,4 @@ class TestScalableBloomfilter(unittest.TestCase):
             self.assertEqual(i in f, False)
 
         self.assertEqual(rnd in f, True)
-
-if __name__ == '__main__':
-    unittest.main()
 
