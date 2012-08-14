@@ -59,12 +59,9 @@ class wordnet(baseCrawlPlugin):
         args = izip(original_response_repeat, mutants)
         
         #   Send the requests using threads:
-        self._tm.threadpool.map(self._abc,
-                                args)
+        self._tm.threadpool.map_multi_args(self._check_existance,
+                                           args)
         return self._fuzzable_requests
-    
-    def _abc(self,x_y):
-        print x_y
     
     def _check_existance( self, original_response, mutant ):
         '''
