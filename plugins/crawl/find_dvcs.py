@@ -19,22 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 import StringIO
 
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.optionList import optionList
-
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-from core.controllers.w3afException import w3afException
-
-from core.controllers.coreHelpers.fingerprint_404 import is_404
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
+
+from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -54,47 +48,55 @@ class find_dvcs(baseCrawlPlugin):
 
     def crawl(self, fuzzableRequest ):
         '''
-        For every directory, fetch a list of files and analyze the response using regex.
+        For every directory, fetch a list of files and analyze the response
+        using regex.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+                                    (among other things) the URL to test.
         '''
         domain_path = fuzzableRequest.getURL().getDomainPath()
         self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add( domain_path )
+
+            test_generator = self._url_generator( domain_path )
             
-            for repo in self._compiled_dvcs_info.keys():
-                relative_url = self._compiled_dvcs_info[repo]['filename']
-                regular_expression = self._compiled_dvcs_info[repo]['re']
-                repo_url = domain_path.urlJoin(relative_url)
-
-                try:
-                    response = self._uri_opener.GET( repo_url, cache=True )
-                except w3afException:
-                    om.out.debug('Failed to GET '+repo+' file: "' + repo_url + '"')
-                else:
-                    if not is_404(response):
-                        # Check pattern
-                        f = StringIO.StringIO(response.getBody())
-                        for line in f:
-                            if regular_expression.match(line):
-                                v = vuln.vuln()
-                                v.setPluginName(self.getName())
-                                v.setId( response.id )
-                                v.setName( 'Possible '+repo+' repository found' )
-                                v.setSeverity(severity.LOW)
-                                v.setURL( response.getURL() )
-                                msg = 'A '+repo+' repository file was found at: "' + v.getURL() + '" ; this could'
-                                msg += ' indicate that a '+repo+' repo is accessible. You might be able to download'
-                                msg += ' the Web application source code.'
-                                v.setDesc( msg )
-                                kb.kb.append( self, repo.upper(), v )
-                                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                                fuzzable_requests = self._create_fuzzable_requests( response )
-                                self._fuzzable_requests_to_return.extend( fuzzable_requests )
-
-            return self._fuzzable_requests_to_return
+            self._tm.threadpool.map_multi_args(self._send_and_check, test_generator)
+            
+        return self._fuzzable_requests_to_return          
+    
+    def _send_and_check(self, repo_url, regular_expression, repo):
+        try:
+            response = self._uri_opener.GET( repo_url, cache=True )
+        except w3afException:
+            om.out.debug('Failed to GET '+repo+' file: "' + repo_url + '"')
+        else:
+            # Check pattern
+            f = StringIO.StringIO(response.getBody())
+            for line in f:
+                if regular_expression.match(line):
+                    v = vuln.vuln()
+                    v.setPluginName(self.getName())
+                    v.setId( response.id )
+                    v.setName( 'Possible '+repo+' repository found' )
+                    v.setSeverity(severity.LOW)
+                    v.setURL( response.getURL() )
+                    msg = ('A %s repository file was found at: "%s"; this could'
+                           ' indicate that a %s repo is accessible. You might'
+                           ' be able to download the Web application source code.')
+                    v.setDesc( msg % (repo, v.getURL(), repo) )
+                    kb.kb.append( self, repo.upper(), v )
+                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    fuzzable_requests = self._create_fuzzable_requests( response )
+                    self._fuzzable_requests_to_return.extend( fuzzable_requests )
+    
+    def _url_generator(self, domain_path):
+        for repo in self._compiled_dvcs_info.keys():
+            relative_url = self._compiled_dvcs_info[repo]['filename']
+            regular_expression = self._compiled_dvcs_info[repo]['re']
+            repo_url = domain_path.urlJoin(relative_url)
+            yield repo_url, regular_expression, repo
     
     def _compile_DVCS_RE( self ):
         '''
@@ -117,31 +119,6 @@ class find_dvcs(baseCrawlPlugin):
         self._compiled_dvcs_info['bzr']['re'] = re.compile('^This\sis\sa\sBazaar')
         self._compiled_dvcs_info['bzr']['filename'] = '.bzr/README'
 
-    def getOptions( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-
-        ol = optionList()
-        return ol
-
-    def setOptions( self, OptionList ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of getOptions().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def getPluginDeps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -151,10 +128,8 @@ class find_dvcs(baseCrawlPlugin):
         For example, if the input is:
             - http://host.tld/w3af/index.php
             
-        The plugin will perform a request to:
+        The plugin will perform requests to:
             - http://host.tld/w3af/.git/HEAD
-            - or
             - http://host.tld/w3af/.hg/requires
-            - or
             - http://host.tld/w3af/.bzr/README
         '''

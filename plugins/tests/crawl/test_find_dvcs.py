@@ -1,5 +1,5 @@
 '''
-test_find_git.py
+test_find_dvcs.py
 
 Copyright 2012 Andres Riancho
 
@@ -22,28 +22,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from ..helper import PluginTest, PluginConfig
 
 
-class TestFindGit(PluginTest):
+class TestFindDVCS(PluginTest):
     
-    base_url = 'http://moth/w3af/crawl/find_git/'
+    base_url = 'http://moth/w3af/crawl/find_dvcs/'
     
     _run_configs = {
         'cfg': {
             'target': base_url,
-            'plugins': {'crawl': (PluginConfig('find_git'),)}
+            'plugins': {'crawl': (PluginConfig('find_dvcs'),
+                                  PluginConfig('web_spider',
+                                         ('onlyForward', True, PluginConfig.BOOL)),)}
             }
         }
     
-    def test_fuzzer_user(self):
+    def test_dvcs(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('find_git', 'GIT')
+        vulns_git = self.kb.getData('find_dvcs', 'GIT')
+        vulns_bzr = self.kb.getData('find_dvcs', 'BZR')
+        vulns_hg = self.kb.getData('find_dvcs', 'HG')
         
-        self.assertEqual( len(vulns), 1, vulns )
+        self.assertEqual( len(vulns_git), 1, vulns_git )
+        self.assertEqual( len(vulns_bzr), 1, vulns_bzr )
+        self.assertEqual( len(vulns_hg), 1, vulns_hg )
         
-        vuln = vulns[0]
-        
-        self.assertEquals( vuln.getName(), 'Possible Git repository found' )
-        self.assertEquals( vuln.getURL().url_string, self.base_url + '.git/HEAD' )
-        
+        self.assertEquals( vulns_git[0].getName(), 'Possible git repository found' )
+        self.assertEquals( vulns_bzr[0].getName(), 'Possible bzr repository found' )
+        self.assertEquals( vulns_hg[0].getName(), 'Possible hg repository found' )
 
