@@ -314,3 +314,6 @@ class form_auth(baseBruteforcePlugin):
     
                         om.out.vulnerability(msg, severity=severity.HIGH)
                         return
+
+    def end(self):
+        pass

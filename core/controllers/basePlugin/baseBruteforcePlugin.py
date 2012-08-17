@@ -102,7 +102,8 @@ class baseBruteforcePlugin(baseAuditPlugin):
         self._tm.threadpool.map_multi_args( self._brute_worker, args_iter, chunksize=100 )
     
     def end( self ):
-        pass
+        raise NotImplementedError, ('Bruteforce plugins MUST override the'
+                                    ' end() method.')
             
     def _brute_worker( self, url, combination ):
         '''

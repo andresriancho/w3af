@@ -116,7 +116,16 @@ class basic_auth(baseBruteforcePlugin):
             
                     kb.kb.append( self , 'auth' , v )
                     om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                
+    
+    def end( self ):
+        '''
+        Configure the main urllib with the newly found credentials.
+        '''
+        for v in kb.kb.getData( 'basic_auth' , 'auth' ):
+            self._uri_opener.settings.setBasicAuth( v.getURL(),
+                                                    v['user'],
+                                                    v['pass'] )
+             
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
