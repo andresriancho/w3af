@@ -326,7 +326,7 @@ class httpLogTab(entries.RememberingHPaned):
         # Filter part
         #
         # Codes
-        codes = self.pref.getOptions('codes')
+        codes = self.pref.get_options('codes')
         filterCodes = []
         for opt in codes:
             if opt.getValue():

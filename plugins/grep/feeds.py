@@ -90,10 +90,10 @@ class feeds(baseGrepPlugin):
                 i.addToHighlight( feed_type )
                 kb.kb.append( self, 'feeds', i )
     
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         pass
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

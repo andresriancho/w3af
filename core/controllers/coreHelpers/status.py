@@ -109,7 +109,7 @@ class w3af_core_status(object):
         This method saves the phase, so in the future the UI can use the 
         getPhase() method to show it.
         
-        @parameter pluginName: The pluginName which the w3afCore is running in
+        @parameter plugin_name: The plugin_name which the w3afCore is running in
         a given moment
         '''
         if log:

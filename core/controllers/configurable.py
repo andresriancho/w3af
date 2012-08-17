@@ -25,27 +25,27 @@ class configurable(object):
     This is mostly "an interface", this "interface" states that all
     classes that implement it, should
     implement the following methods :
-        1. setOptions( optionsMap )
-        2. getOptions()
+        1. set_options( optionsMap )
+        2. get_options()
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
-    def setOptions(self, optionsMap):
+    def set_options(self, optionsMap):
         '''
         Sets the Options given on the optionsMap to self. The options
         are the result of a user entering some data on a window that
         was constructed using the XML Options that was retrieved from
-        the plugin using getOptions()
+        the plugin using get_options()
         
         This method MUST be implemented on every configurable object. 
         
         @return: No value is returned.
         ''' 
         raise NotImplementedError('Configurable object is not implementing '
-                                  'required method setOptions')
+                                  'required method set_options')
         
 
-    def getOptions(self):
+    def get_options(self):
         '''
         This method returns an optionList containing the options
         objects that the configurable object has. Using this option
@@ -57,7 +57,7 @@ class configurable(object):
         @return: optionList object.
         '''
         raise NotImplementedError('Configurable object is not implementing '
-                                  'required method getOptions')
+                                  'required method get_options')
 
     def getName(self):
         return type(self).__name__

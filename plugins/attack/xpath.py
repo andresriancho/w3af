@@ -57,15 +57,15 @@ class xpath(baseAttackPlugin):
 
     def fastExploit( self ):
         '''
-        Exploits a web app with os_commanding vuln, the settings are configured using setOptions()
+        Exploits a web app with os_commanding vuln, the settings are configured using set_options()
         '''
         raise w3afException('Not implemented.')
     
-    def getOptions(self):
+    def get_options(self):
         #TODO: Implement this
         return []
     
-    def setOptions(self, options):
+    def set_options(self, options):
         #TODO: Implement this
         pass
     

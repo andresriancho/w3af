@@ -96,10 +96,10 @@ class symfony(baseGrepPlugin):
                             return True
         return False
 
-    def setOptions( self, optionsMap ):
+    def set_options( self, optionsMap ):
         self._override = optionsMap['override'].getValue()
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''

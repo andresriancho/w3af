@@ -45,7 +45,7 @@ class Preferences(object):
         '''Indicates whether the named section is present in the configuration.'''
         return (section in self.sections)
 
-    def getOptions(self, section):
+    def get_options(self, section):
         '''Returns a list of options available in the specified section.'''
         return self.options[section]
 

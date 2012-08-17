@@ -58,7 +58,7 @@ class password_profiling(baseGrepPlugin):
         #      hachoir-metadata it will be useful for writing A LOT of plugins
         
         # Plugins to run
-        self._plugin_name_list = ['html', 'pdf']
+        self._plugins_names_dict = ['html', 'pdf']
         self._plugins = []
         
         
@@ -129,7 +129,7 @@ class password_profiling(baseGrepPlugin):
         '''
         # Create plugin instances only once
         if not self._plugins:
-            for plugin_name in self._plugin_name_list:
+            for plugin_name in self._plugins_names_dict:
                 plugin_klass = 'plugins.grep.password_profiling_plugins.%s'
                 plugin_instance = factory( plugin_klass % plugin_name )
                 self._plugins.append( plugin_instance )

@@ -50,7 +50,7 @@ class bug_report_menu(menu):
         
         if len(params) == 0:
             ptype = 'all'
-        elif len(params) == 1 and params[0] in self._w3af.plugins.getPluginTypes():
+        elif len(params) == 1 and params[0] in self._w3af.plugins.get_plugin_types():
             ptype = params[0]
         else:
             om.out.console('Invalid parameter type, please read help:')
@@ -163,4 +163,4 @@ class bug_report_menu(menu):
         if len(params):
             return []
 
-        return suggest(self._w3af.plugins.getPluginTypes(), part) 
+        return suggest(self._w3af.plugins.get_plugin_types(), part) 

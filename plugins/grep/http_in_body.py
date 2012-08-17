@@ -96,10 +96,10 @@ class http_in_body (baseGrepPlugin):
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 
-    def setOptions( self, optionsMap ):
+    def set_options( self, optionsMap ):
         pass
             
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

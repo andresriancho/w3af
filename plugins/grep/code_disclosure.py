@@ -130,13 +130,13 @@ class code_disclosure(baseGrepPlugin):
                     v.setDesc( msg )
                     kb.kb.append( self, 'code_disclosure', v )
     
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         '''
         No options to set.
         '''
         pass
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

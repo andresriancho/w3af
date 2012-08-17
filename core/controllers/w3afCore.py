@@ -82,9 +82,9 @@ class w3afCore(object):
         self.plugins.zero_enabled_plugins()
         
         # I init the 404 detection for the whole framework
-        self.uriOpener = xUrllib()
+        self.uri_opener = xUrllib()
         fp_404_db = fingerprint_404_singleton()
-        fp_404_db.set_url_opener( self.uriOpener )
+        fp_404_db.set_url_opener( self.uri_opener )
         
     def start(self):
         '''
@@ -111,8 +111,8 @@ class w3afCore(object):
 
         # Let the output plugins know what kind of plugins we're
         # using during the scan
-        om.out.log_enabled_plugins(self.plugins.getAllEnabledPlugins(), 
-                                 self.plugins.getAllPluginOptions())
+        om.out.log_enabled_plugins(self.plugins.get_all_enabled_plugins(), 
+                                 self.plugins.get_all_plugin_options())
 
         self.status.start()
         enable_dns_cache()
@@ -196,7 +196,7 @@ class w3afCore(object):
         '''
         om.out.debug('The user stopped the core.')
         self.strategy.stop()
-        self.uriOpener.stop()
+        self.uri_opener.stop()
         thread_manager.terminate()
         thread_manager.join()
     
@@ -207,14 +207,14 @@ class w3afCore(object):
         '''
         self.status.pause( pause_yes_no )
         self.strategy.pause( pause_yes_no )
-        self.uriOpener.pause( pause_yes_no )
+        self.uri_opener.pause( pause_yes_no )
 
     def quit( self ):
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
         self.strategy.quit()
-        self.uriOpener.stop()
+        self.uri_opener.stop()
         thread_manager.terminate()
         thread_manager.join()
         # Now it's safe to remove the temp_dir
@@ -233,10 +233,10 @@ class w3afCore(object):
         if not cf.cf.getData('targets'):
             raise w3afException( 'No target URI configured.' )
             
-        if not len( self.plugins.getEnabledPlugins('audit') )\
-        and not len( self.plugins.getEnabledPlugins('crawl') )\
-        and not len( self.plugins.getEnabledPlugins('infrastructure') )\
-        and not len( self.plugins.getEnabledPlugins('grep') ):
+        if not len( self.plugins.get_enabled_plugins('audit') )\
+        and not len( self.plugins.get_enabled_plugins('crawl') )\
+        and not len( self.plugins.get_enabled_plugins('infrastructure') )\
+        and not len( self.plugins.get_enabled_plugins('grep') ):
             raise w3afException( 'No audit, grep or crawl plugins configured to run.' )            
     
     def _end(self, exc_inst=None, ignore_err=False):
@@ -246,8 +246,8 @@ class w3afCore(object):
         try:
             # End the xUrllib (clear the cache) and create a new one, so it can
             # be used by exploit plugins. 
-            self.uriOpener.end()
-            self.uriOpener = xUrllib()
+            self.uri_opener.end()
+            self.uri_opener = xUrllib()
             
             if exc_inst:
                 om.out.debug(str(exc_inst))

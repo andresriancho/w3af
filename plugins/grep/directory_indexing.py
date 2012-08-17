@@ -99,10 +99,10 @@ class directory_indexing(baseGrepPlugin):
                     kb.kb.append( self , 'directory' , v )
                     break
     
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         pass
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

@@ -86,10 +86,10 @@ class objects(baseGrepPlugin):
 
                 kb.kb.append( self, tag_name, i )
     
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         pass
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

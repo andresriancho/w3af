@@ -50,20 +50,20 @@ class TestBasic(unittest.TestCase):
     def setUp(self):
         self.w3afcore = w3afCore()
         
-        self.plugin_types = self.w3afcore.plugins.getPluginTypes()
+        self.plugin_types = self.w3afcore.plugins.get_plugin_types()
         self.plugin_types += ['attack']
         self.plugins = {}
         
         for plugin_type in self.plugin_types:
             self.plugins[plugin_type] = []
-            for plugin_name in self.w3afcore.plugins.getPluginList( plugin_type ): 
-                plugin = self.w3afcore.plugins.getPluginInstance(plugin_name, plugin_type)
+            for plugin_name in self.w3afcore.plugins.get_plugin_list( plugin_type ): 
+                plugin = self.w3afcore.plugins.get_plugin_inst(plugin_type, plugin_name)
                 self.plugins[plugin_type].append( plugin )
             
     def test_plugin_options(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                opt1 = plugin.getOptions()
+                opt1 = plugin.get_options()
 
     def test_plugin_deps(self):
         for plugin_type in self.plugins:
@@ -75,10 +75,10 @@ class TestBasic(unittest.TestCase):
                     self.assertTrue( isinstance(dep, basestring) )
                     plugin_type, plugin_name = dep.split('.')
                     
-                    self.assertTrue( plugin_type in self.w3afcore.plugins.getPluginTypes() )
+                    self.assertTrue( plugin_type in self.w3afcore.plugins.get_plugin_types() )
                     
                     msg = '%s is not of type %s in %s plugin dependency.' % (plugin_name, plugin_type, plugin)
-                    self.assertTrue( plugin_name in self.w3afcore.plugins.getPluginList( plugin_type ), msg )
+                    self.assertTrue( plugin_name in self.w3afcore.plugins.get_plugin_list( plugin_type ), msg )
                 
     def test_plugin_desc(self):
         for plugin_type in self.plugins:
@@ -96,8 +96,8 @@ class TestBasic(unittest.TestCase):
             plugin.getRootProbability()
         
     def test_plugin_type_description(self):
-        for plugin_type in self.w3afcore.plugins.getPluginTypes():
-            self.w3afcore.plugins.getPluginTypesDesc(plugin_type)
+        for plugin_type in self.w3afcore.plugins.get_plugin_types():
+            self.w3afcore.plugins.get_plugin_type_desc(plugin_type)
     
     def test_plugin_is_of_correct_type(self):
         for plugin_type in self.plugins:

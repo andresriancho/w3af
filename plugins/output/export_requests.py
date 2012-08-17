@@ -83,11 +83,11 @@ class export_requests(baseOutputPlugin):
             - output_file
         '''
 
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptions()
+        retrieved from the plugin using get_options()
         
         This method MUST be implemented on every plugin. 
         
@@ -99,7 +99,7 @@ class export_requests(baseOutputPlugin):
         else:
             self.output_file = output_file
 
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''

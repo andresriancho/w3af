@@ -203,7 +203,7 @@ class w3af_core_strategy(object):
         
         for url in cf.cf.getData('targets'):
             try:
-                response = self._w3af_core.uriOpener.GET(url, cache=True)
+                response = self._w3af_core.uri_opener.GET(url, cache=True)
                 is_404(response)
             except Exception, e:
                 msg = 'Failed to initialize the 404 detection, original exception'
@@ -245,7 +245,7 @@ class w3af_core_strategy(object):
         
         if grep_plugins:
             grep_in_queue = Queue.Queue()
-            self._w3af_core.uriOpener.set_grep_queue( grep_in_queue )
+            self._w3af_core.uri_opener.set_grep_queue( grep_in_queue )
             self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
             self._grep_consumer.start()
         
@@ -333,8 +333,7 @@ class w3af_core_strategy(object):
         '''
         om.out.debug('Called _setup_audit()' )
 
-        enabled_plugins = self._w3af_core.plugins.getEnabledPlugins('audit')
-        audit_plugins = self._w3af_core.plugins.plugin_factory( enabled_plugins, 'audit')
+        audit_plugins = self._w3af_core.plugins.plugins['audit']
         
         if audit_plugins:
             audit_in_queue = Queue.Queue()

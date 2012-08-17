@@ -81,7 +81,7 @@ class seed(Process):
                 #    GET the initial target URLs in order to save them
                 #    in a list and use them as our bootstrap URLs
                 #
-                response = self._w3af_core.uriOpener.GET(url, cache=True)
+                response = self._w3af_core.uri_opener.GET(url, cache=True)
             except (w3afMustStopOnUrlError, w3afException, w3afMustStopException), w3:
                 om.out.error('The target URL: %s is unreachable.' % url)
                 om.out.error('Error description: %s' % w3)

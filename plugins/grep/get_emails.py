@@ -132,10 +132,10 @@ class get_emails(baseGrepPlugin):
                     i.setDesc( desc )
                     i['url_list'].append(url)
         
-    def setOptions( self, optionsMap ):
+    def set_options( self, optionsMap ):
         self._only_target_domain = optionsMap['onlyTargetDomain'].getValue()
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

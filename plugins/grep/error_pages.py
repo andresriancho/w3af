@@ -206,10 +206,10 @@ class error_pages(baseGrepPlugin):
                         kb.kb.append( self , 'server' , match_string )
                         self._already_reported_versions.append( match_string )
         
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         pass
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

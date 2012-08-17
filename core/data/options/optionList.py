@@ -61,7 +61,7 @@ class optionList(object):
         '''
         This method is used when on any configurable object the developer does something like:
         
-        def setOptions( self, optionsList ):
+        def set_options( self, optionsList ):
             self._checkPersistent = optionsList['checkPersistent']
             
         @return: The value of the item that was selected

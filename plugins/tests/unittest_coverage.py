@@ -53,7 +53,7 @@ class TestUnittestCoverage(unittest.TestCase):
         self._analyze_unittests('grep')
         
     def _analyze_unittests(self, plugin_type):
-        plugins = self.w3afcore.plugins.getPluginList(plugin_type)
+        plugins = self.w3afcore.plugins.get_plugin_list(plugin_type)
         
         missing = []
         

@@ -66,16 +66,16 @@ class w3af_core_profiles(object):
         new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
         
         # Save the enabled plugins
-        for pType in self._w3af_core.plugins.getPluginTypes():
+        for pType in self._w3af_core.plugins.get_plugin_types():
             enabledPlugins = []
-            for pName in self._w3af_core.plugins.getEnabledPlugins(pType):
+            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
                 enabledPlugins.append( pName )
             new_profile.setEnabledPlugins(pType, enabledPlugins)
         
         # Save the profile options
-        for pType in self._w3af_core.plugins.getPluginTypes():
-            for pName in self._w3af_core.plugins.getEnabledPlugins(pType):
-                pOptions = self._w3af_core.plugins.getPluginOptions(pType, pName)
+        for pType in self._w3af_core.plugins.get_plugin_types():
+            for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
+                pOptions = self._w3af_core.plugins.get_plugin_options(pType, pName)
                 if pOptions:
                     new_profile.set_plugin_options(pType, pName, pOptions)
                 
@@ -86,8 +86,8 @@ class w3af_core_profiles(object):
                 
         # Save the misc and http settings
         misc_settings = miscSettings.miscSettings()
-        new_profile.setMiscSettings(misc_settings.getOptions())
-        new_profile.setHttpSettings(self._w3af_core.uriOpener.settings.getOptions())
+        new_profile.setMiscSettings(misc_settings.get_options())
+        new_profile.setHttpSettings(self._w3af_core.uri_opener.settings.get_options())
         
         # Save the profile name and description
         new_profile.setDesc(prof_desc)
@@ -117,7 +117,7 @@ class w3af_core_profiles(object):
         # It exists, work with it!
         
         # Set the target settings of the profile to the core
-        self._w3af_core.target.setOptions( profile_inst.getTarget() )
+        self._w3af_core.target.set_options( profile_inst.getTarget() )
         
         # Set the misc and http settings
         #
@@ -129,8 +129,8 @@ class w3af_core_profiles(object):
             profile_misc_settings['localAddress'].setValue(get_local_ip())
         
         misc_settings = miscSettings.miscSettings()
-        misc_settings.setOptions( profile_misc_settings )
-        self._w3af_core.uriOpener.settings.setOptions( profile_inst.getHttpSettings() )
+        misc_settings.set_options( profile_misc_settings )
+        self._w3af_core.uri_opener.settings.set_options( profile_inst.getHttpSettings() )
         
         #
         #    Handle plugin options
@@ -150,11 +150,11 @@ class w3af_core_profiles(object):
         
         error_messages = []
         
-        for plugin_type in self._w3af_core.plugins.getPluginTypes():
-            plugin_names = profile_inst.getEnabledPlugins( plugin_type )
+        for plugin_type in self._w3af_core.plugins.get_plugin_types():
+            plugin_names = profile_inst.get_enabled_plugins( plugin_type )
             
             # Handle errors that might have been triggered from a possibly invalid profile
-            unknown_plugins = self._w3af_core.plugins.setPlugins( plugin_names, plugin_type )
+            unknown_plugins = self._w3af_core.plugins.set_plugins( plugin_names, plugin_type )
             for unknown_plugin in unknown_plugins:
                 msg = 'The profile references the "%s.%s" plugin which is unknown.'
                 error_messages.append( msg % (plugin_type, unknown_plugin))
@@ -164,7 +164,7 @@ class w3af_core_profiles(object):
             for plugin_name in set(plugin_names) - set(unknown_plugins):
                 
                 try:
-                    plugin_options = profile_inst.getPluginOptions( plugin_type, plugin_name )
+                    plugin_options = profile_inst.get_plugin_options( plugin_type, plugin_name )
                     self._w3af_core.plugins.set_plugin_options( plugin_type, 
                                                                 plugin_name,
                                                                 plugin_options )

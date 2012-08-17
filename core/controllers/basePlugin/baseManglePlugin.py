@@ -31,8 +31,8 @@ class baseManglePlugin(basePlugin):
     and implement the following methods :
         1. mangleRequest( request )
         2. mangleResponse( request )
-        3. setOptions( OptionList )
-        4. getOptions()
+        3. set_options( OptionList )
+        4. get_options()
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

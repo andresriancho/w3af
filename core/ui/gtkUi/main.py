@@ -524,27 +524,27 @@ class MainApp(object):
         @return: True if all went ok
         '''
         # Clear everything
-        for ptype in self.w3af.plugins.getPluginTypes():
-            self.w3af.plugins.setPlugins([], ptype)
+        for ptype in self.w3af.plugins.get_plugin_types():
+            self.w3af.plugins.set_plugins([], ptype)
         
         # save the activated plugins
         for ptype,plugins in self.pcbody.getActivatedPlugins():
-            self.w3af.plugins.setPlugins(plugins, ptype)
+            self.w3af.plugins.set_plugins(plugins, ptype)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
-        options = self.w3af.target.getOptions()
+        options = self.w3af.target.get_options()
         
         # unicode str needed. pygtk works with 'utf8'
         url = self.pcbody.target.get_text().decode('utf8')
         options['target'].setValue( url )
         if relaxedTarget:
             try:
-                self.w3af.target.setOptions(options)
+                self.w3af.target.set_options(options)
             except:
                 pass
             return True
         try:
-            helpers.coreWrap(self.w3af.target.setOptions, options)
+            helpers.coreWrap(self.w3af.target.set_options, options)
         except w3afException:
             return False
         return True
@@ -740,7 +740,7 @@ class MainApp(object):
 
     def menu_config_http(self, action):
         '''Configure HTTP options.'''
-        configurable = self.w3af.uriOpener.settings
+        configurable = self.w3af.uri_opener.settings
         confpanel.ConfigDialog(_("Configure HTTP settings"), self.w3af, configurable)
 
     def menu_config_misc(self, action):

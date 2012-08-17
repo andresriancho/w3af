@@ -172,9 +172,9 @@ class ProfileList(gtk.TreeView):
             return True
 
         # Check plugins config
-        for ptype in self.w3af.plugins.getPluginTypes():
-            for pname in self.w3af.plugins.getPluginList(ptype):
-                opts = self.w3af.plugins.getPluginOptions(ptype, pname)
+        for ptype in self.w3af.plugins.get_plugin_types():
+            for pname in self.w3af.plugins.get_plugin_list(ptype):
+                opts = self.w3af.plugins.get_plugin_options(ptype, pname)
                 if not opts:
                     continue
 
@@ -232,7 +232,7 @@ class ProfileList(gtk.TreeView):
 
         # we adapt this information to a only-options dict, as that's
         # the information that we can get later from the core
-        opts = plugin.getOptions()
+        opts = plugin.get_options()
         realopts = {}
         for opt in opts:
             realopts[opt.getName()] = opt.getDefaultValueStr()

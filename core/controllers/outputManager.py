@@ -131,7 +131,7 @@ class outputManager(threading.Thread):
         configuration.
         
         @param enabled_plugins: As returned by w3afCore's
-                                getAllEnabledPlugins() looks similar to:
+                                get_all_enabled_plugins() looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
         
         @param plugins_options: As defined in the w3afCore, looks similar to: 
@@ -193,13 +193,13 @@ class outputManager(threading.Thread):
         self._output_plugin_list = []
         self._output_plugins = outputPlugins
         
-        for pluginName in self._output_plugins:
-            out._add_output_plugin(pluginName)  
+        for plugin_name in self._output_plugins:
+            out._add_output_plugin(plugin_name)  
     
     def get_output_plugins(self):
         return self._output_plugins
     
-    def set_plugin_options(self, pluginName, PluginsOptions):
+    def set_plugin_options(self, plugin_name, PluginsOptions):
         '''
         @parameter PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
@@ -207,7 +207,7 @@ class outputManager(threading.Thread):
             
         @return: No value is returned.
         '''
-        self._plugins_options[pluginName] = PluginsOptions
+        self._plugins_options[plugin_name] = PluginsOptions
         
     def _add_output_plugin(self, OutputPluginName):
         '''
@@ -223,11 +223,11 @@ class outputManager(threading.Thread):
                                             if os.path.splitext(f)[1] == '.py']
             strReqPlugins.remove ('__init__')
             
-            for pluginName in strReqPlugins:
-                plugin = factory('plugins.output.' + pluginName)
+            for plugin_name in strReqPlugins:
+                plugin = factory('plugins.output.' + plugin_name)
                 
-                if pluginName in self._plugins_options.keys():
-                    plugin.setOptions(self._plugins_options[pluginName])
+                if plugin_name in self._plugins_options.keys():
+                    plugin.set_options(self._plugins_options[plugin_name])
                 
                 # Append the plugin to the list
                 self._output_plugin_list.append(plugin)
@@ -235,7 +235,7 @@ class outputManager(threading.Thread):
         else:
             plugin = factory('plugins.output.' + OutputPluginName)
             if OutputPluginName in self._plugins_options.keys():
-                plugin.setOptions(self._plugins_options[OutputPluginName])
+                plugin.set_options(self._plugins_options[OutputPluginName])
 
                 # Append the plugin to the list
             self._output_plugin_list.append(plugin)    

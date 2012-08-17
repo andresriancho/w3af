@@ -39,8 +39,8 @@ class basePlugin(configurable):
         1. getPluginDeps()
         
     Please note that this class is a configurable object, so it must implement:
-        1. setOptions( OptionList )
-        2. getOptions()
+        1. set_options( OptionList )
+        2. get_options()
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
@@ -69,11 +69,11 @@ class basePlugin(configurable):
         '''
         self._uri_opener = UrlOpenerProxy(urlOpener, self)
 
-    def setOptions( self, optionsList ):
+    def set_options( self, optionsList ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
-        using the options that were retrieved from the plugin using getOptions()
+        using the options that were retrieved from the plugin using get_options()
         
         This method must be implemented in every plugin that wishes to have user
         configurable options. 
@@ -82,7 +82,7 @@ class basePlugin(configurable):
         '''
         pass
         
-    def getOptions(self):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''

@@ -272,13 +272,13 @@ class EditWindow(gtk.Window):
 
 
 class pluginEditor:
-    def __init__(self,  pluginType, pluginName, finishEditCallback):
+    def __init__(self,  plugin_type, plugin_name, finishEditCallback):
         self._finishEditCallback = finishEditCallback
-        self._pluginType = pluginType
-        self._pluginName = pluginName
+        self._plugin_type = plugin_type
+        self._plugin_name = plugin_name
         
         # The filename to edit
-        self._filename = 'plugins' + os.path.sep + pluginType + os.path.sep + pluginName + '.py'
+        self._filename = 'plugins' + os.path.sep + plugin_type + os.path.sep + plugin_name + '.py'
         
         # Create the window
         w = EditWindow(quit_cb=self._quit_cb)
@@ -294,4 +294,4 @@ class pluginEditor:
         The quit callback.
         '''
         gtk.main_quit()
-        self._finishEditCallback( self._pluginType,  self._pluginName)
+        self._finishEditCallback( self._plugin_type,  self._plugin_name)

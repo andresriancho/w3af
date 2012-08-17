@@ -66,7 +66,7 @@ class question_target_1(question):
         
     def getNextQuestionId(self,  optionsMap ):
         # Save the target to the core, all the validations are made there.
-        w3af_core.target.setOptions( optionsMap )
+        w3af_core.target.set_options( optionsMap )
 
         # The next question
         return 'target_2'

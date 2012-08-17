@@ -41,9 +41,9 @@ class test_user_defined_regex(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzableRequest(url, method='GET')
         
-        options = self.plugin.getOptions()
+        options = self.plugin.get_options()
         options['single_regex'].setValue('".*?"')
-        self.plugin.setOptions( options )
+        self.plugin.set_options( options )
         
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('user_defined_regex', 'user_defined_regex')) , 1 )

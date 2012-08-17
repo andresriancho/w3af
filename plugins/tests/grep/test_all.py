@@ -45,23 +45,23 @@ class test_all(unittest.TestCase):
 
         self._w3af = w3af_core
         self._plugins = []
-        for pname in self._w3af.plugins.getPluginList('grep'):
-            self._plugins.append( self._w3af.plugins.getPluginInstance(pname, 'grep') )
+        for pname in self._w3af.plugins.get_plugin_list('grep'):
+            self._plugins.append( self._w3af.plugins.get_plugin_inst('grep', pname) )
 
     def test_options_for_grep_plugins(self):
         '''
         We're not going to assert anything here. What just want to see if
         the plugins implement the following methods:
-            - getOptions()
-            - setOptions()
+            - get_options()
+            - set_options()
             - getPluginDeps()
             - getLongDesc()
             
         And don't crash in any way when we call them.
         '''
         for plugin in self._plugins:
-            o = plugin.getOptions()
-            plugin.setOptions( o )
+            o = plugin.get_options()
+            plugin.set_options( o )
             
             plugin.getPluginDeps()
             plugin.getLongDesc()

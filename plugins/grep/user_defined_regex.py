@@ -47,7 +47,7 @@ class user_defined_regex(baseGrepPlugin):
 
         # Internal variables
         # Improved performance by compiling all the regular expressions
-        # before using them (see setOptions method)
+        # before using them (see set_options method)
         self._regexlist_compiled = []
         self._all_in_one = None
         
@@ -103,7 +103,7 @@ class user_defined_regex(baseGrepPlugin):
                             self._regexlist_compiled[index] = (regex, info_object)
                   
     
-    def setOptions( self, optionsMap ):
+    def set_options( self, optionsMap ):
         '''
         Handle user configuration parameters.
         @return: None
@@ -153,7 +153,7 @@ class user_defined_regex(baseGrepPlugin):
             all_in_one_uncompiled = '('+')|('.join(tmp_not_compiled_all)+')'
             self._all_in_one = re.compile(all_in_one_uncompiled, re.IGNORECASE | re.DOTALL)
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

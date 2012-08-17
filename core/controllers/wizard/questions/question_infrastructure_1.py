@@ -69,7 +69,7 @@ class question_infrastructure_1(question):
         ol_copy.add(o3)
         
         # Save the target to the core, all the validations are made there.
-        self.w3af_core.target.setOptions( ol_copy )
+        self.w3af_core.target.set_options( ol_copy )
 
         # The next question
         return 'infrastructure_2'

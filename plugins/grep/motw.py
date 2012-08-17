@@ -97,10 +97,10 @@ class motw (baseGrepPlugin):
                     i.setDesc( msg )
                     kb.kb.append( self, 'no_motw', i )
 
-    def setOptions( self, optionsMap ):
+    def set_options( self, optionsMap ):
         self._withoutMOTW = optionsMap['withoutMOTW'].getValue()
         
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''

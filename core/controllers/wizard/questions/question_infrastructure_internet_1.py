@@ -60,8 +60,8 @@ class question_infrastructure_internet_1(question):
             plugin_list.append('shared_hosting')
         
         # Set the plugins to be run
-        old_discovery = self.w3af_core.plugins.getEnabledPlugins( 'crawl' )
+        old_discovery = self.w3af_core.plugins.get_enabled_plugins( 'crawl' )
         plugin_list.extend(old_discovery)
-        self.w3af_core.plugins.setPlugins( plugin_list, 'crawl' )
+        self.w3af_core.plugins.set_plugins( plugin_list, 'crawl' )
         
         return None

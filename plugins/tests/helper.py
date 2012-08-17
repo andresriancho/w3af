@@ -77,13 +77,13 @@ class PluginTest(unittest.TestCase):
         # Set target(s)
         if isinstance(target, basestring):
             target = (target,)
-        self.w3afcore.target.setOptions(_targetoptions(*target))
+        self.w3afcore.target.set_options(_targetoptions(*target))
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
-            self.w3afcore.plugins.setPlugins([p.name for p in plugincfgs], ptype)
+            self.w3afcore.plugins.set_plugins([p.name for p in plugincfgs], ptype)
             for pcfg in plugincfgs:
-                plugin_instance = self.w3afcore.plugins.getPluginInstance(pcfg.name, ptype)
-                default_option_list = plugin_instance.getOptions()
+                plugin_instance = self.w3afcore.plugins.get_plugin_inst(ptype, pcfg.name)
+                default_option_list = plugin_instance.get_options()
                 unit_test_options = pcfg.options
                 for option in default_option_list:
                     if option.getName() not in unit_test_options:

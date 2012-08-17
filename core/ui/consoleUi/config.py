@@ -36,7 +36,7 @@ class configMenu(menu):
     def __init__(self, name, console, w3af, parent, configurable):
         menu.__init__(self, 'config:' + name, console, w3af, parent)
         self._configurable = configurable
-        self._options = self._configurable.getOptions()
+        self._options = self._configurable.get_options()
         self._optDict = {}
         self._memory = {}
         self._plainOptions = {}
@@ -97,7 +97,7 @@ class configMenu(menu):
                     self._memory[name].append(value)                
             else:
                 try:
-                    self._configurable.setOptions( self._options )
+                    self._configurable.set_options( self._options )
                     if value not in self._memory[name]:
                         self._memory[name].append(value)                    
                 except w3afException, w3:

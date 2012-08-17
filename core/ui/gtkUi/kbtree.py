@@ -428,8 +428,8 @@ class KBTree(gtk.TreeView):
         # Ensure the each vuln is processed only once.
         if not exploits:
             vuln_id = vuln.getId()
-            for exploit_name in self.w3af.plugins.getPluginList("attack"):
-                exploit = self.w3af.plugins.getPluginInstance(exploit_name, "attack")
+            for exploit_name in self.w3af.plugins.get_plugin_list("attack"):
+                exploit = self.w3af.plugins.get_plugin_inst("attack", exploit_name)
                 if exploit.canExploit(vuln_id):
                     exploits.append(exploit_name)
             # If found at least one exploit, add entry

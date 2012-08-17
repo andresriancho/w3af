@@ -46,8 +46,8 @@ def pprint_plugins( w3af_core ):
     # Return a pretty-printed string from the plugins dicts
     import copy
     from itertools import chain
-    plugs_opts = copy.deepcopy(w3af_core.plugins.getAllPluginOptions())
-    plugs = w3af_core.plugins.getAllEnabledPlugins()
+    plugs_opts = copy.deepcopy(w3af_core.plugins.get_all_plugin_options())
+    plugs = w3af_core.plugins.get_all_enabled_plugins()
 
     for ptype, plist in plugs.iteritems():
         for p in plist:

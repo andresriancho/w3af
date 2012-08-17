@@ -54,9 +54,9 @@ class OnlyOptions(gtk.VBox):
 
         # options
         self.options = optionList()
-        options = plugin.getOptions()
+        options = plugin.get_options()
         # let's use the info from the core
-        coreopts = self.w3af.plugins.getPluginOptions(plugin.ptype, plugin.pname)
+        coreopts = self.w3af.plugins.get_plugin_options(plugin.ptype, plugin.pname)
         if coreopts is None:
             coreopts = {}
 
@@ -230,7 +230,7 @@ class OnlyOptions(gtk.VBox):
             if isinstance(plugin, basePlugin):
                 helpers.coreWrap(self.w3af.plugins.set_plugin_options, plugin.ptype, plugin.pname, self.options)
             else:
-                helpers.coreWrap(plugin.setOptions, self.options)
+                helpers.coreWrap(plugin.set_options, self.options)
         except w3afException:
             return
         for opt in self.options:

@@ -91,11 +91,11 @@ class csv_file(baseOutputPlugin):
             - output_file
         '''
 
-    def setOptions( self, option_list ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the 
         result of a user entering some data on a window that was constructed
-        using the XML Options that was retrieved from the plugin using getOptions()
+        using the XML Options that was retrieved from the plugin using get_options()
         
         @return: No value is returned.
         ''' 
@@ -105,7 +105,7 @@ class csv_file(baseOutputPlugin):
         else:
             self.output_file = output_file
 
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''

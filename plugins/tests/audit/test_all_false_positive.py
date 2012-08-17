@@ -31,7 +31,7 @@ class TestAllFP(PluginTest):
     def test_false_positive(self):
         raise SkipTest('FIXME: This test takes too long to run.')
     
-        audit_plugin_names = self.w3afcore.plugins.getPluginList('audit')
+        audit_plugin_names = self.w3afcore.plugins.get_plugin_list('audit')
 
         for audit_plugin in audit_plugin_names:
             run_config = {

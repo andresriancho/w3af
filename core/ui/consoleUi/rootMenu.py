@@ -57,7 +57,7 @@ class rootMenu(menu):
             'plugins': pluginsMenu,
             'target' : (configMenu, self._w3af.target),
             'misc-settings' : (configMenu, ms.miscSettings()),
-            'http-settings' : (configMenu, self._w3af.uriOpener.settings),
+            'http-settings' : (configMenu, self._w3af.uri_opener.settings),
             'profiles' : profilesMenu,
             'bug-report' : bug_report_menu,
             'exploit' : exploit,
@@ -70,7 +70,7 @@ class rootMenu(menu):
         @return: None
         '''
         # Check if the console output plugin is enabled or not, and warn.
-        output_plugins = self._w3af.plugins.getEnabledPlugins('output')
+        output_plugins = self._w3af.plugins.get_enabled_plugins('output')
         if 'console' not in output_plugins:
             msg = "Warning: You disabled the console output plugin. The scan information, such as"
             msg += ' discovered vulnerabilities won\'t be printed to the console, we advise you'

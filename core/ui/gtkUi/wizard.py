@@ -30,7 +30,7 @@ class Quest(object):
         self.quest = quest
         self.ptype = self.pname = None
 
-    def getOptions(self):
+    def get_options(self):
         opts = self.quest.getOptionObjects()
         return opts
 
@@ -310,8 +310,8 @@ class WizardChooser(entries.RememberingWindow):
     def _goWizard(self, widget):
         '''Runs the selected wizard.'''
         # First, clean all the enabled plugins that the user may have selected:
-        for ptype in self.w3af.plugins.getPluginTypes():
-            self.w3af.plugins.setPlugins([], ptype)
+        for ptype in self.w3af.plugins.get_plugin_types():
+            self.w3af.plugins.set_plugins([], ptype)
         
         # Destroy myself
         self.destroy()

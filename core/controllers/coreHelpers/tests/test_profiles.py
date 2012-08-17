@@ -34,7 +34,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10')
         
-        enabled_plugins = w3af_core.plugins.getAllEnabledPlugins()
+        enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
         
         self.assertTrue( 'sqli' in enabled_plugins['audit'])
         self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
@@ -46,11 +46,11 @@ class Test_w3afCore_profiles(unittest.TestCase):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10')
         
-        audit = w3af_core.plugins.getEnabledPlugins('audit')
+        audit = w3af_core.plugins.get_enabled_plugins('audit')
         disabled_plugin = audit[-1]
         audit = audit[:-1]
-        w3af_core.plugins.setPlugins(audit,'audit')
-        enabled = w3af_core.plugins.getEnabledPlugins('audit')
+        w3af_core.plugins.set_plugins(audit,'audit')
+        enabled = w3af_core.plugins.get_enabled_plugins('audit')
         self.assertEquals(set(enabled), set(audit))
         self.assertTrue(disabled_plugin not in enabled)
 
@@ -58,11 +58,11 @@ class Test_w3afCore_profiles(unittest.TestCase):
         
         # Get a new, clean instance of the core.
         w3af_core = w3afCore()
-        audit = w3af_core.plugins.getEnabledPlugins('audit')
+        audit = w3af_core.plugins.get_enabled_plugins('audit')
         self.assertEquals( audit, [])
 
         w3af_core.profiles.useProfile('unittest-OWASP_TOP10')
-        enabled_plugins = w3af_core.plugins.getAllEnabledPlugins()
+        enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
         
         self.assertTrue( disabled_plugin not in enabled_plugins['audit'])
         self.assertTrue( 'credit_cards' in enabled_plugins['grep'])

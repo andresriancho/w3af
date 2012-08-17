@@ -232,11 +232,11 @@ class phishtank(baseCrawlPlugin):
         return curHandler.matches
 
         
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         self._phishtank_DB = OptionList['dbFile'].getValue()
         self._update_DB = OptionList['updateDB'].getValue()
     
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    

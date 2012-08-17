@@ -151,32 +151,32 @@ class profile:
             
             return True
     
-    def setEnabledPlugins( self, pluginType, pluginNameList ):
+    def setEnabledPlugins( self, plugin_type, plugin_nameList ):
         '''
-        Set the enabled plugins of type pluginType.
+        Set the enabled plugins of type plugin_type.
         
-        @parameter pluginType: 'audit', 'output', etc.
-        @parameter pluginNameList: ['xss', 'sqli'] ...
+        @parameter plugin_type: 'audit', 'output', etc.
+        @parameter plugin_nameList: ['xss', 'sqli'] ...
         @return: None
         '''
         # First, get the enabled plugins of the current profile
-        currentEnabledPlugins = self.getEnabledPlugins( pluginType )
+        currentEnabledPlugins = self.get_enabled_plugins( plugin_type )
         for alreadyEnabledPlugin in currentEnabledPlugins:
-            if alreadyEnabledPlugin not in pluginNameList:
+            if alreadyEnabledPlugin not in plugin_nameList:
                 # The plugin was disabled!
                 # I should remove the section from the config
-                self._config.remove_section( pluginType+'.'+ alreadyEnabledPlugin)
+                self._config.remove_section( plugin_type+'.'+ alreadyEnabledPlugin)
                 
         # Now enable the plugins that the user wants to run
-        for plugin in pluginNameList:
+        for plugin in plugin_nameList:
             try:
-                self._config.add_section(pluginType + "." + plugin )
+                self._config.add_section(plugin_type + "." + plugin )
             except ConfigParser.DuplicateSectionError, ds:
                 pass
         
-    def getEnabledPlugins( self, pluginType ):
+    def get_enabled_plugins( self, plugin_type ):
         '''
-        @return: A list of enabled plugins of type pluginType
+        @return: A list of enabled plugins of type plugin_type
         '''
         res = []
         for section in self._config.sections():
@@ -186,32 +186,32 @@ class profile:
             except:
                 pass
             else:
-                if type == pluginType:
+                if type == plugin_type:
                     res.append(name)
         return res
     
-    def set_plugin_options( self, pluginType, pluginName, options ):
+    def set_plugin_options( self, plugin_type, plugin_name, options ):
         '''
         Set the plugin options.
-        @parameter pluginType: 'audit', 'output', etc.
-        @parameter pluginName: 'xss', 'sqli', etc.
+        @parameter plugin_type: 'audit', 'output', etc.
+        @parameter plugin_name: 'xss', 'sqli', etc.
         @parameter options: an optionList object
         @return: None
         '''
-        section = pluginType + "." + pluginName
+        section = plugin_type + "." + plugin_name
         if section not in self._config.sections():
             self._config.add_section( section )
             
         for option in options:
             self._config.set( section, option.getName(), option.getValueStr() )
     
-    def getPluginOptions( self, pluginType, pluginName ):
+    def get_plugin_options( self, plugin_type, plugin_name ):
         '''
         @return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
         '''
         # Get the plugin defaults with their types
-        pluginInstance = factory('plugins.' + pluginType + '.' + pluginName )
-        optionsMap = pluginInstance.getOptions()
+        plugin_instance = factory('plugins.' + plugin_type + '.' + plugin_name )
+        optionsMap = plugin_instance.get_options()
         
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
@@ -220,14 +220,14 @@ class profile:
             except:
                 pass
             else:
-                if type == pluginType and name == pluginName:
+                if type == plugin_type and name == plugin_name:
                     for option in self._config.options(section):
                         try:
                             value = self._config.get(section, option)
                         except KeyError:
                             # We should never get here...
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
-                            raise w3afException( msg % (option, pluginName) )
+                            raise w3afException( msg % (option, plugin_name) )
                         else:
                             optionsMap[option].setValue(value)
 
@@ -285,7 +285,7 @@ class profile:
         '''
         @return: An optionList object with the options for a configurable object.
         '''
-        optionsMap = configurable_instance.getOptions()
+        optionsMap = configurable_instance.get_options()
 
         try:
             for option in self._config.options(section):
@@ -347,7 +347,7 @@ class profile:
         '''
         # Get the plugin defaults with their types
         targetInstance = w3af_core_target()
-        options = targetInstance.getOptions()
+        options = targetInstance.get_options()
 
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider

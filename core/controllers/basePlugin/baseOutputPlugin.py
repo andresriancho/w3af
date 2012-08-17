@@ -108,7 +108,7 @@ class baseOutputPlugin(basePlugin):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
         
-        @parameter enabledPluginsDict: As returned by w3afCore.getAllEnabledPlugins()
+        @parameter enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
                    looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
         

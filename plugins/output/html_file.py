@@ -193,11 +193,11 @@ class html_file(baseOutputPlugin):
               '<td class=content>%s</td></tr>'
         self._aditional_info.append( msg % (the_time, msg_type, message) )
             
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
-        using the XML Options that was retrieved from the plugin using getOptions()
+        using the XML Options that was retrieved from the plugin using get_options()
         
         This method MUST be implemented on every plugin. 
         
@@ -206,7 +206,7 @@ class html_file(baseOutputPlugin):
         self._file_name = OptionList['fileName'].getValue()
         self._verbose = OptionList['verbose'].getValue()
         
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''

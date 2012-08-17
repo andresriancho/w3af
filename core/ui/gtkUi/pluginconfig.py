@@ -206,7 +206,7 @@ class PluginTree(gtk.TreeView):
 
         # decide which type in function of style
         if style == "standard":
-            plugins_toshow = sorted(x for x in w3af.plugins.getPluginTypes() if x != "output")
+            plugins_toshow = sorted(x for x in w3af.plugins.get_plugin_types() if x != "output")
             col_title = _("Plugin")
         elif style == "output":
             plugins_toshow = ("output",)
@@ -219,8 +219,8 @@ class PluginTree(gtk.TreeView):
         for plugintype in plugins_toshow:
 
             # let's see if some of the children are activated or not
-            pluginlist = w3af.plugins.getPluginList(plugintype)
-            activated = set(w3af.plugins.getEnabledPlugins(plugintype))
+            pluginlist = w3af.plugins.get_plugin_list(plugintype)
+            activated = set(w3af.plugins.get_enabled_plugins(plugintype))
             if plugintype == "output":
                 activated.add("gtk_output")
             if not activated:
@@ -236,7 +236,7 @@ class PluginTree(gtk.TreeView):
 
             dlg = gtk.Dialog()
             editpixbuf = dlg.render_icon(gtk.STOCK_EDIT, gtk.ICON_SIZE_MENU)
-            for plugin in sorted(w3af.plugins.getPluginList(plugintype)):
+            for plugin in sorted(w3af.plugins.get_plugin_list(plugintype)):
                 activ = int(plugin in activated)
                 if self._getEditablePlugin(plugin, plugintype):
                     thispixbuf = editpixbuf
@@ -293,8 +293,8 @@ class PluginTree(gtk.TreeView):
 
     def _getEditablePlugin(self, pname, ptype):
         '''Returns if the plugin has options.'''
-        plugin = self.w3af.plugins.getPluginInstance(pname, ptype)
-        options = plugin.getOptions()
+        plugin = self.w3af.plugins.get_plugin_inst(ptype, pname)
+        options = plugin.get_options()
         return bool(len(options))
 
     def configChanged(self, like_initial):
@@ -312,7 +312,7 @@ class PluginTree(gtk.TreeView):
             row[0] = row[3]
             # we just alert the changing here, as if it's not saved, the
             # profile shouldn't really be changed
-            plugin = self._getPluginInstance(path)
+            plugin = self._get_plugin_inst(path)
             self.mainwin.profiles.profileChanged(plugin)
         else:
             row[0] = "<b>%s</b>" % row[3]
@@ -332,7 +332,7 @@ class PluginTree(gtk.TreeView):
         isallok = all([all(children.values()) for children in self.config_status.values()])
         self.mainwin.scanok.change(self, isallok)
 
-    def _getPluginInstance(self, path):
+    def _get_plugin_inst(self, path):
         '''Caches the plugin instance.
 
         @param path: where the user is in the plugin tree
@@ -350,7 +350,7 @@ class PluginTree(gtk.TreeView):
         # here it must use the name in the column 3, as it's always the original
         pname = self.treestore[path][3]
         ptype = self.treestore[path[:1]][3]
-        plugin = self.w3af.plugins.getPluginInstance(pname, ptype)
+        plugin = self.w3af.plugins.get_plugin_inst(ptype, pname)
         plugin.pname = pname
         plugin.ptype = ptype
         self.plugin_instances[path] = plugin
@@ -387,23 +387,23 @@ class PluginTree(gtk.TreeView):
                 
                 gm.popup( None, None, None, event.button, _time)
     
-    def _handleReloadPluginEvent(self, widget, pluginName, pluginType, path):
+    def _handleReloadPluginEvent(self, widget, plugin_name, plugin_type, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Reload plugin"
         This method calls the plugin editor with the corresponding parameters.
         '''
-        self._finishedEditingPlugin(path, pluginType, pluginName)
+        self._finishedEditingPlugin(path, plugin_type, plugin_name)
        
-    def _handleEditPluginEvent(self, widget, pluginName, pluginType, path):
+    def _handleEditPluginEvent(self, widget, plugin_name, plugin_type, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
         This method calls the plugin editor with the corresponding parameters.
         '''
         def f(t, n):
-            self._finishedEditingPlugin(path, pluginType, pluginName)
-        pluginEditor(pluginType,  pluginName,  f)
+            self._finishedEditingPlugin(path, plugin_type, plugin_name)
+        pluginEditor(plugin_type,  plugin_name,  f)
 
-    def _finishedEditingPlugin(self, path, pluginType, pluginName):
+    def _finishedEditingPlugin(self, path, plugin_type, plugin_name):
         '''
         This is a callback that is called when the plugin editor finishes.
         '''
@@ -412,7 +412,7 @@ class PluginTree(gtk.TreeView):
         
         # Reload the plugin
         try:
-            self.w3af.plugins.reloadModifiedPlugin(pluginType,  pluginName)
+            self.w3af.plugins.reload_modified_plugin(plugin_type,  plugin_name)
         except Exception, e:
             msg = 'The plugin you modified raised the following exception'
             msg += ' while trying to reload it: "%s",' % str(e)
@@ -436,12 +436,12 @@ class PluginTree(gtk.TreeView):
             return
 
         if len(path) == 1:
-            pluginType = self.treestore[path][3]
-            desc = self.w3af.plugins.getPluginTypesDesc( pluginType )
+            plugin_type = self.treestore[path][3]
+            desc = self.w3af.plugins.get_plugin_type_desc( plugin_type )
             label = helpers.cleanDescription( desc )
             self.config_panel.clear(label=label )
         else:
-            plugin = self._getPluginInstance(path)
+            plugin = self._get_plugin_inst(path)
             longdesc = plugin.getLongDesc()
             longdesc = helpers.cleanDescription(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
@@ -667,14 +667,14 @@ class PluginConfigBody(gtk.VBox):
         '''Builds the advanced target widget.'''
         # overwrite the plugin info with the target url
         configurableTarget = self.w3af.target
-        options = configurableTarget.getOptions()
+        options = configurableTarget.get_options()
         url = self.target.get_text()
 
         # open config
         confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"), self.w3af, configurableTarget, {"target":url})
 
         # update the Entry with plugin info
-        options = configurableTarget.getOptions()
+        options = configurableTarget.get_options()
         self.target.set_text(options['target'].getValueStr())
 
     def getActivatedPlugins(self):
@@ -708,7 +708,7 @@ class PluginConfigBody(gtk.VBox):
         '''Reloads all the configurations.'''
         # target url
         configurable_obj = self.w3af.target
-        options = configurable_obj.getOptions()
+        options = configurable_obj.get_options()
         newurl = options['target'].getDefaultValueStr()
         if newurl:
             self.target.setText(newurl)

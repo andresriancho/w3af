@@ -136,11 +136,11 @@ class xml_file(baseOutputPlugin):
         '''
         pass
         
-    def setOptions( self, OptionList ):
+    def set_options( self, OptionList ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using getOptions()
+        retrieved from the plugin using get_options()
         
         This method MUST be implemented on every plugin. 
         
@@ -148,7 +148,7 @@ class xml_file(baseOutputPlugin):
         ''' 
         self._file_name = OptionList['fileName'].getValue()
         
-    def getOptions( self ):
+    def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
@@ -174,12 +174,12 @@ class xml_file(baseOutputPlugin):
         and their configuration
         '''
         node = self._xmldoc.createElement(str(groupName))
-        for pluginName in pluginList:
+        for plugin_name in pluginList:
             pluginNode = self._xmldoc.createElement("plugin")
-            pluginNode.setAttribute("name", str(pluginName))
+            pluginNode.setAttribute("name", str(plugin_name))
 
-            if optionsDict.has_key(pluginName):
-                for plugin_option in optionsDict[pluginName]:
+            if optionsDict.has_key(plugin_name):
+                for plugin_option in optionsDict[plugin_name]:
                     configNode = self._xmldoc.createElement("config")
                     configNode.setAttribute("parameter", str(plugin_option.getName()))
                     configNode.setAttribute("value", str(plugin_option.getValue()))

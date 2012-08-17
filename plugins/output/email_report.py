@@ -55,13 +55,13 @@ class email_report(baseOutputPlugin):
     def log_enabled_plugins(self, pluginsDict, optionsDict):
         self.targets = cf.cf.getData('targets')
 
-    def setOptions(self, OptionList):
+    def set_options(self, OptionList):
         self.smtpServer = OptionList['smtpServer'].getValue()
         self.smtpPort = OptionList['smtpPort'].getValue()
         self.fromAddr = OptionList['fromAddr'].getValue()
         self.toAddrs = OptionList['toAddrs'].getValue()
 
-    def getOptions(self):
+    def get_options(self):
         ol = optionList()
         
         d = 'SMTP server ADDRESS to send notifications through, e.g. smtp.yourdomain.com'

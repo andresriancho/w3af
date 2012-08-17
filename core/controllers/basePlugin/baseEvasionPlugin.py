@@ -28,8 +28,8 @@ class baseEvasionPlugin(basePlugin):
     This is the base class for evasion plugins, all evasion plugins should inherit from it 
     and implement the following methods :
         1. modifyRequest(...)
-        2. setOptions( OptionList )
-        3. getOptions()
+        2. set_options( OptionList )
+        3. get_options()
 
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''

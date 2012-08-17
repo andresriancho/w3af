@@ -170,10 +170,10 @@ class reqResViewer(gtk.VBox):
         #requestId = self._lstore[path][0]
         # Create the popup menu
         gm = gtk.Menu()
-        pluginType = "audit"
-        for pluginName in sorted(self.w3af.plugins.getPluginList(pluginType)):
-            e = gtk.MenuItem(pluginName)
-            e.connect('activate', self._auditRequest, pluginName, pluginType)
+        plugin_type = "audit"
+        for plugin_name in sorted(self.w3af.plugins.get_plugin_list(plugin_type)):
+            e = gtk.MenuItem(plugin_name)
+            e.connect('activate', self._auditRequest, plugin_name, plugin_type)
             gm.append(e)
         # Add a separator
         gm.append(gtk.SeparatorMenuItem())
@@ -186,13 +186,13 @@ class reqResViewer(gtk.VBox):
         gm.show_all()
         gm.popup(None, None, None, event.button, _time)
 
-    def _auditRequest(self, menuItem, pluginName, pluginType):
+    def _auditRequest(self, menuItem, plugin_name, plugin_type):
         """
         Audit a request using one or more plugins.
 
         @parameter menuItem: The name of the audit plugin, or the 'All audit plugins' wildcard
-        @parameter pluginName: The name of the plugin
-        @parameter pluginType: The type of plugin
+        @parameter plugin_name: The name of the plugin
+        @parameter plugin_type: The type of plugin
         @return: None
         """
         # We show a throbber, and start it
@@ -202,7 +202,7 @@ class reqResViewer(gtk.VBox):
         # Now I start the analysis of this request in a new thread,
         # threading game (copied from craftedRequests)
         event = threading.Event()
-        impact = ThreadedURLImpact(self.w3af, request, pluginName, pluginType, event)
+        impact = ThreadedURLImpact(self.w3af, request, plugin_name, plugin_type, event)
         impact.start()
         gobject.timeout_add(200, self._impactDone, event, impact)
 
@@ -428,12 +428,12 @@ class reqResWindow(RememberingWindow):
 
 class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
-    def __init__(self, w3af, request, pluginName, pluginType, event):
+    def __init__(self, w3af, request, plugin_name, plugin_type, event):
         '''Init ThreadedURLImpact.'''
         self.w3af = w3af
         self.request = request
-        self.pluginName = pluginName
-        self.pluginType = pluginType
+        self.plugin_name = plugin_name
+        self.plugin_type = plugin_type
         self.event = event
         self.result = []
         self.ok = False
@@ -443,13 +443,13 @@ class ThreadedURLImpact(threading.Thread):
         '''Start the thread.'''
         try:
             # First, we check if the user choosed 'All audit plugins'
-            if self.pluginType == 'audit_all':
+            if self.plugin_type == 'audit_all':
                 
                 #
                 #   Get all the plugins and work with that list
                 #
-                for pluginName in self.w3af.plugins.getPluginList('audit'):
-                    plugin = self.w3af.plugins.getPluginInstance(pluginName, 'audit')
+                for plugin_name in self.w3af.plugins.get_plugin_list('audit'):
+                    plugin = self.w3af.plugins.get_plugin_inst('audit', plugin_name)
                     tmp_result = []
                     try:
                         tmp_result = plugin.audit_wrapper(self.request)
@@ -461,7 +461,7 @@ class ThreadedURLImpact(threading.Thread):
                         #   Save the plugin that found the vulnerability in the result
                         #
                         for r in tmp_result:
-                            r.plugin_name = pluginName
+                            r.plugin_name = plugin_name
                         self.result.extend(tmp_result)
 
                 
@@ -469,7 +469,7 @@ class ThreadedURLImpact(threading.Thread):
                 #
                 #   Only one plugin was enabled
                 #
-                plugin = self.w3af.plugins.getPluginInstance(self.pluginName, self.pluginType)
+                plugin = self.w3af.plugins.get_plugin_inst(self.plugin_type, self.plugin_name)
                 try:
                     self.result = plugin.audit_wrapper(self.request)
                     plugin.end()
@@ -480,7 +480,7 @@ class ThreadedURLImpact(threading.Thread):
                     #   Save the plugin that found the vulnerability in the result
                     #
                     for r in self.result:
-                        r.plugin_name = self.pluginName
+                        r.plugin_name = self.plugin_name
             
             #   We got here, everything is OK!
             self.ok = True
