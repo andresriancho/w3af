@@ -142,8 +142,8 @@ class sqli(baseAuditPlugin):
         mutants = createMutants(freq, self.SQLI_STRINGS, oResponse=oResponse)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
 
     def _analyze_result(self, mutant, response):
         '''
@@ -151,7 +151,7 @@ class sqli(baseAuditPlugin):
         '''
         sql_error_list = self._findsql_error(response)
         orig_resp_body = mutant.getOriginalResponseBody()
-        
+
         for sql_regex, sql_error_string, dbms_type in sql_error_list:
             if not sql_regex.search(orig_resp_body):
                 if self._has_no_bug(mutant):
