@@ -29,7 +29,7 @@ class Node(object):
         self.me = me
         self.next = None
 
-class LRU:
+class LRU(object):
     """
     Implementation of a length-limited O(1) LRU queue.
     Built for and used by PyPE:
