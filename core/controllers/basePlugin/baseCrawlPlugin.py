@@ -61,5 +61,7 @@ class baseCrawlPlugin(basePlugin):
     def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
         return create_fuzzable_requests( httpResponse, request, add_self )
     
+    discover_wrapper = crawl_wrapper
+    
     def getType( self ):
         return 'crawl'
