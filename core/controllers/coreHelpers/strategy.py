@@ -19,31 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import itertools
-import traceback
 import Queue
-import time
-import sys
+
+from multiprocessing import TimeoutError
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
-from core.controllers.coreHelpers.update_urls_in_kb import update_URLs_in_KB
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.consumers.grep import grep
 from core.controllers.coreHelpers.consumers.auth import auth
 from core.controllers.coreHelpers.consumers.audit import audit
-from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
-from core.controllers.coreHelpers.status import w3af_core_status
-from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.threads.threadManager import thread_manager
-from core.controllers.w3afException import (w3afException, w3afRunOnce,
-                                            w3afMustStopException, 
-                                            w3afMustStopOnUrlError)
-
-from core.data.request.frFactory import create_fuzzable_requests
-from core.data.db.disk_set import disk_set
+from core.controllers.coreHelpers.consumers.bruteforce import bruteforce
+from core.controllers.coreHelpers.consumers.seed import seed
+from core.controllers.coreHelpers.consumers.crawl_infrastructure import crawl_infrastructure 
+from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.w3afException import w3afException
 
 
 class w3af_core_strategy(object):
@@ -63,15 +55,20 @@ class w3af_core_strategy(object):
     '''
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
-        
-        # Internal variables
-        self._fuzzable_request_set  = set()
-        kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
-        
+                
         # Consumer threads
         self._grep_consumer = None
         self._audit_consumer = None
         self._auth_consumer = None
+        self._discovery_consumer = None
+        self._bruteforce_consumer = None
+        self._seed_producer = seed(self._w3af_core)
+        
+        self._consumers = [self._grep_consumer,
+                           self._audit_consumer,
+                           self._auth_consumer,
+                           self._discovery_consumer,
+                           self._bruteforce_consumer]
 
     def start(self):
         '''
@@ -88,32 +85,154 @@ class w3af_core_strategy(object):
         try:
             self._setup_grep()
             self._setup_auth()
+            self._setup_crawl_infrastructure()
+            self._setup_audit()
+            self._setup_bruteforce()
+            self._setup_404_detection()
+            
+            self.force_auth_login()
             
             self._seed_discovery()
             
-            self._fuzzable_request_set.update( self._discover_and_bruteforce() )
-            
-            if not self._fuzzable_request_set:
-                om.out.information('No URLs found during crawl phase.')
-                return
+            self._fuzzable_request_router()
 
-            self._post_discovery()
-            
-            self._setup_audit()
-            
-        except w3afException, e:
-            self._end(e)
+        except Exception:
+            self.terminate()
             raise
         finally:
-            self._end()
+            self.join_all_consumers()
+
+    def stop(self):
+        self.terminate()
     
-    def _end(self, exc_inst=None, ignore_err=False):
+    quit = stop
+    
+    def pause(self, pause_yes_no):
+        # FIXME: Consumers should have something to do with this, most likely
+        # another constant similar to the poison pill
+        pass
+
+    def force_auth_login(self):
         '''
-        End the strategy specific things and then call w3af_core's _end()
+        Make login to the web application when it is needed.
         '''
-        self.teardown_grep()
-        self.teardown_audit()
-        self.teardown_auth()
+        if self._auth_consumer is not None:
+            self._auth_consumer.force_login()
+    
+    def terminate(self):
+        '''
+        Consume (without processing) all queues with data which are in
+        the consumers and then send a poison-pill to that queue.
+        '''
+        for consumer in self._consumers:
+            if consumer is not None:
+                consumer.terminate()
+    
+    def join_all_consumers(self):
+        '''
+        End the strategy specific things.
+        '''
+        self._teardown_grep()
+        self._teardown_audit()
+        self._teardown_auth()
+        self._teardown_crawl_infrastructure()
+        self._teardown_bruteforce()
+    
+    def _fuzzable_request_router(self):
+        '''
+        This is one of the most important methods, it will take things from the
+        discovery Queue and store them in one or more Queues (audit, bruteforce,
+        etc).
+        '''
+        _input = [self._seed_producer, self._discovery_consumer, 
+                  self._bruteforce_consumer]
+        _input = [prod for prod in _input if prod is not None]
+       
+        output = [self._audit_consumer, self._discovery_consumer,
+                  self._bruteforce_consumer]
+        output = [cons for cons in output if cons is not None]
+        
+        finished = set()
+        consumer_forced_end = set()
+        
+        
+        while True:
+            for url_producer in _input:
+                
+                if len(_input) == len(finished | consumer_forced_end):
+                    return
+                
+                try:
+                    result_item = url_producer.get_result(timeout=0.2)
+                except TimeoutError:
+                    pass
+                
+                except Queue.Empty:
+                    if not url_producer.has_pending_work():
+                        # This consumer is saying that it doesn't have any
+                        # pending or in progress work
+                        finished.add( url_producer )
+                else:
+                    if result_item == POISON_PILL:
+                        # This consumer is saying that it has finished, so we
+                        # remove it from the list.
+                        consumer_forced_end.add(url_producer)
+                    else:
+                        _, _, plugin_result = result_item
+                        for url_consumer in output:
+                            url_consumer.in_queue_put_iter( plugin_result )
+                        
+                        # This is rather complex to digest... so pay attention :)
+                        # A consumer might be 100% idle (no tasks in input or 
+                        # output queues, no in progress work) and we still need
+                        # to keep it alive, because output from another producer
+                        # will be sent to that consumer and make it work again
+                        #
+                        # So, when one producer returns something, we set the
+                        # finished list to empty and start over.
+                        finished = set()
+    
+    def _setup_404_detection(self):
+        #
+        #    NOTE: I need to perform this test here in order to avoid some weird
+        #    thread locking that happens when the webspider calls is_404, and
+        #    because I want to initialize the is_404 database in a controlled
+        #    try/except block.
+        #
+        from core.controllers.coreHelpers.fingerprint_404 import is_404
+        
+        for url in cf.cf.getData('targets'):
+            try:
+                response = self._w3af_core.uriOpener.GET(url, cache=True)
+                is_404(response)
+            except Exception, e:
+                msg = 'Failed to initialize the 404 detection, original exception'
+                msg += ' was: "%s".'
+                raise w3afException( msg % e)
+                        
+    def _setup_crawl_infrastructure(self):
+        '''
+        Setup the crawl and infrastructure consumer:
+            * Retrieve all plugins from the core,
+            * Create the consumer instance and more,
+        '''
+        # Internal variables
+        kb.kb.save('urls', 'fuzzable_requests', set())
+        
+        crawl_plugins = self._w3af_core.plugins.plugins['crawl']
+        infrastructure_plugins = self._w3af_core.plugins.plugins['infrastructure']
+        
+        if crawl_plugins or infrastructure_plugins:
+            discovery_plugins = crawl_plugins
+            discovery_plugins.extend(infrastructure_plugins)
+            
+            discovery_in_queue = Queue.Queue()
+            
+            self._discovery_consumer = crawl_infrastructure(discovery_in_queue,
+                                                            discovery_plugins,
+                                                            self._w3af_core,
+                                                            cf.cf.getData('maxDiscoveryTime'))
+            self._discovery_consumer.start()
     
     def _setup_grep(self):
         '''
@@ -130,162 +249,65 @@ class w3af_core_strategy(object):
             self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
             self._grep_consumer.start()
         
-    def teardown_grep(self):
+    def _teardown_grep(self):
         if self._grep_consumer is not None: 
             self._grep_consumer.join()
             self._grep_consumer = None
     
-    def teardown_audit(self):
+    def _teardown_audit(self):
         if self._audit_consumer is not None:
-            #FIXME: See comment in audit, search for "self._audit_consumer.join()" 
-            #self._audit_consumer.join()
+            # Wait for all the in_queue items to get() from the queue
+            self._audit_consumer.join()
+            # get() all results from the output queue and handle them 
+            self._audit_consumer.handle_audit_results()
             self._audit_consumer = None
         
-    def teardown_auth(self):
+    def _teardown_auth(self):
         if self._auth_consumer is not None:
             self._auth_consumer.join()
             self._auth_consumer = None
-
-    def _post_discovery(self):
-        '''
-        This method is called after the crawl and brutefore phases finish
-        and performs these things:
-            * Cleanup
-            * Report results to the user
-            * Filter duplicate fuzzable requests
-            * Return 
-        '''
-        # Remove the crawl and bruteforce plugins from memory
-        # This is a performance enhancement.
-        self._w3af_core.plugins.plugins['crawl'] = []
-        self._w3af_core.plugins.plugins['infrastructure'] = []
-        self._w3af_core.plugins.plugins['bruteforce'] = []
-
-        # Filter out the fuzzable requests that aren't important 
-        # (and will be ignored by audit plugins anyway...)
-        #
-        #   What I want to do here, is filter the repeated fuzzable requests.
-        #   For example, if the spidering process found:
-        #       - http://host.tld/?id=3739286
-        #       - http://host.tld/?id=3739285
-        #       - http://host.tld/?id=3739282
-        #       - http://host.tld/?id=3739212
-        #
-        #   I don't want to have all these different fuzzable requests. The reason is that
-        #   audit plugins will try to send the payload to each parameter, thus generating
-        #   the following requests:
-        #       - http://host.tld/?id=payload1
-        #       - http://host.tld/?id=payload1
-        #       - http://host.tld/?id=payload1
-        #       - http://host.tld/?id=payload1
-        #
-        #   w3af has a cache, but its still a waste of time to send those requests.
-        #
-        #   Now lets analyze this with more than one parameter. Spidered URIs:
-        #       - http://host.tld/?id=3739286&action=create
-        #       - http://host.tld/?id=3739285&action=create
-        #       - http://host.tld/?id=3739282&action=remove
-        #       - http://host.tld/?id=3739212&action=remove
-        #
-        #   Generated requests:
-        #       - http://host.tld/?id=payload1&action=create
-        #       - http://host.tld/?id=3739286&action=payload1
-        #       - http://host.tld/?id=payload1&action=create
-        #       - http://host.tld/?id=3739285&action=payload1
-        #       - http://host.tld/?id=payload1&action=remove
-        #       - http://host.tld/?id=3739282&action=payload1
-        #       - http://host.tld/?id=payload1&action=remove
-        #       - http://host.tld/?id=3739212&action=payload1
-        #
-        #   In cases like this one, I'm sending these repeated requests:
-        #       - http://host.tld/?id=payload1&action=create
-        #       - http://host.tld/?id=payload1&action=create
-        #       - http://host.tld/?id=payload1&action=remove
-        #       - http://host.tld/?id=payload1&action=remove
-        #   But there is not much I can do about it... (except from having a nice cache)
-        #
-        #   TODO: Is the previous statement completely true?
-        #
-        '''filtered_fuzzable_requests = []
-        for fr_original in self._fuzzable_request_set:
-            
-            different_from_all = True
-            
-            for fr_filtered in filtered_fuzzable_requests:
-                if fr_filtered.is_variant_of( fr_original ):
-                    different_from_all = False
-                    break
-            
-            if different_from_all:
-                filtered_fuzzable_requests.append( fr_original )
-        
-        self._fuzzable_request_set = filtered_fuzzable_requests
-        '''
-        # Sort URLs
-        tmp_url_list = kb.kb.getData( 'urls', 'url_objects')[:]
-        tmp_url_list = list(set(tmp_url_list))
-        tmp_url_list.sort()
-        
-        msg = 'Found %s URLs and %s different points of injection.' 
-        msg = msg % (len(tmp_url_list), len(self._fuzzable_request_set))
-        om.out.information( msg )
-        
-        # print the URLs
-        om.out.information('The list of URLs is:')
-        for i in tmp_url_list:
-            om.out.information( '- ' + i )
-
-        # Now I simply print the list that I have after the filter.
-        tmp_fr = [ '- ' + str(fr) for fr in self._fuzzable_request_set]
-        tmp_fr.sort()
-
-        om.out.information('The list of fuzzable requests is:')
-        map(om.out.information, tmp_fr)
+    
+    def _teardown_bruteforce(self):
+        if self._bruteforce_consumer is not None:
+            self._bruteforce_consumer.join()
+            self._bruteforce_consumer = None
+                
+    def _teardown_crawl_infrastructure(self):
+        if self._discovery_consumer is not None:
+            self._discovery_consumer.join()
+            self._discovery_consumer = None
               
     def _seed_discovery(self):
         '''
-        Create the first fuzzable request objects based on the targets
-        '''
-
-        # We only want to scan pages that in current scope
-        get_curr_scope_pages = lambda fr: \
-            fr.getURL().getDomain() == url.getDomain()
-
-        for url in cf.cf.getData('targets'):
-            try:
-                #
-                #    GET the initial target URLs in order to save them
-                #    in a list and use them as our bootstrap URLs
-                #
-                response = self._w3af_core.uriOpener.GET(url, cache=True)
-                self._fuzzable_request_set.update( filter(
-                    get_curr_scope_pages, create_fuzzable_requests(response)) )
-
-                #
-                #    NOTE: I need to perform this test here in order to avoid some weird
-                #    thread locking that happens when the webspider calls is_404, and
-                #    because I want to initialize the is_404 database in a controlled
-                #    try/except block.
-                #
-                from core.controllers.coreHelpers.fingerprint_404 import is_404
-                is_404(response)
-
-            except KeyboardInterrupt:
-                self._end()
-                raise
-            except (w3afMustStopOnUrlError, w3afException, w3afMustStopException), w3:
-                om.out.error('The target URL: %s is unreachable.' % url)
-                om.out.error('Error description: %s' % w3)
-            except Exception, e:
-                om.out.error('The target URL: %s is unreachable '
-                             'because of an unhandled exception.' % url)
-                om.out.error('Error description: "%s". See debug '
-                             'output for more information.' % e)
-                om.out.error('Traceback for this error: %s' % 
-                             traceback.format_exc())
+        Create the first fuzzable request objects based on the targets and put
+        them in the crawl_infrastructure consumer Queue.
         
-        # Load the target URLs to the KB
-        update_URLs_in_KB( self._fuzzable_request_set )
+        This will start the whole discovery process, since plugins are going
+        to consume from that Queue and then put their results in it again in 
+        order to continue discovering.
+        '''
+        #
+        #    GET the initial target URLs in order to save them
+        #    in a list and use them as our bootstrap URLs
+        #
+        self._seed_producer.seed_output_queue( cf.cf.getData('targets') )
+    
+    def _setup_bruteforce(self):
+        '''
+        Create a bruteforce consumer instance with the bruteforce plugins
+        and initialize it in order to start taking work from the input Queue.
+        
+        The input queue for this consumer is populated by the fuzzable request
+        router.
+        '''
+        bruteforce_plugins = self._w3af_core.plugins.plugins['bruteforce']
+        
+        if bruteforce_plugins:
+            bruteforce_in_queue = Queue.Queue()
+            self._bruteforce_consumer = bruteforce(bruteforce_in_queue,
+                                                   bruteforce_plugins,
+                                                   self._w3af_core)
+            self._bruteforce_consumer.start()
     
     def _setup_auth(self, timeout=5):
         '''
@@ -304,293 +326,7 @@ class w3af_core_strategy(object):
                                        self._w3af_core, timeout)
             self._auth_consumer.start()
             self._auth_consumer.async_force_login()
-        
-    def force_auth_login(self):
-        '''
-        Make login to the web application when it is needed.
-        '''
-        if self._auth_consumer is not None:
-            self._auth_consumer.force_login()
-
-    def _discover_and_bruteforce( self ):
-        '''
-        Discovery and bruteforce phases are related, so I have joined them
-        here in this method.
-        
-        @return: A list with fuzzable requests that were found during discovery
-                 and bruteforce.
-        '''
-        # Make sure we have a session before we start the crawl process
-        self.force_auth_login()
-        
-        res = set()
-        add = res.add
-        #TODO: This is a horrible thing to do, we consume lots of memory
-        #      for just a loop. The issue is that we had some strange
-        #      "RuntimeError: Set changed size during iteration" and I had
-        #      no time to solve them.
-        tmp_set = set(self._fuzzable_request_set)
-        
-        while True:
-            discovered_fr_list = self._discover( tmp_set )
-            successfully_bruteforced = self._bruteforce( tmp_set.union(discovered_fr_list) )
-
-            chain = itertools.chain( discovered_fr_list,
-                                     successfully_bruteforced,
-                                     self._fuzzable_request_set)
-            map(add, chain)
-            
-            if not successfully_bruteforced:
-                # Haven't found new credentials
-                break
-            else:
-                # So in the next "while True:" loop I can do a discovery
-                # using the new URLs found during bruteforce
-                tmp_set = successfully_bruteforced
-                
-                # Now I reconfigure the urllib to use the newly found credentials
-                self._reconfigureUrllib()
-        
-        # Update the KB before returning
-        update_URLs_in_KB( res )
-        
-        return res
-    
-    def _reconfigureUrllib( self ):
-        '''
-        Configure the main urllib with the newly found credentials.
-        '''
-        for v in kb.kb.getData( 'basic_auth' , 'auth' ):
-            self._w3af_core.uriOpener.settings.setBasicAuth( v.getURL(),
-                                                             v['user'],
-                                                             v['pass'] )
-
-    def quit(self):
-        # End all plugins
-        self._end(ignore_err=True)
-    
-    def stop(self):
-        # End all plugins
-        self._end(ignore_err=True)
-    
-    def pause(self, pause_yes_no):
-        # FIXME: Consumers should have something to do with this, most likely
-        # another constant similar to the poison pill
-        pass
-    
-    def _discover(self, to_walk):
-        '''
-        This method will run the discover_worker, which will run all the discovery
-        plugins in a loop in order to find new URLs, forms, web services, etc.
-        
-        @return: A list of fuzzable requests.
-        '''
-        # Init some internal variables
-        self._w3af_core.status.set_phase('crawl')
-
-        # Run all the crawl plugins        
-        result = self._discover_worker( to_walk )
-        
-        # Let the plugins know that they won't be used anymore
-        self._end_discovery()
-        
-        return set(result)
-    
-    def _end_discovery( self ):
-        '''
-        Let the crawl plugins know that they won't be used anymore.
-        '''
-        # TODO: Hack hack, remove!
-        for plugin_type in ('crawl', 'infrastructure'):
-            for p in self._w3af_core.plugins.plugins[plugin_type]:
-                try:
-                    p.end()
-                except Exception, e:
-                    om.out.error('The plugin "%s" raised an exception in the '
-                                 'end() method: %s' % (p.getName(), e))
-    
-    def get_discovery_time(self):
-        '''
-        @return: The time between now and the start of the crawl phase in
-                 minutes.
-        '''
-        now = time.time()
-        diff = now - self._w3af_core._start_time_epoch
-        return diff / 60
-    
-    def _should_stop_discovery(self):
-        '''
-        @return: True if we should stop the crawl phase because of time limit
-                 set by the user, or simply because the user wants to stop the
-                 crawl phase.
-        '''
-        # If the user wants to stop, I have to stop and at least
-        # return the findings I've got until now.
-        if self._w3af_core.status.is_stopped():
-            return True
-        
-        if self.get_discovery_time() > cf.cf.getData('maxDiscoveryTime'):
-            om.out.information('Maximum crawl time limit hit.')
-            return True
-        
-        return False
-    
-    def _discover_worker(self, to_walk):
-        '''
-        This method will run crawl plugins in a loop until no new knowledge
-        (ie fuzzable requests) is found.
-        
-        TODO: unit-test this method
-        
-        @return: A list with the found fuzzable requests.
-        '''
-        om.out.debug('Called _discover_worker()' )
-        result = []
-        
-        while to_walk:
-            
-            #TODO: This is just a hack, this should be removed when I rewrite
-            #      the discovery phase as a consumer/producer
-            plugins_to_run = self._w3af_core.plugins.plugins['crawl'] + \
-                             self._w3af_core.plugins.plugins['infrastructure']
-            
-            # Progress stuff, do this inside the while loop, because the to_walk 
-            # variable changes in each loop
-            amount_of_tests = ( len(plugins_to_run) * 
-                                len(to_walk) )
-            self._w3af_core.progress.set_total_amount(amount_of_tests)
-            
-            plugins_to_remove_list = []
-            fuzz_reqs = {}
-            
-            for plugin in plugins_to_run:
-                
-                for fr in to_walk:
-                    
-                    # Should I continue with the crawl phase? If not, return
-                    # what I know for now and forget about all the remaining work
-                    if self._should_stop_discovery(): return result
-                    
-                    # Status reporting
-                    status = self._w3af_core.status
-                    status.set_running_plugin(plugin.getName())
-                    status.set_current_fuzzable_request(fr)
-                    om.out.debug('%s is testing "%s"' % (plugin.getName(), fr.getURI() ) )
-                    
-                    try:
-                        try:
-                            # Perform the actual work
-                            # TODO: Hack hack, FIXME!
-                            if plugin.getType() == 'crawl':
-                                plugin_result = plugin.crawl_wrapper(fr)
-                            else:
-                                plugin_result = plugin.discover_wrapper(fr)
-                        finally:
-                            thread_manager.join(plugin)
-                    except KeyboardInterrupt:
-                        om.out.information('The user interrupted the crawl phase, '
-                                           'continuing with audit.')
-                        return result
-                    except w3afException,e:
-                        om.out.error(str(e))
-                    except w3afRunOnce:
-                        # Some plugins are meant to be run only once
-                        # that is implemented by raising a w3afRunOnce
-                        # exception
-                        plugins_to_remove_list.append(plugin)
-                    except Exception, e:
-                        # Smart error handling, much better than just crashing.
-                        # Doing this here and not with something similar to:
-                        # sys.excepthook = handle_crash because we want to handle
-                        # plugin exceptions in this way, and not framework 
-                        # exceptions                        
-                        exec_info = sys.exc_info()
-                        enabled_plugins = pprint_plugins(self._w3af_core)
-                        exception_handler.handle( self._w3af_core.status, e , 
-                                                  exec_info, enabled_plugins )
-                    
-                    else:
-                        # We don't trust plugins, i'll only work if this
-                        # is a list or something else that is iterable
-                        lst = fuzz_reqs.setdefault(plugin.getName(), [])
-                        if hasattr(plugin_result, '__iter__'):
-                            lst.extend(fr for fr in plugin_result)
                                 
-                    # Finished one loop, inc!
-                    self._w3af_core.progress.inc()
-            
-            # Remove the plugins that don't want to be run anymore
-            self._remove_discovery_plugin( plugins_to_remove_list )
-            
-            # The search has finished - now performing some mangling
-            # and filtering with the requests before the next loop
-            new_fuzz_reqs = self._filter_mangle_discovery_fr( fuzz_reqs, result )
-            result.extend( new_fuzz_reqs )
-            
-            # Update the list / queue that lives in the KB
-            update_URLs_in_KB(new_fuzz_reqs)
-
-            # Get ready for next while loop
-            to_walk = new_fuzz_reqs
-        
-        return result
-
-
-    def _filter_mangle_discovery_fr(self, fuzz_reqs, result):
-        '''
-        @param fuzz_reqs: A dict with plugin name as key and fuzzable requests
-                          found by the plugin during the last run.
-        @param result: The fuzzable requests that were already identified by
-                       other crawl plugins during this or previous discovery
-                       loops.
-        @return: A list with the NEW fuzzable requests that were found, these
-                 have been filtered based on the target url, if they are new
-                 or not, etc.
-        '''
-        new_fr = []
-        base_urls_cf = cf.cf.getData('baseURLs')
-        
-        for pname, fuzzable_list in fuzz_reqs.iteritems():
-            
-            for fr in fuzzable_list:
-                fr_uri = fr.getURI()
-                # No need to care about fragments
-                # (http://a.com/foo.php#frag). Remove them
-                fr.setURI(fr_uri.removeFragment())
-                
-                if fr_uri.baseUrl() in base_urls_cf and\
-                fr not in result:
-                    # Found a new fuzzable request
-                    new_fr.append(fr)
-        
-            # Print the new URLs in a sorted manner.
-            for url in sorted(set(fr.getURL().url_string for fr in new_fr)):
-                msg = 'New URL found by %s plugin: %s' % (pname, url)
-                om.out.information( msg )
-        
-        return new_fr
-    
-    def _remove_discovery_plugin(self, plugins_to_remove_list):            
-        '''
-        Remove plugins that don't want to be run anymore and raised a w3afRunOnce
-        exception during the crawl phase.
-        '''
-        for plugin_to_remove in plugins_to_remove_list:
-            # TODO: This for loop is also a hack and should be removed when rewriting
-            #       the discovery loop as a consumer/producer
-            for plugin_type in ('crawl', 'infrastructure'):
-                if plugin_to_remove in self._w3af_core.plugins.plugins[plugin_type]:
-                    
-                    # Remove it from the plugin list, and run the end() method
-                    self._w3af_core.plugins.plugins[plugin_type].remove( plugin_to_remove )
-                    msg = 'The %s plugin: "%s" wont be run anymore.'
-                    om.out.debug( msg % (plugin_type, plugin_to_remove.getName() ) )
-                    try:
-                        plugin_to_remove.end()
-                    except Exception, e:
-                        msg = 'The plugin "%s" raised an exception in the end() method: "%s"'
-                        om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
-                        
     def _setup_audit(self):
         '''
         Starts the audit plugin consumer 
@@ -605,140 +341,3 @@ class w3af_core_strategy(object):
             self._audit_consumer = audit(audit_in_queue, audit_plugins, self._w3af_core)
             self._audit_consumer.start()
             
-            # FIXME: Remove me.
-            self._seed_audit_consumer()
-
-    def _seed_audit_consumer(self):
-        '''
-        FIXME: This method should be merged into start() and removed from
-               _setup_audit()
-        
-        '''   
-        #TODO: This set() a horrible thing to do, we consume lots of memory
-        #      for just a loop. The issue is that we had some strange
-        #      "RuntimeError: Set changed size during iteration" and I had
-        #      no time to solve them.
-        for fr in set(self._fuzzable_request_set):
-            self._audit_consumer.in_queue_put(fr)
-
-        # FIXME: This should be removed or moved around when we complete the whole
-        # refactoring. See the commented join() in teardown_audit.
-        self._audit_consumer.join()
-
-        self._handle_audit_results()
-            
-
-    def _handle_audit_results(self):
-        '''
-        This method handles the results of running audit plugins. The results
-        are put() into self._audit_consumer.out_queue by the consumer and they
-        are basically the ApplyResult objects from the threadpool.
-        
-        Since audit plugins don't really return stuff that we're interested in,
-        these results are mostly interesting to us because of the exceptions
-        that might appear in the plugins. Because of that, the method should be
-        called in the main thread and be seen as a way to "bring thread exceptions
-        to main thread".
-        
-        Each time this method is called it will consume all items in the output
-        queue. Note that you might have to call this more than once during the
-        strategy execution.
-        '''
-        while True:
-            queue_item = self._audit_consumer.out_queue.get()
-
-            if queue_item == FINISH_CONSUMER:
-                break
-            else:
-                plugin_name, request, result = queue_item
-                try:
-                    result.get()
-                except Exception, e:
-                    # Smart error handling, much better than just crashing.
-                    # Doing this here and not with something similar to:
-                    # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework 
-                    # exceptions
-                    class fake_status(w3af_core_status):
-                        pass
-        
-                    status = fake_status()
-                    status.set_running_plugin( plugin_name, log=False )
-                    status.set_phase( 'audit' )
-                    status.set_current_fuzzable_request( request )
-                    
-                    exec_info = sys.exc_info()
-                    enabled_plugins = pprint_plugins(self._w3af_core)
-                    exception_handler.handle( status, e , exec_info, enabled_plugins )
-                else:
-                    # Please note that this is not perfect, it is showing which
-                    # plugin result was JUST taken from the Queue. The good thing is
-                    # that the "client" reads the status once every 500ms so the user
-                    # will see things "moving" and will be happy
-                    self._w3af_core.status.set_phase('audit')
-                    self._w3af_core.status.set_running_plugin( plugin_name )
-                    self._w3af_core.status.set_current_fuzzable_request( request )
-        
-        om.out.debug('Finished _handle_audit_results.')
-        
-            
-    def _bruteforce(self, fr_list):
-        '''
-        @parameter fr_list: A list of fr's to be analyzed by the bruteforce plugins
-        @return: A list of the URL's that have been successfully bruteforced
-        '''
-        res = []
-        
-        # Status
-        om.out.debug('Called _bruteforce()' )
-        self._w3af_core.status.set_phase('bruteforce')
-        
-        # Progress
-        bruteforce_plugin_num = len(self._w3af_core.plugins.plugins['bruteforce'])
-        amount_of_tests = bruteforce_plugin_num * len(fr_list) 
-        self._w3af_core.progress.set_total_amount( amount_of_tests )
-        
-        for plugin in self._w3af_core.plugins.plugins['bruteforce']:
-
-            # Status
-            self._w3af_core.status.set_running_plugin( plugin.getName() )
-            
-            for fr in fr_list:
-                
-                # Status
-                self._w3af_core.status.set_current_fuzzable_request( fr )
-                
-                # Sends each URL to the bruteforce plugin
-                try:
-                    try:
-                        new_frs = plugin.bruteforce_wrapper( fr )
-                        
-                    finally:
-                        thread_manager.join( plugin )
-                except w3afException, e:
-                    om.out.error( str(e) )
-                
-                except Exception, e:
-                    # Smart error handling, much better than just crashing.
-                    # Doing this here and not with something similar to:
-                    # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework 
-                    # exceptions                    
-                    exec_info = sys.exc_info()
-                    enabled_plugins = pprint_plugins(self._w3af_core)
-                    exception_handler.handle( self._w3af_core.status, e , 
-                                              exec_info, enabled_plugins )
-                
-                else:
-                    res.extend( new_frs )
-                
-                # Progress, I performed one test (no matter if it failed or not)
-                self._w3af_core.progress.inc()
-            
-            # We're not going to be using this plugin anymore.
-            try:
-                plugin.end()
-            except w3afException, e:
-                om.out.error( str(e) )
-                
-        return set(res)

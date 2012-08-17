@@ -19,16 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from multiprocessing.dummy import Queue, Process
+import sys
 
 import core.controllers.outputManager as om
 
-from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
-from core.controllers.threads.threadpool import Pool
+from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.coreHelpers.status import w3af_core_status
+from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
+from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.w3afException import w3afException
 
 
-class audit(Process):
+class audit(BaseConsumer):
     '''
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the crawl plugins and identified vulnerabilities by performing various
@@ -41,87 +44,73 @@ class audit(Process):
         @param audit_plugins: Instances of audit plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(audit, self).__init__()
+        super(audit, self).__init__(in_queue, audit_plugins, w3af_core)
         
-        self._in_queue = in_queue
-        # See documentation in the property below
-        self._out_queue = Queue()
-        self._audit_plugins = audit_plugins
-        self._w3af_core = w3af_core
-        self._audit_threadpool = Pool(10)
-    
-    def run(self):
-        '''
-        Consume the queue items and find vulnerabilities
-        
-        TODO: Report progress to w3afCore somehow.
-        '''
+    def _teardown(self):
+        # End plugins
+        for plugin in self._consumer_plugins:
+            try:
+                plugin.end()
+            except w3afException, e:
+                om.out.error( str(e) )
 
+    def _consume(self, work_unit):
+        for plugin in self._consumer_plugins:
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            result = self._threadpool.apply_async( plugin.audit_wrapper,
+                                                   (work_unit,),
+                                                   callback=self._task_done)
+            self._out_queue.put( (plugin.getName(), work_unit, result) )
+    
+    def handle_audit_results(self):
+        '''
+        This method handles the results of running audit plugins. The results
+        are put() into self._audit_consumer.out_queue by the consumer and they
+        are basically the ApplyResult objects from the threadpool.
+        
+        Since audit plugins don't really return stuff that we're interested in,
+        these results are mostly interesting to us because of the exceptions
+        that might appear in the plugins. Because of that, the method should be
+        called in the main thread and be seen as a way to "bring thread exceptions
+        to main thread".
+        
+        Each time this method is called it will consume all items in the output
+        queue. Note that you might have to call this more than once during the
+        strategy execution.
+        '''
         while True:
-           
-            workunit = self._in_queue.get()
+            queue_item = self.out_queue.get()
 
-            if workunit == FINISH_CONSUMER:
-                
-                # Close the pool and wait for everyone to finish
-                self._audit_threadpool.close()
-                self._audit_threadpool.join()
-                
-                # End plugins
-                
-                for plugin in self._audit_plugins:
-                    try:
-                        plugin.end()
-                    except w3afException, e:
-                        om.out.error( str(e) )
-                
-                # Finish this consumer and everyone consuming the output
-                self._out_queue.put( FINISH_CONSUMER )
-                self._in_queue.task_done()
+            if queue_item == POISON_PILL:
                 break
-                
             else:
-                
-                for plugin in self._audit_plugins:
-                    om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), workunit ) )
-                    result = self._audit_threadpool.apply_async( plugin.audit_wrapper,
-                                                                 (workunit,) )
-                    self._out_queue.put( (plugin.getName(), workunit, result) )
-            
-                self._in_queue.task_done()
-
-    @property
-    def out_queue(self):
-        #
-        #    This output queue can contain one of the following:
-        #        * FINISH_CONSUMER
-        #        * (plugin_name, fuzzable_request, AsyncResult)
-        return self._out_queue
-    
-    def in_queue_put(self, work):
-        return self._in_queue.put( work )
+                plugin_name, request, result = queue_item
+                try:
+                    result.get()
+                except Exception, e:
+                    # Smart error handling, much better than just crashing.
+                    # Doing this here and not with something similar to:
+                    # sys.excepthook = handle_crash because we want to handle
+                    # plugin exceptions in this way, and not framework 
+                    # exceptions
+                    class fake_status(w3af_core_status):
+                        pass
         
-    def in_queue_size(self):
-        return self._in_queue.qsize()
-
-    def join(self):
-        '''
-        Poison the loop and wait for all queued work to finish this might take
-        some time to process.
-        '''
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()
-
-    def terminate(self):
-        '''
-        Remove all queued work from in_queue and poison the loop so the consumer
-        exits. Should be very fast and called only if we don't care about the
-        queued work anymore (ie. user clicked stop in the UI).
-        '''
-        while not self._in_queue.empty():
-            self._in_queue.get()
-            self._in_queue.task_done()
+                    status = fake_status()
+                    status.set_running_plugin( plugin_name, log=False )
+                    status.set_phase( 'audit' )
+                    status.set_current_fuzzable_request( request )
+                    
+                    exec_info = sys.exc_info()
+                    enabled_plugins = pprint_plugins(self._w3af_core)
+                    exception_handler.handle( status, e , exec_info, enabled_plugins )
+                else:
+                    # Please note that this is not perfect, it is showing which
+                    # plugin result was JUST taken from the Queue. The good thing is
+                    # that the "client" reads the status once every 500ms so the user
+                    # will see things "moving" and will be happy
+                    self._w3af_core.status.set_phase('audit')
+                    self._w3af_core.status.set_running_plugin( plugin_name )
+                    self._w3af_core.status.set_current_fuzzable_request( request )
         
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()
-
+        om.out.debug('Finished handle_audit_results().')

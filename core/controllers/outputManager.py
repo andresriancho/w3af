@@ -27,7 +27,7 @@ import Queue
 
 from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
-from core.controllers.coreHelpers.consumers.constants import FINISH_CONSUMER
+from core.controllers.coreHelpers.consumers.constants import POISON_PILL
 
 def start_thread_on_demand(func):
     '''
@@ -82,7 +82,7 @@ class outputManager(threading.Thread):
         while True:
             work_unit = self._in_queue.get()
             
-            if work_unit == FINISH_CONSUMER:
+            if work_unit == POISON_PILL:
                 
                 break
             

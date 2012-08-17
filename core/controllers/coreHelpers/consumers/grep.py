@@ -20,19 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import sys
-import Queue
 
-from multiprocessing.dummy import Process
-
-from .constants import FINISH_CONSUMER
+from .constants import POISON_PILL
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
 
 
-
-class grep(Process):
+class grep(BaseConsumer):
     '''
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.
@@ -44,12 +41,8 @@ class grep(Process):
         @param grep_plugins: Instances of grep plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(grep, self).__init__()
-        
-        self._in_queue = in_queue
-        self._grep_plugins = grep_plugins
-        self._w3af_core = w3af_core
-    
+        super(grep, self).__init__(in_queue, grep_plugins, w3af_core)
+            
     def run(self):
         '''
         Consume the queue items
@@ -58,9 +51,9 @@ class grep(Process):
            
             work_unit = self._in_queue.get()
 
-            if work_unit == FINISH_CONSUMER:
+            if work_unit == POISON_PILL:
                 
-                for plugin in self._grep_plugins:
+                for plugin in self._consumer_plugins:
                     plugin.end()
                 
                 self._in_queue.task_done()
@@ -70,7 +63,7 @@ class grep(Process):
             else:
                 request, response = work_unit
 
-                for grep_plugin in self._grep_plugins:
+                for grep_plugin in self._consumer_plugins:
                     try:
                         grep_plugin.grep_wrapper( request, response )
                     except Exception, e:
@@ -92,26 +85,4 @@ class grep(Process):
                         exception_handler.handle( status, e , exec_info, enabled_plugins )
                 
                 self._in_queue.task_done()
-    
-    def join(self):
-        '''
-        Poison the loop and wait for all queued work to finish this might take
-        some time to process.
-        '''
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()
-
-    def terminate(self):
-        '''
-        Remove all queued work from in_queue and poison the loop so the consumer
-        exits. Should be very fast and called only if we don't care about the
-        queued work anymore (ie. user clicked stop in the UI).
-        '''
-        while not self._in_queue.empty():
-            self._in_queue.get()
-            self._in_queue.task_done()
-        
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()
-        
-        
+                self._task_done(None)

@@ -22,17 +22,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import Queue
 
-from multiprocessing.dummy import Process
-
-from .constants import FINISH_CONSUMER, FORCE_LOGIN
+from .constants import POISON_PILL, FORCE_LOGIN
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager as tm
+from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
 
 
-
-class auth(Process):
+class auth(BaseConsumer):
     '''
     Thread that logins into the application every N seconds.
     '''
@@ -41,17 +39,14 @@ class auth(Process):
         '''
         @param in_queue: A queue that's used to communicate with the thread. Items
                          that might appear in this queue are:
-                             * FINISH_CONSUMER
+                             * POISON_PILL
                              * FORCE_LOGIN
         @param auth_plugins: Instances of auth plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         @param timeout: The time to wait between each login check
         '''
-        super(auth, self).__init__()
+        super(auth, self).__init__(in_queue, auth_plugins, w3af_core)
         
-        self._in_queue = in_queue
-        self._auth_plugins = auth_plugins
-        self._w3af_core = w3af_core
         self._timeout = timeout
     
     def run(self):
@@ -66,9 +61,9 @@ class auth(Process):
                 self._login()
             else:
                 
-                if action == FINISH_CONSUMER:
+                if action == POISON_PILL:
                     
-                    for plugin in self._auth_plugins:
+                    for plugin in self._consumer_plugins:
                         plugin.end()
                     
                     self._in_queue.task_done()
@@ -84,7 +79,7 @@ class auth(Process):
         This is the method that actually calls the plugins in order to login
         to the web application.        
         '''
-        for plugin in self._auth_plugins:
+        for plugin in self._consumer_plugins:
             try:
                 try:
                     if not plugin.is_logged():
@@ -101,6 +96,8 @@ class auth(Process):
                 enabled_plugins = pprint_plugins(self._w3af_core)
                 exception_handler.handle( self._w3af_core.status, e , 
                                           exec_info, enabled_plugins )
+        
+        self._task_done(None)
     
     def async_force_login(self):
         self._in_queue.put( FORCE_LOGIN )
@@ -108,23 +105,3 @@ class auth(Process):
     def force_login(self):
         self._login()
         
-    def join(self):
-        '''
-        Poison the loop and wait for all queued work to finish this might take
-        some time to process.
-        '''
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()
-
-    def terminate(self):
-        '''
-        Remove all queued work from in_queue and poison the loop so the consumer
-        exits. Should be very fast and called only if we don't care about the
-        queued work anymore (ie. user clicked stop in the UI).
-        '''
-        while not self._in_queue.empty():
-            self._in_queue.get()
-            self._in_queue.task_done()
-        
-        self._in_queue.put( FINISH_CONSUMER )
-        self._in_queue.join()        
