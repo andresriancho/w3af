@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 
 # options
@@ -29,7 +28,7 @@ from core.data.options.optionList import optionList
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.urlParser import url_object
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 
 import os
@@ -163,7 +162,8 @@ class web_diff(baseCrawlPlugin):
             
                 if not is_404( response ):
                     if response.is_text_or_html():
-                        self._fuzzableRequests.extend( self._create_fuzzable_requests( response ) )
+                        for fr in self._create_fuzzable_requests( response ):
+                            self.output_queue.put(fr)
                     self._check_content( response, directory + os.path.sep + fname )
                     self._eq.append( url )
                 else:

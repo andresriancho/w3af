@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -58,8 +57,6 @@ class user_dir(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._fuzzable_requests = []
-            
         base_url = fuzzableRequest.getURL().baseUrl()
         self._headers = {'Referer': base_url.url_string }
         
@@ -91,8 +88,6 @@ class user_dir(baseCrawlPlugin):
                 
             # Report findings of remote OS, applications, users, etc.
             self._report_findings()
-        
-        return self._fuzzable_requests
 
     def _do_request( self, mutated_url, user ):
         '''
@@ -123,8 +118,8 @@ class user_dir(baseCrawlPlugin):
                     
                     kb.kb.append( self, 'users', i )
                     
-                    fuzzable_request_list = self._create_fuzzable_requests( response )
-                    self._fuzzable_requests.extend( fuzzable_request_list )
+                    for fr in self._create_fuzzable_requests( response ):
+                        self.output_queue.put(fr)
                     
                 return True
             else:

@@ -31,7 +31,6 @@ from core.controllers.w3afException import w3afRunOnce
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.request.httpQsRequest import HTTPQSRequest
 from core.data.parsers.urlParser import url_object
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.coreHelpers.fingerprint_404 import is_404
@@ -55,7 +54,6 @@ class archive_dot_org(baseCrawlPlugin):
         # Internal variables
         self._already_crawled = scalable_bloomfilter()
         self._already_verified = scalable_bloomfilter()
-        self._fuzzable_requests = []
         
         # User configured parameters
         self._max_depth = 3
@@ -68,7 +66,6 @@ class archive_dot_org(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._fuzzable_requests = []
         domain = fuzzableRequest.getURL().getDomain()
         
         if is_private_site( domain ):
@@ -90,8 +87,6 @@ class archive_dot_org(baseCrawlPlugin):
             
         references = self._spider_archive( [start_url,] , self._max_depth, domain )
         self._analyze_urls( references )
-        
-        return self._fuzzable_requests 
             
     def _analyze_urls(self, references):
         '''
@@ -119,15 +114,6 @@ class archive_dot_org(baseCrawlPlugin):
         # the result if they do. Send the requests using threads:
         self._tm.threadpool.map(self._exists_in_target, real_URLs)            
         
-        if not self._fuzzable_requests:
-            om.out.debug('All pages found in archive.org cache are '
-                         'missing in the target site.')
-        else:
-            om.out.debug('The following pages are in Archive.org cache '
-                         'and also in the target site:')
-            for req in self._fuzzable_requests:
-                om.out.debug('- %s' % req.getURI())
-
     def _spider_archive( self, url_list, max_depth, domain ):
         '''
         Perform a classic web spidering process.
@@ -179,7 +165,7 @@ class archive_dot_org(baseCrawlPlugin):
         Check if a resource still exists in the target web site.
         
         @param url: The resource to verify.
-        @return: None, the result is stored in self._fuzzable_requests
+        @return: None, the result is stored in self.output_queue
         '''
         if url in self._already_verified:
             return
@@ -192,7 +178,8 @@ class archive_dot_org(baseCrawlPlugin):
             msg = 'The URL: "' + url + '" was found at archive.org and is'
             msg += ' STILL AVAILABLE in the target site.'
             om.out.debug( msg )
-            self._fuzzable_requests.extend( self._create_fuzzable_requests(response) )
+            for fr in self._create_fuzzable_requests(response):
+                self.output_queue.put( fr )
         else:
             msg = 'The URL: "' + url + '" was found at archive.org and was'
             msg += ' DELETED from the target site.'

@@ -86,9 +86,8 @@ class wordpress_fingerprint(baseCrawlPlugin):
                 self._fingerprint_wordpress( domain_path, wp_unique_url, response)
                 
                 # Extract the links
-                dirs = []
-                dirs.extend( self._create_fuzzable_requests( response ) )
-                return dirs
+                for fr in self._create_fuzzable_requests( response ):
+                    self.output_queue.put(fr)
     
     def _fingerprint_wordpress(self, domain_path, wp_unique_url, response):
         '''

@@ -49,8 +49,6 @@ class wordnet(baseCrawlPlugin):
         @parameter fuzzable_request: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._fuzzable_requests = []
-        
         original_response = self._uri_opener.send_mutant(fuzzable_request)        
         original_response_repeat = repeat(original_response)
         
@@ -61,19 +59,18 @@ class wordnet(baseCrawlPlugin):
         #   Send the requests using threads:
         self._tm.threadpool.map_multi_args(self._check_existance,
                                            args)
-        return self._fuzzable_requests
     
     def _check_existance( self, original_response, mutant ):
         '''
         Actually check if the mutated URL exists.
         
-        @return: None, all important data is saved to self._fuzzable_requests
+        @return: None, all important data is saved to self.out_queue
         '''
         response = self._uri_opener.send_mutant(mutant)
         if not is_404( response ) and \
         relative_distance_lt(original_response.body, response.body, 0.85):
-            fuzz_reqs = self._create_fuzzable_requests( response )
-            self._fuzzable_requests.extend( fuzz_reqs )
+            for fr in self._create_fuzzable_requests( response ):
+                self.output_queue.put(fr)
     
     def _generate_mutants( self, fuzzable_request ):
         '''

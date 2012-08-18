@@ -68,7 +68,7 @@ class content_negotiation(baseCrawlPlugin):
         '''
         if self._content_negotiation_enabled is not None \
         and self._content_negotiation_enabled == False:
-            return []
+            return
             
         else:
             con_neg_result = self._verify_content_neg_enabled( fuzzable_request )
@@ -77,27 +77,21 @@ class content_negotiation(baseCrawlPlugin):
                 # I can't say if it's vulnerable or not (yet), save the current
                 # directory to be included in the bruteforcing process, and return.
                 self._to_bruteforce.put(fuzzable_request.getURL())
-                return []
+                return
             
             elif con_neg_result == False:
                 # Not vulnerable, nothing else to do.
-                return []
+                return
                 
             elif con_neg_result == True:
                 # Happy, happy, joy!
                 # Now we can test if we find new resources!
-                new_resources = self._find_new_resources( fuzzable_request )
+                self._find_new_resources( fuzzable_request )
                 
                 # and we can also perform a bruteforce:
                 self._to_bruteforce.put(fuzzable_request.getURL())
-                bruteforce_result = self._bruteforce()
+                self._bruteforce()
                 
-                result = []
-                result.extend( new_resources )
-                result.extend( bruteforce_result )
-                
-                return result
-    
     def _find_new_resources(self, fuzzable_request):
         '''
         Based on a request like http://host.tld/backup.php , this method will find
@@ -106,12 +100,10 @@ class content_negotiation(baseCrawlPlugin):
         
         @return: A list of new fuzzable requests.
         '''
-        result = []
-        
         # Get the file name
         filename = fuzzable_request.getURL().getFileName()
         if filename == '':
-            return []
+            return
         else:
             # The thing here is that I've found that if these files exist in
             # the directory:
@@ -133,10 +125,9 @@ class content_negotiation(baseCrawlPlugin):
                                                               original_headers)
            
                 # And create the new fuzzable requests
-                result = self._create_new_fuzzable_requests( fuzzable_request.getURL(),
-                                                             alternates )
-        
-        return result
+                for fr in self._create_new_fuzzable_requests( fuzzable_request.getURL(),
+                                                              alternates ):
+                    self.output_queue.put(fr)
     
     def _bruteforce(self):
         '''
@@ -145,8 +136,6 @@ class content_negotiation(baseCrawlPlugin):
         
         @return: A list of new fuzzable requests.
         '''
-        result = []
-        
         wl_url_generator = self._wordlist_url_generator()
         args_generator = izip(wl_url_generator, repeat({}))
         # Send the requests using threads:
@@ -154,9 +143,8 @@ class content_negotiation(baseCrawlPlugin):
                                                     self._request_and_get_alternates,
                                                     args_generator,
                                                     chunksize=10):
-            result = self._create_new_fuzzable_requests( base_url,  alternates )
-
-        return result
+            for fr in self._create_new_fuzzable_requests( base_url,  alternates ):
+                self.output_queue.put(fr)
     
     def _wordlist_url_generator(self):
         '''

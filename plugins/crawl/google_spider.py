@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from urllib2 import URLError
 
 import core.controllers.outputManager as om
@@ -43,9 +42,6 @@ class google_spider(baseCrawlPlugin):
 
     def __init__(self):
         baseCrawlPlugin.__init__(self)
-        
-        # Internal variables
-        self._fuzzable_requests = []
         
         # User variables
         self._result_limit = 300
@@ -71,8 +67,6 @@ class google_spider(baseCrawlPlugin):
         else:
             self._tm.threadpool.map(self._get_fuzzable_requests,
                                     [r.URL for r in g_results])
-                            
-        return self._fuzzable_requests
     
     def _get_fuzzable_requests( self, url ):
         '''
@@ -90,8 +84,8 @@ class google_spider(baseCrawlPlugin):
             msg = 'URLError while fetching page in google_spider, error: "%s".'
             om.out.debug(msg % ue)
         else:
-            fuzz_reqs = self._create_fuzzable_requests( response )
-            self._fuzzable_requests.extend( fuzz_reqs )
+            for fr in self._create_fuzzable_requests( response ):
+                self.output_queue.put(fr)
     
     def get_options( self ):
         '''

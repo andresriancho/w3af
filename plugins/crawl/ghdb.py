@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os.path
 import xml.dom.minidom
 
@@ -50,7 +49,6 @@ class ghdb(baseCrawlPlugin):
         # Internal variables
         self._ghdb_file = os.path.join('plugins', 'crawl',
                                        'ghdb', 'GHDB.xml')
-        self._fuzzableRequests = []
         
         # User configured variables
         self._result_limit = 300
@@ -61,14 +59,14 @@ class ghdb(baseCrawlPlugin):
         @param fuzzableRequest: A fuzzableRequest instance that contains
             (among other things) the URL to test.
         '''
-        self._fuzzableRequests = []
         # Get the domain and set some parameters
         domain = fuzzableRequest.getURL().getDomain()
         if is_private_site(domain):
             msg = 'There is no point in searching google for "site:'+ domain
-            msg += '" . Google doesnt index private pages.'
+            msg += '" . Google doesn\'t index private pages.'
             raise w3afException(msg)
-        return self._do_clasic_GHDB(domain)
+        else:
+            self._do_clasic_GHDB(domain)
         
     def _do_clasic_GHDB( self, domain ):
         '''
@@ -88,8 +86,6 @@ class ghdb(baseCrawlPlugin):
                 break
         
         self._join()
-        
-        return self._fuzzableRequests
     
     def _classic_worker(self, gh, search):
         
@@ -116,7 +112,8 @@ class ghdb(baseCrawlPlugin):
                 om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
                         
                 # Create the fuzzable requests
-                self._fuzzableRequests.extend( self._create_fuzzable_requests( response ) )
+                for fr in self._create_fuzzable_requests( response ):
+                    self.output_queue.put(fr)
     
     def _read_ghdb( self ):
         '''

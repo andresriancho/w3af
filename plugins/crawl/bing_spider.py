@@ -45,9 +45,6 @@ class bing_spider(baseCrawlPlugin):
         
         # User variables
         self._result_limit = 300
-        
-        # Internal variables
-        self._fuzzable_requests = []
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
@@ -71,8 +68,6 @@ class bing_spider(baseCrawlPlugin):
             self._tm.threadpool.map(self._get_fuzzable_requests,
                                     [r.URL for r in results])
 
-        return self._fuzzable_requests
-
     def _get_fuzzable_requests( self, url ):
         '''
         Generate the fuzzable requests based on the URL, which is a result from
@@ -89,8 +84,8 @@ class bing_spider(baseCrawlPlugin):
             msg = 'URLError while fetching page in bing_spider, error: "%s".'
             om.out.debug(msg % ue)
         else:
-            fuzz_reqs = self._create_fuzzable_requests( response )
-            self._fuzzable_requests.extend( fuzz_reqs )
+            for fr in self._create_fuzzable_requests( response ):
+                self.output_queue.put(fr)
 
     def get_options( self ):
         '''

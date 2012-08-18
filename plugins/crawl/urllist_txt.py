@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -47,8 +46,6 @@ class urllist_txt(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._new_fuzzable_requests = []         
-        
         base_url = fuzzableRequest.getURL().baseUrl()
         urllist_url = base_url.urlJoin( 'urllist.txt' )
         http_response = self._uri_opener.GET( urllist_url, cache=True )
@@ -75,9 +72,6 @@ class urllist_txt(baseCrawlPlugin):
             # Send the requests using threads:
             self._tm.threadpool.map(self._get_and_parse, url_generator)
 
-        
-        return self._new_fuzzable_requests
-    
     def _is_urllist_txt(self, base_url, body):
         '''
         @return: True if the body is a urllist.txt
@@ -117,7 +111,7 @@ class urllist_txt(baseCrawlPlugin):
         GET and URL that was found in the robots.txt file, and parse it.
         
         @parameter url: The URL to GET.
-        @return: None, everything is saved to self._new_fuzzable_requests.
+        @return: None, everything is saved to self.out_queue.
         '''
         try:
             http_response = self._uri_opener.GET( url, cache=True )
@@ -127,8 +121,8 @@ class urllist_txt(baseCrawlPlugin):
             om.out.debug( msg )
         else:
             if not is_404( http_response ):
-                fuzz_reqs = self._create_fuzzable_requests( http_response )
-                self._new_fuzzable_requests.extend( fuzz_reqs )
+                for fr in self._create_fuzzable_requests( http_response ):
+                    self.output_queue.put(fr)
         
     def getLongDesc( self ):
         '''

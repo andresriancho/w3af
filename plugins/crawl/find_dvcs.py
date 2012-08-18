@@ -55,7 +55,6 @@ class find_dvcs(baseCrawlPlugin):
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzableRequest.getURL().getDomainPath()
-        self._fuzzable_requests_to_return = []
         
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add( domain_path )
@@ -63,8 +62,6 @@ class find_dvcs(baseCrawlPlugin):
             test_generator = self._url_generator( domain_path )
             
             self._tm.threadpool.map_multi_args(self._send_and_check, test_generator)
-            
-        return self._fuzzable_requests_to_return          
     
     def _send_and_check(self, repo_url, regular_expression, repo):
         try:
@@ -88,8 +85,8 @@ class find_dvcs(baseCrawlPlugin):
                     v.setDesc( msg % (repo, v.getURL(), repo) )
                     kb.kb.append( self, repo.upper(), v )
                     om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                    fuzzable_requests = self._create_fuzzable_requests( response )
-                    self._fuzzable_requests_to_return.extend( fuzzable_requests )
+                    for fr in self._create_fuzzable_requests( response ):
+                        self.output_queue.put(fr)
     
     def _url_generator(self, domain_path):
         for repo in self._compiled_dvcs_info.keys():

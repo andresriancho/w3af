@@ -53,7 +53,6 @@ class phpinfo(baseCrawlPlugin):
         # Internal variables
         self._analyzed_dirs = disk_set()
         self._has_audited = 0
-        self._new_fuzzable_requests = []
 
     def crawl(self, fuzzableRequest ):
         '''
@@ -62,8 +61,6 @@ class phpinfo(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._new_fuzzable_requests = []
-
         for domain_path in fuzzableRequest.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
@@ -73,13 +70,11 @@ class phpinfo(baseCrawlPlugin):
                 args = izip(url_repeater, self._get_potential_phpinfos())
                 
                 self._tm.threadpool.map_multi_args(self._check_and_analyze, args)
-                
-        return self._new_fuzzable_requests
 
     def _check_and_analyze(self, domain_path, php_info_filename):
         '''
         Check if a php_info_filename exists in the domain_path.
-        @return: None, everything is saved to the self._new_fuzzable_requests list.
+        @return: None, everything is saved to the self.out_queue.
         '''
         # Request the file
         php_info_url = domain_path.urlJoin( php_info_filename )
@@ -107,7 +102,8 @@ class phpinfo(baseCrawlPlugin):
             if not is_404( response ):
                 
                 # Create the fuzzable request
-                self._new_fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
+                for fr in self._create_fuzzable_requests( response ):
+                    self.output_queue.put(fr)
                 
                 '''
                 |Modified|

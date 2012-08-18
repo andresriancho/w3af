@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from functools import partial 
 
-import core.controllers.outputManager as om
-
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.coreHelpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt

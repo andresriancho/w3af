@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 
 # options
@@ -65,7 +64,6 @@ class import_results(baseCrawlPlugin):
 
         else:
             self._exec = False
-            res = []
 
             # Load data from the csv file
             if self._input_csv != '':
@@ -79,7 +77,7 @@ class import_results(baseCrawlPlugin):
                     for row in csv.reader(file_handler):
                         obj = self._obj_from_csv( row )
                         if obj:
-                            res.append( obj )
+                            self.out_queue.put( obj )
             
             # Load data from WebScarab's saved conversations
             elif self._input_webscarab != '':
@@ -96,19 +94,21 @@ class import_results(baseCrawlPlugin):
                         if not re.search( "([\d]+)\-request", req_file ):
                             continue
                         objs = self._objs_from_log( os.path.join( self._input_webscarab, req_file ) )
-                        res.extend( objs )
+                        for fr in objs:
+                            self.out_queue.put( fr )
                         
             # Load data from Burp's log
             elif self._input_burp != '':
                 if os.path.isfile( self._input_burp ):
                     try:
-                        res.extend( self._objs_from_log(self._input_burp) )
+                        fuzzable_requests = self._objs_from_log(self._input_burp)
                     except Exception,  e:
                         msg = 'An error was found while trying to read the Burp log file: "'
                         msg += str(e) + '".'
                         om.out.error( msg )
-                
-        return res
+                    else:
+                        for fr in fuzzable_requests:
+                            self.out_queue.put( fr )
     
     def _obj_from_csv( self, csv_row ):
         '''

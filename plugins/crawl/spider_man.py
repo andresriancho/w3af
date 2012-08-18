@@ -46,9 +46,8 @@ class spider_man(baseCrawlPlugin):
     @author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
     '''
     def __init__(self):
-        # Internal variables
-        self._fuzzable_requests = []
-
+        self._first_captured_request = True
+        
         # User configured parameters
         self._listen_address = '127.0.0.1'
         self._listen_port = w3afPorts.SPIDERMAN
@@ -70,8 +69,6 @@ class spider_man(baseCrawlPlugin):
         # Run the server
         self._proxy.run()
         
-        return self._fuzzable_requests
-
     def append_fuzzable_request(self, freq):
         '''
         Get a fuzzable request. Save it. Log it.
@@ -80,15 +77,17 @@ class spider_man(baseCrawlPlugin):
         
         @return: None.
         '''
-        self._fuzzable_requests.append(freq)
+        self.output_queue.put(freq)
 
-        if len(self._fuzzable_requests) == 1:
-            om.out.information('Trapped fuzzable requests:')
+        if self._first_captured_request:
+            self._first_captured_request = False
+            om.out.information('Requests captured with spider_man plugin:')
         
         om.out.information( str(freq) )
 
     def ext_fuzzable_requests(self, response):
-        self._fuzzable_requests.extend(self._create_fuzzable_requests(response))
+        for fr in self._create_fuzzable_requests(response):
+            self.output_queue.put(fr)
 
     def stopProxy(self):
         self._proxy.stop()

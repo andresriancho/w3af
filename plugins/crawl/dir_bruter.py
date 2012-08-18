@@ -19,10 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
 
-from itertools import chain, repeat, izip
+from itertools import repeat, izip
 
 import core.controllers.outputManager as om
 
@@ -34,7 +33,6 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.db.disk_set import disk_set
-
 
 
 class dir_bruter(baseCrawlPlugin):
@@ -53,10 +51,8 @@ class dir_bruter(baseCrawlPlugin):
         self._be_recursive = True
 
         # Internal variables
-        self._fuzzable_requests = []
         self._exec = True
         self._already_tested = disk_set()
-        
 
     def crawl(self, fuzzableRequest ):
         '''
@@ -73,8 +69,6 @@ class dir_bruter(baseCrawlPlugin):
                 # Only run once
                 self._exec = False
 
-            self._fuzzable_requests = []
-            
             domain_path = fuzzableRequest.getURL().getDomainPath()
             base_url = fuzzableRequest.getURL().baseUrl()
             
@@ -86,8 +80,6 @@ class dir_bruter(baseCrawlPlugin):
                 self._bruteforce_directories( domain_path )
                 self._already_tested.add( domain_path )
 
-        return self._fuzzable_requests
-    
     def _dir_name_generator(self, base_path):
         '''
         Simple generator that returns the names of the directories to test. It
@@ -107,7 +99,7 @@ class dir_bruter(baseCrawlPlugin):
         '''
         Performs a GET and verifies that the response is not a 404.
         
-        @return: None, data is stored in self._fuzzable_requests 
+        @return: None, data is stored in self.out_queue 
         '''
         try:
             http_response = self._uri_opener.GET( dir_url, cache=False )
@@ -127,8 +119,8 @@ class dir_bruter(baseCrawlPlugin):
                     #    Good, the directory_name + createRandAlNum(5) return a
                     #    404, the original directory_name is not a false positive.
                     #
-                    fuzzable_reqs = self._create_fuzzable_requests( http_response )
-                    self._fuzzable_requests.extend( fuzzable_reqs )
+                    for fr in self._create_fuzzable_requests( http_response ):
+                        self.output_queue.put(fr)
                     
                     msg = 'Directory bruteforcer plugin found directory "'
                     msg += http_response.getURL()  + '"'
@@ -144,7 +136,7 @@ class dir_bruter(baseCrawlPlugin):
                           can be something like http://host.tld/ or
                           http://host.tld/images/ .
                           
-        @return: None, the data is stored in self._fuzzable_requests
+        @return: None, the data is stored in self.out_queue
         '''
         dir_name_generator = self._dir_name_generator(base_path)
         base_path_repeater = repeat(base_path)

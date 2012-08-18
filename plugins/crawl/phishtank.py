@@ -51,9 +51,6 @@ class phishtank(baseCrawlPlugin):
         baseCrawlPlugin.__init__(self)
         self._run = True
 
-        # Internal variables
-        self._fuzzable_requests = []
-        
         # User defines variable
         self._phishtank_DB = 'plugins' + os.path.sep + 'crawl'
         self._phishtank_DB += os.path.sep + 'phishtank' + os.path.sep + 'index.xml'
@@ -80,7 +77,8 @@ class phishtank(baseCrawlPlugin):
             phishtank_matches = self._is_in_phishtank( to_check_list )
             for ptm in phishtank_matches:
                 response = self._uri_opener.GET( ptm.url )
-                self._fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
+                for fr in self._create_fuzzable_requests( response ):
+                    self.output_queue.put(fr)
             
             # Only create the vuln object once
             if phishtank_matches:
@@ -95,8 +93,6 @@ class phishtank(baseCrawlPlugin):
                 v.setDesc( desc )
                 kb.kb.append( self, 'phishtank', v )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
-                
-        return self._fuzzable_requests
         
     def _get_to_check( self, target_url ):
         '''

@@ -49,7 +49,6 @@ class robots_txt(baseCrawlPlugin):
                                                       (among other things) the URL to test.
         '''
         dirs = []
-        self._new_fuzzable_requests = []         
         
         base_url = fuzzableRequest.getURL().baseUrl()
         robots_url = base_url.urlJoin( 'robots.txt' )
@@ -88,15 +87,13 @@ class robots_txt(baseCrawlPlugin):
                         dirs.append( url )
 
         self._tm.threadpool.map(self._get_and_parse, dirs)
-        
-        return self._new_fuzzable_requests
     
     def _get_and_parse(self, url):
         '''
         GET and URL that was found in the robots.txt file, and parse it.
         
         @parameter url: The URL to GET.
-        @return: None, everything is saved to self._new_fuzzable_requests.
+        @return: None, everything is saved to self.out_queue.
         '''
         try:
             http_response = self._uri_opener.GET( url, cache=True )
@@ -108,8 +105,8 @@ class robots_txt(baseCrawlPlugin):
             om.out.debug( msg )
         else:
             if not is_404( http_response ):
-                fuzz_reqs = self._create_fuzzable_requests( http_response )
-                self._new_fuzzable_requests.extend( fuzz_reqs )
+                for fr in self._create_fuzzable_requests( http_response ):
+                    self.output_queue.put(fr)
                 
     def getLongDesc( self ):
         '''

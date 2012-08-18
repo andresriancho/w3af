@@ -83,8 +83,6 @@ class pykto(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._new_fuzzable_requests = []
-        
         if not self._exec and not self._mutate_tests:
             # dont run anymore
             raise w3afRunOnce()
@@ -111,8 +109,6 @@ class pykto(baseCrawlPlugin):
                     # testing them more than once...
                     self._already_analyzed.add( url )
                     self._run( url )
-
-        return self._new_fuzzable_requests
                 
     def _run( self, url ):
         '''
@@ -479,7 +475,8 @@ class pykto(baseCrawlPlugin):
             
             fr_list = self._create_fuzzable_requests( response )
             [ fr.getURI().normalizeURL() for fr in fr_list ]
-            self._new_fuzzable_requests.extend( fr_list )
+            for fr in fr_list:
+                self.output_queue.put(fr)
         
     def _analyze_result( self , response , expected_response, parameters, uri ):
         '''

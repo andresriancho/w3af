@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 
 from itertools import izip, repeat
@@ -55,8 +54,6 @@ class digit_sum(baseCrawlPlugin):
         @parameter fuzzable_request: A fuzzableRequest instance that contains
                                      (among other things) the URL to test.
         '''
-        self._fuzzable_requests = []
-            
         url = fuzzable_request.getURL()
         headers = {'Referer': url.url_string }
                 
@@ -76,8 +73,6 @@ class digit_sum(baseCrawlPlugin):
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
             self._already_visited.add( fuzzable_request.getURI() )
-
-        return self._fuzzable_requests
 
     def _do_request(self, fuzzable_request, original_resp, headers):
         '''
@@ -126,7 +121,8 @@ class digit_sum(baseCrawlPlugin):
                 add = True
                 
         if add:
-            self._fuzzable_requests.extend( self._create_fuzzable_requests( response ) )
+            for fr in self._create_fuzzable_requests( response ):
+                self.output_queue.put(fr)
     
     def _mangle_digits(self, fuzzable_request):
         '''

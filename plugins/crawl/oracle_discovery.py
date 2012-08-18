@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 
 # options
@@ -53,7 +52,6 @@ class oracle_discovery(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        dirs = []
         if not self._exec :
             # This will remove the plugin from the crawl plugins to be run.
             raise w3afRunOnce()
@@ -70,7 +68,8 @@ class oracle_discovery(baseCrawlPlugin):
                 response = self._uri_opener.GET( oracle_discovery_URL, cache=True )
                 
                 if not is_404( response ):
-                    dirs.extend( self._create_fuzzable_requests( response ) )
+                    for fr in self._create_fuzzable_requests( response ):
+                        self.output_queue.put(fr)
                     if re.match( regex_string , response.getBody(), re.DOTALL):
                         i = info.info()
                         i.setPluginName(self.getName())
@@ -85,8 +84,6 @@ class oracle_discovery(baseCrawlPlugin):
                         msg += ' but failed to parse it. The content of the URL is: "'
                         msg += response.getBody() + '".'
                         om.out.debug( msg )
-        
-        return dirs
     
     def _parse( self, url, response ):
         '''

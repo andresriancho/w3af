@@ -69,8 +69,6 @@ class url_fuzzer(baseCrawlPlugin):
         @parameter fuzzableRequest: A fuzzableRequest instance that contains
                                     (among other things) the URL to test.
         '''
-        self._fuzzable_requests = []
-            
         url = fuzzableRequest.getURL()
         self._headers = {'Referer': url}
         
@@ -100,8 +98,6 @@ class url_fuzzer(baseCrawlPlugin):
             args = izip(url_repeater, mutants_chain)
             
             self._tm.threadpool.map_multi_args(self._do_request, args)
-        
-        return self._fuzzable_requests
 
     def _do_request(self, url, mutant):
         '''
@@ -113,8 +109,8 @@ class url_fuzzer(baseCrawlPlugin):
         if not (is_404(response) or
                 response.getCode() in (403, 401) or
                 self._return_without_eval(mutant)):
-            fr_list = self._create_fuzzable_requests(response)
-            self._fuzzable_requests.extend(fr_list)
+            for fr in self._create_fuzzable_requests(response):
+                self.output_queue.put(fr)
             #
             #   Save it to the kb (if new)!
             #

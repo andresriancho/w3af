@@ -125,7 +125,6 @@ class find_backdoors(baseCrawlPlugin):
         
         # Internal variables
         self._analyzed_dirs = scalable_bloomfilter()
-        self._fuzzable_requests_to_return = []
 
     def crawl(self, fuzzableRequest):
         '''
@@ -135,8 +134,7 @@ class find_backdoors(baseCrawlPlugin):
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzableRequest.getURL().getDomainPath()
-        self._fuzzable_requests_to_return = []
-
+        
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add(domain_path)
 
@@ -144,9 +142,6 @@ class find_backdoors(baseCrawlPlugin):
             self._tm.threadpool.map(self._check_if_exists,
                                     (domain_path.urlJoin(fname) for fname in WEB_SHELLS)
                                     )            
-
-        return self._fuzzable_requests_to_return
-
     
     def _check_if_exists(self, web_shell_url):
         '''
@@ -172,8 +167,8 @@ class find_backdoors(baseCrawlPlugin):
                 kb.kb.append(self, 'backdoors', v)
                 om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
 
-                fuzzable_requests = self._create_fuzzable_requests(response)
-                self._fuzzable_requests_to_return += fuzzable_requests
+                for fr in self._create_fuzzable_requests(response):
+                    self.output_queue.put(fr)
             
     def _is_possible_backdoor(self, response):
         '''

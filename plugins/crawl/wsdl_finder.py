@@ -61,7 +61,6 @@ class wsdl_finder(baseCrawlPlugin):
             self._tm.threadpool.map(self._do_request, 
                                     wsdl_url_generator,
                                     chunksize=1)                
-        return []
 
     def wsdl_url_generator( self, url_string ):
         for wsdl_parameter in self.WSDL:
