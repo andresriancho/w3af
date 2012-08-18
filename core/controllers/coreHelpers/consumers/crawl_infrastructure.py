@@ -26,6 +26,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
 from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
+from core.controllers.coreHelpers.consumers.constants import POISON_PILL
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.update_urls_in_kb import (update_kb,
                                                             get_urls_from_kb,
@@ -61,6 +62,42 @@ class crawl_infrastructure(BaseConsumer):
         self._already_seen_urls = scalable_bloomfilter()
         
         self._tasks_in_progress_counter = 0
+    
+    def run(self):
+        '''
+        Consume the queue items, sending them to the plugins which are then going
+        to find vulnerabilities, new URLs, etc.
+        
+        TODO: Report progress to w3afCore somehow.
+        '''
+
+        while True:
+           
+            try:
+                work_unit = self._in_queue.get(timeout=0.2)
+            except:
+                pass
+            else:
+                if work_unit == POISON_PILL:
+                    
+                    # Close the pool and wait for everyone to finish
+                    self._threadpool.close()
+                    self._threadpool.join()
+                    
+                    self._teardown()
+                    self._task_done(None)
+                    
+                    # Finish this consumer and everyone consuming the output
+                    self._out_queue.put( POISON_PILL )
+                    self._in_queue.task_done()
+                    break
+                    
+                else:
+                    
+                    self._consume(work_unit)
+                    self._in_queue.task_done()
+            finally:
+                self._route_all_plugin_results()
                 
     def _teardown(self):
         # End plugins
@@ -76,22 +113,22 @@ class crawl_infrastructure(BaseConsumer):
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
             self._threadpool.apply_async( return_args(self._discover_worker),
                                           (plugin, work_unit,),
-                                          callback=self._process_output )
-            self._get_all_plugin_results()
+                                          callback=self._finished_plugin_cb )
+            self._route_all_plugin_results()
             
-    def _process_output(self, ((plugin, x), y)):
-        self._get_plugin_results(plugin)
+    def _finished_plugin_cb(self, ((plugin, x), y)):
+        self._route_plugin_results(plugin)
         
         # Finished one fuzzable_request, inc!
         self._w3af_core.progress.inc()
         
         self._task_done(None)
         
-    def _get_all_plugin_results(self):
+    def _route_all_plugin_results(self):
         for plugin in self._consumer_plugins:
-            self._get_plugin_results(plugin)
+            self._route_plugin_results(plugin)
     
-    def _get_plugin_results(self, plugin):
+    def _route_plugin_results(self, plugin):
         '''
         Retrieve the results from all plugins and put them in our output Queue.
         '''
@@ -318,7 +355,7 @@ class crawl_infrastructure(BaseConsumer):
                                       exec_info, enabled_plugins )
         
         else:
-            # The plugin output is retrieved and analyzed by the _get_plugin_results
+            # The plugin output is retrieved and analyzed by the _route_plugin_results
             # method
             pass
         
