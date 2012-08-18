@@ -47,7 +47,7 @@ class TestWebSpider(PluginTest):
              }
          },
     }
-    
+
     def test_spider_found_urls(self):
         cfg = self._run_configs['basic']
         self._scan(self.follow_links_url + '1.html', cfg['plugins'])
@@ -78,8 +78,8 @@ class TestWebSpider(PluginTest):
             u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php'
         ) 
         self.assertEquals(
-            sorted([(self.encoding_url + u) for u in expected]),
-            sorted([u.url_string for u in urls])
+            set([(self.encoding_url + u) for u in expected]),
+            set([u.url_string for u in urls])
         )
     
     def test_spider_relative_urls_found_with_regex(self):
@@ -89,7 +89,7 @@ class TestWebSpider(PluginTest):
     def test_spider_traverse_directories(self):
         raise SkipTest('FIXME: Need to test this feature!')
         self.dir_get_url
-    
+
     def test_wivet(self):
         clear_wivet()
         
