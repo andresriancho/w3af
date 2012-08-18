@@ -27,7 +27,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.w3afException import (w3afMustStopException, 
                                             w3afMustStopOnUrlError)
-
+from core.controllers.coreHelpers.update_urls_in_kb import update_kb
 from core.controllers.coreHelpers.consumers.constants import POISON_PILL
 from core.controllers.w3afException import w3afException
 from core.data.request.frFactory import create_fuzzable_requests
@@ -96,6 +96,10 @@ class seed(Process):
                 all_fuzzable_requests = create_fuzzable_requests(response)
                 filtered_seeds = filter(in_scope, all_fuzzable_requests )
                 
-                self._out_queue.put( (None, None, filtered_seeds) )
+                for seed in filtered_seeds:
+                    self._out_queue.put( (None, None, seed) )
+                    
+                    # Update the list / set that lives in the KB
+                    update_kb(seed)
                 
         self._out_queue.put( POISON_PILL )

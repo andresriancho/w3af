@@ -178,9 +178,9 @@ class w3af_core_strategy(object):
                         # remove it from the list.
                         consumer_forced_end.add(url_producer)
                     else:
-                        _, _, plugin_result = result_item
+                        _, _, fuzzable_request = result_item
                         for url_consumer in output:
-                            url_consumer.in_queue_put_iter( plugin_result )
+                            url_consumer.in_queue_put( fuzzable_request )
                         
                         # This is rather complex to digest... so pay attention :)
                         # A consumer might be 100% idle (no tasks in input or 

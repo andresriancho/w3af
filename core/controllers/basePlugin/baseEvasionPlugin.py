@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from core.controllers.basePlugin.basePlugin import basePlugin
 from core.controllers.w3afException import w3afException
+
 
 class baseEvasionPlugin(basePlugin):
     '''
@@ -36,7 +36,6 @@ class baseEvasionPlugin(basePlugin):
 
     def __init__(self):
         basePlugin.__init__( self )
-        self._uri_opener = None
 
     def modifyRequest(self, request ):
         '''

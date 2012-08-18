@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import sys
 import threading
+import Queue
 
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
@@ -50,6 +51,7 @@ class basePlugin(configurable):
         Create some generic attributes that are going to be used by most plugins.
         '''
         self._uri_opener = None
+        self.output_queue = Queue.Queue()
         self._tm = thread_manager
         self._plugin_lock = threading.RLock()
 

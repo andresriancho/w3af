@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 update_lock = threading.RLock()
 
 
-def update_kb( fuzzable_request_list ):
+def update_kb( fuzzable_request ):
     '''
     Updates the URL and fuzzable request list in the kb for other plugins to use.
     
@@ -35,7 +35,7 @@ def update_kb( fuzzable_request_list ):
 
     >>> u1 = url_object('http://w3af.org/')
     >>> r1 = fuzzableRequest(u1, method='GET')
-    >>> update_URLs_in_KB( [r1,] )
+    >>> update_URLs_in_KB( r1 )
     >>> kb.kb.getData('url', 'url_objects')
     [<url_object for "http://w3af.org/">]
 
@@ -43,7 +43,9 @@ def update_kb( fuzzable_request_list ):
     >>> r2 = fuzzableRequest(u2, method='GET')    
     >>> u3 = url_object('http://w3af.org/')
     >>> r3 = fuzzableRequest(u3, method='GET')    
-    >>> update_URLs_in_KB( [r1,r2,r3] )
+    >>> update_URLs_in_KB( r1 )
+    >>> update_URLs_in_KB( r2 )
+    >>> update_URLs_in_KB( r3 )
     >>> kb.kb.getData('url', 'url_objects')
     [<url_object for "http://w3af.org/">, <url_object for "http://w3af.org/blog/">]
     
@@ -58,17 +60,16 @@ def update_kb( fuzzable_request_list ):
         # TODO: Force this somehow so that this isn't just a warning but
         # something that fails if developers change it.
         url_object_list = get_urls_from_kb()
-        new_list = [ fr.getURL() for fr in fuzzable_request_list \
-                     if fr.getURL() not in url_object_list ]
+        if fuzzable_request.getURL() not in url_object_list:
     
-        url_object_list.extend( new_list )
-        kb.kb.save( 'urls', 'url_objects' ,  url_object_list )
+            url_object_list.append( fuzzable_request.getURL() )
+            kb.kb.save( 'urls', 'url_objects', url_object_list )
     
         # Update the list of fuzzable requests that lives in the KB
         # TODO: Move the whole KB to a sqlite database in order to save
         #       some memory usage.
         kb_fr_set = get_fuzzable_requests_from_kb()
-        kb_fr_set.update( fuzzable_request_list )
+        kb_fr_set.add( fuzzable_request )
 
 def get_urls_from_kb():
     return kb.kb.getData( 'urls', 'url_objects' )

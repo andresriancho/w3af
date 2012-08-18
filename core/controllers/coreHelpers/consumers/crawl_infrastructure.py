@@ -32,6 +32,7 @@ from core.controllers.coreHelpers.update_urls_in_kb import (update_kb,
                                                             get_fuzzable_requests_from_kb)
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.threads.threadpool import return_args
 from core.data.db.variant_db import variant_db
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -60,7 +61,7 @@ class crawl_infrastructure(BaseConsumer):
         self._already_seen_urls = scalable_bloomfilter()
         
         self._tasks_in_progress_counter = 0
-
+                
     def _teardown(self):
         # End plugins
         for plugin in self._consumer_plugins:
@@ -73,11 +74,36 @@ class crawl_infrastructure(BaseConsumer):
     def _consume(self, work_unit):
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
-            result = self._threadpool.apply_async( self._discover_worker,
-                                                   (plugin, work_unit,),
-                                                   callback=self._task_done )
-            self._out_queue.put( (plugin.getName(), work_unit, result) )
+            self._threadpool.apply_async( return_args(self._discover_worker),
+                                          (plugin, work_unit,),
+                                          callback=self._get_plugin_results )
             
+    
+    def _get_plugin_results(self, ((plugin, fuzzable_request), plugin_result)):
+        '''
+        Retrieve the results from all plugins and put them in our output Queue.
+        '''
+        while True:
+            try:
+                fuzzable_request = plugin.output_queue.get_nowait()
+            except:
+                break
+            else:
+                # Finished one fuzzable_request, inc!
+                self._w3af_core.progress.inc()
+        
+                # The plugin has finished and now we need to analyze which of
+                # the returned fuzzable_requests are new and should be put in the
+                # input_queue again.
+                if self._is_new_fuzzable_request( plugin, fuzzable_request ):
+                
+                    # Update the list / set that lives in the KB
+                    update_kb(fuzzable_request)
+                    
+                    self._out_queue.put( (plugin.getName(), None, fuzzable_request) )
+        
+        self._task_done(None)
+        
     def join(self):
         super(crawl_infrastructure, self).join()
         self.cleanup()
@@ -167,85 +193,77 @@ class crawl_infrastructure(BaseConsumer):
                     msg = 'The plugin "%s" raised an exception in the end() method: "%s"'
                     om.out.error( msg % (plugin_to_remove.getName(), str(e)) )
 
-    def _filter_new_fuzzable_requests(self, plugin, plugin_result):
+    def _is_new_fuzzable_request(self, plugin, fuzzable_request):
         '''
         @param plugin: The plugin that found these fuzzable requests
         
-        @param plugin_result: A dict with plugin name as key and fuzzable requests
-                          found by the plugin during the last run.
+        @param fuzzable_request: A potentially new fuzzable request
 
-        @return: A list with the NEW fuzzable requests that were found, these
-                 have been filtered based on the target url, if they are new
-                 or not, etc.
+        @return: True if @fuzzable_request is new (never seen before).
         '''
-        new_fr_list = []
         base_urls_cf = cf.cf.getData('baseURLs')
         
-        for fuzzable_request in plugin_result:
-            
-            fr_uri = fuzzable_request.getURI()
-            # No need to care about fragments
-            # (http://a.com/foo.php#frag). Remove them
-            fuzzable_request.setURI(fr_uri.removeFragment())
-            
-            if fr_uri.baseUrl() in base_urls_cf:
-                # Filter out the fuzzable requests that aren't important 
-                # (and will be ignored by audit plugins anyway...)
-                #
-                #   What I want to do here, is filter the repeated fuzzable requests.
-                #   For example, if the spidering process found:
-                #       - http://host.tld/?id=3739286
-                #       - http://host.tld/?id=3739285
-                #       - http://host.tld/?id=3739282
-                #       - http://host.tld/?id=3739212
-                #
-                #   I don't want to have all these different fuzzable requests. The reason is that
-                #   audit plugins will try to send the payload to each parameter, thus generating
-                #   the following requests:
-                #       - http://host.tld/?id=payload1
-                #       - http://host.tld/?id=payload1
-                #       - http://host.tld/?id=payload1
-                #       - http://host.tld/?id=payload1
-                #
-                #   w3af has a cache, but its still a waste of time to send those requests.
-                #
-                #   Now lets analyze this with more than one parameter. Spidered URIs:
-                #       - http://host.tld/?id=3739286&action=create
-                #       - http://host.tld/?id=3739285&action=create
-                #       - http://host.tld/?id=3739282&action=remove
-                #       - http://host.tld/?id=3739212&action=remove
-                #
-                #   Generated requests:
-                #       - http://host.tld/?id=payload1&action=create
-                #       - http://host.tld/?id=3739286&action=payload1
-                #       - http://host.tld/?id=payload1&action=create
-                #       - http://host.tld/?id=3739285&action=payload1
-                #       - http://host.tld/?id=payload1&action=remove
-                #       - http://host.tld/?id=3739282&action=payload1
-                #       - http://host.tld/?id=payload1&action=remove
-                #       - http://host.tld/?id=3739212&action=payload1
-                #
-                #   In cases like this one, I'm sending these repeated requests:
-                #       - http://host.tld/?id=payload1&action=create
-                #       - http://host.tld/?id=payload1&action=create
-                #       - http://host.tld/?id=payload1&action=remove
-                #       - http://host.tld/?id=payload1&action=remove
-                #                
-                if fr_uri in self._already_seen_urls:
-                    continue
-                else:
-                    self._already_seen_urls.add(fr_uri)
+        fr_uri = fuzzable_request.getURI()
+        # No need to care about fragments
+        # (http://a.com/foo.php#frag). Remove them
+        fuzzable_request.setURI(fr_uri.removeFragment())
+        
+        if fr_uri.baseUrl() in base_urls_cf:
+            # Filter out the fuzzable requests that aren't important 
+            # (and will be ignored by audit plugins anyway...)
+            #
+            #   What I want to do here, is filter the repeated fuzzable requests.
+            #   For example, if the spidering process found:
+            #       - http://host.tld/?id=3739286
+            #       - http://host.tld/?id=3739285
+            #       - http://host.tld/?id=3739282
+            #       - http://host.tld/?id=3739212
+            #
+            #   I don't want to have all these different fuzzable requests. The reason is that
+            #   audit plugins will try to send the payload to each parameter, thus generating
+            #   the following requests:
+            #       - http://host.tld/?id=payload1
+            #       - http://host.tld/?id=payload1
+            #       - http://host.tld/?id=payload1
+            #       - http://host.tld/?id=payload1
+            #
+            #   w3af has a cache, but its still a waste of time to send those requests.
+            #
+            #   Now lets analyze this with more than one parameter. Spidered URIs:
+            #       - http://host.tld/?id=3739286&action=create
+            #       - http://host.tld/?id=3739285&action=create
+            #       - http://host.tld/?id=3739282&action=remove
+            #       - http://host.tld/?id=3739212&action=remove
+            #
+            #   Generated requests:
+            #       - http://host.tld/?id=payload1&action=create
+            #       - http://host.tld/?id=3739286&action=payload1
+            #       - http://host.tld/?id=payload1&action=create
+            #       - http://host.tld/?id=3739285&action=payload1
+            #       - http://host.tld/?id=payload1&action=remove
+            #       - http://host.tld/?id=3739282&action=payload1
+            #       - http://host.tld/?id=payload1&action=remove
+            #       - http://host.tld/?id=3739212&action=payload1
+            #
+            #   In cases like this one, I'm sending these repeated requests:
+            #       - http://host.tld/?id=payload1&action=create
+            #       - http://host.tld/?id=payload1&action=create
+            #       - http://host.tld/?id=payload1&action=remove
+            #       - http://host.tld/?id=payload1&action=remove
+            #                
+            if fr_uri in self._already_seen_urls:
+                return False
+            else:
+                self._already_seen_urls.add(fr_uri)
+                
+                if self._variant_db.need_more_variants(fr_uri):
+                    self._variant_db.append(fr_uri)
                     
-                    if self._variant_db.need_more_variants(fr_uri):
-                        self._variant_db.append(fr_uri)
-                        new_fr_list.append(fuzzable_request)
+                    msg = 'New URL found by %s plugin: "%s"' % (plugin.getName(), fuzzable_request.getURL())
+                    om.out.information( msg )
+                    return True
         
-        # Print the new URLs in a sorted manner.
-        for url in sorted(set(fr.getURL().url_string for fr in new_fr_list)):
-            msg = 'New URL found by %s plugin: "%s"' % (plugin.getName(), url)
-            om.out.information( msg )
-        
-        return new_fr_list
+        return False
     
     def _discover_worker(self, plugin, fuzzable_request):
         '''
@@ -262,8 +280,6 @@ class crawl_infrastructure(BaseConsumer):
         # Should I continue with the crawl phase? If not, return an empty result
         if self._should_stop_discovery(): return []
         
-        result = []
-        
         # Status reporting
         status = self._w3af_core.status
         status.set_running_plugin(plugin.getName())
@@ -271,7 +287,7 @@ class crawl_infrastructure(BaseConsumer):
         om.out.debug('%s is testing "%s"' % (plugin.getName(), fuzzable_request.getURI() ) )
         
         try:
-            plugin_result = plugin.discover_wrapper(fuzzable_request)
+            plugin.discover_wrapper(fuzzable_request)
         except KeyboardInterrupt:
             om.out.information('The user interrupted the crawl phase, '
                                'continuing with audit.')
@@ -295,27 +311,7 @@ class crawl_infrastructure(BaseConsumer):
                                       exec_info, enabled_plugins )
         
         else:
-            # We don't trust plugins, i'll only work if this
-            # is a list or something else that is iterable
-            if not hasattr(plugin_result, '__iter__'):
-                msg = 'The %s plugin returned an object (%s) which is not'
-                msg += ' iterable which breaks the w3af API.'
-                om.out.error( msg % (plugin.getName(), plugin_result) )
-            
-            else:
-                    
-                # Finished one fuzzable_request, inc!
-                self._w3af_core.progress.inc()
-        
-                # The plugin has finished and now we need to analyze which of
-                # the returned fuzzable_requests are new and should be put in the
-                # input_queue again.
-                result = self._filter_new_fuzzable_requests( plugin,
-                                                             plugin_result )
-                
-                # Update the list / queue that lives in the KB
-                update_kb(result)
-                
-        return result
-    
+            # The plugin output is retrieved and analyzed by the _get_plugin_results
+            # method
+            pass
         

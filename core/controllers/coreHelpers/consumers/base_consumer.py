@@ -149,19 +149,6 @@ class BaseConsumer(Process):
 
     def get_result(self, timeout=0.5):
         '''
-        TODO: This is a very naive implementation that returns a result to
-              the caller; but it might be the case that available results
-              are ready and I'm waiting for a result in the given order.
-              
-              I'm also ignoring the timeout parameter.
+        @return: The first result from the output Queue.
         '''
-        try:
-            queue_item = self._out_queue.get(timeout=timeout)
-        except Queue.Empty:
-            raise
-        else:
-            if queue_item == POISON_PILL:
-                return queue_item
-            else:
-                plugin_name, fr, apply_result = queue_item
-                return plugin_name, fr, apply_result.get() 
+        return self._out_queue.get(timeout=timeout)

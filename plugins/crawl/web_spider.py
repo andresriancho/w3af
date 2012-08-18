@@ -59,7 +59,6 @@ class web_spider(baseCrawlPlugin):
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
         self._broken_links = disk_set()
-        self._fuzzable_reqs = disk_set()
         self._first_run = True
         self._known_variants = variant_db()
         self._already_filled_form = scalable_bloomfilter()
@@ -93,9 +92,6 @@ class web_spider(baseCrawlPlugin):
             else:
                 self._target_domain = targets[0].getDomain()
 
-        # Clear the previously found fuzzable requests,
-        self._fuzzable_reqs.clear()
-
         #
         # If it is a form, then smartFill the parameters to send something that
         # makes sense and will allow us to cover more code.
@@ -119,14 +115,12 @@ class web_spider(baseCrawlPlugin):
                                              resp,
                                              request=fuzzable_req,
                                              add_self=False
-                                             )
-        self._fuzzable_reqs.update(fuzz_req_list)
+                                            )
+        for fr in fuzz_req_list:
+            self.output_queue.put(fr)
 
         self._extract_links_and_verify(resp, fuzzable_req)
         
-        return self._fuzzable_reqs
-
-
     def _urls_to_verify_generator(self, resp, fuzzable_req):
         '''
         @param resp: HTTP response object
@@ -318,7 +312,7 @@ class web_spider(baseCrawlPlugin):
             # Process the list.
             for fuzz_req in fuzz_req_list:
                 fuzz_req.setReferer(referer)
-                self._fuzzable_reqs.add(fuzz_req)
+                self.output_queue.put(fuzz_req)
     
     def end(self):
         '''
