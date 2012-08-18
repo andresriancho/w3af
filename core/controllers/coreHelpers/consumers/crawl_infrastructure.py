@@ -76,10 +76,22 @@ class crawl_infrastructure(BaseConsumer):
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
             self._threadpool.apply_async( return_args(self._discover_worker),
                                           (plugin, work_unit,),
-                                          callback=self._get_plugin_results )
+                                          callback=self._process_output )
+            self._get_all_plugin_results()
             
+    def _process_output(self, ((plugin, x), y)):
+        self._get_plugin_results(plugin)
+        
+        # Finished one fuzzable_request, inc!
+        self._w3af_core.progress.inc()
+        
+        self._task_done(None)
+        
+    def _get_all_plugin_results(self):
+        for plugin in self._consumer_plugins:
+            self._get_plugin_results(plugin)
     
-    def _get_plugin_results(self, ((plugin, fuzzable_request), plugin_result)):
+    def _get_plugin_results(self, plugin):
         '''
         Retrieve the results from all plugins and put them in our output Queue.
         '''
@@ -89,9 +101,6 @@ class crawl_infrastructure(BaseConsumer):
             except:
                 break
             else:
-                # Finished one fuzzable_request, inc!
-                self._w3af_core.progress.inc()
-        
                 # The plugin has finished and now we need to analyze which of
                 # the returned fuzzable_requests are new and should be put in the
                 # input_queue again.
@@ -101,8 +110,6 @@ class crawl_infrastructure(BaseConsumer):
                     update_kb(fuzzable_request)
                     
                     self._out_queue.put( (plugin.getName(), None, fuzzable_request) )
-        
-        self._task_done(None)
         
     def join(self):
         super(crawl_infrastructure, self).join()
