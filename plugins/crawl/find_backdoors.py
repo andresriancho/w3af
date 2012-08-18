@@ -126,14 +126,14 @@ class find_backdoors(baseCrawlPlugin):
         # Internal variables
         self._analyzed_dirs = scalable_bloomfilter()
 
-    def crawl(self, fuzzableRequest):
+    def crawl(self, fuzzable_request):
         '''
         For every directory, fetch a list of shell files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
-        domain_path = fuzzableRequest.getURL().getDomainPath()
+        domain_path = fuzzable_request.getURL().getDomainPath()
         
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add(domain_path)

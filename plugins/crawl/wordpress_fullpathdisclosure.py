@@ -49,15 +49,15 @@ class wordpress_fullpathdisclosure(baseCrawlPlugin):
         # Internal variables
         self._exec = True
 
-    def crawl(self, fuzzableRequest):
+    def crawl(self, fuzzable_request):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
         (among other things) the URL to test.
         '''
         possible_vulnerable_files = ['wp-content/plugins/akismet/akismet.php', 'wp-content/plugins/hello.php']
 
         # Search this theme path and add the themes header/footer to the possible vulnerable files
-        domain_path = fuzzableRequest.getURL().getDomainPath()
+        domain_path = fuzzable_request.getURL().getDomainPath()
         response = self._uri_opener.GET( domain_path, cache=True )
         if not is_404( response ):
             response_body = response.getBody()

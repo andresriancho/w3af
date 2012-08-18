@@ -48,7 +48,7 @@ class http_vs_https_dist(baseInfrastructurePlugin):
         self._https_port = 443
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest):
+    def discover(self, fuzzable_request):
         '''
         Discovery task. Uses scapy.traceroute function in order to determine
         the distance between http and https ports for the target.
@@ -64,7 +64,7 @@ class http_vs_https_dist(baseInfrastructurePlugin):
             inf.setDesc(desc)
             kb.kb.append(self, 'http_vs_https_dist', inf)
 
-        target_url = fuzzableRequest.getURL()
+        target_url = fuzzable_request.getURL()
         domain = target_url.getDomain()
         http_port = self._http_port
         https_port = self._https_port

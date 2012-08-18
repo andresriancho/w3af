@@ -73,7 +73,7 @@ class rfi(baseAuditPlugin):
         '''
         Tests an URL for remote file inclusion vulnerabilities.
         
-        @param freq: A fuzzableRequest object
+        @param freq: A fuzzable_request object
         '''
         # Sanity check 
         if not self._correctly_configured():
@@ -122,7 +122,7 @@ class rfi(baseAuditPlugin):
         '''
         Check for RFI using a local web server
         
-        @param freq: A fuzzableRequest object
+        @param freq: A fuzzable_request object
         @return: None, everything is saved to the kb
         '''
         #
@@ -163,7 +163,7 @@ class rfi(baseAuditPlugin):
         '''
         Check for RFI using the official w3af site.
         
-        @param freq: A fuzzableRequest object
+        @param freq: A fuzzable_request object
         @return: None, everything is saved to the kb
         '''        
         self._rfi_url = url_object(RFI_TEST_URL)
@@ -173,7 +173,7 @@ class rfi(baseAuditPlugin):
         
     def _test_inclusion(self, freq):
         '''
-        Checks a fuzzableRequest for remote file inclusion bugs.
+        Checks a fuzzable_request for remote file inclusion bugs.
         
         @return: None
         '''

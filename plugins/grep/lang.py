@@ -77,7 +77,7 @@ class lang(baseGrepPlugin):
         
     def grep(self, request, response):
         '''
-        Get the page indicated by the fuzzableRequest and determine the language
+        Get the page indicated by the fuzzable_request and determine the language
         using the preposition list.
         
         @parameter request: The HTTP request object.

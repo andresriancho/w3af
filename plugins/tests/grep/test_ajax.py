@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.ajax import ajax
@@ -37,7 +37,7 @@ class test_ajax(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = ajax()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzableRequest(self.url)
+        self.request = fuzzable_request(self.url)
         kb.kb.save('ajax','ajax',[])
 
     def tearDown(self):
@@ -48,7 +48,7 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 0 )
     
@@ -57,7 +57,7 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
@@ -66,7 +66,7 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
@@ -75,7 +75,7 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
@@ -84,7 +84,7 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
     
@@ -93,6 +93,6 @@ class test_ajax(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )

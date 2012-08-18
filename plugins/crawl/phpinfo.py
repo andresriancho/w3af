@@ -54,14 +54,14 @@ class phpinfo(baseCrawlPlugin):
         self._analyzed_dirs = disk_set()
         self._has_audited = 0
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        for domain_path in fuzzableRequest.getURL().getDirectories():
+        for domain_path in fuzzable_request.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
                 self._analyzed_dirs.add( domain_path )

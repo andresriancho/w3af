@@ -49,12 +49,12 @@ class server_header(baseInfrastructurePlugin):
         # User configured variables
         self._exec_one_time = True        
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                                       (among other things) the URL to test.
         '''
         if not self._exec:
@@ -62,7 +62,7 @@ class server_header(baseInfrastructurePlugin):
             raise w3afRunOnce()
         else:
             try:
-                response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )       
+                response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )       
             except KeyboardInterrupt,e:
                 raise e
             else:
@@ -110,14 +110,14 @@ class server_header(baseInfrastructurePlugin):
                     self._exec = False
                 
         if self._x_powered:
-            self._check_x_power( fuzzableRequest )
+            self._check_x_power( fuzzable_request )
         
-    def _check_x_power( self, fuzzableRequest ):
+    def _check_x_power( self, fuzzable_request ):
         '''
         Analyze X-Powered-By header.
         '''
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except:
             pass
         else:

@@ -57,7 +57,7 @@ class response_splitting(baseAuditPlugin):
         '''
         Tests an URL for response splitting vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         mutants = createMutants( freq , self.HEADER_INJECTION_TESTS )
             

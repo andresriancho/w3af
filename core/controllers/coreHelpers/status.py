@@ -135,9 +135,9 @@ class w3af_core_status(object):
         '''
         return self._currentFuzzableRequest
         
-    def set_current_fuzzable_request( self, fuzzableRequest ):
+    def set_current_fuzzable_request( self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: The fuzzableRequest that the w3afCore is
+        @parameter fuzzable_request: The fuzzable_request that the w3afCore is
         working on right now.
         '''
-        self._currentFuzzableRequest = fuzzableRequest
+        self._currentFuzzableRequest = fuzzable_request

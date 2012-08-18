@@ -54,7 +54,7 @@ class frontpage(baseAuditPlugin):
         '''
         Searches for file upload vulns using a POST to author.dll.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         domain_path = freq.getURL().getDomainPath()
         

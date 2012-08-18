@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 
 
 class xst(baseAuditPlugin):
@@ -59,7 +59,7 @@ class xst(baseAuditPlugin):
             method = 'TRACE'
             headers = {}
             headers['FalseHeader'] = 'XST'
-            fr = fuzzableRequest(uri,
+            fr = fuzzable_request(uri,
                                  method=method,
                                  headers=headers
                                  )

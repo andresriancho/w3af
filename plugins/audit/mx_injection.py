@@ -63,7 +63,7 @@ class mx_injection(baseAuditPlugin):
         '''
         Tests an URL for mx injection vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         oResponse = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()

@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
@@ -39,7 +39,7 @@ class test_wsdl_greper(unittest.TestCase):
         fingerprint_404_singleton( [False, False, False] )
         self.plugin = wsdl_greper()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzableRequest(self.url)
+        self.request = fuzzable_request(self.url)
 
     def tearDown(self):
         self.plugin.end()

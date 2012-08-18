@@ -50,7 +50,7 @@ class form_auth(baseBruteforcePlugin):
         '''
         Tries to bruteforce a form auth. This aint fast!
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         freq_url = freq.getURL()
         
@@ -171,7 +171,7 @@ class form_auth(baseBruteforcePlugin):
 
     def _is_login_form(self, freq):
         '''
-        @return: True if this fuzzableRequest is a loginForm.
+        @return: True if this fuzzable_request is a loginForm.
         '''
         passwd = text = other = 0
         data_container = freq.getDc()
@@ -248,7 +248,7 @@ class form_auth(baseBruteforcePlugin):
     def _brute_worker(self, freq, user_field, passwd_field, 
                       login_failed_result_list, combination):
         '''
-        @parameter freq: A fuzzableRequest
+        @parameter freq: A fuzzable_request
         @parameter combination: A tuple with (user, pass) or a pass if this is a
                                 password only form.
         '''

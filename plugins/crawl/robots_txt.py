@@ -41,16 +41,16 @@ class robots_txt(baseCrawlPlugin):
         baseCrawlPlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Get the robots.txt file and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                                       (among other things) the URL to test.
         '''
         dirs = []
         
-        base_url = fuzzableRequest.getURL().baseUrl()
+        base_url = fuzzable_request.getURL().baseUrl()
         robots_url = base_url.urlJoin( 'robots.txt' )
         http_response = self._uri_opener.GET( robots_url, cache=True )
         

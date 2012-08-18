@@ -57,18 +57,18 @@ class find_vhosts(baseInfrastructurePlugin):
         self._can_resolve_domain_names = False
         self._non_existant_response = None
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Find virtual hosts.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         vhost_list = []
         if self._first_exec:
             # Only run once
             self._first_exec = False
-            vhost_list = self._generic_vhosts( fuzzableRequest )
+            vhost_list = self._generic_vhosts( fuzzable_request )
             
             # Set this for later
             self._can_resolve_domain_names = self._can_resolve_domains()
@@ -77,18 +77,18 @@ class find_vhosts(baseInfrastructurePlugin):
         # I also test for ""dead links"" that the web programmer left in the page
         # For example, If w3af finds a link to "http://corporative.intranet.corp/" it will try to
         # resolve the dns name, if it fails, it will try to request that page from the server
-        vhost_list.extend( self._get_dead_links( fuzzableRequest ) )
+        vhost_list.extend( self._get_dead_links( fuzzable_request ) )
         
         # Report our findings
         for vhost, request_id in vhost_list:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setURL( fuzzableRequest.getURL() )
+            v.setURL( fuzzable_request.getURL() )
             v.setMethod( 'GET' )
             v.setName( 'Shared hosting' )
             v.setSeverity(severity.LOW)
             
-            domain = fuzzableRequest.getURL().getDomain()
+            domain = fuzzable_request.getURL().getDomain()
             
             msg = 'Found a new virtual host at the target web server, the virtual host name is: "'
             msg += vhost + '". To access this site you might need to change your DNS resolution'
@@ -99,7 +99,7 @@ class find_vhosts(baseInfrastructurePlugin):
             kb.kb.append( self, 'find_vhosts', v )
             om.out.information( v.getDesc() )       
         
-    def _get_dead_links(self, fuzzableRequest):
+    def _get_dead_links(self, fuzzable_request):
         '''
         Find every link on a HTML document verify if the domain is reachable or not; after that,
         verify if the web found a different name for the target site or if we found a new site that
@@ -109,8 +109,8 @@ class find_vhosts(baseInfrastructurePlugin):
         res = []
         
         # Get some responses to compare later
-        base_url = fuzzableRequest.getURL().baseUrl()
-        original_response = self._uri_opener.GET(fuzzableRequest.getURI(), cache=True)
+        base_url = fuzzable_request.getURL().baseUrl()
+        original_response = self._uri_opener.GET(fuzzable_request.getURI(), cache=True)
         base_response = self._uri_opener.GET(base_url, cache=True)
         base_resp_body = base_response.getBody()
         
@@ -191,10 +191,10 @@ class find_vhosts(baseInfrastructurePlugin):
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('Internal hostname in HTML link')
-                    i.setURL( fuzzableRequest.getURL() )
+                    i.setURL( fuzzable_request.getURL() )
                     i.setMethod( 'GET' )
                     i.setId( original_response.id )
-                    msg = 'The content of "'+ fuzzableRequest.getURL() +'" references a non '
+                    msg = 'The content of "'+ fuzzable_request.getURL() +'" references a non '
                     msg += 'existant domain: "' + link + '". This may be a broken link, or an'
                     msg += ' internal domain name.'
                     i.setDesc( msg )
@@ -220,12 +220,12 @@ class find_vhosts(baseInfrastructurePlugin):
         else:
             return True
     
-    def _generic_vhosts( self, fuzzableRequest ):
+    def _generic_vhosts( self, fuzzable_request ):
         '''
         Test some generic virtual hosts, only do this once.
         '''
         res = []
-        base_url = fuzzableRequest.getURL().baseUrl()
+        base_url = fuzzable_request.getURL().baseUrl()
         
         common_vhost_list = self._get_common_virtualhosts(base_url)
         

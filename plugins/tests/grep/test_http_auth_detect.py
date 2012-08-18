@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
 from plugins.grep.http_auth_detect import http_auth_detect
@@ -35,7 +35,7 @@ class test_http_auth_detect(unittest.TestCase):
     def setUp(self):
         fingerprint_404_singleton( [False, False, False] )
         self.url = url_object('http://www.w3af.com/') 
-        self.request = fuzzableRequest(self.url, method='GET')
+        self.request = fuzzable_request(self.url, method='GET')
         self.plugin = http_auth_detect()
         kb.kb.cleanup()
         

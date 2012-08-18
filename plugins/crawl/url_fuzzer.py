@@ -62,14 +62,14 @@ class url_fuzzer(baseCrawlPlugin):
         self._headers = {}
         self._seen = scalable_bloomfilter()
         
-    def crawl(self, fuzzableRequest):
+    def crawl(self, fuzzable_request):
         '''
         Searches for new Url's using fuzzing.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        url = fuzzableRequest.getURL()
+        url = fuzzable_request.getURL()
         self._headers = {'Referer': url}
         
         if self._first_time:

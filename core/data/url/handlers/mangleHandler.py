@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import urllib2
-import core.data.request.fuzzableRequest as fuzzableRequest
+import core.data.request.fuzzable_request as fuzzable_request
 
 import core.data.url.httpResponse as httpResponse
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
@@ -44,15 +44,15 @@ class mangleHandler(urllib2.BaseHandler):
         
     def _urllibReq2fr( self, request ):
         '''
-        Convert a urllib2 request object to a fuzzableRequest.
+        Convert a urllib2 request object to a fuzzable_request.
         Used in http_request.
         
         @parameter request: A urllib2 request obj.
-        @return: A fuzzableRequest.
+        @return: A fuzzable_request.
         '''
         headers = request.headers
         headers.update(request.unredirected_hdrs)
-        fr = fuzzableRequest.fuzzableRequest(
+        fr = fuzzable_request.fuzzable_request(
                                      request.url_object,
                                      request.get_method(),
                                      headers
@@ -60,24 +60,24 @@ class mangleHandler(urllib2.BaseHandler):
         fr.setData(request.get_data() or '')
         return fr
     
-    def _fr2urllibReq(self, fuzzableRequest, orig_req):
+    def _fr2urllibReq(self, fuzzable_request, orig_req):
         '''
-        Convert a fuzzableRequest to a urllib2 request object. 
+        Convert a fuzzable_request to a urllib2 request object. 
         Used in http_request.
         
-        @parameter fuzzableRequest: A fuzzableRequest.
+        @parameter fuzzable_request: A fuzzable_request.
         @return: A urllib2 request obj.
         '''
-        host = fuzzableRequest.getURL().getDomain()
+        host = fuzzable_request.getURL().getDomain()
         
-        if fuzzableRequest.getMethod().upper() == 'GET':
+        if fuzzable_request.getMethod().upper() == 'GET':
             data = None
         else:
-            data = fuzzableRequest.getData()
+            data = fuzzable_request.getData()
             
         req = HTTPRequest(
-                  fuzzableRequest.getURI(), data=data,
-                  headers=fuzzableRequest.getHeaders(),
+                  fuzzable_request.getURI(), data=data,
+                  headers=fuzzable_request.getHeaders(),
                   origin_req_host=host,
                   follow_redir=orig_req.follow_redir
                   )

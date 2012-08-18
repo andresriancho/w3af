@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from nose.plugins.skip import SkipTest
 from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 
 
@@ -49,7 +49,7 @@ class test_code_disclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
             
@@ -58,7 +58,7 @@ class test_code_disclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
 
@@ -68,7 +68,7 @@ class test_code_disclosure(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 0 )
 

@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
@@ -45,7 +45,7 @@ class test_strange_http_codes(unittest.TestCase):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         
         resp_200 = httpResponse(200, body , headers, url, url)
         resp_404 = httpResponse(404, body , headers, url, url)

@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.misc.temp_dir import create_temp_dir
@@ -47,7 +47,7 @@ class test_oracle(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 0 )
     
@@ -56,7 +56,7 @@ class test_oracle(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 0 )
     
@@ -67,6 +67,6 @@ class test_oracle(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 1 )

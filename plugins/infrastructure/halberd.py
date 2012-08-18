@@ -61,18 +61,18 @@ class halberd(baseInfrastructurePlugin):
         baseInfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         It calls the "main" from halberd and writes the results to the kb.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         msg = 'halberd plugin is starting. Original halberd author: Juan M. Bello Rivas ;'
         msg += ' http://halberd.superadditive.com/'
         om.out.information( msg )
         
-        self._main( fuzzableRequest.getURL().baseUrl().url_string )
+        self._main( fuzzable_request.getURL().baseUrl().url_string )
 
     def _main( self, url ):
         '''

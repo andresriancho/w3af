@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from plugins.grep.private_ip import private_ip
 
@@ -35,7 +35,7 @@ class test_private_ip(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = private_ip()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzableRequest(self.url)
+        self.request = fuzzable_request(self.url)
 
     def tearDown(self):
         self.plugin.end()
@@ -45,7 +45,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 0 )
     
@@ -54,7 +54,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
     
@@ -63,7 +63,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
     
@@ -72,7 +72,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
     
@@ -81,7 +81,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'x-via': '10.3.4.5'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'header')) , 1 )
 
@@ -90,7 +90,7 @@ class test_private_ip(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'x-via': '10.256.3.10.1.2.3'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 0 )
         self.assertEquals( len(kb.kb.getData('private_ip', 'header')) , 0 )

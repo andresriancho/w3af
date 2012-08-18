@@ -47,7 +47,7 @@ class format_string(baseAuditPlugin):
         '''
         Tests an URL for format string vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         string_list = self._get_string_list()
         oResponse = self._uri_opener.send_mutant(freq)

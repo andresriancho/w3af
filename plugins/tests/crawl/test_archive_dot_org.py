@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afRunOnce
 
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.url.xUrllib import xUrllib
 
 from plugins.crawl.archive_dot_org import archive_dot_org
@@ -54,13 +54,13 @@ class TestArchiveDotOrg(PluginTest):
     
     def test_raise_on_local_domain(self):
         url = url_object('http://moth/')
-        fr = fuzzableRequest(url, method='GET')
+        fr = fuzzable_request(url, method='GET')
         ado = archive_dot_org()
         self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)
 
     def test_raise_on_domain_not_in_archive(self):
         url = url_object('http://www.w3af.org/')
-        fr = fuzzableRequest(url, method='GET')
+        fr = fuzzable_request(url, method='GET')
         
         ado = archive_dot_org()
         uri_opener = xUrllib()

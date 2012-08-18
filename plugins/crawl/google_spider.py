@@ -49,7 +49,7 @@ class google_spider(baseCrawlPlugin):
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
         google_se = google(self._uri_opener)

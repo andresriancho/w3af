@@ -49,15 +49,15 @@ class domain_dot(baseInfrastructurePlugin):
         # Internal variables
         self._already_tested = []
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Sends the special request.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                                     (among other things) the URL to test.
         '''
-        domain = fuzzableRequest.getURL().getDomain()
-        extension = fuzzableRequest.getURL().getExtension()
+        domain = fuzzable_request.getURL().getDomain()
+        extension = fuzzable_request.getURL().getExtension()
         
         if (domain, extension) not in self._already_tested:
             
@@ -66,12 +66,12 @@ class domain_dot(baseInfrastructurePlugin):
             
             # Generate the new URL
             domain += '.'
-            dot_url = fuzzableRequest.getURL()
+            dot_url = fuzzable_request.getURL()
             dot_url = dot_url.copy()
             dot_url.setDomain(domain)
             try:
                 # GET the original response
-                original_response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=False )
+                original_response = self._uri_opener.GET( fuzzable_request.getURL(), cache=False )
                 # GET the response with the modified domain (with the trailing dot)
                 response = self._uri_opener.GET( dot_url, cache=False )
             except KeyboardInterrupt,e:

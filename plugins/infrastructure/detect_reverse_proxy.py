@@ -49,9 +49,9 @@ class detect_reverse_proxy(baseInfrastructurePlugin):
         self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For', 'Proxy-Connection', 
                                                 'Max-Forwards', 'X-Forwarded-Host', 'X-Forwarded-Server']
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                                     (among other things) the URL to test.
         '''
         if not self._run:
@@ -63,14 +63,14 @@ class detect_reverse_proxy(baseInfrastructurePlugin):
             
             # detect using GET
             if not kb.kb.getData( 'detect_transparent_proxy', 'detect_transparent_proxy'):            
-                response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+                response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
                 if self._has_proxy_headers( response ):
                     self._report_finding( response )
            
             # detect using TRACE
             # only if I wasn't able to do it with GET
             if not kb.kb.getData( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACE( fuzzableRequest.getURL(), cache=True )
+                response = self._uri_opener.TRACE( fuzzable_request.getURL(), cache=True )
                 if self._has_proxy_content( response ):
                     self._report_finding( response )
            
@@ -88,7 +88,7 @@ class detect_reverse_proxy(baseInfrastructurePlugin):
             # Reverse-Via: MUTUN ------> find this!
             # ....
             if not kb.kb.getData( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACK( fuzzableRequest.getURL(), cache=True )
+                response = self._uri_opener.TRACK( fuzzable_request.getURL(), cache=True )
                 if self._has_proxy_content( response ):
                     self._report_finding( response )
                 

@@ -51,11 +51,11 @@ class import_results(baseCrawlPlugin):
         self._input_webscarab = ''
         self._input_burp = ''
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
-        Read the input file, and create the fuzzableRequests based on that information.
+        Read the input file, and create the fuzzable_requests based on that information.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test. It ain't used.
         '''
         if not self._exec:
@@ -112,7 +112,7 @@ class import_results(baseCrawlPlugin):
     
     def _obj_from_csv( self, csv_row ):
         '''
-        @return: A fuzzableRequest based on the csv_line.
+        @return: A fuzzable_request based on the csv_line.
         
         >>> i = import_results()
         

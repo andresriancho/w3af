@@ -53,7 +53,7 @@ class preg_replace(baseAuditPlugin):
         '''
         Tests an URL for unsafe usage of PHP's preg_replace.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         # First I check If I get the error message from php
         oResponse = self._uri_opener.send_mutant(freq)

@@ -1,5 +1,5 @@
 '''
-fuzzableRequest.py
+fuzzable_request.py
 
 Copyright 2006 Andres Riancho
 
@@ -40,7 +40,7 @@ CRLF = CR + LF
 SP = ' '
 
 
-class fuzzableRequest(disk_item):
+class fuzzable_request(disk_item):
     '''
     This class represents a fuzzable request. Fuzzable requests were created
     to allow w3af plugins to be much simpler and don't really care if the
@@ -73,7 +73,7 @@ class fuzzableRequest(disk_item):
         '''
         @return: a DETAILED str representation of this fuzzable request.
 
-        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"),\
+        >>> fr = fuzzable_request(url_object("http://www.w3af.com/"),\
                                  headers={'Host':'www.w3af.com'})
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
@@ -115,7 +115,7 @@ class fuzzableRequest(disk_item):
         @return: a csv str representation of the request
 
         >>> from core.data.dc.dataContainer import DataContainer
-        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
+        >>> fr = fuzzable_request(url_object("http://www.w3af.com/"))
         >>> fr.export()
         'GET,http://www.w3af.com/,'
         >>> d = DataContainer()
@@ -158,7 +158,7 @@ class fuzzableRequest(disk_item):
         TODO: This function is called MANY times, and under some circumstances it's
         performance REALLY matters. We need to review this function.
         
-        >>> f = fuzzableRequest(url_object("""http://example.com/a?p=d'z"0&paged=2"""))
+        >>> f = fuzzable_request(url_object("""http://example.com/a?p=d'z"0&paged=2"""))
         >>> f.sent('d%5C%27z%5C%220')
         True
         
@@ -166,7 +166,7 @@ class fuzzableRequest(disk_item):
         >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
         True
         
-        >>> f = fuzzableRequest(url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
+        >>> f = fuzzable_request(url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
@@ -222,7 +222,7 @@ class fuzzableRequest(disk_item):
         '''
         @return: A string representation of this fuzzable request.
 
-        >>> fr = fuzzableRequest(url_object("http://www.w3af.com/"))
+        >>> fr = fuzzable_request(url_object("http://www.w3af.com/"))
         >>> str(fr)
         'http://www.w3af.com/ | Method: GET'
 
@@ -271,21 +271,21 @@ class fuzzableRequest(disk_item):
 
 
         >>> u = url_object("""http://www.w3af.com/""")
-        >>> fr1 = fuzzableRequest(u)
-        >>> fr2 = fuzzableRequest(u)
+        >>> fr1 = fuzzable_request(u)
+        >>> fr2 = fuzzable_request(u)
         >>> fr1 == fr2
         True
-        >>> fr1 = fuzzableRequest(url_object("http://www.w3af.com/a"))
-        >>> fr2 = fuzzableRequest(url_object("http://www.w3af.com/b"))
+        >>> fr1 = fuzzable_request(url_object("http://www.w3af.com/a"))
+        >>> fr2 = fuzzable_request(url_object("http://www.w3af.com/b"))
         >>> fr1 == fr2
         False
-        >>> fr1 = fuzzableRequest(u)
-        >>> fr2 = fuzzableRequest(u, method='POST')
+        >>> fr1 = fuzzable_request(u)
+        >>> fr2 = fuzzable_request(u, method='POST')
         >>> fr1 == fr2
         False
 
         '''
-        if isinstance( other, fuzzableRequest):
+        if isinstance( other, fuzzable_request):
             return (self._method == other._method and
                     self._uri == other._uri and
                     self._dc == other._dc)
@@ -327,12 +327,12 @@ class fuzzableRequest(disk_item):
     
     def setURL(self, url):
         '''
-        >>> r = fuzzableRequest('http://www.google.com/')
+        >>> r = fuzzable_request('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: The "uri" parameter of a fuzzableRequest must be of urlParser.url_object type.
+        TypeError: The "uri" parameter of a fuzzable_request must be of urlParser.url_object type.
         >>> url = url_object('http://www.google.com/')
-        >>> r = fuzzableRequest(url)
+        >>> r = fuzzable_request(url)
         >>> r.getURL() == url
         True
         '''        
@@ -355,7 +355,7 @@ class fuzzableRequest(disk_item):
         
     def setDc(self, dataCont):
         if not isinstance(dataCont, DataContainer):
-            raise TypeError('Invalid call to fuzzableRequest.setDc(), the '
+            raise TypeError('Invalid call to fuzzable_request.setDc(), the '
                             'argument must be a DataContainer instance.')
         self._dc = dataCont
         
@@ -377,9 +377,9 @@ class fuzzableRequest(disk_item):
         elif c is None:
             self._cookie = None
         else:
-            om.out.error('[fuzzableRequest error] setCookie received: "' + 
+            om.out.error('[fuzzable_request error] setCookie received: "' + 
                          str(type(c)) + '" , "' + repr(c) + '"')
-            raise w3afException('Invalid call to fuzzableRequest.setCookie()')
+            raise w3afException('Invalid call to fuzzable_request.setCookie()')
             
     def getURL(self):
         return self._url

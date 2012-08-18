@@ -54,13 +54,13 @@ class ghdb(baseCrawlPlugin):
         self._result_limit = 300
     
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
-        @param fuzzableRequest: A fuzzableRequest instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
             (among other things) the URL to test.
         '''
         # Get the domain and set some parameters
-        domain = fuzzableRequest.getURL().getDomain()
+        domain = fuzzable_request.getURL().getDomain()
         if is_private_site(domain):
             msg = 'There is no point in searching google for "site:'+ domain
             msg += '" . Google doesn\'t index private pages.'

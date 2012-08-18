@@ -41,21 +41,21 @@ class dns_wildcard(baseInfrastructurePlugin):
         baseInfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Get www.site.com and site.com and compare responses.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not re.match('\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?',
-                                fuzzableRequest.getURL().getDomain() ):
+                                fuzzable_request.getURL().getDomain() ):
             # Only do all this if this is a domain name!
-            base_url = fuzzableRequest.getURL().baseUrl()
+            base_url = fuzzable_request.getURL().baseUrl()
             original_response = self._uri_opener.GET( base_url, cache=True )
             
-            domain = fuzzableRequest.getURL().getDomain()
-            dns_wildcard_url = fuzzableRequest.getURL().copy()
+            domain = fuzzable_request.getURL().getDomain()
+            dns_wildcard_url = fuzzable_request.getURL().copy()
             
             #    TODO: This is weak! What if the subdomain is "www2"?
             #    Example: Target set by user is www2.host.tld.

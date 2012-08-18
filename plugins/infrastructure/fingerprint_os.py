@@ -40,19 +40,19 @@ class fingerprint_os(baseInfrastructurePlugin):
         
         self._exec = True
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         It calls the "main" and writes the results to the kb.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
             raise w3afRunOnce()
         
-        self._exec = not self._find_OS(fuzzableRequest)
+        self._exec = not self._find_OS(fuzzable_request)
     
-    def _find_OS(self, fuzzableRequest):
+    def _find_OS(self, fuzzable_request):
         '''
         Analyze responses and determine if remote web server runs on windows
         or *nix.
@@ -60,7 +60,7 @@ class fingerprint_os(baseInfrastructurePlugin):
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
         found_os = False
-        freq_url = fuzzableRequest.getURL() 
+        freq_url = fuzzable_request.getURL() 
         filename = freq_url.getFileName()
         dirs = freq_url.getDirectories()[:-1] # Skipping "domain level" dir.
         

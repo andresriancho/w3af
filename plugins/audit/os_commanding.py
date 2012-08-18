@@ -77,7 +77,7 @@ class os_commanding(baseAuditPlugin):
         '''
         Tests an URL for OS Commanding vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         # We are implementing two different ways of detecting OS Commanding
         # vulnerabilities:
@@ -100,7 +100,7 @@ class os_commanding(baseAuditPlugin):
         Tests an URL for OS Commanding vulnerabilities using cat/type to write the 
         content of a known file (i.e. /etc/passwd) to the HTML.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         original_response = self._uri_opener.send_mutant(freq)
         # Prepare the strings to create the mutants
@@ -162,7 +162,7 @@ class os_commanding(baseAuditPlugin):
         '''
         Tests an URL for OS Commanding vulnerabilities using time delays.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         fake_mutants = createMutants(freq, ['',])
         

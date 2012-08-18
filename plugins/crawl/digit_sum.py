@@ -51,7 +51,7 @@ class digit_sum(baseCrawlPlugin):
         Searches for new Url's by adding and substracting numbers to the url
         and the parameters.
         
-        @parameter fuzzable_request: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         url = fuzzable_request.getURL()
@@ -128,7 +128,7 @@ class digit_sum(baseCrawlPlugin):
         '''
         Mangle the digits (if any) in the fr URL.
         
-        @param fuzzableRequest: The original fuzzableRequest
+        @param fuzzable_request: The original fuzzable_request
         @return: A generator which returns mangled fuzzable requests 
         '''
         # First i'll mangle the digits in the URL file

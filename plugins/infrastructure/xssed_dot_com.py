@@ -50,14 +50,14 @@ class xssed_dot_com(baseInfrastructurePlugin):
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
     
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Search in xssed.com and parse the output.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
-        target_domain = fuzzableRequest.getURL().getRootDomain()
+        target_domain = fuzzable_request.getURL().getRootDomain()
 
         try:
             check_url = self._xssed_url.urlJoin("/search?key=." + target_domain)

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from ..fuzzableRequest import fuzzableRequest as FuzzReq
+from ..fuzzable_request import fuzzable_request as FuzzReq
 from core.data.parsers.urlParser import url_object
 
 

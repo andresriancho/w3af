@@ -68,12 +68,12 @@ class find_jboss(baseInfrastructurePlugin):
         self._fuzzable_requests_to_return = []
         
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest):
+    def discover(self, fuzzable_request):
         '''
         Checks if JBoss Interesting Directories exist in the target server.
         Also verifies some vulnerabilities.
         '''
-        base_url = fuzzableRequest.getURL().baseUrl()
+        base_url = fuzzable_request.getURL().baseUrl()
         
         for vuln_db_instance in find_jboss._jboss_vulns:
             vuln_url = base_url.urlJoin( vuln_db_instance['url'] )

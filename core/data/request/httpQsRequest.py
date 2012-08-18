@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 
 
-class HTTPQSRequest(fuzzableRequest):
+class HTTPQSRequest(fuzzable_request):
     '''
     This class represents a fuzzable request that sends all variables
     in the querystring. This is tipically used for GET requests.

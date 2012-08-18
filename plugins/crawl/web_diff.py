@@ -49,7 +49,7 @@ class web_diff(baseCrawlPlugin):
         self._first = True
         self._start_path = None
         
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
         self._not_eq = []
         self._not_eq_content = []
         self._eq = []
@@ -61,11 +61,11 @@ class web_diff(baseCrawlPlugin):
         self._local_dir = ''
         self._remote_path = ''
         
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         GET's local files one by one until done.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains (among other things) the URL to test.
         '''
         if not self._run:
             # This will remove the plugin from the crawl plugins to be run.
@@ -76,7 +76,7 @@ class web_diff(baseCrawlPlugin):
             if self._local_dir != '' and self._remote_path:
                 os.path.walk( self._local_dir, self._compare_dir, None )
                 self._generate_report()
-                return self._fuzzableRequests
+                return self._fuzzable_requests
             else:
                 msg = 'web_diff plugin: You have to configure the local and remote directory'
                 msg += ' to compare.'

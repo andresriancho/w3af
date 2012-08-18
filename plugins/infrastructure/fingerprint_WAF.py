@@ -55,33 +55,33 @@ class fingerprint_WAF(baseInfrastructurePlugin):
         baseInfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)        
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        self._fingerprint_URLScan( fuzzableRequest )
-        self._fingerprint_ModSecurity( fuzzableRequest )
-        self._fingerprint_SecureIIS( fuzzableRequest )
-        self._fingerprint_Airlock( fuzzableRequest )
-        self._fingerprint_Barracuda( fuzzableRequest )
-        self._fingerprint_DenyAll( fuzzableRequest )
-        self._fingerprint_F5ASM( fuzzableRequest )
-        self._fingerprint_F5TrafficShield( fuzzableRequest )
-        self._fingerprint_TEROS( fuzzableRequest )
-        self._fingerprint_NetContinuum( fuzzableRequest )
-        self._fingerprint_BinarySec( fuzzableRequest )
-        self._fingerprint_HyperGuard( fuzzableRequest )
+        self._fingerprint_URLScan( fuzzable_request )
+        self._fingerprint_ModSecurity( fuzzable_request )
+        self._fingerprint_SecureIIS( fuzzable_request )
+        self._fingerprint_Airlock( fuzzable_request )
+        self._fingerprint_Barracuda( fuzzable_request )
+        self._fingerprint_DenyAll( fuzzable_request )
+        self._fingerprint_F5ASM( fuzzable_request )
+        self._fingerprint_F5TrafficShield( fuzzable_request )
+        self._fingerprint_TEROS( fuzzable_request )
+        self._fingerprint_NetContinuum( fuzzable_request )
+        self._fingerprint_BinarySec( fuzzable_request )
+        self._fingerprint_HyperGuard( fuzzable_request )
     
-    def _fingerprint_SecureIIS(self,  fuzzableRequest):
+    def _fingerprint_SecureIIS(self,  fuzzable_request):
         '''
         Try to verify if SecureIIS is installed or not.
         '''
         # And now a final check for SecureIIS
-        headers = fuzzableRequest.getHeaders()
+        headers = fuzzable_request.getHeaders()
         headers['Transfer-Encoding'] = createRandAlpha(1024 + 1)
         try:
-            lock_response2 = self._uri_opener.GET( fuzzableRequest.getURL(), 
+            lock_response2 = self._uri_opener.GET( fuzzable_request.getURL(), 
                                                    headers=headers, cache=True )
         except w3afException, w3:
             om.out.debug('Failed to identify secure IIS, exception: ' + str(w3) )
@@ -89,19 +89,19 @@ class fingerprint_WAF(baseInfrastructurePlugin):
             if lock_response2.getCode() == 404:
                 self._report_finding('SecureIIS', lock_response2)
         
-    def _fingerprint_ModSecurity(self,  fuzzableRequest):
+    def _fingerprint_ModSecurity(self,  fuzzable_request):
         '''
         Try to verify if mod_security is installed or not AND try to get the installed version.
         '''
         pass
 
-    def _fingerprint_Airlock(self,  fuzzableRequest):
+    def _fingerprint_Airlock(self,  fuzzable_request):
         '''
         Try to verify if Airlock is present.
         '''
         om.out.debug( 'detect Airlock' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -114,13 +114,13 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else 
                     # more checks, like path /error_path or encrypted URL in response
 
-    def _fingerprint_Barracuda(self,  fuzzableRequest):
+    def _fingerprint_Barracuda(self,  fuzzable_request):
         '''
         Try to verify if Barracuda is present.
         '''
         om.out.debug( 'detect Barracuda' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -134,13 +134,13 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else 
                     # don't know ...
 
-    def _fingerprint_DenyAll(self,  fuzzableRequest):
+    def _fingerprint_DenyAll(self,  fuzzable_request):
         '''
         Try to verify if Deny All rWeb is present.
         '''
         om.out.debug( 'detect Deny All' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -153,13 +153,13 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like detection=detected cookie
 
-    def _fingerprint_F5ASM(self,  fuzzableRequest):
+    def _fingerprint_F5ASM(self,  fuzzable_request):
         '''
         Try to verify if F5 ASM (also TrafficShield) is present.
         '''
         om.out.debug( 'detect F5 ASM or TrafficShield' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -172,7 +172,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like special string in response
 
-    def _fingerprint_F5TrafficShield(self,  fuzzableRequest):
+    def _fingerprint_F5TrafficShield(self,  fuzzable_request):
         '''
         Try to verify if the older version F5 TrafficShield is present.
         Ref: Hacking Exposed - Web Application
@@ -180,7 +180,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
         '''
         om.out.debug( 'detect the older version F5 TrafficShield' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -193,7 +193,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like special string in response
                     
-    def _fingerprint_TEROS(self,  fuzzableRequest):
+    def _fingerprint_TEROS(self,  fuzzable_request):
         '''
         Try to verify if TEROS is present.
         Ref: Hacking Exposed - Web Application
@@ -201,7 +201,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
         '''
         om.out.debug( 'detect TEROS' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -214,7 +214,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like special string in response
      
-    def _fingerprint_NetContinuum(self,  fuzzableRequest):
+    def _fingerprint_NetContinuum(self,  fuzzable_request):
         '''
         Try to verify if NetContinuum is present.
         Ref: Hacking Exposed - Web Application
@@ -222,7 +222,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
         '''
         om.out.debug( 'detect NetContinuum' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -235,13 +235,13 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like special string in response
     
-    def _fingerprint_BinarySec(self,  fuzzableRequest):
+    def _fingerprint_BinarySec(self,  fuzzable_request):
         '''
         Try to verify if BinarySec is present.
         '''
         om.out.debug( 'detect BinarySec' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -255,13 +255,13 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                     # more checks like special string in response
 
     
-    def _fingerprint_HyperGuard(self,  fuzzableRequest):
+    def _fingerprint_HyperGuard(self,  fuzzable_request):
         '''
         Try to verify if HyperGuard is present.
         '''
         om.out.debug( 'detect HyperGuard' )
         try:
-            response = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         except KeyboardInterrupt,e:
             raise e
         else:
@@ -274,32 +274,32 @@ class fingerprint_WAF(baseInfrastructurePlugin):
                 # else
                     # more checks like special string in response
 
-    def _fingerprint_URLScan(self,  fuzzableRequest):
+    def _fingerprint_URLScan(self,  fuzzable_request):
         '''
         Try to verify if URLScan is installed or not.
         '''
         # detect using GET
         # Get the original response
-        originalResponse = self._uri_opener.GET( fuzzableRequest.getURL(), cache=True )
+        originalResponse = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
         if originalResponse.getCode() != 404:
             # Now add the if header and try again
-            headers = fuzzableRequest.getHeaders()
+            headers = fuzzable_request.getHeaders()
             headers['If'] = createRandAlpha(8)
-            if_response = self._uri_opener.GET( fuzzableRequest.getURL(), headers=headers,
+            if_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers,
                                                                 cache=True )
-            headers = fuzzableRequest.getHeaders()
+            headers = fuzzable_request.getHeaders()
             headers['Translate'] = createRandAlpha(8)
-            translate_response = self._uri_opener.GET( fuzzableRequest.getURL(), headers=headers, 
+            translate_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers, 
                                                                             cache=True )
             
-            headers = fuzzableRequest.getHeaders()
+            headers = fuzzable_request.getHeaders()
             headers['Lock-Token'] = createRandAlpha(8)
-            lock_response = self._uri_opener.GET( fuzzableRequest.getURL(), headers=headers, 
+            lock_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers, 
                                                                     cache=True )
             
-            headers = fuzzableRequest.getHeaders()
+            headers = fuzzable_request.getHeaders()
             headers['Transfer-Encoding'] = createRandAlpha(8)
-            transfer_enc_response = self._uri_opener.GET( fuzzableRequest.getURL(), 
+            transfer_enc_response = self._uri_opener.GET( fuzzable_request.getURL(), 
                                                                                     headers=headers,
                                                                                     cache=True )
         

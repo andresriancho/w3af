@@ -41,9 +41,9 @@ class finger_pks(baseInfrastructurePlugin):
         # Internal variables
         self._run = True
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._run:
@@ -55,7 +55,7 @@ class finger_pks(baseInfrastructurePlugin):
             
             pks_se = pks( self._uri_opener)
             
-            root_domain = fuzzableRequest.getURL().getRootDomain()
+            root_domain = fuzzable_request.getURL().getRootDomain()
             
             results = pks_se.search( root_domain )
             for result in results:

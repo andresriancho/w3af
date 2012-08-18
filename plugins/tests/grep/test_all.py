@@ -30,7 +30,7 @@ from itertools import repeat
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.w3afCore import w3af_core
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 
 
@@ -91,7 +91,7 @@ class test_all(unittest.TestCase):
                                             url_object( self.url_str + str(counter) ),
                                             id=random.randint(1,5000) )
 
-                    request = fuzzableRequest(self.url_inst)
+                    request = fuzzable_request(self.url_inst)
                     for pinst in self._plugins:
                         pinst.grep( request, response )
             

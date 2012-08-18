@@ -42,7 +42,7 @@ class basic_auth(baseBruteforcePlugin):
         '''
         Tries to bruteforce a basic HTTP auth. This is not fast!
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         auth_url_list = [ i.getURL().getDomainPath() for i in 
                           kb.kb.getData( 'http_auth_detect', 'auth' )]

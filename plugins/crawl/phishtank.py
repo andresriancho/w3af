@@ -56,7 +56,7 @@ class phishtank(baseCrawlPlugin):
         self._phishtank_DB += os.path.sep + 'phishtank' + os.path.sep + 'index.xml'
         self._update_DB = False
         
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Plugin entry point, perform all the work.
         '''
@@ -71,7 +71,7 @@ class phishtank(baseCrawlPlugin):
             if self._update_DB:
                 self._do_update()
             
-            to_check_list = self._get_to_check( fuzzableRequest.getURL() )
+            to_check_list = self._get_to_check( fuzzable_request.getURL() )
             
             # I found some URLs, create fuzzable requests
             phishtank_matches = self._is_in_phishtank( to_check_list )

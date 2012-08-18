@@ -53,9 +53,9 @@ class shared_hosting(baseInfrastructurePlugin):
         # User variables
         self._result_limit = 300
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains (among other things) the URL to test.
         '''
         if not self._run:
             # This will remove the plugin from the infrastructure plugins to be run.
@@ -66,7 +66,7 @@ class shared_hosting(baseInfrastructurePlugin):
             
             bing_wrapper = bing( self._uri_opener )
             
-            domain = fuzzableRequest.getURL().getDomain()
+            domain = fuzzable_request.getURL().getDomain()
             if is_private_site( domain ):
                 msg = 'shared_hosting plugin is not checking for subdomains for domain: '
                 msg += domain + ' because its a private address.' 
@@ -115,7 +115,7 @@ class shared_hosting(baseInfrastructurePlugin):
                         severityOfThisVuln = severity.MEDIUM
                         v = vuln.vuln()
                         v.setPluginName(self.getName())
-                        v.setURL(fuzzableRequest.getURL())
+                        v.setURL(fuzzable_request.getURL())
                         v.setId(1)
                         
                         v['alsoInHosting'] = results

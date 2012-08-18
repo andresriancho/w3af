@@ -30,7 +30,7 @@ from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.fuzzer import createRandAlNum
-from core.data.request.fuzzableRequest import fuzzableRequest as FuzzReq
+from core.data.request.fuzzable_request import fuzzable_request as FuzzReq
 from core.data.parsers.urlParser import url_object
 from core.data.url.httpResponse import httpResponse
 

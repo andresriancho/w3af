@@ -54,11 +54,11 @@ class dir_bruter(baseCrawlPlugin):
         self._exec = True
         self._already_tested = disk_set()
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Get the file and parse it.
         
-        @param fuzzableRequest: A fuzzableRequest instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                (among other things) the URL to test.
         '''
         if not self._exec:
@@ -69,8 +69,8 @@ class dir_bruter(baseCrawlPlugin):
                 # Only run once
                 self._exec = False
 
-            domain_path = fuzzableRequest.getURL().getDomainPath()
-            base_url = fuzzableRequest.getURL().baseUrl()
+            domain_path = fuzzable_request.getURL().getDomainPath()
+            base_url = fuzzable_request.getURL().baseUrl()
             
             if base_url not in self._already_tested:
                 self._bruteforce_directories( base_url )

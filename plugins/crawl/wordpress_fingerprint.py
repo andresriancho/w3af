@@ -57,10 +57,10 @@ class wordpress_fingerprint(baseCrawlPlugin):
         # Internal variables
         self._exec = True
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Finds the version of a WordPress installation.   
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
         (among other things) the URL to test.
         '''
         if not self._exec :
@@ -71,7 +71,7 @@ class wordpress_fingerprint(baseCrawlPlugin):
             #
             # Check if the server is running wp
             #
-            domain_path = fuzzableRequest.getURL().getDomainPath()
+            domain_path = fuzzable_request.getURL().getDomainPath()
             
             # Main scan URL passed from w3af + unique wp file
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )

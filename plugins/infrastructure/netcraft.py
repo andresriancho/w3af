@@ -49,14 +49,14 @@ class netcraft(baseInfrastructurePlugin):
 
    
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Search netcraft and parse the output.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the site to test.
         '''
-        target_domain = fuzzableRequest.getURL().getRootDomain()
+        target_domain = fuzzable_request.getURL().getRootDomain()
         
         # Example URL:
         # http://toolbar.netcraft.com/site_report?url=http://www.foo.org

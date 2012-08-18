@@ -50,16 +50,16 @@ class frontpage_version(baseInfrastructurePlugin):
         self._analyzed_dirs = scalable_bloomfilter()
 
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         fuzzable_return_value = []
 
-        for domain_path in fuzzableRequest.getURL().getDirectories():
+        for domain_path in fuzzable_request.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
 

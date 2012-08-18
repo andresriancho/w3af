@@ -53,7 +53,7 @@ class csrf(baseAuditPlugin):
         '''
         Tests an URL for csrf vulnerabilities.
 
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         suitable, orig_response = self._is_suitable(freq)
         if not suitable:

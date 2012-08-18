@@ -92,7 +92,7 @@ class buffer_overflow(baseAuditPlugin):
         '''
         Tests an URL for buffer overflow vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         try:
             oResponse = self._uri_opener.send_mutant(freq)

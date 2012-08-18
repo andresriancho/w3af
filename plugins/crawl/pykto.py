@@ -80,7 +80,7 @@ class pykto(baseCrawlPlugin):
         '''
         Runs pykto to the site.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec and not self._mutate_tests:

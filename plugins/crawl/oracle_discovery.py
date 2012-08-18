@@ -45,11 +45,11 @@ class oracle_discovery(baseCrawlPlugin):
         baseCrawlPlugin.__init__(self)
         self._exec = True
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         GET some files and parse them.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec :
@@ -60,7 +60,7 @@ class oracle_discovery(baseCrawlPlugin):
             # Only run once
             self._exec = False
             
-            base_url = fuzzableRequest.getURL().baseUrl()
+            base_url = fuzzable_request.getURL().baseUrl()
             
             for url, regex_string in self.getOracleData():
 

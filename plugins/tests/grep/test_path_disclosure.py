@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzableRequest import fuzzableRequest as fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request as fuzzable_request
 from core.data.url.httpResponse import httpResponse as httpResponse
 from plugins.grep.path_disclosure import path_disclosure
 
@@ -35,7 +35,7 @@ class test_path_disclosure(unittest.TestCase):
         self.plugin = path_disclosure()
         kb.kb.cleanup()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzableRequest(self.url, method='GET')
+        self.request = fuzzable_request(self.url, method='GET')
 
     def tearDown(self):
         self.plugin.end()

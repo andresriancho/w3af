@@ -37,7 +37,7 @@ from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 
 # Override builtin 'str' function in order to avoid encoding
 # errors while generating objects' utf8 bytestring representations.
@@ -222,7 +222,7 @@ class xml_file(baseOutputPlugin):
                    'javascript', 'rss+xml', 'soap+xml', 'font-woff', 'xhtml+xml', 'xml-dtd',
                    'xop+xml']
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
-        if isinstance(action, fuzzableRequest):
+        if isinstance(action, fuzzable_request):
             headers = action.getHeaders()
             body = str(action.getData() or '')
             status = action.getRequestLine()

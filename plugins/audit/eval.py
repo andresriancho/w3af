@@ -86,7 +86,7 @@ class eval(baseAuditPlugin):
     def audit(self, freq):
         '''
         Tests an URL for eval() user input injection vulnerabilities.
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         if self._use_echo:
             self._fuzz_with_echo(freq)
@@ -97,7 +97,7 @@ class eval(baseAuditPlugin):
     def _fuzz_with_echo(self, freq):
         '''
         Tests an URL for eval() usage vulnerabilities using echo strings.
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         oResponse = self._uri_opener.send_mutant(freq)
         print_strings = [pstr % (self._rnd,) for pstr in self.PRINT_STRINGS]
@@ -112,7 +112,7 @@ class eval(baseAuditPlugin):
     def _fuzz_with_time_delay(self, freq):
         '''
         Tests an URL for eval() usage vulnerabilities using time delays.
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         fake_mutants = createMutants(freq, ['',])
         self._tm.threadpool.map(self._test_delay, fake_mutants)

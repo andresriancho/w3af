@@ -58,15 +58,15 @@ class archive_dot_org(baseCrawlPlugin):
         # User configured parameters
         self._max_depth = 3
 
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Does a search in archive.org and searches for links on the html. Then
         searches those URLs in the target site. This is a time machine ! 
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        domain = fuzzableRequest.getURL().getDomain()
+        domain = fuzzable_request.getURL().getDomain()
         
         if is_private_site( domain ):
             msg = 'There is no point in searching archive.org for "%s"'
@@ -75,7 +75,7 @@ class archive_dot_org(baseCrawlPlugin):
             raise w3afRunOnce(msg)
 
         # Initial check to verify if domain in archive
-        start_url = self.ARCHIVE_START_URL % fuzzableRequest.getURL()
+        start_url = self.ARCHIVE_START_URL % fuzzable_request.getURL()
         start_url = url_object( start_url )
         http_response = self._uri_opener.GET( start_url, cache=True )
         

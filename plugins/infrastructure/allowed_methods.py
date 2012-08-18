@@ -76,12 +76,12 @@ class allowed_methods(baseInfrastructurePlugin):
         self._exec_one_time = True
         self._report_dav_only = True
         
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Uses several techniques to try to find out what methods are allowed for
         an URL.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
@@ -93,7 +93,7 @@ class allowed_methods(baseInfrastructurePlugin):
         if self._exec_one_time:
             self._exec = False
         
-        domain_path = fuzzableRequest.getURL().getDomainPath()
+        domain_path = fuzzable_request.getURL().getDomainPath()
         if domain_path not in self._already_tested:
             self._already_tested.add( domain_path )
             self._check_methods( domain_path )

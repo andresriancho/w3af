@@ -43,14 +43,14 @@ class zone_h(baseInfrastructurePlugin):
         baseInfrastructurePlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Search zone_h and parse the output.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains 
+        @parameter fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
-        target_domain = fuzzableRequest.getURL().getRootDomain()
+        target_domain = fuzzable_request.getURL().getRootDomain()
         
         # Example URL:
         # http://www.zone-h.org/archive/domain=cyprus-stones.com

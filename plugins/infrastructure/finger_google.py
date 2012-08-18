@@ -52,15 +52,15 @@ class finger_google(baseInfrastructurePlugin):
         self._fast_search = False
     
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not is_private_site( fuzzableRequest.getURL().getDomain() ):
+        if not is_private_site( fuzzable_request.getURL().getDomain() ):
             self._google = google(self._uri_opener)
-            self._domain = domain = fuzzableRequest.getURL().getDomain()
-            self._domain_root = fuzzableRequest.getURL().getRootDomain()
+            self._domain = domain = fuzzable_request.getURL().getDomain()
+            self._domain_root = fuzzable_request.getURL().getRootDomain()
             
             if self._fast_search:
                 self._do_fast_search(domain)

@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.blank_body import blank_body
@@ -37,7 +37,7 @@ class test_blank_body(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = blank_body()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzableRequest(self.url)
+        self.request = fuzzable_request(self.url)
 
     def tearDown(self):
         self.plugin.end()
@@ -47,7 +47,7 @@ class test_blank_body(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('blank_body', 'blank_body')) , 1 )
     
@@ -62,7 +62,7 @@ class test_blank_body(unittest.TestCase):
         body = ''
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, self.url, self.url)
-        request = fuzzableRequest(self.url, method='ARGENTINA')
+        request = fuzzable_request(self.url, method='ARGENTINA')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 0 )
     
@@ -70,6 +70,6 @@ class test_blank_body(unittest.TestCase):
         body = ''
         headers = {'content-type': 'text/html'}
         response = httpResponse(401, body , headers, self.url, self.url)
-        request = fuzzableRequest(self.url, method='GET')
+        request = fuzzable_request(self.url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('blank_body', 'blank_body')) , 0 )

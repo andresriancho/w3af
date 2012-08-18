@@ -54,11 +54,11 @@ class server_status(baseInfrastructurePlugin):
         self._exec = True
         self._shared_hosting_hosts = []
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         Get the server-status and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains (among other things) the URL to test.
         '''
         res = []
         if not self._exec :
@@ -69,7 +69,7 @@ class server_status(baseInfrastructurePlugin):
             # Only run once
             self._exec = False
             
-            base_url = fuzzableRequest.getURL().baseUrl()
+            base_url = fuzzable_request.getURL().baseUrl()
             server_status_url = base_url.urlJoin( 'server-status' )
             response = self._uri_opener.GET( server_status_url, cache=True )
             
@@ -120,7 +120,7 @@ class server_status(baseInfrastructurePlugin):
                 if len( self._shared_hosting_hosts ):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
-                    v.setURL( fuzzableRequest.getURL() )
+                    v.setURL( fuzzable_request.getURL() )
                     v.setId( response.id )
                     self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )
                     v['alsoInHosting'] = self._shared_hosting_hosts

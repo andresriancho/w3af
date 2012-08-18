@@ -45,7 +45,7 @@ class sitemap_xml(baseCrawlPlugin):
         '''
         Get the sitemap.xml file and parse it.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                    (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()

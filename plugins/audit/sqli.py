@@ -136,7 +136,7 @@ class sqli(baseAuditPlugin):
         '''
         Tests an URL for SQL injection vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         oResponse = self._uri_opener.send_mutant(freq)
         mutants = createMutants(freq, self.SQLI_STRINGS, oResponse=oResponse)

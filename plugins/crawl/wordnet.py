@@ -46,7 +46,7 @@ class wordnet(baseCrawlPlugin):
         
     def crawl(self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         original_response = self._uri_opener.send_mutant(fuzzable_request)        
@@ -197,20 +197,20 @@ class wordnet(baseCrawlPlugin):
         return fname.replace('.' + ext, '')
             
     def _generate_URL_from_wn_result( self, analyzed_variable, element_index, 
-                                      result_set, fuzzableRequest ):
+                                      result_set, fuzzable_request ):
         '''
         Based on the result, create the new URLs to test.
         
         @parameter analyzed_variable: The parameter name that is being analyzed
         @parameter element_index: 0 in most cases, >0 if we have repeated parameter names
         @parameter result_set: The set of results that wordnet gave use
-        @parameter fuzzableRequest: The fuzzable request that we got as input in the first place.
+        @parameter fuzzable_request: The fuzzable request that we got as input in the first place.
         
         @return: An URL list.
         '''
         if analyzed_variable is None:
             # The URL was analyzed
-            url = fuzzableRequest.getURL()
+            url = fuzzable_request.getURL()
             fname = url.getFileName()
             domain_path = url.getDomainPath()
             
@@ -227,14 +227,14 @@ class wordnet(baseCrawlPlugin):
             
             for set_item in result_set:
                 new_fname = fname.replace( name, set_item )
-                frCopy = fuzzableRequest.copy()
+                frCopy = fuzzable_request.copy()
                 frCopy.setURL( domain_path.urlJoin( new_fname ) )
                 result.append( frCopy )
                 
             return result
             
         else:
-            mutants = createMutants( fuzzableRequest , result_set,
+            mutants = createMutants( fuzzable_request , result_set,
                                      fuzzableParamList=[analyzed_variable,] )
             return mutants
         

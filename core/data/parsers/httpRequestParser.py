@@ -95,11 +95,11 @@ def checkURISyntax(uri, host=None):
 
 def httpRequestParser(head, postdata):
     '''
-    This function parses HTTP Requests from a string to a fuzzableRequest.
+    This function parses HTTP Requests from a string to a fuzzable_request.
     
     @parameter head: The head of the request.
     @parameter postdata: The post data of the request
-    @return: A fuzzableRequest object with all the corresponding information
+    @return: A fuzzable_request object with all the corresponding information
         that was sent in head and postdata
     
     @author: Andres Riancho ( andres.riancho@gmail.com )

@@ -83,7 +83,7 @@ class xss(baseAuditPlugin):
         
         # Some internal variables to keep track of remote 
         # web application sanitization
-        self._fuzzableRequests = []
+        self._fuzzable_requests = []
         self._xssMutants = []
         self._special_characters = ['<', '>', '"', "'", '(', ')']
         
@@ -98,10 +98,10 @@ class xss(baseAuditPlugin):
         '''
         Tests an URL for XSS vulnerabilities.
         
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         # Save it here, so I can search for permanent XSS
-        self._fuzzableRequests.append(freq)
+        self._fuzzable_requests.append(freq)
         
         # This list is just to test if the parameter is echoed back
         fake_mutants = createMutants(freq, ['',])
@@ -405,7 +405,7 @@ class xss(baseAuditPlugin):
         @return: None, vulns are saved to the kb.
         '''
         if self._check_stored_xss:
-            for fuzzable_request in self._fuzzableRequests:
+            for fuzzable_request in self._fuzzable_requests:
                 response = self._uri_opener.send_mutant(fuzzable_request,
                                                          cache=False)
 

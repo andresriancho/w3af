@@ -43,14 +43,14 @@ class wsdl_finder(baseCrawlPlugin):
         # Internal variables
         self._already_tested = scalable_bloomfilter()
         
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         If url not in _tested, append a ?WSDL and check the response.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        url = fuzzableRequest.getURL().uri2url()
+        url = fuzzable_request.getURL().uri2url()
         url_string = url.url_string
         
         if url_string not in self._already_tested:

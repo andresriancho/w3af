@@ -63,8 +63,8 @@ class mutant(object):
         If I want to overwrite 456, index has to be 1.
 
         >>> from core.data.parsers.urlParser import url_object
-        >>> from core.data.request.fuzzableRequest import fuzzableRequest
-        >>> fr = fuzzableRequest(url_object('http://www.w3af.com'), )
+        >>> from core.data.request.fuzzable_request import fuzzable_request
+        >>> fr = fuzzable_request(url_object('http://www.w3af.com'), )
         >>> m = mutant( fr )
         
         # By default

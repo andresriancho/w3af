@@ -50,14 +50,14 @@ class user_dir(baseCrawlPlugin):
         self._do_fast_search = False
     
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzableRequest ):
+    def crawl(self, fuzzable_request ):
         '''
         Searches for user directories.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        base_url = fuzzableRequest.getURL().baseUrl()
+        base_url = fuzzable_request.getURL().baseUrl()
         self._headers = {'Referer': base_url.url_string }
         
         # Create a response body to compare with the others

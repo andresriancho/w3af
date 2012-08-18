@@ -23,10 +23,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import imap
 
 from core.controllers.misc.io import is_file_like
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 
 
-class httpPostDataRequest(fuzzableRequest):
+class httpPostDataRequest(fuzzable_request):
     '''
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.
@@ -35,7 +35,7 @@ class httpPostDataRequest(fuzzableRequest):
     '''
     def __init__(self, uri, method='POST', headers=None,
                  cookie=None, dc=None, files=None):
-        fuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
+        fuzzable_request.__init__(self, uri, method, headers, cookie, dc)
         self._files = files or []
 
     def getData(self):

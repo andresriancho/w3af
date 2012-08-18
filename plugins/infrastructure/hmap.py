@@ -49,11 +49,11 @@ class hmap(baseInfrastructurePlugin):
         # User configured parameters
         self._genFpF = False
 
-    def discover(self, fuzzableRequest ):
+    def discover(self, fuzzable_request ):
         '''
         It calls the "main" from hmap and writes the results to the kb.
         
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains (among other things) the URL to test.
+        @parameter fuzzable_request: A fuzzable_request instance that contains (among other things) the URL to test.
         '''
         if not self._exec:
             # This will remove the plugin from the infrastructure plugins to be run.
@@ -70,7 +70,7 @@ class hmap(baseInfrastructurePlugin):
                 msg = 'Hmap web server fingerprint is starting, this may take a while.'
                 om.out.information( msg )
                 
-                url = fuzzableRequest.getURL()
+                url = fuzzable_request.getURL()
                 protocol = url.getProtocol()
                 server = url.getNetLocation()
                 

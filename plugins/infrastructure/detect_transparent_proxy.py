@@ -60,7 +60,7 @@ class detect_transparent_proxy(baseInfrastructurePlugin):
         else:
             om.out.information( 'Your ISP has no transparent proxy.' )
         
-    def _is_proxyed_conn( self, fuzzableRequest ):
+    def _is_proxyed_conn( self, fuzzable_request ):
         '''
         Make a connection to a "random" IP to port 80 and make a request for the
         URL we are interested in.

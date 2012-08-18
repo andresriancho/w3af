@@ -49,10 +49,10 @@ class wordpress_enumerate_users(baseCrawlPlugin):
         # Internal variables
         self._exec = True
 
-    def crawl(self, fuzzableRequest):
+    def crawl(self, fuzzable_request):
         '''
         Find users in a WordPress installation
-        @parameter fuzzableRequest: A fuzzableRequest instance that contains
+        @parameter fuzzable_request: A fuzzable_request instance that contains
         (among other things) the URL to test.
         '''
         uid = 1           # First user ID, will be incremented until 404
@@ -66,7 +66,7 @@ class wordpress_enumerate_users(baseCrawlPlugin):
             raise w3afRunOnce()
         else:
             # Check if the server is running WordPress
-            domain_path = fuzzableRequest.getURL().getDomainPath()
+            domain_path = fuzzable_request.getURL().getDomainPath()
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
             response = self._uri_opener.GET( wp_unique_url, cache=True )
 

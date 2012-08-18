@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
 from plugins.grep.collect_cookies import collect_cookies
@@ -45,7 +45,7 @@ class test_collect_cookies(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'cookies')), 0 )
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'invalid-cookies')), 0 )
@@ -55,7 +55,7 @@ class test_collect_cookies(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'cookies')), 1 )
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'invalid-cookies')), 0 )
@@ -65,7 +65,7 @@ class test_collect_cookies(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; HttpOnly'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'cookies')), 1)
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'invalid-cookies')), 0 )
@@ -75,7 +75,7 @@ class test_collect_cookies(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': ''}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'cookies')), 1 )
         self.assertEqual( len(kb.kb.getData('collect_cookies', 'invalid-cookies')), 0)
@@ -85,7 +85,7 @@ class test_collect_cookies(unittest.TestCase):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'PHPSESSID=d98238ab39de038'}
         response = httpResponse(200, body , headers, url, url)
-        request = fuzzableRequest(url, method='GET')
+        request = fuzzable_request(url, method='GET')
 
         self.plugin.grep(request, response)
         

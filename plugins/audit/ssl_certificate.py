@@ -58,7 +58,7 @@ class ssl_certificate(baseAuditPlugin):
         '''
         Get the cert and do some checks against it.
 
-        @param freq: A fuzzableRequest
+        @param freq: A fuzzable_request
         '''
         url = freq.getURL()
         if 'HTTPS' != url.getProtocol().upper():

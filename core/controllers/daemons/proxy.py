@@ -35,7 +35,7 @@ from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
 import core.controllers.outputManager as om
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzableRequest import fuzzableRequest
+from core.data.request.fuzzable_request import fuzzable_request
 
 
 class proxy(w3afThread):
@@ -238,7 +238,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             path = self.path
 
-        fuzzReq = fuzzableRequest(
+        fuzzReq = fuzzable_request(
                               url_object(path), 
                               self.command,
                               self.headers.dict
