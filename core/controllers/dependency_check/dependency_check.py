@@ -58,9 +58,9 @@ def dependency_check():
             from pybloomfilter import BloomFilter as mmap_filter
         except Exception, e:
             msg = '    pybloomfiltermmap is a required dependency in *nix systems,'
-            msg += '    in order to install it please run the following commands:'
-            msg += '    sudo apt-get install python2.7-dev\n'
-            msg += '    sudo easy_install pybloomfiltermmap'
+            msg += ' in order to install it please run the following commands:\n'
+            msg += '        sudo apt-get install python2.7-dev\n'
+            msg += '        sudo easy_install pybloomfiltermmap'
             additional_information.append(msg)
             reasonForExit = True
     #mem_test('after bloom filter import')
@@ -72,7 +72,7 @@ def dependency_check():
         msg += ' will speed up pattern matching for most plugins. You'
         msg += ' can download it from http://code.google.com/p/esmre/ or run'
         msg += ' the following command to install it:\n'
-        msg += '    sudo easy_install esmre\n'
+        msg += '        sudo easy_install esmre\n'
         
         #packages.append('esmre')
         #packages.append('esm')
