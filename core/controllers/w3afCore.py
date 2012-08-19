@@ -163,7 +163,7 @@ class w3afCore(object):
         @return: The time (in minutes) between now and the call to start().
         '''
         now = time.time()
-        diff = now - self._w3af_core._start_time_epoch
+        diff = now - self._start_time_epoch
         return diff / 60
         
     def cleanup( self ):
