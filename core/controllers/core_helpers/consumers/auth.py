@@ -24,10 +24,10 @@ import Queue
 
 from .constants import POISON_PILL, FORCE_LOGIN
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager as tm
-from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
+from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
 
 class auth(BaseConsumer):

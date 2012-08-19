@@ -27,7 +27,7 @@ import random
 
 from itertools import repeat
 
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.w3afCore import w3af_core
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzable_request import fuzzable_request

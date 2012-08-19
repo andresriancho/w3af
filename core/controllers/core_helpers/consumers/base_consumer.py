@@ -23,7 +23,7 @@ import Queue
 
 from multiprocessing.dummy import Process
 
-from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.threads.threadpool import Pool
 
 

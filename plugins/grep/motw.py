@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 

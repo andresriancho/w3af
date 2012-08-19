@@ -25,7 +25,7 @@ from itertools import izip, repeat
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.misc.levenshtein import relative_distance_lt
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.options.option import option

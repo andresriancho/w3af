@@ -24,7 +24,7 @@ import shutil
 
 from nose.plugins.attrib import attr
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 from ..helper import PluginTest, PluginConfig
 
 

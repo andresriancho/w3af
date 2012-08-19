@@ -23,8 +23,8 @@ import sys
 
 import core.controllers.outputManager as om
 
-from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
 

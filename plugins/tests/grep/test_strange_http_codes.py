@@ -27,7 +27,7 @@ from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from plugins.grep.strange_http_codes import strange_http_codes
 
 

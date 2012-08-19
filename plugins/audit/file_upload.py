@@ -32,7 +32,7 @@ import core.data.kb.vuln as vuln
 from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList

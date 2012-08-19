@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -66,7 +66,7 @@ class code_disclosure(baseGrepPlugin):
         >>> from core.data.request.fuzzable_request import fuzzable_request
         >>> from core.controllers.misc.temp_dir import create_temp_dir
         >>> from core.data.parsers.urlParser import url_object
-        >>> from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+        >>> from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
         >>> from core.data.url.xUrllib import xUrllib
         >>> xurllib = xUrllib()
         >>> f = fingerprint_404_singleton( [False, False, False] )

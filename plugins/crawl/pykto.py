@@ -32,7 +32,7 @@ import core.data.constants.severity as severity
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.options.option import option

@@ -28,13 +28,13 @@ import traceback
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
-from core.controllers.coreHelpers.progress import progress
-from core.controllers.coreHelpers.status import w3af_core_status
-from core.controllers.coreHelpers.profiles import w3af_core_profiles
-from core.controllers.coreHelpers.plugins import w3af_core_plugins
-from core.controllers.coreHelpers.target import w3af_core_target
-from core.controllers.coreHelpers.strategy import w3af_core_strategy
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.core_helpers.progress import progress
+from core.controllers.core_helpers.status import w3af_core_status
+from core.controllers.core_helpers.profiles import w3af_core_profiles
+from core.controllers.core_helpers.plugins import w3af_core_plugins
+from core.controllers.core_helpers.target import w3af_core_target
+from core.controllers.core_helpers.strategy import w3af_core_strategy
+from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.threads.threadManager import thread_manager
 
 from core.controllers.misc.epoch_to_string import epoch_to_string

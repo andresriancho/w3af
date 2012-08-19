@@ -25,10 +25,10 @@ import sys
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
-from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
-from core.controllers.coreHelpers.consumers.constants import POISON_PILL
-from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.coreHelpers.update_urls_in_kb import (update_kb,
+from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
                                                             get_urls_from_kb,
                                                             get_fuzzable_requests_from_kb)
 from core.controllers.exception_handling.helpers import pprint_plugins

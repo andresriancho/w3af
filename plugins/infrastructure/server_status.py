@@ -34,7 +34,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 from core.data.parsers.urlParser import url_object
 
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afRunOnce
 
 import re

@@ -25,7 +25,7 @@ import core.data.kb.info as info
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
 
 

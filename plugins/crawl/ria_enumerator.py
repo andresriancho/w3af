@@ -31,7 +31,7 @@ import core.data.constants.severity as severity
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 

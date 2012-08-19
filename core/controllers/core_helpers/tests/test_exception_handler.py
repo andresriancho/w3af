@@ -25,8 +25,8 @@ import sys
 
 from nose.plugins.attrib import attr
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.coreHelpers.status import w3af_core_status
+from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.core_helpers.status import w3af_core_status
 
 
 class TestExceptionHandler(unittest.TestCase):

@@ -27,8 +27,8 @@ import core.controllers.outputManager as om
 
 from core.controllers.w3afException import (w3afMustStopException, 
                                             w3afMustStopOnUrlError)
-from core.controllers.coreHelpers.update_urls_in_kb import update_kb
-from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.update_urls_in_kb import update_kb
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.w3afException import w3afException
 from core.data.request.frFactory import create_fuzzable_requests
 

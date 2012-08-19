@@ -29,7 +29,7 @@ import core.data.parsers.dpCache as dpCache
 import core.data.constants.httpConstants as http_constants
 
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.itertools_toolset import unique_justseen
 

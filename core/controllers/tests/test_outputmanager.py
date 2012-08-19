@@ -24,7 +24,7 @@ from nose.plugins.attrib import attr
 
 import core.controllers.outputManager as om
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 
 
 class TestOutputManager(PyMockTestCase):

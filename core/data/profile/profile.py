@@ -24,7 +24,7 @@ import ConfigParser
 import os
 import shutil
 
-from core.controllers.coreHelpers.target import w3af_core_target
+from core.controllers.core_helpers.target import w3af_core_target
 from core.controllers.misc.factory import factory
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.constants.encodings import UTF8

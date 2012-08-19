@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 
 from core.controllers.exception_handling.helpers import gettempdir, create_crash_file
 from core.ui.gtkUi.exception_handling import handled_bug_report
@@ -38,7 +38,7 @@ def handle_exceptions():
     will allow the user to report the exceptions that were found during the
     scan.
     
-    The main class in this game is core.controllers.coreHelpers.exception_handler
+    The main class in this game is core.controllers.core_helpers.exception_handler
     and you should read it before this one.
     ''' 
     # Save the info to a file for later analysis by the user   

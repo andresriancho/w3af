@@ -59,7 +59,7 @@ class ExceptionHandler(object):
         processing. If there are already too many stored exceptions for this
         plugin then no action is taken.
         
-        @param current_status: Pointer to the coreHelpers.status module
+        @param current_status: Pointer to the core_helpers.status module
         @param exception: The exception that was raised
         @param exec_info: The exec info as returned by sys module
         @param enabled_plugins: A string as returned by helpers.pprint_plugins.

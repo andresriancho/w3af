@@ -45,7 +45,7 @@ from core.controllers.w3afCore import w3af_core
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.gtkUi.splash import Splash
@@ -578,7 +578,7 @@ class MainApp(object):
                 
                 #
                 #    Here we handle the case of an exception that was raised
-                #    and did not get handled by coreHelpers.exception_handler
+                #    and did not get handled by core_helpers.exception_handler
                 #
                 try:
                     plugins_str = pprint_plugins(self.w3af)

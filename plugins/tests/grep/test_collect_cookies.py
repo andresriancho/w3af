@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
-from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from plugins.grep.collect_cookies import collect_cookies
 
 

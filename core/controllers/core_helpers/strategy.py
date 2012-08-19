@@ -27,14 +27,14 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.coreHelpers.consumers.grep import grep
-from core.controllers.coreHelpers.consumers.auth import auth
-from core.controllers.coreHelpers.consumers.audit import audit
-from core.controllers.coreHelpers.consumers.bruteforce import bruteforce
-from core.controllers.coreHelpers.consumers.seed import seed
-from core.controllers.coreHelpers.consumers.crawl_infrastructure import crawl_infrastructure 
-from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.core_helpers.consumers.grep import grep
+from core.controllers.core_helpers.consumers.auth import auth
+from core.controllers.core_helpers.consumers.audit import audit
+from core.controllers.core_helpers.consumers.bruteforce import bruteforce
+from core.controllers.core_helpers.consumers.seed import seed
+from core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_infrastructure 
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.w3afException import w3afException
 
 
@@ -55,13 +55,22 @@ class w3af_core_strategy(object):
     '''
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
-                
+        
+        # Internal attribute to keep track of all known fuzzable requests
+        # TODO: Make this a disk_set to reduce memory usage.
+        self._fuzzable_request_set = set()
+        kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
+        
         # Consumer threads
         self._grep_consumer = None
         self._audit_consumer = None
         self._auth_consumer = None
+        
+        # Producer/consumer threads
         self._discovery_consumer = None
         self._bruteforce_consumer = None
+        
+        # Producer threads
         self._seed_producer = seed(self._w3af_core)
         
         self._consumers = [self._grep_consumer,
@@ -199,7 +208,7 @@ class w3af_core_strategy(object):
         #    because I want to initialize the is_404 database in a controlled
         #    try/except block.
         #
-        from core.controllers.coreHelpers.fingerprint_404 import is_404
+        from core.controllers.core_helpers.fingerprint_404 import is_404
         
         for url in cf.cf.getData('targets'):
             try:
@@ -216,9 +225,6 @@ class w3af_core_strategy(object):
             * Retrieve all plugins from the core,
             * Create the consumer instance and more,
         '''
-        # Internal variables
-        kb.kb.save('urls', 'fuzzable_requests', set())
-        
         crawl_plugins = self._w3af_core.plugins.plugins['crawl']
         infrastructure_plugins = self._w3af_core.plugins.plugins['infrastructure']
         

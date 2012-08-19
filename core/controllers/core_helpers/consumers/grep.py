@@ -23,10 +23,10 @@ import sys
 
 from .constants import POISON_PILL
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
-from core.controllers.coreHelpers.status import w3af_core_status
+from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.coreHelpers.consumers.base_consumer import BaseConsumer
+from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
 
 class grep(BaseConsumer):

@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info

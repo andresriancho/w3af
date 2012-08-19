@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk
 
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import gettempdir
 from core.ui.gtkUi.exception_handling.common_windows import (simple_base_window,
                                                              trac_multi_bug_report)

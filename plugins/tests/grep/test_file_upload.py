@@ -34,7 +34,7 @@ class test_file_upload(unittest.TestCase):
     def setUp(self):
         self.plugin = file_upload()
 
-        from core.controllers.coreHelpers.fingerprint_404 import fingerprint_404_singleton
+        from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
         from core.data.url.xUrllib import xUrllib
         f = fingerprint_404_singleton( [False, False, False] )
         f.set_url_opener( xUrllib() )

@@ -33,7 +33,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
 class archive_dot_org(baseCrawlPlugin):

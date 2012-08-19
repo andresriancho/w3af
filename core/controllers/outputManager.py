@@ -27,7 +27,7 @@ import Queue
 
 from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
-from core.controllers.coreHelpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
 
 def start_thread_on_demand(func):
     '''
@@ -169,8 +169,8 @@ class outputManager(threading.Thread):
                 # FIXME: I need to import these here because of the awful
                 #        singletons I use all over the framework. If imported
                 #        at the top, they will generate circular import errors
-                from core.controllers.coreHelpers.exception_handler import exception_handler
-                from core.controllers.coreHelpers.status import w3af_core_status
+                from core.controllers.core_helpers.exception_handler import exception_handler
+                from core.controllers.core_helpers.status import w3af_core_status
                 
                 class fake_status(w3af_core_status):
                     pass

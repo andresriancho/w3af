@@ -24,7 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.w3afCore import w3afCore
-from core.controllers.coreHelpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
 from core.data.options.option import option as Option

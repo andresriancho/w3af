@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.coreHelpers.fingerprint_404 import is_404
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.esmre.multi_in import multi_in
 
 def whole_words(l):
