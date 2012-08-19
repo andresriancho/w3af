@@ -35,13 +35,13 @@ class grep(BaseConsumer):
     analyzes them using the user-enabled grep plugins.
     '''
     
-    def __init__(self, in_queue, grep_plugins, w3af_core):
+    def __init__(self, grep_plugins, w3af_core):
         '''
         @param in_queue: The input queue that will feed the grep plugins
         @param grep_plugins: Instances of grep plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(grep, self).__init__(in_queue, grep_plugins, w3af_core)
+        super(grep, self).__init__(grep_plugins, w3af_core)
             
     def run(self):
         '''
@@ -49,14 +49,14 @@ class grep(BaseConsumer):
         '''
         while True:
            
-            work_unit = self._in_queue.get()
+            work_unit = self.in_queue.get()
 
             if work_unit == POISON_PILL:
                 
                 for plugin in self._consumer_plugins:
                     plugin.end()
                 
-                self._in_queue.task_done()
+                self.in_queue.task_done()
                 
                 break
                 
@@ -84,5 +84,5 @@ class grep(BaseConsumer):
                         enabled_plugins = pprint_plugins(self._w3af_core)
                         exception_handler.handle( status, e , exec_info, enabled_plugins )
                 
-                self._in_queue.task_done()
+                self.in_queue.task_done()
                 self._task_done(None)

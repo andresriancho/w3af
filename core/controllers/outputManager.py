@@ -71,7 +71,7 @@ class outputManager(threading.Thread):
         self._plugins_options = {}
         
         # Internal variables
-        self._in_queue = Queue.Queue()
+        self.in_queue = Queue.Queue()
     
     def run(self):
         '''
@@ -80,7 +80,7 @@ class outputManager(threading.Thread):
         
         '''
         while True:
-            work_unit = self._in_queue.get()
+            work_unit = self.in_queue.get()
             
             if work_unit == POISON_PILL:
                 
@@ -94,7 +94,7 @@ class outputManager(threading.Thread):
                 #
                 apply(self._call_output_plugins_action, args, kwds)
                 
-                self._in_queue.task_done()
+                self.in_queue.task_done()
     
     def end_output_plugins(self):
         self.process_all_messages()
@@ -102,10 +102,10 @@ class outputManager(threading.Thread):
     
     def process_all_messages(self):
         '''Blocks until all messages are processed'''
-        self._in_queue.join()
+        self.in_queue.join()
     
     def _add_to_queue(self, *args, **kwds):
-        self._in_queue.put( (args, kwds) )
+        self.in_queue.put( (args, kwds) )
 
     def __end_output_plugins_impl(self):
         for o_plugin in self._output_plugin_list:

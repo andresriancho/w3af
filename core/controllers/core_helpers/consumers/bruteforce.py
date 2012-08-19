@@ -35,13 +35,13 @@ class bruteforce(BaseConsumer):
     by the crawl plugins and bruteforces logins by performing various requests.
     '''
     
-    def __init__(self, in_queue, bruteforce_plugins, w3af_core):
+    def __init__(self, bruteforce_plugins, w3af_core):
         '''
         @param in_queue: The input queue that will feed the bruteforce plugins
         @param bruteforce_plugins: Instances of bruteforce plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(bruteforce, self).__init__(in_queue, bruteforce_plugins, w3af_core)
+        super(bruteforce, self).__init__(bruteforce_plugins, w3af_core)
 
     def _teardown(self):
         # End plugins

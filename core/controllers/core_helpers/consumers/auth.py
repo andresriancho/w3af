@@ -35,7 +35,7 @@ class auth(BaseConsumer):
     Thread that logins into the application every N seconds.
     '''
     
-    def __init__(self, in_queue, auth_plugins, w3af_core, timeout):
+    def __init__(self, auth_plugins, w3af_core, timeout):
         '''
         @param in_queue: A queue that's used to communicate with the thread. Items
                          that might appear in this queue are:
@@ -45,7 +45,7 @@ class auth(BaseConsumer):
         @param w3af_core: The w3af core that we'll use for status reporting
         @param timeout: The time to wait between each login check
         '''
-        super(auth, self).__init__(in_queue, auth_plugins, w3af_core)
+        super(auth, self).__init__(auth_plugins, w3af_core)
         
         self._timeout = timeout
     
@@ -56,7 +56,7 @@ class auth(BaseConsumer):
         while True:
            
             try:
-                action = self._in_queue.get( timeout=self._timeout )
+                action = self.in_queue.get( timeout=self._timeout )
             except Queue.Empty:
                 self._login()
             else:
@@ -66,13 +66,13 @@ class auth(BaseConsumer):
                     for plugin in self._consumer_plugins:
                         plugin.end()
                     
-                    self._in_queue.task_done()
+                    self.in_queue.task_done()
                     break
                     
                 elif action == FORCE_LOGIN:
                     
                     self._login()
-                    self._in_queue.task_done()
+                    self.in_queue.task_done()
 
     def _login(self):
         '''
@@ -100,7 +100,7 @@ class auth(BaseConsumer):
         self._task_done(None)
     
     def async_force_login(self):
-        self._in_queue.put( FORCE_LOGIN )
+        self.in_queue.put( FORCE_LOGIN )
     
     def force_login(self):
         self._login()

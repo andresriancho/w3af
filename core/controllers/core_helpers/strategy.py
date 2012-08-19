@@ -232,10 +232,7 @@ class w3af_core_strategy(object):
             discovery_plugins = crawl_plugins
             discovery_plugins.extend(infrastructure_plugins)
             
-            discovery_in_queue = Queue.Queue()
-            
-            self._discovery_consumer = crawl_infrastructure(discovery_in_queue,
-                                                            discovery_plugins,
+            self._discovery_consumer = crawl_infrastructure(discovery_plugins,
                                                             self._w3af_core,
                                                             cf.cf.getData('maxDiscoveryTime'))
             self._discovery_consumer.start()
@@ -250,9 +247,8 @@ class w3af_core_strategy(object):
         grep_plugins = self._w3af_core.plugins.plugins['grep']
         
         if grep_plugins:
-            grep_in_queue = Queue.Queue()
-            self._w3af_core.uri_opener.set_grep_queue( grep_in_queue )
-            self._grep_consumer = grep(grep_in_queue, grep_plugins, self._w3af_core)
+            self._grep_consumer = grep(grep_plugins, self._w3af_core)
+            self._w3af_core.uri_opener.set_grep_queue( self._grep_consumer.in_queue )
             self._grep_consumer.start()
         
     def _teardown_grep(self):
@@ -309,9 +305,7 @@ class w3af_core_strategy(object):
         bruteforce_plugins = self._w3af_core.plugins.plugins['bruteforce']
         
         if bruteforce_plugins:
-            bruteforce_in_queue = Queue.Queue()
-            self._bruteforce_consumer = bruteforce(bruteforce_in_queue,
-                                                   bruteforce_plugins,
+            self._bruteforce_consumer = bruteforce(bruteforce_plugins,
                                                    self._w3af_core)
             self._bruteforce_consumer.start()
     
@@ -327,8 +321,7 @@ class w3af_core_strategy(object):
         auth_plugins = self._w3af_core.plugins.plugins['auth']
         
         if auth_plugins:
-            auth_in_queue = Queue.Queue()
-            self._auth_consumer = auth(auth_in_queue, auth_plugins,
+            self._auth_consumer = auth(auth_plugins,
                                        self._w3af_core, timeout)
             self._auth_consumer.start()
             self._auth_consumer.async_force_login()
@@ -342,7 +335,6 @@ class w3af_core_strategy(object):
         audit_plugins = self._w3af_core.plugins.plugins['audit']
         
         if audit_plugins:
-            audit_in_queue = Queue.Queue()
-            self._audit_consumer = audit(audit_in_queue, audit_plugins, self._w3af_core)
+            self._audit_consumer = audit(audit_plugins, self._w3af_core)
             self._audit_consumer.start()
             

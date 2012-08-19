@@ -34,7 +34,7 @@ class BaseConsumer(Process):
     requests.
     '''
     
-    def __init__(self, in_queue, consumer_plugins, w3af_core):
+    def __init__(self, consumer_plugins, w3af_core):
         '''
         @param in_queue: The input queue that will feed the base_consumer plugins
         @param base_consumer_plugins: Instances of base_consumer plugins in a list
@@ -42,7 +42,7 @@ class BaseConsumer(Process):
         '''
         super(BaseConsumer, self).__init__()
         
-        self._in_queue = in_queue
+        self.in_queue = Queue.Queue()
         # See documentation in the property below
         self._out_queue = Queue.Queue()
         self._consumer_plugins = consumer_plugins
@@ -60,7 +60,7 @@ class BaseConsumer(Process):
 
         while True:
            
-            work_unit = self._in_queue.get()
+            work_unit = self.in_queue.get()
 
             if work_unit == POISON_PILL:
                 
@@ -73,13 +73,13 @@ class BaseConsumer(Process):
                 
                 # Finish this consumer and everyone consuming the output
                 self._out_queue.put( POISON_PILL )
-                self._in_queue.task_done()
+                self.in_queue.task_done()
                 break
                 
             else:
                 
                 self._consume(work_unit)
-                self._in_queue.task_done()
+                self.in_queue.task_done()
 
     def _teardown(self):
         raise NotImplementedError
@@ -93,13 +93,13 @@ class BaseConsumer(Process):
     def in_queue_put(self, work):
         if work is not None:
             self._tasks_in_progress_counter += 1
-            return self._in_queue.put( work )
+            return self.in_queue.put( work )
         
     def in_queue_put_iter(self, work_iter):
         if work_iter is not None:
             for work in work_iter:
                 self._tasks_in_progress_counter += 1
-                self._in_queue.put( work )
+                self.in_queue.put( work )
                     
     def has_pending_work(self):
         '''
@@ -124,15 +124,15 @@ class BaseConsumer(Process):
         return self._out_queue
         
     def in_queue_size(self):
-        return self._in_queue.qsize()
+        return self.in_queue.qsize()
 
     def join(self):
         '''
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         '''
-        self._in_queue.put( POISON_PILL )
-        self._in_queue.join()
+        self.in_queue.put( POISON_PILL )
+        self.in_queue.join()
 
     def terminate(self):
         '''
@@ -140,12 +140,12 @@ class BaseConsumer(Process):
         exits. Should be very fast and called only if we don't care about the
         queued work anymore (ie. user clicked stop in the UI).
         '''
-        while not self._in_queue.empty():
-            self._in_queue.get()
-            self._in_queue.task_done()
+        while not self.in_queue.empty():
+            self.in_queue.get()
+            self.in_queue.task_done()
         
-        self._in_queue.put( POISON_PILL )
-        self._in_queue.join()
+        self.in_queue.put( POISON_PILL )
+        self.in_queue.join()
 
     def get_result(self, timeout=0.5):
         '''
