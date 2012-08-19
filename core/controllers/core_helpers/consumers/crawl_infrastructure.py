@@ -215,15 +215,6 @@ class crawl_infrastructure(BaseConsumer):
         om.out.information('The list of fuzzable requests is:')
         map(om.out.information, tmp_fr)
         
-    def get_discovery_time(self):
-        '''
-        @return: The time between now and the start of the crawl phase in
-                 minutes.
-        '''
-        now = time.time()
-        diff = now - self._w3af_core._start_time_epoch
-        return diff / 60
-    
     def _should_stop_discovery(self):
         '''
         @return: True if we should stop the crawl phase because of time limit
@@ -236,7 +227,7 @@ class crawl_infrastructure(BaseConsumer):
             return True
         
         # TODO: unittest this limit
-        if self.get_discovery_time() > self._max_discovery_time:
+        if self._w3af_core.get_run_time() > self._max_discovery_time:
             om.out.information('Maximum crawl time limit hit.')
             return True
         

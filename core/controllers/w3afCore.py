@@ -158,7 +158,14 @@ class w3afCore(object):
             
             self._end()
             
-    
+    def get_run_time(self):
+        '''
+        @return: The time (in minutes) between now and the call to start().
+        '''
+        now = time.time()
+        diff = now - self._w3af_core._start_time_epoch
+        return diff / 60
+        
     def cleanup( self ):
         '''
         The GTK user interface calls this when a scan has been stopped 
