@@ -81,7 +81,7 @@ By default all plugins are listed.
             </item>
         </category>
     </topic>
-    <topic name="pluginType">
+    <topic name="plugin_type">
         <category name="plugins">
             <item name="${TYPE}">
                 <head>View, configure and enable ${TYPE} plugins</head>
