@@ -21,12 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 
+from nose.plugins.attrib import attr
+
 import core.data.kb.vuln as vuln
 
 from core.data.parsers.urlParser import url_object
 from ..helper import PluginTest, PluginConfig
 
 
+@attr('smoke')
 class TestTextFile(PluginTest):
     
     OUTPUT_FILE = 'output-unittest.txt'

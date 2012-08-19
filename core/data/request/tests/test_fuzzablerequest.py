@@ -21,10 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from nose.plugins.attrib import attr
+
 from ..fuzzable_request import fuzzable_request as FuzzReq
 from core.data.parsers.urlParser import url_object
 
-
+@attr('smoke')
 class TestFuzzableRequest(unittest.TestCase):
 
     def setUp(self):

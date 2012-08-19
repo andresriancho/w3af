@@ -19,12 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
+
+from nose.plugins.attrib import attr
 
 from core.data.kb.info import info
 
-
+@attr('smoke')
 class TestInfo(unittest.TestCase):
     '''
     Simplest tests for info. Mainly started because of incompatibilities between

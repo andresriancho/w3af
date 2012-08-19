@@ -23,11 +23,12 @@ import unittest
 import time
 import os.path
 
+from nose.plugins.attrib import attr
+
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
-
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.request.fuzzable_request import fuzzable_request as FuzzReq
@@ -35,6 +36,7 @@ from core.data.parsers.urlParser import url_object
 from core.data.url.httpResponse import httpResponse
 
 
+@attr('smoke')
 class TestHistoryItem(unittest.TestCase):
 
     def setUp(self):

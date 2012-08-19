@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
 from ..helper import PluginTest, PluginConfig
 from core.data.parsers.urlParser import url_object
@@ -76,8 +77,7 @@ class TestGeneric(PluginTest):
              }
         }
     
-    
-    
+    @attr('smoke')    
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 

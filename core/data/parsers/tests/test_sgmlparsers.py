@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from pymock import PyMockTestCase, IfTrue, override, at_least
+from nose.plugins.attrib import attr
 
 from ..htmlParser import HTMLParser
 from ..sgmlParser import SGMLParser
@@ -139,7 +140,7 @@ class _SGMLParser(SGMLParser):
         # Restore it
         self._parse = orig_parse
         
-
+@attr('smoke')
 class TestSGMLParser(PyMockTestCase):
 
     def setUp(self):
@@ -298,7 +299,7 @@ class _HTMLParser(HTMLParser):
         # Restore it
         self._parse = orig_parse
 
-
+@attr('smoke')
 class TestHTMLParser(PyMockTestCase):
 
     def setUp(self):

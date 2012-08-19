@@ -21,7 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.ui.consoleUi.consoleUi import consoleUi
+
 
 def do_nothing(self, *args, **kwds):
     pass
@@ -38,7 +41,7 @@ class mock_stdout(object):
     def clear(self):
         self.messages = []
 
-
+@attr('smoke')
 class TestConsoleUI(unittest.TestCase):
     '''
     Basic test for the console UI.

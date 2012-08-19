@@ -18,8 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
+from nose.plugins.attrib import attr
 from ..helper import PluginTest, PluginConfig
+
 
 class TestBasicAuth(PluginTest):
     
@@ -36,6 +37,7 @@ class TestBasicAuth(PluginTest):
             }
         }
     
+    @attr('smoke')
     def test_found_credentials(self):
         # Run the scan
         cfg = self._run_configs['cfg']

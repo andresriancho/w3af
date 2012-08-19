@@ -18,10 +18,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import random
 import unittest
 import string
+
+from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_list import disk_list
@@ -34,6 +35,7 @@ class test_disk_list(unittest.TestCase):
     def setUp(self):
         create_temp_dir()
 
+    @attr('smoke')
     def test_int(self):
         dl = disk_list()
 
@@ -47,7 +49,8 @@ class test_disk_list(unittest.TestCase):
         for i in xrange(0, 1000 / 2 ):
             r = random.randint(1000,1000 * 2)
             self.assertEqual(r in dl, False)
-        
+    
+    @attr('smoke')
     def test_string(self):
         dl = disk_list()
 
@@ -62,6 +65,7 @@ class test_disk_list(unittest.TestCase):
 
         self.assertEqual(rnd in dl, True)
     
+    @attr('smoke')
     def test_unicode(self):
         dl = disk_list()
 
@@ -72,7 +76,8 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[0] , u'à')
         self.assertEqual( dl[1] , u'המלצת השבוע')
         self.assertEqual( dl[2] , [u'à',])
-
+    
+    @attr('smoke')
     def test_urlobject(self):
         dl = disk_list()
 
@@ -83,7 +88,8 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[1] , url_object('http://w3af.org/?id=3'))
         self.assertFalse( url_object('http://w3af.org/?id=4') in dl )
         self.assertTrue( url_object('http://w3af.org/?id=2') in dl )
-        
+    
+    @attr('smoke')
     def test_fuzzable_request(self):
         dl = disk_list()
         
@@ -103,7 +109,8 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[1] , qsr2)
         self.assertFalse( qsr3 in dl )
         self.assertTrue( qsr2 in dl )
-        
+    
+    @attr('smoke')
     def test_len(self):
         dl = disk_list()
 
@@ -112,6 +119,7 @@ class test_disk_list(unittest.TestCase):
 
         self.assertEqual( len(dl) == 100, True)
 
+    @attr('smoke')
     def test_pickle(self):
         dl = disk_list()
 
@@ -127,6 +135,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( values[1] == 1, True)
         self.assertEqual( values[2] == [3,2,1], True)
 
+    @attr('smoke')
     def test_getitem(self):
         dl = disk_list()
 
@@ -138,10 +147,12 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[1] == 1  , True)
         self.assertEqual( dl[2] == [3,2,1], True)
 
+    @attr('smoke')
     def test_not(self):
         dl = disk_list()
         self.assertFalse( dl )
     
+    @attr('smoke')
     def test_extend(self):
         dl = disk_list()
 
@@ -154,6 +165,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[2] , 2)
         self.assertEqual( dl[3] , 3)
     
+    @attr('smoke')
     def test_clear(self):
         dl = disk_list()
 
@@ -165,7 +177,8 @@ class test_disk_list(unittest.TestCase):
         dl.clear()
         
         self.assertEqual( len(dl), 0)
-                
+    
+    @attr('smoke')
     def test_sorted(self):
         dl = disk_list()
 
@@ -177,6 +190,7 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( ['aaa','abc','def'], sorted_dl)
     
+    @attr('smoke')
     def test_ordered_iter(self):
         dl = disk_list()
 
@@ -189,7 +203,8 @@ class test_disk_list(unittest.TestCase):
             sorted_dl.append(i)
         
         self.assertEqual( ['aaa','abc','def'], sorted_dl)        
-        
+    
+    @attr('smoke')
     def test_reverse_iteration(self):
         dl = disk_list()
         dl.append(1)

@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
+from nose.plugins.attrib import attr
 from ..helper import PluginTest, PluginConfig
-import core.data.constants.severity as severity
 
 
+@attr('smoke')
 class TestHTMLComments(PluginTest):
     
     html_comments_url = 'https://moth/w3af/grep/html_comments/'

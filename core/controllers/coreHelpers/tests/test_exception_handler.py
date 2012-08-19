@@ -20,9 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
 import sys
+
+from nose.plugins.attrib import attr
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from core.controllers.coreHelpers.status import w3af_core_status
@@ -38,6 +39,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.status.set_phase( 'phase' )
         self.status.set_current_fuzzable_request( 'http://www.w3af.org/' )        
     
+    @attr('smoke')
     def test_handle_one(self):
         
         try:
@@ -64,6 +66,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals( edata.filename, 'test_exception_handler.py' )
         self.assertEquals( edata.exception, e )
     
+    @attr('smoke')
     def test_handle_multiple(self):
         
         for i in xrange(10):

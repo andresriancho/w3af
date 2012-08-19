@@ -22,10 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import re
 
-from ..helper import PluginTest, PluginConfig
 from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
+from ..helper import PluginTest, PluginConfig
 
+@attr('smoke')
 class TestWebSpider(PluginTest):
     
     follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/'

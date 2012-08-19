@@ -18,13 +18,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
+
+from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.temp_shelve import temp_shelve
 
-
+@attr('smoke')
 class test_shelve(unittest.TestCase):
 
     def setUp(self):

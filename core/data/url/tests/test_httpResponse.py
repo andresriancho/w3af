@@ -19,8 +19,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import unittest
+
+from nose.plugins.attrib import attr
 
 from ..httpResponse import httpResponse, DEFAULT_CHARSET
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
@@ -35,6 +36,7 @@ TEST_RESPONSES = {
 }
 
 
+@attr('smoke')
 class TestHTTPResponse(unittest.TestCase):
     
     def setUp(self):

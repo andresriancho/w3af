@@ -18,11 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import os
 import StringIO
 
 from lxml import etree
+from nose.plugins.attrib import attr
 
 import core.data.kb.vuln as vuln
 
@@ -30,6 +30,7 @@ from core.data.parsers.urlParser import url_object
 from ..helper import PluginTest, PluginConfig
 
 
+@attr('smoke')
 class TestXMLOutput(PluginTest):
     
     xss_url = 'http://moth/w3af/audit/xss/'

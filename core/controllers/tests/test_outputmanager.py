@@ -19,11 +19,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from pymock import PyMockTestCase, method
+from nose.plugins.attrib import attr
+
+import core.controllers.outputManager as om
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
-import core.controllers.outputManager as om
 
 
 class TestOutputManager(PyMockTestCase):
@@ -34,6 +35,7 @@ class TestOutputManager(PyMockTestCase):
     def setUp(self):
         PyMockTestCase.setUp(self)
 
+    @attr('smoke')
     def test_output_plugins_actions(self):
         '''Call all actions on output plugins'''
         
@@ -56,6 +58,7 @@ class TestOutputManager(PyMockTestCase):
             self.verify()
             self.reset()
     
+    @attr('smoke')
     def test_output_plugins_actions_with_unicode_message(self):
         '''Call all actions on output plugins using a unicode message'''
         
@@ -79,6 +82,7 @@ class TestOutputManager(PyMockTestCase):
             self.verify()
             self.reset()        
     
+    @attr('smoke')
     def test_method_that_not_exists(self):
         '''The output manager implements __getattr__ and we don't want it to
         catch-all, just the ones I define!'''
@@ -87,6 +91,7 @@ class TestOutputManager(PyMockTestCase):
         except AttributeError:
             pass
 
+    @attr('smoke')
     def test_kwds(self):
         '''The output manager implements __getattr__ with some added
         functools.partial magic. This verifies that it works well with kwds'''
@@ -110,6 +115,7 @@ class TestOutputManager(PyMockTestCase):
         self.verify()
         self.reset()
     
+    @attr('smoke')
     def test_error_handling(self):
         
         class InvalidPlugin(object):

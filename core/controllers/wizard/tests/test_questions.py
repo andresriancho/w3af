@@ -19,8 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
+
+from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
@@ -32,6 +33,7 @@ class test_questions(object):
 
     unique_question_ids = []
 
+    @attr('smoke')
     def test_all_questions(self):
         '''
         This is a very basic test where we perform the following:
@@ -54,6 +56,7 @@ class test_questions(object):
             
             yield self._test_qid, question_inst
     
+    @attr('smoke')
     def _test_qid(self, question_inst):
         '''
         Ahhh, nose's magic of test generators :D

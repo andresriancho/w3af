@@ -317,13 +317,12 @@ class xUrllib(object):
         req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies)
         req = self._add_headers(req, headers)
         try:
-            http_response = self._send(req, cache=cache, grep=grep)
+            return self._send(req, cache=cache, grep=grep)
         finally:
             if not respect_size_limit:
                 # restore the original value
                 cf.cf.save('maxFileSize', max_file_size)
-            return http_response
-    
+
     def _new_no_content_resp(self, uri, log_it=False):
         '''
         Return a new NO_CONTENT httpResponse object. Optionally call the

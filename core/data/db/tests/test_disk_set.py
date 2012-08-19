@@ -18,8 +18,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
+
+from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_set import disk_set
@@ -28,7 +29,7 @@ from core.data.parsers.urlParser import url_object
 from core.data.request.httpQsRequest import HTTPQSRequest
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 
-
+@attr('smoke')
 class test_disk_set(unittest.TestCase):
 
     def setUp(self):

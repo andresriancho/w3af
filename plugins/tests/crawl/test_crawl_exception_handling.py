@@ -19,14 +19,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import os
 import shutil
+
+from nose.plugins.attrib import attr
 
 from core.controllers.coreHelpers.exception_handler import exception_handler
 from ..helper import PluginTest, PluginConfig
 
 
+@attr('smoke')
 class TestCrawlExceptions(PluginTest):
     
     target_url = 'http://moth/w3af/crawl/web_spider/follow_links/'

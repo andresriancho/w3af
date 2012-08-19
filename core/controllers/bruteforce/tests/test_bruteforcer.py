@@ -22,13 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from nose.plugins.attrib import attr
+
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.bruteforce.bruteforcer import password_bruteforcer, user_password_bruteforcer
+from core.controllers.bruteforce.bruteforcer import (password_bruteforcer,
+                                                     user_password_bruteforcer)
 from core.data.parsers.urlParser import url_object
 
 
 class test_password_bruteforcer(unittest.TestCase):
 
+    @attr('smoke')
     def test_contains(self):
         url = url_object('http://www.w3af.org/')
         
@@ -44,6 +48,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
     def setUp(self):
         self.temp_dir = create_temp_dir()
 
+    @attr('smoke')
     def test_bruteforcer_default(self):
         url = url_object('http://www.w3af.org/')
         
@@ -66,6 +71,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
         for expected_comb in expected_combinations:
             self.assertTrue( expected_comb in generated )
 
+    @attr('smoke')
     def test_bruteforcer_combo(self):
 
         expected_combinations = [

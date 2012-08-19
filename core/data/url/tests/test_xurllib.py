@@ -19,9 +19,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import unittest
 import time
+
+from nose.plugins.attrib import attr
 
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
@@ -30,7 +31,7 @@ from core.data.url.xUrllib import xUrllib
 from core.data.parsers.urlParser import url_object
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 
-
+@attr('smoke')
 class TestXUrllib(unittest.TestCase):
     
     def setUp(self):
