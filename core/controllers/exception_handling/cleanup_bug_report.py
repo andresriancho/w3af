@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 
 import core.data.kb.config as cf
 
 
-def cleanup_bug_report( input ):
+def cleanup_bug_report( _input ):
     '''
     @return: A string that contains a "clean" bug report. The function will remove
              all references to the target site, operating system user name, etc.
@@ -49,8 +48,8 @@ def cleanup_bug_report( input ):
     user_re = '/home/(.*?)/'
     user_re_win= 'C:\\\\Documents and Settings\\\\(.*?)\\\\'
     
-    input = re.sub(user_re, '/home/user/', input)
-    input = re.sub(user_re_win, 'C:/user/', input)
+    _input = re.sub(user_re, '/home/user/', _input)
+    _input = re.sub(user_re_win, 'C:/user/', _input)
     
     targets = cf.cf.getData('targets')
     if targets is not None:
@@ -58,10 +57,10 @@ def cleanup_bug_report( input ):
         paths = [url.getPath() for url in targets if url.getPath() != '/']
     
         for domain in domains:
-            input = input.replace(domain, 'domain')
+            _input = _input.replace(domain, 'domain')
     
         for path in paths:
-            input = input.replace(path, '/path/foo/')
+            _input = _input.replace(path, '/path/foo/')
         
-    return input
+    return _input
     
