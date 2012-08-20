@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import time
 import sys
 
 import core.controllers.outputManager as om
@@ -150,7 +149,7 @@ class crawl_infrastructure(BaseConsumer):
         '''
         # Before I had a while True: and a break inside with, but after reading
         # some docs, it seems that doing it like this is faster.
-        while plugin.output_queue.qsize():
+        while plugin.output_queue.qsize() > 0:
             
             # Note that I'm NOT wrapping this get_nowait in a try/except stm
             # because I run a qsize before; AND we should be the only plugin
