@@ -564,7 +564,7 @@ class MainApp(object):
         # Verify that everything is ready to run
         try:
             helpers.coreWrap(self.w3af.plugins.init_plugins)
-            helpers.coreWrap(self.w3af.verifyEnvironment)
+            helpers.coreWrap(self.w3af.verify_environment)
         except w3afException:
             return
 

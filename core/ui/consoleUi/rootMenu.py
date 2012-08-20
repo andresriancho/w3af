@@ -110,7 +110,7 @@ class rootMenu(menu):
         '''
         try:
             self._w3af.plugins.init_plugins()
-            self._w3af.verifyEnvironment()
+            self._w3af.verify_environment()
             self._w3af.start()
         except w3afException, w3:
             om.out.error(str(w3))

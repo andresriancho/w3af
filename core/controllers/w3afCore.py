@@ -101,11 +101,11 @@ class w3afCore(object):
         
         try:
             # Just in case the gtkUi / consoleUi forgot to do this...
-            self.verifyEnvironment()
+            self.verify_environment()
         except Exception, e:
-            error = ('verifyEnvironment() raised an exception: "%s". This'
+            error = ('verify_environment() raised an exception: "%s". This'
                 ' should never happen. Are *you* user interface coder sure'
-                ' that you called verifyEnvironment() *before* start() ?' % e)
+                ' that you called verify_environment() *before* start() ?' % e)
             om.out.error(error)
             raise
 
@@ -227,7 +227,7 @@ class w3afCore(object):
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
     
-    def verifyEnvironment(self):
+    def verify_environment(self):
         '''
         Checks if all parameters where configured correctly by the user,
         which in this case is a mix of w3af_console, w3af_gui and the real

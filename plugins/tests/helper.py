@@ -93,7 +93,7 @@ class PluginTest(unittest.TestCase):
                 
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
-        self.w3afcore.verifyEnvironment()
+        self.w3afcore.verify_environment()
         self.w3afcore.start()
     
     def tearDown(self):
