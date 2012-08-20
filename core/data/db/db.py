@@ -26,6 +26,8 @@ import sys
 
 from multiprocessing.dummy import Queue, Process
 
+from core.data.misc.file_utils import replace_file_special_chars 
+
 
 class DBClient(object):
     """Simple w3af DB interface"""
@@ -100,9 +102,9 @@ class DBClientSQLite(Process, DBClient):
         # characters, see:
         # http://www.sqlite.org/c3ref/open.html
         unicode_filename = filename.decode(sys.getfilesystemencoding())
-        self.filename = unicode_filename.encode("utf-8")
+        filename = unicode_filename.encode("utf-8")
+        self.filename = replace_file_special_chars(filename)
         
-        self.filename = filename
         self.autocommit = autocommit
         self.journal_mode = journal_mode
         self.cache_size = cache_size

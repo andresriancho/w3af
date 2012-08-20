@@ -127,7 +127,7 @@ class HistoryItem(object):
         self._db = DB(dbName)
 
         self._session_dir = os.path.join(get_temp_dir(),
-                                        self._db.getFileName() + '_traces')
+                                         self._db.getFileName() + '_traces')
         tablename = self.getTableName()
         # Init tables
         self._db.createTable(

@@ -55,7 +55,14 @@ class TestHistoryItem(unittest.TestCase):
         h1 = HistoryItem()
         h2 = HistoryItem()
         self.assertEqual(h1._db, h2._db)
-
+    
+    def test_special_chars_in_db_filename(self):
+        kb.kb.cleanup()
+        cf.cf.cleanup()
+        cf.cf.save('session_name', 'db_foo-:3128!.db')
+        create_temp_dir()
+        h1 = HistoryItem()
+    
     def test_find(self):
         find_id = random.randint(1, 499)
         url = url_object('http://w3af.org/a/b/foobar.php?foo=123')
