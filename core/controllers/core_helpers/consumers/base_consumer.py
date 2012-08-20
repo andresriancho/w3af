@@ -90,15 +90,18 @@ class BaseConsumer(Process):
     def _task_done(self, result):
         self._tasks_in_progress_counter -= 1
     
+    def _add_task(self):
+        self._tasks_in_progress_counter += 1
+    
     def in_queue_put(self, work):
         if work is not None:
-            self._tasks_in_progress_counter += 1
+            self._add_task()
             return self.in_queue.put( work )
         
     def in_queue_put_iter(self, work_iter):
         if work_iter is not None:
             for work in work_iter:
-                self._tasks_in_progress_counter += 1
+                self._add_task()
                 self.in_queue.put( work )
                     
     def has_pending_work(self):
