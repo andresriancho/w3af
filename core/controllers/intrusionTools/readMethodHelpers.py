@@ -26,9 +26,11 @@ from core.controllers.w3afException import w3afException
 
 def read_os_detection( remote_read ):
     '''
-    Uses the remote_read method to read remote files and determine what the remote OS is.
+    Uses the remote_read method to read remote files and determine what the
+    remote OS is.
     
-    @return: String with 'windows' or 'linux' or raises a w3afException if unknown.
+    @return: String with 'windows' or 'linux' or raises a w3afException
+             if unknown.
     '''
     try:
         linux1 = remote_read('/etc/passwd')
