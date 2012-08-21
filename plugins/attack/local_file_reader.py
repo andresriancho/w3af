@@ -19,21 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-
 import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.misc.levenshtein import relative_distance_ge
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+
+from core.data.options.option import option
+from core.data.options.optionList import optionList
 from core.data.kb.read_shell import read_shell as read_shell
+from core.data.parsers.urlParser import parse_qs
 
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import parse_qs
+from core.controllers.plugins.attack_plugin import AttackPlugin
+from core.controllers.misc.levenshtein import relative_distance_ge
 
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
@@ -331,19 +328,19 @@ class fileReaderShell(read_shell):
                 
     def _filter_errors( self, result,  filename ):
         '''
-        Filter out ugly php errors and print a simple "Permission denied" or "File not found"
+        Filter out ugly php errors and print a simple "Permission denied"
+        or "File not found"
         '''
         filtered = ''
         
-        if result.count('<b>Warning</b>'):
-            if result.count( 'Permission denied' ):
-                filtered = PERMISSION_DENIED
-            elif result.count( 'No such file or directory in' ):
-                filtered = NO_SUCH_FILE
-            elif result.count( 'Not a directory in' ):
-                filtered = READ_DIRECTORY
-            elif result.count('</a>]: failed to open stream:'):
-                filtered = FAILED_STREAM
+        if result.count( 'Permission denied' ):
+            filtered = PERMISSION_DENIED
+        elif result.count( 'No such file or directory in' ):
+            filtered = NO_SUCH_FILE
+        elif result.count( 'Not a directory in' ):
+            filtered = READ_DIRECTORY
+        elif result.count('</a>]: failed to open stream:'):
+            filtered = FAILED_STREAM
                 
         elif self._application_file_not_found_error is not None:
             #   The application file not found error string that I have has the "not_exist0.txt"
