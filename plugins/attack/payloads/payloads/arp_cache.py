@@ -15,7 +15,7 @@ class arp_cache(base_payload):
         for file in files:
             content = self.shell.read(file)
             if content != '':
-                for line in content.split('\n'):
+                for line in content.split('\n')[1:]:
                     splitted_line = line.split(' ')
                     splitted_line = [ i for i in splitted_line if i != '']
                     
