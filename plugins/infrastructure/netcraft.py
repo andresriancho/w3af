@@ -27,7 +27,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 from core.controllers.misc.decorators import runonce
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
 import core.data.kb.knowledgeBase as kb
@@ -38,14 +38,14 @@ from core.data.parsers.urlParser import url_object
 import re
 
 
-class netcraft(baseInfrastructurePlugin):
+class netcraft(InfrastructurePlugin):
     '''
     Find out "What's that site running?".
     
     @author: ino ( guerrino.dimassa@gmail.com )
     '''    
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
    
     @runonce(exc_class=w3afRunOnce)

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 
 from core.data.parsers.urlParser import parse_qs
@@ -34,7 +34,7 @@ import urllib2
 import copy
 
 
-class mod_security(baseEvasionPlugin):
+class mod_security(EvasionPlugin):
     '''
     Evade detection using a mod_security vulnerability.
     
@@ -42,7 +42,7 @@ class mod_security(baseEvasionPlugin):
     '''
 
     def __init__(self):
-        baseEvasionPlugin.__init__(self)
+        EvasionPlugin.__init__(self)
 
     def modifyRequest(self, request ):
         '''

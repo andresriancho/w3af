@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from itertools import chain, repeat, izip
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt
 
@@ -31,7 +31,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class wordnet(baseCrawlPlugin):
+class wordnet(CrawlPlugin):
     '''
     Use the wordnet lexical database to find new URLs.
     
@@ -39,7 +39,7 @@ class wordnet(baseCrawlPlugin):
     '''
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # User defined parameters
         self._wordnet_results = 5

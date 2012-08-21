@@ -25,10 +25,10 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class dom_xss(baseGrepPlugin):
+class dom_xss(GrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
       
@@ -52,7 +52,7 @@ class dom_xss(baseGrepPlugin):
                           )
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Compile the regular expressions
         self._scriptRe = re.compile('< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)

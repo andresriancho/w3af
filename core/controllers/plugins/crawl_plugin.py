@@ -1,5 +1,5 @@
 '''
-baseInfrastructurePlugin.py
+CrawlPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,44 +19,48 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.controllers.w3afException import w3afException
 from core.data.request.frFactory import create_fuzzable_requests
 
 
-class baseInfrastructurePlugin(basePlugin):
+class CrawlPlugin(Plugin):
     '''
-    This is the base class for infrastructure plugins, all infrastructure plugins
-    should inherit from it and implement the following methods:
-        1. discover(...)
+    This is the base class for crawl plugins, all crawl plugins should
+    inherit from it and implement the following methods:
+        1. crawl(...)
         
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        basePlugin.__init__( self )
+        Plugin.__init__( self )
 
-    def discover_wrapper(self, fuzzable_request):
+    def crawl_wrapper(self, fuzzable_request):
         '''
-        Wrapper around the discover method in order to perform some generic tasks.
+        Wrapper around the crawl method in order to perform some generic tasks.
         '''
         # I copy the fuzzable request, to avoid cross plugin contamination
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = fuzzable_request.copy()
-        return self.discover( fuzzable_request_copy )
+        return self.crawl( fuzzable_request_copy )
 
-    def discover(self, fuzzable_request):
+    def crawl(self, fuzzable_request):
         '''
         This method MUST be implemented on every plugin.
         
-        @param fuzzable_request: The target to use for infrastructure plugins.
-        @return: None. These plugins should store information in the KB. Results
-                 from this method will be ignored by the core.
+        @param fuzzable_request: Represents an HTTP request, with its URL and
+                                 parameters.
+                                 
+        @return: A list with of new fuzzable request objects found by this
+                 plugin. Can be empty.
         '''
-        raise w3afException('Plugin is not implementing required method discover' )
-    
+        raise w3afException('Plugin is not implementing required method crawl' )
+
     def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
         return create_fuzzable_requests( httpResponse, request, add_self )
     
+    discover_wrapper = crawl_wrapper
+    
     def getType( self ):
-        return 'infrastructure'
+        return 'crawl'

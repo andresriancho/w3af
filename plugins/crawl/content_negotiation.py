@@ -31,18 +31,18 @@ import core.data.kb.info as info
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class content_negotiation(baseCrawlPlugin):
+class content_negotiation(CrawlPlugin):
     '''
     Use content negotiation to find new resources.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # User configured parameters
         self._wordlist = os.path.join('plugins', 'crawl', 'content_negotiation',

@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 import core.data.parsers.dpCache as dpCache
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.fuzzer.fuzzer import createRandAlNum
@@ -42,14 +42,14 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 import socket
 
 
-class find_vhosts(baseInfrastructurePlugin):
+class find_vhosts(InfrastructurePlugin):
     '''
     Modify the HTTP Host header and try to find virtual hosts.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Internal variables
         self._first_exec = True

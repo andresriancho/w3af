@@ -1,5 +1,5 @@
 '''
-baseEvasionPlugin.py
+EvasionPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.controllers.w3afException import w3afException
 
 
-class baseEvasionPlugin(basePlugin):
+class EvasionPlugin(Plugin):
     '''
     This is the base class for evasion plugins, all evasion plugins should inherit from it 
     and implement the following methods :
@@ -35,7 +35,7 @@ class baseEvasionPlugin(basePlugin):
     '''
 
     def __init__(self):
-        basePlugin.__init__( self )
+        Plugin.__init__( self )
 
     def modifyRequest(self, request ):
         '''

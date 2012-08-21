@@ -25,7 +25,7 @@ from lxml import etree
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.kb.info import info
 
@@ -40,7 +40,7 @@ PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 
-class form_autocomplete(baseGrepPlugin):
+class form_autocomplete(GrepPlugin):
     '''
     Grep every page for detection of forms with 'autocomplete' capabilities 
     containing password-type inputs.
@@ -49,7 +49,7 @@ class form_autocomplete(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()

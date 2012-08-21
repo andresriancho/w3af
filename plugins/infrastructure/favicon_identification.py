@@ -32,20 +32,20 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
 
-class favicon_identification(baseInfrastructurePlugin):
+class favicon_identification(InfrastructurePlugin):
     '''
     Identify server software using favicon.
     @author: Vlatko Kosturjak  <kost@linux.hr> http://kost.com.hr
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Internal variables
         self._version = None

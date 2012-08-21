@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -36,7 +36,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from lxml import etree
 
 
-class objects(baseGrepPlugin):
+class objects(GrepPlugin):
     '''
     Grep every page for objects and applets.
       
@@ -44,7 +44,7 @@ class objects(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//object | //applet')

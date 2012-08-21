@@ -1,5 +1,5 @@
 '''
-basePlugin.py
+plugins.py
 
 Copyright 2006 Andres Riancho
 
@@ -33,7 +33,7 @@ from core.controllers.threads.threadpool import return_args
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 
 
-class basePlugin(configurable):
+class Plugin(configurable):
     '''
     This is the base class for ALL plugins, all plugins should inherit from it 
     and implement the following method :
@@ -103,11 +103,11 @@ class basePlugin(configurable):
         '''
         @return: A description of the plugin.
         
-        >>> b = basePlugin()
+        >>> b = plugins()
         >>> b.__doc__ = 'abc'
         >>> b.getDesc()
         'abc'
-        >>> b = basePlugin()
+        >>> b = plugins()
         >>> b.__doc__ = '    abc\t'
         >>> b.getDesc()
         'abc'
@@ -137,7 +137,7 @@ class basePlugin(configurable):
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
             
-        >>> b = basePlugin()
+        >>> b = plugins()
         >>> v1 = vuln.vuln()
         >>> v1.setDesc('hello')
         >>> v2 = vuln.vuln()
@@ -167,7 +167,7 @@ class basePlugin(configurable):
             inform = infoObjList
             
         else:
-            om.out.error('basePlugin.print_uniq(): Unknown unique parameter value.')
+            om.out.error('plugins.print_uniq(): Unknown unique parameter value.')
 
         # Print the list            
         for i in inform:

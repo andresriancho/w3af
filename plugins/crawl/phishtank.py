@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -40,7 +40,7 @@ import os.path
 import socket
 
 
-class phishtank(baseCrawlPlugin):
+class phishtank(CrawlPlugin):
     '''
     Search the phishtank.com database to determine if your server is (or was) being used in phishing scams.
     
@@ -48,7 +48,7 @@ class phishtank(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         self._run = True
 
         # User defines variable

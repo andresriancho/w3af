@@ -27,11 +27,11 @@ import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
-class collect_cookies(baseGrepPlugin):
+class collect_cookies(GrepPlugin):
     '''
     Grep every response for session cookies sent by the web application.
       
@@ -84,7 +84,7 @@ class collect_cookies(baseGrepPlugin):
         )
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         self._already_reported_server = []
 
     def grep(self, request, response):

@@ -24,12 +24,12 @@ from __future__ import with_statement
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.factory import factory
 
 
-class password_profiling(baseGrepPlugin):
+class password_profiling(GrepPlugin):
     '''
     Create a list of possible passwords by reading HTTP response bodies.
       
@@ -51,7 +51,7 @@ class password_profiling(baseGrepPlugin):
     
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         kb.kb.save( self, 'password_profiling', {} )
         
         #TODO: develop more plugins, there is a, pure-python metadata reader named

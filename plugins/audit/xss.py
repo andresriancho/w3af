@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException
 from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
                                           INTERNET_EXPLORER_7, NETSCAPE_IE,
@@ -35,7 +35,7 @@ import core.data.kb.vuln as vuln
 import re
 
 
-class xss(baseAuditPlugin):
+class xss(AuditPlugin):
     '''
     Find cross site scripting vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -79,7 +79,7 @@ class xss(baseAuditPlugin):
     )
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Some internal variables to keep track of remote 
         # web application sanitization

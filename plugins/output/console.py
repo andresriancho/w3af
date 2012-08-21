@@ -27,7 +27,7 @@ from errno import ENOSPC
 
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afMustStopByKnownReasonExc
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -46,7 +46,7 @@ def catch_ioerror(meth):
 
     return wrapper
 
-class console(baseOutputPlugin):
+class console(OutputPlugin):
     '''
     Print messages to the console.
     
@@ -54,7 +54,7 @@ class console(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         
         # User configured setting
         self.verbose = False

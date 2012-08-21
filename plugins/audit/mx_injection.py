@@ -26,12 +26,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 
-class mx_injection(baseAuditPlugin):
+class mx_injection(AuditPlugin):
     '''
     Find MX injection vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -54,7 +54,7 @@ class mx_injection(baseAuditPlugin):
         in my life... but well.... if someone , somewhere in the planet ever finds a bug of using
         this plugin... THEN my job has been done :P
         '''
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables.
         self._errors = []

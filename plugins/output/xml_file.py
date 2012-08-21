@@ -30,7 +30,7 @@ import core.data.constants.severity as severity
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.misc import get_w3af_version
 from core.controllers.misc.encoding import smart_str
 from core.controllers.w3afException import w3afException
@@ -46,14 +46,14 @@ from core.data.request.fuzzable_request import fuzzable_request
 str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 
 
-class xml_file(baseOutputPlugin):
+class xml_file(OutputPlugin):
     '''
     Print all messages to a xml file.
     
     @author: Kevin Denver ( muffysw@hotmail.com )
     '''
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         
         # These attributes hold the file pointers
         self._file = None

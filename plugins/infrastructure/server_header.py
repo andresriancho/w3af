@@ -26,21 +26,21 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class server_header(baseInfrastructurePlugin):
+class server_header(InfrastructurePlugin):
     '''
     Identify the server type based on the server header.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Internal variables
         self._exec = True

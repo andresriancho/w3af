@@ -26,11 +26,11 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.constants.httpConstants as http_constants
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class htaccess_methods(baseAuditPlugin):
+class htaccess_methods(AuditPlugin):
     '''
     Find misconfigurations in Apache's "<LIMIT>" configuration.
     
@@ -42,7 +42,7 @@ class htaccess_methods(baseAuditPlugin):
                         http_constants.FORBIDDEN])
     
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         self._already_tested = scalable_bloomfilter()
         
     def audit(self, freq ):

@@ -24,11 +24,11 @@ import re
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class hash_find(baseGrepPlugin):
+class hash_find(GrepPlugin):
     '''
     Identify hashes in HTTP responses.
       
@@ -36,7 +36,7 @@ class hash_find(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_reported = scalable_bloomfilter()
         

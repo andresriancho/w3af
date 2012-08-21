@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
@@ -29,14 +29,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class shift_out_in_between_dots(baseEvasionPlugin):
+class shift_out_in_between_dots(EvasionPlugin):
     '''
     Insert between dots shift-in and shift-out control characters which are cancelled each other when they are below 
     @author: Jose Ramon Palanco( jose.palanco@hazent.com )
     '''
 
     def __init__(self):
-        baseEvasionPlugin.__init__(self)
+        EvasionPlugin.__init__(self)
 
     def modifyRequest(self, request ):
         '''

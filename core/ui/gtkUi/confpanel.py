@@ -23,8 +23,8 @@ import gtk
 from . import entries, helpers
 from core.controllers.w3afException import w3afException
 
-from core.controllers.basePlugin.basePlugin import basePlugin
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.plugin import Plugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 
 from core.data.options.optionList import optionList
 import core.controllers.outputManager as om
@@ -227,7 +227,7 @@ class OnlyOptions(gtk.VBox):
             for opt in self.options:
                 helpers.coreWrap(opt.setValue, opt.widg.getValue())
 
-            if isinstance(plugin, basePlugin):
+            if isinstance(plugin, plugins):
                 helpers.coreWrap(self.w3af.plugins.set_plugin_options, plugin.ptype, plugin.pname, self.options)
             else:
                 helpers.coreWrap(plugin.set_options, self.options)

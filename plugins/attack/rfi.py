@@ -29,7 +29,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.controllers.daemons.webserver as webserver
 from core.controllers.w3afException import w3afException
@@ -52,14 +52,14 @@ SUCCESS_COMPLETE = 1
 SUCCESS_OPEN_PORT = 2
 
 
-class rfi(baseAttackPlugin):
+class rfi(AttackPlugin):
     '''
     Exploit remote file include vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._shell = None
@@ -85,7 +85,7 @@ class rfi(baseAttackPlugin):
         
     def canExploit(self, vuln_to_exploit=None):
         '''
-        Searches the kb for vulnerabilities that this plugin can exploit, this is overloaded from baseAttackPlugin because
+        Searches the kb for vulnerabilities that this plugin can exploit, this is overloaded from AttackPlugin because
         I need to test for xss vulns also. This is a "complex" plugin.
 
         @parameter vuln_to_exploit: The id of the vulnerability to exploit.

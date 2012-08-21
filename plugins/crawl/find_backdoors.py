@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -113,7 +113,7 @@ KNOWN_OFFENSIVE_WORDS = set(
     'webshell'))
 
 
-class find_backdoors(baseCrawlPlugin):
+class find_backdoors(CrawlPlugin):
     '''
     Find web backdoors and web shells.
     
@@ -121,7 +121,7 @@ class find_backdoors(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._analyzed_dirs = scalable_bloomfilter()

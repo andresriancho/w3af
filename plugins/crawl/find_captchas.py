@@ -27,19 +27,19 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.parsers.documentParser as documentParser
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.data.db.disk_set import disk_set
 
 
-class find_captchas(baseCrawlPlugin):
+class find_captchas(CrawlPlugin):
     '''
     Identify captcha images on web pages.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         self._captchas_found = disk_set()
         

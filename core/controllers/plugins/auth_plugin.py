@@ -1,5 +1,5 @@
 '''
-baseAuthPlugin.py
+AuthPlugin.py
 
 Copyright 2011 Andres Riancho
 
@@ -19,11 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.controllers.plugins.plugin import Plugin
 
-from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.basePlugin import basePlugin
 
-class baseAuthPlugin(basePlugin):
+class AuthPlugin(Plugin):
     '''  
     This is the base class for auth plugins, all auth plugins should inherit from it    
     and implement the following methods:
@@ -35,7 +34,7 @@ class baseAuthPlugin(basePlugin):
     '''
 
     def __init__(self):
-        basePlugin.__init__(self)
+        Plugin.__init__(self)
         self._uri_opener = None
 
     def login(self):

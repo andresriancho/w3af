@@ -27,13 +27,13 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.urlParser import url_object
 
 
-class xssed_dot_com(baseInfrastructurePlugin):
+class xssed_dot_com(InfrastructurePlugin):
     '''
     Search in xssed.com to find xssed pages.
     
@@ -41,7 +41,7 @@ class xssed_dot_com(baseInfrastructurePlugin):
     @author: Fix: Set "." in front of the root domain to limit the search - Raul Siles
     '''    
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         #
         #   Could change in time,

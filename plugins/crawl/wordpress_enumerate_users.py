@@ -27,7 +27,7 @@ import re
 
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -37,14 +37,14 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
 # Main class
-class wordpress_enumerate_users(baseCrawlPlugin):
+class wordpress_enumerate_users(CrawlPlugin):
     '''
     Finds users in a WordPress installation.
     @author: Andres Tarantini ( atarantini@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
 
         # Internal variables
         self._exec = True

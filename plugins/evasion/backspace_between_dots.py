@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
@@ -29,7 +29,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class backspace_between_dots(baseEvasionPlugin):
+class backspace_between_dots(EvasionPlugin):
     '''
     Insert between dots an 'A' and an BS control character which are cancelled each other when they are below 
     
@@ -37,7 +37,7 @@ class backspace_between_dots(baseEvasionPlugin):
     '''
 
     def __init__(self):
-        baseEvasionPlugin.__init__(self)
+        EvasionPlugin.__init__(self)
 
     def modifyRequest(self, request ):
         '''

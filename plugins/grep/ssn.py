@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import itertools
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
@@ -32,7 +32,7 @@ import core.data.constants.severity as severity
 from .ssndata.ssnAreasGroups import areas_groups_map
 
 
-class ssn(baseGrepPlugin):
+class ssn(GrepPlugin):
     '''
     This plugin detects the occurence of US Social Security numbers in web pages.
 
@@ -44,7 +44,7 @@ class ssn(baseGrepPlugin):
     
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_inspected = scalable_bloomfilter()
                 

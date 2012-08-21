@@ -23,16 +23,16 @@ from urllib import urlencode
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseAuthPlugin import baseAuthPlugin
+from core.controllers.plugins.auth_plugin import AuthPlugin
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 
-class generic(baseAuthPlugin):
+class generic(AuthPlugin):
     '''Generic authentication plugin.'''
 
     def __init__(self):
-        baseAuthPlugin.__init__(self)
+        AuthPlugin.__init__(self)
         self.username = ''
         self.password = ''
         self.username_field = ''

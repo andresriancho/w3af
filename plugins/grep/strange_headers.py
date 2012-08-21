@@ -24,11 +24,11 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
-class strange_headers(baseGrepPlugin):
+class strange_headers(GrepPlugin):
     '''
     Grep headers for uncommon headers sent in HTTP responses.
       
@@ -75,7 +75,7 @@ class strange_headers(baseGrepPlugin):
                       )
                       
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
     def grep(self, request, response):
         '''

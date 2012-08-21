@@ -26,12 +26,12 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.esmre.multi_in import multi_in
 from core.data.fuzzer.fuzzer import createMutants
 
 
-class ldapi(baseAuditPlugin):
+class ldapi(AuditPlugin):
     '''
     Find LDAP injection bugs.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -83,7 +83,7 @@ class ldapi(baseAuditPlugin):
     _multi_in = multi_in( LDAP_ERRORS )
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._errors = []

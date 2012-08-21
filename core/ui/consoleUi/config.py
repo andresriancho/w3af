@@ -22,8 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.ui.consoleUi.menu import *
 from core.ui.consoleUi.util import *
-from core.controllers.basePlugin.basePlugin import basePlugin
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.plugin import Plugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
         
 class configMenu(menu):
@@ -89,7 +89,7 @@ class configMenu(menu):
             self._options[name].setValue( value )
             self._plainOptions[name] = value
                             
-            if isinstance( self._configurable, basePlugin ):
+            if isinstance( self._configurable, plugins ):
                 self._w3af.plugins.set_plugin_options( self._configurable.getType(),
                                                      self._configurable.getName(),
                                                      self._options )

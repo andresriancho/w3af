@@ -30,13 +30,13 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.db.disk_set import disk_set
 
 
-class phpinfo(baseCrawlPlugin):
+class phpinfo(CrawlPlugin):
     '''
     Search PHP Info file and if it finds it will determine the version of PHP.
     @author: Viktor Gazdag ( woodspeed@gmail.com )
@@ -48,7 +48,7 @@ class phpinfo(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._analyzed_dirs = disk_set()

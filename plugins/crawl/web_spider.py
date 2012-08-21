@@ -28,7 +28,7 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 import core.data.constants.httpConstants as http_constants
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.itertools_toolset import unique_justseen
@@ -43,7 +43,7 @@ from core.data.request.httpPostDataRequest import httpPostDataRequest as \
                                                   HttpPostDataRequest
 
 
-class web_spider(baseCrawlPlugin):
+class web_spider(CrawlPlugin):
     '''
     Crawl the web application.
     
@@ -53,7 +53,7 @@ class web_spider(baseCrawlPlugin):
                     http_constants.FORBIDDEN])
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
 
         # Internal variables
         self._compiled_ignore_re = None

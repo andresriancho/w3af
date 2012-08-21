@@ -27,7 +27,7 @@ from core.data.options.optionList import optionList
 from core.data.esmre.multi_in import multi_in
 from core.data.esmre.multi_re import multi_re
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -35,7 +35,7 @@ import core.data.kb.info as info
 import re
 
 
-class error_pages(baseGrepPlugin):
+class error_pages(GrepPlugin):
     '''
     Grep every page for error pages.
       
@@ -146,7 +146,7 @@ class error_pages(baseGrepPlugin):
 
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_reported_versions = []
         self._compiled_regex = []

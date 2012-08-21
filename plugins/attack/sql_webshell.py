@@ -37,7 +37,7 @@ from core.data.kb.shell import shell as shell
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.misc.webroot import get_webroot_dirs
@@ -46,13 +46,13 @@ from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
-class sql_webshell(baseAttackPlugin):
+class sql_webshell(AttackPlugin):
     '''
     Exploits [blind] sql injections by uploading a webshell to the target webroot.
     '''
     
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._vuln = None

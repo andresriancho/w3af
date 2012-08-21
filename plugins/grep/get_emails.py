@@ -24,14 +24,14 @@ import core.data.kb.info as info
 import core.data.parsers.dpCache as dpCache
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class get_emails(baseGrepPlugin):
+class get_emails(GrepPlugin):
     '''
     Find email accounts.
       
@@ -39,7 +39,7 @@ class get_emails(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         self._already_inspected = scalable_bloomfilter()
         
         # User configured variables

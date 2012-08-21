@@ -1,5 +1,5 @@
 '''
-baseOutputPlugin.py
+OutputPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -23,11 +23,11 @@ import inspect
 
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.controllers.w3afException import w3afException
 
 
-class baseOutputPlugin(basePlugin):
+class OutputPlugin(Plugin):
     '''
     This is the base class for data output, all output plugins should inherit 
     from it and implement the following methods :
@@ -39,7 +39,7 @@ class baseOutputPlugin(basePlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        basePlugin.__init__( self )
+        Plugin.__init__( self )
 
     def getType( self ):
         return 'output'
@@ -149,7 +149,7 @@ class baseOutputPlugin(basePlugin):
         @return: The caller of the om.out.XYZ method; this is used to make output
                  more readable.
                  
-        >>> bop = baseOutputPlugin()
+        >>> bop = OutputPlugin()
         >>> bop.getCaller()
         'doctest'
         

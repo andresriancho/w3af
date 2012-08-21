@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.fuzzer.mutantHeaders import mutantHeaders
@@ -37,14 +37,14 @@ COMMON_CSRF_NAMES = [
         'token'
         ]
 
-class csrf(baseAuditPlugin):
+class csrf(AuditPlugin):
     '''
     Identify Cross-Site Request Forgery vulnerabilities.
     @author: Taras (oxdef@oxdef.info)
     '''
     
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         self._strict_mode = False
         self._equal_limit = 0.95

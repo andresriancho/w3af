@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
@@ -35,7 +35,7 @@ import core.data.kb.info as info
 from lxml import etree
 
 
-class feeds(baseGrepPlugin):
+class feeds(GrepPlugin):
     '''
     Grep every page and finds rss, atom, opml feeds.
       
@@ -43,7 +43,7 @@ class feeds(baseGrepPlugin):
     '''
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         self._feed_types = {'rss': 'RSS', # <rss version="...">
                             'feed': 'OPML',# <feed version="..."
                             'opml': 'OPML' # <opml version="...">

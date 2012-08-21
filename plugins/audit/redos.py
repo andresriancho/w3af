@@ -28,11 +28,11 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 
 
-class redos(baseAuditPlugin):
+class redos(AuditPlugin):
     '''
     Find ReDoS vulnerabilities.
     
@@ -40,7 +40,7 @@ class redos(baseAuditPlugin):
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Some internal variables
         # The wait time of the unmodified request

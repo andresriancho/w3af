@@ -23,20 +23,20 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
 
 
-class urllist_txt(baseCrawlPlugin):
+class urllist_txt(CrawlPlugin):
     '''
     Analyze the urllist.txt file and find new URLs
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):

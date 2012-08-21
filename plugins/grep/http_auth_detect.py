@@ -29,10 +29,10 @@ import core.data.constants.severity as severity
 import core.data.parsers.dpCache as dpCache
 
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class http_auth_detect(baseGrepPlugin):
+class http_auth_detect(GrepPlugin):
     '''
     Find responses that indicate that the resource requires auth.
       
@@ -40,7 +40,7 @@ class http_auth_detect(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._auth_uri_regex = re.compile('.*://[\w%]*?:[\w%]*?@[\w\.]{3,40}')
 

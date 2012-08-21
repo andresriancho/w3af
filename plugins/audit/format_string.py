@@ -26,11 +26,11 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants, createFormatString
 
 
-class format_string(baseAuditPlugin):
+class format_string(AuditPlugin):
     '''
     Find format string vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -41,7 +41,7 @@ class format_string(baseAuditPlugin):
                     )
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
 
     def audit(self, freq ):
         '''

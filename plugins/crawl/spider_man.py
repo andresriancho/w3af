@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 import core.data.url.httpResponse as httpResponse
 import core.data.constants.w3afPorts as w3afPorts
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
@@ -38,7 +38,7 @@ from core.data.parsers.urlParser import url_object
 TERMINATE_URL = url_object('http://127.7.7.7/spider_man?terminate')
 
 
-class spider_man(baseCrawlPlugin):
+class spider_man(CrawlPlugin):
     '''
     SpiderMan is a local proxy that will collect new URLs.
     

@@ -28,10 +28,10 @@ import core.data.kb.info as info
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class symfony(baseGrepPlugin):
+class symfony(GrepPlugin):
     '''
     Grep every page for traces of the Symfony framework.
       
@@ -41,7 +41,7 @@ class symfony(baseGrepPlugin):
     '''
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()

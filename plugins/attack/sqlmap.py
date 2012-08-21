@@ -32,7 +32,7 @@ from core.data.parsers.urlParser import parse_qs, url_object
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.threads.threadManager import thread_manager as tm
@@ -43,7 +43,7 @@ from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
 SQLMAPCREATORS = 'sqlmap coded by inquis <bernardo.damele@gmail.com> and belch <daniele.bellucci@gmail.com>'
 
 
-class sqlmap(baseAttackPlugin):
+class sqlmap(AttackPlugin):
     '''
     Exploits [blind] sql injections using sqlmap ( http://sqlmap.sf.net ).
     '''
@@ -55,7 +55,7 @@ class sqlmap(baseAttackPlugin):
     #@author: Daniele Bellucci (belch) - initial author
         
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._vuln = None

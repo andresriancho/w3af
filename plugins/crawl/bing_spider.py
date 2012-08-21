@@ -23,7 +23,7 @@ from urllib2 import URLError
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.is_private_site import is_private_site
@@ -34,14 +34,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class bing_spider(baseCrawlPlugin):
+class bing_spider(CrawlPlugin):
     '''
     Search Bing to get a list of new URLs
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # User variables
         self._result_limit = 300

@@ -29,7 +29,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -41,14 +41,14 @@ from core.data.parsers.urlParser import url_object
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class pykto(baseCrawlPlugin):
+class pykto(CrawlPlugin):
     '''
     A nikto port to python. 
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # internal variables
         self._exec = True

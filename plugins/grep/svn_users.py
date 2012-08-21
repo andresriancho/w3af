@@ -25,11 +25,11 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class svn_users(baseGrepPlugin):
+class svn_users(GrepPlugin):
     '''
     Grep every response for users of the versioning system.
       
@@ -37,7 +37,7 @@ class svn_users(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         self._already_inspected = scalable_bloomfilter()
         # Add the regex to match something like this:
         #

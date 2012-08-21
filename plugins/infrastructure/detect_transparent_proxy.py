@@ -27,19 +27,19 @@ import core.data.kb.info as info
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
 
-class detect_transparent_proxy(baseInfrastructurePlugin):
+class detect_transparent_proxy(InfrastructurePlugin):
     '''
     Find out if your ISP has a transparent proxy installed.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)        
     def discover(self, fuzzable_request ):

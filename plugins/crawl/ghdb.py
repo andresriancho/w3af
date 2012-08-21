@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os.path
 import xml.dom.minidom
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
@@ -37,14 +37,14 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
 
-class ghdb(baseCrawlPlugin):
+class ghdb(CrawlPlugin):
     '''
     Search Google for vulnerabilities in the target site.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._ghdb_file = os.path.join('plugins', 'crawl',

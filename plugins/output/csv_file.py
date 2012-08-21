@@ -24,13 +24,13 @@ import itertools
 
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class csv_file(baseOutputPlugin):
+class csv_file(OutputPlugin):
     '''
     Export identified vulnerabilities to a CSV file.
     
@@ -38,7 +38,7 @@ class csv_file(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         self.output_file = 'output-w3af.csv'
 
     def do_nothing(self, *args, **kwds): pass

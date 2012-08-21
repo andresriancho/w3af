@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -37,7 +37,7 @@ from core.controllers.misc.is_source_file import is_source_file
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class code_disclosure(baseGrepPlugin):
+class code_disclosure(GrepPlugin):
     '''
     Grep every page for code disclosure vulnerabilities.
       
@@ -45,7 +45,7 @@ class code_disclosure(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         #   Internal variables
         self._already_added = scalable_bloomfilter()

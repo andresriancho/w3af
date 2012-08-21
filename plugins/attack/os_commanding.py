@@ -27,14 +27,14 @@ from core.data.options.optionList import optionList
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.fuzzer.fuzzer import createRandAlpha
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
-class os_commanding(baseAttackPlugin):
+class os_commanding(AttackPlugin):
     '''
     Exploit OS Commanding vulnerabilities.
     
@@ -42,7 +42,7 @@ class os_commanding(baseAttackPlugin):
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # User configured parameter
         self._change_to_post = True

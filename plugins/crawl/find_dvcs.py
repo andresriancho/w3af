@@ -27,12 +27,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class find_dvcs(baseCrawlPlugin):
+class find_dvcs(CrawlPlugin):
     '''
     Find GIT, Mercurial (HG), and Bazaar (BZR) repositories
 
@@ -40,7 +40,7 @@ class find_dvcs(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._analyzed_dirs = scalable_bloomfilter()

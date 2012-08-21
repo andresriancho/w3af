@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 
 import core.data.kb.knowledgeBase as kb
@@ -35,14 +35,14 @@ import core.data.kb.info as info
 import re
 
 
-class oracle_discovery(baseCrawlPlugin):
+class oracle_discovery(CrawlPlugin):
     '''
     Find Oracle applications on the remote web server.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         self._exec = True
 
     def crawl(self, fuzzable_request ):

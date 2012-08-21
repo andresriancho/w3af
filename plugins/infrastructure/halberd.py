@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
@@ -47,7 +47,7 @@ import Halberd.ScanTask as halberd_scan_task
 import Halberd.version as halberd_shell_version
 import Halberd.clues.analysis as halberd_analysis
 
-class halberd(baseInfrastructurePlugin):
+class halberd(InfrastructurePlugin):
     '''
     Identify if the remote server has HTTP load balancers.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -58,7 +58,7 @@ class halberd(baseInfrastructurePlugin):
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request ):

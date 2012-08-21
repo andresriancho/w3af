@@ -28,7 +28,7 @@ import core.data.kb.vuln as vuln
 
 from core.controllers.w3afException import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import createRandAlpha
@@ -36,7 +36,7 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class frontpage(baseAuditPlugin):
+class frontpage(AuditPlugin):
     '''
     Tries to upload a file using frontpage extensions (author.dll).
     
@@ -44,7 +44,7 @@ class frontpage(baseAuditPlugin):
     '''
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._already_tested = scalable_bloomfilter()

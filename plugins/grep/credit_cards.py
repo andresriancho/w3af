@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 def luhnCheck(value):
@@ -53,7 +53,7 @@ def luhnCheck(value):
     return not (sm % 10)
 
 
-class credit_cards(baseGrepPlugin):
+class credit_cards(GrepPlugin):
     '''
     This plugin detects the occurrence of credit card numbers in web pages.
 
@@ -62,7 +62,7 @@ class credit_cards(baseGrepPlugin):
     
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
         cc_regex = '((^|\s)\d{4}[- ]?(\d{4}[- ]?\d{4}|\d{6})[- ]?(\d{5}|\d{4})($|\s))'
         #    (^|[^\d])                        Match the start of the string, or something that's NOT a digit

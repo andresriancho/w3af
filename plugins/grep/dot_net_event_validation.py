@@ -24,12 +24,12 @@ import re
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 
-class dot_net_event_validation(baseGrepPlugin):
+class dot_net_event_validation(GrepPlugin):
     '''
     Grep every page and identify the ones that have viewstate and don't have event validation.
       
@@ -37,7 +37,7 @@ class dot_net_event_validation(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
         vsRegex = r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value=".*?" />'
         self._viewstate = re.compile( vsRegex, re.IGNORECASE|re.DOTALL)

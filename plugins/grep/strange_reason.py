@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class strange_reason(baseGrepPlugin):
+class strange_reason(GrepPlugin):
     '''
     Analyze HTTP response reason (Not Found, Ok, Internal Server Error).
       
@@ -80,7 +80,7 @@ class strange_reason(baseGrepPlugin):
         }
         
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
     def grep(self, request, response):
         '''

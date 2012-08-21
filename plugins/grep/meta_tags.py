@@ -24,13 +24,13 @@ import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class meta_tags(baseGrepPlugin):
+class meta_tags(GrepPlugin):
     '''
     Grep every page for interesting meta tags.
       
@@ -53,7 +53,7 @@ class meta_tags(baseGrepPlugin):
                          'verify-v1':'Google Sitemap' }
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_inspected = scalable_bloomfilter()
         

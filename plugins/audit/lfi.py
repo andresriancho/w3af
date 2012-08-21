@@ -30,13 +30,13 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.is_source_file import is_source_file
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_in import multi_in
 
 
-class lfi(baseAuditPlugin):
+class lfi(AuditPlugin):
     '''
     Find local file inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -64,7 +64,7 @@ class lfi(baseAuditPlugin):
     _multi_in = multi_in( FILE_PATTERNS )
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._file_compiled_regex = []

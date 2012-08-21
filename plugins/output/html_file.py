@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.db.disk_list import disk_list
 from core.data.options.option import option
@@ -46,14 +46,14 @@ HTML_HEADER = Template( '<!DOCTYPE html>\n<html>\n<head>\n<title>$title</title>\
             '<body bgcolor=white>\n' )
 
 
-class html_file(baseOutputPlugin):
+class html_file(OutputPlugin):
     '''
     Generate HTML report with identified vulnerabilities and log messages.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         
         # Internal variables
         self._initialized = False

@@ -24,19 +24,19 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
+from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.xUrllib import xUrllib
 
 
-class basic_auth(baseBruteforcePlugin):
+class basic_auth(BruteforcePlugin):
     '''
     Bruteforce HTTP basic authentication.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseBruteforcePlugin.__init__(self)
+        BruteforcePlugin.__init__(self)
 
     def audit(self, freq ):
         '''

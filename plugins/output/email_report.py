@@ -25,12 +25,12 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class email_report(baseOutputPlugin):
+class email_report(OutputPlugin):
     '''Email report to specified addresses.
     
     @author: Taras (oxdef@oxdef.info)
@@ -42,7 +42,7 @@ class email_report(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         
         self.targets = []
         self._exec = False

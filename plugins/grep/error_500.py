@@ -23,11 +23,11 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.db.disk_set import disk_set
 
 
-class error_500(baseGrepPlugin):
+class error_500(GrepPlugin):
     '''
     Grep every page for error 500 pages that haven't been identified as bugs by other plugins.
       
@@ -38,7 +38,7 @@ class error_500(baseGrepPlugin):
                               )
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._error_500_responses = disk_set()
 

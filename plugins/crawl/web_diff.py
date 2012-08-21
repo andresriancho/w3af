@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.data.parsers.urlParser import url_object
@@ -34,7 +34,7 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 import os
 
 
-class web_diff(baseCrawlPlugin):
+class web_diff(CrawlPlugin):
     '''
     Compare a local directory with a remote URL path.
     
@@ -42,7 +42,7 @@ class web_diff(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._run = True

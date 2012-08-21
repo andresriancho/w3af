@@ -24,14 +24,14 @@ from __future__ import with_statement
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.esmre.multi_in import multi_in
 
 def whole_words(l):
     return [' %s ' % w for w in l ]
 
-class lang(baseGrepPlugin):
+class lang(GrepPlugin):
     '''
     Read N pages and determines the language the site is written in.
     
@@ -70,7 +70,7 @@ class lang(baseGrepPlugin):
                      }
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._exec = True

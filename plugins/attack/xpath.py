@@ -24,7 +24,7 @@ from random import randint
 import re
 import difflib
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 from core.data.kb.exec_shell import shell as shell
@@ -34,7 +34,7 @@ XML_FILTER = '//*'
 THRESHOLD = 0.8
 
 
-class xpath(baseAttackPlugin):
+class xpath(AttackPlugin):
     '''
     Exploit XPATH injections with the objective of retrieving the complete XML text.
     
@@ -42,7 +42,7 @@ class xpath(baseAttackPlugin):
     @author: Andres Riancho
     '''
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # User configured parameter
         self._change_to_post = True

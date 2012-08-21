@@ -25,7 +25,7 @@ from itertools import repeat, izip
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
@@ -35,7 +35,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 from core.data.db.disk_set import disk_set
 
 
-class dir_bruter(baseCrawlPlugin):
+class dir_bruter(CrawlPlugin):
     '''
     Finds Web server directories by bruteforcing.
 
@@ -43,7 +43,7 @@ class dir_bruter(baseCrawlPlugin):
     @author: Andres Riancho ( andres@bonsai-sec.com )
     '''
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # User configured parameters
         self._dir_list = os.path.join('plugins','crawl', 'dir_bruter', 

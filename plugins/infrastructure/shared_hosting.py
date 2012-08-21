@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 
@@ -40,14 +40,14 @@ from core.controllers.misc.is_private_site import is_private_site
 import socket
 
 
-class shared_hosting(baseInfrastructurePlugin):
+class shared_hosting(InfrastructurePlugin):
     '''
     Use Bing search to determine if the website is in a shared hosting.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         self._run = True
         
         # User variables

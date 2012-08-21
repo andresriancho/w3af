@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 from core.data.parsers.urlParser import url_object
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class wsdl_finder(baseCrawlPlugin):
+class wsdl_finder(CrawlPlugin):
     '''
     Find web service definitions files.
     
@@ -38,7 +38,7 @@ class wsdl_finder(baseCrawlPlugin):
             '?WSDL')
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._already_tested = scalable_bloomfilter()

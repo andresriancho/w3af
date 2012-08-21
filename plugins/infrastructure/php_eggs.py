@@ -27,14 +27,14 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import one_to_many
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class php_eggs(baseInfrastructurePlugin):
+class php_eggs(InfrastructurePlugin):
     '''
     Fingerprint the PHP version using documented easter eggs that exist in PHP.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -219,7 +219,7 @@ class php_eggs(baseInfrastructurePlugin):
             ('23f183b78eb4e3ba8b3df13f0a15e5de', 'PHP Credits')]
     
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Already analyzed extensions
         self._already_analyzed_ext = scalable_bloomfilter()

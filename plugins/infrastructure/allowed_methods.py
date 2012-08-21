@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -38,7 +38,7 @@ import core.data.constants.httpConstants as httpConstants
 from core.controllers.misc.groupbyMinKey import groupbyMinKey
 
 
-class allowed_methods(baseInfrastructurePlugin):
+class allowed_methods(InfrastructurePlugin):
     '''
     Enumerate the allowed methods of an URL.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -61,7 +61,7 @@ class allowed_methods(baseInfrastructurePlugin):
                            'MERGE', 'MKWORKSPACE', 'MKACTIVITY', 'BASELINE_CONTROL'])       
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
         # Internal variables
         self._exec = True

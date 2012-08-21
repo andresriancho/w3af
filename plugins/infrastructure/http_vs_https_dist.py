@@ -23,8 +23,8 @@ import socket
 
 from scapy.all import traceroute
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import \
-    baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import \
+    InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -37,7 +37,7 @@ import core.data.kb.knowledgeBase as kb
 PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
 " It seems that the user running the w3af process has not enough privileges."
 
-class http_vs_https_dist(baseInfrastructurePlugin):
+class http_vs_https_dist(InfrastructurePlugin):
     '''
     Determines the network distance between the http and https ports for a target.
     @author: Javier Andalia <jandalia =at= gmail.com>

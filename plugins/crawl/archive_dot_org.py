@@ -25,7 +25,7 @@ from itertools import izip, repeat
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afRunOnce
 
@@ -36,7 +36,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
-class archive_dot_org(baseCrawlPlugin):
+class archive_dot_org(CrawlPlugin):
     '''
     Search archive.org to find new pages in the target site.
     
@@ -49,7 +49,7 @@ class archive_dot_org(baseCrawlPlugin):
     NOT_IN_ARCHIVE = '<p>Wayback Machine doesn&apos;t have that page archived.</p>'
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._already_crawled = scalable_bloomfilter()

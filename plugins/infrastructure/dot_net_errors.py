@@ -23,11 +23,11 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class dot_net_errors(baseInfrastructurePlugin):
+class dot_net_errors(InfrastructurePlugin):
     '''
     Request specially crafted URLs that generate ASP.NET errors in order
     to gather information.
@@ -36,7 +36,7 @@ class dot_net_errors(baseInfrastructurePlugin):
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
         # Internal variables
         self._already_tested = scalable_bloomfilter()

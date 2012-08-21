@@ -1,5 +1,5 @@
 '''
-baseAuditPlugin.py
+AuditPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.data.request.variant_identification import are_variants
 
 
-class baseAuditPlugin(basePlugin):
+class AuditPlugin(Plugin):
     '''
     This is the base class for audit plugins, all audit plugins should inherit
     from it and implement the following methods :
@@ -36,7 +36,7 @@ class baseAuditPlugin(basePlugin):
     '''
 
     def __init__(self):
-        basePlugin.__init__( self )
+        Plugin.__init__( self )
         self._uri_opener = None
 
     # FIXME: This method is awful and returns LOTS of false positives

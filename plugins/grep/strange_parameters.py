@@ -26,12 +26,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.w3afException import w3afException
 
 
-class strange_parameters(baseGrepPlugin):
+class strange_parameters(GrepPlugin):
     '''
     Grep the HTML response and find URIs that have strange parameters.
       
@@ -39,7 +39,7 @@ class strange_parameters(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_reported = scalable_bloomfilter()

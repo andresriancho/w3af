@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
@@ -38,7 +38,7 @@ import core.data.kb.info as info
 import re
 
 
-class fingerprint_WAF(baseInfrastructurePlugin):
+class fingerprint_WAF(InfrastructurePlugin):
     '''
     Identify if a Web Application Firewall is present and if possible identify the vendor and version.
     
@@ -52,7 +52,7 @@ class fingerprint_WAF(baseInfrastructurePlugin):
     '''
     
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)        
     def discover(self, fuzzable_request ):

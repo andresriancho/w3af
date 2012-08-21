@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -38,7 +38,7 @@ from core.data.esmre.multi_in import multi_in
 import re
 
 
-class directory_indexing(baseGrepPlugin):
+class directory_indexing(GrepPlugin):
     '''
     Grep every response for directory indexing problems.
       
@@ -63,7 +63,7 @@ class directory_indexing(baseGrepPlugin):
     _multi_in = multi_in( DIR_INDEXING )    
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_visited = scalable_bloomfilter()
         

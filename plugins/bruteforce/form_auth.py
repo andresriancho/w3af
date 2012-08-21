@@ -28,21 +28,21 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
+from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.dc import form
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 
-class form_auth(baseBruteforcePlugin):
+class form_auth(BruteforcePlugin):
     '''
     Bruteforce HTML form authentication.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseBruteforcePlugin.__init__(self)        
+        BruteforcePlugin.__init__(self)        
         
         self._found = set()
         

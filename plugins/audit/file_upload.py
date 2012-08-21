@@ -29,7 +29,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -39,7 +39,7 @@ from core.data.options.optionList import optionList
 from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
 
 
-class file_upload(baseAuditPlugin):
+class file_upload(AuditPlugin):
     '''
     Uploads a file and then searches for the file inside all known directories.
     
@@ -50,7 +50,7 @@ class file_upload(baseAuditPlugin):
     
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # User configured
         self._extensions = ['gif', 'html', 'bmp', 'jpg', 'png', 'txt']

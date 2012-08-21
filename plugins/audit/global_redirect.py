@@ -28,10 +28,10 @@ import core.data.parsers.dpCache as dpCache
 
 from core.data.fuzzer.fuzzer import createMutants
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
-class global_redirect(baseAuditPlugin):
+class global_redirect(AuditPlugin):
     '''
     Find scripts that redirect the browser to any site.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -41,7 +41,7 @@ class global_redirect(baseAuditPlugin):
                  '//w3af.org')
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 

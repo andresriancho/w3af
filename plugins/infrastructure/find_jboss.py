@@ -23,12 +23,12 @@ import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.w3afException import w3afRunOnce
 
 
-class find_jboss(baseInfrastructurePlugin):
+class find_jboss(InfrastructurePlugin):
     '''
     Find default Jboss installations.
 
@@ -64,7 +64,7 @@ class find_jboss(baseInfrastructurePlugin):
         )
     
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         self._fuzzable_requests_to_return = []
         
     @runonce(exc_class=w3afRunOnce)

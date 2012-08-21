@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.fuzzer.fuzzer import createRandAlpha
 from core.data.db.temp_shelve import temp_shelve
@@ -35,14 +35,14 @@ from core.data.esmre.multi_in import multi_in
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class ssi(baseAuditPlugin):
+class ssi(AuditPlugin):
     '''
     Find server side inclusion vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._expected_res_mutant = temp_shelve()

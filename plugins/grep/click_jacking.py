@@ -24,10 +24,10 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.db.disk_list import disk_list
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class click_jacking(baseGrepPlugin):
+class click_jacking(GrepPlugin):
     '''
     Grep every page for X-Frame-Options header.
 
@@ -35,7 +35,7 @@ class click_jacking(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._total_count = 0
         self._vuln_count = 0

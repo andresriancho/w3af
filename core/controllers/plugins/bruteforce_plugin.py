@@ -1,5 +1,5 @@
 '''
-baseBruteforcePlugin.py
+BruteforcePlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -25,7 +25,7 @@ from itertools import izip, repeat
 
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
                                                      password_bruteforcer)
 from core.data.request.frFactory import create_fuzzable_requests
@@ -33,14 +33,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class baseBruteforcePlugin(baseAuditPlugin):
+class BruteforcePlugin(AuditPlugin):
     '''
     This plugin is a superclass for plugins that want to bruteforce any type of login.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Config params
         self._users_file = os.path.join('core','controllers','bruteforce','users.txt')

@@ -27,7 +27,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.data.parsers.urlParser import parse_qs
@@ -39,7 +39,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
-class eval(baseAttackPlugin):
+class eval(AttackPlugin):
     '''
     Exploit eval() vulnerabilities.
     
@@ -47,7 +47,7 @@ class eval(baseAttackPlugin):
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._shell_code = None

@@ -23,27 +23,27 @@ import unittest
 
 from core.controllers.w3afCore import w3afCore
 
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
-from core.controllers.basePlugin.baseAuthPlugin import baseAuthPlugin
-from core.controllers.basePlugin.baseBruteforcePlugin import baseBruteforcePlugin
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
-from core.controllers.basePlugin.baseManglePlugin import baseManglePlugin
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.plugins.auth_plugin import AuthPlugin
+from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.controllers.plugins.mangle_plugin import ManglePlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 
-PLUGIN_TYPES = {'attack': baseAttackPlugin,
-                'audit': baseAuditPlugin,
-                'auth': baseAuthPlugin,
-                'bruteforce': baseBruteforcePlugin,
-                'crawl': baseCrawlPlugin,
-                'evasion': baseEvasionPlugin,
-                'grep': baseGrepPlugin,
-                'infrastructure': baseInfrastructurePlugin,
-                'mangle': baseManglePlugin,
-                'output': baseOutputPlugin}
+PLUGIN_TYPES = {'attack': AttackPlugin,
+                'audit': AuditPlugin,
+                'auth': AuthPlugin,
+                'bruteforce': BruteforcePlugin,
+                'crawl': CrawlPlugin,
+                'evasion': EvasionPlugin,
+                'grep': GrepPlugin,
+                'infrastructure': InfrastructurePlugin,
+                'mangle': ManglePlugin,
+                'output': OutputPlugin}
 
 class TestBasic(unittest.TestCase):
 

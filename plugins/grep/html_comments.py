@@ -32,11 +32,11 @@ import core.data.kb.info as info
 from core.data.esmre.multi_in import multi_in
 from core.data.db.temp_shelve import temp_shelve
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.w3afException import w3afException
 
 
-class html_comments(baseGrepPlugin):
+class html_comments(GrepPlugin):
     '''
     Find HTML comments.
       
@@ -59,7 +59,7 @@ class html_comments(baseGrepPlugin):
     _multi_in = multi_in( INTERESTING_WORDS )
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
         # Internal variables
         self._comments = temp_shelve()

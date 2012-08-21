@@ -27,8 +27,8 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseManglePlugin import baseManglePlugin
-from core.controllers.basePlugin.baseManglePlugin import headersToString, stringToHeaders
+from core.controllers.plugins.mangle_plugin import ManglePlugin
+from core.controllers.plugins.mangle_plugin import headersToString, stringToHeaders
 
 import re
 
@@ -36,7 +36,7 @@ from core.controllers.w3afException import w3afException
 from core.data.request.frFactory import create_fuzzable_request
 
 
-class sed(baseManglePlugin):
+class sed(ManglePlugin):
     '''
     This plugin is a "stream editor" for http requests and responses.
       
@@ -44,7 +44,7 @@ class sed(baseManglePlugin):
     '''
     
     def __init__(self):
-        baseManglePlugin.__init__(self)
+        ManglePlugin.__init__(self)
         self._req_body_manglers = []
         self._req_head_manglers = []
         self._res_body_manglers = []

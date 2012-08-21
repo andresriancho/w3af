@@ -27,14 +27,14 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 
 HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
 
 
-class response_splitting(baseAuditPlugin):
+class response_splitting(AuditPlugin):
     '''
     Find response splitting vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -51,7 +51,7 @@ class response_splitting(baseAuditPlugin):
                       'Cannot modify header information - headers already sent')
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
 
     def audit(self, freq ):
         '''

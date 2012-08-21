@@ -26,14 +26,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 from core.data.esmre.multi_re import multi_re
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class http_in_body (baseGrepPlugin):
+class http_in_body (GrepPlugin):
     """
     Search for HTTP request/response string in response body.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -49,7 +49,7 @@ class http_in_body (baseGrepPlugin):
     
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         self._already_inspected = scalable_bloomfilter()
                         

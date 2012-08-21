@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -31,14 +31,14 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 
-class robots_txt(baseCrawlPlugin):
+class robots_txt(CrawlPlugin):
     '''
     Analyze the robots.txt file and find new URLs
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):

@@ -26,13 +26,13 @@ import os
 import core.data.kb.config as cf
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class text_file(baseOutputPlugin):
+class text_file(OutputPlugin):
     '''
     Prints all messages to a text file.
     
@@ -40,7 +40,7 @@ class text_file(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         
         # User configured parameters
         self._file_name = 'output.txt'

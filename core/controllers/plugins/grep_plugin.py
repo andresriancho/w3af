@@ -1,5 +1,5 @@
 '''
-baseGrepPlugin.py
+GrepPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 
 
-class baseGrepPlugin(basePlugin):
+class GrepPlugin(Plugin):
     '''
     This is the base class for grep plugins, all grep plugins should
     inherit from it and implement the following method:
@@ -35,7 +35,7 @@ class baseGrepPlugin(basePlugin):
     '''
 
     def __init__(self):
-        basePlugin.__init__(self)
+        Plugin.__init__(self)
 
     def grep_wrapper(self, fuzzable_request, response):
         '''

@@ -25,10 +25,10 @@ import Queue
 import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 
 
-class gtk_output(baseOutputPlugin):
+class gtk_output(OutputPlugin):
     '''
     Saves messages to kb.kb.getData('gtk_output', 'queue') to be displayed in the UI.
     
@@ -36,7 +36,7 @@ class gtk_output(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         if not kb.kb.getData('gtk_output', 'queue') == []:
             self.queue = kb.kb.getData('gtk_output', 'queue')
         else:

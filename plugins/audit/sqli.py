@@ -25,12 +25,12 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import createMutants
 from core.data.esmre.multi_re import multi_re
 
 
-class sqli(baseAuditPlugin):
+class sqli(AuditPlugin):
     '''
     Find SQL injection bugs.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -127,7 +127,7 @@ class sqli(baseAuditPlugin):
     SQLI_STRINGS = (u"d'z\"0",)
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Internal variables
         self._errors = []

@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledgeBase as kb
 
 
-from core.controllers.basePlugin.baseOutputPlugin import baseOutputPlugin
+from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 
 # options
@@ -32,7 +32,7 @@ from core.data.options.optionList import optionList
 from core.data.request.wsPostDataRequest import wsPostDataRequest
 
 
-class export_requests(baseOutputPlugin):
+class export_requests(OutputPlugin):
     '''
     Export the fuzzable requests found during crawl to a file.
     
@@ -40,7 +40,7 @@ class export_requests(baseOutputPlugin):
     '''
     
     def __init__(self):
-        baseOutputPlugin.__init__(self)
+        OutputPlugin.__init__(self)
         self.output_file = 'output-requests.csv'
 
     def do_nothing(self, *args, **kwds): pass

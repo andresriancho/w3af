@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -35,7 +35,7 @@ from core.data.options.optionList import optionList
 from core.data.parsers.urlParser import url_object
 
 
-class url_fuzzer(baseCrawlPlugin):
+class url_fuzzer(CrawlPlugin):
     '''
     Try to find backups, and other related files.
     @author: Andres Riancho ( andres.riancho@gmail.com )  
@@ -55,7 +55,7 @@ class url_fuzzer(baseCrawlPlugin):
         )
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         self._first_time = True
         self._fuzz_images = False

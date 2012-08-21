@@ -28,7 +28,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -36,13 +36,13 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class ria_enumerator(baseCrawlPlugin):
+class ria_enumerator(CrawlPlugin):
     '''
     Fingerprint Rich Internet Apps - Google Gears Manifest files, Silverlight and Flash.
     @author: Jon Rose ( jrose@owasp.org )
     '''
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # User configured parameters
         self._wordlist = os.path.join('plugins' , 'crawl' , 'ria_enumerator',

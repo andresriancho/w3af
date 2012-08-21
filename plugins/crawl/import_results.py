@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.data.request.frFactory import create_fuzzable_request
 from core.data.parsers.urlParser import url_object
@@ -35,13 +35,13 @@ import re
 import os
 
 
-class import_results(baseCrawlPlugin):
+class import_results(CrawlPlugin):
     '''
     Import URLs found by other tools.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
 
         # Internal variables
         self._exec = True

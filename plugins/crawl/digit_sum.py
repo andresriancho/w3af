@@ -23,7 +23,7 @@ import re
 
 from itertools import izip, repeat
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
@@ -32,14 +32,14 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class digit_sum(baseCrawlPlugin):
+class digit_sum(CrawlPlugin):
     '''
     Take an URL with a number (index2.asp) and try to find related files (index1.asp, index3.asp).
     @author: Andres Riancho ( andres.riancho@gmail.com )  
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         self._already_visited = scalable_bloomfilter()
         
         # User options

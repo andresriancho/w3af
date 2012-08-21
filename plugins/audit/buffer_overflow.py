@@ -26,13 +26,13 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
 from core.data.esmre.multi_in import multi_in
 
 
-class buffer_overflow(baseAuditPlugin):
+class buffer_overflow(AuditPlugin):
     '''
     Find buffer overflow vulnerabilities.
     @author: Andres Riancho ( andres.riancho@gmail.com )
@@ -86,7 +86,7 @@ class buffer_overflow(baseAuditPlugin):
                 
             Note that this is an Apache error 500, not the more common PHP error 500.
         '''
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
     def audit(self, freq ):
         '''

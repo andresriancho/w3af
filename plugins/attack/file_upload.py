@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -44,14 +44,14 @@ import tempfile
 from core.controllers.misc.temp_dir import get_temp_dir
 
 
-class file_upload(baseAttackPlugin):
+class file_upload(AttackPlugin):
     '''
     Exploit applications that allow unrestricted file uploads inside the webroot.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._path_name = ''

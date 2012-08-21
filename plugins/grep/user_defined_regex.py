@@ -26,12 +26,12 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class user_defined_regex(baseGrepPlugin):
+class user_defined_regex(GrepPlugin):
     '''
     Report a vulnerability if the response matches a user defined regex.
       
@@ -39,7 +39,7 @@ class user_defined_regex(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # User defined options
         self._single_regex = ''

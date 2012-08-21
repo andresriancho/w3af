@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from functools import partial 
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt
 
@@ -29,7 +29,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.parsers.urlParser import url_object
 
 
-class slash(baseCrawlPlugin):
+class slash(CrawlPlugin):
     '''
     Identify if the resource http://host.tld/spam/ and 
     http://host.tld/spam are the same.
@@ -38,7 +38,7 @@ class slash(baseCrawlPlugin):
     '''
     
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         self._already_visited = scalable_bloomfilter()
         
     def crawl(self, fuzzable_request):

@@ -21,18 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseAuthPlugin import baseAuthPlugin
+from core.controllers.plugins.auth_plugin import AuthPlugin
 from core.controllers.w3afException import w3afException
 
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class detailed(baseAuthPlugin):
+class detailed(AuthPlugin):
     '''Detailed authentication plugin.'''
 
     def __init__(self):
-        baseAuthPlugin.__init__(self)
+        AuthPlugin.__init__(self)
         self.username = ''
         self.password = ''
         self.username_field = ''

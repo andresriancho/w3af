@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
@@ -30,14 +30,14 @@ from core.data.options.optionList import optionList
 
 
 
-class self_reference(baseEvasionPlugin):
+class self_reference(EvasionPlugin):
     '''
     Add a directory self reference.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseEvasionPlugin.__init__(self)
+        EvasionPlugin.__init__(self)
 
     def modifyRequest(self, request ):
         '''

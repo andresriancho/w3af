@@ -25,11 +25,11 @@ from lxml import etree
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class ajax(baseGrepPlugin):
+class ajax(GrepPlugin):
     '''
     Grep every page for traces of Ajax code.
       
@@ -37,7 +37,7 @@ class ajax(baseGrepPlugin):
     '''
     
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()

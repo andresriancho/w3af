@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.misc.levenshtein import relative_distance_ge
 
 import core.data.kb.knowledgeBase as kb
@@ -38,14 +38,14 @@ from core.data.parsers.urlParser import parse_qs
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 
 
-class local_file_reader(baseAttackPlugin):
+class local_file_reader(AttackPlugin):
     '''
     Exploit local file inclusion bugs.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._already_tested = []

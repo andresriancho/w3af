@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -36,7 +36,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
 
-class domain_dot(baseInfrastructurePlugin):
+class domain_dot(InfrastructurePlugin):
     '''
     Send a specially crafted request with a dot after the domain (http://host.tld./) and analyze response.
     
@@ -44,7 +44,7 @@ class domain_dot(baseInfrastructurePlugin):
     '''
 
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Internal variables
         self._already_tested = []

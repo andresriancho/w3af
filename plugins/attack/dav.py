@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -39,14 +39,14 @@ import plugins.attack.payloads.shell_handler as shell_handler
 import urllib
 
 
-class dav(baseAttackPlugin):
+class dav(AttackPlugin):
     '''
     Exploit web servers that have unauthenticated DAV access.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
 
     def __init__(self):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         
         # Internal variables
         self._exploit_url = None

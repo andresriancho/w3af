@@ -27,20 +27,20 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.urlParser import url_object
 
 
-class zone_h(baseInfrastructurePlugin):
+class zone_h(InfrastructurePlugin):
     '''
     Find out if the site was defaced in the past.
     
     @author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
     '''    
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request ):

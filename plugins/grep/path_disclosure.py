@@ -26,11 +26,11 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.constants.common_directories import get_common_directories
 
 
-class path_disclosure(baseGrepPlugin):
+class path_disclosure(GrepPlugin):
     '''
     Grep every page for traces of path disclosure vulnerabilities.
       
@@ -38,7 +38,7 @@ class path_disclosure(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_added = []

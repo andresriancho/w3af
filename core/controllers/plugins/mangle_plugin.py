@@ -1,5 +1,5 @@
 '''
-baseManglePlugin.py
+ManglePlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 
-class baseManglePlugin(basePlugin):
+class ManglePlugin(Plugin):
     '''
     This is the base class for mangle plugins, all mangle plugins should inherit from it 
     and implement the following methods :

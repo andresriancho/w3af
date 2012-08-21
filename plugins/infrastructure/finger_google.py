@@ -29,20 +29,20 @@ from core.data.search_engines.google import google as google
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
-from core.controllers.basePlugin.baseInfrastructurePlugin import baseInfrastructurePlugin
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afRunOnce
 
 
-class finger_google(baseInfrastructurePlugin):
+class finger_google(InfrastructurePlugin):
     '''
     Search Google using the Google API to get a list of users for a domain.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        baseInfrastructurePlugin.__init__(self)
+        InfrastructurePlugin.__init__(self)
         
         # Internal variables
         self._accounts = []

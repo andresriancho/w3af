@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class strange_http_codes(baseGrepPlugin):
+class strange_http_codes(GrepPlugin):
     '''
     Analyze HTTP response codes sent by the remote web application.
       
@@ -38,7 +38,7 @@ class strange_http_codes(baseGrepPlugin):
                               500, 501] )
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
     def grep(self, request, response):
         '''

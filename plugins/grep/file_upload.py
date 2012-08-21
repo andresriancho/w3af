@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 # options
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.options.optionList import optionList
 import core.data.kb.knowledgeBase as kb
@@ -33,7 +33,7 @@ import core.data.kb.info as info
 FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
 
 
-class file_upload(baseGrepPlugin):
+class file_upload(GrepPlugin):
     '''
     Find HTML forms with file upload capabilities.
       
@@ -41,7 +41,7 @@ class file_upload(baseGrepPlugin):
     '''
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
         
         # Internal variables
         self._already_inspected = scalable_bloomfilter()

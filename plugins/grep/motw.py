@@ -25,19 +25,19 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class motw (baseGrepPlugin):
+class motw (GrepPlugin):
     """
     Identify whether the page is compliant to mark of the web.
     @author: Sharad Ganapathy sharadgana |at| gmail.com
     """
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
         # The following regex matches a valid url as well as the text about:internet.
         # Also it validates the number in the parenthesis. It should be a 4 digit number

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.basePlugin.baseEvasionPlugin import baseEvasionPlugin
+from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 
 from core.data.fuzzer.fuzzer import createRandAlNum
@@ -32,13 +32,13 @@ from core.data.options.option import option
 from core.data.options.optionList import optionList
 
 
-class rnd_param(baseEvasionPlugin):
+class rnd_param(EvasionPlugin):
     '''
     Add a random parameter.
     @author: Andres Riancho ( andres.riancho@gmail.com )
     '''
     def __init__(self):
-        baseEvasionPlugin.__init__(self)
+        EvasionPlugin.__init__(self)
 
     def modifyRequest(self, request ):
         '''

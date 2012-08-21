@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseGrepPlugin import baseGrepPlugin
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.esmre.multi_in import multi_in
 
 
-class wsdl_greper(baseGrepPlugin):
+class wsdl_greper(GrepPlugin):
     '''
     Grep every page for web service definition files.
     
@@ -40,7 +40,7 @@ class wsdl_greper(baseGrepPlugin):
     _multi_in = multi_in( WSDL_STRINGS )
 
     def __init__(self):
-        baseGrepPlugin.__init__(self)
+        GrepPlugin.__init__(self)
 
         self._already_inspected = scalable_bloomfilter()
         self._disco_strings = ['disco:discovery ']

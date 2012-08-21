@@ -29,10 +29,10 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.fuzzer.fuzzer import createMutants
-from core.controllers.basePlugin.baseAuditPlugin import baseAuditPlugin
+from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
-class phishing_vector(baseAuditPlugin):
+class phishing_vector(AuditPlugin):
     '''
     Find phishing vectors.
     
@@ -40,7 +40,7 @@ class phishing_vector(baseAuditPlugin):
     '''
 
     def __init__(self):
-        baseAuditPlugin.__init__(self)
+        AuditPlugin.__init__(self)
         
         # Some internal vars
         self._tag_xpath = etree.XPath('//iframe | //frame')

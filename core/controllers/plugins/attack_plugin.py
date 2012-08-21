@@ -1,5 +1,5 @@
 '''
-baseAttackPlugin.py
+AttackPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.basePlugin import basePlugin
+from core.controllers.plugins.plugin import Plugin
 from core.controllers.misc.commonAttackMethods import commonAttackMethods
 import core.controllers.outputManager as om
 
@@ -32,7 +32,7 @@ import core.data.kb.knowledgeBase as kb
 import copy
 
 
-class baseAttackPlugin(basePlugin, commonAttackMethods):
+class AttackPlugin(Plugin, commonAttackMethods):
     '''
     This is the base class for attack plugins, all attack plugins should inherit from it 
     and implement the following methods :
@@ -43,7 +43,7 @@ class baseAttackPlugin(basePlugin, commonAttackMethods):
     '''
 
     def __init__(self):
-        basePlugin.__init__( self )
+        Plugin.__init__( self )
         commonAttackMethods.__init__( self )
         
         self._uri_opener = None

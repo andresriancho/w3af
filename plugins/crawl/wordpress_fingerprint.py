@@ -27,12 +27,12 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
-class wordpress_fingerprint(baseCrawlPlugin):
+class wordpress_fingerprint(CrawlPlugin):
     '''
     Finds the version of a WordPress installation.
     @author: Ryan Dewhurst ( ryandewhurst@gmail.com ) www.ethicalhack3r.co.uk
@@ -52,7 +52,7 @@ class wordpress_fingerprint(baseCrawlPlugin):
                       ]
         
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
         # Internal variables
         self._exec = True

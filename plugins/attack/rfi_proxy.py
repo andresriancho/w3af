@@ -28,7 +28,7 @@ import core.data.kb.config as cf
 from core.data.kb.shell import shell as shell
 
 from core.controllers.w3afException import w3afException
-from core.controllers.basePlugin.baseAttackPlugin import baseAttackPlugin
+from core.controllers.plugins.attack_plugin import AttackPlugin
 
 import core.controllers.daemons.webserver as webserver
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
@@ -55,7 +55,7 @@ RFI_SEPARATOR = createRandAlNum( 25 )
 URLOPENER = None
 
 
-class rfi_proxy(baseAttackPlugin, w3afThread):
+class rfi_proxy(AttackPlugin, w3afThread):
     '''
     Exploits remote file inclusions to create a proxy server.
     
@@ -63,7 +63,7 @@ class rfi_proxy(baseAttackPlugin, w3afThread):
     '''
 
     def __init__( self ):
-        baseAttackPlugin.__init__(self)
+        AttackPlugin.__init__(self)
         w3afThread.__init__( self )
         
         self._shell = None

@@ -23,14 +23,14 @@ import xml.dom.minidom
 
 import core.controllers.outputManager as om
 
-from core.controllers.basePlugin.baseCrawlPlugin import baseCrawlPlugin
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.urlParser import url_object
 
 
-class sitemap_xml(baseCrawlPlugin):
+class sitemap_xml(CrawlPlugin):
     '''
     Analyze the sitemap.xml file and find new URLs
     
@@ -38,7 +38,7 @@ class sitemap_xml(baseCrawlPlugin):
     '''
 
     def __init__(self):
-        baseCrawlPlugin.__init__(self)
+        CrawlPlugin.__init__(self)
         
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):
