@@ -79,7 +79,7 @@ class lfi(AuditPlugin):
         '''
         oResponse = self._uri_opener.send_mutant(freq)
         
-        #   What payloads do I want to send to the remote end?
+        # Which payloads do I want to send to the remote end?
         local_files = []
         local_files.append( freq.getURL().getFileName() )
         if not self._open_basedir:
@@ -89,8 +89,8 @@ class lfi(AuditPlugin):
         
         # FIXME: Here I was using kwds: grep=False
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
         
     def _get_local_file_list( self, origUrl):
         '''
@@ -287,6 +287,7 @@ class lfi(AuditPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find local file include vulnerabilities. This is done by sending to all injectable parameters
-        file paths like "../../../../../etc/passwd" and searching in the response for strings like "root:x:0:0:".
+        This plugin will find local file include vulnerabilities. This is done by
+        sending to all injectable parameters file paths like "../../../../../etc/passwd"
+        and searching in the response for strings like "root:x:0:0:".
         '''
