@@ -87,10 +87,19 @@ class global_redirect(baseAuditPlugin):
         This method checks if the browser was redirected (using a 302 code) 
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
         '''
-        #
-        #    Test for 302 header redirects
-        #
         lheaders = response.getLowerCaseHeaders()
+        
+        response = self._30x_code_redirect(response, lheaders) or \
+                   self._refresh_redirect(response, lheaders) or \
+                   self._meta_redirect(response) or \
+                   self._javascript_redirect(response) or \
+                   self._http_equiv_redirect(response)
+        
+        return response
+    
+    def _30x_code_redirect(self, response, lheaders):
+        '''Test for 302 header redirects'''
+        
         for header_name in ('location', 'uri'):
             if header_name in lheaders:
                 header_value = lheaders[header_name]
@@ -100,9 +109,13 @@ class global_redirect(baseAuditPlugin):
                         # so the URL is now the test site
                         return True
         
-        # Check for the *very strange* Refresh HTTP header, which looks like a
-        # <meta refresh> in the header context!
-        # http://stackoverflow.com/questions/283752/refresh-http-header
+        return False
+
+    def _refresh_redirect(self, response, lheaders):        
+        '''Check for the *very strange* Refresh HTTP header, which looks like a
+        <meta refresh> in the header context!
+        http://stackoverflow.com/questions/283752/refresh-http-header
+        '''
         if 'refresh' in lheaders:
             refresh = lheaders['refresh']
             # Format is 0;url=my_view_page.php
@@ -113,9 +126,12 @@ class global_redirect(baseAuditPlugin):
                     if url.startswith( test_url ):
                         return True
         
-        #
-        # Test for meta redirects
-        #
+        return False
+    
+    def _meta_redirect(self, response):
+        '''
+        Test for meta redirects
+        '''
         try:
             dp = dpCache.dpc.getDocumentParserFor( response )
         except w3afException:
@@ -128,14 +144,17 @@ class global_redirect(baseAuditPlugin):
                     url = match_url.group(1)
                     for test_url in self.TEST_URLS:
                         if url.startswith( test_url ):
-                            return True                    
+                            return True
+        
+        return False             
 
-        #
-        # Test for JavaScript redirects, these are some common redirects:
-        #     location.href = '../htmljavascript.htm';
-        #     window.location = "http://www.w3af.com/"
-        #     window.location.href="http://www.w3af.com/";
-        #     location.replace('http://www.w3af.com/');
+    def _javascript_redirect(self, response):
+        '''Test for JavaScript redirects, these are some common redirects:
+             location.href = '../htmljavascript.htm';
+             window.location = "http://www.w3af.com/"
+             window.location.href="http://www.w3af.com/";
+             location.replace('http://www.w3af.com/');
+            '''
         res = self._script_re.search( response.getBody() )
         if res:
             
@@ -152,7 +171,7 @@ class global_redirect(baseAuditPlugin):
                         return True
         
         return False
-        
+    
     def getLongDesc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
