@@ -1,5 +1,4 @@
 import core.data.kb.knowledgeBase as kb
-import plugins.attack.payloads.misc.file_crawler as file_crawler
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
@@ -26,11 +25,11 @@ class apache_config_files(base_payload):
 
         apache_dir = self.exec_payload('apache_config_directory')['apache_directory']
         if apache_dir:
-            for dir in apache_dir:
-                for file in files:
-                    content = self.shell.read(dir+file)
+            for directory in apache_dir:
+                for filename in files:
+                    content = self.shell.read(directory+filename)
                     if content:
-                        result['apache_config'][ dir+file ] = content
+                        result['apache_config'][ directory+filename ] = content
                 
                 #TODO: Add target domain name being scanned by w3af.
                 profiled_words_list = kb.kb.getData('password_profiling', 'password_profiling')
@@ -46,7 +45,7 @@ class apache_config_files(base_payload):
                 extras = [i for i in extras if i != '']
                 
                 for possible_domain in extras:
-                    site_configuration = dir + 'sites-enabled/' + possible_domain.lower()
+                    site_configuration = directory + 'sites-enabled/' + possible_domain.lower()
                     
                     site_configuration_content = self.shell.read(site_configuration)
                     if site_configuration_content:
