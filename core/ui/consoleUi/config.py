@@ -89,7 +89,7 @@ class configMenu(menu):
             self._options[name].setValue( value )
             self._plainOptions[name] = value
                             
-            if isinstance( self._configurable, plugins ):
+            if isinstance( self._configurable, Plugin ):
                 self._w3af.plugins.set_plugin_options( self._configurable.getType(),
                                                      self._configurable.getName(),
                                                      self._options )
