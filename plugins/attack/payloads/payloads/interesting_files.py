@@ -1,3 +1,5 @@
+from core.controllers.threads.threadManager import thread_manager
+from core.controllers.threads.threadpool import return_args
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
@@ -6,10 +8,9 @@ class interesting_files(base_payload):
     '''
     Search for interesting files in all known directories. 
     '''
-    def api_read(self, parameters):
-        result = {}
-        user_config_files = []
-
+    KNOWN_FALSE_POSITIVES = set(['/bin/pwd',])
+    
+    def _file_path_generator(self):
         interesting_extensions = []
         interesting_extensions.append('')   # no extension
         interesting_extensions.append('.txt')
@@ -47,8 +48,6 @@ class interesting_files(base_payload):
                 
         users_result = self.exec_payload('users')
 
-        files_to_read = []
-        
         #
         #    Create the list of files
         #
@@ -58,15 +57,18 @@ class interesting_files(base_payload):
             for interesting_file in file_list:
                 for extension in interesting_extensions:
                     file_fp = home + interesting_file + extension
-                    files_to_read.append( file_fp )
+                    yield file_fp
+    
+    def api_read(self, parameters):
+        result = {}
         
-        #
-        #    Read the files
-        #    
-        for file_fp in files_to_read:
-            content = self.shell.read(file_fp)
-            if content:
-                result[ file_fp ] = content
+        file_path_iter = self._file_path_generator()
+        read_file = return_args(self.shell.read)
+        
+        for (file_fp,), content in thread_manager.threadpool.imap_unordered(read_file, file_path_iter):
+            if content and file_fp not in self.KNOWN_FALSE_POSITIVES:
+                result[ file_fp ] = None
+            
         return result
         
     def run_read(self, parameters):
