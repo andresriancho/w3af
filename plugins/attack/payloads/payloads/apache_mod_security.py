@@ -21,7 +21,6 @@ class apache_mod_security(base_payload):
 
         def parse_version(binary):
             version = re.search('(?<=ModSecurity for Apache/)(.*?) ', binary)
-            print version.group(0)
             if version:
                 return version.group(0)
             else:
