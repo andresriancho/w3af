@@ -36,10 +36,12 @@ class apache_config_directory(base_payload):
         def check_apache_config_dir( apache_config_directory ):
             httpd = self.shell.read( apache_config_directory + 'httpd.conf')
             apache = self.shell.read( apache_config_directory + 'apache2.conf')
-            if httpd != '' or apache != '':
-                return True
-            else:
-                return False
+            for keyword in ('#', 'NCSA', 'Global'):
+                if keyword in httpd:
+                    return True
+                elif keyword in apache:
+                    return True
+            return False
 
         paths.append( parse_apache2_init( self.shell.read('/etc/init.d/apache2') ) )
         paths.append( parse_apache_init( self.shell.read('/etc/init.d/apache') ) )
