@@ -1,9 +1,11 @@
-from core.controllers.threads.threadManager import thread_manager as tm
-from plugins.attack.payloads.base_payload import base_payload
-import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
 import re
+
+import core.controllers.outputManager as om
+
+from core.controllers.threads.threadManager import thread_manager
 from core.ui.consoleUi.tables import table
+
+from plugins.attack.payloads.base_payload import base_payload
 
 
 class list_processes(base_payload ):
@@ -24,7 +26,7 @@ class list_processes(base_payload ):
         else:
             return ''
     
-    def _thread_read( self, pid):
+    def _thread_read(self, pid):
         #   "progress bar"  
         self.k -= 1
         if self.k == 0:
@@ -53,13 +55,16 @@ class list_processes(base_payload ):
         self.k = 400
         
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
-        #   Remove comment to debug
-        max_pid = 400
         
-        for pid in xrange(1, int(max_pid)):
-            targs = (pid, )
-            tm.apply_async( target=self._thread_read, args=targs, ownerObj=self )
-        tm.join( self )
+        if len(parameters) == 1:
+            max_pid_user = parameters[0]
+            try:
+                max_pid = int(max_pid_user)
+            except:
+                om.out.console('Invalid max_pid: %s' % max_pid_user)
+        
+        pid_iter = xrange(1, int(max_pid))
+        thread_manager.threadpool.map(self._thread_read, pid_iter)
         
         return self.result
     
