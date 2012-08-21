@@ -309,7 +309,7 @@ class fileReaderShell(read_shell):
 
         # Lets send the command.
         function_reference = getattr( self._uri_opener , self.getMethod() )
-        data_container = self.getDc()
+        data_container = self.getDc().copy()
         data_container[ self.getVar() ] = filename
         try:
             response = function_reference( self.getURL() ,  str(data_container) )
