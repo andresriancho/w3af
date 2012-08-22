@@ -5,7 +5,7 @@ class iis_root_directory(base_payload):
     '''
     This payload finds IIS Root Directories where websites are hosted.
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         self.result = {}
         files = []
 
@@ -41,7 +41,7 @@ class iis_root_directory(base_payload):
 
         return self.result
     
-    def run_read(self, parameters):
+    def run_read(self):
         hashmap = self.api_read(parameters)
         result = []
         for k, v in hashmap.iteritems():

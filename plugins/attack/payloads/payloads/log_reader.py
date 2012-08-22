@@ -82,7 +82,7 @@ class log_reader(base_payload):
         for fname in logs:
             yield fname
         
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
 
         def parse_apache_logs(config_file):
@@ -112,8 +112,8 @@ class log_reader(base_payload):
         return result
 
 
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             return 'No log files not found.'

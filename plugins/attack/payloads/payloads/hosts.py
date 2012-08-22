@@ -6,7 +6,7 @@ class hosts(base_payload):
     '''
     This payload shows the hosts allow and deny files.
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         hosts = []
 
@@ -20,8 +20,8 @@ class hosts(base_payload):
                 result[file] = content
         return result
         
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             return 'Hosts files not found.'

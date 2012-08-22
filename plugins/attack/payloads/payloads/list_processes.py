@@ -8,7 +8,7 @@ from core.ui.consoleUi.tables import table
 from plugins.attack.payloads.base_payload import base_payload
 
 
-class list_processes(base_payload ):
+class list_processes(base_payload):
     '''
     This payload shows current proccesses on the system.
     '''
@@ -50,18 +50,12 @@ class list_processes(base_payload ):
         #if kb.kb:
             #kb.kb.append(str(i), [str(i), name, state, cmd])
 
-    def api_read(self, parameters):
+    def api_read(self, max_pid_user):
         self.result = {}
         self.k = 400
         
         max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
-        
-        if len(parameters) == 1:
-            max_pid_user = parameters[0]
-            try:
-                max_pid = int(max_pid_user)
-            except:
-                om.out.console('Invalid max_pid: %s' % max_pid_user)
+        max_pid = min(max_pid, max_pid_user)
         
         pid_iter = xrange(1, int(max_pid))
         thread_manager.threadpool.map(self._thread_read, pid_iter)
@@ -81,7 +75,18 @@ class list_processes(base_payload ):
         return self.result
         
     def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+
+        if len(parameters) > 1:
+            return 'Usage: list_processes <max_pid>'
+        elif len(parameters) == 1:
+            try:
+                max_pid = int(parameters[0])
+            except:
+                return 'Invalid max_pid, expected an integer.'
+        else:
+            max_pid = 50000
+            
+        api_result = self.api_read(max_pid)
         
         if not api_result:
             return 'Failed to list proccesses.'

@@ -50,7 +50,7 @@ class svn_config_files(base_payload):
             yield '/srv/svn/'+folder.lower()+'/conf/svnserve.conf'
             yield '/srv/svn/'+folder.lower()+'/conf/passwd'    
         
-    def api_read(self, parameters):
+    def api_read(self):
         self.result = {}
 
         def parse_parent_path(config):
@@ -116,8 +116,8 @@ class svn_config_files(base_payload):
 
         return self.result
 
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             return 'SVN configuration files not found.'

@@ -57,7 +57,7 @@ class interesting_files(base_payload):
                     file_fp = home + interesting_file + extension
                     yield file_fp
     
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         
         file_path_iter = self._file_path_generator()
@@ -68,8 +68,8 @@ class interesting_files(base_payload):
             
         return result
         
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
                 
         if not api_result:
             return 'No interesting files found.'

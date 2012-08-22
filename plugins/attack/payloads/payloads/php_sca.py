@@ -104,7 +104,7 @@ class php_sca(base_payload):
                       'vulnsrc': str(fc.vulnsources[0])} for fc in funcs])
         return res
 
-    def run_read(self, parameters):
+    def run_read(self):
 
         api_res = self.api_read()
         if not api_res:

@@ -8,9 +8,48 @@ class get_source_code(base_payload):
     '''
     Get the source code for all files that were spidered by w3af.
     '''
-    def api_read(self, parameters):
+    def api_read(self, output_directory):
         self.result = {}
         
+        apache_root_directory = self.exec_payload('apache_root_directory')
+        webroot_list = apache_root_directory['apache_root_directory']
+        
+        url_list = kb.kb.getData('urls', 'url_objects')
+        
+        for webroot in webroot_list:
+            for url in url_list:
+
+                path_and_file = url.getPath()
+                relative_path_file = path_and_file[1:]
+                remote_full_path = os.path.join(webroot, relative_path_file )
+                                                               
+                file_content = self.shell.read(remote_full_path)
+                if file_content:
+                    #
+                    # Now I write the file to the local disk
+                    # I have to maintain the remote file structure
+                    #
+                    
+                    # Create the file path to be written to disk
+                    # FIXME: The webroot[1:] only works in Linux. For windows with C:\ it won't work
+                    local_full_path = os.path.join(output_directory, webroot[1:], relative_path_file)
+                    
+                    #    Create the local directories (if needed)
+                    local_directory = os.path.dirname( local_full_path )
+                    if not os.path.exists(local_directory):
+                        os.makedirs(local_directory)
+                    
+                    #    Write the file!
+                    fh = file(local_full_path, 'w')
+                    fh.write(file_content)
+                    fh.close()
+                    
+                    self.result[url] = (remote_full_path, local_full_path)
+                        
+        return self.result
+
+
+    def run_read(self, parameters):
         #
         #    Parameter validation
         #
@@ -29,52 +68,7 @@ class get_source_code(base_payload):
                 msg = 'Failed to open "%s" for writing.'
                 raise Exception( msg % output_directory )
             
-            else:
-                #
-                #    The real stuff
-                #
-                
-                apache_root_directory = self.exec_payload('apache_root_directory')
-                webroot_list = apache_root_directory['apache_root_directory']
-                
-                url_list = kb.kb.getData('urls', 'url_objects')
-                
-                for webroot in webroot_list:
-                    for url in url_list:
-
-                        path_and_file = url.getPath()
-                        relative_path_file = path_and_file[1:]
-                        remote_full_path = os.path.join(webroot, relative_path_file )
-                                                                       
-                        file_content = self.shell.read(remote_full_path)
-                        if file_content:
-                            #
-                            # Now I write the file to the local disk
-                            # I have to maintain the remote file structure
-                            #
-                            
-                            # Create the file path to be written to disk
-                            # FIXME: The webroot[1:] only works in Linux. For windows with C:\ it won't work
-                            local_full_path = os.path.join(output_directory, webroot[1:], relative_path_file)
-                            
-                            #    Create the local directories (if needed)
-                            local_directory = os.path.dirname( local_full_path )
-                            if not os.path.exists(local_directory):
-                                os.makedirs(local_directory)
-                            
-                            #    Write the file!
-                            fh = file(local_full_path, 'w')
-                            fh.write(file_content)
-                            fh.close()
-                            
-                            self.result[url] = (remote_full_path, local_full_path)
-                        
-        
-        return self.result
-
-    def run_read(self, parameters):
-
-        api_result = self.api_read(parameters)
+        api_result = self.api_read(output_directory)
         
         if not api_result:
             return 'Failed to download the application source code.'

@@ -40,7 +40,7 @@ class running_vm(base_payload):
             yield file_
         
         
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         result['running_vm'] = False
 
@@ -93,8 +93,8 @@ class running_vm(base_payload):
         iis6log_content = self.shell.read('/windows/iis6.log')
         #if 'VMWare'
     
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
 
         rows = []
         rows.append( ['Running inside Virtual Machine',] ) 

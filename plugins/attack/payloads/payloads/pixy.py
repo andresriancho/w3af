@@ -89,7 +89,7 @@ class pixy(base_payload):
         
         return self.result
 
-    def run_read(self, parameters):
+    def run_read(self):
         
         if len(parameters) != 2:
             msg = 'Usage: pixy <local temp directory> <pixy tool location>\n'

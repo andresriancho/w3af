@@ -70,7 +70,7 @@ class rootkit_hunter(base_payload):
             if module in kernel_modules:
                 self.result['bad_kernel_modules'].append(module)
                     
-    def api_read(self, parameters):
+    def api_read(self):
         self.result = {}
         self.result['bad_kernel_modules'] = []
         self.result['backdoor_files'] = []
@@ -86,8 +86,8 @@ class rootkit_hunter(base_payload):
 
         return self.result
     
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             return 'Rootkit hunter failed to run.'

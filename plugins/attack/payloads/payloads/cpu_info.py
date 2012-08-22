@@ -7,7 +7,7 @@ class cpu_info(base_payload):
     '''
     This payload shows CPU Model and Core info.
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
 
         def parse_cpu_info( cpu_info ):
@@ -52,8 +52,8 @@ class cpu_info(base_payload):
             else:
                 return ''
     
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
                 
         if not api_result:
             return 'No CPU information found.'

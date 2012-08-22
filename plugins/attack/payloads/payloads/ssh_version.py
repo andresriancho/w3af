@@ -7,7 +7,7 @@ class ssh_version(base_payload):
     '''
     This payload shows the current SSH Server Version
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         result['ssh_version'] = ''
 
@@ -27,8 +27,8 @@ class ssh_version(base_payload):
 
         return result
 
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result['ssh_version']:
             return 'SSH version could not be identified.'

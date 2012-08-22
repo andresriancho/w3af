@@ -7,7 +7,7 @@ class root_login_allowed(base_payload):
     '''
     This payload checks if root user is allowed to login on console.
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
 
         def parse_securetty( securetty ):
@@ -44,8 +44,8 @@ class root_login_allowed(base_payload):
 
         return result
     
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             msg = 'Failed to verify if root login is allowed, '

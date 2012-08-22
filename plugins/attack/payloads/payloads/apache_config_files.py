@@ -44,7 +44,7 @@ class apache_config_files(base_payload):
                 for possible_domain in extras:
                     yield directory + 'sites-enabled/' + possible_domain.lower()
 
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         result['apache_config'] = {}
         
@@ -55,8 +55,8 @@ class apache_config_files(base_payload):
 
         return result
         
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result['apache_config']:
             return 'Apache configuration files not found.'

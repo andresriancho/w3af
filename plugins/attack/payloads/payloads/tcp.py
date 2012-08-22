@@ -7,7 +7,7 @@ class tcp(base_payload):
     '''
     This payload shows TCP socket information
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
 
         def parse_tcp(net_tcp):
@@ -71,8 +71,8 @@ class tcp(base_payload):
             
         return result
         
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             return 'No TCP information was identified.'

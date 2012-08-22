@@ -7,7 +7,7 @@ class running_honeypot(base_payload):
     '''
     This payload check if the server is a Honeypot or is running one.
     '''
-    def api_read(self, parameters):
+    def api_read(self):
         result = {}
         result['running_honeypot'] = False
         result['is_a_honeypot'] = False
@@ -47,8 +47,8 @@ class running_honeypot(base_payload):
         
         return result
         
-    def run_read(self, parameters):
-        api_result = self.api_read( parameters )
+    def run_read(self):
+        api_result = self.api_read()
         
         if not api_result:
             msg = 'Failed to verify if the remote host is running a honeypot.'
