@@ -412,7 +412,7 @@ class PortScanShell(shell):
         return 'portscan-shell object'
 
 
-class RFIShell(exec_shell):
+class RFIShell(exec_shell, PortScanShell):
     '''
     I create this shell when the remote host allows outgoing connections, or when
     the attack plugin was configured to use XSS vulnerabilities to exploit the RFI and
@@ -422,7 +422,9 @@ class RFIShell(exec_shell):
         '''
         Create the obj
         '''
+        PortScanShell.__init__(self, vuln)
         exec_shell.__init__(self, vuln)
+        
         self._exploit_dc = None
     
     def setExploitDc(self, e_dc):
