@@ -24,15 +24,15 @@ class ssh_config_files(base_payload):
         files.append('/etc/sshd_config')
         files.append('/etc/openssh/sshd_config')
 
-        for file in files:
-            hostkey = parse_hostkey(self.shell.read(file))
+        for file_ in files:
+            hostkey = parse_hostkey(self.shell.read(file_))
             for key in hostkey:
                 files.append(key)
 
-        for file in files:
-            content = self.shell.read(file)
+        for file_ in files:
+            content = self.shell.read(file_)
             if content:
-                result[file] = content
+                result[file_] = content
 
         return result
 

@@ -1,5 +1,4 @@
 import re
-import core.data.kb.knowledgeBase as kb
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
@@ -19,28 +18,29 @@ class root_login_allowed(base_payload):
                 return ''
 
         def parse_permit_root_login(config):
-            condition = re.findall('(?<=PermitRootLogin )(.*)', config)
-            if condition:
-                return condition.group(1)
+            match_obj = re.search('PermitRootLogin (yes|no)', config)
+            if match_obj:
+                return match_obj.group(1)
             else:
                 return ''
 
-        ssh_string = ''
         ssh_config_result = self.exec_payload('ssh_config_files')
-        for config in ssh_config_result:
-            if parse_permit_root_login(config) == 'yes':
-                result['ssh_attack'] = True
-            elif parse_permit_root_login(config) == 'no':
-                result['ssh_attack'] = False
-            else:
-                result['ssh_attack'] = ''
+        result['ssh_root_bruteforce'] = 'unknown'
+        for config in ssh_config_result.values():
+            ssh_allows = parse_permit_root_login(config)
+            if ssh_allows == 'yes':
+                result['ssh_root_bruteforce'] = True
+                break
+            elif ssh_allows == 'no':
+                result['ssh_root_bruteforce'] = False
+                break
 
         securetty = self.shell.read('/etc/securetty')
         if securetty:
             if parse_securetty(securetty):
-                result['root_login'] = True
+                result['securetty_root_login'] = True
             else:
-                result['root_login'] = False
+                result['securetty_root_login'] = False
 
         return result
     
