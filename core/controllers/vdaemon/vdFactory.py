@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import core.controllers.outputManager as om
 
 from core.controllers.vdaemon.lnxVd import lnxVd
 from core.controllers.vdaemon.winVd import winVd
-
-import core.controllers.outputManager as om
-from core.controllers.intrusionTools.execMethodHelpers import *
+from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
 from core.controllers.w3afException import w3afException
 
 
