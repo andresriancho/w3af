@@ -19,8 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import plugins.attack.payloads.payload_handler as payload_handler
+
+from core.controllers.threads.threadpool import return_args
+from core.controllers.threads.threadManager import thread_manager
 
 SYSCALL_LIST = ['read', 'write', 'execute', 'unlink', 'is_open_port']
 
@@ -117,3 +119,12 @@ class base_payload(object):
         @return: The operating system requirement to run this payload.
         '''
         return 'linux'
+    
+    def read_multi(self, fname_iter):
+        '''
+        @param fname_iter: An iterator that yields all the file names to read.
+        '''
+        read_file = return_args(self.shell.read)
+        for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
+            yield file_name, content
+        

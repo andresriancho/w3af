@@ -1,5 +1,3 @@
-from core.controllers.threads.threadManager import thread_manager
-from core.controllers.threads.threadpool import return_args
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
@@ -63,9 +61,8 @@ class interesting_files(base_payload):
         result = {}
         
         file_path_iter = self._file_path_generator()
-        read_file = return_args(self.shell.read)
         
-        for (file_fp,), content in thread_manager.threadpool.imap_unordered(read_file, file_path_iter):
+        for file_fp, content in self.read_multi(file_path_iter):
             if content and file_fp not in self.KNOWN_FALSE_POSITIVES:
                 result[ file_fp ] = None
             
