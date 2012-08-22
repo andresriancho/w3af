@@ -19,25 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os.path
 
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 
-import os.path
-
-
 SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
-# 15825b40c6dace2a
-# 7cf5d4ab8ed434d5
+SHELL_IDENTIFIER_1 = '15825b40c6dace2a'
+SHELL_IDENTIFIER_2 = '7cf5d4ab8ed434d5'
 
 
 def get_webshells( extension, forceExtension=False ):
     '''
-    This method returns a webshell content to be used in exploits, based on the extension, or based
-    on the x-powered-by header.
+    This method returns a webshell content to be used in exploits, based on
+    the extension, or based on the x-powered-by header.
     
-    Plugins calling this function, should depend on "infrastructure.server_header" if they want to use 
-    the complete power if this function.
+    Plugins calling this function, should depend on "infrastructure.server_header"
+    if they want to use the complete power if this function.
     '''
     return _get_file_list( 'webshell', extension, forceExtension )
 
