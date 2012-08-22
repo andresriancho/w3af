@@ -7,8 +7,7 @@ class log_reader(base_payload):
     '''
     This payload finds different readable logs on the filesystem.
     '''
-    def api_read(self, parameters):
-        result = {}
+    def fname_generator(self):
         logs = []
 
         logs.append('/var/log/kern.log')
@@ -79,7 +78,12 @@ class log_reader(base_payload):
             logs.append('/var/log/dpkg.log.'+str(i)+'.log')
             logs.append('/var/log/messages.log.'+str(i)+ext)
             logs.append('/var/log/gdm/:0.log.'+str(i))
-
+        
+        for fname in logs:
+            yield fname
+        
+    def api_read(self, parameters):
+        result = {}
 
         def parse_apache_logs(config_file):
             error_log = re.search('(?<=ErrorLog )(.*?)\s', config_file)
@@ -96,15 +100,14 @@ class log_reader(base_payload):
         config_file = self.exec_payload('apache_config_files')['apache_config']
         for config in config_file:
             apache_logs = parse_apache_logs(self.shell.read(config))
-            for log in apache_logs:
-                content = self.shell.read(log)
+            for file_path, content in self.read_multi(apache_logs):
                 if content:
-                    result[ log ] = content
+                    result[ file_path ] = content
 
-        for log in logs:
-            content = self.shell.read(log)
+        fname_iter = self.fname_generator()
+        for file_path, content in self.read_multi(fname_iter):
             if content:
-                result[ log ] = content
+                result[ file_path ] = content
                 
         return result
 
