@@ -72,9 +72,9 @@ def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
     #
     payload_inst = get_payload_instance(payload_name, shell_obj)
     if use_api:
-        result = payload_inst.run_api(parameters)
+        result = payload_inst.run_api(*parameters)
     else:
-        result = payload_inst.run(parameters)
+        result = payload_inst.run(*parameters)
     return result
     
 def runnable_payloads(shell_obj):
