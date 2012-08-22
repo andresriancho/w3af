@@ -63,7 +63,6 @@ def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
         
         available_shells = kb.kb.getAllShells()
         for shell in available_shells:
-            print shell
             if payload_name in runnable_payloads( shell ):
                 shell_obj = shell
                 break
