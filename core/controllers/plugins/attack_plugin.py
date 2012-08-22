@@ -36,7 +36,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
     This is the base class for attack plugins, all attack plugins should inherit from it 
     and implement the following methods :
         1. fastExploit(...)
-        2. _generateShell(...)
+        2. _generate_shell(...)
         
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
@@ -50,18 +50,18 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         self._header = None
         
         # User configured parameter
-        self._generateOnlyOne = False
+        self._generate_only_one = False
 
     def fastExploit(self, url ):
         '''
         '''
         raise NotImplementedError('Plugin is not implementing required method fastExploit' )
         
-    def _generateShell( self, vuln ):
+    def _generate_shell( self, vuln ):
         '''
         @parameter vuln: The vulnerability object to exploit.
         '''
-        raise NotImplementedError('Plugin is not implementing required method _generateShell' )
+        raise NotImplementedError('Plugin is not implementing required method _generate_shell' )
         
     def getExploitableVulns(self):
         return kb.kb.getData( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
@@ -174,11 +174,11 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                 continue
                     
             # Try to get a shell using a vuln
-            s = self._generateShell(vuln)
+            s = self._generate_shell(vuln)
             if s is not None:
                 kb.kb.append( self, 'shell', s )
                 om.out.console('Vulnerability successfully exploited. Generated shell object %s' % s)
-                if self._generateOnlyOne:
+                if self._generate_only_one:
                     # A shell was generated, I only need one point of exec.
                     return [s,]
                 else:

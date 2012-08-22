@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
+
 from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
 
