@@ -211,7 +211,7 @@ class rfi(AuditPlugin):
                 #   "configuration problems"
                 #
                 rfi_errors = ['php_network_getaddresses: getaddrinfo',
-                                    'failed to open stream: Connection refused in']
+                              'failed to open stream: Connection refused in']
                 for error in rfi_errors:
                     if error in response and not error in mutant.getOriginalResponseBody():
                         v = vuln.vuln( mutant )
