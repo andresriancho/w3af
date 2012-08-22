@@ -1,7 +1,6 @@
-import re
-from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 from core.controllers.misc.is_private_site import is_private_site
+from plugins.attack.payloads.base_payload import base_payload
 
 
 class portscan(base_payload):
@@ -63,10 +62,11 @@ class portscan(base_payload):
         
         if len(parameters) < 1:
             msg = 'Usage: portscan <"auto" or ip-address or domain> [port-list]\n'
-            msg += 'In "auto" mode, the targets will be automatically chosen based on the results of other payloads like "tcp" and "udp".'
+            msg += 'In "auto" mode, the targets will be automatically chosen based'
+            msg += ' on the results of other payloads like "tcp" and "udp".'
             msg += ' If you specify a target, only that target will be scanned.\n'
-            msg += 'If the port-list is not specified, the following is used: %s\n' % ','.join(default_ports)
-            return msg
+            msg += 'If the port-list is not specified, the following is used: %s\n'
+            return msg % ','.join(default_ports)
         
         ip_address_or_auto = parameters[0]
         
