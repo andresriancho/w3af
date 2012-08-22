@@ -1,11 +1,9 @@
-import core.data.kb.knowledgeBase as kb
-from core.data.constants.common_directories import get_common_directories
+import re
 
-from plugins.attack.payloads.base_payload import base_payload
+from core.data.constants.common_directories import get_common_directories
 from core.ui.consoleUi.tables import table
 
-
-import re
+from plugins.attack.payloads.base_payload import base_payload
 
 
 class spider(base_payload):
@@ -99,23 +97,16 @@ class spider(base_payload):
             
             new_files = []
             
-            for filename in initial_file_list:
+            initial_file_list = [f for f in initial_file_list if f not in self.result]
+            
+            for filename, file_content in self.read_multi(initial_file_list):
                 
-                if filename not in self.result:
+                if file_content:
+                    #    Save it in the result
+                    self.result[ filename ] = is_interesting_file( filename, file_content )
                     
-                    file_content = self.shell.read( filename )
-                    
-                    if file_content:
-                        #
-                        #    Save it in the result
-                        #
-                        if filename not in self.result:
-                            self.result[ filename ] = is_interesting_file( filename, file_content )
-                        
-                        #
-                        #    Extract info from it
-                        #
-                        new_files.extend( extract_files_from_file( filename, file_content ) )
+                    #    Extract info from it
+                    new_files.extend( extract_files_from_file( filename, file_content ) )
             
             #
             #    Finish one pass, lets setup the next one
