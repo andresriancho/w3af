@@ -71,10 +71,13 @@ class test_users(PayloadTestHelper):
               u'whoopsie': { 'desc': u'', 'home': u'/nonexistent/', 'shell': u'/bin/false'},
               u'www-data': { 'desc': u'www-data',
                              'home': u'/var/www/',
-                             'shell': u'/bin/sh'}
+                             'shell': u'/bin/sh'},
+              u'postfix': { 'desc': u'postfix',
+                             'home': u'/var/spool/postfix',
+                             'shell': u'/bin/false'}
                        }
 
     def test_users(self):
         result = exec_payload(self.shell, 'users', use_api=True)
-        self.assertEquals(self.EXPECTED_RESULT, result)
+        self.assertEquals(set(self.EXPECTED_RESULT.keys()), set(result.keys()))
         
