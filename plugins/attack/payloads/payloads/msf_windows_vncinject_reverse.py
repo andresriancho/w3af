@@ -1,4 +1,3 @@
-from plugins.attack.payloads.base_payload import base_payload
 from plugins.attack.payloads.payloads.metasploit import metasploit
 
 

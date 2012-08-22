@@ -1,5 +1,4 @@
 from plugins.attack.payloads.base_payload import base_payload
-import core.controllers.outputManager as om
 from core.controllers.vdaemon.vdFactory import getVirtualDaemon
 from core.controllers.w3afException import w3afException
 
