@@ -10,7 +10,6 @@ class ssh_version(base_payload):
     def api_read(self, parameters):
         result = {}
         result['ssh_version'] = ''
-        files = []
 
         def parse_binary(bin_ssh):
             version = re.search('(?<=OpenSSH)(.*?)\x00', bin_ssh)
@@ -19,7 +18,9 @@ class ssh_version(base_payload):
             else:
                 return ''
 
-        #TODO: Add more binaries
+        # TODO: Add more binaries
+        # Please note that this only works IF the remote end allows us to use
+        # php wrappers and read the binary file with base64
         version = self.shell.read('/usr/sbin/sshd')
         if version:
             result['ssh_version'] = 'OpenSSH'+parse_binary(version)

