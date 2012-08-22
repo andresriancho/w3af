@@ -184,7 +184,12 @@ class CommonAttackMethods(object):
             msg = ('You need to call _define_exact_cut() or _guess_cut() before'
                    'calling _cut().')
             raise w3afException(msg)
-             
+        
+        if self._header_length + self._footer_length > len(body):
+            # FIXME: I should handle this in some way.
+            msg = ('Cut algorithm error: len(header+footer)>len(body).')
+            raise w3afException(msg)
+        
         if body == '':
             om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')
             return body
