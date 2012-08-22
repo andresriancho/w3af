@@ -42,7 +42,7 @@ import urllib
 class dav(AttackPlugin):
     '''
     Exploit web servers that have unauthenticated DAV access.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

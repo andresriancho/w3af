@@ -19,30 +19,26 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import socket
+import urlparse
+import urllib
+import os
 
-from core.data.fuzzer.fuzzer import createRandAlNum
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
-from core.data.kb.shell import shell as shell
+import core.controllers.daemons.webserver as webserver
+import core.data.constants.w3afPorts as w3afPorts
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
-
-import core.controllers.daemons.webserver as webserver
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import thread_manager as tm
-import core.data.constants.w3afPorts as w3afPorts
-
-# options
 from core.data.options.option import option
 from core.data.options.optionList import optionList
-
-import time
-import socket, urlparse, urllib
-import os
+from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.kb.shell import shell as shell
 
 #
 # TODO: I dont like globals, please see TODO below.
@@ -59,7 +55,7 @@ class rfi_proxy(AttackPlugin, w3afThread):
     '''
     Exploits remote file inclusions to create a proxy server.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )    
+    @author: Andres Riancho (andres.riancho@gmail.com)    
     '''
 
     def __init__( self ):

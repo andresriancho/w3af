@@ -55,7 +55,7 @@ SUCCESS_OPEN_PORT = 2
 class rfi(AttackPlugin):
     '''
     Exploit remote file include vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

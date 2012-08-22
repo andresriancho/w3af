@@ -47,7 +47,7 @@ from core.controllers.misc.temp_dir import get_temp_dir
 class file_upload(AttackPlugin):
     '''
     Exploit applications that allow unrestricted file uploads inside the webroot.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

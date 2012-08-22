@@ -30,7 +30,7 @@ class dbDriver(dbDriverFunctions):
     '''
     This represents a database driver. This class is an "interface" between w3af and sqlmap.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, urlOpener, cmpFunction, vuln):
         dbDriverFunctions.__init__(self, cmpFunction)

@@ -33,7 +33,7 @@ class dbDriverBuilder:
     '''
     This class is a builder for database drivers.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__( self , urlOpener, cmpFunction ):
         '''

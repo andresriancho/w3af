@@ -48,7 +48,7 @@ class sqlmap(AttackPlugin):
     Exploits [blind] sql injections using sqlmap ( http://sqlmap.sf.net ).
     '''
     #Plugin author:
-    #@author: Andres Riancho ( andres.riancho@gmail.com )
+    #@author: Andres Riancho (andres.riancho@gmail.com)
     
     #sqlmap authors:
     #@author: Bernardo Damele (inquis) - maintainer
