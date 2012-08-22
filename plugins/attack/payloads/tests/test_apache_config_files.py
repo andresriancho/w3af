@@ -32,5 +32,5 @@ class test_apache_config_files(PayloadTestHelper):
 
     def test_apache_config_files(self):
         result = exec_payload(self.shell, 'apache_config_files', use_api=True)
-        self.assertEquals(self.EXPECTED_RESULT, result['apache_config'].keys())
+        self.assertEquals(set(self.EXPECTED_RESULT), set(result['apache_config'].keys()))
         

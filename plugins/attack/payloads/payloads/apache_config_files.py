@@ -7,9 +7,7 @@ class apache_config_files(base_payload):
     '''
     This payload finds readable Apache configuration files
     '''
-    def api_read(self, parameters):
-        result = {}
-        result['apache_config'] = {}
+    def fname_generator(self):
         files = []
 
         files.append('apache2.conf')
@@ -27,12 +25,11 @@ class apache_config_files(base_payload):
         if apache_dir:
             for directory in apache_dir:
                 for filename in files:
-                    content = self.shell.read(directory+filename)
-                    if content:
-                        result['apache_config'][ directory+filename ] = content
-                
+                    yield directory+filename
+
                 #TODO: Add target domain name being scanned by w3af.
-                profiled_words_list = kb.kb.getData('password_profiling', 'password_profiling')
+                profiled_words_list = kb.kb.getData('password_profiling',
+                                                    'password_profiling')
                 domain_name = self.exec_payload('domainname')['domain_name']
                 hostname = self.exec_payload('hostname')['hostname']
                 
@@ -45,11 +42,16 @@ class apache_config_files(base_payload):
                 extras = [i for i in extras if i != '']
                 
                 for possible_domain in extras:
-                    site_configuration = directory + 'sites-enabled/' + possible_domain.lower()
-                    
-                    site_configuration_content = self.shell.read(site_configuration)
-                    if site_configuration_content:
-                        result['apache_config'][ site_configuration ] = site_configuration_content
+                    yield directory + 'sites-enabled/' + possible_domain.lower()
+
+    def api_read(self, parameters):
+        result = {}
+        result['apache_config'] = {}
+        
+        fname_iter = self.fname_generator()
+        for file_path, content in self.read_multi(fname_iter):
+            if content:
+                result['apache_config'][ file_path ] = content
 
         return result
         
