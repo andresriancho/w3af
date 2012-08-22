@@ -32,7 +32,6 @@ class iis_root_directory(base_payload):
         
         files.append('/Windows/iis6.log')
 
-
         for file in files:
             content = self.shell.read(file)
             if content:
