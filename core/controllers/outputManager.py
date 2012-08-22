@@ -49,7 +49,7 @@ class outputManager(threading.Thread):
     This class manages output. It has a list of output plugins and sends the 
     messages to every plugin on that list.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     METHODS = (

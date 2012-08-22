@@ -35,7 +35,7 @@ from core.data.db.disk_set import disk_set
 class find_captchas(CrawlPlugin):
     '''
     Identify captcha images on web pages.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

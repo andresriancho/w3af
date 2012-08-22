@@ -31,7 +31,7 @@ class pks(searchEngine):
     '''
     This class is a wrapper for doing PKS searches on the MIT PKS server. 
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self, urlOpener ):

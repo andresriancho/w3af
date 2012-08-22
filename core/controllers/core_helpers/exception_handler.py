@@ -39,7 +39,7 @@ class ExceptionHandler(object):
     This class handles exceptions generated while running plugins, usually
     the handling is just to store the traceback for later processing.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     MAX_EXCEPTIONS_PER_PLUGIN = 3

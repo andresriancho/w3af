@@ -45,7 +45,7 @@ import socket
 class find_vhosts(InfrastructurePlugin):
     '''
     Modify the HTTP Host header and try to find virtual hosts.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

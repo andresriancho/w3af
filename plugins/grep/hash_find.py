@@ -32,7 +32,7 @@ class hash_find(GrepPlugin):
     '''
     Identify hashes in HTTP responses.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

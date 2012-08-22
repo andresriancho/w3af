@@ -39,7 +39,7 @@ class feeds(GrepPlugin):
     '''
     Grep every page and finds rss, atom, opml feeds.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

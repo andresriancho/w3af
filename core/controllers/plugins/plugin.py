@@ -43,7 +43,7 @@ class Plugin(configurable):
         1. set_options( OptionList )
         2. get_options()
         
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

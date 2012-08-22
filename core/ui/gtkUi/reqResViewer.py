@@ -57,7 +57,7 @@ class reqResViewer(gtk.VBox):
     '''
     A widget with the request and the response inside.
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Facundo Batista ( facundo@taniquetil.com.ar )
 
     '''

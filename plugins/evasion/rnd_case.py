@@ -35,7 +35,7 @@ from random import choice, randint
 class rnd_case(EvasionPlugin):
     '''
     Change the case of random letters.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

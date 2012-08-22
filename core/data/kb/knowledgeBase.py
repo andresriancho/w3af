@@ -30,7 +30,7 @@ class KnowledgeBase:
     This class saves the data that is sent to it by plugins. It is the only way
     in which plugins can talk to each other.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

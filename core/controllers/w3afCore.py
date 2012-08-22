@@ -56,7 +56,7 @@ class w3afCore(object):
     This is the core of the framework, it calls all plugins, handles exceptions,
     coordinates all the work, creates threads, etc.
      
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self ):

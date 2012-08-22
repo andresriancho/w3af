@@ -37,7 +37,7 @@ HEADER_VALUE = 'ae5cw3af'
 class response_splitting(AuditPlugin):
     '''
     Find response splitting vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     HEADER_INJECTION_TESTS = ( "w3af\r\n" + HEADER_NAME +": " + HEADER_VALUE,

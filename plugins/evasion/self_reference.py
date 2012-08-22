@@ -33,7 +33,7 @@ from core.data.options.optionList import optionList
 class self_reference(EvasionPlugin):
     '''
     Add a directory self reference.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

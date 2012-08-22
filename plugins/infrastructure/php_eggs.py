@@ -37,7 +37,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 class php_eggs(InfrastructurePlugin):
     '''
     Fingerprint the PHP version using documented easter eggs that exist in PHP.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     PHP_EGGS = [ ('?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000', 'PHP Credits'),
                  ('?=PHPE9568F34-D428-11d2-A769-00AA001ACF42', 'PHP Logo'),

@@ -38,7 +38,7 @@ import re
 class oracle_discovery(CrawlPlugin):
     '''
     Find Oracle applications on the remote web server.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

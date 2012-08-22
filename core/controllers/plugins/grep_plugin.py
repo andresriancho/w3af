@@ -31,7 +31,7 @@ class GrepPlugin(Plugin):
     inherit from it and implement the following method:
         1. grep(request, response)
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

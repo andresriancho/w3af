@@ -36,7 +36,7 @@ from core.controllers.misc.levenshtein import relative_distance_lt
 class user_dir(CrawlPlugin):
     '''
     Try to find user directories like "http://test/~user/" and identify the remote OS based on them.
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
 
     def __init__(self):

@@ -31,7 +31,7 @@ class error_500(GrepPlugin):
     '''
     Grep every page for error 500 pages that haven't been identified as bugs by other plugins.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     FALSE_POSITIVE_STRINGS = ('<h1>Bad Request (Invalid URL)</h1>',

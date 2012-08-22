@@ -36,7 +36,7 @@ import core.data.kb.info as info
 class http_in_body (GrepPlugin):
     """
     Search for HTTP request/response string in response body.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     HTTP = (

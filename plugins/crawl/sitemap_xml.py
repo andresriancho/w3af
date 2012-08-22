@@ -34,7 +34,7 @@ class sitemap_xml(CrawlPlugin):
     '''
     Analyze the sitemap.xml file and find new URLs
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

@@ -40,7 +40,7 @@ class eval(AuditPlugin):
     Find insecure eval() usage.
 
     @author: Viktor Gazdag ( woodspeed@gmail.com )
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     PRINT_STRINGS = (

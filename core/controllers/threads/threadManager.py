@@ -30,7 +30,7 @@ class ThreadManager(object):
     '''
     This class manages threads. Note: This is just a wrapper around Pool 
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     ''' 
     
     MAX_THREADS = 20
@@ -90,5 +90,6 @@ class ThreadManager(object):
     def terminate(self):
         if self._threadpool is not None:
             self._threadpool.terminate()
+            self._threadpool = None
 
 thread_manager = ThreadManager()

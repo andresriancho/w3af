@@ -34,7 +34,7 @@ from core.data.esmre.multi_in import multi_in
 class mx_injection(AuditPlugin):
     '''
     Find MX injection vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     MX_ERRORS = (

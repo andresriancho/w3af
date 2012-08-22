@@ -35,7 +35,7 @@ class Form(DataContainer):
     '''
     This class represents a HTML form.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com ) |
+    @author: Andres Riancho (andres.riancho@gmail.com) |
         Javier Andalia (jandalia =at= gmail.com)
     '''
     # Max

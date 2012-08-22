@@ -41,7 +41,7 @@ class wsdlParser:
     '''
     This class parses WSDL documents.
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__( self ):

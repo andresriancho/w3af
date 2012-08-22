@@ -31,7 +31,7 @@ class EvasionPlugin(Plugin):
         2. set_options( OptionList )
         3. get_options()
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

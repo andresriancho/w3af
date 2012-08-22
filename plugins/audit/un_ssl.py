@@ -32,7 +32,7 @@ from core.controllers.misc.levenshtein import relative_distance_boolean
 class un_ssl(AuditPlugin):
     '''
     Find out if secure content can also be fetched using http.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

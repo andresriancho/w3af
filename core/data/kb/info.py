@@ -27,7 +27,7 @@ import core.data.constants.severity as severity
 class info(dict):
     '''
     This class represents an information that is saved to the kb.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, data_obj=None):
 

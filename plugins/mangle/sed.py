@@ -40,7 +40,7 @@ class sed(ManglePlugin):
     '''
     This plugin is a "stream editor" for http requests and responses.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

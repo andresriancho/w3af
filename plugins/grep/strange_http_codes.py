@@ -29,7 +29,7 @@ class strange_http_codes(GrepPlugin):
     '''
     Analyze HTTP response codes sent by the remote web application.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     COMMON_HTTP_CODES = set([ 200,

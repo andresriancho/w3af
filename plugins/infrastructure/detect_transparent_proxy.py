@@ -35,7 +35,7 @@ from core.controllers.misc.decorators import runonce
 class detect_transparent_proxy(InfrastructurePlugin):
     '''
     Find out if your ISP has a transparent proxy installed.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

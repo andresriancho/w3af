@@ -29,7 +29,7 @@ class XMLRPCRequest(httpPostDataRequest):
     This class represents a fuzzable request for a http request
     that contains XMLRPC postdata.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, xml, uri, method='POST', headers=None):

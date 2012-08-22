@@ -177,7 +177,7 @@ class url_object(disk_item):
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     ALWAYS_SAFE = "%/:=&?~#+!$,;'@()*[]|"

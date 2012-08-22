@@ -33,7 +33,7 @@ class ajax(GrepPlugin):
     '''
     Grep every page for traces of Ajax code.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

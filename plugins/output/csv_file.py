@@ -34,7 +34,7 @@ class csv_file(OutputPlugin):
     '''
     Export identified vulnerabilities to a CSV file.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

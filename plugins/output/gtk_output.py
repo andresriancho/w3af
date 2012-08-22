@@ -32,7 +32,7 @@ class gtk_output(OutputPlugin):
     '''
     Saves messages to kb.kb.getData('gtk_output', 'queue') to be displayed in the UI.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

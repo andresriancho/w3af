@@ -32,7 +32,7 @@ class dom_xss(GrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
       
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
     
     JS_FUNCTIONS = ('document.write',

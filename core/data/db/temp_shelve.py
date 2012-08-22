@@ -40,7 +40,7 @@ class temp_shelve(object):
         - Is thread safe
         - Deletes the file when the temp_shelve object is deleted
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

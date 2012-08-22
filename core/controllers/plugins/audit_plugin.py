@@ -32,7 +32,7 @@ class AuditPlugin(Plugin):
     from it and implement the following methods :
         1. audit(...)
         
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

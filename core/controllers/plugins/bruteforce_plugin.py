@@ -36,7 +36,7 @@ from core.data.options.optionList import optionList
 class BruteforcePlugin(AuditPlugin):
     '''
     This plugin is a superclass for plugins that want to bruteforce any type of login.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

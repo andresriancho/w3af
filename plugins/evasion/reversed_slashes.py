@@ -32,7 +32,7 @@ from core.data.options.optionList import optionList
 class reversed_slashes(EvasionPlugin):
     '''
     Change the slashes from / to \\
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

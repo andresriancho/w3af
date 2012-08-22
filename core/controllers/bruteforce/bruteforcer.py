@@ -35,7 +35,7 @@ class password_bruteforcer(object):
     This class is a helper for bruteforcing any login that provides passwords
     with an iterator API.
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, url):
         self.passwd_file = os.path.join('core','controllers','bruteforce','passwords.txt')
@@ -76,7 +76,7 @@ class user_password_bruteforcer(object):
     This class is a helper for bruteforcing any login that provides user and
     password combinations with an iterator API.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, url):

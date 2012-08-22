@@ -36,7 +36,7 @@ class http_auth_detect(GrepPlugin):
     '''
     Find responses that indicate that the resource requires auth.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

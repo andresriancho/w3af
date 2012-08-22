@@ -35,7 +35,7 @@ class collect_cookies(GrepPlugin):
     '''
     Grep every response for session cookies sent by the web application.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')

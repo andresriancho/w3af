@@ -39,7 +39,7 @@ from core.controllers.w3afException import w3afRunOnce
 class finger_google(InfrastructurePlugin):
     '''
     Search Google using the Google API to get a list of users for a domain.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)

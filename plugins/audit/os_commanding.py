@@ -37,7 +37,7 @@ from core.data.esmre.multi_in import multi_in
 class os_commanding(AuditPlugin):
     '''
     Find OS Commanding vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     FILE_PATTERNS = (

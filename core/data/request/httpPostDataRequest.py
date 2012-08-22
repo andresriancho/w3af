@@ -31,7 +31,7 @@ class httpPostDataRequest(fuzzable_request):
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, uri, method='POST', headers=None,
                  cookie=None, dc=None, files=None):

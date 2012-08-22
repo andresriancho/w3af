@@ -32,7 +32,7 @@ class option:
     '''
     This class represents an option.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     BOOL = 'boolean'
     INT = 'integer'

@@ -36,7 +36,7 @@ import core.data.kb.info as info
 class server_header(InfrastructurePlugin):
     '''
     Identify the server type based on the server header.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

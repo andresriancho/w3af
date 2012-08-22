@@ -28,7 +28,7 @@ class wsPostDataRequest(httpPostDataRequest):
     '''
     This class represents a fuzzable request for a webservice method call. 
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, url, action, params,

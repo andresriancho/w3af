@@ -32,7 +32,7 @@ class strange_headers(GrepPlugin):
     '''
     Grep headers for uncommon headers sent in HTTP responses.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     # Remember that this headers are only the ones SENT BY THE SERVER TO THE

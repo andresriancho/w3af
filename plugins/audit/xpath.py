@@ -34,7 +34,7 @@ from core.data.esmre.multi_in import multi_in
 class xpath(AuditPlugin):
     '''
     Find XPATH injection vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     XPATH_PATTERNS = (

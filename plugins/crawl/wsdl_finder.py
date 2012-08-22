@@ -31,7 +31,7 @@ class wsdl_finder(CrawlPlugin):
     '''
     Find web service definitions files.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     WSDL = ('?wsdl',

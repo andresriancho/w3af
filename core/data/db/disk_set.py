@@ -27,7 +27,7 @@ class disk_set(disk_list):
     '''
     A disk_list that only allows to add/append unique items.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

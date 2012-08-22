@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.misc.commonAttackMethods import commonAttackMethods
+from core.controllers.misc.common_attack_methods import CommonAttackMethods
 from core.data.kb.exploitResult import exploitResult
 from core.controllers.w3afException import w3afException
 from core.controllers.intrusionTools.execMethodHelpers import *
@@ -28,11 +28,11 @@ from core.controllers.intrusionTools.execMethodHelpers import *
 # python stuff
 import time
 
-class proxy(exploitResult, commonAttackMethods):
+class proxy(exploitResult, CommonAttackMethods):
     '''
     This class represents the output of an attack plugin that gives a proxy to the w3af user.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, proxyDaemonObject):

@@ -44,7 +44,7 @@ class phishtank(CrawlPlugin):
     '''
     Search the phishtank.com database to determine if your server is (or was) being used in phishing scams.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com ) ; special thanks to http://www.phishtank.com/ !
+    @author: Andres Riancho (andres.riancho@gmail.com) ; special thanks to http://www.phishtank.com/ !
     '''
 
     def __init__(self):

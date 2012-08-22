@@ -27,7 +27,7 @@ class elf:
     This class represents a tiny ELF file. I created this ELF file with the GREAT paper that
     can be read at http://www.muppetlabs.com/~breadbox/software/tiny/teensy.html .
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__( self, arch='32bit' ):
         self._arch = arch

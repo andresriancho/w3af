@@ -72,7 +72,7 @@ class proxy(w3afThread):
         - http requests like GET, HEAD, POST, CONNECT
         - https CONNECT ( thanks Sasha! )
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, ip, port, uri_opener, proxyHandler=None,

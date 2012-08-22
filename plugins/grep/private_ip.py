@@ -35,7 +35,7 @@ class private_ip(GrepPlugin):
     '''
     Find private IP addresses on the response body and headers.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

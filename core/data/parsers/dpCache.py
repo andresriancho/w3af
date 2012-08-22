@@ -33,7 +33,7 @@ class dpCache:
     '''
     This class is a document parser cache.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     LRU_LENGTH = 40
     

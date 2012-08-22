@@ -38,7 +38,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 class ssi(AuditPlugin):
     '''
     Find server side inclusion vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

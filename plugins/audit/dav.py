@@ -33,7 +33,7 @@ class dav(AuditPlugin):
     '''
     Verify if the WebDAV module is properly configured.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

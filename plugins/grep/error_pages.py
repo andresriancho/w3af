@@ -39,7 +39,7 @@ class error_pages(GrepPlugin):
     '''
     Grep every page for error pages.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     ERROR_PAGES = (

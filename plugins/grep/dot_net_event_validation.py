@@ -33,7 +33,7 @@ class dot_net_event_validation(GrepPlugin):
     '''
     Grep every page and identify the ones that have viewstate and don't have event validation.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

@@ -74,7 +74,7 @@ class distance_function_selector(entries.RememberingWindow):
     '''A small window to select which distance_function the w3afDotWindow
     will use to generate the graph.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, w3af, response_list):
         super(distance_function_selector,self).__init__(

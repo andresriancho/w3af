@@ -40,7 +40,7 @@ class extrusionServer:
     This class defines a simple server that listens on the current interface for connections
     made from the extrusionClient.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )    
+    @author: Andres Riancho (andres.riancho@gmail.com)    
     '''
 
     def __init__( self, tcp_ports, udp_ports , host=None, iface=None ):

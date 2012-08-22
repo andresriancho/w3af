@@ -38,7 +38,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 class content_negotiation(CrawlPlugin):
     '''
     Use content negotiation to find new resources.
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):

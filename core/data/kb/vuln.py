@@ -27,7 +27,7 @@ from core.data.fuzzer.mutant import mutant as mutant
 class vuln(info):
     '''
     This class represents a web vulnerability.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, data_obj=None):
         info.__init__(self, data_obj)

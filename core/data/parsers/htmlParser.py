@@ -29,7 +29,7 @@ class HTMLParser(SGMLParser):
     '''
     This class parses HTML's.
     
-    @authors: Andres Riancho ( andres.riancho@gmail.com )
+    @authors: Andres Riancho (andres.riancho@gmail.com)
               Javier Andalia (jandalia =AT= GMAIL.COM)
     '''
     

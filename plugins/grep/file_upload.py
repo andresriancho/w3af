@@ -37,7 +37,7 @@ class file_upload(GrepPlugin):
     '''
     Find HTML forms with file upload capabilities.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

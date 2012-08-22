@@ -36,7 +36,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 class afd(InfrastructurePlugin):
     '''
     Find out if the remote web server has an active filter (IPS or WAF).
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

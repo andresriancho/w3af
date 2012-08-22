@@ -40,7 +40,7 @@ class archive_dot_org(CrawlPlugin):
     '''
     Search archive.org to find new pages in the target site.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Darren Bilby, thanks for the good idea!
     '''
     

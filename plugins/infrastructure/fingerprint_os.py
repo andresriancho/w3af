@@ -32,7 +32,7 @@ from core.controllers.misc.levenshtein import relative_distance_ge
 class fingerprint_os(InfrastructurePlugin):
     '''
     Fingerprint the remote operating system using the HTTP protocol.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

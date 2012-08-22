@@ -33,7 +33,7 @@ class password_profiling(GrepPlugin):
     '''
     Create a list of possible passwords by reading HTTP response bodies.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     COMMON_WORDS = {'en': set([ 'type', 'that', 'from', 'this', 'been', 'there',
                                 'which', 'line', 'error', 'warning', 'file',

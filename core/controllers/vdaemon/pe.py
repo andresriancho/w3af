@@ -28,7 +28,7 @@ class pe:
     '''
     This class represents a PE file. 
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__( self, arch='32bit' ):
         self._arch = arch

@@ -38,7 +38,7 @@ class blind_sqli_response_diff(object):
     the logic is here and not as an audit plugin because it is also used in
     attack plugins when trying to verify the vulnerability.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):

@@ -32,7 +32,7 @@ from core.data.parsers.urlParser import url_object
 class finger_pks(InfrastructurePlugin):
     '''
     Search MIT PKS to get a list of users for a domain.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

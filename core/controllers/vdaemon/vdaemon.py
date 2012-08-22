@@ -43,7 +43,7 @@ class vdaemon(object):
     This class should be sub-classed by winVd and lnxVd, each implementing a different way
     of sending the metasploit payload to the remote web server.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__( self, exec_method ):        
         

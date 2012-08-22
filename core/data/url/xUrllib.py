@@ -57,7 +57,7 @@ class xUrllib(object):
     '''
     This is a urllib2 wrapper.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

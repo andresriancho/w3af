@@ -31,7 +31,7 @@ class wsdl_greper(GrepPlugin):
     '''
     Grep every page for web service definition files.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     WSDL_STRINGS = ( 'xs:int', 'targetNamespace', 'soap:body',
                      '/s:sequence', 'wsdl:', 'soapAction=',

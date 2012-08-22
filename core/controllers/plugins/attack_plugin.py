@@ -19,32 +19,31 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import copy
 
-from core.controllers.w3afException import w3afException
-from core.controllers.plugins.plugin import Plugin
-from core.controllers.misc.commonAttackMethods import commonAttackMethods
 import core.controllers.outputManager as om
-
-from core.data.parsers.urlParser import url_object
 import core.data.request.httpPostDataRequest as httpPostDataRequest
 import core.data.kb.knowledgeBase as kb
 
-import copy
+from core.controllers.w3afException import w3afException
+from core.controllers.plugins.plugin import Plugin
+from core.controllers.misc.common_attack_methods import CommonAttackMethods
+from core.data.parsers.urlParser import url_object
 
 
-class AttackPlugin(Plugin, commonAttackMethods):
+class AttackPlugin(Plugin, CommonAttackMethods):
     '''
     This is the base class for attack plugins, all attack plugins should inherit from it 
     and implement the following methods :
         1. fastExploit(...)
         2. _generateShell(...)
         
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
         Plugin.__init__( self )
-        commonAttackMethods.__init__( self )
+        CommonAttackMethods.__init__( self )
         
         self._uri_opener = None
         self._footer = None

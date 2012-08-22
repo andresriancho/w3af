@@ -34,7 +34,7 @@ class path_disclosure(GrepPlugin):
     '''
     Grep every page for traces of path disclosure vulnerabilities.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

@@ -33,7 +33,7 @@ from core.data.fuzzer.fuzzer import createMutants, createFormatString
 class format_string(AuditPlugin):
     '''
     Find format string vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     ERROR_STRINGS = (
                      # TODO: Add more error strings here

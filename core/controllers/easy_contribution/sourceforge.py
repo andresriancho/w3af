@@ -218,7 +218,7 @@ class SourceforgeHTTP(Sourceforge):
         This class is a wrapper for reporting bugs to sourceforge's TRAC
         using python.
         
-        @author: Andres Riancho ( andres.riancho@gmail.com )
+        @author: Andres Riancho (andres.riancho@gmail.com)
         '''
         Sourceforge.__init__(self, username, passwd)
         

@@ -35,7 +35,7 @@ class strange_parameters(GrepPlugin):
     '''
     Grep the HTML response and find URIs that have strange parameters.
       
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):

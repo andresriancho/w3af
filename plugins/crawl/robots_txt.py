@@ -34,7 +34,7 @@ import core.data.kb.info as info
 class robots_txt(CrawlPlugin):
     '''
     Analyze the robots.txt file and find new URLs
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

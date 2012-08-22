@@ -35,7 +35,7 @@ from core.data.options.optionList import optionList
 class rnd_param(EvasionPlugin):
     '''
     Add a random parameter.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         EvasionPlugin.__init__(self)

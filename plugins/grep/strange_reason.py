@@ -29,7 +29,7 @@ class strange_reason(GrepPlugin):
     '''
     Analyze HTTP response reason (Not Found, Ok, Internal Server Error).
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     W3C_REASONS = {
             100: ['continue',],

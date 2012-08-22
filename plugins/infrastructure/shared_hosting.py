@@ -43,7 +43,7 @@ import socket
 class shared_hosting(InfrastructurePlugin):
     '''
     Use Bing search to determine if the website is in a shared hosting.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

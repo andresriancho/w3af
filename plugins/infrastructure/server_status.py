@@ -44,7 +44,7 @@ class server_status(InfrastructurePlugin):
     '''
     Find new URLs from the Apache server-status cgi.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

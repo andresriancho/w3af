@@ -40,7 +40,7 @@ class objects(GrepPlugin):
     '''
     Grep every page for objects and applets.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

@@ -37,7 +37,7 @@ class redos(AuditPlugin):
     Find ReDoS vulnerabilities.
     
     @author: Sebastien Duquette ( sebastien.duquette@gmail.com )
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         AuditPlugin.__init__(self)

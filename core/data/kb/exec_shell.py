@@ -38,7 +38,7 @@ class exec_shell(shell):
     This class represents a shell where users can execute commands in the remote
     operating system and get the output back.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, v):

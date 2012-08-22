@@ -40,7 +40,7 @@ import core.data.kb.vuln as vuln
 class ghdb(CrawlPlugin):
     '''
     Search Google for vulnerabilities in the target site.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

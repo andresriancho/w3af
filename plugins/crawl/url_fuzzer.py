@@ -38,7 +38,7 @@ from core.data.parsers.urlParser import url_object
 class url_fuzzer(CrawlPlugin):
     '''
     Try to find backups, and other related files.
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
     _appendables = ('~', '.tar.gz', '.gz', '.7z', '.cab', '.tgz',
         '.gzip', '.bzip2', '.inc', '.zip', '.rar', '.jar', '.java',

@@ -1,5 +1,5 @@
 '''
-commonAttackMethods.py
+CommonAttackMethods.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,12 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
 import difflib
 
+import core.controllers.outputManager as om
+from core.controllers.w3afException import w3afException
 
-class commonAttackMethods:
+
+class CommonAttackMethods(object):
+    
     def __init__( self ):
         self._header_length = None
         self._footer_length = None
@@ -175,10 +177,13 @@ class commonAttackMethods:
         After defining a cut, I can cut parts of an HTML and return the important
         sections.
         
-        @param body: The HTML response that I need to cut to obtain the useful information.
+        @param body: The HTML response that I need to cut to obtain the useful
+                     information.
         '''
         if self._header_length is None or self._footer_length is None:
-            raise w3afException('You need to call _define_exact_cut() or _guess_cut() before calling _cut().')
+            msg = ('You need to call _define_exact_cut() or _guess_cut() before'
+                   'calling _cut().')
+            raise w3afException(msg)
              
         if body == '':
             om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')

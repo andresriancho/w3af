@@ -44,7 +44,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 class pykto(CrawlPlugin):
     '''
     A nikto port to python. 
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
 
     def __init__(self):

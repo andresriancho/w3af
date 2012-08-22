@@ -35,7 +35,7 @@ from random import randint
 class rnd_hex_encode(EvasionPlugin):
     '''
     Add random hex encoding.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

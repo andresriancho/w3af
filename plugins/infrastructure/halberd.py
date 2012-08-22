@@ -50,7 +50,7 @@ import Halberd.clues.analysis as halberd_analysis
 class halberd(InfrastructurePlugin):
     '''
     Identify if the remote server has HTTP load balancers.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     '''

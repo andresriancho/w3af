@@ -34,7 +34,7 @@ from core.data.fuzzer.fuzzer import createMutants
 class ldapi(AuditPlugin):
     '''
     Find LDAP injection bugs.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     LDAP_ERRORS = (

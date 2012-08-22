@@ -36,7 +36,7 @@ import re
 class rnd_path(EvasionPlugin):
     '''
     Add a random path to the URI.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

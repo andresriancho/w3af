@@ -50,7 +50,7 @@ class html_file(OutputPlugin):
     '''
     Generate HTML report with identified vulnerabilities and log messages.
     
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
     def __init__(self):
         OutputPlugin.__init__(self)

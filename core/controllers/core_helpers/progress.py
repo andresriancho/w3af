@@ -28,7 +28,7 @@ class progress:
     This class keeps track of the progress of something. Mostly used to keeps
     track of the progress of the w3afCore tests (discovery/audit/etc).
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     """
 
     def __init__(self):

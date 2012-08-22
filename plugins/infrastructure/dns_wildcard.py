@@ -34,7 +34,7 @@ from core.controllers.misc.decorators import runonce
 class dns_wildcard(InfrastructurePlugin):
     '''
     Find out if www.site.com and site.com return the same page.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

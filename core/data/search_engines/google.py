@@ -46,7 +46,7 @@ class google(searchEngine):
     GET requests to the mobile version, the Ajax API and the standard www.google.com
     page.
     
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     @author: Floyd Fuh (floyd_fuh@yahoo.de)
     '''
     

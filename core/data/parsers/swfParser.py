@@ -29,7 +29,7 @@ class swfParser(BaseParser):
     '''
     This class is a SWF (flash) parser. This is the first version, so don't expect much!
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, httpResponse):
         BaseParser.__init__(self , httpResponse)

@@ -35,7 +35,7 @@ class profile:
     '''
     This class represents a profile.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )    
+    @author: Andres Riancho (andres.riancho@gmail.com)    
     '''
     def __init__(self, profname='', workdir=None):
         '''

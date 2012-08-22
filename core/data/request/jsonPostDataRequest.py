@@ -28,7 +28,7 @@ class JSONPostDataRequest(httpPostDataRequest):
     '''
     This class represents a fuzzable request for a http request that contains JSON postdata.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def getData( self ):

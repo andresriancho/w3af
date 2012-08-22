@@ -29,7 +29,7 @@ class Cookie(DataContainer):
     '''
     This class represents a cookie.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, strValues='', encoding=DEFAULT_ENCODING):
         

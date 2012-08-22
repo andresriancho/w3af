@@ -36,7 +36,7 @@ class symfony(GrepPlugin):
     Grep every page for traces of the Symfony framework.
       
     @author: Carlos Pantelides (carlos.pantelides@yahoo.com ) based upon 
-    work by Andres Riancho ( andres.riancho@gmail.com ) and help from
+    work by Andres Riancho (andres.riancho@gmail.com) and help from
     Pablo Mouzo (pablomouzo@gmail.com)
     '''
     

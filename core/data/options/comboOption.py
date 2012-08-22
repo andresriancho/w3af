@@ -30,7 +30,7 @@ class comboOption(option):
     '''
     This class represents an comboOption.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, name, defaultValue, desc, type, help='', tabid=''):
         '''

@@ -35,7 +35,7 @@ class read_shell(shell):
     '''
     This class represents a shell that can only read files from the remote system.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, v):

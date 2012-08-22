@@ -40,7 +40,7 @@ class domain_dot(InfrastructurePlugin):
     '''
     Send a specially crafted request with a dot after the domain (http://host.tld./) and analyze response.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

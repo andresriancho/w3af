@@ -39,7 +39,7 @@ from core.data.esmre.multi_in import multi_in
 class lfi(AuditPlugin):
     '''
     Find local file inclusion vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     FILE_PATTERNS = (

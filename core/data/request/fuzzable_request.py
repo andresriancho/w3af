@@ -52,7 +52,7 @@ class fuzzable_request(disk_item):
     the _dc in the querystring (getURI) and httpPostDataRequest should return
     the _dc in the POSTDATA (getData()).
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri, method='GET',

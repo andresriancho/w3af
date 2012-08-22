@@ -30,7 +30,7 @@ class CrawlPlugin(Plugin):
     inherit from it and implement the following methods:
         1. crawl(...)
         
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         Plugin.__init__( self )

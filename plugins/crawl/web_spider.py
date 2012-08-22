@@ -47,7 +47,7 @@ class web_spider(CrawlPlugin):
     '''
     Crawl the web application.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     NOT_404 = set([ http_constants.UNAUTHORIZED, 
                     http_constants.FORBIDDEN])

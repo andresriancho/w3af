@@ -35,7 +35,7 @@ class get_emails(GrepPlugin):
     '''
     Find email accounts.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

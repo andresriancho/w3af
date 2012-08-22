@@ -28,7 +28,7 @@ class w3afThread(threading.Thread):
     '''
     This class represents a w3afThread.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     ''' 
     
     def __init__(self):

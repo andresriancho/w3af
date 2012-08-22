@@ -38,7 +38,7 @@ import os
 class import_results(CrawlPlugin):
     '''
     Import URLs found by other tools.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         CrawlPlugin.__init__(self)

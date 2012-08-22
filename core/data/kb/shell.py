@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om
 
@@ -32,7 +31,7 @@ class shell(vuln, exploitResult):
     This class represents the output of an attack plugin that gives a shell to
     the w3af user.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, v):

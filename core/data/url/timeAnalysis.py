@@ -39,7 +39,7 @@ class timeAnalysis:
     This class analyzes the response time of a GET/POST .
     It is usefull for finding possible DoS's to Web Apps, buffer overflows, etc.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

@@ -37,7 +37,7 @@ class SGMLParser(BaseParser):
     and 'close' will be called during the parsing process. 
     
     @author: Javier Andalia (jandalia =at= gmail.com)
-             Andres Riancho (andres.riancho@gmail.com)
+             Andres Riancho ((andres.riancho@gmail.com))
     '''
     
     TAGS_WITH_URLS = (

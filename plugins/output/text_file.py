@@ -36,7 +36,7 @@ class text_file(OutputPlugin):
     '''
     Prints all messages to a text file.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

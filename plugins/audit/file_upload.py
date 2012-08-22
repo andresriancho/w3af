@@ -43,7 +43,7 @@ class file_upload(AuditPlugin):
     '''
     Uploads a file and then searches for the file inside all known directories.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     TEMPLATE_DIR = os.path.join('plugins', 'audit', 'file_upload')

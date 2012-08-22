@@ -42,7 +42,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     '''
     Identify if a Web Application Firewall is present and if possible identify the vendor and version.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     '''

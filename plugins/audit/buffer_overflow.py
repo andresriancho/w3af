@@ -35,7 +35,7 @@ from core.data.esmre.multi_in import multi_in
 class buffer_overflow(AuditPlugin):
     '''
     Find buffer overflow vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     OVERFLOW_ERRORS = (

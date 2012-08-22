@@ -38,7 +38,7 @@ class web_diff(CrawlPlugin):
     '''
     Compare a local directory with a remote URL path.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
 
     def __init__(self):

@@ -36,7 +36,7 @@ class export_requests(OutputPlugin):
     '''
     Export the fuzzable requests found during crawl to a file.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

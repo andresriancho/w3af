@@ -30,7 +30,7 @@ class blank_body(GrepPlugin):
     '''
     Find responses with empty body.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

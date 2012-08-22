@@ -117,7 +117,7 @@ class find_backdoors(CrawlPlugin):
     '''
     Find web backdoors and web shells.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

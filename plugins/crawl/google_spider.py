@@ -37,7 +37,7 @@ from core.controllers.misc.decorators import runonce
 class google_spider(CrawlPlugin):
     '''
     Search google using google API to get new URLs
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

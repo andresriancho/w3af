@@ -33,7 +33,7 @@ from core.data.esmre.multi_re import multi_re
 class sqli(AuditPlugin):
     '''
     Find SQL injection bugs.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     SQL_ERRORS = (

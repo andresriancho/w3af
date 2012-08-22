@@ -33,7 +33,7 @@ class ManglePlugin(Plugin):
         3. set_options( OptionList )
         4. get_options()
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def getType( self ):
         return 'mangle'

@@ -35,7 +35,7 @@ class wordnet(CrawlPlugin):
     '''
     Use the wordnet lexical database to find new URLs.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

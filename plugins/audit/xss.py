@@ -38,7 +38,7 @@ import re
 class xss(AuditPlugin):
     '''
     Find cross site scripting vulnerabilities.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     # TODO: with these xss tests, and the rest of the plugin as

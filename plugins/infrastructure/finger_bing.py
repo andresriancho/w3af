@@ -39,7 +39,7 @@ from core.data.options.optionList import optionList
 class finger_bing(InfrastructurePlugin):
     '''
     Search Bing to get a list of users for a domain.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

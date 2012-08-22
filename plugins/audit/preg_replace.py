@@ -34,7 +34,7 @@ from core.data.esmre.multi_in import multi_in
 class preg_replace(AuditPlugin):
     '''
     Find unsafe usage of PHPs preg_replace.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     PREG_ERRORS = ( 'Compilation failed: unmatched parentheses at offset',
                     '<b>Warning</b>:  preg_replace() [<a',

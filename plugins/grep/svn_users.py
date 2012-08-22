@@ -33,7 +33,7 @@ class svn_users(GrepPlugin):
     '''
     Grep every response for users of the versioning system.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

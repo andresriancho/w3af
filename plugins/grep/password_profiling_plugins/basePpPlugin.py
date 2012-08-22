@@ -28,7 +28,7 @@ class basePpPlugin:
     '''
     This is the base plugin for all password profiling plugins.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

@@ -35,7 +35,7 @@ class lang(GrepPlugin):
     '''
     Read N pages and determines the language the site is written in.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     PREPOSITIONS = { 'en': multi_in(whole_words(['aboard', 'about', 'above',

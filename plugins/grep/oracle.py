@@ -30,7 +30,7 @@ class oracle(GrepPlugin):
     '''
     Find Oracle applications.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

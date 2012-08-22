@@ -34,7 +34,7 @@ class blind_sqli_time_delay(object):
     is here and not as an audit plugin because this logic is also used in 
     attack plugins.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):

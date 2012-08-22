@@ -40,7 +40,7 @@ class html_comments(GrepPlugin):
     '''
     Find HTML comments.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')

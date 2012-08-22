@@ -102,7 +102,7 @@ def httpRequestParser(head, postdata):
     @return: A fuzzable_request object with all the corresponding information
         that was sent in head and postdata
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
 
     >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', 'foo=bar')
     <postdata fuzzable request | 200 | http://www.w3af.com/>

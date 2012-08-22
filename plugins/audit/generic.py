@@ -36,7 +36,7 @@ from core.controllers.misc.levenshtein import relative_distance
 class generic(AuditPlugin):
     '''
     Find all kind of bugs without using a fixed database of errors.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

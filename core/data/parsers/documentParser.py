@@ -39,7 +39,7 @@ class documentParser:
     '''
     This class is a document parser.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, httpResponse):
 

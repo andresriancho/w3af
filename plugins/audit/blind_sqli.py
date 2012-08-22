@@ -38,7 +38,7 @@ class blind_sqli(AuditPlugin):
     '''
     Identify blind SQL injection vulnerabilities.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

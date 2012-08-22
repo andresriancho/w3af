@@ -44,7 +44,7 @@ class ssl_certificate(AuditPlugin):
     '''
     Check the SSL certificate validity (if https is being used).
 
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Taras ( oxdef@oxdef.info )
     '''
 

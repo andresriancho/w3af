@@ -41,7 +41,7 @@ from core.controllers.misc.groupbyMinKey import groupbyMinKey
 class allowed_methods(InfrastructurePlugin):
     '''
     Enumerate the allowed methods of an URL.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     BAD_CODES = set([httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,

@@ -29,7 +29,7 @@ class QueryString(DataContainer):
     '''
     This class represents a Query String.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(QueryString, self).__init__(init_val, encoding)

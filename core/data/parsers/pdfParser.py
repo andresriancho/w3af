@@ -38,7 +38,7 @@ class pdfParser(BaseParser):
     '''
     This class parses pdf documents to find emails and URLs. It's based in the pyPdf library.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, httpResponse):
         super(pdfParser, self).__init__(httpResponse)

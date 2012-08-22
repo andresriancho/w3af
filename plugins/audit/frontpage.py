@@ -40,7 +40,7 @@ class frontpage(AuditPlugin):
     '''
     Tries to upload a file using frontpage extensions (author.dll).
     
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):

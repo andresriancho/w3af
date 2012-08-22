@@ -37,7 +37,7 @@ from core.controllers.w3afException import w3afRunOnce,  w3afException
 class hmap(InfrastructurePlugin):
     '''
     Fingerprint the server type, i.e apache, iis, tomcat, etc.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)

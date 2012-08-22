@@ -34,7 +34,7 @@ class meta_tags(GrepPlugin):
     '''
     Grep every page for interesting meta tags.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     '''

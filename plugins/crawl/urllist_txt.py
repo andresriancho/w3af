@@ -32,7 +32,7 @@ from core.controllers.misc.decorators import runonce
 class urllist_txt(CrawlPlugin):
     '''
     Analyze the urllist.txt file and find new URLs
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

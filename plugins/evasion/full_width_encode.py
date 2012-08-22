@@ -36,7 +36,7 @@ class full_width_encode(EvasionPlugin):
     '''
     Evade detection using full width encoding.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

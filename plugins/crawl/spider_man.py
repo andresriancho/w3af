@@ -42,7 +42,7 @@ class spider_man(CrawlPlugin):
     '''
     SpiderMan is a local proxy that will collect new URLs.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
     '''
     def __init__(self):

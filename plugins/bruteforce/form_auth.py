@@ -38,7 +38,7 @@ from core.data.fuzzer.fuzzer import createRandAlNum
 class form_auth(BruteforcePlugin):
     '''
     Bruteforce HTML form authentication.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

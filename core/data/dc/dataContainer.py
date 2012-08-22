@@ -32,7 +32,7 @@ class DataContainer(OrderedDict):
     This class represents a data container. It's basically the way
     query-string and post-data are stored when using url-encoding.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
         

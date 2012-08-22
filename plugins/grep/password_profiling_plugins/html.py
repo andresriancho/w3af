@@ -30,7 +30,7 @@ class html(basePpPlugin):
     '''
     This plugin creates a map of possible passwords by reading html responses.
       
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

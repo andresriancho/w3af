@@ -37,7 +37,7 @@ from core.data.options.optionList import optionList
 class bing_spider(CrawlPlugin):
     '''
     Search Bing to get a list of new URLs
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):

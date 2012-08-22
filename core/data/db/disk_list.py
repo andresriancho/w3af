@@ -52,7 +52,7 @@ class disk_list(DBClientSQLite):
     thus slowing down the whole process with many disk reads of tens and maybe
     hundreds of MB's.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

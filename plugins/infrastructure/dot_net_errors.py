@@ -32,7 +32,7 @@ class dot_net_errors(InfrastructurePlugin):
     Request specially crafted URLs that generate ASP.NET errors in order
     to gather information.
     
-    @author: Andres Riancho (andres.riancho@gmail.com)
+    @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):

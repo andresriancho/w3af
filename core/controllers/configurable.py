@@ -28,7 +28,7 @@ class configurable(object):
         1. set_options( optionsMap )
         2. get_options()
         
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def set_options(self, optionsMap):
         '''

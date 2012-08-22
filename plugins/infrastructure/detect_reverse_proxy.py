@@ -38,7 +38,7 @@ import re
 class detect_reverse_proxy(InfrastructurePlugin):
     '''
     Find out if the remote web server has a reverse proxy.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):

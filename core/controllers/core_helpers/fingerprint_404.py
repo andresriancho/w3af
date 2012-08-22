@@ -45,7 +45,7 @@ class fingerprint_404:
     '''
     Read the 404 page(s) returned by the server.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     _instance = None

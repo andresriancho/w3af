@@ -34,7 +34,7 @@ class htaccess_methods(AuditPlugin):
     '''
     Find misconfigurations in Apache's "<LIMIT>" configuration.
     
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     BAD_METHODS = set([ http_constants.UNAUTHORIZED, 
                         http_constants.NOT_IMPLEMENTED, 

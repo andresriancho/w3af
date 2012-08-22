@@ -34,7 +34,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 class global_redirect(AuditPlugin):
     '''
     Find scripts that redirect the browser to any site.
-    @author: Andres Riancho ( andres.riancho@gmail.com )
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     TEST_URLS = ('http://www.w3af.org/',

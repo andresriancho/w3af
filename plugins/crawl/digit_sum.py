@@ -35,7 +35,7 @@ from core.data.options.optionList import optionList
 class digit_sum(CrawlPlugin):
     '''
     Take an URL with a number (index2.asp) and try to find related files (index1.asp, index3.asp).
-    @author: Andres Riancho ( andres.riancho@gmail.com )  
+    @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
 
     def __init__(self):
