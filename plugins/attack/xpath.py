@@ -90,7 +90,7 @@ class xpath(AttackPlugin):
         '''        
         return 'xpath'
                 
-    def _generateShell(self, vuln):
+    def _generate_shell(self, vuln):
         '''
         @param vuln: The vulnerability to exploit
         
@@ -100,12 +100,12 @@ class xpath(AttackPlugin):
         #
         #    Check if the vulnerability can be exploited using our techniques
         #
-        if self._verifyVuln( vuln ):
+        if self._verify_vuln( vuln ):
             #
             #    Generate the shell
             #
             if vuln.getMethod() != 'POST' and self._change_to_post and \
-            self._verifyVuln( self.GET2POST( vuln ) ):
+            self._verify_vuln( self.GET2POST( vuln ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used'
                 msg += ' during this exploit.'
                 om.out.console( msg )
@@ -128,7 +128,7 @@ class xpath(AttackPlugin):
             # FAIL!
             return None
             
-    def _verifyVuln(self, vuln):
+    def _verify_vuln(self, vuln):
         '''
         @return: True if the vulnerability can be exploited.
         '''

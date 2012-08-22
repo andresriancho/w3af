@@ -1,5 +1,5 @@
 '''
-test_os_commanding_shell.py
+test_os_commanding.py
 
 Copyright 2012 Andres Riancho
 

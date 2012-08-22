@@ -107,7 +107,7 @@ class rfi_proxy(AttackPlugin, w3afThread):
         return 'rfi'
                 
       
-    def _generateShell( self, vuln ):
+    def _generate_shell( self, vuln ):
         '''
         @parameter vuln: The vuln to exploit.
         @return: True if the user can start using the proxy.
@@ -120,7 +120,7 @@ class rfi_proxy(AttackPlugin, w3afThread):
         
         self.start2()
         
-        p = proxy_rfi_shell( self._proxyAddress + ':' + str(self._proxyPort) )
+        p = proxy_RFIShell( self._proxyAddress + ':' + str(self._proxyPort) )
         
         return p
         
@@ -306,7 +306,7 @@ class rfi_proxy(AttackPlugin, w3afThread):
             - rfiConnGenerator
         '''
         
-class proxy_rfi_shell(shell):
+class proxy_RFIShell(shell):
     
     def __init__(self, proxy_url):
         self._proxy_url = proxy_url
@@ -325,7 +325,7 @@ class proxy_rfi_shell(shell):
         om.out.debug('xssShell cleanup complete.')
         
     def getName( self ):
-        return 'proxy_rfi_shell'
+        return 'proxy_RFIShell'
     
     def _identifyOs(self):
         return 'remote_file_inclusion_proxy'

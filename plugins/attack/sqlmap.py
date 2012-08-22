@@ -70,7 +70,7 @@ class sqlmap(AttackPlugin):
         # User configured variables
         self._eq_limit = 0.9
         self._goodSamaritan = True
-        self._generateOnlyOne = True
+        self._generate_only_one = True
         
     def fastExploit(self):
         '''
@@ -107,7 +107,7 @@ class sqlmap(AttackPlugin):
                     msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
                     msg += '. Please wait...'
                     om.out.console(msg)
-                    shell_obj = self._generateShell(vuln_obj)
+                    shell_obj = self._generate_shell(vuln_obj)
                     if shell_obj is not None:
                         kb.kb.append(self, 'shell', shell_obj)
                         return [shell_obj, ]
@@ -191,9 +191,9 @@ class sqlmap(AttackPlugin):
                     msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
                     msg += '. Please wait...' 
                     om.out.console( msg )
-                    shell_obj = self._generateShell( vuln_obj )
+                    shell_obj = self._generate_shell( vuln_obj )
                     if shell_obj:
-                        if self._generateOnlyOne:
+                        if self._generate_only_one:
                             # A shell was generated, I only need one point of exec.
                             return [shell_obj, ]
                         else:
@@ -203,7 +203,7 @@ class sqlmap(AttackPlugin):
                 # FIXME: Am I really saving anything here ?!?!
                 return kb.kb.getData( self.getName(), 'shell' )
                 
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
         @return: A sqlmap shell object if sqlmap could fingerprint the database.
@@ -260,7 +260,7 @@ class sqlmap(AttackPlugin):
         ol.add(o)
         
         d = 'If true, this plugin will try to generate only one shell object.'
-        o = option('generateOnlyOne', self._generateOnlyOne, d, 'boolean')
+        o = option('generateOnlyOne', self._generate_only_one, d, 'boolean')
         ol.add(o)        
         
 
@@ -286,7 +286,7 @@ class sqlmap(AttackPlugin):
         self._injvar = optionsMap['injvar'].getValue()
         self._eq_limit = optionsMap['equalLimit'].getValue()
         self._goodSamaritan = optionsMap['goodSamaritan'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+        self._generate_only_one = optionsMap['generateOnlyOne'].getValue()
 
     def getRootProbability( self ):
         '''

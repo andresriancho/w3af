@@ -53,7 +53,7 @@ class dav(AttackPlugin):
         
         # User configured variables
         self._url = ''
-        self._generateOnlyOne = True
+        self._generate_only_one = True
         
     def fastExploit( self ):
         '''
@@ -85,13 +85,13 @@ class dav(AttackPlugin):
         '''        
         return 'dav'
     
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln_obj ):
+        if self._verify_vuln( vuln_obj ):
             # Create the shell object
             shell_obj = davObj( vuln_obj )
             shell_obj.set_url_opener( self._uri_opener )
@@ -100,7 +100,7 @@ class dav(AttackPlugin):
         else:
             return None
 
-    def _verifyVuln( self, vuln_obj ):
+    def _verify_vuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work! :P
 
@@ -151,7 +151,7 @@ class dav(AttackPlugin):
         o1 = option('url', self._url, d1, 'url')
         
         d2 = 'Exploit only one vulnerability.'
-        o2 = option('generateOnlyOne', self._generateOnlyOne, d2, 'boolean')
+        o2 = option('generateOnlyOne', self._generate_only_one, d2, 'boolean')
         
         ol = optionList()
         ol.add(o1)
@@ -167,7 +167,7 @@ class dav(AttackPlugin):
         @return: No value is returned.
         ''' 
         self._url = optionsMap['url'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+        self._generate_only_one = optionsMap['generateOnlyOne'].getValue()
 
     def getRootProbability( self ):
         '''

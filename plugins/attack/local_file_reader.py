@@ -55,7 +55,7 @@ class local_file_reader(AttackPlugin):
         self._method = 'GET'
         self._data = ''
         self._file_pattern = ''
-        self._generateOnlyOne = True
+        self._generate_only_one = True
         
     def fastExploit( self ):
         '''
@@ -90,16 +90,16 @@ class local_file_reader(AttackPlugin):
         '''        
         return 'lfi'
         
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln_obj ):
+        if self._verify_vuln( vuln_obj ):
             
             if vuln_obj.getMethod() != 'POST' and self._changeToPost and \
-            self._verifyVuln( self.GET2POST( vuln_obj ) ):
+            self._verify_vuln( self.GET2POST( vuln_obj ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used during'
                 msg += ' this exploit.'
                 om.out.console( msg )
@@ -118,7 +118,7 @@ class local_file_reader(AttackPlugin):
         else:
             return None
 
-    def _verifyVuln( self, vuln_obj ):
+    def _verify_vuln( self, vuln_obj ):
         '''
         This command verifies a vuln.
 
@@ -174,7 +174,7 @@ class local_file_reader(AttackPlugin):
         o4 = option('file_pattern', self._file_pattern, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
-        o5 = option('generateOnlyOne', self._generateOnlyOne, d5, 'boolean')
+        o5 = option('generateOnlyOne', self._generate_only_one, d5, 'boolean')
         
         ol = optionList()
         ol.add(o0)
@@ -198,7 +198,7 @@ class local_file_reader(AttackPlugin):
         self._method = optionsMap['method'].getValue()
         self._data = parse_qs( optionsMap['data'].getValue() )
         self._file_pattern = optionsMap['file_pattern'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+        self._generate_only_one = optionsMap['generateOnlyOne'].getValue()
         
     def getRootProbability( self ):
         '''
@@ -385,7 +385,7 @@ class FileReaderShell(read_shell):
         Filter out ugly php errors and print a simple "Permission denied"
         or "File not found"
         '''
-        print filename
+        #print filename
         error = None
         
         if result.count( 'Permission denied' ):

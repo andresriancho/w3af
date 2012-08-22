@@ -76,16 +76,16 @@ class os_commanding(AttackPlugin):
         '''        
         return 'os_commanding'
 
-    def _generateShell( self, vuln ):
+    def _generate_shell( self, vuln ):
         '''
         @parameter vuln: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln ):
+        if self._verify_vuln( vuln ):
             
             if vuln.getMethod() != 'POST' and self._change_to_post and \
-            self._verifyVuln( self.GET2POST( vuln ) ):
+            self._verify_vuln( self.GET2POST( vuln ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used'
                 msg += ' during this exploit.'
                 om.out.console( msg )
@@ -96,7 +96,7 @@ class os_commanding(AttackPlugin):
                 om.out.console( msg )
             
             # Create the shell object
-            shell_obj = osShell( vuln )
+            shell_obj = OSCommandingShell( vuln )
             shell_obj.set_url_opener( self._uri_opener )
             shell_obj.set_cut( self._header_length, self._footer_length )
             return shell_obj
@@ -104,7 +104,7 @@ class os_commanding(AttackPlugin):
         else:
             return None
 
-    def _verifyVuln( self, vuln ):
+    def _verify_vuln( self, vuln ):
         '''
         This command verifies a vuln. This is really hard work!
 
@@ -217,7 +217,7 @@ class os_commanding(AttackPlugin):
             - generateOnlyOne
         '''
 
-class osShell(exec_shell):
+class OSCommandingShell(exec_shell):
  
     @exec_debug
     def execute(self, command):
@@ -239,7 +239,7 @@ class osShell(exec_shell):
             return self._cut( response.getBody() )
             
     def end( self ):
-        om.out.debug('osShell cleanup complete.')
+        om.out.debug('OSCommandingShell cleanup complete.')
         
     def getName( self ):
         return 'os_commanding'

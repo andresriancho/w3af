@@ -98,13 +98,13 @@ class file_upload(AttackPlugin):
         '''                
         return 'file_upload'
                 
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit.
         @return: True is a shell object based on the param vuln was created ok.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verifyVuln( vuln_obj ):
+        if self._verify_vuln( vuln_obj ):
             
             # Set shell parameters
             shell_obj = fuShell( vuln_obj )
@@ -114,7 +114,7 @@ class file_upload(AttackPlugin):
         else:
             return None
 
-    def _verifyVuln( self, vuln_obj ):
+    def _verify_vuln( self, vuln_obj ):
         '''
         This command verifies a vuln. This is really hard work! :P
         

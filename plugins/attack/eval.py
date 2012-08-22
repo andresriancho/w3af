@@ -58,7 +58,7 @@ class eval(AttackPlugin):
         self._method = 'GET'
         self._data = ''
         self._inj_var = ''
-        self._generateOnlyOne = True
+        self._generate_only_one = True
 
     def fastExploit(self, url, method, data ):
         '''
@@ -89,7 +89,7 @@ class eval(AttackPlugin):
         '''
         return 'eval'
         
-    def _generateShell( self, vuln_obj ):
+    def _generate_shell( self, vuln_obj ):
         '''
         @parameter vuln_obj: The vuln to exploit.
         @return: A shell object based on the vuln that is passed as parameter.
@@ -159,7 +159,7 @@ class eval(AttackPlugin):
         o4 = option('injvar', self._inj_var, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
-        o5 = option('generateOnlyOne', self._generateOnlyOne, d5, 'boolean')
+        o5 = option('generateOnlyOne', self._generate_only_one, d5, 'boolean')
         
         ol = optionList()
         ol.add(o0)
@@ -183,7 +183,7 @@ class eval(AttackPlugin):
         self._method = optionsMap['method'].getValue()
         self._data = parse_qs( optionsMap['data'].getValue() )
         self._inj_var = optionsMap['injvar'].getValue()
-        self._generateOnlyOne = optionsMap['generateOnlyOne'].getValue()
+        self._generate_only_one = optionsMap['generateOnlyOne'].getValue()
                 
     def getRootProbability( self ):
         '''
