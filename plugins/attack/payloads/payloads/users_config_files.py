@@ -28,14 +28,19 @@ class users_config_files(base_payload):
          '.ldaprc ', '.emacs', '.bash_logout', '.bash_login ',
          '.hushlogin', '.mail.rc', '.profile', '.vimrc', '.gtkrc',
          '.kderc', '.netrc', '.rhosts', '.Xauthority', '.cshrc',
-         '.login', '.joe_state']
+         '.login', '.joe_state',
+         
+         # TODO: Should I move this to a separate payload?
+         '.filezilla/filezilla.xml', '.filezilla/recentservers.xml',
+         '.filezilla/sitemanager.xml',
+         
+         ]
         
         for user in users_result:
             home = users_result[user]['home']
             
             for filename in files:
                 yield home + filename
-                
         
     def api_read(self):
         result = {}

@@ -1,65 +1,53 @@
-import re
 from plugins.attack.payloads.base_payload import base_payload
+
 
 class ftp_config_files(base_payload):
     '''
     This payload shows FTP Server configuration files
     '''
+    def fname_generator(self):
+        yield '/etc/ftpd/ftpaccess'
+        yield '/etc/ftpd/ftpconversions'
+        yield '/etc/ftpd/ftphosts'
+        yield '/etc/ftpd/ftpusers'
+        yield '/etc/ftpd/ftpgroups'
+        yield '/etc/vsftpd.ftpusers'
+        yield '/etc/vsftpd/ftpusers'
+        yield '/etc/vsftpd.conf'
+        yield '/etc/vsftpd/vsftpd.conf'
+        yield '/etc/vsftp/vsftpd.conf'
+        yield '/usr/local/etc/vsftpd.conf'
+        yield '/opt/etc/vsftpd.conf'
+        yield '/etc/vsftpd.user_list'
+        yield '/etc/vsftpd/user_list'
+        yield '/etc/pam.d/vsftpd'
+        yield '/etc/ftpaccess'
+        yield '/etc/ftpusers'
+        yield '/etc/ftpservers'
+        yield '/etc/ftphosts'
+        yield '/etc/ftpconversions'
+        yield '/etc/pam.d/ftp'
+        yield '/etc/xinetd.d/wu-ftpd'
+        yield '/opt/bin/ftponly'
+                
     def api_read(self):
         result = {}
-        files = []
 
-        files.append('/etc/ftpd/ftpaccess')
-        files.append('/etc/ftpd/ftpconversions')
-        files.append('/etc/ftpd/ftphosts')
-        files.append('/etc/ftpd/ftpusers')
-        files.append('/etc/ftpd/ftpgroups')
-        files.append('/etc/vsftpd.ftpusers')
-        files.append('/etc/vsftpd/ftpusers')
-        files.append('/etc/vsftpd.conf')
-        files.append('/etc/vsftpd/vsftpd.conf')
-        files.append('/etc/vsftp/vsftpd.conf')
-        files.append('/usr/local/etc/vsftpd.conf')
-        files.append('/opt/etc/vsftpd.conf')
-        files.append('/etc/vsftpd.user_list')
-        files.append('/etc/vsftpd/user_list')
-        files.append('/etc/pam.d/vsftpd')
-        files.append('/etc/ftpaccess')
-        files.append('/etc/ftpusers')
-        files.append('/etc/ftpservers')
-        files.append('/etc/ftphosts')
-        files.append('/etc/ftpconversions')
-        files.append('/etc/pam.d/ftp')
-        files.append('/etc/xinetd.d/wu-ftpd')
-        files.append('/opt/bin/ftponly')
-
-        for file in files:
-            content = self.shell.read(file)
+        fname_iter = self.fname_generator()
+        for file_path, content in self.read_multi(fname_iter):
             if content:
-                result.update({file:content})
+                result.update({file_path:content})
 
-        # TODO: Should I move this to users_config_files ?
-        users_name = self.exec_payload('users')
-        for user_home in users_name:
-            filezilla_content = self.shell.read(user_home+'.filezilla/filezilla.xml')
-            recent_content = self.shell.read(user_home+'.filezilla/recentservers.xml')
-            sitemanager_content = self.shell.read(user_home+'.filezilla/sitemanager.xml')
-            if filezilla_content:
-                result.update({user_home+'.filezilla/recentservers.xml':filezilla_content})
-            if recent_content:
-                result.update({user_home+'.filezilla/recentservers.xml':recent_content})
-            if sitemanager_content:
-                result.update({user_home+'.filezilla/recentservers.xml':sitemanager_content})
         return result
     
     def run_read(self):
-        hashmap = self.api_read(parameters)
+        api_result = self.api_read()
         result = []
-        if hashmap:
+        if api_result:
             result.append('FTP Config Files')
-            for file, content in hashmap.iteritems():
+            for file_, content in api_result.iteritems():
                 result.append('-------------------------')
-                result.append(file)
+                result.append(file_)
                 result.append('-------------------------')
                 result.append(content)
 
