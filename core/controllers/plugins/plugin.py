@@ -113,12 +113,11 @@ class Plugin(configurable):
         'abc'
         '''
         if self.__doc__ is not None:
-            res2 = self.__doc__.replace( '\t' , '' )
-            res2 = self.__doc__.replace( '    ' , '' )
-            res = ''.join ( [ i for i in res2.split('\n') if i != '' and
-                             '@author' not in i ] )
+            tmp = self.__doc__.replace( '    ' , '' )
+            res = ''.join (i for i in tmp.split('\n') if i != '' and
+                           '@author' not in i)
         else:
-            res = ''
+            res = 'No description available for this plugin.'
         return res
     
     def getLongDesc( self ):
