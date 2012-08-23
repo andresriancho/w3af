@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
 import sys
 import time
@@ -39,11 +38,11 @@ from core.controllers.threads.threadManager import thread_manager
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
 from core.controllers.misc.dns_cache import enable_dns_cache
-from core.controllers.misc.homeDir import (create_home_dir,
-    verify_dir_has_perm, HOME_DIR)
 from core.controllers.misc.number_generator import consecutive_number_generator
+from core.controllers.misc.homeDir import (create_home_dir,
+                                           verify_dir_has_perm, HOME_DIR)
 from core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
-    TEMP_DIR)
+                                            TEMP_DIR)
 from core.controllers.w3afException import (w3afException, w3afMustStopException,
                                             w3afMustStopByUnknownReasonExc)
 
@@ -261,7 +260,7 @@ class w3afCore(object):
                         
             # Also, close the output manager.
             om.out.end_output_plugins()
-
+            om.out.process_all_messages()
         except Exception:
             if not ignore_err:
                 raise
