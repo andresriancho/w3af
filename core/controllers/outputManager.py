@@ -29,6 +29,7 @@ from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 
+
 def start_thread_on_demand(func):
     '''
     Given that the output manager has been migrated into a producer/consumer model,
