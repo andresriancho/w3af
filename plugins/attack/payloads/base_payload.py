@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import textwrap
+
 import plugins.attack.payloads.payload_handler as payload_handler
 
 from core.controllers.threads.threadpool import return_args
@@ -49,7 +51,7 @@ class base_payload(object):
 
         return available_syscalls.intersection(run_options)
         
-    def exec_payload(self, payload_name, parameters=[]):
+    def exec_payload(self, payload_name, args=()):
         '''
         Execute ANOTHER payload, by providing the other payload name.
         
@@ -57,7 +59,7 @@ class base_payload(object):
         @return: The payload result.
         '''
         try:
-            return payload_handler.exec_payload(self.shell, payload_name, parameters, use_api=True)
+            return payload_handler.exec_payload(self.shell, payload_name, args, use_api=True)
         except:
             #
             #    Run the payload name with any shell that has the capabilities we need,
@@ -65,7 +67,7 @@ class base_payload(object):
             #    the capabilities).
             #
             try:
-                return payload_handler.exec_payload(None, payload_name, parameters, use_api=True)
+                return payload_handler.exec_payload(None, payload_name, args, use_api=True)
             except:
                 msg = 'The payload you are trying to run ("%s") can not be run with the current' % self
                 msg += ' is trying to call another payload ("%s") which is failing because' % payload_name
@@ -113,7 +115,6 @@ class base_payload(object):
         else:
             return self.api_read( *args )
 
-
     def require(self):
         '''
         @return: The operating system requirement to run this payload.
@@ -128,3 +129,9 @@ class base_payload(object):
         for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
             yield file_name, content
         
+    def get_desc(self):
+        if self.__doc__ is not None:
+            return textwrap.dedent(self.__doc__ ).strip()
+        else:
+            return 'No help available for this payload.'
+       

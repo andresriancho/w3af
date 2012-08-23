@@ -11,6 +11,8 @@ from plugins.attack.payloads.base_payload import base_payload
 class list_processes(base_payload):
     '''
     This payload shows current proccesses on the system.
+    
+    Usage: list_processes <max_pid>
     '''
     def parse_proc_name( self, status_file ):
         name = re.search('(?<=Name:\t)(.*)', status_file)
@@ -51,11 +53,16 @@ class list_processes(base_payload):
             #kb.kb.append(str(i), [str(i), name, state, cmd])
 
     def api_read(self, max_pid_user):
+        try:
+            max_pid_user = int(max_pid_user)
+        except:
+            raise ValueError('Invalid max_pid, expected an integer.')
+        
         self.result = {}
         self.k = 400
         
-        max_pid = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
-        max_pid = min(max_pid, max_pid_user)
+        max_pid_proc = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
+        max_pid = min(max_pid_proc, max_pid_user)
         
         pid_iter = xrange(1, int(max_pid))
         thread_manager.threadpool.map(self._thread_read, pid_iter)
@@ -74,18 +81,7 @@ class list_processes(base_payload):
         parse_iis6_log(self.shell.read('/windows/iis6.log'))
         return self.result
         
-    def run_read(self, parameters):
-
-        if len(parameters) > 1:
-            return 'Usage: list_processes <max_pid>'
-        elif len(parameters) == 1:
-            try:
-                max_pid = int(parameters[0])
-            except:
-                return 'Invalid max_pid, expected an integer.'
-        else:
-            max_pid = 50000
-            
+    def run_read(self, max_pid):            
         api_result = self.api_read(max_pid)
         
         if not api_result:

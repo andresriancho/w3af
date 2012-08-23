@@ -29,11 +29,11 @@ class test_portscan(PayloadTestHelperExec):
 
     def test_portscan(self):
         result = exec_payload(self.shell, 'portscan', 
-                              parameters=[ ['localhost',], ['22',] ], 
+                              args=('localhost', '22'), 
                               use_api=True)
         self.assertEquals(self.RESULT_22, result)
         
         result = exec_payload(self.shell, 'portscan', 
-                              parameters=[ ['localhost',], ['23',] ], 
+                              args=('localhost', '23'), 
                               use_api=True)
         self.assertEquals(self.RESULT_23, result)

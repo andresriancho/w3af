@@ -18,15 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import tempfile
+
+import core.data.constants.severity as severity
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 
 from core.data.dc.dataContainer import DataContainer
 from core.ui.consoleUi.tables import table
 from plugins.attack.payloads.base_payload import base_payload
-import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
 
 
 class php_sca(base_payload):
@@ -43,7 +43,7 @@ class php_sca(base_payload):
     def api_read(self, localtmpdir=None):
         '''
         @param localtmpdir: Local temporary directory where to save
-            the remote code.
+                            the remote code.
         '''
         # TODO: This import should be moved to the head of the module when phply
         # is a dependency of the framework
@@ -78,20 +78,18 @@ class php_sca(base_payload):
                 v.setDc(DataContainer())
                 
                 #
-                ## TODO: This needs to be checked! OS Commanding specific
-                ### parameters
+                # TODO: This needs to be checked! OS Commanding specific
+                #       attributes.
                 v['os'] = 'unix'
                 v['separator'] = ''
-                ###
-                ##
-                #
+                
                 kb.kb.append(*args)
         
         if not localtmpdir:
             localtmpdir = tempfile.mkdtemp()
         
         res = {}
-        files = self.exec_payload('get_source_code', (localtmpdir,))
+        files = self.exec_payload('get_source_code', args=(localtmpdir,))
         
         for url, file in files.iteritems():
             sca = PhpSCA(file=file[1])

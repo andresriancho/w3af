@@ -1,13 +1,16 @@
-from plugins.attack.payloads.base_payload import base_payload
-from core.ui.consoleUi.tables import table
-
 import os
 import subprocess
+
+from plugins.attack.payloads.base_payload import base_payload
+from core.ui.consoleUi.tables import table
 
 
 class pixy(base_payload):
     '''
     Downloads the remote source code and performs SCA using pixy.
+
+    Usage: pixy <local_temp_directory> <pixy_tool_location>
+    Example: payload pixy /tmp/mirror/ ~/tools/pixy/
     '''
     
     def api_read(self, local_temp_dir, pixy_location):
@@ -28,13 +31,13 @@ class pixy(base_payload):
         
         #    Run the command and check its working
         proc = subprocess.Popen(pixy_full,
-                       shell=True,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE,
-                       )
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                )
         stdout_value = proc.communicate()[0]
         if 'usage: check [options] file' not in stdout_value:
-            return 'Please install pixy or specify its location.'
+            ValueError('Please specify the correct pixy location')
         
         #
         #    Get the source code!
@@ -76,10 +79,10 @@ class pixy(base_payload):
                 if os.path.isfile(full_path):
                     pixy_full_with_target = pixy_full + ' ' + full_path
                     proc = subprocess.Popen(pixy_full_with_target,
-                                   shell=True,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   )
+                                            shell=True,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE,
+                                            )
                     stdout_value = proc.communicate()[0]
 
                     extract_info(stdout_value)
@@ -89,16 +92,7 @@ class pixy(base_payload):
         
         return self.result
 
-    def run_read(self):
-        
-        if len(parameters) != 2:
-            msg = 'Usage: pixy <local temp directory> <pixy tool location>\n'
-            msg += 'Example: payload pixy /tmp/mirror/ ~/tools/pixy/'
-            return msg
-        
-        local_temp_dir = parameters[0]
-        pixy_location = parameters[1]
-            
+    def run_read(self, local_temp_dir, pixy_location):
         api_result = self.api_read( local_temp_dir, pixy_location )
                 
         if not api_result:

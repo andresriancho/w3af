@@ -108,8 +108,7 @@ class shell(vuln, exploitResult):
             #    Run the payload
             #
             if params:
-                payload_name = params[0]
-                return self._payload(payload_name, params[1:])
+                return self._payload(params)
         
         elif command == 'lsp':
             #
@@ -158,26 +157,58 @@ class shell(vuln, exploitResult):
         '''
         pass
     
-    def _payload(self, payload_name, parameters):
+    def _payload(self, parameters):
         '''
-        Run a payload by name.
+        Handle the payload command:
+            - payload desc list_processes -> return payload description
+            - payload list_processes      -> run payload
         
         @param payload_name: The name of the payload I want to run.
         @param parameters: The parameters as sent by the user.
         '''
+        #
+        #    Handle payload desc xyz
+        #
+        if len(parameters) == 2:
+            if parameters[0] == 'desc':
+                payload_name = parameters[1]
+                
+                if payload_name not in payload_handler.get_payload_list():
+                    return 'Unknown payload name: "%s"' % payload_name
+                 
+                return payload_handler.get_payload_desc(payload_name)
+
+        #
+        #    Handle payload xyz
+        #
+        payload_name = parameters[0]
+        parameters = parameters[1:]
         
+        if payload_name not in payload_handler.get_payload_list():
+            return 'Unknown payload name: "%s"' % payload_name
         
         if payload_name in payload_handler.runnable_payloads(self):
-            om.out.debug( 'The payload can be run. Starting execution.' )
+            om.out.debug( 'Payload %s can be run. Starting execution.' % payload_name )
             
             # Note: The payloads are actually writing to om.out.console
             # so there is no need to get the result. If someone wants to
             # get the results in a programatic way they should execute the
             # payload with use_api=True.
-            payload_handler.exec_payload( self, payload_name, parameters)
-            result = None
+            try:
+                payload_handler.exec_payload(self, payload_name, parameters)
+                result = None
+            except TypeError:
+                # We get here when the user calls the payload with an incorrect
+                # number of parameters:
+                payload = payload_handler.get_payload_instance( payload_name, self )
+                result = payload.get_desc()
+            except ValueError, ve:
+                # We get here when one of the parameters provided by the user is
+                # not of the correct type, or something like that.
+                result = str(ve)
         else:
-            result = 'The payload could not be run.'
+            result = ('The payload could not be run because the current shell'
+                      ' doesn\'t have the required capabilities.')
             
         return result
     

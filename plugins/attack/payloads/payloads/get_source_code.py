@@ -7,8 +7,18 @@ import os
 class get_source_code(base_payload):
     '''
     Get the source code for all files that were spidered by w3af.
+    
+    Usage: get_source_code <output_directory>
     '''
     def api_read(self, output_directory):
+        if not os.path.isdir( output_directory ):
+            msg = 'The output directory "%s" is invalid.'
+            raise ValueError( msg % output_directory )
+        
+        elif not os.access(output_directory, os.W_OK):
+            msg = 'Failed to open "%s" for writing.'
+            raise ValueError( msg % output_directory )
+                
         self.result = {}
         
         apache_root_directory = self.exec_payload('apache_root_directory')
@@ -49,25 +59,7 @@ class get_source_code(base_payload):
         return self.result
 
 
-    def run_read(self, parameters):
-        #
-        #    Parameter validation
-        #
-        if len(parameters) != 1:
-            msg = 'You need to specify an output directory where the '
-            msg += 'remote application source will be downloaded.'
-            raise Exception(msg)
-        
-        else:
-            output_directory = parameters[0]
-            if not os.path.isdir( output_directory ):
-                msg = 'The output directory "%s" is invalid.'
-                raise Exception( msg % output_directory )
-            
-            elif not os.access(output_directory, os.W_OK):
-                msg = 'Failed to open "%s" for writing.'
-                raise Exception( msg % output_directory )
-            
+    def run_read(self, output_directory):
         api_result = self.api_read(output_directory)
         
         if not api_result:

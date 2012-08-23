@@ -9,6 +9,12 @@ from plugins.attack.payloads.base_payload import base_payload
 class spider(base_payload):
     '''
     This payload crawls the remote file system and extracts information.
+    
+    The recursion_level is an integer (2 or 3 is recommended but any number can
+    be used) that specifies the depth used in the spidering process. The higher
+    the recursion_level, the more time it takes to complete the spider process.
+    
+    Usage: spider <recursion_level>
     '''
     def api_read(self, recursion_level):
         
@@ -88,6 +94,10 @@ class spider(base_payload):
             else:
                 return False
 
+        try:
+            recursion_level = int(recursion_level)
+        except:
+            ValueError('recursion_level needs to be an integer.')
 
         self.result = {}        
         
@@ -116,15 +126,8 @@ class spider(base_payload):
         
         return self.result
 
-    def run_read(self, parameters):
+    def run_read(self, recursion_level):
         
-        if len(parameters) > 1:
-            return 'Usage: spider <recursion levels>'
-        elif len(parameters) == 1:
-            recursion_level = parameters[0]
-        else:
-            recursion_level = 2
-            
         api_result = self.api_read( recursion_level )
                 
         if not api_result:

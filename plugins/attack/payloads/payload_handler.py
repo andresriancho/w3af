@@ -35,10 +35,13 @@ def payload_to_file( payload_name ):
 def is_payload( function_name ):
     '''
     @return: True if the function_name is referencing a payload.
+    
+    >>> is_payload('udp')
+    True
     '''
     return function_name in get_payload_list()
     
-def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
+def exec_payload(shell_obj, payload_name, args=(), use_api=False):
     '''
     Now I execute the payload, by providing the shell_obj.
     
@@ -46,7 +49,7 @@ def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
                       If this is set to None, the handler will choose a shell from
                       the KB that provide the necessary syscalls. 
     @param payload_name: The name of the payload I want to run.
-    @param parameters: A list with the parameters (strings) the user typed. 
+    @param args: A tuple with the args (strings) the user typed. 
     @use_api: Indicates if I need to use the API or not in this run. This is True when
                     exec_payload is called from base_payload.exec_payload()
                     
@@ -72,9 +75,9 @@ def exec_payload(shell_obj, payload_name, parameters=[], use_api=False):
     #
     payload_inst = get_payload_instance(payload_name, shell_obj)
     if use_api:
-        result = payload_inst.run_api(*parameters)
+        result = payload_inst.run_api(*args)
     else:
-        result = payload_inst.run(*parameters)
+        result = payload_inst.run(*args)
     return result
     
 def runnable_payloads(shell_obj):
@@ -102,9 +105,20 @@ def get_payload_instance( payload_name,  shell_obj):
     klass = getattr( module , payload_name )
     return apply( klass, (shell_obj, ))
 
+def get_payload_desc(payload_name):
+    '''
+    >>> get_payload_desc('tcp')
+    'This payload shows TCP socket information'
+    '''
+    payload = get_payload_instance(payload_name, None)
+    return payload.get_desc()
+
 def get_payload_list():
     '''
     @return: A list of the payload names in the payloads directory.
+    
+    >>> 'tcp' in get_payload_list()
+    True
     '''
     result = []
     py_list = [x for x in os.listdir(PAYLOAD_PATH) if x.endswith('.py') and x != '__init__.py']

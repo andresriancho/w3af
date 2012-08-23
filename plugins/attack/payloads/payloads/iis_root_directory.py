@@ -1,5 +1,6 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
+
 #TODO: TEST
 class iis_root_directory(base_payload):
     '''
@@ -32,7 +33,7 @@ class iis_root_directory(base_payload):
         
         files.append('/Windows/iis6.log')
 
-        for file in files:
+        for file_ in files:
             content = self.shell.read(file)
             if content:
                 parse_www_root(content)
@@ -42,9 +43,9 @@ class iis_root_directory(base_payload):
         return self.result
     
     def run_read(self):
-        hashmap = self.api_read(parameters)
+        api_result = self.api_read()
         result = []
-        for k, v in hashmap.iteritems():
+        for k, v in api_result.iteritems():
             k = k.replace('_', ' ')
             print 
             result.append(k.title()+" : "+v)
