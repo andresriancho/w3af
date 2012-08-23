@@ -156,7 +156,7 @@ class consoleUi(object):
             self._w3af.quit()
             self._context.join()
             om.out.console(self._randomMessage())
-
+            om.out.process_all_messages()
 
     def _executePending(self):
         while (self._commands):

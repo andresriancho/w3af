@@ -19,18 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import string
 import sys
 
 from errno import ENOSPC
 
-import core.data.constants.severity as severity
-
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afMustStopByKnownReasonExc
 from core.data.options.option import option
 from core.data.options.optionList import optionList
+
 
 def catch_ioerror(meth):
     '''
@@ -45,6 +43,7 @@ def catch_ioerror(meth):
                 raise w3afMustStopByKnownReasonExc( msg )
 
     return wrapper
+
 
 class console(OutputPlugin):
     '''
@@ -61,6 +60,7 @@ class console(OutputPlugin):
 
     def _make_printable(self, a_string):
         a_string = str( a_string )
+        a_string = a_string.replace('\n', '\n\r')
         return ''.join(ch for ch in a_string if ch in string.printable)
 
     def _print_to_stdout(self, message, newline):

@@ -1,5 +1,5 @@
 '''
-test_consoleui.py
+test_basic.py
 
 Copyright 2012 Andres Riancho
 
@@ -18,75 +18,46 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import sys
-import unittest
-
 from nose.plugins.attrib import attr
 
 from core.ui.consoleUi.consoleUi import consoleUi
+from core.ui.consoleUi.tests.helper import ConsoleTestHelper
 
-
-def do_nothing(self, *args, **kwds):
-    pass
-    
-class mock_stdout(object):
-    def __init__(self):
-        self.messages = []
-    
-    def write(self, msg):
-        self.messages.extend( msg.split('\n\r') )
-    
-    flush = do_nothing
-    
-    def clear(self):
-        self.messages = []
 
 @attr('smoke')
-class TestConsoleUI(unittest.TestCase):
+class TestBasicConsoleUI(ConsoleTestHelper):
     '''
     Basic test for the console UI.
     '''
-    def setUp(self):
-        self.mock_sys()
+    def test_menu_browse_misc(self):
+        commands_to_run = ['misc-settings', 'back', 'exit']
         
-    def tearDown(self):
-        self.restore_sys()
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
+        
+        expected = ('w3af>>> ','w3af/config:misc-settings>>> ')
+        self.assertTrue( self.all_expected_in_output(expected), 
+                         self._mock_stdout.messages )
+        
+    def test_menu_browse_http(self):
+        commands_to_run = ['http-settings', 'back', 'exit']
+        
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
+        
+        expected = ('w3af>>> ','w3af/config:http-settings>>> ')
+        self.assertTrue( self.all_expected_in_output(expected), 
+                         self._mock_stdout.messages )
 
-    def mock_sys(self):
-        # backup
-        self.old_stdout = sys.stdout
-        self.old_exit = sys.exit
+    def test_menu_browse_target(self):
+        commands_to_run = ['target', 'back', 'exit']
         
-        # assign new
-        self._mock_stdout = mock_stdout()
-        sys.stdout = self._mock_stdout
-        sys.exit = do_nothing
-
-    def restore_sys(self):
-        sys.stdout = self.old_stdout
-        sys.exit = self.old_exit
-    
-    def test_menu_browse(self):
-        MENU_EXPECTED = (
-                         ('misc-settings',('w3af>>> ','w3af/config:misc-settings>>> ') ),
-                         ('http-settings',('w3af>>> ','w3af/config:http-settings>>> ') ),
-                         ('target',('w3af>>> ','w3af/config:target>>> ') )
-                         )
+        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console.sh()
         
-        for menu, expected in MENU_EXPECTED:
-            commands_to_run = [menu, 'back', 'exit']
-            
-            self.mock_sys()
-            
-            console = consoleUi(commands=commands_to_run, do_upd=False)
-            console.sh()
-            
-            self.restore_sys()
-            
-            self.assertTrue( self.all_expected_in_output(expected), 
-                             self._mock_stdout.messages )
-            
-            self._mock_stdout.clear()
+        expected = ('w3af>>> ','w3af/config:target>>> ')
+        self.assertTrue( self.all_expected_in_output(expected), 
+                         self._mock_stdout.messages )
     
     def test_menu_plugin_desc(self):
         commands_to_run = ['plugins',
@@ -98,19 +69,15 @@ class TestConsoleUI(unittest.TestCase):
                     'result. The information stored in',
                     'previous defacements to the target website.')
         
-        self.mock_sys()
-        
         console = consoleUi(commands=commands_to_run, do_upd=False)
         console.sh()
         
-        self.restore_sys()
-        
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
-        
-        self._mock_stdout.clear()        
     
     def test_SQL_scan(self):
+        target = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+        qs = '?name=andres'
         commands_to_run = ['plugins',
                            'output console,text_file',
                            'output config text_file',
@@ -125,25 +92,19 @@ class TestConsoleUI(unittest.TestCase):
                             'grep path_disclosure',
                             'back', 
                             'target',
-                                'set target http://moth/w3af/audit/sql_injection/select/sql_injection_string.php?name=andres', 'back',
+                                'set target %s%s' % (target, qs), 'back',
                             'start',
                             'exit']
         
         expected = ('SQL injection in ',
                     'A SQL error was found in the response supplied by ',
-                    'New URL found by web_spider plugin: http://moth/w3af/audit/sql_injection/select/sql_injection_string.php')
-        
-        self.mock_sys()
+                    'New URL found by web_spider plugin: %s' % target)
         
         console = consoleUi(commands=commands_to_run, do_upd=False)
         console.sh()
         
-        self.restore_sys()
-        
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
-        
-        self._mock_stdout.clear()
         
     def test_load_profile_exists(self):
         commands_to_run = ['profiles',
@@ -155,17 +116,11 @@ class TestConsoleUI(unittest.TestCase):
                     'Please set the target URL',
                     '| use                            | Use a profile.')
         
-        self.mock_sys()
-        
         console = consoleUi(commands=commands_to_run, do_upd=False)
         console.sh()
         
-        self.restore_sys()
-        
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
-        
-        self._mock_stdout.clear()
 
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
@@ -175,32 +130,9 @@ class TestConsoleUI(unittest.TestCase):
         
         expected = ('Unknown profile name: "do_not_exist"',)
         
-        self.mock_sys()
-        
         console = consoleUi(commands=commands_to_run, do_upd=False)
         console.sh()
         
-        self.restore_sys()
-        
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
-        
-        self._mock_stdout.clear()
-        
-    def startswith_expected_in_output(self, expected):
-        for line in expected:
-            for sys_line in self._mock_stdout.messages:
-                if sys_line.startswith(line):
-                    break
-            else:
-                return False
-        else:
-            return True
-            
-    def all_expected_in_output(self, expected):
-        for line in expected:
-            if line not in self._mock_stdout.messages:
-                return False
-        else:
-            return True
         
