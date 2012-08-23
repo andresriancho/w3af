@@ -28,7 +28,8 @@ class test_apache_config_files(PayloadTestHelper):
                         '/etc/apache2/magic',
                         '/etc/apache2/ports.conf',
                         '/etc/apache2/apache2.conf',
-                        '/etc/apache2/conf.d/security']
+                        '/etc/apache2/conf.d/security',
+                        '/etc/apache2/sites-enabled/moth']
 
     def test_apache_config_files(self):
         result = exec_payload(self.shell, 'apache_config_files', use_api=True)
