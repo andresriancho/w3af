@@ -215,7 +215,6 @@ class pluginsTypeMenu(menu):
         plugin = self._w3af.plugins.get_plugin_inst(self._name, plugin_name)
         long_desc = plugin.getLongDesc()
         long_desc = textwrap.dedent(long_desc)
-        long_desc = long_desc.replace('\n','\n\r')
         om.out.console( long_desc )
 
 
