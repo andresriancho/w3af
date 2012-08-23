@@ -5,13 +5,9 @@ from core.ui.consoleUi.tables import table
 
 class apache_config_directory(base_payload):
     '''
-    This payload finds the Apache Config Directory
+    This payload finds Apache's config directories.
     '''
-    def api_read(self):
-        result = {}
-        result['apache_directory'] = []
-        paths = []
-
+    def fname_generator(self):
         def parse_apache2_init( apache_file_read ):
             directory = re.search('(?<=APACHE_PID_FILE needs to be defined in )(.*?)envvars', apache_file_read)
             if directory:
@@ -25,24 +21,8 @@ class apache_config_directory(base_payload):
                 return directory.group(1)
             else:
                 return ''
-            
-        def parse_httpd_file( httpd_file_read ):
-            directory = re.search('(?<=# config: )(.*?)/httpd.conf', httpd_file_read)
-            if directory:
-                return directory.group(1)
-            else:
-                return ''
-
-        def check_apache_config_dir( apache_config_directory ):
-            httpd = self.shell.read( apache_config_directory + 'httpd.conf')
-            apache = self.shell.read( apache_config_directory + 'apache2.conf')
-            for keyword in ('#', 'NCSA', 'Global'):
-                if keyword in httpd:
-                    return True
-                elif keyword in apache:
-                    return True
-            return False
-
+        
+        paths = []
         paths.append( parse_apache2_init( self.shell.read('/etc/init.d/apache2') ) )
         paths.append( parse_apache_init( self.shell.read('/etc/init.d/apache') ) )
         paths.append('/etc/apache2/')
@@ -56,12 +36,24 @@ class apache_config_directory(base_payload):
         paths.append('/etc/httpd/conf/')
         paths.append('/usr/pkg/etc/httpd/')
         paths.append('/usr/local/etc/apache22/')
-
-        for path in paths:
-            if check_apache_config_dir(path):
-                result['apache_directory'].append(path)
         
-        # uniq
+        for path in paths:
+            yield path + 'httpd.conf'
+            yield path + 'apache2.conf'
+        
+    def api_read(self):
+        result = {}
+        result['apache_directory'] = []
+            
+        fname_iter = self.fname_generator()
+        for file_path, content in self.read_multi(fname_iter):
+            for keyword in ('#', 'NCSA', 'Global'):
+                if keyword in content:
+                    file_path = file_path.replace('httpd.conf','')
+                    file_path = file_path.replace('apache2.conf','')
+                    result['apache_directory'].append(file_path)
+                    break
+        
         result['apache_directory'] = list( set(result['apache_directory']))
         
         return result
