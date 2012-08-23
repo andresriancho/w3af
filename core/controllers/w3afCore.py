@@ -260,7 +260,7 @@ class w3afCore(object):
                         
             # Also, close the output manager.
             om.out.end_output_plugins()
-            om.out.process_all_messages()
+            
         except Exception:
             if not ignore_err:
                 raise
