@@ -24,45 +24,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 class test_list_kernel_modules(PayloadTestHelper):
     
-    EXPECTED_RESULT = {   u'ac97_bus': { 'used': u'snd_ac97_codec'},
-                          u'btrfs': { 'used': ''},
-                          u'e1000': { 'used': ''},
-                          u'ext2': { 'used': ''},
-                          u'fat': { 'used': u'vfat,msdos'},
-                          u'hfs': { 'used': ''},
-                          u'hfsplus': { 'used': ''},
-                          u'hid': { 'used': u'usbhid'},
-                          u'i2c_piix4': { 'used': ''},
-                          u'jfs': { 'used': ''},
-                          u'joydev': { 'used': ''},
-                          u'libcrc32c': { 'used': u'btrfs'},
-                          u'lp': { 'used': ''},
-                          u'mac_hid': { 'used': ''},
-                          u'minix': { 'used': ''},
-                          u'msdos': { 'used': ''},
-                          u'ntfs': { 'used': ''},
-                          u'parport': { 'used': u'ppdev,parport_pc,lp'},
-                          u'parport_pc': { 'used': ''},
-                          u'ppdev': { 'used': ''},
-                          u'psmouse': { 'used': ''},
-                          u'qnx4': { 'used': ''},
-                          u'reiserfs': { 'used': ''},
-                          u'serio_raw': { 'used': ''},
-                          u'snd': { 'used': u'snd_intel8x0,snd_ac97_codec,snd_pcm,snd_timer'},
-                          u'snd_ac97_codec': { 'used': u'snd_intel8x0'},
-                          u'snd_intel8x0': { 'used': ''},
-                          u'snd_page_alloc': { 'used': u'snd_intel8x0,snd_pcm'},
-                          u'snd_pcm': { 'used': u'snd_intel8x0,snd_ac97_codec'},
-                          u'snd_timer': { 'used': u'snd_pcm'},
-                          u'soundcore': { 'used': u'snd'},
-                          u'ufs': { 'used': ''},
-                          u'usbhid': { 'used': ''},
-                          u'vesafb': { 'used': ''},
-                          u'vfat': { 'used': ''},
-                          u'xfs': { 'used': ''},
-                          u'zlib_deflate': { 'used': u'btrfs'}}
-
+    EXPECTED_RESULT = set(['ext2', 'lp', 'snd', 'parport_pc', 'vesafb'])
+    
     def test_list_kernel_modules(self):
         result = exec_payload(self.shell, 'list_kernel_modules', use_api=True)
-        self.assertEquals(self.EXPECTED_RESULT, result)
+        self.assertTrue( set(result.keys()).issuperset(self.EXPECTED_RESULT), result.keys() )
         
