@@ -1,7 +1,7 @@
+import os
 import core.data.kb.knowledgeBase as kb
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.consoleUi.tables import table
-import os
 
 
 class get_source_code(base_payload):
