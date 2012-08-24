@@ -20,7 +20,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from pymock import PyMockTestCase, IfTrue, override, at_least
+import unittest
+
+from functools import partial
+from itertools import combinations
+from random import choice
+
 from nose.plugins.attrib import attr
 
 from ..htmlParser import HTMLParser
@@ -141,11 +146,8 @@ class _SGMLParser(SGMLParser):
         self._parse = orig_parse
         
 @attr('smoke')
-class TestSGMLParser(PyMockTestCase):
+class TestSGMLParser(unittest.TestCase):
 
-    def setUp(self):
-        PyMockTestCase.setUp(self)
-    
     def test_parser_attrs(self):
         body_content = HTML_DOC % {'head':'', 'body':''}
         p = _SGMLParser(_build_http_response(URL, body_content))
@@ -210,13 +212,15 @@ class TestSGMLParser(PyMockTestCase):
             il = False
             if isinstance(s, basestring):
                 il = s.islower()
-            elif isinstance(s, dict):
+            else:
                 il = all(k.islower() for k in s)
             assert il, "'%s' is not lowered-case" % s 
             return il
         
-        from itertools import combinations
-        from random import choice
+        def start_wrapper(orig_start, tag, attrs):
+            islower(tag)
+            islower(attrs)
+            return orig_start(tag, attrs)
         
         tags = (A_LINK_ABSOLUTE, INPUT_CHECKBOX_WITH_NAME, SELECT_WITH_NAME,
                 TEXTAREA_WITH_ID_AND_DATA, INPUT_HIDDEN)
@@ -235,15 +239,10 @@ class TestSGMLParser(PyMockTestCase):
             body = HTML_DOC % {'head': '', 'body': ''.join(body_elems)}
             resp = _build_http_response(URL, body)
             p = _SGMLParser(resp)
-            args = (IfTrue(islower), IfTrue(islower))
-            override(p, 'start').expects(*args).returns(None).at_least(10)
-            # Replay
-            self.replay()
+            orig_start = p.start
+            wrapped_start = partial(start_wrapper, orig_start)
+            p.start = wrapped_start
             p._parse(resp)
-            # Verify and reset
-            self.verify()
-            self.reset()
-            
     
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
@@ -300,10 +299,7 @@ class _HTMLParser(HTMLParser):
         self._parse = orig_parse
 
 @attr('smoke')
-class TestHTMLParser(PyMockTestCase):
-
-    def setUp(self):
-        PyMockTestCase.setUp(self)
+class TestHTMLParser(unittest.TestCase):
 
     def test_forms(self):
         body = HTML_DOC % \
