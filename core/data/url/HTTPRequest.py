@@ -19,9 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib2
 import copy
+
 
 class HTTPRequest(urllib2.Request):
     
@@ -33,8 +33,9 @@ class HTTPRequest(urllib2.Request):
         >>> from core.data.parsers.urlParser import url_object
         >>> u = url_object('http://www.w3af.com')
         >>> req = HTTPRequest(u)
-        >>> req.get_full_url() == 'http://www.w3af.com'
-        True
+        >>> req.get_full_url()
+        'http://www.w3af.com/'
+        
         '''
         #
         # Save some information for later access in an easier way
