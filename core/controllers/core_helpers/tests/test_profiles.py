@@ -27,13 +27,12 @@ from nose.plugins.attrib import attr
 from core.controllers.w3afCore import w3afCore
 from core.controllers.w3afException import w3afException
 
-
+@attr('smoke')
 class Test_w3afCore_profiles(unittest.TestCase):
 
     def setUp(self):
         pass
     
-    @attr('smoke')
     def test_useProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10')
@@ -46,7 +45,6 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertTrue( 'dns_wildcard' in enabled_plugins['infrastructure'])
         self.assertTrue( 'web_spider' in enabled_plugins['crawl'])
     
-    @attr('smoke')
     def test_saveCurrentToNewProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10')
@@ -77,7 +75,6 @@ class Test_w3afCore_profiles(unittest.TestCase):
         
         w3af_core.profiles.removeProfile('unittest-OWASP_TOP10')
 
-    @attr('smoke')
     def test_removeProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.saveCurrentToNewProfile('unittest-remove')
@@ -85,7 +82,6 @@ class Test_w3afCore_profiles(unittest.TestCase):
         
         self.assertRaises(w3afException, w3af_core.profiles.useProfile,'unittest-remove')
     
-    @attr('smoke')
     def test_removeProfile_not_exists(self):
         w3af_core = w3afCore()
         self.assertRaises(w3afException, w3af_core.profiles.removeProfile,'not-exists')
