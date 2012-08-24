@@ -34,7 +34,7 @@ class iis_root_directory(base_payload):
         files.append('/Windows/iis6.log')
 
         for file_ in files:
-            content = self.shell.read(file)
+            content = self.shell.read(file_)
             if content:
                 parse_www_root(content)
                 parse_ftp_root(content)
