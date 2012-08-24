@@ -7,7 +7,7 @@ class apache_config_files(base_payload):
     '''
     This payload finds readable Apache configuration files
     '''
-    def fname_generator(self):
+    def fname_generator(self, apache_dir):
         files = []
 
         files.append('apache2.conf')
@@ -20,14 +20,12 @@ class apache_config_files(base_payload):
         files.append('sites-available/default-ssl')
         files.append('conf.d/subversion.conf')
         files.append('workers.properties')
-
-        apache_dir = self.exec_payload('apache_config_directory')['apache_directory']
+        
         if apache_dir:
             for directory in apache_dir:
                 for filename in files:
                     yield directory+filename
 
-                #TODO: Add target domain name being scanned by w3af.
                 profiled_words_list = kb.kb.getData('password_profiling',
                                                     'password_profiling')
                 domain_name = self.exec_payload('domainname')['domain_name']
@@ -44,11 +42,16 @@ class apache_config_files(base_payload):
                 for possible_domain in extras:
                     yield directory + 'sites-enabled/' + possible_domain.lower()
 
+                yield directory + 'sites-enabled/' + self.shell.getURL().getDomain()
+                
+
     def api_read(self):
         result = {}
         result['apache_config'] = {}
         
-        fname_iter = self.fname_generator()
+        apache_dirs = self.exec_payload('apache_config_directory')['apache_directory']
+        fname_iter = self.fname_generator(apache_dirs)
+        
         for file_path, content in self.read_multi(fname_iter):
             if content:
                 result['apache_config'][ file_path ] = content
