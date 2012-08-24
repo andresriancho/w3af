@@ -1,5 +1,5 @@
 '''
-echoLnx.py
+EchoLinux.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,16 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
-
 import time
 
+import core.controllers.outputManager as om
 
-class echoLnx( basePayloadTransfer ):
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
+
+
+class EchoLinux( BasePayloadTransfer ):
     '''
-    This is a class that defines how to send a file to a remote server using the "echo" command.
+    This is a class that defines how to send a file to a remote server using
+    the "echo" command.
     '''
 
     def __init__( self , exec_method, os ):
@@ -38,10 +39,11 @@ class echoLnx( basePayloadTransfer ):
         # internal configuration parameters
         self._step = 30
         
-    def canTransfer( self ):
+    def can_transfer( self ):
         '''
-        This method is used to test if the transfer method works as expected. The implementation of
-        this should transfer 10 bytes and check if they arrived as expected to the other end.
+        This method is used to test if the transfer method works as expected.
+        The implementation of this should transfer 10 bytes and check if they
+        arrived as expected to the other end.
         '''
         # Check if echo exists and works as expected
         res = self._exec_method( "/bin/echo -n 'w3af'" )
@@ -51,7 +53,7 @@ class echoLnx( basePayloadTransfer ):
         else:
             return True
     
-    def estimateTransferTime( self, size ):
+    def estimate_transfer_time( self, size ):
         '''
         @return: An estimated transfer time for a file with the specified size.
         '''
@@ -91,9 +93,10 @@ class echoLnx( basePayloadTransfer ):
                     
         return self.verify_upload( strObject, self._filename ) 
         
-    def getSpeed( self ):
+    def get_speed( self ):
         '''
-        @return: The transfer speed of the transfer object. It should return a number between 100 (fast) and 1 (slow)
+        @return: The transfer speed of the transfer object. It should return
+                 a number between 100 (fast) and 1 (slow)
         '''
         return 1
         

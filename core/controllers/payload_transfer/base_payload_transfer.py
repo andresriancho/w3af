@@ -1,5 +1,5 @@
 '''
-basePayloadTransfer.py
+BasePayloadTransfer.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,14 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-from core.controllers.w3afException import *
-
 import hashlib
 
 
-class basePayloadTransfer:
+class BasePayloadTransfer(object):
     '''
     This is a base class for doing payload transfers.
     '''
@@ -35,30 +31,33 @@ class basePayloadTransfer:
         self._exec_method = execMethod
         self._os = os
         
-    def canTransfer( self ):
+    def can_transfer( self ):
         '''
-        This method is used to test if the transfer method works as expected. Usually the implementation of
-        this should transfer 10 bytes and check if they arrived as expected to the other end.
+        This method is used to test if the transfer method works as expected.
+        Usually the implementation of this should transfer 10 bytes and check
+        if they arrived as expected to the other end.
         '''
-        raise w3afException('You should implement the canTransfer method when you inherit from basePayloadTransfer.')
+        raise NotImplementedError()
     
-    def estimateTransferTime( self, size ):
+    def estimate_transfer_time( self, size ):
         '''
         @return: An estimated transfer time for a file with the specified size.
         '''
-        raise w3afException('You should implement the estimateTransferTime method when you inherit from basePayloadTransfer.')
+        raise NotImplementedError()
         
     def transfer( self, strObject, destination ):
         '''
-        This method is used to transfer the strObject from w3af to the compromised server,
+        This method is used to transfer the strObject from w3af to the
+        compromised server,
         '''
-        raise w3afException('You should implement the transfer method when you inherit from basePayloadTransfer.')
+        raise NotImplementedError()
     
-    def getSpeed( self ):
+    def get_speed( self ):
         '''
-        @return: The transfer speed of the transfer object. It should return a number between 100 (fast) and 1 (slow)
+        @return: The transfer speed of the transfer object. It should return a
+                 number between 100 (fast) and 1 (slow)
         '''
-        raise w3afException('You should implement the getSpeed method when you inherit from echo.')
+        raise NotImplementedError()
 
     def verify_upload(self, file_content, remote_filename):
         '''
@@ -70,11 +69,11 @@ class basePayloadTransfer:
         '''
         if '/etc/passwd' in self._exec_method( 'md5sum /etc/passwd' ): 
             md5sum_res = self._exec_method( 'md5sum ' + remote_filename )
-            hash = md5sum_res.split(' ')[0]
+            hash_ = md5sum_res.split(' ')[0]
             
             m = hashlib.md5()
             m.update(file_content)
-            return hash == m.hexdigest()
+            return hash_ == m.hexdigest()
     
         #    TODO: Hmmmmmmm....
         return True

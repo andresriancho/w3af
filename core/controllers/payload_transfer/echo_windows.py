@@ -1,5 +1,5 @@
 '''
-echoWin.py
+EchoWindows.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,17 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-from core.controllers.w3afException import *
-
-from core.controllers.payloadTransfer.basePayloadTransfer import basePayloadTransfer as basePayloadTransfer
 import time
 
+import core.controllers.outputManager as om
 
-class echoWin( basePayloadTransfer ):
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
+from core.controllers.w3afException import w3afException
+
+
+class EchoWindows( BasePayloadTransfer ):
     '''
-    This is a class that defines how to send a file to a remote server using the "echo" command.
+    This is a class that defines how to send a file to a remote server using the
+    "echo" command.
     '''
 
     def __init__( self , exec_method, os ):
@@ -39,10 +40,11 @@ class echoWin( basePayloadTransfer ):
         self._exec_methodutedCanTransfer = False
         self._step = 24 # how many bytes per request
         
-    def canTransfer( self ):
+    def can_transfer( self ):
         '''
-        This method is used to test if the transfer method works as expected. The implementation of
-        this should transfer 10 bytes and check if they arrived as expected to the other end.
+        This method is used to test if the transfer method works as expected.
+        The implementation of this should transfer 10 bytes and check if they
+        arrived as expected to the other end.
         '''
         self._exec_methodutedCanTransfer = True
         
@@ -56,7 +58,7 @@ class echoWin( basePayloadTransfer ):
             return True
 
     
-    def estimateTransferTime( self, size ):
+    def estimate_transfer_time( self, size ):
         '''
         @return: An estimated transfer time for a file with the specified size.
         '''
@@ -79,12 +81,14 @@ class echoWin( basePayloadTransfer ):
         '''
         om.out.debug('Starting upload.')
         
-        self._filename = self._getFilename( destination )
+        self._filename = self._get_filename( destination )
         
         # Check if echo exists and works as expected
         if not self._exec_methodutedCanTransfer:
-            if not self.canTransfer():
-                raise w3afException('Failed to transfer file to the compromised server, echoWin.canTransfer returned False.')
+            if not self.can_transfer():
+                msg = 'Failed to transfer file to the compromised server, '
+                msg += 'EchoWindows.can_transfer returned False.'
+                raise w3afException( msg )
                 
         # if exists, delete _filename
         res = self._exec_method('del ' + self._filename )
@@ -120,28 +124,29 @@ class echoWin( basePayloadTransfer ):
         res = self._exec_method( 'debug < ' + self._filename )
         if 'file creation error' in res.lower():
             raise w3afException('Error in remote debug.exe command.')
-        extension = self._getExtension( destination )
+        extension = self._get_extension( destination )
         om.out.debug('Changing the extension of the binary file to match the original one ()')
         res = self._exec_method( 'move ' + self._filename + '._ ' + self._filename + '.' + extension )
         
     
     om.out.debug('Finished file upload.')
 
-    def _getExtension( self, filename ):
+    def _get_extension( self, filename ):
         if len ( filename.split('.') ) != 1:
             return filename.split('.')[-1:][0]
         else:
             return ''
     
-    def _getFilename( self, filename ):
+    def _get_filename( self, filename ):
         if len( filename.split('.') ) != 1:
             return '.'.join( filename.split('.')[:-1] )
         else:
             return filename
         
-    def getSpeed( self ):
+    def get_speed( self ):
         '''
-        @return: The transfer speed of the transfer object. It should return a number between 100 (fast) and 1 (slow)
+        @return: The transfer speed of the transfer object. It should return
+                 a number between 100 (fast) and 1 (slow)
         '''
         return 1
     
