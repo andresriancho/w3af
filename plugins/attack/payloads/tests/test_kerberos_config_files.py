@@ -30,7 +30,6 @@ class test_kerberos_config_files(PayloadTestHelper):
 
     def test_kerberos_config_files(self):
         result = exec_payload(self.shell, 'kerberos_config_files', use_api=True)
-        import pprint; pp = pprint.PrettyPrinter(indent=2); pp.pprint(result)
         self.assertEquals(self.EXPECTED_RESULT, result)
         
     def test_a_positive_test(self):
