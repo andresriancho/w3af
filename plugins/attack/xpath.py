@@ -186,7 +186,6 @@ class xpath(AttackPlugin):
                 return None
             else:              
                 if response_is_error(vuln, true_resp.getBody(), self._uri_opener, self.use_difflib):
-                    print true_resp.getBody()
                     om.out.debug( "ERROR: Error message found in TRUE response..." )
                     return False
                 else:
