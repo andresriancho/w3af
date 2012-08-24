@@ -12,8 +12,12 @@ class get_source_code(base_payload):
     '''
     def api_read(self, output_directory):
         if not os.path.isdir( output_directory ):
-            msg = 'The output directory "%s" is invalid.'
-            raise ValueError( msg % output_directory )
+            try:
+                os.makedirs( output_directory )
+            except:
+                msg = 'The output directory "%s" does not exist and was unable'
+                msg += ' to create it.'
+                raise ValueError( msg % output_directory )
         
         elif not os.access(output_directory, os.W_OK):
             msg = 'Failed to open "%s" for writing.'
