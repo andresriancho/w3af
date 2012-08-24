@@ -8,7 +8,8 @@ class svn_config_files(base_payload):
     '''
     This payload shows SVN Server configuration files
     '''
-    def fname_generator(self):
+    def fname_generator(self, users_info, apache_config_directory, 
+                        apache_config_files):
         yield '/etc/httpd/conf.d/subversion.conf'
         yield '/etc/httpd/conf.d/viewvc.conf'
         yield '/etc/viewvc/viewvc.conf'
@@ -29,8 +30,6 @@ class svn_config_files(base_payload):
         yield '/etc/subversion/hairstyles'
         yield '/etc/subversion/servers'
         yield '/etc/subversion/config'
-
-        users_info = self.exec_payload('users')
         
         for user in users_info:
             directory = users_info[user]['home']
@@ -42,13 +41,15 @@ class svn_config_files(base_payload):
             yield directory+'/conf/svnserve.conf'
             yield directory+'/conf/passwd'
 
-        apache_config_directory = self.exec_payload('apache_config_directory')['apache_directory']
         for directory in apache_config_directory:
             yield directory+'mods-enabled/dav_svn.conf'
 
         for folder in kb.kb.getData('password_profiling', 'password_profiling'):
             yield '/srv/svn/'+folder.lower()+'/conf/svnserve.conf'
             yield '/srv/svn/'+folder.lower()+'/conf/passwd'    
+
+        for file_path in apache_config_files:
+            yield file_path
         
     def api_read(self):
         self.result = {}
@@ -103,14 +104,13 @@ class svn_config_files(base_payload):
             if not only_parse:
                 self.result[ file ] = file_content
 
-        for file_path, file_content in self.read_multi(self.fname_generator()):
-            if file_content:
-                multi_parser(self, file_path, file_content)
-
-        #FIXME: For some strange reason, if we put this into the fname_generator
-        #       method, the whole thing freezes.
+        users_info = self.exec_payload('users')
+        apache_config_directory = self.exec_payload('apache_config_directory')['apache_directory']
         apache_config_files= self.exec_payload('apache_config_files')['apache_config']
-        for file_path, file_content in apache_config_files.iteritems():
+        fname_iter = self.fname_generator(users_info, apache_config_directory,
+                                          apache_config_files)
+        
+        for file_path, file_content in self.read_multi(fname_iter):
             if file_content:
                 multi_parser(self, file_path, file_content)
 
