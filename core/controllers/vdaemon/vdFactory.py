@@ -23,7 +23,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.vdaemon.lnxVd import lnxVd
 from core.controllers.vdaemon.winVd import winVd
-from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
+from core.controllers.intrusionTools.execMethodHelpers import os_detection_exec
 from core.controllers.w3afException import w3afException
 
 
@@ -33,7 +33,7 @@ def getVirtualDaemon( exec_method ):
     and based on that info, it returns the corresponding virtual daemon.
     '''
     try:
-        os = osDetectionExec( exec_method )
+        os = os_detection_exec( exec_method )
     except w3afException, w3:
         raise w3
     else:

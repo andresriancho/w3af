@@ -19,32 +19,33 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-from core.controllers.threads.w3afThread import w3afThread
-from core.controllers.w3afException import w3afException
-from core.controllers.w3afAgent.server.w3afAgentServer import w3afAgentServer
-from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
-from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
-from core.controllers.intrusionTools.delayedExecutionFactory import delayedExecutionFactory
-from core.controllers.intrusionTools.execMethodHelpers import *
-import core.data.kb.config as cf
-
 import os
 import time
 import socket
 
+from multiprocessing.dummy import Process
 
-class w3afAgentManager( w3afThread ):
+import core.controllers.outputManager as om
+
+from core.controllers.w3afException import w3afException
+from core.controllers.w3afAgent.server.w3afAgentServer import w3afAgentServer
+from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
+from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
+from core.controllers.intrusionTools.delayedExecutionFactory import delayedExecutionFactory
+from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
+
+
+class w3afAgentManager( Process ):
     '''
     Start a w3afAgent, to do this, I must transfer the agent client to the
     remote end and start the w3afServer in this local machine.
     
-    This is a w3afThread, so the entry point is start() , which will
+    This is a Process, so the entry point is start() , which will
     internally call the run() method.
     '''
     def __init__( self, exec_method, ip_address, socks_port=1080 ):
-        w3afThread.__init__(self)
+        Process.__init__(self)
+        self.daemon = True
         
         #    Configuration
         self._exec_method = exec_method
@@ -79,14 +80,16 @@ class w3afAgentManager( w3afThread ):
             #
             #    Get a port to use. Extrusion scan or any other method is applied here.
             #
-            inbound_port = self._getinbound_port()
+            inbound_port = self._get_inbound_port()
 
             #
             #    Start the w3afAgentServer on this machine
             #
-            agent_server = w3afAgentServer( self._ip_address, socks_port=self._socks_port, listen_port=inbound_port )
+            agent_server = w3afAgentServer( self._ip_address, 
+                                            socks_port=self._socks_port,
+                                            listen_port=inbound_port )
             self._agent_server = agent_server
-            agent_server.start2()
+            agent_server.start()
             # Wait for it to start.
             time.sleep(0.5)
             
@@ -98,17 +101,17 @@ class w3afAgentManager( w3afThread ):
                 #    Now that everything is setup here, transfer the client
                 #    to the remote end and run it.
                 #
-                ptf = payloadTransferFactory( self._exec_method )
+                ptf = payload_transfer_factory( self._exec_method )
                 transferHandler = ptf.getTransferHandler( inbound_port )
     
-                if not transferHandler.canTransfer():
-                    raise w3afException('Can\'t transfer w3afAgent client to remote host, canTransfer() returned False.')
+                if not transferHandler.can_transfer():
+                    raise w3afException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
                 else:
                     #    Let the user know how much time it will take to transfer the file
-                    estimatedTime = transferHandler.estimateTransferTime( len(client_code) )
+                    estimatedTime = transferHandler.estimate_transfer_time( len(client_code) )
                     om.out.debug('The w3afAgent client transfer will take "' + str(estimatedTime) + '" seconds.')
                     
-                    filename = getRemoteTempFile( self._exec_method )
+                    filename = get_remote_temp_file( self._exec_method )
                     filename += '.' + extension
                     
                     #    Upload the file and check integrity
@@ -197,11 +200,11 @@ class w3afAgentManager( w3afThread ):
         
         return True
 
-    def _getinbound_port( self ):
+    def _get_inbound_port( self ):
         # Do an extrusion scan and return the inbound open ports
         es = extrusionScanner( self._exec_method )
         try:
-            inbound_port = es.getInboundPort()
+            inbound_port = es.get_inbound_port()
         except Exception, e:
             
             om.out.error( 'The extrusion scan failed.' )
@@ -209,7 +212,9 @@ class w3afAgentManager( w3afThread ):
             
             for p in [ 8080, 5060, 3306, 1434, 1433, 443, 80, 25, 22]:
                 if self._is_locally_available(p) and es.isAvailable( p, 'TCP' ):
-                    om.out.console('Using inbound port "'+ str(p) +'" without knowing if the remote host will be able to connect back.')
+                    msg = 'Using inbound port "%s" without knowing if the remote'
+                    msg += ' host will be able to connect back.'
+                    om.out.console( msg % p )
                     return p
             
             raise e

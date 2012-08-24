@@ -50,7 +50,7 @@ class TestExtrusionScanner(unittest.TestCase):
         es = extrusionScanner(commands.getoutput)
         
         try:
-            inbound_port = es.getInboundPort()
+            inbound_port = es.get_inbound_port()
         except w3afException:
             raise SkipTest('This test requires root privileges.')
         else: 

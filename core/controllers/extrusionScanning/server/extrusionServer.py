@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import socket
 import time
 
@@ -35,7 +34,7 @@ import core.controllers.outputManager as om
 import core.data.kb.config as cf
 
 
-class extrusionServer:
+class extrusionServer(object):
     '''
     This class defines a simple server that listens on the current interface for connections
     made from the extrusionClient.
@@ -59,10 +58,14 @@ class extrusionServer:
         self._sniffing = False        
         self.reverse_ports_allowed = []
 
-        if iface:
+        if iface is not None:
             self._iface = iface
         else:
-            self._iface = cf.cf.getData( 'interface' )
+            cf_iface = cf.cf.getData( 'interface' )
+            if cf_iface is not None:
+                self._iface = cf_iface
+            else:
+                raise Exception('Failed to bind extrusionServer to an interface.')
     
     def canSniff( self ):
         '''

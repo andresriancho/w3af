@@ -163,11 +163,11 @@ class w3afAgentClient( threading.Thread ):
         
     def run( self ):
         # Start the connection manager
-        cm = connectionManager( self._w3afAgentServer_address, self._w3afAgentServer_port )
+        cm = ConnectionManager( self._w3afAgentServer_address, self._w3afAgentServer_port )
         cm.setBindAddress( self.socks_bind_address )
         cm.start()
 
-class connectionManager( threading.Thread ):
+class ConnectionManager( threading.Thread ):
     '''
     This is a service that creates some connections to the remote w3afAgentServer and waits
     for SOCKS requests to arrive on those connections. When a request arrives, I parse the request

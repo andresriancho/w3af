@@ -25,7 +25,7 @@ from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import createRandAlNum
 
 
-def osDetectionExec( exec_method ):
+def os_detection_exec( exec_method ):
     '''
     Uses the exec_method to run remote commands and determine what's the remote OS is
     and returns a string with 'windows' or 'linux' or raises a w3afException if unknown.
@@ -53,13 +53,13 @@ def osDetectionExec( exec_method ):
     
     raise w3afException('Failed to get/identify the remote OS.')
 
-def getRemoteTempFile( exec_method ):
+def get_remote_temp_file( exec_method ):
     '''
     @return: The name of a file in the remote file system that the user that I'm executing commands with
     can write, read and execute. The normal responses for this are files in /tmp/ or %TEMP% depending
     on the remote OS.
     '''
-    os = osDetectionExec( exec_method )
+    os = os_detection_exec( exec_method )
     if  os == 'windows':
         _filename = exec_method('echo %TEMP%').strip() + '\\'
         _filename += createRandAlNum(6)
@@ -68,7 +68,7 @@ def getRemoteTempFile( exec_method ):
         dirRes = exec_method('dir '+_filename).strip().lower()
         if 'not found' in dirRes:
             # Shit, the file exists, run again and see what we can do
-            return getRemoteTempFile( exec_method )
+            return get_remote_temp_file( exec_method )
         else:
             return _filename
         return _filename
@@ -81,7 +81,7 @@ def getRemoteTempFile( exec_method ):
         lsRes = exec_method('ls '+_filename).strip()
         if _filename == lsRes:
             # Shit, the file exists, run again and see what we can do
-            return getRemoteTempFile( exec_method )
+            return get_remote_temp_file( exec_method )
         else:
             return _filename
     else:

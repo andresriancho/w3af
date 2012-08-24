@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import hashlib
 import os
 import socket
@@ -32,9 +31,10 @@ import core.controllers.outputManager as om
 
 from core.controllers.extrusionScanning.server.extrusionServer import extrusionServer
 from core.controllers.w3afException import w3afException
-from core.controllers.intrusionTools.execMethodHelpers import *
-from core.controllers.payloadTransfer.echoWin import echoWin
-from core.controllers.payloadTransfer.echoLnx import echoLnx
+from core.controllers.intrusionTools.execMethodHelpers import (os_detection_exec, 
+                                                               get_remote_temp_file)
+from core.controllers.payload_transfer.echo_windows import EchoWindows
+from core.controllers.payload_transfer.echo_linux import EchoLinux
 
 
 class extrusionScanner(object):
@@ -58,14 +58,14 @@ class extrusionScanner(object):
         '''
         self._execMethod = execMethod
         self._forceReRun = forceReRun
-        self._tcpPortList = tcpPortList
-        self._udpPortList = udpPortList
+        self._tcp_port_list = tcpPortList
+        self._udp_port_list = udpPortList
         
-        os = osDetectionExec( execMethod )
+        os = os_detection_exec( execMethod )
         if os == 'windows':
-            self._transferHandler = echoWin( execMethod, os )
+            self._transferHandler = EchoWindows( execMethod, os )
         elif os == 'linux':
-            self._transferHandler = echoLnx( execMethod, os )
+            self._transferHandler = EchoLinux( execMethod, os )
     
     def _getRemoteId( self ):
         '''
@@ -103,9 +103,9 @@ class extrusionScanner(object):
             return 1
         else:
             _, file_content, _ = self._selectExtrusionClient()
-            return self._transferHandler.estimateTransferTime( len(file_content) ) + 8
+            return self._transferHandler.estimate_transfer_time( len(file_content) ) + 8
     
-    def getInboundPort( self, desiredProtocol='TCP' ):
+    def get_inbound_port( self, desiredProtocol='TCP' ):
         '''
         Performs the process
         '''
@@ -122,7 +122,7 @@ class extrusionScanner(object):
             
         om.out.information('Please wait some seconds while w3af performs an extrusion scan.')
         
-        es = extrusionServer( self._tcpPortList, self._udpPortList )
+        es = extrusionServer( self._tcp_port_list, self._udp_port_list )
         if not es.canSniff():
             msg = 'The user running w3af can\'t sniff on the specified'
             msg += ' interface. Hints: Are you root? Does this interface'
@@ -196,7 +196,7 @@ class extrusionScanner(object):
     
     def _sendExtrusionClient( self ):
         interpreter, extrusionClient, extension = self._selectExtrusionClient()
-        remoteFilename = getRemoteTempFile( self._execMethod )
+        remoteFilename = get_remote_temp_file( self._execMethod )
         remoteFilename += '.' + extension
         
         # do the transfer
@@ -248,10 +248,17 @@ class extrusionScanner(object):
         return interpreter, fileContent, extension
 
     def _execExtrusionClient( self, interpreter, remoteFilename ):
-        cmd = interpreter + ' ' + remoteFilename + ' ' + \
-              cf.cf.getData( 'localAddress' ) + ' ' + \
-              ','.join( [ str(x) for x in self._tcpPortList ] ) + \
-              ' ' + ','.join( [ str(x) for x in self._udpPortList ] )
+        
+        local_address = cf.cf.getData( 'localAddress' )
+        if local_address is None:
+            raise Exception('Invalid environment: no local address found in cf.')
+        
+        cmd_fmt = '%s %s %s %s %s'
+        cmd = cmd_fmt % (interpreter,
+                         remoteFilename,
+                         local_address,
+                         ','.join( [ str(x) for x in self._tcp_port_list ] ),
+                         ','.join( [ str(x) for x in self._udp_port_list ] ) )
 
         res = self._exec( cmd )
         

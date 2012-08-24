@@ -471,8 +471,8 @@ class RFIShell(exec_shell, PortScanShell):
         if shell_handler.SHELL_IDENTIFIER_1 not in body or \
         shell_handler.SHELL_IDENTIFIER_2 not in body:
             msg = 'Unable to execute remote command, result extraction'
-            msg += ' failed.'
-            raise w3afException( msg)
+            msg += ' failed. %s' % body
+            raise w3afException(msg)
 
         idx_1 = body.index(shell_handler.SHELL_IDENTIFIER_1)
         len_1 = len(shell_handler.SHELL_IDENTIFIER_1)

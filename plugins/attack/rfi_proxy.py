@@ -25,6 +25,7 @@ import urllib
 import os
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from multiprocessing.dummy import Process
 
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
@@ -33,7 +34,6 @@ import core.data.constants.w3afPorts as w3afPorts
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.threads.w3afThread import w3afThread
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.data.options.option import option
 from core.data.options.optionList import optionList
@@ -51,7 +51,7 @@ RFI_SEPARATOR = createRandAlNum( 25 )
 URLOPENER = None
 
 
-class rfi_proxy(AttackPlugin, w3afThread):
+class rfi_proxy(AttackPlugin, Process):
     '''
     Exploits remote file inclusions to create a proxy server.
     
@@ -60,7 +60,8 @@ class rfi_proxy(AttackPlugin, w3afThread):
 
     def __init__( self ):
         AttackPlugin.__init__(self)
-        w3afThread.__init__( self )
+        Process.__init__( self )
+        self.daemon = True
         
         self._shell = None
         self._proxyAddress = '127.0.0.1'
@@ -81,8 +82,8 @@ class rfi_proxy(AttackPlugin, w3afThread):
         '''
         Exploits a web app with os_commanding vuln.
         
-        @parameter url: A string containing the Url to exploit ( http://somehost.com/foo.php )
-        @parameter method: A string containing the method to send the data ( post / get )
+        @parameter url: A string containing the URL to exploit
+        @parameter method: A string containing the method to send the data
         @parameter data: A string containing data to send with a mark that defines
         which is the vulnerable parameter ( aa=notMe&bb=almost&cc=[VULNERABLE] )
         '''
@@ -118,9 +119,9 @@ class rfi_proxy(AttackPlugin, w3afThread):
         self._exploitData = vuln.getDc()
         self._variable = vuln.getVar()
         
-        self.start2()
+        self.start()
         
-        p = proxy_RFIShell( self._proxyAddress + ':' + str(self._proxyPort) )
+        p = RFIProxyShell( self._proxyAddress + ':' + str(self._proxyPort) )
         
         return p
         
@@ -306,7 +307,7 @@ class rfi_proxy(AttackPlugin, w3afThread):
             - rfiConnGenerator
         '''
         
-class proxy_RFIShell(shell):
+class RFIProxyShell(shell):
     
     def __init__(self, proxy_url):
         self._proxy_url = proxy_url
@@ -322,10 +323,10 @@ class proxy_RFIShell(shell):
         return msg
     
     def end( self ):
-        om.out.debug('xssShell cleanup complete.')
+        om.out.debug('RFIProxyShell cleanup complete.')
         
     def getName( self ):
-        return 'proxy_RFIShell'
+        return 'RFIProxyShell'
     
     def _identifyOs(self):
         return 'remote_file_inclusion_proxy'

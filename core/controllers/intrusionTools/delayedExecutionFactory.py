@@ -36,7 +36,7 @@ class delayedExecutionFactory:
         self._execMethod = execMethod
         
     def getDelayedExecutionHandler( self ):
-        os = osDetectionExec( self._execMethod )
+        os = os_detection_exec( self._execMethod )
         if os == 'windows':
             return atHandler( self._execMethod )
         elif os == 'linux':

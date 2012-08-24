@@ -241,7 +241,7 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.showAlert(_(str(w3)))
             raise w3
         else:
-            self.proxy.start2()
+            self.proxy.start()
 
     def _superviseRequests(self, *a):
         """Supervise if there're requests to show.

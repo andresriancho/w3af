@@ -23,8 +23,8 @@ import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
-from core.controllers.intrusionTools.execMethodHelpers import osDetectionExec
-from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
+from core.controllers.intrusionTools.execMethodHelpers import os_detection_exec
+from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
 from core.data.kb.shell import shell
 from plugins.attack.payloads.decorators.read_decorator import read_debug
 from plugins.attack.payloads.decorators.download_decorator import download_debug
@@ -120,13 +120,13 @@ class exec_shell(shell):
         '''
         if not self._transfer_handler:
             # Get the fastest transfer method
-            ptf = payloadTransferFactory( self.execute )
+            ptf = payload_transfer_factory( self.execute )
             self._transfer_handler = ptf.getTransferHandler()
 
-        if not self._transfer_handler.canTransfer():
+        if not self._transfer_handler.can_transfer():
             return 'Failed to transfer, the transfer handler failed.'
         else:
-            estimatedTime = self._transfer_handler.estimateTransferTime( len(file_content) )
+            estimatedTime = self._transfer_handler.estimate_transfer_time( len(file_content) )
             om.out.debug('The file transfer will take "' + str(estimatedTime) + '" seconds.')
             
             self._transfer_handler.transfer( file_content, remote_filename )
@@ -271,7 +271,7 @@ class exec_shell(shell):
         '''
         Identify the remote operating system and get some remote variables to show to the user.
         '''
-        self._rOS = osDetectionExec( self.execute ) 
+        self._rOS = os_detection_exec( self.execute ) 
         
         if self._rOS == 'linux':
             self._rUser = self.execute('whoami').strip()

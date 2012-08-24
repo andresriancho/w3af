@@ -29,8 +29,8 @@ import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
-from core.controllers.payloadTransfer.payloadTransferFactory import payloadTransferFactory
-from core.controllers.intrusionTools.execMethodHelpers import getRemoteTempFile
+from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
+from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
 
 
 class vdaemon(object):
@@ -188,21 +188,21 @@ class vdaemon(object):
         om.out.debug('Called _send_exe_to_server()')
         om.out.console('Wait while w3af uploads the payload to the remote server...')
         
-        ptf = payloadTransferFactory( self._exec_method )
+        ptf = payload_transfer_factory( self._exec_method )
         
         # Now we get the transfer handler
-        wait_time_for_extrusion_scan = ptf.estimateTransferTime()
+        wait_time_for_extrusion_scan = ptf.estimate_transfer_time()
         transferHandler = ptf.getTransferHandler()
         
-        if not transferHandler.canTransfer():
-            raise w3afException('Can\'t transfer the file to remote host, canTransfer() returned False.')
+        if not transferHandler.can_transfer():
+            raise w3afException('Can\'t transfer the file to remote host, can_transfer() returned False.')
         else:
             om.out.debug('The transferHandler can upload files to the remote end.')
 
-            estimatedTime = transferHandler.estimateTransferTime( len(exe_file) )
+            estimatedTime = transferHandler.estimate_transfer_time( len(exe_file) )
             om.out.debug('The payload transfer will take "' + str(estimatedTime) + '" seconds.')
             
-            self._remote_filename = getRemoteTempFile( self._exec_method )
+            self._remote_filename = get_remote_temp_file( self._exec_method )
             om.out.debug('Starting payload upload, remote filename is: "' + self._remote_filename + '".')
             
             if transferHandler.transfer( file(exe_file).read(), self._remote_filename ):
