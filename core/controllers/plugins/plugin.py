@@ -103,11 +103,11 @@ class Plugin(configurable):
         '''
         @return: A description of the plugin.
         
-        >>> b = plugins()
+        >>> b = Plugin()
         >>> b.__doc__ = 'abc'
         >>> b.getDesc()
         'abc'
-        >>> b = plugins()
+        >>> b = Plugin()
         >>> b.__doc__ = '    abc\t'
         >>> b.getDesc()
         'abc'
@@ -136,7 +136,7 @@ class Plugin(configurable):
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
             
-        >>> b = plugins()
+        >>> b = Plugin()
         >>> v1 = vuln.vuln()
         >>> v1.setDesc('hello')
         >>> v2 = vuln.vuln()
