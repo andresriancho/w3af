@@ -92,9 +92,8 @@ class global_redirect(AuditPlugin):
         response = self._30x_code_redirect(response, lheaders) or \
                    self._refresh_redirect(response, lheaders) or \
                    self._meta_redirect(response) or \
-                   self._javascript_redirect(response) or \
-                   self._http_equiv_redirect(response)
-        
+                   self._javascript_redirect(response)
+                           
         return response
     
     def _30x_code_redirect(self, response, lheaders):
