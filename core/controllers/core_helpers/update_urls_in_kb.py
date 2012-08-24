@@ -27,28 +27,8 @@ update_lock = threading.RLock()
 
 def update_kb( fuzzable_request ):
     '''
-    Updates the URL and fuzzable request list in the kb for other plugins to use.
-    
-    >>> from core.data.parsers.urlParser import url_object
-    >>> from core.data.request.fuzzable_request import fuzzable_request
-    >>> kb.kb.save('url', 'url_objects', [])
-
-    >>> u1 = url_object('http://w3af.org/')
-    >>> r1 = fuzzable_request(u1, method='GET')
-    >>> update_URLs_in_KB( r1 )
-    >>> kb.kb.getData('url', 'url_objects')
-    [<url_object for "http://w3af.org/">]
-
-    >>> u2 = url_object('http://w3af.org/blog/')
-    >>> r2 = fuzzable_request(u2, method='GET')    
-    >>> u3 = url_object('http://w3af.org/')
-    >>> r3 = fuzzable_request(u3, method='GET')    
-    >>> update_URLs_in_KB( r1 )
-    >>> update_URLs_in_KB( r2 )
-    >>> update_URLs_in_KB( r3 )
-    >>> kb.kb.getData('url', 'url_objects')
-    [<url_object for "http://w3af.org/">, <url_object for "http://w3af.org/blog/">]
-    
+    Updates the URL and fuzzable request list in the kb for other plugins to 
+    use.
     '''
     with update_lock:
         # Update the list of URLs that is used world wide, it is VERY
