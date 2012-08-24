@@ -24,7 +24,7 @@ from ..helper import PluginTest, PluginConfig
 
 class TestRFI(PluginTest):
     
-    target_url = 'http://moth/w3af/audit/remoteFileInclusion/vulnerable.php'
+    target_url = 'http://moth/w3af/audit/rfi/vulnerable.php'
     
     _run_configs = {
         'cfg': {
