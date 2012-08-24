@@ -271,7 +271,7 @@ class localproxy(proxy):
 
 if __name__ == '__main__':
     lp = localproxy('127.0.0.1', 8080, xUrllib() )
-    lp.start2()
+    lp.start()
     
     for i in xrange(10):
         time.sleep(1)

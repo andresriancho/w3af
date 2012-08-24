@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import cStringIO
 import traceback
 import time
@@ -27,18 +26,20 @@ import socket
 import select
 import httplib
 import SocketServer
+
 from OpenSSL import SSL
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from multiprocessing.dummy import Process
 
-from core.controllers.threads.w3afThread import w3afThread
+import core.controllers.outputManager as om
+
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
-import core.controllers.outputManager as om
 from core.data.parsers.urlParser import url_object
 from core.data.request.fuzzable_request import fuzzable_request
 
 
-class proxy(w3afThread):
+class proxy(Process):
     '''
     This class defines a simple HTTP proxy, it is mainly used for "complex" plugins.
     
@@ -50,23 +51,26 @@ class proxy(w3afThread):
     
     If the IP:Port is already in use, an exception will be raised while creating the ws instance.
     
-    To start the proxy, and given that this is a w3afThread class, you can do this:
-        ws.start2()
+    To start the proxy, and given that this is a Process class, you can do this:
+        ws.start()
         
     Or if you don't want a different thread, you can simply call the run method:
         ws.run()
     
-    The proxy handler class is the place where you'll perform all the magic stuff, like intercepting requests, modifying
-    them, etc. A good idea if you want to code your own proxy handler is to inherit from the proxy handler that 
-    is already defined in this file (see: w3afProxyHandler).
+    The proxy handler class is the place where you'll perform all the magic stuff,
+    like intercepting requests, modifying them, etc. A good idea if you want to
+    code your own proxy handler is to inherit from the proxy handler that is
+    already defined in this file (see: w3afProxyHandler).
     
     What you basically have to do is to inherit from it:
         class myProxyHandler(w3afProxyHandler):
         
     And redefine the following methods:
         def do_ALL( self )
-            Which originally receives a request from the browser, sends it to the remote site, receives the response
-            and returns the response to the browser. This method is called every time the browser sends a new request.
+            Which originally receives a request from the browser, sends it to
+            the remote site, receives the response and returns the response to
+            the browser. This method is called every time the browser sends a
+            new request.
     
     Things that work:
         - http requests like GET, HEAD, POST, CONNECT
@@ -87,8 +91,9 @@ class proxy(w3afThread):
         @parameter proxyCert: Proxy certificate to use, this is needed
             for proxying SSL connections.
         '''
-        w3afThread.__init__(self)
-
+        Process.__init__(self)
+        self.daemon = True
+        
         # Internal vars
         self._server = None
         self._proxyHandler = proxyHandler
@@ -148,13 +153,11 @@ class proxy(w3afThread):
     
     def run(self):
         """
-        Starts the proxy daemon; usually this method isn't called directly. In most cases you'll call start2()
+        Starts the proxy daemon; usually this method isn't called directly. In
+        most cases you'll call start()
         """
         if self._proxyHandler is None:
             self._proxyHandler = w3afProxyHandler
-        
-        # Timeout to wait for thread starting
-        time.sleep(0.1)
         
         om.out.debug( 'Using proxy handler: ' + str(self._proxyHandler) )
         self._proxyHandler._uri_opener = self._uri_opener
@@ -164,11 +167,11 @@ class proxy(w3afThread):
         message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
         om.out.debug( message )
         self._server.w3afLayer = self
+
         self._running = True
         self._server.serve_forever()
-        
-        # We aren't running anymore
         self._running = False
+        
         # I have to do this to actually KILL the HTTPServer, and free the TCP port
         del self._server
 
@@ -182,7 +185,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         __doc__ string for information on how to handle specific HTTP
         commands such as GET and POST.
         
-        I override this because I'm going to use ONE handler for all the methods (except CONNECT).
+        I override this because I'm going to use ONE handler for all the
+        methods (except CONNECT).
         """
         self.raw_requestline = self.rfile.readline()
         if not self.raw_requestline:
