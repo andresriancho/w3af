@@ -24,7 +24,7 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 class test_apache_root_directory(PayloadTestHelper):
     
-    EXPECTED_RESULT = { 'apache_root_directory': [u'/var/www/']}
+    EXPECTED_RESULT = { 'apache_root_directory': [u'/var/www/', u'/var/www/moth/']}
 
     def test_apache_root_directory(self):
         result = exec_payload(self.shell, 'apache_root_directory', use_api=True)
