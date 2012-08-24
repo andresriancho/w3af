@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import socket
 import random
+import unittest
 
 from time import time
 from pymock import PyMockTestCase, method, override
@@ -140,11 +141,9 @@ class test_keepalive(PyMockTestCase):
         
         
 
-class test_connection_mgr(PyMockTestCase):
+class test_connection_mgr(unittest.TestCase):
 
     def setUp(self):
-        PyMockTestCase.setUp(self)
-        
         self.cm = ConnectionManager()
         self.host = dummy()
     
