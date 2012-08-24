@@ -66,7 +66,7 @@ eq_limit = 0.9
 [output.console]
 verbose = True
 
-[discovery.web_spider]
+[crawl.web_spider]
 followRegex = .*
 ignoreRegex = 
 onlyForward = False

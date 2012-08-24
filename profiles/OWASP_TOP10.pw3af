@@ -1,4 +1,4 @@
-[discovery.phpinfo]
+[crawl.phpinfo]
 
 [audit.frontpage]
 stopOnFirst = True
@@ -15,13 +15,13 @@ withoutMOTW = False
 [audit.blind_sqli]
 eq_limit = 0.9
 
-[discovery.allowed_methods]
+[infrastructure.allowed_methods]
 reportDavOnly = True
 execOneTime = False
 
 [grep.feeds]
 
-[discovery.halberd]
+[infrastructure.halberd]
 
 [audit.phishing_vector]
 
@@ -31,9 +31,9 @@ execOneTime = False
 
 [grep.hash_find]
 
-[discovery.dns_wildcard]
+[infrastructure.dns_wildcard]
 
-[discovery.detect_transparent_proxy]
+[infrastructure.detect_transparent_proxy]
 
 [audit.mx_injection]
 
@@ -60,22 +60,22 @@ interface = ppp0
 localAddress = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
 
-[discovery.fingerprint_os]
+[infrastructure.fingerprint_os]
 
 [audit.lfi]
 
-[discovery.afd]
+[infrastructure.afd]
 
 [audit.ldapi]
 
-[discovery.dot_net_errors]
+[infrastructure.dot_net_errors]
 
 [audit.un_ssl]
 
-[discovery.shared_hosting]
+[infrastructure.shared_hosting]
 resultLimit = 300
 
-[discovery.web_spider]
+[crawl.web_spider]
 followRegex = .*
 ignoreRegex = None
 onlyForward = False
@@ -88,7 +88,7 @@ caFileName = plugins/audit/ssl_certificate/ca.pem
 
 [audit.ssi]
 
-[discovery.server_header]
+[infrastructure.server_header]
 execOneTime = True
 
 [audit.sqli]
@@ -117,34 +117,34 @@ diffRatio = 0.35
 
 [grep.http_in_body]
 
-[discovery.sitemap_xml]
+[crawl.sitemap_xml]
 
 [grep.file_upload]
 
 [grep.ajax]
 
-[discovery.fingerprint_WAF]
+[infrastructure.fingerprint_WAF]
 
 [grep.error_500]
 
-[discovery.detect_reverse_proxy]
+[infrastructure.detect_reverse_proxy]
 
 [grep.lang]
 
-[discovery.server_status]
+[infrastructure.server_status]
 
 [grep.objects]
 
-[discovery.hmap]
+[infrastructure.hmap]
 genFpF = False
 
-[discovery.user_dir]
+[crawl.user_dir]
 identifyOS = True
 identifyApplications = True
 
 [audit.htaccess_methods]
 
-[discovery.oracle_discovery]
+[crawl.oracle_discovery]
 
 [grep.dom_xss]
 
@@ -158,7 +158,7 @@ listenPort = 44449
 
 [grep.wsdl_greper]
 
-[discovery.find_vhosts]
+[infrastructure.find_vhosts]
 
 [grep.http_auth_detect]
 
@@ -179,11 +179,11 @@ verbose = True
 
 [audit.format_string]
 
-[discovery.php_eggs]
+[infrastructure.php_eggs]
 
 [grep.strange_parameters]
 
-[discovery.robots_txt]
+[crawl.robots_txt]
 
 [audit.global_redirect]
 
@@ -207,7 +207,7 @@ name = OWASP_TOP10
 
 [grep.private_ip]
 
-[discovery.phishtank]
+[crawl.phishtank]
 dbFile = plugins/discovery/phishtank/index.xml
 updateDB = False
 
@@ -233,7 +233,7 @@ cookieJarFile =
 ntlmAuthDomain = 
 ntlmAuthURL = 
 
-[discovery.bing_spider]
+[crawl.bing_spider]
 resultLimit = 300
 
 [audit.file_upload]

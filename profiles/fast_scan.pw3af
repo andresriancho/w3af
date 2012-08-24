@@ -49,7 +49,7 @@ withoutMOTW = False
 
 [grep.error_500]
 
-[discovery.web_spider]
+[crawl.web_spider]
 
 [grep.feeds]
 

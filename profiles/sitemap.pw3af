@@ -2,7 +2,7 @@
 description = Use different online techniques to create a fast sitemap of the target web application. This plugin will only work if you've got Internet access and the target web application is being spidered by Yahoo!
 name = sitemap
 
-[discovery.sitemap_xml]
+[crawl.sitemap_xml]
 
 [output.gtk_output]
 
@@ -24,7 +24,7 @@ interface = ppp0
 localAddress = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
 
-[discovery.robots_txt]
+[crawl.robots_txt]
 
 [http-settings]
 proxyPort = 8080
