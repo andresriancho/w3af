@@ -86,7 +86,7 @@ class wsdl_greper(GrepPlugin):
                 i.addToHighlight( disco_string )
                 kb.kb.append( self , 'disco' , i )
             
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
@@ -100,7 +100,7 @@ class wsdl_greper(GrepPlugin):
         self.print_uniq( kb.kb.getData( 'wsdl_greper', 'wsdl' ), 'URL' )
         self.print_uniq( kb.kb.getData( 'wsdl_greper', 'disco' ), 'URL' )
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

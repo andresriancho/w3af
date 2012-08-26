@@ -30,8 +30,8 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.options.option import option
-from core.data.options.optionList import optionList
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.options.option_list import OptionList
+from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.db.disk_set import disk_set
 
 
@@ -110,13 +110,13 @@ class dir_bruter(CrawlPlugin):
                 #
                 #   Looking fine... but lets see if this is a false positive or not...
                 #
-                dir_url = base_path.urlJoin( directory_name + createRandAlNum(5) + '/')
+                dir_url = base_path.urlJoin( directory_name + rand_alnum(5) + '/')
     
                 invalid_http_response = self._uri_opener.GET( dir_url, cache=False )
     
                 if is_404( invalid_http_response ):
                     #
-                    #    Good, the directory_name + createRandAlNum(5) return a
+                    #    Good, the directory_name + rand_alnum(5) return a
                     #    404, the original directory_name is not a false positive.
                     #
                     for fr in self._create_fuzzable_requests( http_response ):
@@ -150,7 +150,7 @@ class dir_bruter(CrawlPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
             
         d = 'Wordlist to use in directory bruteforcing process.'
         o = option('wordlist', self._dir_list , d, 'string')
@@ -179,7 +179,7 @@ class dir_bruter(CrawlPlugin):
             
         self._be_recursive = OptionList['be_recursive'].getValue()
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
@@ -244,7 +244,7 @@ class phishtank(CrawlPlugin):
         h2 += ' from http://www.phishtank.com/ .'
         o2 = option('updateDB', self._update_DB, d2, 'boolean', help=h2)
         
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         return ol
@@ -274,14 +274,14 @@ class phishtank(CrawlPlugin):
         else:
             return True
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

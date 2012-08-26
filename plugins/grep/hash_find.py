@@ -134,7 +134,7 @@ class hash_find(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'hash_find', 'hash_find' ), None )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

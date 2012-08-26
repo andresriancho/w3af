@@ -107,7 +107,7 @@ class find_jboss(InfrastructurePlugin):
     def handleUrlError(self, url_error):
         return (True, None)
     
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

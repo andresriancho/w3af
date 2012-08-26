@@ -195,7 +195,7 @@ class profile:
         Set the plugin options.
         @parameter plugin_type: 'audit', 'output', etc.
         @parameter plugin_name: 'xss', 'sqli', etc.
-        @parameter options: an optionList object
+        @parameter options: an OptionList
         @return: None
         '''
         section = plugin_type + "." + plugin_name
@@ -211,7 +211,7 @@ class profile:
         '''
         # Get the plugin defaults with their types
         plugin_instance = factory('plugins.' + plugin_type + '.' + plugin_name )
-        optionsMap = plugin_instance.get_options()
+        options_list = plugin_instance.get_options()
         
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
@@ -229,14 +229,14 @@ class profile:
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
                             raise w3afException( msg % (option, plugin_name) )
                         else:
-                            optionsMap[option].setValue(value)
+                            options_list[option].setValue(value)
 
-        return optionsMap
+        return options_list
         
     def setMiscSettings( self, options ):
         '''
         Set the misc settings options.
-        @parameter options: an optionList object
+        @parameter options: an OptionList
         @return: None
         '''
         self._set_x_settings('misc-settings', options)
@@ -244,7 +244,7 @@ class profile:
     def setHttpSettings( self, options ):
         '''
         Set the http settings options.
-        @parameter options: an optionList object
+        @parameter options: an OptionList
         @return: None
         '''
         self._set_x_settings('http-settings', options)    
@@ -254,7 +254,7 @@ class profile:
         Set the section options.
         
         @parameter section: The section name
-        @parameter options: an optionList object
+        @parameter options: an OptionList
         @return: None
         '''
         if section not in self._config.sections():
@@ -266,7 +266,7 @@ class profile:
     def getMiscSettings( self ):
         '''
         Get the misc settings options.
-        @return: The misc settings in an optionList object
+        @return: The misc settings in an OptionList
         '''
         import core.controllers.miscSettings as miscSettings
         misc_settings = miscSettings.miscSettings()
@@ -275,7 +275,7 @@ class profile:
     def getHttpSettings( self ):
         '''
         Get the http settings options.
-        @return: The http settings in an optionList object
+        @return: The http settings in an OptionList
         '''
         import core.data.url.urlOpenerSettings as urlOpenerSettings
         url_settings = urlOpenerSettings.urlOpenerSettings()
@@ -283,9 +283,9 @@ class profile:
         
     def _get_x_settings( self, section, configurable_instance ):
         '''
-        @return: An optionList object with the options for a configurable object.
+        @return: An OptionList with the options for a configurable object.
         '''
-        optionsMap = configurable_instance.get_options()
+        options_list = configurable_instance.get_options()
 
         try:
             for option in self._config.options(section):
@@ -296,13 +296,13 @@ class profile:
                     msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
                     raise w3afException(msg)
                 else:
-                    optionsMap[option].setValue(value)
+                    options_list[option].setValue(value)
         except:
             # This is for back compatibility with old profiles
             # that don't have a http-settings nor misc-settings section 
-            return optionsMap
+            return options_list
 
-        return optionsMap
+        return options_list
 
     def setName( self, name ):
         '''

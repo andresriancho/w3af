@@ -26,7 +26,7 @@ from core.controllers.w3afException import w3afException
 from core.controllers.plugins.plugin import Plugin
 from core.controllers.plugins.output_plugin import OutputPlugin
 
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 import core.controllers.outputManager as om
 
 class OnlyOptions(gtk.VBox):
@@ -53,7 +53,7 @@ class OnlyOptions(gtk.VBox):
         self.propagLabels = {}
 
         # options
-        self.options = optionList()
+        self.options = OptionList()
         options = plugin.get_options()
         # let's use the info from the core
         coreopts = self.w3af.plugins.get_plugin_options(plugin.ptype, plugin.pname)
@@ -277,7 +277,7 @@ class ConfigDialog(gtk.Dialog):
         if showDesc:
             # The long description of the plugin
             longLabel = gtk.Label()
-            longLabel.set_text( plugin.getLongDesc() )
+            longLabel.set_text( plugin.get_long_desc() )
             longLabel.set_alignment(0.0, 0.5)
             longLabel.show()
             self.vbox.pack_start(longLabel)

@@ -28,7 +28,7 @@ import core.data.kb.info as info
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class user_defined_regex(GrepPlugin):
@@ -103,7 +103,7 @@ class user_defined_regex(GrepPlugin):
                             self._regexlist_compiled[index] = (regex, info_object)
                   
     
-    def set_options( self, optionsMap ):
+    def set_options( self, options_list ):
         '''
         Handle user configuration parameters.
         @return: None
@@ -114,7 +114,7 @@ class user_defined_regex(GrepPlugin):
         #   Add the regexes from the file
         #
         self._regexlist_compiled = []
-        regex_file_path = optionsMap['regex_file_path'].getValue()
+        regex_file_path = options_list['regex_file_path'].getValue()
         if regex_file_path and not regex_file_path == 'None':
             self._regex_file_path = regex_file_path
             current_regex = ''
@@ -137,7 +137,7 @@ class user_defined_regex(GrepPlugin):
         #
         #   Add the single regex
         #
-        self._single_regex = optionsMap['single_regex'].getValue()
+        self._single_regex = options_list['single_regex'].getValue()
         if self._single_regex and not self._single_regex == 'None':
             try:
                 self._regexlist_compiled.append((re.compile(self._single_regex, 
@@ -157,7 +157,7 @@ class user_defined_regex(GrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         
         d = 'Single regex to use in the grep process.'
         o = option('single_regex', self._single_regex , d, 'string')
@@ -181,7 +181,7 @@ class user_defined_regex(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

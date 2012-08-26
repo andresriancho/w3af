@@ -27,7 +27,7 @@ import tempfile
 import StringIO
 
 from core.controllers.misc.get_w3af_version import get_w3af_version
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 
 # String containing the versions for python, gtk and pygtk
 VERSIONS = '''
@@ -63,7 +63,7 @@ def gettempdir():
     return tempfile.gettempdir()
 
 def create_crash_file(exception):
-    filename = "w3af_crash-" + createRandAlNum(5) + ".txt"
+    filename = "w3af_crash-" + rand_alnum(5) + ".txt"
     filename = os.path.join( gettempdir() , filename ) 
     crash_dump = file(filename, "w")
     crash_dump.write(_('Submit this bug here: https://sourceforge.net/apps/trac/w3af/newticket \n'))

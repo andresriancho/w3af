@@ -118,7 +118,7 @@ class zone_h(InfrastructurePlugin):
                 om.out.information( i.getDesc() )
                 
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         return '''
         This plugin searches the zone-h.org defacement database and parses the
         result. The information stored in that database is useful to know about

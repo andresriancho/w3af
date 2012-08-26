@@ -133,7 +133,7 @@ class meta_tags(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'meta_tags', 'meta_tags' ), 'URL' )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

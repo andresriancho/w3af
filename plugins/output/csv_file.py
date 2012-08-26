@@ -27,7 +27,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class csv_file(OutputPlugin):
@@ -65,7 +65,7 @@ class csv_file(OutputPlugin):
             try:
                 row = [
                        data.getName() ,
-                       data.getMethod() ,
+                       data.get_method() ,
                        data.getURI() ,
                        data.getVar() ,
                        data.getDc() ,
@@ -79,7 +79,7 @@ class csv_file(OutputPlugin):
                 msg = msg % e
                 raise w3afException( msg )        
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -109,7 +109,7 @@ class csv_file(OutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         
         d = 'The name of the output file where the vulnerabilities will be saved'
         o = option('output_file', self.output_file, d, 'string')

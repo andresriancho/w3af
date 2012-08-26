@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
@@ -93,7 +93,7 @@ class objects(GrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def end(self):
@@ -103,14 +103,14 @@ class objects(GrepPlugin):
         for obj_type in self._tag_names:
             self.print_uniq( kb.kb.getData( 'objects', obj_type ), 'URL' )
                 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

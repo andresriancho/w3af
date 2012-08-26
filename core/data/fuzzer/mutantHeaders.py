@@ -61,7 +61,7 @@ class mutantHeaders(mutant):
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The fuzzed header was: "'
+        res += self.get_method() + '. The fuzzed header was: "'
         res += self.getVar() + '" and it\'s value was: "' + self.getModValue() + '".'
         return res
 

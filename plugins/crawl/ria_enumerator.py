@@ -33,7 +33,7 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class ria_enumerator(CrawlPlugin):
@@ -183,7 +183,7 @@ class ria_enumerator(CrawlPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()    
+        ol = OptionList()    
         
         d = 'Wordlist to use in the manifest file name bruteforcing process.'
         o = option('wordlist', self._wordlist , d, 'string')
@@ -209,7 +209,7 @@ class ria_enumerator(CrawlPlugin):
         
         self._extensions = OptionList['manifestExtensions'].getValue()
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

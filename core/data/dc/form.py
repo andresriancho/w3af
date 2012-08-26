@@ -81,7 +81,7 @@ class Form(DataContainer):
                              'urlParser.url_object type.')
         self._action = action
         
-    def getMethod(self):
+    def get_method(self):
         '''
         @return: The Form method.
         '''
@@ -90,7 +90,7 @@ class Form(DataContainer):
     def setMethod(self, method):
         self._method = method.upper()
     
-    def getFileVariables( self ):
+    def get_file_vars( self ):
         return self._files
 
     def _setVar(self, name, value):

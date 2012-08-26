@@ -104,7 +104,7 @@ class xpath(AttackPlugin):
             #
             #    Generate the shell
             #
-            if vuln.getMethod() != 'POST' and self._change_to_post and \
+            if vuln.get_method() != 'POST' and self._change_to_post and \
             self._verify_vuln( self.GET2POST( vuln ) ):
                 msg = 'The vulnerability was found using method GET, but POST is being used'
                 msg += ' during this exploit.'
@@ -155,7 +155,7 @@ class xpath(AttackPlugin):
                                                     self.STR_DEL, self.rnum + 1)
         
         exploit_dc = vuln.getDc()
-        functionReference = getattr( self._uri_opener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.get_method() )
         exploit_dc[ vuln.getVar() ] = self.FALSE_COND
 
         #
@@ -199,7 +199,7 @@ class xpath(AttackPlugin):
         '''
         exploit_dc = vuln.getDc()
         orig_value = vuln.getMutant().getOriginalValue()
-        functionReference = getattr( self._uri_opener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.get_method() )
         
         true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
         false_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum + 1) 
@@ -260,7 +260,7 @@ class xpath(AttackPlugin):
         diffRatio = 0.0
         
         exploit_dc = vuln.getDc()
-        functionReference = getattr( self._uri_opener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.get_method() )
         exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
 
         om.out.debug( "Testing if body dynamically changes... " )
@@ -284,7 +284,7 @@ class xpath(AttackPlugin):
                 om.out.debug( 'Randomness is too high to use difflib, switching to error based detection...' )
                 return False
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -368,7 +368,7 @@ class xpath_reader(shell):
         XML is too long. In the case of an error, None is returned.
         '''
         exploit_dc = self.getDc()
-        functionReference = getattr( self._uri_opener , self.getMethod() )
+        functionReference = getattr( self._uri_opener , self.get_method() )
 
         maxl = self.max_data_len
         minl = 1
@@ -431,7 +431,7 @@ class xpath_reader(shell):
         HTTP library exceptions are not handled in order to make the code clearer. 
         '''
         exploit_dc = self.getDc()
-        functionReference = getattr( self._uri_opener , self.getMethod() )
+        functionReference = getattr( self._uri_opener , self.get_method() )
 
         data = ''
         
@@ -478,7 +478,7 @@ def response_is_error(vuln_obj, res_body, url_opener, use_difflib=True):
     if use_difflib:
         
         exploit_dc = vuln_obj.getDc()
-        functionReference = getattr( url_opener , vuln_obj.getMethod() )
+        functionReference = getattr( url_opener , vuln_obj.get_method() )
 
         exploit_dc[ vuln_obj.getVar() ] = vuln_obj.getMutant().getOriginalValue()
 

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 
@@ -48,19 +48,19 @@ class question_infrastructure_1(question):
         self._d1 = 'Target URL'
         o1 = option( 'target','http://', self._d1, 'list')
     
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
         # I don't care about the target OS for these tests, so I add them here with the default value
         o2 = option('targetOS','unknown', '', 'string')
         o3 = option('targetFramework','unknown', '', 'string')
         
-        #   Manually copy the optionList object... the copy.deepcopy method fails :(
-        ol_copy = optionList()
-        for o in optionsMap:
+        #   Manually copy the OptionList... the copy.deepcopy method fails :(
+        ol_copy = OptionList()
+        for o in options_list:
             ol_copy.add(o)
        
         # Get the "Target URL" and change it back to "target" so the core can understand it

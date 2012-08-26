@@ -108,7 +108,7 @@ class slash(CrawlPlugin):
         
         return []
     
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

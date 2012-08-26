@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
 
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class test_questions(object):
@@ -72,7 +72,7 @@ class test_questions(object):
         assert 'New' == new
         
         opt = question_inst.getOptionObjects()
-        assert isinstance(opt, optionList) == True
+        assert isinstance(opt, OptionsList) == True
         
         qid = question_inst.getQuestionId()
         assert qid not in self.unique_question_ids

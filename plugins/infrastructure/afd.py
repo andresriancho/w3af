@@ -30,7 +30,7 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.parsers.urlParser import url_object
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 
 
 class afd(InfrastructurePlugin):
@@ -71,8 +71,8 @@ class afd(InfrastructurePlugin):
         @parameter fuzzable_request: The fuzzable_request to modify in order to
                                      see if it's blocked
         '''
-        rnd_param = createRandAlNum(7)
-        rnd_value = createRandAlNum(7)
+        rnd_param = rand_alnum(7)
+        rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
         original_url_str = fmt % (fuzzable_request.getURL(), rnd_param, rnd_value)
         original_url = url_object(original_url_str)
@@ -171,7 +171,7 @@ class afd(InfrastructurePlugin):
         
         return res
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

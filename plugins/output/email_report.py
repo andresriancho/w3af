@@ -27,7 +27,7 @@ import core.data.kb.config as cf
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class email_report(OutputPlugin):
@@ -62,7 +62,7 @@ class email_report(OutputPlugin):
         self.toAddrs = OptionList['toAddrs'].getValue()
 
     def get_options(self):
-        ol = optionList()
+        ol = OptionList()
         
         d = 'SMTP server ADDRESS to send notifications through, e.g. smtp.yourdomain.com'
         o = option('smtpServer', self.smtpServer, d, 'string')
@@ -107,7 +107,7 @@ class email_report(OutputPlugin):
             msg += ' Original error: "%s".' % e
             om.out.error( msg )
 
-    def getLongDesc(self):
+    def get_long_desc(self):
         return '''
             This plugin sends short report (only vulnerabilities) by email to
             specified addresses.

@@ -21,13 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 
 
@@ -50,28 +49,26 @@ class mx_injection(AuditPlugin):
 
     def __init__(self):
         '''
-        Plugin added just for completeness... I dont really expect to find one of this bugs
-        in my life... but well.... if someone , somewhere in the planet ever finds a bug of using
-        this plugin... THEN my job has been done :P
+        Plugin added just for completeness... I dont really expect to find one
+        of this bugs in my life... but well.... if someone , somewhere in the
+        planet ever finds a bug of using this plugin... THEN my job has been
+        done :P
         '''
         AuditPlugin.__init__(self)
         
-        # Internal variables.
-        self._errors = []
-
     def audit(self, freq ):
         '''
         Tests an URL for mx injection vulnerabilities.
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
+        orig_resp = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()
-        mutants = createMutants( freq , mx_injection_strings, oResponse=oResponse )
+        mutants = create_mutants( freq , mx_injection_strings, orig_resp=orig_resp )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
             
     def _analyze_result( self, mutant, response ):
         '''
@@ -111,7 +108,7 @@ class mx_injection(AuditPlugin):
         mx_injection_strings.append('')
         return mx_injection_strings
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

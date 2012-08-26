@@ -29,7 +29,7 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 
 
 class redos(AuditPlugin):
@@ -74,11 +74,11 @@ class redos(AuditPlugin):
         
         # Prepare the strings to create the mutants
         patterns_list = self._get_wait_patterns(run=1)
-        mutants = createMutants( freq , patterns_list )
+        mutants = create_mutants( freq , patterns_list )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_wait)
+                                      mutants,
+                                      self._analyze_wait)
                 
     def _analyze_wait( self, mutant, response ):
         '''
@@ -127,7 +127,7 @@ class redos(AuditPlugin):
                     i.setName('Possible ReDoS vulnerability')
                     i.setId( response.id )
                     i.setDc( mutant.getDc() )
-                    i.setMethod( mutant.getMethod() )
+                    i.setMethod( mutant.get_method() )
                     msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
                     msg += ' . Please review manually.'
                     i.setDesc( msg )
@@ -157,14 +157,14 @@ class redos(AuditPlugin):
         
         return patterns
     
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.server_header']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

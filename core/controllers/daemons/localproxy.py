@@ -128,7 +128,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         uri = fuzzReq.getURI()
         data = fuzzReq.getData()
         headers = fuzzReq.getHeaders()
-        method = fuzzReq.getMethod()
+        method = fuzzReq.get_method()
         # Also add the cookie header.
         cookie = fuzzReq.getCookie()
         if cookie:
@@ -156,7 +156,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             return False
 
         if len(self.server.w3afLayer._methodsToTrap) and \
-                fuzzReq.getMethod() not in self.server.w3afLayer._methodsToTrap:
+                fuzzReq.get_method() not in self.server.w3afLayer._methodsToTrap:
             return False
 
         if self.server.w3afLayer._whatNotToTrap.search( fuzzReq.getURL().url_string ):

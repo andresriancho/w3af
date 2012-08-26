@@ -42,7 +42,7 @@ class mutantXMLRPC(mutantPostData):
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The sent JSON-data was: "'
+        res += self.get_method() + '. The sent JSON-data was: "'
         res += str(self.getDc())
         res += '"'
         return res

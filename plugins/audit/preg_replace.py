@@ -27,7 +27,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 
 
@@ -36,6 +36,7 @@ class preg_replace(AuditPlugin):
     Find unsafe usage of PHPs preg_replace.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+    PREG_PAYLOAD = ['a' + ')/' * 100, ]
     PREG_ERRORS = ( 'Compilation failed: unmatched parentheses at offset',
                     '<b>Warning</b>:  preg_replace() [<a',
                     'Warning: preg_replace(): ' )
@@ -46,9 +47,6 @@ class preg_replace(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         
-        #   Internal variables
-        self._errors = []
-        
     def audit(self, freq ):
         '''
         Tests an URL for unsafe usage of PHP's preg_replace.
@@ -56,8 +54,8 @@ class preg_replace(AuditPlugin):
         @param freq: A fuzzable_request
         '''
         # First I check If I get the error message from php
-        oResponse = self._uri_opener.send_mutant(freq)
-        mutants = createMutants( freq , ['a' + ')/' * 100, ] , oResponse=oResponse )
+        orig_resp = self._uri_opener.send_mutant(freq)
+        mutants = create_mutants( freq , self.PREG_PAYLOAD , orig_resp=orig_resp )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -107,14 +105,14 @@ class preg_replace(AuditPlugin):
             res.append(error_match)
         return res
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+                 the current one.
         '''
         return ['grep.error_500']
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

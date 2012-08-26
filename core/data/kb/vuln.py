@@ -42,7 +42,7 @@ class vuln(info):
         
         if isinstance(data_obj, mutant) or \
             isinstance(data_obj, vuln):
-            self.setMethod(data_obj.getMethod())
+            self.setMethod(data_obj.get_method())
             self.setDc(data_obj.getDc())
             self.setVar(data_obj.getVar())
             self.setURI(data_obj.getURI())
@@ -66,9 +66,9 @@ class vuln(info):
     def setSeverity(self, severity):
         self._severity = severity
         
-    def getMethod(self):
+    def get_method(self):
         if self._mutant:
-            return self._mutant.getMethod()
+            return self._mutant.get_method()
         else:
             return self._method
 

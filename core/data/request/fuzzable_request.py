@@ -87,7 +87,7 @@ class fuzzable_request(disk_item):
     
     def getRequestLine(self):
         '''Return request line.'''
-        return "%s %s HTTP/1.1%s" % (self.getMethod(), 
+        return "%s %s HTTP/1.1%s" % (self.get_method(), 
                                      self.getURI().urlEncode(),
                                      CRLF)
 
@@ -257,7 +257,7 @@ class fuzzable_request(disk_item):
     
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % \
-                                        (self.getMethod(), self.getURI())
+                                        (self.get_method(), self.getURI())
         
     def __eq__(self, other):
         '''
@@ -402,7 +402,7 @@ class fuzzable_request(disk_item):
         '''
         return self._data
         
-    def getMethod(self):
+    def get_method(self):
         return self._method
         
     def getDc(self):
@@ -423,7 +423,7 @@ class fuzzable_request(disk_item):
         else:
             return None
     
-    def getFileVariables(self):
+    def get_file_vars(self):
         return []
     
     def copy(self):

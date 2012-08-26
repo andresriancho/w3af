@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib
 import cgi
 
@@ -27,7 +26,7 @@ import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.fuzzer.fuzzer import createMutants, createRandNum
+from core.data.fuzzer.fuzzer import rand_number
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.controllers.misc.diff import diff
 
@@ -72,12 +71,12 @@ class blind_sqli_response_diff(object):
         
         return None
     
-    def _get_statements( self, mutant, excludeNumbers=[] ):
+    def _get_statements( self, mutant, exclude_numbers=[] ):
         '''
         Returns a list of statement tuples.
         '''
         res = {}
-        rnd_num = int( createRandNum( 2 , excludeNumbers ) )
+        rnd_num = int( rand_number( 2 , exclude_numbers ) )
         rnd_num_plus_one = rnd_num + 1
         
         # Numeric/Datetime
@@ -171,7 +170,7 @@ class blind_sqli_response_diff(object):
                     
                     desc = 'Blind SQL injection was found at: "%s", using'
                     desc += ' HTTP method %s. The injectable parameter is: "%s"'
-                    desc = desc % (v.getURL(), v.getMethod(), mutant.getVar())
+                    desc = desc % (v.getURL(), v.get_method(), mutant.getVar())
                     v.setDesc( desc )
                     om.out.debug( v.getDesc() )
                     

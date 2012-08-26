@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_re import multi_re
 
 
@@ -129,17 +129,14 @@ class sqli(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         
-        # Internal variables
-        self._errors = []
-
     def audit(self, freq):
         '''
         Tests an URL for SQL injection vulnerabilities.
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
-        mutants = createMutants(freq, self.SQLI_STRINGS, oResponse=oResponse)
+        orig_resp = self._uri_opener.send_mutant(freq)
+        mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_resp)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
@@ -193,7 +190,7 @@ class sqli(AuditPlugin):
             res.append((regex_comp, match.group(0), dbms_type))
         return res
         
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

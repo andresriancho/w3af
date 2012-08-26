@@ -113,7 +113,7 @@ class wsdlParser:
         else:
             raise w3afException('Unknown method name.') 
     
-    def getMethods( self ):
+    def get_methods( self ):
         '''
         @wsdlDocument: The XML document
         @return: The methods defined in the WSDL
@@ -126,11 +126,11 @@ class wsdlParser:
             remoteMethodObject.setAction( self.getAction( methodName ) )
             remoteMethodObject.setLocation( self.getLocation( methodName ) )
             remoteMethodObject.setParameters(
-                                            self.getMethodParams( methodName ) )
+                                            self.get_methodParams( methodName ) )
             res.append( remoteMethodObject )
         return res
     
-    def getMethodParams( self,  methodName ):
+    def get_methodParams( self,  methodName ):
         '''
         @methodName: The method name
         @return: The soap action.
@@ -188,7 +188,7 @@ class remoteMethod:
         self._inParameters = None
         self._location = ''
         
-    def getMethodName( self ):
+    def get_methodName( self ):
         return self._name
         
     def setMethodName( self, name ):

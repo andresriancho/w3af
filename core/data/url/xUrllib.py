@@ -218,7 +218,7 @@ class xUrllib(object):
             fuzzReq.setHeaders(headers)
         
         # Send it
-        function_reference = getattr( self , fuzzReq.getMethod() )
+        function_reference = getattr( self , fuzzReq.get_method() )
         return function_reference(fuzzReq.getURI(), data=fuzzReq.getData(),
                                   headers=fuzzReq.getHeaders(), cache=False,
                                   grep=False)
@@ -257,7 +257,7 @@ class xUrllib(object):
               'follow_redir': follow_redir,
               'cookies': cookies,
               }
-        method = mutant.getMethod()
+        method = mutant.get_method()
         
         functor = getattr(self, method)
         res = functor(*args, **kwargs)

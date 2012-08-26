@@ -32,7 +32,7 @@ from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.dc import form
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 
 
 class form_auth(BruteforcePlugin):
@@ -112,8 +112,8 @@ class form_auth(BruteforcePlugin):
         
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
-        tests = [(createRandAlNum(8), createRandAlNum(8)), 
-                 (createRandAlNum(8), '')]
+        tests = [(rand_alnum(8), rand_alnum(8)), 
+                 (rand_alnum(8), '')]
         
         for user, passwd in tests:
             # Setup the data_container
@@ -135,8 +135,8 @@ class form_auth(BruteforcePlugin):
         # Now I perform a self test, before starting with the actual bruteforcing
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
-        tests = [(createRandAlNum(8), createRandAlNum(8)),
-                 (createRandAlNum(8), '')]
+        tests = [(rand_alnum(8), rand_alnum(8)),
+                 (rand_alnum(8), '')]
         
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
@@ -281,7 +281,7 @@ class form_auth(BruteforcePlugin):
                     # Ok, this might be a valid combination.
                     # Now test with a new invalid password to ensure our
                     # previous possible found credentials are valid                        
-                    data_container[passwd_field][0] = createRandAlNum(8)
+                    data_container[passwd_field][0] = rand_alnum(8)
                     freq.setDc(data_container)
                     verif_resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
                     body = verif_resp.getBody()

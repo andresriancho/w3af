@@ -98,7 +98,7 @@ class gtk_output(OutputPlugin):
         '''
         self.queue.put( m )
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

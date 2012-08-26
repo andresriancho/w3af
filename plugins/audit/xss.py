@@ -19,20 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.w3afException import w3afException
-from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
-                                          INTERNET_EXPLORER_7, NETSCAPE_IE,
-                                          FIREFOX, NETSCAPE_G, OPERA)
-from core.data.fuzzer.fuzzer import createMutants, createRandAlNum
-from core.data.options.option import option
-from core.data.options.optionList import optionList
+import re
+
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-import re
+from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.controllers.w3afException import w3afException
+from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
+from core.data.options.option import option
+from core.data.options.option_list import OptionList
+from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
+                                          INTERNET_EXPLORER_7, NETSCAPE_IE,
+                                          FIREFOX, NETSCAPE_G, OPERA)
 
 
 class xss(AuditPlugin):
@@ -104,7 +105,7 @@ class xss(AuditPlugin):
         self._fuzzable_requests.append(freq)
         
         # This list is just to test if the parameter is echoed back
-        fake_mutants = createMutants(freq, ['',])
+        fake_mutants = create_mutants(freq, ['',])
         for mutant in fake_mutants:
             # verify if the variable we are fuzzing is actually being
             # echoed back
@@ -149,10 +150,10 @@ class xss(AuditPlugin):
         
         # Get the strings only
         xss_strings = [i[0] for i in filtered_xss_tests]
-        mutant_list = createMutants(
+        mutant_list = create_mutants(
                             mutant.getFuzzableReq(),
                             xss_strings,
-                            fuzzableParamList=[mutant.getVar()]
+                            fuzzable_param_list=[mutant.getVar()]
                             )
 
         # In the mutant, we have to save which browsers are vulnerable
@@ -182,11 +183,11 @@ class xss(AuditPlugin):
         '''
         # Create a random number and assign it to the mutant
         # modified parameter
-        rndNum = str(createRandAlNum(2))
+        rndNum = str(rand_alnum(2))
         oldValue = mutant.getModValue() 
         
         joined_list = rndNum.join(self._special_characters)
-        list_delimiter = str(createRandAlNum(2))
+        list_delimiter = str(rand_alnum(2))
         joined_list = list_delimiter + joined_list + list_delimiter
         mutant.setModValue(joined_list)
         
@@ -242,10 +243,10 @@ class xss(AuditPlugin):
         xss_strings = [xss_test.replace('alert', 'fake_alert')
                         for xss_test in xss_strings]
         
-        mutant_list = createMutants(
+        mutant_list = create_mutants(
                             mutant.getFuzzableReq(),
                             xss_strings,
-                            fuzzableParamList=[mutant.getVar()]
+                            fuzzable_param_list=[mutant.getVar()]
                             )
         
         # In the mutant, we have to save which browsers are vulnerable
@@ -271,7 +272,7 @@ class xss(AuditPlugin):
         Example: [('<>RANDOMIZE', ['Internet Explorer'])]
         '''
         # Used to identify everything that is sent to the web app
-        rnd_value = createRandAlNum(4)
+        rnd_value = rand_alnum(4)
 
         return [(x[0].replace("RANDOMIZE", rnd_value), x[1])
                     for x in xss.XSS_TESTS]
@@ -292,7 +293,7 @@ class xss(AuditPlugin):
         '''
         # Create a random number and assign it to the mutant modified
         # parameter
-        rndNum = str(createRandAlNum(5))
+        rndNum = str(rand_alnum(5))
         oldValue = mutant.getModValue() 
         mutant.setModValue(rndNum)
 
@@ -419,7 +420,7 @@ class xss(AuditPlugin):
                         v.setPluginName(self.getName())
                         v.setURL(fuzzable_request.getURL())
                         v.setDc(fuzzable_request.getDc())
-                        v.setMethod(fuzzable_request.getMethod())
+                        v.setMethod(fuzzable_request.get_method())
                         
                         v['permanent'] = True
                         v['write_payload'] = mutant
@@ -427,7 +428,7 @@ class xss(AuditPlugin):
                         v.setName('Permanent cross site scripting vulnerability')
                         v.setSeverity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()
-                        msg += ' . Using method: ' + v.getMethod() + '. The XSS was sent to the'
+                        msg += ' . Using method: ' + v.get_method() + '. The XSS was sent to the'
                         msg += ' URL: ' + mutant.getURL() + '. ' + mutant.printModValue()
                         v.setDesc(msg)
                         v.setId([response.id, mutant_response_id])
@@ -458,12 +459,12 @@ class xss(AuditPlugin):
         h2 += str(self._xss_tests_length)
         o2 = option('numberOfChecks', self._number_of_stored_xss_checks, d2, 'integer', help=h2)
         
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         return ol
         
-    def set_options(self, optionsMap):
+    def set_options(self, options_list):
         '''
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of get_options().
@@ -471,15 +472,15 @@ class xss(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._check_stored_xss = optionsMap['checkStored'].getValue()
-        if optionsMap['numberOfChecks'].getValue() >= 1 and \
-        optionsMap['numberOfChecks'].getValue() <= self._xss_tests_length:
-            self._number_of_stored_xss_checks = optionsMap['numberOfChecks'].getValue()
+        self._check_stored_xss = options_list['checkStored'].getValue()
+        if options_list['numberOfChecks'].getValue() >= 1 and \
+        options_list['numberOfChecks'].getValue() <= self._xss_tests_length:
+            self._number_of_stored_xss_checks = options_list['numberOfChecks'].getValue()
         else:
             msg = 'Please enter a valid numberOfChecks value (1-' + str(self._xss_tests_length) + ').'
             raise w3afException(msg)
 
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -1,5 +1,5 @@
 '''
-optionList.py
+option_list.py
 
 Copyright 2008 Andres Riancho
 
@@ -19,40 +19,40 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from core.controllers.w3afException import w3afException
 
-class optionList(object):
+
+class OptionList(object):
     '''
     This class represents a list of options.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
-        self._oList = []
+        self._internal_opt_list = []
         
     def add( self, option ):
-        self._oList.append( option )
+        self._internal_opt_list.append( option )
     append = add
     
     def __len__( self ):
-        return len(self._oList)
+        return len(self._internal_opt_list)
     
     def __repr__(self):
         '''
         A nice way of printing your object =)
         '''
-        return '<optionList: '+ '|'.join([i.getName() for i in self._oList]) +'>'
+        return '<OptionList: '+ '|'.join([i.getName() for i in self._internal_opt_list]) +'>'
 
     def __eq__(self, other):
-        if not isinstance(other, optionList):
+        if not isinstance(other, OptionsList):
             return False
         
-        return self._oList == other._oList
+        return self._internal_opt_list == other._oList
             
         
     def __contains__( self, item_name ):
-        for o in self._oList:
+        for o in self._internal_opt_list:
             if o.getName() == item_name:
                 return True
         return False
@@ -62,18 +62,27 @@ class optionList(object):
         This method is used when on any configurable object the developer does something like:
         
         def set_options( self, optionsList ):
-            self._checkPersistent = optionsList['checkPersistent']
+            self._check_persistent = optionsList['check_persistent']
             
         @return: The value of the item that was selected
+        
+        >>> from core.data.options.option import option
+        >>> opt_list = OptionList()
+        >>> opt_list.add( option('name', True, 'desc', 'boolean') )
+        >>> opt_list['name']
+        <option name:name|type:boolean|value:True>
+        
         '''
         try:
             item_name = int(item_name)
         except:
             # A string
-            for o in self._oList:
+            for o in self._internal_opt_list:
                 if o.getName() == item_name:
                     return o
-            raise w3afException('The optionList object doesn\'t contain an option with the name: ' + item_name )
+            else:
+                msg = 'The OptionList doesn\'t contain an option with the name: "%s"'
+                raise w3afException( msg % item_name)
         else:
             # An integer
-            return self._oList[ item_name ]
+            return self._internal_opt_list[ item_name ]

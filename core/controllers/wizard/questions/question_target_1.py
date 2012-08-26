@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 # Import the core singleton
@@ -57,16 +57,16 @@ class question_target_1(question):
         o2 = option('targetOS','unknown', d1, 'string')
         o3 = option('targetFramework','unknown', d1, 'string')
 
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
         # Save the target to the core, all the validations are made there.
-        w3af_core.target.set_options( optionsMap )
+        w3af_core.target.set_options( options_list )
 
         # The next question
         return 'target_2'

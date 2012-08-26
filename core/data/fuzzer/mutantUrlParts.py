@@ -101,6 +101,6 @@ class mutantUrlParts(mutant):
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The fuzzed parameter was the target URL, with value: "'
+        res += self.get_method() + '. The fuzzed parameter was the target URL, with value: "'
         res += self.getModValue() + '".'
         return res

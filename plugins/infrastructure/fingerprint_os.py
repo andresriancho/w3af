@@ -103,7 +103,7 @@ class fingerprint_os(InfrastructurePlugin):
         
         return found_os
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

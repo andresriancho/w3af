@@ -67,4 +67,4 @@ class HTTPQSRequest(fuzzable_request):
     
     def __repr__(self):
         return ('<QS fuzzable request | %s | %s>' % 
-                (self.getMethod(), self.getURI()))
+                (self.get_method(), self.getURI()))

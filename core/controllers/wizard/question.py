@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class question(object):
@@ -70,7 +70,7 @@ class question(object):
 
         @return: The option objects
         '''
-        ol = optionList()
+        ol = OptionList()
         return ol
     
     def setPreviouslyAnsweredValues(self, values):
@@ -85,10 +85,10 @@ class question(object):
     def setQuestionId(self, qid):
         self._question_id = qid
         
-    def getNextQuestionId(self, optionsMap):
+    def getNextQuestionId(self, options_list):
         '''
         @return: The id of the next question that the wizard has to ask to the
-                 user, based on the optionsMap. None if this is the last
+                 user, based on the options_list. None if this is the last
                  question of the wizard.
         '''
         return None

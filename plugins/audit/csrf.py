@@ -28,7 +28,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.mutantHeaders import mutantHeaders
 from core.data.dc.dataContainer import DataContainer
 
@@ -107,12 +107,12 @@ class csrf(AuditPlugin):
             return False, None
         
         # Strict mode on/off - do we need to audit GET requests? Not always...
-        if freq.getMethod() == 'GET' and not self._strict_mode:
+        if freq.get_method() == 'GET' and not self._strict_mode:
             return False, None
         
         # Payload? 
-        if not ((freq.getMethod() == 'GET' and freq.getURI().hasQueryString()) \
-            or (freq.getMethod() =='POST' and len(freq.getDc()))):
+        if not ((freq.get_method() == 'GET' and freq.getURI().hasQueryString()) \
+            or (freq.get_method() =='POST' and len(freq.getDc()))):
                 return False, None
             
         # Send the same request twice and analyze if we get the same responses
@@ -151,7 +151,7 @@ class csrf(AuditPlugin):
 
     def _is_token_checked(self, freq, token, orig_response):
         om.out.debug('Testing for validation of token in %s' % freq.getURL())
-        mutants = createMutants(freq, ['123'], False, token.keys())
+        mutants = create_mutants(freq, ['123'], False, token.keys())
         for mutant in mutants:
             mutant_response = self._sendMutant(mutant, analyze=False)
             if not self._is_resp_equal(orig_response, mutant_response):
@@ -203,7 +203,7 @@ class csrf(AuditPlugin):
         '''
         self.printUniq(kb.kb.getData('csrf', 'csrf'), None)
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

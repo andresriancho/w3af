@@ -48,7 +48,7 @@ class info(dict):
         if isinstance( data_obj, info ):
             self.setURI( data_obj.getURI() )
             self.setDesc( data_obj.getDesc() )
-            self.setMethod( data_obj.getMethod() )
+            self.setMethod( data_obj.get_method() )
             self.setVar( data_obj.getVar() )
             self.setId( data_obj.getId() )
             self.setName( data_obj.getName() )
@@ -114,7 +114,7 @@ class info(dict):
     def setMethod( self, method ):
         self._method = method.upper()
     
-    def getMethod( self ):
+    def get_method( self ):
         return self._method
         
     def setDesc( self, desc ):

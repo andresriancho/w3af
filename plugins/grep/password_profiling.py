@@ -76,7 +76,7 @@ class password_profiling(GrepPlugin):
         # I added the 404 code here to avoid doing some is_404 lookups
         if response.getCode() not in [500, 401, 403, 404] \
         and not is_404(response) \
-        and request.getMethod() in ['POST', 'GET']:
+        and request.get_method() in ['POST', 'GET']:
             
             # Run the plugins
             data = self._run_plugins(response)
@@ -178,14 +178,14 @@ class password_profiling(GrepPlugin):
                     om.out.information( msg )
             
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.lang']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

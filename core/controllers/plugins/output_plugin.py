@@ -117,7 +117,7 @@ class OutputPlugin(Plugin):
         '''
         pass
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be 
         run before the current one.

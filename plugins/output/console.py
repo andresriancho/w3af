@@ -27,7 +27,7 @@ from errno import ENOSPC
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afMustStopByKnownReasonExc
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 def catch_ioerror(meth):
@@ -91,7 +91,7 @@ class console(OutputPlugin):
         
     error = console = vulnerability = information = _generic
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -118,7 +118,7 @@ class console(OutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         d = 'Enables verbose output for the console'
         o = option('verbose', self.verbose, d, 'boolean')
         ol.add(o)

@@ -168,7 +168,7 @@ class ssn(GrepPlugin):
         # Print results
         self.print_uniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
 
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

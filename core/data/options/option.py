@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import copy
 import cgi
 import re
@@ -28,7 +27,7 @@ from core.controllers.w3afException import w3afException
 from core.data.parsers.urlParser import url_object
 
 
-class option:
+class option(object):
     '''
     This class represents an option.
     

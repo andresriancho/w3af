@@ -28,7 +28,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.esmre.multi_in import multi_in
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 
 
 class ldapi(AuditPlugin):
@@ -82,11 +82,11 @@ class ldapi(AuditPlugin):
             
     _multi_in = multi_in( LDAP_ERRORS )
 
+    LDAPI_STRINGS = ["^(#$!@#$)(()))******",]
+
+
     def __init__(self):
         AuditPlugin.__init__(self)
-        
-        # Internal variables
-        self._errors = []
         
     def audit(self, freq ):
         '''
@@ -94,24 +94,13 @@ class ldapi(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
-        ldapiStrings = self._get_ldapi_strings()
-        mutants = createMutants( freq , ldapiStrings, oResponse=oResponse )
+        orig_resp = self._uri_opener.send_mutant(freq)
+        mutants = create_mutants( freq , self.LDAPI_STRINGS, orig_resp=orig_resp )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
             
-    def _get_ldapi_strings( self ):
-        '''
-        Gets a list of strings to test against the web app.
-        
-        @return: A list with all ldapi strings to test.
-        '''
-        ldap_strings = []
-        ldap_strings.append("^(#$!@#$)(()))******")
-        return ldap_strings
-
     def _analyze_result( self, mutant, response ):
         '''
         Analyze results of the _send_mutant method.
@@ -149,26 +138,26 @@ class ldapi(AuditPlugin):
         '''
         res = []
         for match_string in self._multi_in.query( response.body ):
-            msg = 'Found LDAP error string. '
-            msg += 'The error returned by the web application is (only a fragment is shown): "'
+            msg = 'Found LDAP error string. The error returned by the web'
+            msg += ' application is (only a fragment is shown): "'
             msg += match_string + '". The error was found on '
             msg += 'response with id ' + str(response.id) + '.'
             om.out.information(msg)
             res.append( match_string )
         return res
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find LDAP injections by sending a specially crafted string to every
-        parameter and analyzing the response for LDAP errors.
+        This plugin will find LDAP injections by sending a specially crafted 
+        string to every parameter and analyzing the response for LDAP errors.
         '''

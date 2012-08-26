@@ -24,6 +24,7 @@ import copy
 from core.controllers.w3afException import w3afException
 from core.data.dc.dataContainer import DataContainer
 
+
 class mutant(object):
     '''
     This class is a wrapper for fuzzable requests that have been modified.
@@ -126,7 +127,7 @@ class mutant(object):
         return 'The sent '+ self.getMutantType() +' is: "' + str(self.getData()) + '" .'
     
     def __repr__( self ):
-        return '<'+ self.getMutantType() +' mutant | '+ self.getMethod() +' | '+ self.getURI() +' >'
+        return '<'+ self.getMutantType() +' mutant | '+ self.get_method() +' | '+ self.getURI() +' >'
     
     def copy( self ):
         return copy.deepcopy( self )
@@ -163,7 +164,7 @@ class mutant(object):
                         ' was found at: ' + mutant.foundAt())
         '''
         res = ['"%s", using HTTP method %s. The sent data was: "'
-               % (self.getURL(), self.getMethod())]
+               % (self.getURL(), self.get_method())]
         
         # Depending on the data container, print different things:
         dc = self.getDc()

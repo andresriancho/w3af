@@ -28,7 +28,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.data.fuzzer.fuzzer import createMutants, createRandAlpha
+from core.data.fuzzer.fuzzer import create_mutants, rand_alpha
 from core.data.esmre.multi_in import multi_in
 
 
@@ -51,7 +51,7 @@ class buffer_overflow(AuditPlugin):
     # TODO: if lengths = [ 65 , 257 , 513 , 1025, 2049, 4097, 8000 ]
     # then i get a BadStatusLine exception from urllib2, is seems to be an
     # internal error. Tested against tomcat 5.5.7
-    BUFFER_TESTS = [ createRandAlpha(l) for l in [ 65 , 257 , 513 , 1025, 2049 ] ]
+    BUFFER_TESTS = [ rand_alpha(l) for l in [ 65 , 257 , 513 , 1025, 2049 ] ]
 
 
     def __init__(self):
@@ -95,13 +95,13 @@ class buffer_overflow(AuditPlugin):
         @param freq: A fuzzable_request
         '''
         try:
-            oResponse = self._uri_opener.send_mutant(freq)
+            orig_resp = self._uri_opener.send_mutant(freq)
         except:
             msg = 'Failed to perform the initial request during buffer'
             msg += ' overflow testing'
             om.out.debug( msg )
         else:
-            mutants = createMutants(freq , self.BUFFER_TESTS, oResponse=oResponse)
+            mutants = create_mutants(freq , self.BUFFER_TESTS, orig_resp=orig_resp)
             
             self._tm.threadpool.map(self._send_request, mutants)
             
@@ -119,7 +119,7 @@ class buffer_overflow(AuditPlugin):
             msg = 'A potential (most probably a false positive than a bug) buffer-'
             msg += 'overflow was found when requesting: "%s", using HTTP method'
             msg += ' %s. The data sent was: "%s".' 
-            msg = msg % ( mutant.getURL(), mutant.getMethod(), mutant.getDc())
+            msg = msg % ( mutant.getURL(), mutant.get_method(), mutant.getDc())
             i.setDesc( msg )
             kb.kb.append( self, 'buffer_overflow', i )
         else:
@@ -150,14 +150,14 @@ class buffer_overflow(AuditPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'buffer_overflow', 'buffer_overflow' ), 'VAR' )
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -292,7 +292,7 @@ class path_disclosure(GrepPlugin):
         path_disclosure_strings.extend( get_common_directories() )
         return path_disclosure_strings
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -105,7 +105,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         if mutant is None:
             return vulnCopy
         
-        if mutant.getMethod() == 'POST':
+        if mutant.get_method() == 'POST':
             # No need to work !
             return vulnCopy
             
@@ -168,7 +168,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                 om.out.debug( msg % (self.getName(), vuln.getId()) )
                 continue
 
-            if not isinstance( vuln.getMethod(), basestring):
+            if not isinstance( vuln.get_method(), basestring):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an HTTP method.'
                 om.out.debug( msg % (self.getName(), vuln.getId()) )
                 continue
@@ -188,7 +188,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         
         return kb.kb.getData( self.getName(), 'shell' )
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one. For attack plugins this doesn't make much sense since we're not

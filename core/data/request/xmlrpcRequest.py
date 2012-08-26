@@ -62,4 +62,4 @@ class XMLRPCRequest(httpPostDataRequest):
         self._dc = data_container
             
     def __repr__(self):
-        return '<XMLRPC fuzzable request | ' + self.getMethod() + ' | ' + self.getURI() + ' >'
+        return '<XMLRPC fuzzable request | ' + self.get_method() + ' | ' + self.getURI() + ' >'

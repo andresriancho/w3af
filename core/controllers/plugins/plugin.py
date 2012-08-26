@@ -26,7 +26,7 @@ import Queue
 import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
 
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.configurable import configurable
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.threads.threadpool import return_args
@@ -37,7 +37,7 @@ class Plugin(configurable):
     '''
     This is the base class for ALL plugins, all plugins should inherit from it 
     and implement the following method :
-        1. getPluginDeps()
+        1. get_plugin_deps()
         
     Please note that this class is a configurable object, so it must implement:
         1. set_options( OptionList )
@@ -88,10 +88,10 @@ class Plugin(configurable):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         return ol
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be 
                  run before the current one. Only plugins with dependencies
@@ -120,11 +120,11 @@ class Plugin(configurable):
             res = 'No description available for this plugin.'
         return res
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        raise w3afException('Plugin is not implementing required method getLongDesc' )
+        raise w3afException('Plugin is not implementing required method get_long_desc' )
     
     def print_uniq( self, infoObjList, unique ):
         '''
@@ -211,12 +211,12 @@ class Plugin(configurable):
                      (url_error.req.get_full_url(), url_error.msg))
         return (False, None)
 
-    def _send_mutants_in_threads(self, func, iterable, callback):
+    def _send_mutants_in_threads(self, func, iterable, callback, **kwds):
         '''
         Please note that this method blocks from the caller's point of view
         but performs all the HTTP requests in parallel threads.
         '''
-        func = return_args(func)
+        func = return_args(func, **kwds)
         for (mutant,), http_response in self._tm.threadpool.imap_unordered(func, iterable):
             callback(mutant, http_response)
     

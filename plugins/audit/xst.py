@@ -82,7 +82,7 @@ class xst(AuditPlugin):
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 kb.kb.append( self, 'xst', v )
             
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

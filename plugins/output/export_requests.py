@@ -28,7 +28,7 @@ from core.controllers.w3afException import w3afException
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.request.wsPostDataRequest import wsPostDataRequest
 
 
@@ -70,7 +70,7 @@ class export_requests(OutputPlugin):
             msg += ' output file.' + str(e)
             raise w3afException( msg )        
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -106,6 +106,6 @@ class export_requests(OutputPlugin):
         d1 = 'The name of the output file where the HTTP requests will be saved'
         o1 = option('output_file', self.output_file, d1, 'string')
         
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         return ol

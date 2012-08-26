@@ -28,7 +28,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 
 HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
@@ -59,11 +59,11 @@ class response_splitting(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        mutants = createMutants( freq , self.HEADER_INJECTION_TESTS )
+        mutants = create_mutants( freq , self.HEADER_INJECTION_TESTS )
             
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
     
     def _analyze_result( self, mutant, response ):
         '''
@@ -143,7 +143,7 @@ class response_splitting(AuditPlugin):
                 
         return False
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -27,8 +27,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
-from core.data.fuzzer.fuzzer import createRandAlpha
+from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.fuzzer import rand_alpha
 from core.data.db.temp_shelve import temp_shelve
 from core.data.db.disk_list import disk_list
 from core.data.esmre.multi_in import multi_in
@@ -54,11 +54,11 @@ class ssi(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
+        orig_resp = self._uri_opener.send_mutant(freq)
         
         # Create the mutants to send right now,
         ssi_strings = self._get_ssi_strings()
-        mutants = createMutants( freq , ssi_strings, oResponse=oResponse )
+        mutants = create_mutants( freq , ssi_strings, orig_resp=orig_resp )
 
         # Used in end() to detect "persistent SSI"
         for m in mutants:
@@ -78,8 +78,8 @@ class ssi(AuditPlugin):
         
         @return: A string, see above.
         '''
-        yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % (createRandAlpha(5),
-                                                             createRandAlpha(5))
+        yield '<!--#exec cmd="echo -n %s;echo -n %s" -->' % (rand_alpha(5),
+                                                             rand_alpha(5))
         
         # TODO: Add mod_perl ssi injection support
         # http://www.sens.buffalo.edu/services/webhosting/advanced/perlssi.shtml
@@ -159,11 +159,10 @@ class ssi(AuditPlugin):
                 v.addToHighlight( matched_expected_result )
                 kb.kb.append( self, 'ssi', v )         
         
-        no_cache_send = lambda m: self._uri_opener.send_mutant(m, cache=False)
-        
-        self._send_mutants_in_threads(no_cache_send,
+        self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       filtered_freq_generator(self._freq_list),
-                                      analyze_persistent)
+                                      analyze_persistent,
+                                      cache=False)
             
         self.print_uniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )
             
@@ -184,7 +183,7 @@ class ssi(AuditPlugin):
             res.append( file_pattern_match )
         return res
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

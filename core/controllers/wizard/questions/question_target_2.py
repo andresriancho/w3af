@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 class question_target_2(question):
@@ -51,14 +51,14 @@ class question_target_2(question):
         d1 = 'Is the target web application reachable from the Internet?'
         o1 = option('internet',True, d1, 'boolean')
 
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
 
-        internet = optionsMap['internet'].getValue()
+        internet = options_list['internet'].getValue()
         # FIXME: Do something with this value
 
         return None

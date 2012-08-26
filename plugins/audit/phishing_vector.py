@@ -23,12 +23,11 @@ from __future__ import with_statement
 
 from lxml import etree
 
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
@@ -59,11 +58,11 @@ class phishing_vector(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        mutants = createMutants( freq , self._test_urls )
+        mutants = create_mutants( freq , self._test_urls )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
             
     def _analyze_result(self, mutant, response):
         '''
@@ -112,7 +111,7 @@ class phishing_vector(AuditPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'phishing_vector', 'phishing_vector' ), 'VAR' )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

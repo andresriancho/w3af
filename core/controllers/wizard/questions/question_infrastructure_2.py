@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 
@@ -56,7 +56,7 @@ class question_infrastructure_2(question):
         self._d4 = 'Identify HTTP load balancers'
         o4 = option(self._d4, True, self._d4, 'boolean')
     
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
@@ -64,21 +64,21 @@ class question_infrastructure_2(question):
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
         plugin_list = []
         
             
-        if optionsMap[self._d1].getValue():
+        if options_list[self._d1].getValue():
             plugin_list.append('afd')
             
-        if optionsMap[self._d2].getValue():
+        if options_list[self._d2].getValue():
             plugin_list.append('detect_reverse_proxy')
             plugin_list.append('detect_transparent_proxy')
             
-        if optionsMap[self._d3].getValue():
+        if options_list[self._d3].getValue():
             plugin_list.append('fingerprint_WAF')
         
-        if optionsMap[self._d4].getValue():
+        if options_list[self._d4].getValue():
             plugin_list.append('halberd')
         
         # Set the plugins to be run

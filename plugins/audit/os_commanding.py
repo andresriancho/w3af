@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.kb.knowledgeBase as kb
@@ -30,7 +29,7 @@ import core.data.kb.config as cf
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 
 
@@ -68,10 +67,7 @@ class os_commanding(AuditPlugin):
         #   Some internal variables
         #
         self._special_chars = ['', '&&', '|', ';']
-        # The wait time of the unfuzzed request
-        self._original_wait_time = 0
         self._file_compiled_regex = []
-                
 
     def audit(self, freq ):
         '''
@@ -106,11 +102,11 @@ class os_commanding(AuditPlugin):
         # Prepare the strings to create the mutants
         command_list = self._get_echo_commands()
         only_command_strings = [ v.get_command() for v in command_list ]
-        mutants = createMutants( freq , only_command_strings, oResponse=original_response )
+        mutants = create_mutants( freq , only_command_strings, orig_resp=original_response )
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_echo)
+                                      mutants,
+                                      self._analyze_echo)
         
     def _analyze_echo( self, mutant, response ):
         '''
@@ -164,7 +160,7 @@ class os_commanding(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        fake_mutants = createMutants(freq, ['',])
+        fake_mutants = create_mutants(freq, ['',])
         
         for mutant in fake_mutants:
             
@@ -257,7 +253,7 @@ class os_commanding(AuditPlugin):
         
         return commands
             
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

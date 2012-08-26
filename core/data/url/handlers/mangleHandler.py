@@ -70,7 +70,7 @@ class mangleHandler(urllib2.BaseHandler):
         '''
         host = fuzzable_request.getURL().getDomain()
         
-        if fuzzable_request.getMethod().upper() == 'GET':
+        if fuzzable_request.get_method().upper() == 'GET':
             data = None
         else:
             data = fuzzable_request.getData()

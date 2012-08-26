@@ -116,13 +116,13 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         except w3afException:
             pass
         else:
-            for rem_meth in wsdlp.getMethods():
+            for rem_meth in wsdlp.get_methods():
                 wspdr = wsPostDataRequest(
                                   rem_meth.getLocation(),
                                   rem_meth.getAction(),
                                   rem_meth.getParameters(),
                                   rem_meth.getNamespace(),
-                                  rem_meth.getMethodName(),
+                                  rem_meth.get_methodName(),
                                   headers
                                   )
                 res.append(wspdr)
@@ -131,14 +131,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         mode = cf.cf.getData('fuzzFormComboValues')
         for form in form_list:
             for variant in form.getVariants(mode):
-                if form.getMethod().upper() == 'POST':
+                if form.get_method().upper() == 'POST':
                     r = httpPostDataRequest(
                                         variant.getAction(),
-                                        variant.getMethod(),
+                                        variant.get_method(),
                                         headers,
                                         cookieObj,
                                         variant,
-                                        form.getFileVariables()
+                                        form.get_file_vars()
                                         )
                 else:
                     # The default is a GET request

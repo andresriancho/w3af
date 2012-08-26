@@ -34,7 +34,7 @@ import core.controllers.outputManager as om
 from core.data.options.preferences import Preferences
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class httpLogTab(entries.RememberingHPaned):
@@ -175,15 +175,15 @@ class httpLogTab(entries.RememberingHPaned):
                 ('GET', 'GET', False),
                 ('POST', 'POST', False),
                 ]
-        filterMethods = optionList()
+        filterMethods = OptionList()
         for method in self._filterMethods:
             filterMethods.add(Option(method[0], method[2], method[1], "boolean"))
         self.pref.addSection('methods', _('Request Method'), filterMethods)
-        filterId = optionList()
+        filterId = OptionList()
         filterId.add(Option("min", "0", "Min ID", "string"))
         filterId.add(Option("max", "0", "Max ID", "string"))
         self.pref.addSection('trans_id', _('Transaction ID'), filterId)
-        filterCodes = optionList()
+        filterCodes = OptionList()
         codes = [
                 ("1xx", "1xx", False),
                 ("2xx", "2xx", False),
@@ -194,11 +194,11 @@ class httpLogTab(entries.RememberingHPaned):
         for code in codes:
             filterCodes.add(Option(code[0], code[2], code[1], "boolean"))
         self.pref.addSection('codes', _('Response Code'), filterCodes)
-        filterMisc = optionList()
+        filterMisc = OptionList()
         filterMisc.add(Option("tag", False, "Tag", "boolean"))
         filterMisc.add(Option("has_qs", False, "Request has Query String", "boolean"))
         self.pref.addSection('misc', _('Misc'), filterMisc)
-        filterTypes = optionList()
+        filterTypes = OptionList()
         self._filterTypes = [
                 ('html', 'HTML', False),
                 ('javascript', 'JavaScript', False),
@@ -210,7 +210,7 @@ class httpLogTab(entries.RememberingHPaned):
         for filterType in self._filterTypes:
             filterTypes.add(Option(filterType[0], filterType[2], filterType[1], "boolean"))
         self.pref.addSection('types', _('Response Content Type'), filterTypes)
-        filterSize = optionList()
+        filterSize = OptionList()
         filterSize.add(Option("resp_size", False, "Not Null", "boolean"))
         self.pref.addSection('sizes', _('Response Size'), filterSize)
         self.pref.show()

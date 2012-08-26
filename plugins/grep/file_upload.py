@@ -25,7 +25,7 @@ from lxml import etree
 # options
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
@@ -87,7 +87,7 @@ class file_upload(GrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def end(self):
@@ -96,14 +96,14 @@ class file_upload(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'URL' )
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

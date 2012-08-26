@@ -134,7 +134,7 @@ class strange_reason(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'strange_reason', 'strange_reason' ), 'URL' )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

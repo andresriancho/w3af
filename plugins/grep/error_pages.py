@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.esmre.multi_in import multi_in
 from core.data.esmre.multi_re import multi_re
 
@@ -213,7 +213,7 @@ class error_pages(GrepPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def end(self):
@@ -222,14 +222,14 @@ class error_pages(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'error_pages', 'errorPage' ), 'URL' )
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

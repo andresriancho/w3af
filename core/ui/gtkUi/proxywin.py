@@ -29,7 +29,7 @@ from . import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.w3afException import w3afException, w3afProxyException
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.daemons import localproxy
 from core.ui.gtkUi.entries import ConfigOptions
 import core.controllers.outputManager as om
@@ -145,7 +145,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.like_initial = True
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
         # Proxy options
-        proxyOptions = optionList()
+        proxyOptions = OptionList()
         proxyOptions.add(Option('ipport', "localhost:8080", "IP:port","ipport"))
         proxyOptions.add(Option('trap', ".*", _("URLs to trap"), "regex"))
         proxyOptions.add(Option('methodtrap', "GET,POST", _("Methods to trap"), "list"))
@@ -156,7 +156,7 @@ class ProxiedRequests(entries.RememberingWindow):
         proxyOptions.add(comboOption("home_tab", ['Intercept', 'History', 'Options'], _("Home tab"), "combo"))
         self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
-        editorOptions = optionList()
+        editorOptions = OptionList()
         editorOptions.add(Option("wrap", True, _("Wrap long lines"), "boolean"))
         editorOptions.add(Option("highlight_current_line", True, _("Highlight current line"), "boolean"))
         editorOptions.add(Option("highlight_syntax", True, _("Highlight syntax"), "boolean"))

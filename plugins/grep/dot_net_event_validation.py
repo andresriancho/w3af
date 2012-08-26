@@ -104,7 +104,7 @@ class dot_net_event_validation(GrepPlugin):
         self.print_uniq( kb.kb.getData( 'dot_net_event_validation', 
                                         'dot_net_event_validation' ), 'URL' )
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

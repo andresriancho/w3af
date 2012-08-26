@@ -48,7 +48,7 @@ class dbDriverBuilder:
         '''
         exploitDc = vuln.getDc()
         exploitDc[ vuln.getVar() ] = "'z'z'z'"
-        functionReference = getattr( self._uri_opener , vuln.getMethod() )
+        functionReference = getattr( self._uri_opener , vuln.get_method() )
         errorResponse = functionReference( vuln.getURL(), str(exploitDc) )
 
         for escape, type in [ ('\'','stringsingle') , ('"','stringdouble'), (' ','numeric')]:

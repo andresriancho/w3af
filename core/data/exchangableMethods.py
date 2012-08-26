@@ -40,7 +40,7 @@ def isExchangable(uri_opener, freq):
         
     response = uri_opener.send_mutant(freq)
     
-    if freq.getMethod() == 'GET':
+    if freq.get_method() == 'GET':
         # I have to create a httpPostDataRequest and set all
         # the parameters to it.
         pdr = httpPostDataRequest(
@@ -51,7 +51,7 @@ def isExchangable(uri_opener, freq):
                           )
         response2 = uri_opener.send_mutant(pdr)
     
-    elif freq.getMethod() == 'POST':
+    elif freq.get_method() == 'POST':
         # I have to create a HTTPQSRequest and set all the parameters to it.
         qsr = HTTPQSRequest(
                     freq.getURL(),

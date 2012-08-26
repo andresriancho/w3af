@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.history import HistoryItem
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.request.fuzzable_request import fuzzable_request as FuzzReq
 from core.data.parsers.urlParser import url_object
 from core.data.url.httpResponse import httpResponse
@@ -66,7 +66,7 @@ class TestHistoryItem(unittest.TestCase):
     def test_find(self):
         find_id = random.randint(1, 499)
         url = url_object('http://w3af.org/a/b/foobar.php?foo=123')
-        tag_value = createRandAlNum(10)
+        tag_value = rand_alnum(10)
         for i in xrange(0, 500):
             fr = FuzzReq(url, dc={'a': ['1']})
             code = 200
@@ -163,7 +163,7 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_tag(self):
         tag_id = random.randint(501, 999)
-        tag_value = createRandAlNum(10)
+        tag_value = rand_alnum(10)
         url = url_object('http://w3af.org/a/b/c.php')
 
         for i in xrange(501, 1000):

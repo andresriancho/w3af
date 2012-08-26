@@ -24,12 +24,12 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 import core.data.parsers.dpCache as dpCache
 from core.controllers.misc.levenshtein import relative_distance_lt
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 from core.controllers.w3afException import w3afException
 
 import core.data.kb.knowledgeBase as kb
@@ -121,7 +121,7 @@ class find_vhosts(InfrastructurePlugin):
             return []
         
         # Set the non existant response
-        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4) 
+        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4) 
         self._non_existant_response = self._uri_opener.GET(base_url, 
                                                 cache=False, headers={'Host': non_existant})
         nonexist_resp_body = self._non_existant_response.getBody()
@@ -232,7 +232,7 @@ class find_vhosts(InfrastructurePlugin):
         # Get some responses to compare later
         original_response = self._uri_opener.GET(base_url, cache=True)
         orig_resp_body = original_response.getBody()
-        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + createRandAlNum(4)
+        non_existant = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4)
         self._non_existant_response = self._uri_opener.GET(base_url, cache=False, \
                                                         headers={'Host': non_existant })
         nonexist_resp_body = self._non_existant_response.getBody()
@@ -287,7 +287,7 @@ class find_vhosts(InfrastructurePlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -300,14 +300,14 @@ class find_vhosts(InfrastructurePlugin):
         ''' 
         pass
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

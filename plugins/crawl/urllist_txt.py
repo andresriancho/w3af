@@ -124,7 +124,7 @@ class urllist_txt(CrawlPlugin):
                 for fr in self._create_fuzzable_requests( http_response ):
                     self.output_queue.put(fr)
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

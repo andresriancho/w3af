@@ -36,7 +36,7 @@ from core.controllers.misc.encoding import smart_str
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.request.fuzzable_request import fuzzable_request
 
 # Override builtin 'str' function in order to avoid encoding
@@ -155,7 +155,7 @@ class xml_file(OutputPlugin):
         d1 = 'File name where this plugin will write to'
         o1 = option('fileName', self._file_name, d1, 'string')
 
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
 
         return ol
@@ -296,7 +296,7 @@ class xml_file(OutputPlugin):
         for i in vulns:
             messageNode = self._xmldoc.createElement("vulnerability")
             messageNode.setAttribute("severity", str(i.getSeverity()))
-            messageNode.setAttribute("method", str(i.getMethod()))
+            messageNode.setAttribute("method", str(i.get_method()))
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("var", str(i.getVar()))
             messageNode.setAttribute("name", str(i.getName()))
@@ -380,7 +380,7 @@ class xml_file(OutputPlugin):
         finally:
             self._file.close()
               
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

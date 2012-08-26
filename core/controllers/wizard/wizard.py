@@ -118,18 +118,18 @@ class wizard:
         '''
         return ''
         
-    def setAnswer(self, optionsMap):
+    def setAnswer(self, options_list):
         '''
         Saves the answer for the current question, and finds the next question
         to be performed to the user.
 
         This method raises an exception if the selected options are invalid.
         
-        @parameter optionsMap: This is a map with the answers for every question
+        @parameter options_list: This is a map with the answers for every question
                                that was made to the user.
         '''
         # This line may rise a w3afException        
-        self._nextQuestionId = self._currentQuestion.getNextQuestionId( optionsMap )
+        self._nextQuestionId = self._currentQuestion.getNextQuestionId( options_list )
         
         # save the options selected by the user, to be able to perform a "previous"
-        self._user_options = optionsMap
+        self._user_options = options_list

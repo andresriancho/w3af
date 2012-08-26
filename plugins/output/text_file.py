@@ -29,7 +29,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class text_file(OutputPlugin):
@@ -248,7 +248,7 @@ class text_file(OutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         
         d = 'Enable if verbose output is needed'
         o = option('verbose', self.verbose, d, 'boolean')
@@ -283,7 +283,7 @@ class text_file(OutputPlugin):
         self._write_to_HTTP_log('\n' + '=' * (len(msg) - 1) + '\n')
         self._http.flush()
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

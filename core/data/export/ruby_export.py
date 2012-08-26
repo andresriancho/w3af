@@ -64,7 +64,7 @@ def ruby_export( request_string ):
     res = res [:-2]
     res += '\n}\n'
 
-    method = http_request.getMethod()
+    method = http_request.get_method()
     res += 'res = Net::HTTP.start(url.host, url.port) do |http|\n'
     res += '\thttp.use_ssl = '
     if http_request.getURL().getProtocol().lower() == 'https':

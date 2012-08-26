@@ -39,7 +39,7 @@ class mutantPostData(mutant):
         '''
         res = ''
         res += '"' + self.getURI() + '", using HTTP method '
-        res += self.getMethod() + '. The sent post-data was: "'
+        res += self.get_method() + '. The sent post-data was: "'
         
         # Depending on the data container, print different things:
         dc_length = 0

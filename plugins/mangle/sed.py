@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.mangle_plugin import headersToString, stringToHeaders
@@ -73,7 +73,7 @@ class sed(ManglePlugin):
         
         return create_fuzzable_request(
                                  request.getURL(),
-                                 request.getMethod(),
+                                 request.get_method(),
                                  data, header_dict
                                  )
     
@@ -169,13 +169,13 @@ class sed(ManglePlugin):
         h3 = 'Mangle plugins are ordered using the priority parameter'
         o3 = option('priority', self._priority, d3, 'integer', help=h3)
         
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
         return ol
   
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
@@ -191,7 +191,7 @@ class sed(ManglePlugin):
         '''        
         return self._priority
         
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

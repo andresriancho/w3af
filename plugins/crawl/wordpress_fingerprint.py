@@ -229,7 +229,7 @@ class wordpress_fingerprint(CrawlPlugin):
         kb.kb.append( self, 'info', i )
         om.out.information( i.getDesc() )
   
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

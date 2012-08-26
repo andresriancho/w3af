@@ -27,7 +27,7 @@ from core.controllers.plugins.infrastructure_plugin import \
     InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.controllers.outputManager as om
 import core.data.kb.info as info
@@ -144,7 +144,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         d1 = 'Destination http port number to analize'
         o1 = option('httpPort', self._http_port, d1, option.INT, help=d1)
         ol.add(o1)
@@ -165,7 +165,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         self._http_port = options['httpPort'].getValue()            
         self._https_port = options['httpsPort'].getValue()
     
-    def getLongDesc(self):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -182,7 +182,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         HTTP and HTTPS ports default to 80 and 443.
         '''
     
-    def getPluginDeps(self):
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run 
         before the current one.

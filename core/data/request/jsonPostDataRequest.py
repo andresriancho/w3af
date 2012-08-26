@@ -53,4 +53,4 @@ class JSONPostDataRequest(httpPostDataRequest):
         self._dc = dataCont
             
     def __repr__( self ):
-        return '<JSON fuzzable request | '+ self.getMethod() +' | '+ self.getURI() +' >'
+        return '<JSON fuzzable request | '+ self.get_method() +' | '+ self.getURI() +' >'

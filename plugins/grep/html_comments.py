@@ -177,7 +177,7 @@ class html_comments(GrepPlugin):
             for i in inform:
                 om.out.information( i )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

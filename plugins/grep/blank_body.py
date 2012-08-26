@@ -45,7 +45,7 @@ class blank_body(GrepPlugin):
         @parameter response: The HTTP response object
         @return: None
         '''
-        if response.getBody() == '' and request.getMethod() in ['GET', 'POST']\
+        if response.getBody() == '' and request.get_method() in ['GET', 'POST']\
         and response.getCode() not in [401, 304, 302, 301, 204]\
         and 'location' not in response.getLowerCaseHeaders()\
         and response.getURL() not in self._already_reported:
@@ -70,7 +70,7 @@ class blank_body(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'blank_body', 'blank_body' ), None )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

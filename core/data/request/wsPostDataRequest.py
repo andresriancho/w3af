@@ -64,14 +64,14 @@ class wsPostDataRequest(httpPostDataRequest):
         res = '<?xml version="1.0" encoding="UTF-8"?>\n'
         res += '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">\n'
         res += '<SOAP-ENV:Body>\n'
-        res += '<ns1:' + self.getMethodName() + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
+        res += '<ns1:' + self.get_methodName() + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
         count = 0
         for param in self.getParameters():
             count += 1
             res += '<v' + str(count) + ' xsi:type="xsd:' + param.getType() + '">' + \
             cgi.escape(self._dc[param.getName()]) + '</v' + str(count) + '>\n'
             
-        res += '</ns1:' + self.getMethodName() + '>\n'
+        res += '</ns1:' + self.get_methodName() + '>\n'
         res += '</SOAP-ENV:Body>\n'
         res += '</SOAP-ENV:Envelope>\n'
         return res
@@ -98,7 +98,7 @@ class wsPostDataRequest(httpPostDataRequest):
     def setAction(self, a):
         self._action = a
     
-    def getMethodName(self):
+    def get_methodName(self):
         return self._name
     
     def setMethodName(self , name):
@@ -130,5 +130,5 @@ class wsPostDataRequest(httpPostDataRequest):
         return strRes
         
     def __repr__(self):
-        return '<WS fuzzable request | %s | %s >' % (self.getMethod(),
+        return '<WS fuzzable request | %s | %s >' % (self.get_method(),
                                                      self.getURI())

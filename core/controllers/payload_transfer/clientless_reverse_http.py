@@ -27,7 +27,7 @@ import core.data.kb.config as cf
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
 from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
-from core.data.fuzzer.fuzzer import createRandAlpha
+from core.data.fuzzer.fuzzer import rand_alpha
 
 
 class ClientlessReverseHTTP( BasePayloadTransfer ):
@@ -89,7 +89,7 @@ class ClientlessReverseHTTP( BasePayloadTransfer ):
         commandTemplates['curl'] = 'curl http://%s:%s/%s > %s'
         
         # Create the file
-        filename = createRandAlpha( 10 )
+        filename = rand_alpha( 10 )
         file_path = get_temp_dir() + os.path.sep + filename
         f = file( file_path, 'w' )
         f.write( strObject )

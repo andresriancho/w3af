@@ -27,7 +27,7 @@ import core.controllers.outputManager as om
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.w3afException import w3afException
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -132,14 +132,14 @@ class get_emails(GrepPlugin):
                     i.setDesc( desc )
                     i['url_list'].append(url)
         
-    def set_options( self, optionsMap ):
-        self._only_target_domain = optionsMap['onlyTargetDomain'].getValue()
+    def set_options( self, options_list ):
+        self._only_target_domain = options_list['onlyTargetDomain'].getValue()
     
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
 
         d1 = 'When greping, only search emails for domain of target'
         o1 = option('onlyTargetDomain', self._only_target_domain, d1, 'boolean')
@@ -154,7 +154,7 @@ class get_emails(GrepPlugin):
         self.print_uniq( kb.kb.getData( 'emails', 'emails' ), None )
         self.print_uniq( kb.kb.getData( 'emails', 'external_emails' ), None )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

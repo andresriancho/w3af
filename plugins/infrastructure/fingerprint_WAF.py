@@ -24,13 +24,13 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
-from core.data.fuzzer.fuzzer import createRandAlpha
+from core.data.fuzzer.fuzzer import rand_alpha
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
@@ -79,7 +79,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         '''
         # And now a final check for SecureIIS
         headers = fuzzable_request.getHeaders()
-        headers['Transfer-Encoding'] = createRandAlpha(1024 + 1)
+        headers['Transfer-Encoding'] = rand_alpha(1024 + 1)
         try:
             lock_response2 = self._uri_opener.GET( fuzzable_request.getURL(), 
                                                    headers=headers, cache=True )
@@ -284,21 +284,21 @@ class fingerprint_WAF(InfrastructurePlugin):
         if originalResponse.getCode() != 404:
             # Now add the if header and try again
             headers = fuzzable_request.getHeaders()
-            headers['If'] = createRandAlpha(8)
+            headers['If'] = rand_alpha(8)
             if_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers,
                                                                 cache=True )
             headers = fuzzable_request.getHeaders()
-            headers['Translate'] = createRandAlpha(8)
+            headers['Translate'] = rand_alpha(8)
             translate_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers, 
                                                                             cache=True )
             
             headers = fuzzable_request.getHeaders()
-            headers['Lock-Token'] = createRandAlpha(8)
+            headers['Lock-Token'] = rand_alpha(8)
             lock_response = self._uri_opener.GET( fuzzable_request.getURL(), headers=headers, 
                                                                     cache=True )
             
             headers = fuzzable_request.getHeaders()
-            headers['Transfer-Encoding'] = createRandAlpha(8)
+            headers['Transfer-Encoding'] = rand_alpha(8)
             transfer_enc_response = self._uri_opener.GET( fuzzable_request.getURL(), 
                                                                                     headers=headers,
                                                                                     cache=True )
@@ -333,7 +333,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -346,14 +346,14 @@ class fingerprint_WAF(InfrastructurePlugin):
         ''' 
         pass
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.afd']
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

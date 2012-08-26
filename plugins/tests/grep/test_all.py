@@ -54,8 +54,8 @@ class test_all(unittest.TestCase):
         the plugins implement the following methods:
             - get_options()
             - set_options()
-            - getPluginDeps()
-            - getLongDesc()
+            - get_plugin_deps()
+            - get_long_desc()
             
         And don't crash in any way when we call them.
         '''
@@ -63,8 +63,8 @@ class test_all(unittest.TestCase):
             o = plugin.get_options()
             plugin.set_options( o )
             
-            plugin.getPluginDeps()
-            plugin.getLongDesc()
+            plugin.get_plugin_deps()
+            plugin.get_long_desc()
             
             plugin.end()
                 

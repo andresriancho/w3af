@@ -27,7 +27,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 
 
@@ -74,22 +74,19 @@ class xpath(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         
-        # Internal variables
-        self._errors = []
-
     def audit(self, freq ):
         '''
         Tests an URL for xpath injection vulnerabilities.
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
+        orig_resp = self._uri_opener.send_mutant(freq)
         xpath_strings = self._get_xpath_strings()
-        mutants = createMutants( freq , xpath_strings, oResponse=oResponse )
+        mutants = create_mutants( freq , xpath_strings, orig_resp=orig_resp )
             
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
         
     def _get_xpath_strings( self ):
         '''
@@ -142,21 +139,21 @@ class xpath(AuditPlugin):
         '''
         res = []
         for xpath_error_match in self._multi_in.query( response.body ):
-            msg = 'Found XPATH injection. The error showed by the web application is (only'
-            msg +=' a fragment is shown): "' + xpath_error_match
+            msg = 'Found XPATH injection. The error showed by the web application'
+            msg +=' is (only a fragment is shown): "' + xpath_error_match
             msg += '". The error was found on response with id ' + str(response.id) + '.'
             om.out.information( msg )
             res.append( xpath_error_match )
         return res
                 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

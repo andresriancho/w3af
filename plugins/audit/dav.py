@@ -25,7 +25,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.fuzzer.fuzzer import createRandAlpha, createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alpha, rand_alnum
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
@@ -127,8 +127,8 @@ class dav(AuditPlugin):
         Tests PUT method.
         '''
         # upload
-        url = domain_path.urlJoin( createRandAlpha( 5 ) )
-        rndContent = createRandAlNum(6)
+        url = domain_path.urlJoin( rand_alpha( 5 ) )
+        rndContent = rand_alnum(6)
         put_response = self._uri_opener.PUT( url , data=rndContent )
         
         # check if uploaded
@@ -181,14 +181,14 @@ class dav(AuditPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'dav', 'dav' ), 'VAR' )
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before 
                  the current one.
         '''
         return ['infrastructure.allowed_methods', 'infrastructure.server_header']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

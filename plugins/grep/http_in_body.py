@@ -23,7 +23,7 @@ import core.controllers.outputManager as om
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.esmre.multi_re import multi_re
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -96,14 +96,14 @@ class http_in_body (GrepPlugin):
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 
-    def set_options( self, optionsMap ):
+    def set_options( self, options_list ):
         pass
             
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
         
     def end(self):
@@ -118,14 +118,14 @@ class http_in_body (GrepPlugin):
                 for i in kb.kb.getData('http_in_body', info_type):
                     om.out.information('- ' + i.getURI() + '  (id:' + str(i.getId()) + ')' )
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

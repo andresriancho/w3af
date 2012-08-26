@@ -213,7 +213,7 @@ class pluginsTypeMenu(menu):
             raise w3afException("Unknown plugin: '%s'" % plugin_name)
 
         plugin = self._w3af.plugins.get_plugin_inst(self._name, plugin_name)
-        long_desc = plugin.getLongDesc()
+        long_desc = plugin.get_long_desc()
         long_desc = textwrap.dedent(long_desc)
         om.out.console( long_desc )
 

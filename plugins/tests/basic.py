@@ -68,7 +68,7 @@ class TestBasic(unittest.TestCase):
     def test_plugin_deps(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                dependencies = plugin.getPluginDeps()
+                dependencies = plugin.get_plugin_deps()
                 self.assertTrue( isinstance(dependencies, list) )
                 
                 for dep in dependencies:
@@ -83,9 +83,9 @@ class TestBasic(unittest.TestCase):
     def test_plugin_desc(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                self.assertTrue( isinstance(plugin.getPluginDeps(), list) )
+                self.assertTrue( isinstance(plugin.get_plugin_deps(), list) )
                 
-                self.assertTrue( isinstance( plugin.getLongDesc(), basestring) )
+                self.assertTrue( isinstance( plugin.get_long_desc(), basestring) )
                 
                 self.assertTrue( isinstance( plugin.getDesc(), basestring) )
                 msg = 'Description for %s.%s is too short'

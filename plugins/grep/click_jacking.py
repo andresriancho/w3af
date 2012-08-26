@@ -88,7 +88,7 @@ class click_jacking(GrepPlugin):
             
         self.print_uniq(kb.kb.getData( 'click_jacking', 'click_jacking' ), 'URL')
 
-    def getLongDesc(self):
+    def get_long_desc(self):
         return '''
         This plugin greps every page for X-Frame-Options header and so
         for possible ClickJacking attack against URL.

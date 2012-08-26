@@ -159,7 +159,7 @@ class private_ip(GrepPlugin):
         self.print_uniq( kb.kb.getData( 'private_ip', 'header' ), None )
         self.print_uniq( kb.kb.getData( 'private_ip', 'HTML' ), None )
             
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

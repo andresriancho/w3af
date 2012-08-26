@@ -27,7 +27,6 @@ from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
 
 
-
 class blind_sqli_time_delay(object):
     '''
     This class tests for blind SQL injection bugs using time delays, the logic

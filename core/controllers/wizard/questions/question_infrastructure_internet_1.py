@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 
@@ -48,15 +48,15 @@ class question_infrastructure_internet_1(question):
         self._d1 = 'Find other virtual hosts using MSN search'
         o1 = option(self._d1, False, self._d1, 'boolean')
     
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
         plugin_list = []
         
-        if optionsMap[self._d1].getValue():
+        if options_list[self._d1].getValue():
             plugin_list.append('shared_hosting')
         
         # Set the plugins to be run

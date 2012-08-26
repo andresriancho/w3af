@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import copy
 import re
 import httplib
@@ -27,10 +26,11 @@ import httplib
 from lxml import etree
 from itertools import imap
 
+import core.controllers.outputManager as om
+
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.urlParser import url_object
-import core.controllers.outputManager as om
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
 CR = '\r'

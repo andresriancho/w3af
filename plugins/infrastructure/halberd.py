@@ -186,7 +186,7 @@ class halberd(InfrastructurePlugin):
                     
             om.out.information('\n')
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

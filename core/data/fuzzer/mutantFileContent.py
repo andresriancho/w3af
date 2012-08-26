@@ -46,7 +46,7 @@ class mutantFileContent(mutant):
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The sent data was: "'
+        res += self.get_method() + '. The sent data was: "'
         
         # Depending on the data container, print different things:
         dc_length = 0

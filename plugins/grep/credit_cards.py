@@ -124,7 +124,7 @@ class credit_cards(GrepPlugin):
         self.print_uniq( kb.kb.getData( 'credit_cards', 'credit_cards' ), 'URL' )
 
      
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

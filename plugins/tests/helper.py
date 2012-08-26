@@ -29,7 +29,7 @@ from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption as ComboOption
-from core.data.options.optionList import optionList as OptionList
+from core.data.options.option_list import OptionList as OptionList
 
 os.chdir(W3AF_LOCAL_PATH)
 

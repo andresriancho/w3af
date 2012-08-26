@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 # Import options
 import re
 
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 
@@ -131,7 +131,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -144,14 +144,14 @@ class wordpress_enumerate_users(CrawlPlugin):
         '''
         pass
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

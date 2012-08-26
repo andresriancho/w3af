@@ -295,7 +295,7 @@ class HistoryItem(object):
         values.append(resp.content_type)
         ch = resp.charset
         values.append(ch)
-        values.append(self.request.getMethod())
+        values.append(self.request.get_method())
         values.append(len(resp.body))
         code = int(resp.getCode()) / 100
         values.append(code)

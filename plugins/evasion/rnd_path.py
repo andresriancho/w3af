@@ -23,12 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 import re
 
@@ -81,7 +81,7 @@ class rnd_path(EvasionPlugin):
         # We mangle the URL
         path = request.url_object.getPath()
         if re.match('^/', path):
-            random_alnum = createRandAlNum()
+            random_alnum = rand_alnum()
             path = '/' + random_alnum + '/..' + path
 
         # Finally, we set all the mutants to the request in order to return it
@@ -98,7 +98,7 @@ class rnd_path(EvasionPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -111,7 +111,7 @@ class rnd_path(EvasionPlugin):
         ''' 
         pass
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
@@ -127,7 +127,7 @@ class rnd_path(EvasionPlugin):
         '''
         return 0
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

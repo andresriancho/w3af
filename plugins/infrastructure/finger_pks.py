@@ -75,7 +75,7 @@ class finger_pks(InfrastructurePlugin):
                 #kb.kb.append( self, 'emails', i )
                 om.out.information( i.getDesc() )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

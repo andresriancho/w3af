@@ -372,14 +372,14 @@ class php_eggs(InfrastructurePlugin):
                 msg += 'The server_header plugin reported this PHP version: "' + version + '".'
                 om.out.information( msg )
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.server_header']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -21,13 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import createMutants, createFormatString
+from core.data.fuzzer.fuzzer import create_mutants, create_format_string
 
 
 class format_string(AuditPlugin):
@@ -50,12 +49,12 @@ class format_string(AuditPlugin):
         @param freq: A fuzzable_request
         '''
         string_list = self._get_string_list()
-        oResponse = self._uri_opener.send_mutant(freq)
-        mutants = createMutants( freq , string_list, oResponse=oResponse )
+        orig_resp = self._uri_opener.send_mutant(freq)
+        mutants = create_mutants( freq , string_list, orig_resp=orig_resp )
             
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
-                                 mutants,
-                                 self._analyze_result)
+                                      mutants,
+                                      self._analyze_result)
             
     def _analyze_result( self, mutant, response ):
         '''
@@ -97,17 +96,17 @@ class format_string(AuditPlugin):
         strings = []
         lengths = [ 1 , 10 , 25, 100 ]
         for i in lengths:
-            strings.append( createFormatString( i ) )
+            strings.append( create_format_string( i ) )
         return strings
 
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

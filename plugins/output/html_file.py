@@ -35,7 +35,7 @@ from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.db.disk_list import disk_list
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 TITLE = 'w3af  -  Web Attack and Audit Framework - Vulnerability Report'
@@ -210,7 +210,7 @@ class html_file(OutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         
         d = 'File name where this plugin will write to'
         o = option('fileName', self._file_name, d, 'string')
@@ -324,7 +324,7 @@ class html_file(OutputPlugin):
         if self._file is not None:
             self._file.close()
             
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

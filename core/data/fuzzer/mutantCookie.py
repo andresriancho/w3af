@@ -83,7 +83,7 @@ class mutantCookie(mutant):
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
-        res += self.getMethod() + '. The modified parameter was the session cookie with value: "'
+        res += self.get_method() + '. The modified parameter was the session cookie with value: "'
         
         # Depending on the data container, print different things:
         dc_length = 0

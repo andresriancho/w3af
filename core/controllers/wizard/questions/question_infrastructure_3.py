@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 
@@ -58,7 +58,7 @@ class question_infrastructure_3(question):
         self._d4 = 'Find virtual hosts'
         o4 = option(self._d4, True, self._d4, 'boolean')
     
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
         ol.add(o2)
         ol.add(o3)
@@ -66,21 +66,21 @@ class question_infrastructure_3(question):
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
+    def getNextQuestionId(self,  options_list ):
         plugin_list = []
         
-        if optionsMap[self._d1].getValue():
+        if options_list[self._d1].getValue():
             plugin_list.append('fingerprint_os')
             
-        if optionsMap[self._d2].getValue():
+        if options_list[self._d2].getValue():
             plugin_list.append('hmap')
             plugin_list.append('server_header')
             
-        if optionsMap[self._d3].getValue():
+        if options_list[self._d3].getValue():
             plugin_list.append('php_eggs')
             plugin_list.append('dot_net_errors')
             
-        if optionsMap[self._d4].getValue():
+        if options_list[self._d4].getValue():
             plugin_list.append('find_vhosts')
         
         # Set the plugins to be run

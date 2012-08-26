@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 
 
 def os_detection_exec( exec_method ):
@@ -62,7 +62,7 @@ def get_remote_temp_file( exec_method ):
     os = os_detection_exec( exec_method )
     if  os == 'windows':
         _filename = exec_method('echo %TEMP%').strip() + '\\'
-        _filename += createRandAlNum(6)
+        _filename += rand_alnum(6)
         
         # verify existance
         dirRes = exec_method('dir '+_filename).strip().lower()
@@ -75,7 +75,7 @@ def get_remote_temp_file( exec_method ):
         
         
     elif os == 'linux':
-        _filename = '/tmp/' + createRandAlNum( 6 )
+        _filename = '/tmp/' + rand_alnum( 6 )
         
         # verify existance
         lsRes = exec_method('ls '+_filename).strip()

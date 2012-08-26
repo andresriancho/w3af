@@ -68,7 +68,7 @@ class httpPostDataRequest(fuzzable_request):
         '''
         self._files = file_variables
     
-    def getFileVariables( self ):
+    def get_file_vars( self ):
         '''
         @return: A list of postdata parameters that contain a file
         '''
@@ -76,5 +76,5 @@ class httpPostDataRequest(fuzzable_request):
     
     def __repr__( self ):
         return '<postdata fuzzable request | %s | %s>' % \
-                    (self.getMethod(), self.getURI())
+                    (self.get_method(), self.getURI())
     

@@ -103,7 +103,7 @@ class error_500(GrepPlugin):
                 
         self.print_uniq( kb.kb.getData( 'error_500', 'error_500' ), 'VAR' )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

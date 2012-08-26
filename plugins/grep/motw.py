@@ -28,7 +28,7 @@ import core.data.kb.info as info
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class motw (GrepPlugin):
@@ -97,14 +97,14 @@ class motw (GrepPlugin):
                     i.setDesc( msg )
                     kb.kb.append( self, 'no_motw', i )
 
-    def set_options( self, optionsMap ):
-        self._withoutMOTW = optionsMap['withoutMOTW'].getValue()
+    def set_options( self, options_list ):
+        self._withoutMOTW = options_list['withoutMOTW'].getValue()
         
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         
         d1 = 'List the pages that don\'t have a MOTW'
         o1 = option('withoutMOTW', self._withoutMOTW, d1, 'boolean')
@@ -134,7 +134,7 @@ class motw (GrepPlugin):
                         msg = '- ' + i.getURL() + ' [Executed in Local machine context]'
                         om.out.information( msg )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -24,7 +24,7 @@ from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
 # Import the core singleton
@@ -55,13 +55,13 @@ class question_infrastructure_4(question):
         self._d1 = 'Is the target web application reachable from the Internet?'
         o1 = option(self._d1, True, self._d1, 'boolean')
     
-        ol = optionList()
+        ol = OptionList()
         ol.add(o1)
 
         return ol
         
-    def getNextQuestionId(self,  optionsMap ):
-        cf.cf.save('reachable_from_internet', optionsMap[self._d1].getValue())
+    def getNextQuestionId(self,  options_list ):
+        cf.cf.save('reachable_from_internet', options_list[self._d1].getValue())
        
        # The next question
         if cf.cf.getData('reachable_from_internet'):

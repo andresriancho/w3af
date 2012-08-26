@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-def getLongDescription():
+def get_long_description():
     '''
     @return: The description for the plugin type.
     '''    

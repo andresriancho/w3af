@@ -23,13 +23,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 
 class rnd_param(EvasionPlugin):
@@ -106,8 +106,8 @@ class rnd_param(EvasionPlugin):
         @param data: A dict-like object.
         @return: The same object with one new key-value.
         '''
-        key = createRandAlNum()
-        value = createRandAlNum()
+        key = rand_alnum()
+        value = rand_alnum()
         data[key] = value
         return data
         
@@ -115,7 +115,7 @@ class rnd_param(EvasionPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -128,7 +128,7 @@ class rnd_param(EvasionPlugin):
         ''' 
         pass
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
@@ -144,7 +144,7 @@ class rnd_param(EvasionPlugin):
         '''
         return 50
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

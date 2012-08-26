@@ -36,10 +36,10 @@ class Preferences(object):
         if label:
             self.filename = os.path.join(get_home_dir(), label + '.cfg')
 
-    def addSection(self, section='default', label=None, optionList=None):
+    def addSection(self, section='default', label=None, options_list=None):
         '''Add a section named section to the instance.'''
         self.sections[section] = label
-        self.options[section] = optionList
+        self.options[section] = options_list
 
     def hasSection(self, section):
         '''Indicates whether the named section is present in the configuration.'''

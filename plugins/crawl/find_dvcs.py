@@ -116,7 +116,7 @@ class find_dvcs(CrawlPlugin):
         self._compiled_dvcs_info['bzr']['re'] = re.compile('^This\sis\sa\sBazaar')
         self._compiled_dvcs_info['bzr']['filename'] = '.bzr/README'
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

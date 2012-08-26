@@ -43,7 +43,7 @@ def html_export(request_string):
         <title>Exported HTTP Request from W3AF</title>
     </head>
     <body>'''
-    res += '<form action="' + httpRequest.getURI() +'" method="' + httpRequest.getMethod() + '">\n'
+    res += '<form action="' + httpRequest.getURI() +'" method="' + httpRequest.get_method() + '">\n'
     if httpRequest.getData() and httpRequest.getData() != '\n':
         postData = httpRequest.getDc()
         for i in postData:

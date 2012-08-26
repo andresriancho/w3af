@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
@@ -96,14 +96,14 @@ class symfony(GrepPlugin):
                             return True
         return False
 
-    def set_options( self, optionsMap ):
-        self._override = optionsMap['override'].getValue()
+    def set_options( self, options_list ):
+        self._override = options_list['override'].getValue()
     
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = optionList()
+        ol = OptionList()
         
         d = 'Skip symfony detection and search for the csrf (mis)protection.'
         o = option('override', self._override, d, 'boolean')
@@ -118,7 +118,7 @@ class symfony(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'symfony', 'symfony' ), 'URL' )
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -442,7 +442,7 @@ class PluginTree(gtk.TreeView):
             self.config_panel.clear(label=label )
         else:
             plugin = self._get_plugin_inst(path)
-            longdesc = plugin.getLongDesc()
+            longdesc = plugin.get_long_desc()
             longdesc = helpers.cleanDescription(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
             self.config_panel.config(self, plugin, longdesc)

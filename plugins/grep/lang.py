@@ -119,7 +119,7 @@ class lang(GrepPlugin):
             # I never got executed !
             om.out.information('Could not determine the language of the site.')
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

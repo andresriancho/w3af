@@ -27,7 +27,7 @@ from core.data.parsers.urlParser import parse_qs
 
 # options
 from core.data.options.option import option
-from core.data.options.optionList import optionList
+from core.data.options.option_list import OptionList
 
 import urllib
 
@@ -117,7 +117,7 @@ class full_width_encode(EvasionPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''    
-        ol = optionList()
+        ol = OptionList()
         return ol
 
     def set_options( self, OptionList ):
@@ -130,7 +130,7 @@ class full_width_encode(EvasionPlugin):
         ''' 
         pass
         
-    def getPluginDeps( self ):
+    def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
@@ -146,7 +146,7 @@ class full_width_encode(EvasionPlugin):
         '''
         return 50
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

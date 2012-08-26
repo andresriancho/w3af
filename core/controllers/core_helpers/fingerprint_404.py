@@ -29,7 +29,7 @@ import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.fuzzer.fuzzer import createRandAlNum
+from core.data.fuzzer.fuzzer import rand_alnum
 
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.threads.threadManager import thread_manager
@@ -111,7 +111,7 @@ class fingerprint_404:
         args_list = []
         
         for extension in handlers:
-            rand_alnum_file = createRandAlNum( 8 ) + '.' + extension
+            rand_alnum_file = rand_alnum( 8 ) + '.' + extension
             url404 = domain_path.urlJoin( rand_alnum_file )
             args_list.append(url404)
 
@@ -326,7 +326,7 @@ class fingerprint_404:
         response_url = http_response.getURL()
         filename = response_url.getFileName()
         if not filename:
-            relative_url = '../%s/' % createRandAlNum( 8 )
+            relative_url = '../%s/' % rand_alnum( 8 )
             url_404 = response_url.urlJoin( relative_url )
         else:
             relative_url = 'not-%s' % filename 

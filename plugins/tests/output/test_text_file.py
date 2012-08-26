@@ -75,8 +75,8 @@ class TestTextFile(PluginTest):
         )
         
         self.assertEquals(
-            set(sorted([v.getMethod() for v in xss_vulns])),
-            set(sorted([v.getMethod() for v in file_vulns]))
+            set(sorted([v.get_method() for v in xss_vulns])),
+            set(sorted([v.get_method() for v in file_vulns]))
         )
 
     def _from_txt_get_vulns(self):

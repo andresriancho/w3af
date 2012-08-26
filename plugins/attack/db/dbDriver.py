@@ -37,14 +37,14 @@ class dbDriver(dbDriverFunctions):
         # Params initialization
         self.args.injectionMethod = vuln['type']
         self.args.injParameter = vuln.getVar()
-        self.args.httpMethod = vuln.getMethod()
+        self.args.httpMethod = vuln.get_method()
         
         self._uri_opener = urlOpener
         self._vuln = vuln
         
         mutant = vuln.getMutant()
         url = mutant.getURI()       
-        if vuln.getMethod() == 'POST':
+        if vuln.get_method() == 'POST':
             url += '?' + str(vuln.getMutant().getData())
         self.args.trueResult = vuln['trueHtml']
         
@@ -88,9 +88,9 @@ class dbDriver(dbDriverFunctions):
         for i in xrange(3):
             
             if vuln['type'] == 'numeric':
-                possibleFalse = createRandNum(4)
+                possibleFalse = rand_number(4)
             elif vuln['type'] in ['stringsingle','stringdouble']:
-                possibleFalse = createRandAlpha(5)
+                possibleFalse = rand_alpha(5)
             
             mutant = vuln.getMutant()
             mutant.setModValue( possibleFalse )

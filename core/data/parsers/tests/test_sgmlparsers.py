@@ -335,7 +335,7 @@ class TestHTMLParser(unittest.TestCase):
         resp = _build_http_response(URL, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        self.assertEquals('GET', p.forms[0].getMethod())
+        self.assertEquals('GET', p.forms[0].get_method())
     
     def test_form_without_action(self):
         '''

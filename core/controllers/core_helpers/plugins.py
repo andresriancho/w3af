@@ -88,7 +88,7 @@ class w3af_core_plugins(object):
         '''
         @parameter plugin_type: The plugin type, like 'audit' or 'crawl'
         @parameter plugin_name: The plugin name, like 'sqli' or 'web_spider'
-        @parameter pluginOptions: An optionList object with the option objects for a plugin.
+        @parameter pluginOptions: An OptionList with the option objects for a plugin.
         
         @return: No value is returned.
         '''
@@ -116,7 +116,7 @@ class w3af_core_plugins(object):
         to get the default options for a plugin, get a plugin instance and
         perform a plugin.get_options()
         
-        @return: An optionList with the plugin options.
+        @return: An OptionList with the plugin options.
         '''
         return self._plugins_options.get(plugin_type, {}).get(plugin_name, None)
     
@@ -198,7 +198,7 @@ class w3af_core_plugins(object):
         except Exception:
             raise w3afException('Unknown plugin type: "'+ plugin_type + '".')
         else:
-            return aModule.getLongDescription()
+            return aModule.get_long_description()
         
     def get_plugin_types(self):
         '''
@@ -277,14 +277,14 @@ class w3af_core_plugins(object):
                     
                     plugin_inst = get_quick_instance(plugin_type, plugin_name)
                     
-                    for dep in plugin_inst.getPluginDeps():
+                    for dep in plugin_inst.get_plugin_deps():
                         
                         try:
                             dep_plugin_type, dep_plugin_name = dep.split('.')
                         except:
                             msg = ('Plugin dependencies must be indicated using '
                             'plugin_type.plugin_name notation. This is an error in '
-                            '%s.getPluginDeps().' % plugin_name)
+                            '%s.get_plugin_deps().' % plugin_name)
                             raise w3afException(msg)
                         
                         if dep_plugin_name not in self._plugins_names_dict[dep_plugin_type]:  
@@ -302,7 +302,7 @@ class w3af_core_plugins(object):
                 for plugin_name in enabled_plugins:
                     plugin_inst = get_quick_instance(plugin_type, plugin_name)
                     
-                    for dep in plugin_inst.getPluginDeps():
+                    for dep in plugin_inst.get_plugin_deps():
                         dep_plugin_type, dep_plugin_name = dep.split('.')
                         
                         if dep_plugin_type == plugin_type:

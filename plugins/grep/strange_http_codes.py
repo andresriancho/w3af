@@ -86,7 +86,7 @@ class strange_http_codes(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'strange_http_codes', 'strange_http_codes' ), 'URL' )
     
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

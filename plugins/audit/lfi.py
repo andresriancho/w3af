@@ -32,7 +32,7 @@ import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.is_source_file import is_source_file
-from core.data.fuzzer.fuzzer import createMutants
+from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 
 
@@ -77,7 +77,7 @@ class lfi(AuditPlugin):
         
         @param freq: A fuzzable_request
         '''
-        oResponse = self._uri_opener.send_mutant(freq)
+        orig_resp = self._uri_opener.send_mutant(freq)
         
         # Which payloads do I want to send to the remote end?
         local_files = []
@@ -85,12 +85,12 @@ class lfi(AuditPlugin):
         if not self._open_basedir:
             local_files.extend( self._get_local_file_list(freq.getURL()) )
         
-        mutants = createMutants( freq , local_files, oResponse=oResponse )
+        mutants = create_mutants( freq , local_files, orig_resp=orig_resp )
         
-        # FIXME: Here I was using kwds: grep=False
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      self._analyze_result,
+                                      grep=False)
         
     def _get_local_file_list( self, origUrl):
         '''
@@ -142,13 +142,14 @@ class lfi(AuditPlugin):
         Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
         '''
-        #
-        #   I analyze the response searching for a specific PHP error string that tells me
-        #   that open_basedir is enabled, and our request triggered the restriction. If
-        #   open_basedir is in use, it makes no sense to keep trying to read "/etc/passwd",
-        #   that is why this variable is used to determine which tests to send if it was possible
-        #   to detect the usage of this security feature.
-        #
+
+        # I analyze the response searching for a specific PHP error string
+        # that tells me that open_basedir is enabled, and our request triggered
+        # the restriction. If open_basedir is in use, it makes no sense to keep
+        # trying to read "/etc/passwd", that is why this variable is used to
+        # determine which tests to send if it was possible to detect the usage
+        # of this security feature.
+
         if not self._open_basedir:
             if 'open_basedir restriction in effect' in response\
             and 'open_basedir restriction in effect' not in mutant.getOriginalResponseBody():
@@ -282,7 +283,7 @@ class lfi(AuditPlugin):
             return self._error_compiled_regex
             
 
-    def getLongDesc( self ):
+    def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
