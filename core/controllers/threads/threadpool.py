@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from functools import partial
 
 from multiprocessing.pool import ThreadPool
 from multiprocessing.pool import RUN
@@ -43,11 +44,11 @@ class return_args(object):
     Utility function that returns the args in the result, useful when calling
     functions like imap_unordered().
     '''
-    def __init__(self, func):
-        self.func = func
+    def __init__(self, func, *args, **kwds):
+        self.func = partial(func, *args, **kwds)
     
-    def __call__(self, *args):
-        return args, self.func(*args)
+    def __call__(self, *args, **kwds):
+        return args, self.func(*args, **kwds)
     
 class Pool(ThreadPool):
     def map_multi_args(self, func, iterable, chunksize=None):
