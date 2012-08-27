@@ -227,7 +227,7 @@ class text_file(OutputPlugin):
             #self._file.flush()
             pass
             
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed 
@@ -238,9 +238,9 @@ class text_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = OptionList['verbose'].getValue()
-        self._file_name = OptionList['fileName'].getValue()
-        self._http_file_name = OptionList['httpFileName'].getValue()
+        self.verbose = option_list['verbose'].getValue()
+        self._file_name = option_list['fileName'].getValue()
+        self._http_file_name = option_list['httpFileName'].getValue()
         
         self._init()
     

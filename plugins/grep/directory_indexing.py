@@ -99,7 +99,7 @@ class directory_indexing(GrepPlugin):
                     kb.kb.append( self , 'directory' , v )
                     break
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         pass
     
     def get_options( self ):

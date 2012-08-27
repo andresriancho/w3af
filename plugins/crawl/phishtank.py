@@ -228,9 +228,9 @@ class phishtank(CrawlPlugin):
         return curHandler.matches
 
         
-    def set_options( self, OptionList ):
-        self._phishtank_DB = OptionList['dbFile'].getValue()
-        self._update_DB = OptionList['updateDB'].getValue()
+    def set_options( self, option_list ):
+        self._phishtank_DB = option_list['dbFile'].getValue()
+        self._update_DB = option_list['updateDB'].getValue()
     
     def get_options( self ):
         '''

@@ -90,7 +90,7 @@ class feeds(GrepPlugin):
                 i.addToHighlight( feed_type )
                 kb.kb.append( self, 'feeds', i )
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         pass
     
     def get_options( self ):

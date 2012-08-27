@@ -83,7 +83,7 @@ class export_requests(OutputPlugin):
             - output_file
         '''
 
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
@@ -93,7 +93,7 @@ class export_requests(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        output_file = OptionList['output_file'].getValue()
+        output_file = option_list['output_file'].getValue()
         if not output_file:
             raise w3afException('You need to configure an output file.')
         else:

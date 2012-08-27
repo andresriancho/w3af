@@ -80,7 +80,7 @@ class file_upload(GrepPlugin):
                     kb.kb.append(self, 'file_upload', i)
 
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         pass
     
     def get_options( self ):
@@ -96,13 +96,6 @@ class file_upload(GrepPlugin):
         '''
         self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'URL' )
 
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.

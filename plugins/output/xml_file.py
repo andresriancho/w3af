@@ -136,7 +136,7 @@ class xml_file(OutputPlugin):
         '''
         pass
         
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
@@ -146,7 +146,7 @@ class xml_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self._file_name = OptionList['fileName'].getValue()
+        self._file_name = option_list['fileName'].getValue()
         
     def get_options( self ):
         '''

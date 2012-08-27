@@ -193,7 +193,7 @@ class html_file(OutputPlugin):
               '<td class=content>%s</td></tr>'
         self._aditional_info.append( msg % (the_time, msg_type, message) )
             
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
@@ -203,8 +203,8 @@ class html_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self._file_name = OptionList['fileName'].getValue()
-        self._verbose = OptionList['verbose'].getValue()
+        self._file_name = option_list['fileName'].getValue()
+        self._verbose = option_list['verbose'].getValue()
         
     def get_options( self ):
         '''

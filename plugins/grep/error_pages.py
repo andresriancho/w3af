@@ -206,7 +206,7 @@ class error_pages(GrepPlugin):
                         kb.kb.append( self , 'server' , match_string )
                         self._already_reported_versions.append( match_string )
         
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         pass
     
     def get_options( self ):

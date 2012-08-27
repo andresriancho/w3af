@@ -102,7 +102,7 @@ class console(OutputPlugin):
             - verbose
         '''
 
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed 
@@ -112,7 +112,7 @@ class console(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = OptionList['verbose'].getValue()
+        self.verbose = option_list['verbose'].getValue()
 
     def get_options( self ):
         '''

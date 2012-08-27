@@ -86,7 +86,7 @@ class objects(GrepPlugin):
 
                 kb.kb.append( self, tag_name, i )
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         pass
     
     def get_options( self ):

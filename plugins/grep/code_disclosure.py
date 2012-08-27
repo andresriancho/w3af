@@ -130,7 +130,7 @@ class code_disclosure(GrepPlugin):
                     v.setDesc( msg )
                     kb.kb.append( self, 'code_disclosure', v )
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         No options to set.
         '''

@@ -55,11 +55,11 @@ class email_report(OutputPlugin):
     def log_enabled_plugins(self, pluginsDict, optionsDict):
         self.targets = cf.cf.getData('targets')
 
-    def set_options(self, OptionList):
-        self.smtpServer = OptionList['smtpServer'].getValue()
-        self.smtpPort = OptionList['smtpPort'].getValue()
-        self.fromAddr = OptionList['fromAddr'].getValue()
-        self.toAddrs = OptionList['toAddrs'].getValue()
+    def set_options(self, option_list):
+        self.smtpServer = option_list['smtpServer'].getValue()
+        self.smtpPort = option_list['smtpPort'].getValue()
+        self.fromAddr = option_list['fromAddr'].getValue()
+        self.toAddrs = option_list['toAddrs'].getValue()
 
     def get_options(self):
         ol = OptionList()

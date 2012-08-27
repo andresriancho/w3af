@@ -103,7 +103,7 @@ class sed(ManglePlugin):
         
         return response
     
-    def set_options( self, OptionList ):
+    def set_options( self, option_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the result of a user
         entering some data on a window that was constructed using the XML Options that was
@@ -113,13 +113,13 @@ class sed(ManglePlugin):
         
         @return: No value is returned.
         ''' 
-        self._user_option_fix_content_len = OptionList['fixContentLen'].getValue()
-        self._priority = OptionList['priority'].getValue()
+        self._user_option_fix_content_len = option_list['fixContentLen'].getValue()
+        self._priority = option_list['priority'].getValue()
         
-        self._expressions = ','.join( OptionList['expressions'].getValue() )
+        self._expressions = ','.join( option_list['expressions'].getValue() )
         self._expressions = re.findall( '([qs])([bh])/(.*?)/(.*?)/;?' , self._expressions )
         
-        if len( self._expressions ) == 0 and len ( OptionList['expressions'].getValue() ) != 0:
+        if len( self._expressions ) == 0 and len ( option_list['expressions'].getValue() ) != 0:
             raise w3afException('The user specified expression is invalid.')
         
         for exp in self._expressions:
