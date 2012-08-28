@@ -19,20 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afException, w3afRunOnce
+import re
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+import core.controllers.outputManager as om
 
-import re
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
 
 
 class detect_reverse_proxy(InfrastructurePlugin):
@@ -44,59 +39,49 @@ class detect_reverse_proxy(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
         
-        # Some internal variables
-        self._run = True
-        self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For', 'Proxy-Connection', 
-                                                'Max-Forwards', 'X-Forwarded-Host', 'X-Forwarded-Server']
-        
+        self._proxy_header_list = ['Via', 'Reverse-Via', 'X-Forwarded-For',
+                                   'Proxy-Connection', 'Max-Forwards',
+                                   'X-Forwarded-Host', 'X-Forwarded-Server']
+
+    @runonce(exc_class=w3afRunOnce)        
     def discover(self, fuzzable_request ):
         '''
         @parameter fuzzable_request: A fuzzable_request instance that contains
-                                                    (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        if not self._run:
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # I will only run this one time. All calls to detect_reverse_proxy return the same url's
-            self._run = False
-            
-            # detect using GET
-            if not kb.kb.getData( 'detect_transparent_proxy', 'detect_transparent_proxy'):            
-                response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_headers( response ):
-                    self._report_finding( response )
-           
-            # detect using TRACE
-            # only if I wasn't able to do it with GET
-            if not kb.kb.getData( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACE( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_content( response ):
-                    self._report_finding( response )
-           
-            # detect using TRACK
-            # This is a rather special case that works with ISA server; example follows:
-            # Request:
-            # TRACK http://www.xyz.com.bo/ HTTP/1.1
-            # ...
-            # Response headers:
-            # HTTP/1.1 200 OK
-            # content-length: 99
-            # ...
-            # Response body:
-            # TRACK / HTTP/1.1
-            # Reverse-Via: MUTUN ------> find this!
-            # ....
-            if not kb.kb.getData( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACK( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_content( response ):
-                    self._report_finding( response )
-                
-            # Report failure to detect reverse proxy
-            if not kb.kb.getData( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
-
+        # detect using GET
+        response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
+        if self._has_proxy_headers( response ):
+            self._report_finding( response )
+            return
         
+        # detect using TRACE
+        response = self._uri_opener.TRACE( fuzzable_request.getURL(), cache=True )
+        if self._has_proxy_content( response ):
+            self._report_finding( response )
+            return
+        
+        # detect using TRACK, this is a rather special case that works
+        # with ISA server; example follows:
+        # Request:
+        # TRACK http://www.xyz.com.bo/ HTTP/1.1
+        # ...
+        # Response headers:
+        # HTTP/1.1 200 OK
+        # content-length: 99
+        # ...
+        # Response body:
+        # TRACK / HTTP/1.1
+        # Reverse-Via: MUTUN ------> find this!
+        # ....
+        response = self._uri_opener.TRACK( fuzzable_request.getURL(), cache=True )
+        if self._has_proxy_content( response ):
+            self._report_finding( response )
+            return
+        
+        # Report failure to detect reverse proxy
+        om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
+
     def _report_finding( self, response ):
         '''
         Save the finding to the kb.
@@ -143,23 +128,6 @@ class detect_reverse_proxy(InfrastructurePlugin):
                 if possible_match in response_body:
                     return True
         return False
-
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = OptionList()
-        return ol
-
-    def set_options( self, option_list ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of get_options().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
         
     def get_plugin_deps( self ):
         '''
@@ -173,9 +141,10 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin tries to determine if the remote end has a reverse proxy installed.
+        This plugin tries to determine if the remote end has a reverse proxy
+        installed.
         
-        The procedure used to detect reverse proxies is to send a request to the remote server and
-        analyze the response headers, if a Via header is found, chances are that the remote site has
-        a reverse proxy.
+        The procedure used to detect reverse proxies is to send a request to 
+        the remote server and analyze the response headers, if a Via header is
+        found, chances are that the remote site has a reverse proxy.
         '''
