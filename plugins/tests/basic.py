@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.controllers.w3afCore import w3afCore
+from core.controllers.w3afException import w3afException
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -33,6 +34,8 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.output_plugin import OutputPlugin
+
+from plugins.tests.helper import PluginTest, PluginConfig
 
 PLUGIN_TYPES = {'attack': AttackPlugin,
                 'audit': AuditPlugin,
@@ -107,4 +110,20 @@ class TestBasic(unittest.TestCase):
                 
                 self.assertEqual( plugin.getType(), plugin_type, msg )
 
-                
+
+class TestFailOnInvalidURL(PluginTest):
+    
+    _run_configs = {
+        'cfg': {
+                'target': None,
+                'plugins': {'infrastructure': (PluginConfig('hmap'),)}
+                }
+        }
+    
+    def test_fail_1(self):
+        cfg = self._run_configs['cfg']
+        self.assertRaises(w3afException, self._scan, 'http://http://moth/', cfg['plugins'])
+
+    def test_fail_2(self):
+        cfg = self._run_configs['cfg']
+        self.assertRaises(w3afException, self._scan, '', cfg['plugins'])
