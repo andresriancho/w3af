@@ -19,18 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afRunOnce
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
+
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 
 
 class server_header(InfrastructurePlugin):
@@ -43,11 +36,8 @@ class server_header(InfrastructurePlugin):
         InfrastructurePlugin.__init__(self)
         
         # Internal variables
-        self._exec = True
+        self._server_header = True
         self._x_powered = True
-        
-        # User configured variables
-        self._exec_one_time = True        
 
     def discover(self, fuzzable_request ):
         '''
@@ -55,145 +45,109 @@ class server_header(InfrastructurePlugin):
         to the kb. A smarter way to check the server type is with the hmap plugin.
         
         @parameter fuzzable_request: A fuzzable_request instance that contains
-                                                      (among other things) the URL to test.
+                                     (among other things) the URL to test.
         '''
-        if not self._exec:
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
-        else:
-            try:
-                response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )       
-            except KeyboardInterrupt,e:
-                raise e
-            else:
-                server = ''
-                for h in response.getHeaders().keys():
-                    if h.lower() == 'server':
-                        server = response.getHeaders()[h]
-                        break
-                
-                if server != '':
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Server header')
-                    i.setId( response.getId() )
-                    i.setDesc('The server header for the remote web server is: "' + server + '".' )
-                    i['server'] = server
-                    om.out.information( i.getDesc() )
-                    i.addToHighlight( h + ':' )
-                    
-                    # Save the results in the KB so the user can look at it
-                    kb.kb.append( self, 'server', i )
-                    
-                    # Also save this for easy internal use
-                    # other plugins can use this information
-                    kb.kb.save( self , 'serverString' , server )
-                    
-                else:
-                    # strange !
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Omitted server header')
-                    i.setId( response.getId() )
-                    msg = 'The remote HTTP Server omitted the "server" header in its response.'
-                    i.setDesc( msg )
-                    om.out.information( i.getDesc() )
-                    
-                    # Save the results in the KB so that other plugins can use this information
-                    kb.kb.append( self, 'omittedHeader', i )
-
-                    # Also save this for easy internal use
-                    # other plugins can use this information
-                    kb.kb.save( self , 'serverString' , '' )
-                    
-                if self._exec_one_time:
-                    self._exec = False
-                
+        if self._server_header:
+            self._server_header = False
+            self._check_server_header( fuzzable_request )
+        
         if self._x_powered:
             self._check_x_power( fuzzable_request )
+
+    def _check_server_header(self, fuzzable_request):
+        '''
+        HTTP GET and analyze response for server header
+        '''
+        response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )       
+
+        for hname, hvalue in response.getLowerCaseHeaders().iteritems():
+            if hname == 'server':
+                server = hvalue
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName('Server header')
+                i.setId( response.getId() )
+                i.setDesc('The server header for the remote web server is: "' + server + '".' )
+                i['server'] = server
+                om.out.information( i.getDesc() )
+                i.addToHighlight( hname + ':' )
+                
+                # Save the results in the KB so the user can look at it
+                kb.kb.append( self, 'server', i )
+                
+                # Also save this for easy internal use
+                # other plugins can use this information
+                kb.kb.save( self , 'serverString' , server )
+                break
+            
+        else:
+            # strange !
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('Omitted server header')
+            i.setId( response.getId() )
+            msg = 'The remote HTTP Server omitted the "server" header in its response.'
+            i.setDesc( msg )
+            om.out.information( i.getDesc() )
+            
+            # Save the results in the KB so that other plugins can use this 
+            # information
+            kb.kb.append( self, 'omittedHeader', i )
+
+            # Also save this for easy internal use
+            # other plugins can use this information
+            kb.kb.save( self , 'serverString' , '' )
+                    
         
     def _check_x_power( self, fuzzable_request ):
         '''
         Analyze X-Powered-By header.
         '''
-        try:
-            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
-        except:
-            pass
-        else:
-            powered_by = ''
-            for header_name in response.getHeaders().keys():
-                for i in [ 'ASPNET', 'POWERED']:
-                    if i in header_name.upper() or header_name.upper() in i:
-                        powered_by = response.getHeaders()[header_name]
+        response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
 
+        for header_name in response.getHeaders().keys():
+            for i in [ 'ASPNET', 'POWERED']:
+                if i in header_name.upper() or header_name.upper() in i:
+                    powered_by = response.getHeaders()[header_name]
+                    
+                    # Only get the first one
+                    self._x_powered = False
+                    
+                    #
+                    #    Check if I already have this info in the KB
+                    #
+                    pow_by_kb = kb.kb.getData( 'server_header', 'poweredBy' )
+                    powered_by_in_kb = [ j['poweredBy'] for j in pow_by_kb ]
+                    if powered_by not in powered_by_in_kb:
+                    
                         #
-                        #    Check if I already have this info in the KB
+                        #    I don't have it in the KB, so I need to add it,
                         #
-                        powered_by_in_kb = [ j['poweredBy'] for j in kb.kb.getData( 'server_header', 'poweredBy' ) ]
-                        if powered_by not in powered_by_in_kb:
+                        i = info.info()
+                        i.setPluginName(self.getName())
+                        i.setName('"%s" header' % header_name)
+                        i.setId( response.getId() )
+                        msg = '"' + header_name + '" header for this HTTP server is: "'
+                        msg += powered_by + '".'
+                        i.setDesc( msg )
+                        i['poweredBy'] = powered_by
+                        om.out.information( i.getDesc() )
+                        i.addToHighlight( header_name + ':' )
                         
-                            #
-                            #    I don't have it in the KB, so I need to add it,
-                            #
-                            i = info.info()
-                            i.setPluginName(self.getName())
-                            i.setName('"%s" header' % header_name)
-                            i.setId( response.getId() )
-                            msg = '"' + header_name + '" header for this HTTP server is: "'
-                            msg += powered_by + '".'
-                            i.setDesc( msg )
-                            i['poweredBy'] = powered_by
-                            om.out.information( i.getDesc() )
-                            i.addToHighlight( header_name + ':' )
-                            
-                            #    Save the results in the KB so that other plugins can use this information
-                            # Before knowing that some servers may return more than one poweredby
-                            # header I had:
-                            # - kb.kb.save( self , 'poweredBy' , poweredBy )
-                            # But I have seen an IIS server with PHP that returns both the ASP.NET and
-                            # the PHP headers
-                            powered_by_in_kb = [ j['poweredBy'] for j in kb.kb.getData( 'server_header', 'poweredBy' ) ]
-                            if powered_by not in powered_by_in_kb:
-                                kb.kb.append( self , 'poweredBy' , i )
-                            
-                                # Also save this for easy internal use
-                                kb.kb.append( self , 'poweredByString' , powered_by )
-                            
-                            if self._exec_one_time:
-                                self._x_powered = False          
+                        # Save the results in the KB so that other plugins can 
+                        # use this information. Before knowing that some servers
+                        # may return more than one poweredby header I had:
+                        #     kb.kb.save( self , 'poweredBy' , poweredBy )
+                        # But I have seen an IIS server with PHP that returns
+                        # both the ASP.NET and the PHP headers
+                        pow_by_kb = kb.kb.getData( 'server_header', 'poweredBy' )
+                        powered_by_in_kb = [ j['poweredBy'] for j in pow_by_kb ]
+                        
+                        if powered_by not in powered_by_in_kb:
+                            kb.kb.append( self , 'poweredBy' , i )
+                            kb.kb.append( self , 'poweredByString' , powered_by )
+                                
 
-    
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'Execute plugin only one time'
-        h1 = 'Generally the server header wont change during a scan to a same site, so executing'
-        h1 += ' this plugin only one time is a safe choice.'
-        o1 = option('execOneTime', self._exec_one_time, d1, 'boolean', help=h1)
-        
-        ol = OptionList()
-        ol.add(o1)
-        return ol
-
-    def set_options( self, options_list ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of get_options().
-        
-        @parameter options_list: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        self._exec_one_time = options_list['execOneTime'].getValue()
-
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
