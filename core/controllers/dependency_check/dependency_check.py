@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import sys
 import platform
+import warnings
 
 import core.controllers.outputManager as om
 
@@ -84,7 +85,7 @@ def dependency_check():
     # /usr/lib/python2.5/site-packages/nltk/__init__.py:117: UserWarning: draw module, ...
     # warnings.warn("draw module, app module, and gui downloader not loaded "
     #
-    import warnings
+    
     warnings.filterwarnings('ignore', '.*',)
     #mem_test('after esmre import')
     if not lazy_load('nltk'):
