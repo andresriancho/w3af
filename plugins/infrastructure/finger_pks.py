@@ -25,6 +25,7 @@ import core.data.kb.info as info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
 from core.data.search_engines.pks import pks as pks
 from core.data.parsers.urlParser import url_object
 
@@ -38,42 +39,33 @@ class finger_pks(InfrastructurePlugin):
     def __init__(self):
         InfrastructurePlugin.__init__(self)
         
-        # Internal variables
-        self._run = True
-        
+    @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request ):
         '''
         @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not self._run:
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # This plugin will only run one time. 
-            self._run = False
-            
-            pks_se = pks( self._uri_opener)
-            
-            root_domain = fuzzable_request.getURL().getRootDomain()
-            
-            results = pks_se.search( root_domain )
-            for result in results:
-                i = info.info()
-                i.setURL( url_object('http://pgp.mit.edu:11371/') )
-                i.setPluginName(self.getName())
-                i.setId( [] )
-                mail = result.username +'@' + root_domain
-                i.setName( mail )
-                i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
-                i['mail'] = mail
-                i['user'] = result.username
-                i['name'] = result.name
-                i['url_list'] = ['http://pgp.mit.edu:11371/', ]
-                kb.kb.append( 'emails', 'emails', i )
-                #   Don't save duplicated information in the KB. It's useless.
-                #kb.kb.append( self, 'emails', i )
-                om.out.information( i.getDesc() )
+        root_domain = fuzzable_request.getURL().getRootDomain()
+        
+        pks_se = pks( self._uri_opener)
+        results = pks_se.search( root_domain )
+        
+        for result in results:
+            i = info.info()
+            i.setURL( url_object('http://pgp.mit.edu:11371/') )
+            i.setPluginName(self.getName())
+            i.setId( [] )
+            mail = result.username +'@' + root_domain
+            i.setName( mail )
+            i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
+            i['mail'] = mail
+            i['user'] = result.username
+            i['name'] = result.name
+            i['url_list'] = ['http://pgp.mit.edu:11371/', ]
+            kb.kb.append( 'emails', 'emails', i )
+            #   Don't save duplicated information in the KB. It's useless.
+            #kb.kb.append( self, 'emails', i )
+            om.out.information( i.getDesc() )
 
     def get_long_desc( self ):
         '''

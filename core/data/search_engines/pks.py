@@ -19,12 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
 import core.controllers.outputManager as om
+
 from core.controllers.w3afException import w3afException
 from core.data.search_engines.searchEngine import searchEngine as searchEngine
 from core.data.parsers.urlParser import url_object
-import re
 
 
 class pks(searchEngine):
@@ -34,9 +35,9 @@ class pks(searchEngine):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
-    def __init__(self, urlOpener ):
+    def __init__(self, uri_opener ):
         searchEngine.__init__(self)
-        self._uri_opener = urlOpener
+        self._uri_opener = uri_opener
         
     def search( self, hostname ):
         '''
@@ -45,12 +46,13 @@ class pks(searchEngine):
         @parameter hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
-            msg = 'You must provide the PKS search engine with a root domain name (as returned by'
-            msg += ' url_object.getRootDomain).'
+            msg = 'You must provide the PKS search engine with a root domain'
+            msg += ' name (as returned by url_object.getRootDomain).'
             raise w3afException( msg )
     
         res = self.met_search( hostname )
-        om.out.debug('PKS search for hostname: "'+ hostname + '" returned ' + str( len( res ) ) + ' results.' )
+        msg = 'PKS search for hostname: "%s" returned %s results.'
+        om.out.debug( msg % (hostname, len(res)) )
         return res
 
     def met_search(self, query):
@@ -62,15 +64,11 @@ class pks(searchEngine):
         This method is based from the pks.py file from the massive enumeration toolset, 
         coded by pdp and released under GPL v2.     
         """
-        class pksResult:
-            def __init__( self, name, username ):
-                self.name = name
-                self.username = username
-                
         url = url_object(u'http://pgp.mit.edu:11371/pks/lookup')
         url.querystring = {u'op': u'index', u'search': query}
 
-        response = self._uri_opener.GET( url , headers=self._headers, cache=True, grep=False )
+        response = self._uri_opener.GET( url, headers=self._headers, 
+                                         cache=True, grep=False )
         content = response.getBody()
         
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)
@@ -97,9 +95,16 @@ class pks(searchEngine):
                     
                     if domain == query:
                         if account not in accounts:
-                            pksr = pksResult( name, account )
+                            pksr = PKSResult( name, account )
                             results.append( pksr )
                             accounts.append( account )
 
         return results
     
+class PKSResult:
+    def __init__( self, name, username ):
+        self.name = name
+        self.username = username
+    
+    def __repr__(self):
+        return '<%s@%s>' % (self.name, self.username)
