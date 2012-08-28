@@ -64,7 +64,7 @@ class test_http_vs_https_dist(PyMockTestCase):
         ## Stop Recording.Time to Play! ##
         self.replay()
         res = plugininst.discover(self.fuzz_req)
-        self.assertEquals(res, [])
+        self.assertEquals(res, None)
 
         ## Verify ##
         self.verify()
@@ -86,7 +86,7 @@ class test_http_vs_https_dist(PyMockTestCase):
         ## Stop Recording.Time to Play! ##
         self.replay()
         res = plugininst.discover(self.fuzz_req)
-        self.assertEquals(res, [])
+        self.assertEquals(res, None)
 
         ## Verify ##
         self.verify()
@@ -109,7 +109,7 @@ class test_http_vs_https_dist(PyMockTestCase):
         ## Stop Recording. Time to Play! ##
         self.replay()
         res = plugininst.discover(self.fuzz_req)
-        self.assertEquals(res, [])
+        self.assertEquals(res, None)
 
         ## Verify ##
         self.verify()

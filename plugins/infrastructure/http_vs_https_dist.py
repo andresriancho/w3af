@@ -23,19 +23,20 @@ import socket
 
 from scapy.all import traceroute
 
-from core.controllers.plugins.infrastructure_plugin import \
-    InfrastructurePlugin
-from core.controllers.misc.decorators import runonce
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.controllers.outputManager as om
 import core.data.kb.info as info
 import core.data.kb.knowledgeBase as kb
 
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.controllers.misc.decorators import runonce
+from core.data.options.option import option
+from core.data.options.option_list import OptionList
+from core.controllers.w3afException import w3afRunOnce, w3afException
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
-" It seems that the user running the w3af process has not enough privileges."
+                 " It seems that the user running the w3af process has not"\
+                 " enough privileges."
+
 
 class http_vs_https_dist(InfrastructurePlugin):
     '''
@@ -181,11 +182,3 @@ class http_vs_https_dist(InfrastructurePlugin):
         
         HTTP and HTTPS ports default to 80 and 443.
         '''
-    
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be run 
-        before the current one.
-        '''
-        return []
-    
