@@ -20,15 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import random
-import re
 import unittest
 
 from core.data.search_engines.bing import bing
-from core.data.url.httpResponse import httpResponse
 from core.data.url.xUrllib import xUrllib
 
 
-class test_google(unittest.TestCase):
+class test_bing(unittest.TestCase):
     
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 200),
