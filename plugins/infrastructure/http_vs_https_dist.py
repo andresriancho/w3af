@@ -45,6 +45,8 @@ class http_vs_https_dist(InfrastructurePlugin):
     '''
 
     def __init__(self):
+        InfrastructurePlugin.__init__(self)
+        
         self._http_port = 80
         self._https_port = 443
 
@@ -115,11 +117,11 @@ class http_vs_https_dist(InfrastructurePlugin):
             if not last_http_ip[1]:
                 om.out.error(desc % (http_port, domain))
         else:
-            # Are routes different
+            trace_str = lambda iptuples: '\n'.join('    %s %s' % \
+                            (t[0], t[1][0]) for t in enumerate(iptuples))
+
             if http_ip_tuples != https_ip_tuples:
                 header = '  TCP trace to %s:%s\n%s'
-                trace_str = lambda iptuples: '\n'.join('    %s %s' % \
-                                (t[0], t[1][0]) for t in enumerate(iptuples))
 
                 trc1 = header % (domain, http_port, trace_str(http_ip_tuples))
                 trc2 = header % (domain, https_port, trace_str(https_ip_tuples))
@@ -129,6 +131,11 @@ class http_vs_https_dist(InfrastructurePlugin):
                                                     https_port, trc1, trc2)
                 set_info('HTTP vs. HTTPS Distance', desc)
                 om.out.information(desc)
+            else:
+                desc = 'The routes to the target\'s HTTP and HTTPS ports are' \
+                       ' the same:\n%s' % trace_str(http_ip_tuples)
+                set_info('HTTP traceroute', desc)
+                
 
     def _has_permission(self):
         '''

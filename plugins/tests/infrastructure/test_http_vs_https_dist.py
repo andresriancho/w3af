@@ -18,18 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
-import __builtin__
 import copy
 
-from pymock import PyMockTestCase, method, override, set_count, \
-    override_prop, dontcare, expr
+from nose.plugins.attrib import attr
+from pymock import (PyMockTestCase, method, override, set_count,
+                    override_prop, dontcare, expr)
 
-from core.data.parsers.urlParser import url_object
 import plugins.infrastructure.http_vs_https_dist as hvshsdist
 
-# Translation hack
-__builtin__.__dict__['_'] = lambda x: x
+from plugins.tests.helper import PluginTest, PluginConfig
+from core.data.parsers.urlParser import url_object
+
 
 class test_http_vs_https_dist(PyMockTestCase):
     '''
@@ -141,3 +140,28 @@ class test_http_vs_https_dist(PyMockTestCase):
         method(https_tracerout_obj, 'get_trace').expects().returns(trace_resp)
         resp_tuple = (https_tracerout_obj, None)
         override(hvshsdist, 'traceroute').expects(dest, dport=dport).returns(resp_tuple)
+
+
+@attr('root')
+class TestHTTPvsHTTPS(PluginTest):
+    
+    base_url = 'http://moth/'
+    
+    _run_configs = {
+        'cfg': {
+                'target': base_url,
+                'plugins': {'infrastructure': (PluginConfig('http_vs_https_dist'),)}
+                }
+        }
+    
+    def test_trace(self):
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+        
+        infos = self.kb.getData('http_vs_https_dist', 'http_vs_https_dist')
+        
+        self.assertEqual( len(infos), 1, infos)
+        
+        info = infos[0]
+        self.assertEqual( 'HTTP traceroute', info.getName() )
+        
