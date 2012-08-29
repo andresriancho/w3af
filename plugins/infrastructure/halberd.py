@@ -19,44 +19,45 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afRunOnce
-from core.controllers.misc.decorators import runonce
-
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as infokb
-
-
-# halberd imports!
-# done this way so the user can run this plugin without having to install halberd !
-# Also, the halberd version i'm using, has some minimal changes.
-import sys, os.path
-halberd_dir = 'plugins' + os.path.sep + 'infrastructure' + os.path.sep + 'oHalberd'
-
-# This insert in the first position of the path is to "step over" an installation of halberd.
+import sys
+import os
+import pprint
+import StringIO
+#
+# Halberd imports, done this way so the user can run this plugin without having 
+# to install halberd Also, the halberd version i'm using, has some changes.
+#
+halberd_dir = os.path.join('plugins', 'infrastructure', 'oHalberd')
+# This insert in the first position of the path is to "step over" an installation
+# of halberd.
 sys.path.insert( 0, halberd_dir )
-
-# I do it this way and not with a "from plugins.infrastructure.oHalberd.Halberd import logger" because
-# inside the original hablerd they are crossed imports and stuff that I don't want to modify.
+# I do it this way and not with a "from plugins.infrastructure.oHalberd.Halberd
+# import logger" because inside the original hablerd they are crossed imports 
+# and stuff that I don't want to modify.
 import Halberd.shell as halberd_shell
 import Halberd.logger as halberd_logger
 import Halberd.ScanTask as halberd_scan_task
 import Halberd.version as halberd_shell_version
 import Halberd.clues.analysis as halberd_analysis
 
+import core.controllers.outputManager as om
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as infokb
+
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
+
+
 class halberd(InfrastructurePlugin):
     '''
     Identify if the remote server has HTTP load balancers.
+    
+    This plugin is a wrapper of Juan M. Bello Rivas' halberd.
+    
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
-    '''
-    This plugin is a wrapper for  Juan M. Bello Rivas <jmbr |at| superadditive.com> halberd.
-    '''
-
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -68,8 +69,8 @@ class halberd(InfrastructurePlugin):
         @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        msg = 'halberd plugin is starting. Original halberd author: Juan M. Bello Rivas ;'
-        msg += ' http://halberd.superadditive.com/'
+        msg = 'halberd plugin is starting. Original halberd author: '
+        msg += 'Juan M. Bello Rivas; http://halberd.superadditive.com/'
         om.out.information( msg )
         
         self._main( fuzzable_request.getURL().baseUrl().url_string )
@@ -110,23 +111,26 @@ class halberd(InfrastructurePlugin):
                 # result should be: <Halberd.ScanTask.ScanTask instance at 0x85df8ec>                
             except halberd_shell.ScanError, msg:
                 om.out.debug('*** %s ***' % msg )
-            except KeyboardInterrupt:
-                raise
             else:
                 self._report( result )
 
     def _report( self, scantask):
         """
-        Displays detailed report information to the user and save the data to the kb.
+        Displays detailed report information to the user and save the data to
+        the kb.
+        
+        @return: None.
         """
         if len(scantask.analyzed) == 1:
-            om.out.information('The site: ' + scantask.url + " doesn't seem to have a HTTP load balancer configuration.")
+            msg = 'The site: "%s" doesn\'t seem to have a HTTP load balancer ' \
+                  'configuration.'
+            om.out.information( msg % scantask.url)
         else:
             clues = scantask.analyzed
             hits = halberd_analysis.hits(clues)
         
-            # xxx This could be passed by the caller in order to avoid recomputation in
-            # case the clues needed a re-analysis.
+            # xxx This could be passed by the caller in order to avoid
+            # recomputation in case the clues needed a re-analysis.
             diff_fields = halberd_analysis.diff_fields(clues)
         
             om.out.information('=' * 70 )
@@ -177,8 +181,6 @@ class halberd(InfrastructurePlugin):
                         idx += 1
         
                 if scantask.debug:
-                    import pprint
-                    import StringIO
                     tmp = StringIO.StringIO()
                     om.out.information('headers:')
                     pprint.pprint(clue.headers, stream=tmp, indent=2)
