@@ -19,26 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.constants.severity as severity
 
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 
 
 class domain_dot(InfrastructurePlugin):
     '''
-    Send a specially crafted request with a dot after the domain (http://host.tld./) and analyze response.
+    Send a specially crafted request with a dot after the domain
+    (http://host.tld./) and analyze response.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -47,14 +40,14 @@ class domain_dot(InfrastructurePlugin):
         InfrastructurePlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = []
+        self._already_tested = set()
 
     def discover(self, fuzzable_request ):
         '''
         Sends the special request.
         
         @parameter fuzzable_request: A fuzzable_request instance that contains
-                                                    (among other things) the URL to test.
+                                     (among other things) the URL to test.
         '''
         domain = fuzzable_request.getURL().getDomain()
         extension = fuzzable_request.getURL().getExtension()
@@ -62,20 +55,19 @@ class domain_dot(InfrastructurePlugin):
         if (domain, extension) not in self._already_tested:
             
             # Do it only one time
-            self._already_tested.append( (domain, extension) )
+            self._already_tested.add( (domain, extension) )
             
             # Generate the new URL
-            domain += '.'
-            dot_url = fuzzable_request.getURL()
-            dot_url = dot_url.copy()
-            dot_url.setDomain(domain)
+            domain_dot = domain + '.'
+            orig_url = fuzzable_request.getURL()
             try:
                 # GET the original response
-                original_response = self._uri_opener.GET( fuzzable_request.getURL(), cache=False )
-                # GET the response with the modified domain (with the trailing dot)
-                response = self._uri_opener.GET( dot_url, cache=False )
-            except KeyboardInterrupt,e:
-                raise e
+                original_response = self._uri_opener.GET( orig_url,
+                                                          cache=False )
+                # GET the response with the modified domain
+                # (with the trailing dot)
+                response = self._uri_opener.GET( orig_url, cache=False,
+                                                 headers={'Host': domain_dot } )
             except w3afException,w3:
                 om.out.error( str(w3) )
             else:
@@ -83,8 +75,10 @@ class domain_dot(InfrastructurePlugin):
 
     def _analyze_response(self, original_resp, resp):
         '''
-        @parameter original_resp: The httpResponse object that holds the ORIGINAL response.
-        @parameter resp: The httpResponse object that holds the content of the response to analyze.
+        @parameter original_resp: The httpResponse object that holds the
+                                  ORIGINAL response.
+        @parameter resp: The httpResponse object that holds the content of
+                         the response to analyze.
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
             i = info.info(resp)
@@ -92,51 +86,29 @@ class domain_dot(InfrastructurePlugin):
             i.setId([original_resp.id, resp.id])
             i.setName('Responses differ')
             msg = '[Manual verification required] The response body for a ' \
-            'request with a trailing dot in the domain, and the response ' \
-            'body without a trailing dot in the domain differ. This could ' \
-            'indicate a misconfiguration in the virtual host settings. In ' \
-            'some cases, this misconfiguration permits the attacker to read ' \
-            'the source code of the web application.'
+                  'request with a trailing dot in the domain, and the response ' \
+                  'body without a trailing dot in the domain differ. This could ' \
+                  'indicate a misconfiguration in the virtual host settings. In ' \
+                  'some cases, this misconfiguration permits the attacker to ' \
+                  'read the source code of the web application.'
             i.setDesc(msg)
             
             om.out.information(msg)
             
             kb.kb.append(self, 'domain_dot', i)
                 
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = OptionList()
-        return ol
-
-    def set_options( self, option_list ):
-        '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of get_options().
-        
-        @parameter OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        ''' 
-        pass
-
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-        
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds misconfigurations in the virtual host settings by sending a specially crafted
-        request with a trailing dot in the domain name. For example, if the input for this plugin is
-        http://host.tld/ , the plugin will perform a request to http://host.tld./ .
+        This plugin finds misconfigurations in the virtual host settings by
+        sending a specially crafted request with a trailing dot in the domain
+        name. For example, if the input for this plugin is http://host.tld/ ,
+        the plugin will perform a request to http://host.tld./ .
         
-        In some misconfigurations, the attacker is able to read the web application source code by
-        requesting any of the files in the "dotted" domain like this:
+        In some misconfigurations, the attacker is able to read the web 
+        application source code by requesting any of the files in the "dotted"
+        domain like this:
             - http://host.tld/login.php
         '''
