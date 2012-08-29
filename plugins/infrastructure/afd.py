@@ -89,8 +89,10 @@ class afd(InfrastructurePlugin):
             
             tests = []
             for offending_string in self._get_offending_strings():
-                offending_URL = fmt % (fuzzable_request.getURL(), rnd_param, 
+                offending_URL = fmt % (fuzzable_request.getURL(),
+                                       rnd_param, 
                                        offending_string)
+                offending_URL = url_object(offending_URL)
                 tests.append( (offending_string, offending_URL,
                                original_response_body, rnd_param) )
             
@@ -109,9 +111,7 @@ class afd(InfrastructurePlugin):
         '''
         try:
             resp_body = self._uri_opener.GET(offending_URL, cache=False).getBody()
-        except KeyboardInterrupt, e:
-            raise e
-        except Exception:
+        except Exception, e:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
         else:
