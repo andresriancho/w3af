@@ -57,7 +57,7 @@ class urllist_txt(CrawlPlugin):
                 i.setPluginName(self.getName())
                 i.setName('urllist.txt file')
                 i.setURL( urllist_url )
-                i.setId( http_response.id )
+                i.set_id( http_response.id )
                 i.setDesc( 'A urllist.txt file was found at: "%s".' % urllist_url )
                 kb.kb.append( self, 'urllist.txt', i )
                 om.out.information( i.getDesc() )

@@ -202,7 +202,7 @@ class rfi(AuditPlugin):
             if self._rfi_result in response:
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
-                v.setId(response.id)
+                v.set_id(response.id)
                 v.setSeverity(severity.HIGH)
                 v.setName('Remote file inclusion vulnerability')
                 v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
@@ -219,7 +219,7 @@ class rfi(AuditPlugin):
                     if error in response and not error in mutant.getOriginalResponseBody():
                         v = vuln.vuln( mutant )
                         v.setPluginName(self.getName())
-                        v.setId( response.id )
+                        v.set_id( response.id )
                         v.setSeverity(severity.MEDIUM)
                         v.addToHighlight(error)
                         v.setName('Remote file inclusion vulnerability')
@@ -230,7 +230,7 @@ class rfi(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('rfi', 'rfi'), 'VAR')
+        self.print_uniq(kb.kb.get('rfi', 'rfi'), 'VAR')
 
     def _create_file(self):
         '''

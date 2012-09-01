@@ -38,7 +38,7 @@ class TestFindVhosts(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
         
-        infos = self.kb.getData('find_vhosts', 'find_vhosts')
+        infos = self.kb.get('find_vhosts', 'find_vhosts')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
@@ -49,7 +49,7 @@ class TestFindVhosts(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.dead_link_url, cfg['plugins'])
         
-        infos = self.kb.getData('find_vhosts', 'find_vhosts')
+        infos = self.kb.get('find_vhosts', 'find_vhosts')
         self.assertEqual( len(infos), 2, infos)
         
         expected = set(['Internal hostname in HTML link', 'Shared hosting'])

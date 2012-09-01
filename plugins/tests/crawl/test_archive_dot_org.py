@@ -40,7 +40,7 @@ class TestArchiveDotOrg(PluginTest):
     
     def test_found_urls(self):
         self._scan(self.archive_url, self._run_config['plugins'])
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         
         EXPECTED_URLS = ('oss.php', 'objectives.php', 'plugin-descriptions.php',
                          'videos/video-demos.php', 'videos/w3af-vs-wivet/w3af-vs-wivet.htm', 

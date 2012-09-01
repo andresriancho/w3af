@@ -37,7 +37,7 @@ class TestDotNetErrors(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('dot_net_errors', 'dot_net_errors')
+        infos = self.kb.get('dot_net_errors', 'dot_net_errors')
         
         self.assertEqual( len(infos), 1, infos )
         

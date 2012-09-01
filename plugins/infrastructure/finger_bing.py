@@ -67,7 +67,7 @@ class finger_bing(InfrastructurePlugin):
             #   Send the requests using threads:
             self._tm.threadpool.map(self._find_accounts, results)            
         
-            self.print_uniq(kb.kb.getData('finger_bing', 'emails'), None)
+            self.print_uniq(kb.kb.get('finger_bing', 'emails'), None)
 
     def _find_accounts(self, page):
         '''

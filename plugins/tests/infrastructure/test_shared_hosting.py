@@ -37,10 +37,10 @@ class TestServerHeader(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        domains = self.kb.getData('shared_hosting', 'domains')
+        domains = self.kb.get('shared_hosting', 'domains')
         self.assertGreater( len(domains), 30, len(domains))
         
-        infos = self.kb.getData('shared_hosting', 'shared_hosting')
+        infos = self.kb.get('shared_hosting', 'shared_hosting')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]

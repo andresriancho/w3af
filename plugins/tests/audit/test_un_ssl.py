@@ -39,7 +39,7 @@ class TestUnSSL(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('un_ssl', 'un_ssl')
+        vulns = self.kb.get('un_ssl', 'un_ssl')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln

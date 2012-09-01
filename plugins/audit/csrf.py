@@ -73,7 +73,7 @@ class csrf(AuditPlugin):
         # Ok, we have found vulnerable to CSRF attack request
         v = vuln.vuln(freq)
         v.setPluginName(self.getName())
-        v.setId(orig_response.id)
+        v.set_id(orig_response.id)
         v.setName('CSRF vulnerability')
         v.setSeverity(severity.HIGH)
         msg = 'Cross Site Request Forgery has been found at: ' + freq.getURL()
@@ -201,7 +201,7 @@ class csrf(AuditPlugin):
         This method is called at the end, when w3afCore aint going to use this
         plugin anymore.
         '''
-        self.printUniq(kb.kb.getData('csrf', 'csrf'), None)
+        self.printUniq(kb.kb.get('csrf', 'csrf'), None)
 
     def get_long_desc( self ):
         '''

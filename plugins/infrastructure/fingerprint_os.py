@@ -83,7 +83,7 @@ class fingerprint_os(InfrastructurePlugin):
                 i.setURL( windows_response.getURL() )
                 i.setMethod( 'GET' )
                 i.setDesc('Fingerprinted this host as a Microsoft Windows system.' )
-                i.setId( [windows_response.id, original_response.id] )
+                i.set_id( [windows_response.id, original_response.id] )
                 kb.kb.save( self, 'operating_system_str', 'windows' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )
@@ -96,7 +96,7 @@ class fingerprint_os(InfrastructurePlugin):
                 msg = 'Fingerprinted this host as a *nix system. Detection for'
                 msg += '  this operating system is weak, "if not windows: is linux".'
                 i.setDesc( msg )
-                i.setId( [original_response.id, windows_response.id] )
+                i.set_id( [original_response.id, windows_response.id] )
                 kb.kb.save( self, 'operating_system_str', 'unix' )
                 kb.kb.append( self, 'operating_system', i )
                 om.out.information( i.getDesc() )

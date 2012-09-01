@@ -81,7 +81,7 @@ class TestGeneric(PluginTest):
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
-        vulns = self.kb.getData('xss', 'xss')
+        vulns = self.kb.get('xss', 'xss')
         
         self.assertEquals( len(vulns), 1, vulns)
         
@@ -104,7 +104,7 @@ class TestGeneric(PluginTest):
     
         self._scan(self.demo_testfire_net['target'], self.demo_testfire_net['plugins'])
 
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         url_strings = set(str(u) for u in urls)
         
         self.assertTrue( self.demo_testfire + 'queryxpath.aspx' in url_strings ) 

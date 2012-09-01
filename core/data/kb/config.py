@@ -27,18 +27,12 @@ class config(dict):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
         
-    def save(self, variableName, value):
+    def save(self, variable_name, value):
         '''
-        This method saves the variableName value to a dict.
+        This method saves the variable_name value to a dict.
         '''
-        self[variableName] = value
+        self[variable_name] = value
         
-    def getData(self, variableName, default=None):
-        '''
-        @return: Returns the data that was saved to the variableName
-        '''
-        return self.get(variableName, default)
-    
     def cleanup(self):
         '''
         Cleanup internal data.

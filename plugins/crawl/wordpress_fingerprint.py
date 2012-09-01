@@ -138,7 +138,7 @@ class wordpress_fingerprint(CrawlPlugin):
                     i.setPluginName(self.getName())
                     i.setName('WordPress version')
                     i.setURL( install_url )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     msg = 'The sysadmin used WordPress version "%s" during the'
                     msg += ' installation, which was found by matching the contents'
                     msg += ' of "%s" with the hashes of known releases. If the'
@@ -168,7 +168,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i.setPluginName(self.getName())
             i.setName('WordPress version')
             i.setURL( wp_readme_url )
-            i.setId( response.id )
+            i.set_id( response.id )
             msg = 'WordPress version "%s" found in the readme.html file.'
             i.setDesc( msg % version )
             kb.kb.append( self, 'info', i )
@@ -196,7 +196,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i.setPluginName(self.getName())
             i.setName('WordPress version')
             i.setURL( wp_index_url )
-            i.setId( response.id )
+            i.set_id( response.id )
             msg = 'WordPress version "%s" found in the index header.'
             i.setDesc( msg % version )
             kb.kb.append( self, 'info', i )
@@ -224,7 +224,7 @@ class wordpress_fingerprint(CrawlPlugin):
         i.setPluginName(self.getName())
         i.setName('WordPress version')
         i.setURL( test_url )
-        i.setId( response.id )
+        i.set_id( response.id )
         i.setDesc( 'WordPress version "'+ version +'" found from data.' )
         kb.kb.append( self, 'info', i )
         om.out.information( i.getDesc() )

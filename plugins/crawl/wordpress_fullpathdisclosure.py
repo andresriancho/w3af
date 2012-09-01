@@ -96,7 +96,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
                                 i.setPluginName(self.getName())
                                 i.setName('WordPress server path found')
                                 i.setURL( vulnerable_url )
-                                i.setId( response.id )
+                                i.set_id( response.id )
                                 desc = 'WordPress is installed on "%s"' % path_disclosure.group(1)
                                 i.setDesc( desc )
                                 kb.kb.append( self, 'info', i )

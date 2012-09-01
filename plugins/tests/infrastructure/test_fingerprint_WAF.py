@@ -37,7 +37,7 @@ class TestFingerprintWAF(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('fingerprint_WAF', 'fingerprint_WAF')
+        infos = self.kb.get('fingerprint_WAF', 'fingerprint_WAF')
         self.assertEqual( len(infos), 0, infos)
         
 

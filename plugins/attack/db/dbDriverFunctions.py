@@ -226,7 +226,7 @@ class dbDriverFunctions:
                     val = chr(min + 1)
                     value = value + val
                     
-                    if self._runningGS and cf.cf.getData( 'demo'  ):
+                    if self._runningGS and cf.cf.get( 'demo'  ):
                         time.sleep(1.4)
                         
                     if self.args.verbose :

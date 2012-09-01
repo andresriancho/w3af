@@ -48,7 +48,7 @@ class TestOSCommandingShell(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('os_commanding', 'os_commanding')
+        vulns = self.kb.get('os_commanding', 'os_commanding')
         self.assertEquals(4, len(vulns))
         self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
                           True)

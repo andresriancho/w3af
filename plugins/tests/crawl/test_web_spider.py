@@ -58,7 +58,7 @@ class TestWebSpider(PluginTest):
              'd%20f/index.html', '2.html', 'a%20b.html',
              'a.gif', 'd%20f/', '1.html'
              )
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
                 set(str(u) for u in urls),
                 set((self.follow_links_url + end) for end in expected_urls)
@@ -67,7 +67,7 @@ class TestWebSpider(PluginTest):
     def test_spider_urls_with_strange_charsets(self):
         cfg = self._run_configs['basic']
         self._scan(self.encoding_url + 'index.html', cfg['plugins'])
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         expected = (
             u'', u'index.html',
             # Japanese
@@ -137,7 +137,7 @@ class TestWebSpider(PluginTest):
         
         inner_pages = 'innerpages/'
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
                 set(str(u) for u in urls if inner_pages in str(u) and str(u).endswith('.php')),
                 set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)

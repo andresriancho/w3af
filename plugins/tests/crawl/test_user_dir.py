@@ -37,7 +37,7 @@ class TestUserDir(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        users = self.kb.getData('user_dir', 'users')
+        users = self.kb.get('user_dir', 'users')
         
         self.assertEqual( len(users), 1, users )
         

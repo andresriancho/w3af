@@ -40,7 +40,7 @@ class TestFrontpage(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan( self.target_vuln_all, cfg['plugins'])
         
-        vulns = self.kb.getData('frontpage', 'frontpage')
+        vulns = self.kb.get('frontpage', 'frontpage')
         
         EXPECTED = set()
         

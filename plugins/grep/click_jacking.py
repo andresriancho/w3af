@@ -69,7 +69,7 @@ class click_jacking(GrepPlugin):
         v.setPluginName(self.getName())
         v.setName('Potential Click-Jacking vulnerability' )
         v.setSeverity(severity.MEDIUM)
-        v.setId([_id for _id in self._ids])
+        v.set_id([_id for _id in self._ids])
         # If none of the URLs implement protection, simply report
         # ONE vulnerability that says that.
         if self._total_count == self._vuln_count:
@@ -86,7 +86,7 @@ class click_jacking(GrepPlugin):
             v.setDesc(msg)
             kb.kb.append(self, 'click_jacking', v)
             
-        self.print_uniq(kb.kb.getData( 'click_jacking', 'click_jacking' ), 'URL')
+        self.print_uniq(kb.kb.get( 'click_jacking', 'click_jacking' ), 'URL')
 
     def get_long_desc(self):
         return '''

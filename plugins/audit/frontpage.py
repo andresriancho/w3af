@@ -57,7 +57,7 @@ class frontpage(AuditPlugin):
         '''
         domain_path = freq.getURL().getDomainPath()
         
-        if self._stop_on_first and kb.kb.getData(self, 'frontpage'):
+        if self._stop_on_first and kb.kb.get(self, 'frontpage'):
             # Nothing to do, I have found vuln(s) and I should stop on first
             msg = 'Not verifying if I can upload files to: "' + domain_path
             msg += '" using author.dll. Because I already found one vulnerability.'
@@ -143,7 +143,7 @@ class frontpage(AuditPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL( target_url )
-                v.setId( [upload_id, res.id] )
+                v.set_id( [upload_id, res.id] )
                 v.setSeverity(severity.HIGH)
                 v.setName( 'Insecure Frontpage extensions configuration' )
                 v.setMethod( 'POST' )

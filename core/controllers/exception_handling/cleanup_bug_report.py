@@ -51,7 +51,7 @@ def cleanup_bug_report( _input ):
     _input = re.sub(user_re, '/home/user/', _input)
     _input = re.sub(user_re_win, 'C:/user/', _input)
     
-    targets = cf.cf.getData('targets')
+    targets = cf.cf.get('targets')
     if targets is not None:
         domains = [url.getDomain() for url in targets]
         paths = [url.getPath() for url in targets if url.getPath() != '/']

@@ -51,7 +51,7 @@ class strange_http_codes(GrepPlugin):
         if response.getCode() not in self.COMMON_HTTP_CODES:
             
             # I check if the kb already has a info object with this code:
-            strange_code_infos = kb.kb.getData('strange_http_codes', 'strange_http_codes')
+            strange_code_infos = kb.kb.get('strange_http_codes', 'strange_http_codes')
             
             corresponding_info = None
             for info_obj in strange_code_infos:
@@ -63,7 +63,7 @@ class strange_http_codes(GrepPlugin):
                 # Work with the "old" info object:
                 id_list = corresponding_info.getId()
                 id_list.append( response.id )
-                corresponding_info.setId( id_list )
+                corresponding_info.set_id( id_list )
                 
             else:
                 # Create a new info object from scratch and save it to the kb:
@@ -71,7 +71,7 @@ class strange_http_codes(GrepPlugin):
                 i.setPluginName(self.getName())
                 i.setName('Strange HTTP Response code - ' + str(response.getCode()))
                 i.setURL( response.getURL() )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i['code'] = response.getCode()
                 desc = 'The remote Web server sent a strange HTTP response code: "'
                 desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
@@ -84,7 +84,7 @@ class strange_http_codes(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'strange_http_codes', 'strange_http_codes' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'strange_http_codes', 'strange_http_codes' ), 'URL' )
     
     def get_long_desc( self ):
         '''

@@ -31,7 +31,7 @@ def get_webroot_dirs( domain=None ):
     result = []
     
     # This one has more probability of success that all the other ones together
-    obtained_webroot = kb.kb.getData( 'path_disclosure', 'webroot' )
+    obtained_webroot = kb.kb.get( 'path_disclosure', 'webroot' )
     if obtained_webroot:
         result.append(obtained_webroot)
     

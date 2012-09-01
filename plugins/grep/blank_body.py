@@ -58,7 +58,7 @@ class blank_body(GrepPlugin):
             i.setPluginName(self.getName())
             i.setName('Blank body')
             i.setURL( response.getURL() )
-            i.setId( response.id )
+            i.set_id( response.id )
             msg = 'The URL: "'+ response.getURL()  + '" returned an empty body. '
             msg += 'This could indicate an error.'
             i.setDesc(msg)
@@ -68,7 +68,7 @@ class blank_body(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'blank_body', 'blank_body' ), None )
+        self.print_uniq( kb.kb.get( 'blank_body', 'blank_body' ), None )
     
     def get_long_desc( self ):
         '''

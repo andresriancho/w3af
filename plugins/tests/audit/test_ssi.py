@@ -42,7 +42,7 @@ class TestSSI(PluginTest):
     def test_found_ssi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('ssi', 'ssi')
+        vulns = self.kb.get('ssi', 'ssi')
         
         self.assertEquals(1, len(vulns), vulns)
         

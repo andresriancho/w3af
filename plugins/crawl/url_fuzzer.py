@@ -119,7 +119,7 @@ class url_fuzzer(CrawlPlugin):
                 i.setPluginName(self.getName())
                 i.setName('Potentially interesting file')
                 i.setURL(response.getURL())
-                i.setId(response.id)
+                i.set_id(response.id)
                 desc = 'A potentially interesting file was found at: "%s".'
                 i.setDesc( desc % response.getURL() )
                 kb.kb.append(self, 'files', i)
@@ -306,7 +306,7 @@ class url_fuzzer(CrawlPlugin):
         
         @return : Sets self._head to the correct value, nothing is returned.
         '''
-        if 'HEAD' in kb.kb.getData('allowed_methods' , 'methods'):
+        if 'HEAD' in kb.kb.get('allowed_methods' , 'methods'):
             self._head = True
         else:
             self._head = False

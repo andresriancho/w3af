@@ -77,7 +77,7 @@ class objects(GrepPlugin):
                 i.setPluginName(self.getName())
                 i.setName(tag_name.title() + ' tag')
                 i.setURL(url)
-                i.setId( response.id )
+                i.set_id( response.id )
                 msg = 'The URL: "%s" has an "%s" tag. We recommend you download the '
                 msg +=  'client side code and analyze it manually.'
                 msg = msg % (i.getURI(), tag_name)
@@ -101,7 +101,7 @@ class objects(GrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         for obj_type in self._tag_names:
-            self.print_uniq( kb.kb.getData( 'objects', obj_type ), 'URL' )
+            self.print_uniq( kb.kb.get( 'objects', obj_type ), 'URL' )
                 
     def get_plugin_deps( self ):
         '''

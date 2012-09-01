@@ -44,7 +44,7 @@ class svn_config_files(base_payload):
         for directory in apache_config_directory:
             yield directory+'mods-enabled/dav_svn.conf'
 
-        for folder in kb.kb.getData('password_profiling', 'password_profiling'):
+        for folder in kb.kb.get('password_profiling', 'password_profiling'):
             yield '/srv/svn/'+folder.lower()+'/conf/svnserve.conf'
             yield '/srv/svn/'+folder.lower()+'/conf/passwd'    
 

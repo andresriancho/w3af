@@ -36,7 +36,7 @@ class TestDirBruter(PluginTest):
     
     def test_fuzzer_found_urls(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         
         EXPECTED_URLS = ('setup/', 'header/', 'images/', 'portal/', 'index/', '')        
         

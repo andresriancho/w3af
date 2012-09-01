@@ -40,7 +40,7 @@ class TestMXInjection(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('mx_injection', 'mx_injection')
+        vulns = self.kb.get('mx_injection', 'mx_injection')
         self.assertEquals(1, len(vulns))
         self.assertEquals(all(["MX injection vulnerability" == vuln.getName() for vuln in vulns ]) , True)
 

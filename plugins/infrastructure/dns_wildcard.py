@@ -102,7 +102,7 @@ class dns_wildcard(InfrastructurePlugin):
                 msg = 'The contents of ' + modified_response.getURI()
                 msg += ' differ from the contents of ' + original_response.getURI() 
                 i.setDesc( msg )
-                i.setId( modified_response.id )
+                i.set_id( modified_response.id )
                 kb.kb.append( self, 'dns_wildcard', i )
                 om.out.information( i.getDesc() )
         
@@ -128,7 +128,7 @@ class dns_wildcard(InfrastructurePlugin):
                 msg = 'The target site has NO DNS wildcard, and the contents of ' \
                       '"%s" differ from the contents of "%s".' 
                 i.setDesc( msg % (dns_wildcard_url, original_response.getURL()) )
-                i.setId( modified_response.id )
+                i.set_id( modified_response.id )
                 kb.kb.append( self, 'dns_wildcard', i )
                 om.out.information( i.getDesc() )
             else:
@@ -140,7 +140,7 @@ class dns_wildcard(InfrastructurePlugin):
                 msg = 'The target site has a DNS wildcard configuration, the' \
                       ' contents of "%s" are equal to the ones of "%s".'
                 i.setDesc( msg % (dns_wildcard_url, original_response.getURL()) )
-                i.setId( modified_response.id )
+                i.set_id( modified_response.id )
                 kb.kb.append( self, 'dns_wildcard', i )
                 om.out.information( i.getDesc() )
                 

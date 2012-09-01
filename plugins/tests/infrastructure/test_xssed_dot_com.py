@@ -38,7 +38,7 @@ class TestXssedDotCom(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.vuln_url, cfg['plugins'])
         
-        infos = self.kb.getData('xssed_dot_com', 'xss')
+        infos = self.kb.get('xssed_dot_com', 'xss')
         
         self.assertEqual( len(infos), 1, infos)
         
@@ -51,7 +51,7 @@ class TestXssedDotCom(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])
         
-        infos = self.kb.getData('xssed_dot_com', 'xss')
+        infos = self.kb.get('xssed_dot_com', 'xss')
         
         self.assertEqual( len(infos), 0, infos)
         

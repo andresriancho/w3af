@@ -79,7 +79,7 @@ class ExceptionHandler(object):
         if isinstance(exception, self.NO_HANDLING):
             raise
             
-        stop_on_first_exception = cf.cf.getData( 'stop_on_first_exception' )
+        stop_on_first_exception = cf.cf.get( 'stop_on_first_exception' )
         if stop_on_first_exception:
             # TODO: Not sure if this is 100% secure code, but it should work
             # in most cases, and in the worse scenario it is just a developer

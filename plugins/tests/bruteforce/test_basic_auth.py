@@ -44,7 +44,7 @@ class TestBasicAuth(PluginTest):
         self._scan( self.target_url_easy , cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('basic_auth', 'auth')
+        vulns = self.kb.get('basic_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
@@ -61,5 +61,5 @@ class TestBasicAuth(PluginTest):
         self._scan( self.target_url_impossible , cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('basic_auth', 'auth')
+        vulns = self.kb.get('basic_auth', 'auth')
         self.assertEquals(len(vulns), 0)

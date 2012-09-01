@@ -37,7 +37,7 @@ class TestURLListTxt(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('urllist_txt', 'urllist.txt')
+        infos = self.kb.get('urllist_txt', 'urllist.txt')
         
         self.assertEqual( len(infos), 1, infos )
         
@@ -46,7 +46,7 @@ class TestURLListTxt(PluginTest):
         self.assertTrue( info.getName().startswith('urllist.txt file') )
         self.assertEquals( info.getURL().url_string, 'http://moth/urllist.txt' )
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         
         self.assertEqual( len(urls), 2, urls )
         

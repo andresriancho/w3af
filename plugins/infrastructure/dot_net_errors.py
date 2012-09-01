@@ -96,7 +96,7 @@ class dot_net_errors(InfrastructurePlugin):
         and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
             v = vuln.vuln( response )
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setSeverity(severity.LOW)
             v.setName( 'Information disclosure via .NET errors' )
             msg = 'Detailed information about ASP.NET error messages can be'

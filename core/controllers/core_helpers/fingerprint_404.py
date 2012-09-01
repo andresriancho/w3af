@@ -204,15 +204,15 @@ class fingerprint_404:
         #   First we handle the user configured exceptions:
         #
         domain_path = http_response.getURL().getDomainPath()
-        if domain_path in cf.cf.getData('always404'):
+        if domain_path in cf.cf.get('always404'):
             return True
-        elif domain_path in cf.cf.getData('never404'):
+        elif domain_path in cf.cf.get('never404'):
             return False        
 
         #
         #   The user configured setting. "If this string is in the response, then it is a 404"
         #
-        if cf.cf.getData('404string') and cf.cf.getData('404string') in http_response:
+        if cf.cf.get('404string') and cf.cf.get('404string') in http_response:
             return True
         
         #

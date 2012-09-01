@@ -93,7 +93,7 @@ class credit_cards(GrepPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL( response.getURL() )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'Credit card number disclosure' )
                 v.addToHighlight(card)
@@ -121,7 +121,7 @@ class credit_cards(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'credit_cards', 'credit_cards' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'credit_cards', 'credit_cards' ), 'URL' )
 
      
     def get_long_desc( self ):

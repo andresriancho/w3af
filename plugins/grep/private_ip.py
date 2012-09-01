@@ -85,7 +85,7 @@ class private_ip(GrepPlugin):
                         v = vuln.vuln()
                         v.setPluginName(self.getName())
                         v.setURL( response.getURL() )
-                        v.setId( response.id )
+                        v.set_id( response.id )
                         v.setSeverity(severity.LOW)
                         v.setName( 'Private IP disclosure vulnerability' )
                         
@@ -121,7 +121,7 @@ class private_ip(GrepPlugin):
                             v = vuln.vuln()
                             v.setPluginName(self.getName())
                             v.setURL( response.getURL() )
-                            v.setId( response.id )
+                            v.set_id( response.id )
                             v.setSeverity(severity.LOW)
                             v.setName( 'Private IP disclosure vulnerability' )
                             
@@ -156,8 +156,8 @@ class private_ip(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'private_ip', 'header' ), None )
-        self.print_uniq( kb.kb.getData( 'private_ip', 'HTML' ), None )
+        self.print_uniq( kb.kb.get( 'private_ip', 'header' ), None )
+        self.print_uniq( kb.kb.get( 'private_ip', 'HTML' ), None )
             
     def get_long_desc( self ):
         '''

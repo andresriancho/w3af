@@ -50,7 +50,7 @@ class vdaemon(object):
         # remote webserver ( using echo $payload > file )
         self._exec_method = exec_method
         
-        self._metasploit_location = cf.cf.getData('msf_location')
+        self._metasploit_location = cf.cf.get('msf_location')
         self._msfpayload_path = os.path.join( self._metasploit_location , 'msfpayload' )
         self._msfcli_path = os.path.join( self._metasploit_location , 'msfcli' )
         

@@ -99,7 +99,7 @@ class frontpage_version(InfrastructurePlugin):
 
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName( 'FrontPage Configuration Information' )
             i.setURL( response.getURL() )
             desc = 'The FrontPage Configuration Information file was found at: "'
@@ -126,7 +126,7 @@ class frontpage_version(InfrastructurePlugin):
             # information in it... IPS? WAF? honeypot?                            
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName( 'Fake FrontPage Configuration Information' )
             i.setURL( response.getURL() )
             desc = 'A fake FrontPage Configuration Information file was found at: "'
@@ -148,7 +148,7 @@ class frontpage_version(InfrastructurePlugin):
                                            frontpage_admin.group(1) )
         i = info.info()
         i.setPluginName(self.getName())
-        i.setId( response.id )
+        i.set_id( response.id )
         i.setURL( admin_location )
         
         # Check for anomalies in the location of admin.exe
@@ -185,7 +185,7 @@ class frontpage_version(InfrastructurePlugin):
         
         i = info.info()
         i.setPluginName(self.getName())
-        i.setId( response.id )
+        i.set_id( response.id )
         i.setURL( author_location )
         # Check for anomalies in the location of author.exe
         if frontpage_author.group(1) != '_vti_bin/_vti_aut/author.exe':

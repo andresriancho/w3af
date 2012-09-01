@@ -60,7 +60,7 @@ class robots_txt(CrawlPlugin):
             i.setPluginName(self.getName())
             i.setName('robots.txt file')
             i.setURL( robots_url )
-            i.setId( http_response.id )
+            i.set_id( http_response.id )
             i.setDesc( 'A robots.txt file was found at: "'+ robots_url +'".' )
             kb.kb.append( self, 'robots.txt', i )
             om.out.information( i.getDesc() )

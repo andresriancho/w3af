@@ -47,7 +47,7 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 0 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 0 )
     
     def test_private_ip_find(self):
         body = '<html><head>192.168.1.1</head></html>'
@@ -56,7 +56,7 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
     
     def test_private_ip_broken_html(self):
         body = '<html><head>192.168.1.1</html>'
@@ -65,7 +65,7 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
     
     def test_private_ip_find_10(self):
         body = 'header 10.2.34.2 footer'
@@ -74,7 +74,7 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 1 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
     
     def test_private_ip_find_header(self):
         body = 'header content footer'
@@ -83,7 +83,7 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'header')) , 1 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'header')) , 1 )
 
     def test_private_ip_no(self):
         body = '<script> 1010.2.3.4 </script>'
@@ -92,5 +92,5 @@ class test_private_ip(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('private_ip', 'HTML')) , 0 )
-        self.assertEquals( len(kb.kb.getData('private_ip', 'header')) , 0 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 0 )
+        self.assertEquals( len(kb.kb.get('private_ip', 'header')) , 0 )

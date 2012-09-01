@@ -96,7 +96,7 @@ class phishing_vector(AuditPlugin):
                         # Vuln vuln!
                         v = vuln.vuln( mutant )
                         v.setPluginName(self.getName())
-                        v.setId( response.id )
+                        v.set_id( response.id )
                         v.setSeverity(severity.LOW)
                         v.setName( 'Phishing vector' )
                         v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
@@ -109,7 +109,7 @@ class phishing_vector(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'phishing_vector', 'phishing_vector' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'phishing_vector', 'phishing_vector' ), 'VAR' )
 
     def get_long_desc( self ):
         '''

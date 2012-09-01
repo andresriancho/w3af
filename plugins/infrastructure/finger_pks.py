@@ -54,7 +54,7 @@ class finger_pks(InfrastructurePlugin):
             i = info.info()
             i.setURL( url_object('http://pgp.mit.edu:11371/') )
             i.setPluginName(self.getName())
-            i.setId( [] )
+            i.set_id( [] )
             mail = result.username +'@' + root_domain
             i.setName( mail )
             i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )

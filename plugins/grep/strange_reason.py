@@ -101,7 +101,7 @@ class strange_reason(GrepPlugin):
                 #
                 #   I check if the kb already has a info object with this code:
                 #
-                strange_reason_infos = kb.kb.getData('strange_reason', 'strange_reason')
+                strange_reason_infos = kb.kb.get('strange_reason', 'strange_reason')
                 
                 corresponding_info = None
                 for info_obj in strange_reason_infos:
@@ -113,7 +113,7 @@ class strange_reason(GrepPlugin):
                     # Work with the "old" info object:
                     id_list = corresponding_info.getId()
                     id_list.append( response.id )
-                    corresponding_info.setId( id_list )
+                    corresponding_info.set_id( id_list )
                     
                 else:
                     # Create a new info object from scratch and save it to the kb:
@@ -121,7 +121,7 @@ class strange_reason(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('Strange HTTP Reason message - ' + str(response.getMsg()))
                     i.setURL( response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i['reason'] = response.getMsg()
                     desc = 'The remote Web server sent a strange HTTP reason message: "'
                     desc += str(response.getMsg()) + '" manual inspection is advised.'
@@ -132,7 +132,7 @@ class strange_reason(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'strange_reason', 'strange_reason' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'strange_reason', 'strange_reason' ), 'URL' )
 
     def get_long_desc( self ):
         '''

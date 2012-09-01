@@ -36,7 +36,7 @@ class TestXST(PluginTest):
 
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
-        vulns = self.kb.getData('xst', 'xst')
+        vulns = self.kb.get('xst', 'xst')
         self.assertEquals( len(vulns), 1)
         
         self.assertEquals(all(['Cross site tracing vulnerability' == vuln.getName() for vuln in vulns ]) , True)

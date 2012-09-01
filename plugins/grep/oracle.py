@@ -59,7 +59,7 @@ class oracle(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('Oracle application')
                     i.setURL(url)
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.addToHighlight( msg )
                     msg = 'The URL: "' + url + '" was created using Oracle'
                     msg += ' Application server.'
@@ -75,7 +75,7 @@ class oracle(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'oracle', 'oracle' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'oracle', 'oracle' ), 'URL' )
 
     def get_long_desc( self ):
         '''

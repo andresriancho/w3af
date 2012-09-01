@@ -353,7 +353,7 @@ class SQLCachedResponse(CachedResponse):
         # Set the response
         resp = httpResponse.from_httplib_resp(response,
                                               original_url=request.url_object)
-        resp.setId(response.id)
+        resp.set_id(response.id)
         resp.setAlias(gen_hash(request))
         hi.response = resp
 

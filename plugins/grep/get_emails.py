@@ -92,7 +92,7 @@ class get_emails(GrepPlugin):
             url = response.getURL()
 
             email_map = {}
-            for info_obj in kb.kb.getData( 'emails', 'emails'):
+            for info_obj in kb.kb.get( 'emails', 'emails'):
                 mail_string = info_obj['mail']
                 email_map[ mail_string ] = info_obj
 
@@ -101,7 +101,7 @@ class get_emails(GrepPlugin):
                 i = info.info()
                 i.setPluginName(self.getName())
                 i.setURL(url)
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.setName( mail_address )
                 desc = 'The mail account: "'+ mail_address + '" was found in: '
                 desc += '\n- ' + url
@@ -124,7 +124,7 @@ class get_emails(GrepPlugin):
                     # of the information object.
                     id_list_of_info = i.getId()
                     id_list_of_info.append( response.id )
-                    i.setId( id_list_of_info )
+                    i.set_id( id_list_of_info )
                     i.setURL( url )
                     desc = i.getDesc()
                     desc += '\n- ' + url
@@ -151,8 +151,8 @@ class get_emails(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'emails', 'emails' ), None )
-        self.print_uniq( kb.kb.getData( 'emails', 'external_emails' ), None )
+        self.print_uniq( kb.kb.get( 'emails', 'emails' ), None )
+        self.print_uniq( kb.kb.get( 'emails', 'external_emails' ), None )
     
     def get_long_desc( self ):
         '''

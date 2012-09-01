@@ -608,7 +608,7 @@ class MainApp(object):
         self.pcbody.target.insertURL()
 
         # sets the title 
-        targets = cf.cf.getData('targets')
+        targets = cf.cf.get('targets')
         if targets:
             target_domain_obj = targets[0]
             target_domain = target_domain_obj.getDomain()

@@ -85,7 +85,7 @@ class phishtank(CrawlPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL( ptm.url )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'Phishing scam' )
                 v.setSeverity(severity.LOW)
                 desc = 'The URL: "' + ptm.url + '" seems to be involved in a phishing scam. Please see "'

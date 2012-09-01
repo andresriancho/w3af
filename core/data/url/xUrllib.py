@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import httplib
 import os
 import re
@@ -63,13 +62,13 @@ class xUrllib(object):
     def __init__(self):
         self.settings = urlOpenerSettings.urlOpenerSettings()
         self._opener = None
-        self._memoryUsageCounter = 0
+        self._memory_usage_counter = 0
         self._non_targets = None
         
         # For error handling
-        self._lastRequestFailed = False
+        self._last_request_failed = False
         self._last_errors = deque(maxlen=10)
-        self._errorCount = {}
+        self._error_count = {}
         self._countLock = threading.RLock()
         
         # User configured options (in an indirect way)
@@ -94,21 +93,21 @@ class xUrllib(object):
         '''
         self._must_stop = True
     
-    def _callBeforeSend(self):
+    def _call_before_send(self):
         '''
-        This is a method that is called before every request is sent. I'm using it as
-        a hook implement:
+        This is a method that is called before every request is sent. I'm using
+        it as a hook implement:
             - The pause/stop feature
             - Memory debugging features
         '''
-        self._sleepIfPausedDieIfStopped()
+        self._sleep_if_paused_die_if_stopped()
         
-        self._memoryUsageCounter += 1
-        if self._memoryUsageCounter == 150:
+        self._memory_usage_counter += 1
+        if self._memory_usage_counter == 150:
             dump_memory_usage()
-            self._memoryUsageCounter = 0
+            self._memory_usage_counter = 0
     
-    def _sleepIfPausedDieIfStopped(self):
+    def _sleep_if_paused_die_if_stopped(self):
         '''
         This method sleeps until self._paused is False.
         '''
@@ -151,10 +150,10 @@ class xUrllib(object):
             om.out.debug('Cleared urllib2 local cache.')
         
     def _init(self):
-        if self.settings.needUpdate or self._opener is None:
-            self.settings.needUpdate = False
-            self.settings.buildOpeners()
-            self._opener = self.settings.getCustomUrlopen()
+        if self.settings.need_update or self._opener is None:
+            self.settings.need_update = False
+            self.settings.build_openers()
+            self._opener = self.settings.get_custom_opener()
 
     def getHeaders(self, uri):
         '''
@@ -171,14 +170,15 @@ class xUrllib(object):
         that configuration here. This is the lowest layer inside w3af.
         '''
         if self._non_targets is None:
-            non_targets = cf.cf.getData('nonTargets') or []
+            non_targets = cf.cf.get('nonTargets') or []
             self._non_targets = set()
             self._non_targets.update([nt_url.uri2url() for nt_url in non_targets])
              
         if uri.uri2url() in self._non_targets:
-            msg = 'The URL you are trying to reach was configured as a non-target. ( '
-            msg += uri +' ). Returning an empty response.'
-            om.out.debug( msg )
+            msg = 'The URL you are trying to reach (%s) was configured as a' \
+                  'non-target. NOT performing the HTTP request and returning an' \
+                  ' empty response.'
+            om.out.debug(msg % uri)
             return True
 
         return False
@@ -305,7 +305,7 @@ class xUrllib(object):
         #       but it shouldn't be implemented like this! It should look more
         #       like the follow_redir parameter.
         if not respect_size_limit:
-            max_file_size = cf.cf.getData('maxFileSize')
+            max_file_size = cf.cf.get('maxFileSize')
             cf.cf.save('maxFileSize', 10**10)
         #
         # Create and send the request
@@ -468,15 +468,15 @@ class xUrllib(object):
 
     def _add_headers( self , req, headers={} ):
         # Add all custom Headers if they exist
-        for i in self.settings.HeaderList:
-            req.add_header( i[0], i[1] )
+        for h, v in self.settings.header_list:
+            req.add_header( h, v )
         
-        for h in headers.keys():
-            req.add_header( h, headers[h] )
+        for h, v in headers.iteritems():
+            req.add_header( h, v )
 
         return req
     
-    def _checkURI( self, req ):
+    def _check_uri( self, req ):
         #bug bug !
         #
         # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
@@ -500,10 +500,10 @@ class xUrllib(object):
         '''
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
-        self._callBeforeSend()
+        self._call_before_send()
 
         # Sanitize the URL
-        self._checkURI(req)
+        self._check_uri(req)
         
         # Evasion
         original_url = req._Request__original
@@ -519,8 +519,9 @@ class xUrllib(object):
             res = self._opener.open(req)
         except urllib2.HTTPError, e:
             # We usually get here when response codes in [404, 403, 401,...]
-            msg = '%s %s returned HTTP code "%s"' % \
-                            (req.get_method(), original_url, e.code)
+            msg = '%s %s returned HTTP code "%s"' % (req.get_method(),
+                                                     original_url,
+                                                     e.code)
 
             from_cache = hasattr(e, 'from_cache')
             flags = ' (id=%s,from_cache=%i,grep=%i)' % (e.id, from_cache, grep)
@@ -532,23 +533,23 @@ class xUrllib(object):
             info = e.info()
             geturl_instance = url_object(e.geturl())
             read = self._readRespose(e)
-            httpResObj = httpResponse(code, read, info, geturl_instance,
+            http_resp = httpResponse(code, read, info, geturl_instance,
                                       original_url_inst, id=e.id,
                                       time=time.time()-start_time, msg=e.msg,
                                       charset=getattr(e.fp, 'encoding', None))
             
             # Clear the log of failed requests; this request is done!
             req_id = id(req)
-            if req_id in self._errorCount:
-                del self._errorCount[req_id]
+            if req_id in self._error_count:
+                del self._error_count[req_id]
 
             # Reset errors counter
             self._zero_global_error_count()
         
             if grep:
-                self._grep(req, httpResObj)
+                self._grep(req, http_resp)
 
-            return httpResObj
+            return http_resp
         except urllib2.URLError, e:
             # I get to this section of the code if a 400 error is returned
             # also possible when a proxy is configured and not available
@@ -557,7 +558,7 @@ class xUrllib(object):
             # Timeouts are not intended to increment the global error counter.
             # They are part of the expected behaviour.
             if not isinstance(e, URLTimeoutError):
-                self._incrementGlobalErrorCount(e)
+                self._increment_global_error_count(e)
             try:
                 e.reason[0]
             except:
@@ -596,8 +597,8 @@ class xUrllib(object):
 
             # Clear the log of failed requests; this request is done!
             req_id = id(req)
-            if req_id in self._errorCount:
-                del self._errorCount[req_id]
+            if req_id in self._error_count:
+                del self._error_count[req_id]
 
             trace_str = traceback.format_exc()
             parsed_traceback = re.findall('File "(.*?)", line (.*?), in (.*)',
@@ -608,7 +609,7 @@ class xUrllib(object):
             #
             # Where ('filename', 'line-number', 'function-name')
 
-            self._incrementGlobalErrorCount(e, parsed_traceback)
+            self._increment_global_error_count(e, parsed_traceback)
 
             return self._new_no_content_resp(original_url_inst, log_it=True)
 
@@ -628,25 +629,25 @@ class xUrllib(object):
             msg += flags
             om.out.debug(msg)
 
-            httpResObj = from_httplib_resp(res, original_url=original_url_inst)
-            httpResObj.setId(id=res.id)
-            httpResObj.setWaitTime(time.time()-start_time)
+            http_resp = from_httplib_resp(res, original_url=original_url_inst)
+            http_resp.set_id(id=res.id)
+            http_resp.set_wait_time(time.time()-start_time)
 
             # Let the upper layers know that this response came from the
             # local cache.
             if isinstance(res, CachedResponse):
-                httpResObj.setFromCache(True)
+                http_resp.set_from_cache(True)
 
             # Clear the log of failed requests; this request is done!
             req_id = id(req)
-            if req_id in self._errorCount:
-                del self._errorCount[req_id]
+            if req_id in self._error_count:
+                del self._error_count[req_id]
             self._zero_global_error_count()
 
             if grep:
-                self._grep(req, httpResObj)
+                self._grep(req, http_resp)
 
-            return httpResObj
+            return http_resp
 
     def _readRespose( self, res ):
         read = ''
@@ -663,19 +664,19 @@ class xUrllib(object):
         Try to send the request again while doing some error handling.
         '''
         req_id = id(req)
-        if self._errorCount.setdefault(req_id, 1) <= \
+        if self._error_count.setdefault(req_id, 1) <= \
                 self.settings.getMaxRetrys():
             # Increment the error count of this particular request.
-            self._errorCount[req_id] += 1            
+            self._error_count[req_id] += 1            
             om.out.debug('Re-sending request...')
             return self._send(req, cache)
         else:
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do
-            del self._errorCount[req_id]
+            del self._error_count[req_id]
             raise w3afMustStopOnUrlError(urlerr, req)
     
-    def _incrementGlobalErrorCount(self, error, parsed_traceback=[]):
+    def _increment_global_error_count(self, error, parsed_traceback=[]):
         '''
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException" subtype.
@@ -693,10 +694,10 @@ class xUrllib(object):
         
         last_errors = self._last_errors
 
-        if self._lastRequestFailed:
+        if self._last_request_failed:
             last_errors.append((str(error) , parsed_traceback))
         else:
-            self._lastRequestFailed = True
+            self._last_request_failed = True
         
         errtotal = len(last_errors)
         
@@ -754,7 +755,7 @@ class xUrllib(object):
     def ignore_errors(self, yes_no):
         '''
         Let the library know if errors should be ignored or not. Basically,
-        ignore all calls to "_incrementGlobalErrorCount" and don't raise the
+        ignore all calls to "_increment_global_error_count" and don't raise the
         w3afMustStopException.
 
         @parameter yes_no: True to ignore errors.
@@ -762,22 +763,22 @@ class xUrllib(object):
         self._ignore_errors_conf = yes_no
             
     def _zero_global_error_count( self ):
-        if self._lastRequestFailed or self._last_errors:
-            self._lastRequestFailed = False
+        if self._last_request_failed or self._last_errors:
+            self._last_request_failed = False
             self._last_errors.clear()
             om.out.debug('Resetting global error count. GEC: 0')
     
     def set_grep_queue(self, grep_queue ):
         self._grep_queue = grep_queue
     
-    def setEvasionPlugins( self, evasionPlugins ):
+    def set_evasion_plugins( self, evasion_plugins ):
         # I'm sorting evasion plugins based on priority
         def sortFunc(x, y):
             return cmp(x.getPriority(), y.getPriority())
-        evasionPlugins.sort(sortFunc)
+        evasion_plugins.sort(sortFunc)
 
         # Save the info
-        self._evasion_plugins = evasionPlugins
+        self._evasion_plugins = evasion_plugins
         
     def _evasion( self, request ):
         '''
@@ -799,7 +800,7 @@ class xUrllib(object):
         domain = url_instance.getDomain()
         
         if self._grep_queue is not None and\
-           domain in cf.cf.getData('targetDomains'):
+           domain in cf.cf.get('targetDomains'):
             
             # Create a fuzzable request based on the urllib2 request object
             fr = create_fuzzable_request(

@@ -76,7 +76,7 @@ class rfi_proxy(AttackPlugin, Process):
         self._url = None
         self._method = None
         self._exploitQs = None
-        self._proxyPublicIP = cf.cf.getData( 'localAddress' )
+        self._proxyPublicIP = cf.cf.get( 'localAddress' )
         
     def fastExploit(self, url, method, data ):
         '''

@@ -81,7 +81,7 @@ class strange_parameters(GrepPlugin):
                             i.setPluginName(self.getName())
                             i.setName('Strange parameter')
                             i.setURI( ref )
-                            i.setId( response.id )
+                            i.set_id( response.id )
                             msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param_name
                             msg += '" with value: "' + qs[param_name][element_index] + '", which is quite odd.'
                             i.setDesc( msg )
@@ -105,7 +105,7 @@ class strange_parameters(GrepPlugin):
                             v.setPluginName(self.getName())
                             v.setName('Parameter has SQL sentence')
                             v.setURI( ref )
-                            v.setId( response.id )
+                            v.set_id( response.id )
                             msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param_name
                             msg +='" with value: "' + qs[param_name][element_index] + '", which is a SQL sentence.'
                             v.setDesc( msg )
@@ -118,7 +118,7 @@ class strange_parameters(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'strange_parameters', 'strange_parameters' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'strange_parameters', 'strange_parameters' ), 'VAR' )
 
     def _is_SQL(self, request, parameter, value):
         '''

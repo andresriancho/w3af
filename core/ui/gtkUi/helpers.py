@@ -429,8 +429,8 @@ def write_console_messages( dlg ):
     from . import messages
     
     msg_queue = messages.getQueueDiverter()
-    get_message_index = kb.kb.getData('get_message_index', 'get_message_index')
-    inc_message_index = kb.kb.getData('inc_message_index', 'inc_message_index')
+    get_message_index = kb.kb.get('get_message_index', 'get_message_index')
+    inc_message_index = kb.kb.get('inc_message_index', 'inc_message_index')
     
     for msg in msg_queue.get(get_message_index()):
         if msg is None:

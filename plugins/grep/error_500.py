@@ -91,7 +91,7 @@ class error_500(GrepPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURI( request.getURI() )
-                v.setId( error_500_response_id )
+                v.set_id( error_500_response_id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Unhandled error in web application' )
                 msg = 'An unidentified web application error (HTTP response code 500)'
@@ -101,7 +101,7 @@ class error_500(GrepPlugin):
                 v.setDesc( msg )
                 kb.kb.append( self, 'error_500', v )
                 
-        self.print_uniq( kb.kb.getData( 'error_500', 'error_500' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'error_500', 'error_500' ), 'VAR' )
 
     def get_long_desc( self ):
         '''

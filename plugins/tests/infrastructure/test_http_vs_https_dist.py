@@ -158,7 +158,7 @@ class TestHTTPvsHTTPS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('http_vs_https_dist', 'http_vs_https_dist')
+        infos = self.kb.get('http_vs_https_dist', 'http_vs_https_dist')
         
         self.assertEqual( len(infos), 1, infos)
         

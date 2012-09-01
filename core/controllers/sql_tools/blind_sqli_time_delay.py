@@ -61,7 +61,7 @@ class blind_sqli_time_delay(object):
                 desc = desc % mutant.foundAt()
                 v.setDesc( desc )
                 v.setDc( mutant.getDc() )
-                v.setId( [r.id for r in responses ] )
+                v.set_id( [r.id for r in responses ] )
                 v.setURI( r.getURI() )
                 
                 om.out.debug( v.getDesc() )

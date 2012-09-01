@@ -49,7 +49,7 @@ class test_oracle(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 0 )
+        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
     
     def test_oracle_long(self):
         body = 'ABC ' * 10000
@@ -58,7 +58,7 @@ class test_oracle(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 0 )
+        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
     
     def test_oracle_positive(self):
         body = 'ABC ' * 100
@@ -69,4 +69,4 @@ class test_oracle(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('oracle', 'oracle')) , 1 )
+        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 1 )

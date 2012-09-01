@@ -73,7 +73,7 @@ class format_string(AuditPlugin):
                     # vuln, vuln!
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.MEDIUM)
                     v.setName( 'Format string vulnerability' )
                     msg = 'A possible (detection is really hard...) format'
@@ -87,7 +87,7 @@ class format_string(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'format_string', 'format_string' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'format_string', 'format_string' ), 'VAR' )
         
     def _get_string_list( self ):
         '''

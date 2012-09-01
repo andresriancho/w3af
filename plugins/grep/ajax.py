@@ -82,7 +82,7 @@ class ajax(GrepPlugin):
                             i.setName('AJAX code')
                             i.setURL(url)
                             i.setDesc('The URL: "%s" has an AJAX code.' % url)
-                            i.setId(response.id)
+                            i.set_id(response.id)
                             i.addToHighlight(res.group(0))
                             kb.kb.append(self, 'ajax', i)
 
@@ -90,7 +90,7 @@ class ajax(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'ajax', 'ajax' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'ajax', 'ajax' ), 'URL' )
     
     def get_long_desc( self ):
         '''

@@ -135,7 +135,7 @@ class httpResponse(object):
             }
         return '<httpResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
     
-    def setId(self, id):
+    def set_id(self, id):
         self.id = id
     
     def getId(self):
@@ -347,7 +347,7 @@ class httpResponse(object):
     def getURI(self):
         return self._uri
 
-    def setFromCache(self, fcache):
+    def set_from_cache(self, fcache):
         '''
         @parameter fcache: True if this response was obtained from the
         local cache.
@@ -360,7 +360,7 @@ class httpResponse(object):
         '''
         return self._fromCache
 
-    def setWaitTime(self, t):
+    def set_wait_time(self, t):
         self._time = t
     
     def getWaitTime(self):

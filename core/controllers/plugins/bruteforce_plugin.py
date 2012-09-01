@@ -87,7 +87,7 @@ class BruteforcePlugin(AuditPlugin):
         self.audit_wrapper( fuzzable_request.copy() )
         
         res = []
-        for v in kb.kb.getData( self.getName(), 'auth' ):
+        for v in kb.kb.get( self.getName(), 'auth' ):
             if v.getURL() not in self._already_reported:
                 self._already_reported.append( v.getURL() )
                 res.extend( create_fuzzable_requests(v['response']) )

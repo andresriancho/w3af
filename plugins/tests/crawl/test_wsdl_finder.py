@@ -40,7 +40,7 @@ class TestWSDLFinder(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('wsdl_greper', 'wsdl')
+        infos = self.kb.get('wsdl_greper', 'wsdl')
         
         self.assertEqual( len(infos), 1, infos )
         

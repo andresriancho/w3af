@@ -155,7 +155,7 @@ class sqli(AuditPlugin):
                     # Create the vuln,
                     v = vuln.vuln(mutant)
                     v.setPluginName(self.getName())
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     v.setName('SQL injection vulnerability')
                     v.setSeverity(severity.HIGH)
                     v.addToHighlight(sql_error_string)
@@ -170,7 +170,7 @@ class sqli(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('sqli', 'sqli'), 'VAR')
+        self.print_uniq(kb.kb.get('sqli', 'sqli'), 'VAR')
     
     def _findsql_error(self, response):
         '''

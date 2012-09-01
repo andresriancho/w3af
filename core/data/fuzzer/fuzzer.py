@@ -289,7 +289,7 @@ def _createFileContentMutants(freq, mutant_str_list, fuzzable_param_list, append
     
     if file_vars:
         tmp = []
-        ext = cf.cf.getData('fuzzFCExt') or 'txt'
+        ext = cf.cf.get('fuzzFCExt') or 'txt'
         
         for mutant_str in mutant_str_list:
             if isinstance(mutant_str, basestring):
@@ -491,7 +491,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
                         # I have to create the NamedStringIO with a "name".
                         # This is needed for MultipartPostHandler
                         fname = "%s.%s" % (rand_alpha(7), 
-                                           cf.cf.getData('fuzzFCExt' ) or 'txt') 
+                                           cf.cf.get('fuzzFCExt' ) or 'txt') 
                         str_file = NamedStringIO('', name=fname)
                         dc_copy[var_name][0] = str_file
                     

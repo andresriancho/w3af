@@ -37,7 +37,7 @@ class TestLDAPI(PluginTest):
     def test_found_ldapi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('ldapi', 'ldapi')
+        vulns = self.kb.get('ldapi', 'ldapi')
         self.assertEquals(1, len(vulns))
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]

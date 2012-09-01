@@ -38,7 +38,7 @@ class TestDetectReverseProxy(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.proxied_url, cfg['plugins'])
         
-        infos = self.kb.getData('detect_reverse_proxy', 'detect_reverse_proxy')
+        infos = self.kb.get('detect_reverse_proxy', 'detect_reverse_proxy')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
@@ -48,7 +48,7 @@ class TestDetectReverseProxy(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
         
-        infos = self.kb.getData('detect_reverse_proxy', 'detect_reverse_proxy')
+        infos = self.kb.get('detect_reverse_proxy', 'detect_reverse_proxy')
         self.assertEqual( len(infos), 0, infos)
         
         

@@ -71,7 +71,7 @@ class file_upload(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('File upload form')
                     i.setURL(url)
-                    i.setId(response.id)
+                    i.set_id(response.id)
                     msg = 'The URL: "%s" has form with file upload ' \
                     'capabilities.' % url
                     i.setDesc(msg)
@@ -94,7 +94,7 @@ class file_upload(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'file_upload', 'file_upload' ), 'URL' )
 
     def get_long_desc( self ):
         '''

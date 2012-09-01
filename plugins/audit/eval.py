@@ -132,7 +132,7 @@ class eval(AuditPlugin):
             if success:
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
-                v.setId( [r.id for r in responses] )
+                v.set_id( [r.id for r in responses] )
                 v.setSeverity(severity.HIGH)
                 v.setName('eval() input injection vulnerability')
                 v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
@@ -150,7 +150,7 @@ class eval(AuditPlugin):
             and self._has_no_bug(mutant):
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
-                v.setId(response.id)
+                v.set_id(response.id)
                 v.setSeverity(severity.HIGH)
                 v.setName('eval() input injection vulnerability')
                 v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
@@ -160,7 +160,7 @@ class eval(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('eval', 'eval'), 'VAR')
+        self.print_uniq(kb.kb.get('eval', 'eval'), 'VAR')
 
     def _find_eval_result(self, response):
         '''

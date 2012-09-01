@@ -105,7 +105,7 @@ class shared_hosting(InfrastructurePlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL(fuzzable_request.getURL())
-                v.setId(1)
+                v.set_id(1)
                 
                 v['alsoInHosting'] = results
                 msg = 'The web application under test seems to be in a shared' \

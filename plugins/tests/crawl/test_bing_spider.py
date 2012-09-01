@@ -43,7 +43,7 @@ class TestBingSpider(PluginTest):
             'blog', 'es/clients/',
                         )
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         
         self.assertEquals(
                 set(str(u) for u in urls),

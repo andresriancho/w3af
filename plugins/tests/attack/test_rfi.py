@@ -42,7 +42,7 @@ class TestRFI(PluginTest):
         self._scan(cfg['target'] + '?file=section.php', cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('rfi', 'rfi')
+        vulns = self.kb.get('rfi', 'rfi')
         self.assertEquals(1, len(vulns))
         
         vuln = vulns[0]

@@ -44,7 +44,7 @@ class TestErrorPages(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        infos = self.kb.getData('cross_domain_js', 'cross_domain_js')
+        infos = self.kb.get('cross_domain_js', 'cross_domain_js')
         self.assertEquals(3, len(infos))
         
         EXPECTED = set(['cross_domain_script_mixed.html',

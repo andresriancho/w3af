@@ -88,7 +88,7 @@ class dav(AuditPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( res.getURL() )
-            v.setId( res.id )
+            v.set_id( res.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
@@ -113,7 +113,7 @@ class dav(AuditPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( res.getURL() )
-            v.setId( res.id )
+            v.set_id( res.id )
             v.setSeverity(severity.MEDIUM)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
@@ -137,7 +137,7 @@ class dav(AuditPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( url )
-            v.setId( [put_response.id, res.id] )
+            v.set_id( [put_response.id, res.id] )
             v.setSeverity(severity.HIGH)
             v.setName( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
@@ -151,7 +151,7 @@ class dav(AuditPlugin):
             i = info.info()
             i.setPluginName(self.getName())
             i.setURL( url )
-            i.setId( res.id )
+            i.set_id( res.id )
             i.setName( 'DAV incorrect configuration' )
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
@@ -165,7 +165,7 @@ class dav(AuditPlugin):
             i = info.info()
             i.setPluginName(self.getName())
             i.setURL( url )
-            i.setId( [put_response.id, res.id] )
+            i.set_id( [put_response.id, res.id] )
             i.setName( 'DAV insufficient privileges' )
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
@@ -179,7 +179,7 @@ class dav(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'dav', 'dav' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'dav', 'dav' ), 'VAR' )
         
     def get_plugin_deps( self ):
         '''

@@ -50,7 +50,7 @@ class test_strange_headers(unittest.TestCase):
         resp_positive = httpResponse(200, body , headers, url, url)
         self.plugin.grep(request, resp_positive)
         
-        infos = kb.kb.getData('strange_headers', 'strange_headers')
+        infos = kb.kb.get('strange_headers', 'strange_headers')
         self.assertEquals( len(infos), 1)
         
         info = infos[0]
@@ -66,5 +66,5 @@ class test_strange_headers(unittest.TestCase):
         resp_positive = httpResponse(200, body , headers, url, url)
         self.plugin.grep(request, resp_positive)
         
-        infos = kb.kb.getData('strange_headers', 'strange_headers')
+        infos = kb.kb.get('strange_headers', 'strange_headers')
         self.assertEquals( len(infos), 0)

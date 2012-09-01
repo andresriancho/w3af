@@ -41,7 +41,7 @@ class TestDav(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan( self.target_vuln_all, cfg['plugins'])
         
-        vulns = self.kb.getData('dav', 'dav')
+        vulns = self.kb.get('dav', 'dav')
         
         EXPECTED_NAMES = set(['Insecure DAV configuration'] * 2)
         
@@ -62,7 +62,7 @@ class TestDav(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan( self.target_no_privs, cfg['plugins'])
         
-        vulns = self.kb.getData('dav', 'dav')
+        vulns = self.kb.get('dav', 'dav')
         
         self.assertTrue( len(vulns), 1)
         
@@ -79,6 +79,6 @@ class TestDav(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan( self.target_safe_all, cfg['plugins'])
         
-        vulns = self.kb.getData('dav', 'dav')
+        vulns = self.kb.get('dav', 'dav')
         self.assertEquals(0, len(vulns))
         

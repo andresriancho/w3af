@@ -64,7 +64,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         raise NotImplementedError('Plugin is not implementing required method _generate_shell' )
         
     def getExploitableVulns(self):
-        return kb.kb.getData( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
+        return kb.kb.get( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
         
     def canExploit(self, vulnToExploit=None):
         '''
@@ -186,7 +186,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                     # this is done 5 lines before this comment
                     pass
         
-        return kb.kb.getData( self.getName(), 'shell' )
+        return kb.kb.get( self.getName(), 'shell' )
 
     def get_plugin_deps( self ):
         '''

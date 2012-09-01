@@ -45,7 +45,7 @@ class PayloadTestHelper(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('lfi', 'lfi')
+        vulns = self.kb.get('lfi', 'lfi')
         self.assertEquals(1, len(vulns))
         
         vuln = vulns[0]

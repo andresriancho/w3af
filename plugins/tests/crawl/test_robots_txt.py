@@ -36,7 +36,7 @@ class TestRobots(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         
         self.assertEqual( len(urls), 5, urls )
         

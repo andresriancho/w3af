@@ -114,7 +114,7 @@ class ria_enumerator(CrawlPlugin):
             i.setPluginName(self.getName())
             i.setName('Gears Manifest')
             i.setURL( url )
-            i.setId( response.id )
+            i.set_id( response.id )
             desc = 'A gears manifest file was found at: "'+ url 
             desc += '".  Each file should be manually reviewed for sensitive'
             desc += ' information that may get cached on the client.' 
@@ -139,7 +139,7 @@ class ria_enumerator(CrawlPlugin):
                 msg = 'The "' + file_name + '" file at: "' + response.getURL()
                 msg += '" is not a valid XML.'
                 i.setDesc( msg )
-                i.setId( response.id )
+                i.set_id( response.id )
                 kb.kb.append( self, 'info', i )
                 om.out.information( i.getDesc() )
         else:
@@ -163,7 +163,7 @@ class ria_enumerator(CrawlPlugin):
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
                     msg += ' flash/silverlight access from any site.'
                     v.setDesc( msg )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     kb.kb.append( self, 'vuln', v )
                     om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
                 else:
@@ -175,7 +175,7 @@ class ria_enumerator(CrawlPlugin):
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
                     msg += ' flash/silverlight access from "' + url + '".'
                     i.setDesc( msg )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     kb.kb.append( self, 'info', i )
                     om.out.information( i.getDesc() ) 	
                     

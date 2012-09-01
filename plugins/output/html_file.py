@@ -168,7 +168,7 @@ class html_file(OutputPlugin):
                                                   options_dict[plugin_type])
         
         # And now the target information
-        str_targets = ', '.join( [u.url_string for u in cf.cf.getData('targets')] )
+        str_targets = ', '.join( [u.url_string for u in cf.cf.get('targets')] )
         to_print += 'target\n'
         to_print += '    set target ' + str_targets + '\n'
         to_print += '    back'
@@ -238,7 +238,7 @@ class html_file(OutputPlugin):
 
         target_html = '<tr><td class=default width="100%%">%s</td></tr>'
         
-        for t in cf.cf.getData('targets'):
+        for t in cf.cf.get('targets'):
             self._write_to_file( target_html % cgi.escape( t.url_string ) )
 
         self._write_to_file('</table></td></tr></tbody></table><br />')

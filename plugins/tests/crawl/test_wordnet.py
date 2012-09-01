@@ -47,7 +47,7 @@ class TestWordnet(PluginTest):
              'hide.php', 'show.php', '',
              )
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
                 set(str(u) for u in urls),
                 set((self.target_url + end) for end in expected_urls)

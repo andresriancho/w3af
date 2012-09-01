@@ -50,7 +50,7 @@ class TestXSS(PluginTest):
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.xss_url, cfg['plugins'])
-        xssvulns = self.kb.getData('xss', 'xss')
+        xssvulns = self.kb.get('xss', 'xss')
         expected = [
             ('simple_xss_no_script_2.php', 'text', ['text']),
             ('dataReceptor.php', 'firstname', ['user', 'firstname']),
@@ -76,7 +76,7 @@ class TestXSS(PluginTest):
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(self.xss_302_url, cfg['plugins'])
-        xssvulns = self.kb.getData('xss', 'xss')
+        xssvulns = self.kb.get('xss', 'xss')
         expected = [
             ('302.php', 'x', ('x',)),
             ('302.php', 'a', ('a',)),

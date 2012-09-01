@@ -75,7 +75,7 @@ class find_dvcs(CrawlPlugin):
                 if regular_expression.match(line):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setName( 'Possible '+repo+' repository found' )
                     v.setSeverity(severity.LOW)
                     v.setURL( response.getURL() )

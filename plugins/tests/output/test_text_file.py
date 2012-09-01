@@ -64,7 +64,7 @@ class TestTextFile(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        xss_vulns = self.kb.getData('xss', 'xss')
+        xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_txt_get_vulns()
         
         self.assertGreaterEqual(len(xss_vulns), 3)

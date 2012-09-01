@@ -105,7 +105,7 @@ class ssi(AuditPlugin):
                 v.setName( 'Server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
                 v.setDesc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.addToHighlight( e_res )
                 kb.kb.append( self, 'ssi', v )
     
@@ -155,7 +155,7 @@ class ssi(AuditPlugin):
                 msg += ' The result of that injection is shown by'
                 msg += ' browsing to "%s".' % freq.getURL()
                 v.setDesc( msg )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.addToHighlight( matched_expected_result )
                 kb.kb.append( self, 'ssi', v )         
         
@@ -164,7 +164,7 @@ class ssi(AuditPlugin):
                                       analyze_persistent,
                                       cache=False)
             
-        self.print_uniq( kb.kb.getData( 'ssi', 'ssi' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'ssi', 'ssi' ), 'VAR' )
             
     def _find_file( self, response ):
         '''

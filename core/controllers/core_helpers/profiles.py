@@ -80,7 +80,7 @@ class w3af_core_profiles(object):
                     new_profile.set_plugin_options(pType, pName, pOptions)
                 
         # Save the profile targets
-        targets = cf.cf.getData('targets')
+        targets = cf.cf.get('targets')
         if targets:
             new_profile.setTarget(' , '.join(t.url_string for t in targets))
                 

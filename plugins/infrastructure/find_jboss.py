@@ -94,7 +94,7 @@ class find_jboss(InfrastructurePlugin):
                     i.setPluginName(self.getName())
                     i.setName(vuln_db_instance['name'])
                     i.setURL(vuln_url)
-                    i.setId(response.id)
+                    i.set_id(response.id)
                     i.setDesc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', i)
                     
@@ -103,7 +103,7 @@ class find_jboss(InfrastructurePlugin):
                     v.setPluginName(self.getName())
                     v.setName(vuln_db_instance['name'])
                     v.setURL(vuln_url)
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     v.setDesc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', v)
                 

@@ -76,9 +76,9 @@ class HistoryItem(object):
         '''Construct object.'''
         self._border = '-#=' * 20
         self._ext = '.trace'
-        if not kb.kb.getData('history', 'db') == []:
-            self._db = kb.kb.getData('history', 'db')
-            self._session_dir = kb.kb.getData('history', 'session_dir')
+        if not kb.kb.get('history', 'db') == []:
+            self._db = kb.kb.get('history', 'db')
+            self._session_dir = kb.kb.get('history', 'session_dir')
         else:
             self.initStructure()
 
@@ -108,7 +108,7 @@ class HistoryItem(object):
     
     def initStructure(self):
         '''Init history structure.'''
-        session_name = cf.cf.getData('session_name')
+        session_name = cf.cf.get('session_name')
         if session_name is None:
             # This is the case of unittests where we "forget" to set the proper
             # cf variables. Because I don't want to set the session name in all

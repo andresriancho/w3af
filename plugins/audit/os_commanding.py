@@ -132,7 +132,7 @@ class os_commanding(AuditPlugin):
                     v['separator'] = sentSeparator
                     v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setURI( response.getURI() )
                     v.addToHighlight( file_pattern_match )
                     kb.kb.append( self, 'os_commanding', v )
@@ -181,7 +181,7 @@ class os_commanding(AuditPlugin):
                     v['separator'] = delay_obj.get_separator()
                     v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
-                    v.setId( [r.id for r in responses] )
+                    v.set_id( [r.id for r in responses] )
                     v.setURI( r.getURI() )
                     kb.kb.append( self, 'os_commanding', v )
                     
@@ -191,7 +191,7 @@ class os_commanding(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('os_commanding', 'os_commanding'), 'VAR')
+        self.print_uniq(kb.kb.get('os_commanding', 'os_commanding'), 'VAR')
     
     def _get_echo_commands(self):
         '''
@@ -213,7 +213,7 @@ class os_commanding(AuditPlugin):
         commands.append( base_command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
         
         # Now I filter the commands based on the targetOS:
-        targetOS = cf.cf.getData('targetOS').lower()
+        targetOS = cf.cf.get('targetOS').lower()
         commands = [ c for c in commands if c.get_OS() == targetOS or targetOS == 'unknown']
 
         return commands
@@ -248,7 +248,7 @@ class os_commanding(AuditPlugin):
         commands.append( ping_delay( 'run ping -n %s localhost', 'windows', 'run '))
         
         # Now I filter the commands based on the targetOS:
-        targetOS = cf.cf.getData('targetOS').lower()
+        targetOS = cf.cf.get('targetOS').lower()
         commands = [ c for c in commands if c.get_OS() == targetOS or targetOS == 'unknown']
         
         return commands

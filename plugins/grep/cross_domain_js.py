@@ -80,7 +80,7 @@ class cross_domain_js(GrepPlugin):
                         i.setPluginName(self.getName())
                         i.setName('Cross-domain javascript source')
                         i.setURL(url)
-                        i.setId(response.id)
+                        i.set_id(response.id)
                         msg = 'The URL: "%s" has script tag with a source that points' \
                               ' to a third party site ("%s"). This practice is not' \
                               ' recommended as security of the current site is being' \
@@ -94,7 +94,7 @@ class cross_domain_js(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'cross_domain_js', 'cross_domain_js' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'cross_domain_js', 'cross_domain_js' ), 'URL' )
     
     def get_long_desc( self ):
         '''

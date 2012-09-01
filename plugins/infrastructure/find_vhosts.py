@@ -98,7 +98,7 @@ class find_vhosts(InfrastructurePlugin):
                       ' order to point "' + vhost + '" to the IP address of "' \
                       + domain + '".'
                 v.setDesc( msg )
-                v.setId( request_id )
+                v.set_id( request_id )
                 kb.kb.append( self, 'find_vhosts', v )
                 om.out.information( v.getDesc() )       
         
@@ -155,7 +155,7 @@ class find_vhosts(InfrastructurePlugin):
                 i.setName('Internal hostname in HTML link')
                 i.setURL( fuzzable_request.getURL() )
                 i.setMethod( 'GET' )
-                i.setId( original_response.id )
+                i.set_id( original_response.id )
                 msg = 'The content of "'+ fuzzable_request.getURL() +'" references a non '
                 msg += 'existant domain: "' + domain + '". This may be a broken link, or an'
                 msg += ' internal domain name.'
@@ -182,7 +182,26 @@ class find_vhosts(InfrastructurePlugin):
                     # socket.gaierror: (-5, 'No address associated with hostname')
                     socket.gethostbyname( domain )
                 except:
+<<<<<<< .mine
+                    i = info.info()
+                    i.setPluginName(self.getName())
+                    i.setName('Internal hostname in HTML link')
+                    i.setURL( fuzzable_request.getURL() )
+                    i.setMethod( 'GET' )
+                    i.set_id( original_response.id )
+                    msg = 'The content of "'+ fuzzable_request.getURL() +'" references a non '
+                    msg += 'existant domain: "' + link + '". This may be a broken link, or an'
+                    msg += ' internal domain name.'
+                    i.setDesc( msg )
+                    kb.kb.append( self, 'find_vhosts', i )
+                    om.out.information( i.getDesc() )
+        
+        res = [ r for r in res if r != '']
+        
+        return res 
+=======
                     yield domain
+>>>>>>> .r5785
     
     def _generic_vhosts( self, fuzzable_request ):
         '''

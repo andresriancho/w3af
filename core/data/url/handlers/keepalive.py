@@ -227,7 +227,7 @@ class HTTPResponse(httplib.HTTPResponse):
         if self.fp is None:
             return ''
 
-        if self.length > cf.cf.getData('maxFileSize'):
+        if self.length > cf.cf.get('maxFileSize'):
             self.status = NO_CONTENT
             self.reason = 'No Content'  # Reason-Phrase
             self.close()

@@ -44,7 +44,7 @@ class TestMetaTags(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('meta_tags', 'meta_tags')
+        vulns = self.kb.get('meta_tags', 'meta_tags')
         
         self.assertEquals(2, len(vulns))
         

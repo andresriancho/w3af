@@ -346,7 +346,7 @@ class xss(AuditPlugin):
                 if vulnerable:                
                     v = vuln.vuln(mutant)
                     v.setPluginName(self.getName())
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     v.setName('Cross site scripting vulnerability')
                     v.setSeverity(severity.MEDIUM)
                     msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
@@ -431,14 +431,14 @@ class xss(AuditPlugin):
                         msg += ' . Using method: ' + v.get_method() + '. The XSS was sent to the'
                         msg += ' URL: ' + mutant.getURL() + '. ' + mutant.printModValue()
                         v.setDesc(msg)
-                        v.setId([response.id, mutant_response_id])
+                        v.set_id([response.id, mutant_response_id])
                         v.addToHighlight(mutant.getModValue())
 
                         om.out.vulnerability(v.getDesc())
                         kb.kb.append(self, 'xss', v)
                         break
         
-        self.print_uniq(kb.kb.getData('xss', 'xss'), 'VAR')
+        self.print_uniq(kb.kb.get('xss', 'xss'), 'VAR')
 
     def get_options(self):
         '''

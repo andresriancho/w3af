@@ -57,8 +57,8 @@ class test_objects(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('objects', 'object')), 1 )
-        i = kb.kb.getData('objects', 'object')[0]
+        self.assertEquals( len(kb.kb.get('objects', 'object')), 1 )
+        i = kb.kb.get('objects', 'object')[0]
         self.assertTrue( '"object"' in i.getDesc() )
             
     def test_applet(self):
@@ -75,8 +75,8 @@ class test_objects(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('objects', 'applet')), 1 )
-        i = kb.kb.getData('objects', 'applet')[0]
+        self.assertEquals( len(kb.kb.get('objects', 'applet')), 1 )
+        i = kb.kb.get('objects', 'applet')[0]
         self.assertTrue( '"applet"' in i.getDesc() )
 
     def test_none(self):
@@ -87,5 +87,5 @@ class test_objects(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('objects', 'objects')), 0 )
+        self.assertEquals( len(kb.kb.get('objects', 'objects')), 0 )
     

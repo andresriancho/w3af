@@ -88,7 +88,7 @@ class un_ssl(AuditPlugin):
                         msg = 'Secure content can be accesed using the insecure'
                         msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
                         v.setDesc( msg % (secure_url, insecure_url) )
-                        v.setId( [insecure_response.id, secure_response.id] )
+                        v.set_id( [insecure_response.id, secure_response.id] )
                         kb.kb.append( self, 'un_ssl', v )
                         om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
     

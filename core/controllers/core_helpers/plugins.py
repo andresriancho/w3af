@@ -343,5 +343,5 @@ class w3af_core_plugins(object):
         '''
         self._plugins_names_dict['evasion'] = evasion_plugins
         self.plugin_factory()
-        self._w3af_core.uri_opener.setEvasionPlugins( self.plugins['evasion'] )
+        self._w3af_core.uri_opener.set_evasion_plugins( self.plugins['evasion'] )
         

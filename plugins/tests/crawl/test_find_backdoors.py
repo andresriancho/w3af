@@ -37,7 +37,7 @@ class TestFindBackdoor(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('find_backdoors', 'backdoors')
+        vulns = self.kb.get('find_backdoors', 'backdoors')
         
         self.assertEqual( len(vulns), 1, vulns )
         

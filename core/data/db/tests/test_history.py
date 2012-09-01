@@ -75,7 +75,7 @@ class TestHistoryItem(unittest.TestCase):
             res = httpResponse(code, '<html>',{'Content-Type':'text/html'}, url, url)
             h1 = HistoryItem()
             h1.request = fr
-            res.setId(i)
+            res.set_id(i)
             h1.response = res
             if i == find_id:
                 h1.toggleMark()
@@ -102,7 +102,7 @@ class TestHistoryItem(unittest.TestCase):
             res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
             h1 = HistoryItem()
             h1.request = fr
-            res.setId(i)
+            res.set_id(i)
             h1.response = res
             if i == mark_id:
                 h1.toggleMark()
@@ -118,7 +118,7 @@ class TestHistoryItem(unittest.TestCase):
         res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
         h1 = HistoryItem()
         h1.request = fr
-        res.setId(i)
+        res.set_id(i)
         h1.response = res
         h1.save()
         h2 = HistoryItem()
@@ -133,7 +133,7 @@ class TestHistoryItem(unittest.TestCase):
         res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
         h1 = HistoryItem()
         h1.request = fr
-        res.setId(i)
+        res.set_id(i)
         h1.response = res
         h1.save()
         h1.delete(i)
@@ -150,7 +150,7 @@ class TestHistoryItem(unittest.TestCase):
         res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
         h1 = HistoryItem()
         h1.request = fr
-        res.setId(i)
+        res.set_id(i)
         h1.response = res
         h1.save()
         h1.clear()
@@ -171,7 +171,7 @@ class TestHistoryItem(unittest.TestCase):
             res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
             h1 = HistoryItem()
             h1.request = fr
-            res.setId(i)
+            res.set_id(i)
             h1.response = res
             if i == tag_id:
                 h1.updateTag(tag_value)

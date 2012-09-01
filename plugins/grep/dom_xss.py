@@ -72,7 +72,7 @@ class dom_xss(GrepPlugin):
             v.setPluginName(self.getName())
             v.addToHighlight(vuln_code)
             v.setURL(response.getURL())
-            v.setId(response.id)
+            v.set_id(response.id)
             v.setSeverity(severity.LOW)
             v.setName('DOM Cross site scripting (Risky JavaScript Code)')
             msg = 'The URL: "' + v.getURL() + '" has a DOM XSS (Risky JavaScript Code) '
@@ -105,7 +105,7 @@ class dom_xss(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('dom_xss', 'dom_xss'), None)
+        self.print_uniq(kb.kb.get('dom_xss', 'dom_xss'), None)
             
     def get_long_desc(self):
         '''

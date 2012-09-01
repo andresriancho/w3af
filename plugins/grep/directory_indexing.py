@@ -92,7 +92,7 @@ class directory_indexing(GrepPlugin):
                     msg = 'The URL: "' + response.getURL() + '" has a directory '
                     msg += 'indexing vulnerability.'
                     v.setDesc( msg )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     path = response.getURL().getPath()
                     v.setName( 'Directory indexing - ' + path )
@@ -113,7 +113,7 @@ class directory_indexing(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'directory_indexing', 'directory' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'directory_indexing', 'directory' ), 'URL' )
             
     def get_plugin_deps( self ):
         '''

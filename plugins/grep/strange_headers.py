@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
+from core.controllers.misc.group_by_min_key import group_by_min_key
 
 
 class strange_headers(GrepPlugin):
@@ -91,14 +91,14 @@ class strange_headers(GrepPlugin):
             if header_name.upper() not in self.COMMON_HEADERS:
                 
                 # Check if the kb already has a info object with this code:
-                strange_header_infos = kb.kb.getData('strange_headers', 'strange_headers')
+                strange_header_infos = kb.kb.get('strange_headers', 'strange_headers')
                 
                 for info_obj in strange_header_infos:
                     if info_obj['header_name'] == header_name:
                         # Work with the "old" info object:
                         id_list = info_obj.getId()
                         id_list.append( response.id )
-                        info_obj.setId( id_list )
+                        info_obj.set_id( id_list )
                         break
                 else:
                     # Create a new info object from scratch and save it to the kb:
@@ -106,7 +106,7 @@ class strange_headers(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('Strange header')
                     i.setURL( response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     msg = 'The remote web server sent the HTTP header: "' + header_name
                     msg += '" with value: "' + response.getHeaders()[header_name] + '".'
                     i.setDesc( msg )
@@ -133,7 +133,7 @@ class strange_headers(GrepPlugin):
             i.setPluginName(self.getName())
             i.setName('Content-Location HTTP header anomaly')
             i.setURL( response.getURL() )
-            i.setId( response.id )
+            i.set_id( response.id )
             msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "content-location"' 
             msg += ' with value: "' + response.getLowerCaseHeaders()['content-location']
             msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
@@ -146,7 +146,7 @@ class strange_headers(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        headers = kb.kb.getData( 'strange_headers', 'strange_headers' )
+        headers = kb.kb.get( 'strange_headers', 'strange_headers' )
         # This is how I saved the data:
         #    i['header_name'] = header_name
         #    i['header_value'] = response.getHeaders()[header_name]
@@ -159,7 +159,7 @@ class strange_headers(GrepPlugin):
         # And don't print duplicates
         tmp = list(set(tmp))
         
-        resDict, itemIndex = groupbyMinKey( tmp )
+        resDict, itemIndex = group_by_min_key( tmp )
         if itemIndex == 0:
             # Grouped by header_name
             msg = 'The header: "%s" was sent by these URLs:'

@@ -98,7 +98,7 @@ class netcraft(InfrastructurePlugin):
     	    i = info.info()
             i.setPluginName(self.getName())
             i.setName('Netblock owner')
-            i.setId( response.getId() )
+            i.set_id( response.getId() )
     	    msg = 'Netcraft reports that the netblock owner for the target domain'
             msg += ' is %s' % netblock_owner
             i.setDesc( msg)

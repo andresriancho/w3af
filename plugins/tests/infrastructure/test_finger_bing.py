@@ -37,7 +37,7 @@ class TestFingerBing(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        emails = self.kb.getData('finger_bing', 'emails')
+        emails = self.kb.get('finger_bing', 'emails')
         
         self.assertEqual( len(emails), 3, emails)
 

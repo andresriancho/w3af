@@ -42,7 +42,7 @@ class TestFormAutocomplete(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('form_autocomplete', 'form_autocomplete')
+        vulns = self.kb.get('form_autocomplete', 'form_autocomplete')
         
         expected_results = [ "index-form-default.html",
                              "index-form-on.html",

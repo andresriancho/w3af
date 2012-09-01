@@ -61,7 +61,7 @@ class extrusionServer(object):
         if iface is not None:
             self._iface = iface
         else:
-            cf_iface = cf.cf.getData( 'interface' )
+            cf_iface = cf.cf.get( 'interface' )
             if cf_iface is not None:
                 self._iface = cf_iface
             else:

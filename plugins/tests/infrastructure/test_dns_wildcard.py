@@ -37,7 +37,7 @@ class TestDNSWildcard(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('dns_wildcard', 'dns_wildcard')
+        infos = self.kb.get('dns_wildcard', 'dns_wildcard')
         
         self.assertEqual( len(infos), 2, infos)
         

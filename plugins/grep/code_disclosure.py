@@ -81,7 +81,7 @@ class code_disclosure(GrepPlugin):
         >>> request = fuzzable_request(url, method='GET')
         >>> c = code_disclosure.code_disclosure()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('code_disclosure', 'code_disclosure'))
+        >>> len(kb.kb.get('code_disclosure', 'code_disclosure'))
         0
         
         Disclose some PHP code,
@@ -93,7 +93,7 @@ class code_disclosure(GrepPlugin):
         >>> request = fuzzable_request(url, method='GET')
         >>> c = code_disclosure.code_disclosure()
         >>> c.grep(request, response)
-        >>> len(kb.kb.getData('code_disclosure', 'code_disclosure'))
+        >>> len(kb.kb.get('code_disclosure', 'code_disclosure'))
         1
 
         '''
@@ -107,7 +107,7 @@ class code_disclosure(GrepPlugin):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
                     v.setURL( response.getURL() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     v.setName( lang + ' code disclosure vulnerability' )
                     v.addToHighlight(match.group())
@@ -121,7 +121,7 @@ class code_disclosure(GrepPlugin):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
                     v.setURL( response.getURL() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     v.addToHighlight(match.group())
                     v.setName( lang + ' code disclosure vulnerability in 404 page' )
@@ -148,7 +148,7 @@ class code_disclosure(GrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print code_disclosure
-        self.print_uniq( kb.kb.getData( 'code_disclosure', 'code_disclosure' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'code_disclosure', 'code_disclosure' ), 'URL' )
         
     def get_plugin_deps( self ):
         '''

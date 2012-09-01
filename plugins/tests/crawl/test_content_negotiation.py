@@ -39,12 +39,12 @@ class TestContentNegotiation(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('content_negotiation', 'content_negotiation')
+        infos = self.kb.get('content_negotiation', 'content_negotiation')
         self.assertEqual( len(infos), 1, infos )
         info = infos[0]
         self.assertEqual( info.getName(), 'HTTP Content Negotiation enabled' )
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         expected_fnames = set(['backup.zip', 'backup.php', 'backup.gz', 
                                'backup.tar', ''])
         self.assertEqual( expected_fnames,

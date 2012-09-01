@@ -98,7 +98,7 @@ class extrusionScanner(object):
             return True
     
     def estimateScanTime( self ):
-        savedResults = kb.kb.getData('extrusionScanner', 'extrusions')
+        savedResults = kb.kb.get('extrusionScanner', 'extrusions')
         if savedResults:
             return 1
         else:
@@ -112,7 +112,7 @@ class extrusionScanner(object):
         if not self._forceReRun:
             # Try to return the data from the kb !
             remoteId = self._getRemoteId()
-            savedResults = kb.kb.getData('extrusionScanner', 'extrusions')
+            savedResults = kb.kb.get('extrusionScanner', 'extrusions')
             if remoteId in savedResults:
                 om.out.information('Reusing previous result from the knowledgeBase:' )
                 msg = '- Selecting port "%s" for inbound connections from the'
@@ -183,7 +183,7 @@ class extrusionScanner(object):
                     
                     if not self._forceReRun:
                         om.out.debug('Saving information in the kb.')
-                        savedResults = kb.kb.getData('extrusionScanner', 'extrusions' )
+                        savedResults = kb.kb.get('extrusionScanner', 'extrusions' )
                         if savedResults:
                             savedResults[ remoteId ] = port
                         else:
@@ -249,7 +249,7 @@ class extrusionScanner(object):
 
     def _execExtrusionClient( self, interpreter, remoteFilename ):
         
-        local_address = cf.cf.getData( 'localAddress' )
+        local_address = cf.cf.get( 'localAddress' )
         if local_address is None:
             raise Exception('Invalid environment: no local address found in cf.')
         

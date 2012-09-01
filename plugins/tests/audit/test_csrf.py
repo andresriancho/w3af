@@ -93,7 +93,7 @@ class TestCSRF(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('csrf', 'csrf')
+        vulns = self.kb.get('csrf', 'csrf')
         self.assertEquals(2, len(vulns))
 
         EXPECTED = [

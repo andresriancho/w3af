@@ -39,7 +39,7 @@ class TestError500(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('error_500', 'error_500')
+        vulns = self.kb.get('error_500', 'error_500')
         
         self.assertEquals(1, len(vulns))
         

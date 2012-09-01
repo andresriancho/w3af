@@ -260,7 +260,7 @@ class crawl_infrastructure(BaseConsumer):
 
         @return: True if @fuzzable_request is new (never seen before).
         '''
-        base_urls_cf = cf.cf.getData('baseURLs')
+        base_urls_cf = cf.cf.get('baseURLs')
         
         fr_uri = fuzzable_request.getURI()
         # No need to care about fragments

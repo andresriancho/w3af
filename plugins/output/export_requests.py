@@ -52,7 +52,7 @@ class export_requests(OutputPlugin):
         '''
         Exports a list of fuzzable requests to the user configured file.
         '''
-        fuzzable_request_list = kb.kb.getData('urls', 'fuzzable_requests')
+        fuzzable_request_list = kb.kb.get('urls', 'fuzzable_requests')
         
         filename = self.output_file
         try:

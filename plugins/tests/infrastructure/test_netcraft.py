@@ -40,7 +40,7 @@ class TestNetcraft(PluginTest):
                          )
 
         for kb_item, ename, edesc in expected_infos:
-            items = self.kb.getData('netcraft', kb_item)
+            items = self.kb.get('netcraft', kb_item)
 
             self.assertEquals( len(items), 1)
 

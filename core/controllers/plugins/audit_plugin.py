@@ -54,11 +54,11 @@ class AuditPlugin(Plugin):
         
         # These lines were added because we need to return the new vulnerabilities found by this
         # audit plugin, and I don't want to change the code of EVERY plugin!
-        before_vuln_dict = kb.kb.getData( self )
+        before_vuln_dict = kb.kb.get( self )
         
         self.audit( fuzzable_request_copy )
         
-        after_vuln_dict = kb.kb.getData( self )
+        after_vuln_dict = kb.kb.get( self )
         
         # Now I get the difference between them:
         before_list = []
@@ -110,7 +110,7 @@ class AuditPlugin(Plugin):
             
             pname = pname or self.getName()
             kb_varname = kb_varname or pname
-            vulns = kb.kb.getData(pname, kb_varname)
+            vulns = kb.kb.get(pname, kb_varname)
     
             for vuln in vulns:
                 if (vuln.getVar() == varname and

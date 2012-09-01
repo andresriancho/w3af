@@ -53,7 +53,7 @@ class TestSSLCertificate(PluginTest):
 
         s.stop()
                 
-        vulns = self.kb.getData('ssl_certificate', 'invalid_ssl_cert')
+        vulns = self.kb.get('ssl_certificate', 'invalid_ssl_cert')
 
         self.assertEquals(1, len(vulns))
         

@@ -37,7 +37,7 @@ class TestFindCAPTCHAS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('find_captchas', 'CAPTCHA')
+        infos = self.kb.get('find_captchas', 'CAPTCHA')
         
         self.assertEqual( len(infos), 1, infos )
         

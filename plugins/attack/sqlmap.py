@@ -122,8 +122,8 @@ class sqlmap(AttackPlugin):
         return 'shell'
     
     def getExploitableVulns(self):
-        vulns = list(kb.kb.getData('blind_sqli', 'blind_sqli'))
-        vulns.extend(kb.kb.getData('sqli', 'sqli'))
+        vulns = list(kb.kb.get('blind_sqli', 'blind_sqli'))
+        vulns.extend(kb.kb.get('sqli', 'sqli'))
         return vulns
 
     def canExploit( self, vulnToExploit=None ):
@@ -155,8 +155,8 @@ class sqlmap(AttackPlugin):
         if not self.canExploit():
             return []
         else:
-            vulns = kb.kb.getData( 'blind_sqli' , 'blind_sqli' )
-            vulns.extend( kb.kb.getData( 'sqli' , 'sqli' ) )
+            vulns = kb.kb.get( 'blind_sqli' , 'blind_sqli' )
+            vulns.extend( kb.kb.get( 'sqli' , 'sqli' ) )
             
             bsql = blind_sqli_response_diff(self._uri_opener)
             bsql.set_eq_limit(self._eq_limit)
@@ -201,7 +201,7 @@ class sqlmap(AttackPlugin):
                             pass
                 
                 # FIXME: Am I really saving anything here ?!?!
-                return kb.kb.getData( self.getName(), 'shell' )
+                return kb.kb.get( self.getName(), 'shell' )
                 
     def _generate_shell( self, vuln_obj ):
         '''

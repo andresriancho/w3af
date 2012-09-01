@@ -40,7 +40,7 @@ class TestAFD(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_http_url, cfg['plugins'])
         
-        infos = self.kb.getData('afd', 'afd')
+        infos = self.kb.get('afd', 'afd')
         
         self.assertEqual( len(infos), 1, infos )
         
@@ -69,7 +69,7 @@ class TestAFD(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_https_url, cfg['plugins'])
         
-        infos = self.kb.getData('afd', 'afd')
+        infos = self.kb.get('afd', 'afd')
         
         self.assertEqual( len(infos), 1, infos )
 
@@ -77,7 +77,7 @@ class TestAFD(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
         
-        infos = self.kb.getData('afd', 'afd')
+        infos = self.kb.get('afd', 'afd')
         
         self.assertEqual( len(infos), 0, infos )
                 

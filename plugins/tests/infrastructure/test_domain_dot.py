@@ -37,7 +37,7 @@ class TestDomainDot(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
         
-        infos = self.kb.getData('domain_dot', 'domain_dot')
+        infos = self.kb.get('domain_dot', 'domain_dot')
         self.assertEqual( len(infos), 0, infos)
         
 

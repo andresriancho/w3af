@@ -80,13 +80,13 @@ class web_spider(CrawlPlugin):
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [i.getDomainPath() for i in cf.cf.getData('targets')]
+            self._target_urls = [i.getDomainPath() for i in cf.cf.get('targets')]
             
             #    The following line triggered lots of bugs when the "stop" button
             #    was pressed and the core did this: "cf.cf.save('targets', [])"
-            #self._target_domain = cf.cf.getData('targets')[0].getDomain()
+            #self._target_domain = cf.cf.get('targets')[0].getDomain()
             #    Changing it to something awful but bug-free.
-            targets = cf.cf.getData('targets')
+            targets = cf.cf.get('targets')
             if not targets:
                 return []
             else:

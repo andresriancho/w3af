@@ -74,7 +74,7 @@ class preg_replace(AuditPlugin):
                 if preg_error_string not in mutant.getOriginalResponseBody():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.HIGH)
                     v.setName( 'Unsafe usage of preg_replace' )
                     v.setDesc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
@@ -85,7 +85,7 @@ class preg_replace(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'preg_replace', 'preg_replace' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'preg_replace', 'preg_replace' ), 'VAR' )
     
     def _find_preg_error( self, response ):
         '''

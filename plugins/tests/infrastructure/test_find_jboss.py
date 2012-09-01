@@ -37,7 +37,7 @@ class TestFindJBoss(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('find_jboss', 'find_jboss')
+        infos = self.kb.get('find_jboss', 'find_jboss')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]

@@ -68,7 +68,7 @@ class motw (GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('Mark of the web')
                     i.setURL( response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.addToHighlight(motw_match.group(0))
                 
                 # Act based on finding/non-finding
@@ -122,7 +122,7 @@ class motw (GrepPlugin):
         pretty_msg['no_motw'] = 'The following URLs don\'t contain a MOTW:'
         for motw_type in pretty_msg:
             inform = []
-            for i in kb.kb.getData( 'motw', motw_type ):
+            for i in kb.kb.get( 'motw', motw_type ):
                 inform.append( i )
         
             if len( inform ):

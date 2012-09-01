@@ -37,7 +37,7 @@ class TestServerStatus(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        server = self.kb.getData('server_status', 'server')
+        server = self.kb.get('server_status', 'server')
         
         self.assertEqual( len(server), 1, server)
         self.assertTrue( 'remote server version: "Apache/2.' in server[0].getDesc(), 

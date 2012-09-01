@@ -75,7 +75,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
         real_extension = extension
         known_framework.append( (filename, real_extension) )
     else:
-        poweredByHeaders = kb.kb.getData( 'server_header' , 'poweredByString' )
+        poweredByHeaders = kb.kb.get( 'server_header' , 'poweredByString' )
         filename = ''
         
         file_list = [ x for x in os.listdir( path ) if x.startswith(type_of_list) ]

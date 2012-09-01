@@ -89,7 +89,7 @@ class response_splitting(AuditPlugin):
                     i.setVar( mutant.getVar() )
                     i.setURI( mutant.getURI() )
                     i.setDc( mutant.getDc() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.setName( 'Parameter modifies headers' )
                     kb.kb.append( self, 'response_splitting', i )
 
@@ -99,7 +99,7 @@ class response_splitting(AuditPlugin):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.getName())
                 v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Response splitting vulnerability' )
                 kb.kb.append( self, 'response_splitting', v )
@@ -109,7 +109,7 @@ class response_splitting(AuditPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq(
-               kb.kb.getData('response_splitting', 'response_splitting'), 'VAR'
+               kb.kb.get('response_splitting', 'response_splitting'), 'VAR'
                )
         
     def _header_was_injected( self, response ):
@@ -136,7 +136,7 @@ class response_splitting(AuditPlugin):
                 i = info.info()
                 i.setPluginName(self.getName())
                 i.setDesc( msg )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.setName( 'Parameter modifies headers' )
                 kb.kb.append( self, 'response_splitting', i )
                 return False

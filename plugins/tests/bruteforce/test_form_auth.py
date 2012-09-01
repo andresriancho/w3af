@@ -56,7 +56,7 @@ class TestFormAuth(PluginTest):
         self._scan(self.target_post_url, self.positive_test['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('form_auth', 'auth')
+        vulns = self.kb.get('form_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
@@ -71,7 +71,7 @@ class TestFormAuth(PluginTest):
         self._scan(self.target_get_url, self.positive_test['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('form_auth', 'auth')
+        vulns = self.kb.get('form_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
@@ -86,7 +86,7 @@ class TestFormAuth(PluginTest):
         self._scan(self.target_password_only_url, self.positive_test['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('form_auth', 'auth')
+        vulns = self.kb.get('form_auth', 'auth')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
@@ -101,7 +101,7 @@ class TestFormAuth(PluginTest):
         self._scan(self.target_negative_url, self.negative_test['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('form_auth', 'auth')
+        vulns = self.kb.get('form_auth', 'auth')
         self.assertEquals(len(vulns), 0)
         
         

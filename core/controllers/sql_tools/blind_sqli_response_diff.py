@@ -161,7 +161,7 @@ class blind_sqli_response_diff(object):
                                           body_false_response,
                                           compare_diff ):
                     v = vuln.vuln( mutant )
-                    v.setId( [second_false_response.id, second_true_response.id] )
+                    v.set_id( [second_false_response.id, second_true_response.id] )
                     v.setSeverity(severity.HIGH)
                     v.setName( 'Blind SQL injection vulnerability' )
                     # This is needed to be used in fuzz file name

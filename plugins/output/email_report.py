@@ -53,7 +53,7 @@ class email_report(OutputPlugin):
         self.fromAddr = ''
 
     def log_enabled_plugins(self, pluginsDict, optionsDict):
-        self.targets = cf.cf.getData('targets')
+        self.targets = cf.cf.get('targets')
 
     def set_options(self, option_list):
         self.smtpServer = option_list['smtpServer'].getValue()

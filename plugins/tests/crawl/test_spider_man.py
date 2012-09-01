@@ -101,7 +101,7 @@ class TestSpiderman(PluginTest):
         
         # Fetch all the results
         bt.join()
-        kb_urls = self.kb.getData('urls', 'url_objects')
+        kb_urls = self.kb.get('urls', 'url_objects')
         responses = bt.responses
         
         EXPECTED_RESPONSE_CONTENTS = (

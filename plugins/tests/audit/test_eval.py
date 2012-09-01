@@ -51,7 +51,7 @@ class TestEval(PluginTest):
         cfg = self._run_configs['echo']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('eval', 'eval')
+        vulns = self.kb.get('eval', 'eval')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln
@@ -64,7 +64,7 @@ class TestEval(PluginTest):
         cfg = self._run_configs['delay']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('eval', 'eval')
+        vulns = self.kb.get('eval', 'eval')
         self.assertEquals(1, len(vulns))
         
         # Now some tests around specific details of the found vuln

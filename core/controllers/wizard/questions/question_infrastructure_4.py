@@ -64,7 +64,7 @@ class question_infrastructure_4(question):
         cf.cf.save('reachable_from_internet', options_list[self._d1].getValue())
        
        # The next question
-        if cf.cf.getData('reachable_from_internet'):
+        if cf.cf.get('reachable_from_internet'):
             return 'infrastructure_internet_1'
         else:
             return None

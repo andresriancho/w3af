@@ -70,7 +70,7 @@ class ssn(GrepPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURI( uri )
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setSeverity(severity.LOW)
                 v.setName( 'US Social Security Number disclosure' )
                 msg = 'The URL: "' + uri + '" possibly discloses a US '
@@ -166,7 +166,7 @@ class ssn(GrepPlugin):
         This method is called when the plugin won't be used anymore.
         '''
         # Print results
-        self.print_uniq( kb.kb.getData( 'ssn', 'ssn' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'ssn', 'ssn' ), 'URL' )
 
     def get_long_desc(self):
         '''

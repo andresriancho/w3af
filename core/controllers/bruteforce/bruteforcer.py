@@ -140,16 +140,16 @@ class user_password_bruteforcer(object):
         yield self._url.getDomain()
         
         if self.use_emails:
-            emails = kb.kb.getData( 'emails', 'emails' )
+            emails = kb.kb.get( 'emails', 'emails' )
             for user in [ v['user'] for v in emails ]:
                 yield user
             
-            emails = kb.kb.getData( 'emails', 'emails' )
+            emails = kb.kb.get( 'emails', 'emails' )
             for user in [ v['mail'] for v in emails ]:
                 yield user
         
         if self.use_SVN_users:
-            users = kb.kb.getData( 'svn_users', 'users' )
+            users = kb.kb.get( 'svn_users', 'users' )
             for user in [ v['user'] for v in users ]:
                 yield user
         
@@ -177,7 +177,7 @@ def get_profiling_results(self, max_items=50):
     def sortfunc(x,y):
         return cmp(y[1],x[1])
         
-    kb_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
+    kb_data = kb.kb.get( 'password_profiling', 'password_profiling' )
     
     if not kb_data:
         msg = 'No password profiling information collected for using during'

@@ -46,9 +46,9 @@ class test_user_defined_regex(unittest.TestCase):
         self.plugin.set_options( options )
         
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('user_defined_regex', 'user_defined_regex')) , 1 )
+        self.assertEquals( len(kb.kb.get('user_defined_regex', 'user_defined_regex')) , 1 )
         
-        info_obj = kb.kb.getData('user_defined_regex', 'user_defined_regex')[0]
+        info_obj = kb.kb.get('user_defined_regex', 'user_defined_regex')[0]
         self.assertTrue( info_obj.getDesc().startswith('The response matches the user defined regular expression') )
         
     def tearDown(self):

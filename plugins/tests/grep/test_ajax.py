@@ -50,7 +50,7 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 0 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 0 )
     
     def test_ajax_find(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
@@ -59,7 +59,7 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
     def test_ajax_broken_html(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
@@ -68,7 +68,7 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
     def test_ajax_broken_2(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
@@ -77,7 +77,7 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
     def test_ajax_find_2(self):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
@@ -86,7 +86,7 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
     def test_ajax_two(self):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
@@ -95,4 +95,4 @@ class test_ajax(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('ajax', 'ajax')) , 1 )
+        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )

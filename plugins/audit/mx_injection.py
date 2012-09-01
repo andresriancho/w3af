@@ -85,7 +85,7 @@ class mx_injection(AuditPlugin):
                     v.setName( 'MX injection vulnerability' )
                     v.setSeverity(severity.MEDIUM)
                     v.setDesc( 'MX injection was found at: ' + mutant.foundAt() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.addToHighlight( mx_error )
                     kb.kb.append( self, 'mx_injection', v )
                     break
@@ -94,7 +94,7 @@ class mx_injection(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'mx_injection', 'mx_injection' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'mx_injection', 'mx_injection' ), 'VAR' )
     
     def _get_MX_injection_strings( self ):
         '''

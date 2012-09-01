@@ -52,8 +52,8 @@ def update_kb( fuzzable_request ):
         kb_fr_set.add( fuzzable_request )
 
 def get_urls_from_kb():
-    return kb.kb.getData( 'urls', 'url_objects' )
+    return kb.kb.get( 'urls', 'url_objects' )
     
 def get_fuzzable_requests_from_kb():
-    return kb.kb.getData( 'urls', 'fuzzable_requests' )
+    return kb.kb.get( 'urls', 'fuzzable_requests' )
         

@@ -38,7 +38,7 @@ class TestZoneH(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.vuln_url, cfg['plugins'])
         
-        infos = self.kb.getData('zone_h', 'defacements')
+        infos = self.kb.get('zone_h', 'defacements')
         
         self.assertEqual( len(infos), 1, infos)
         
@@ -51,7 +51,7 @@ class TestZoneH(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])
         
-        infos = self.kb.getData('zone_h', 'defacements')
+        infos = self.kb.get('zone_h', 'defacements')
         
         self.assertEqual( len(infos), 0, infos)
         

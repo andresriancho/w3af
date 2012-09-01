@@ -75,7 +75,7 @@ class hash_find(GrepPlugin):
                                 i.setName( hash_type + 'hash in HTML content')
                                 i.setURL( response.getURL() )
                                 i.addToHighlight(possible_hash)
-                                i.setId( response.id )
+                                i.set_id( response.id )
                                 msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
                                 msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
                                 msg += '". This is uncommon and requires human verification.'
@@ -132,7 +132,7 @@ class hash_find(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'hash_find', 'hash_find' ), None )
+        self.print_uniq( kb.kb.get( 'hash_find', 'hash_find' ), None )
     
     def get_long_desc( self ):
         '''

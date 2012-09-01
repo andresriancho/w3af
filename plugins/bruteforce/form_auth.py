@@ -291,7 +291,7 @@ class form_auth(BruteforcePlugin):
                         freq_url = freq.getURL()
                         self._found.add(freq_url)
                         v = vuln.vuln()
-                        v.setId(resp.id)
+                        v.set_id(resp.id)
                         v.setPluginName(self.getName())
                         v.setURL(freq.getURL())
                         if user_field is not None:

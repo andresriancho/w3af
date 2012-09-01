@@ -28,7 +28,7 @@ class get_source_code(base_payload):
         apache_root_directory = self.exec_payload('apache_root_directory')
         webroot_list = apache_root_directory['apache_root_directory']
         
-        url_list = kb.kb.getData('urls', 'url_objects')
+        url_list = kb.kb.get('urls', 'url_objects')
         
         for webroot in webroot_list:
             for url in url_list:

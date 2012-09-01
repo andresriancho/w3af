@@ -51,8 +51,8 @@ class test_feeds(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('feeds', 'feeds')), 1 )
-        i = kb.kb.getData('feeds', 'feeds')[0]
+        self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
+        i = kb.kb.get('feeds', 'feeds')[0]
         self.assertTrue( 'RSS' in i.getDesc() )
         self.assertTrue( '3' in i.getDesc() )
             
@@ -64,8 +64,8 @@ class test_feeds(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('feeds', 'feeds')), 1 )
-        i = kb.kb.getData('feeds', 'feeds')[0]
+        self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
+        i = kb.kb.get('feeds', 'feeds')[0]
         self.assertTrue( 'OPML' in i.getDesc() )
         self.assertTrue( '3' in i.getDesc() )
 
@@ -78,8 +78,8 @@ class test_feeds(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('feeds', 'feeds')), 1 )
-        i = kb.kb.getData('feeds', 'feeds')[0]
+        self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
+        i = kb.kb.get('feeds', 'feeds')[0]
         self.assertTrue( 'OPML' in i.getDesc() )
         self.assertTrue( '3' in i.getDesc() )
         
@@ -91,7 +91,7 @@ class test_feeds(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('feeds', 'feeds')), 0 )
+        self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 0 )
     
     def test_no_version(self):
         body = 'header <rss foo="3"> footer'
@@ -101,8 +101,8 @@ class test_feeds(unittest.TestCase):
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
         
-        self.assertEquals( len(kb.kb.getData('feeds', 'feeds')), 1 )
-        i = kb.kb.getData('feeds', 'feeds')[0]
+        self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
+        i = kb.kb.get('feeds', 'feeds')[0]
         self.assertTrue( 'RSS' in i.getDesc() )
         self.assertTrue( 'unknown' in i.getDesc() )        
     

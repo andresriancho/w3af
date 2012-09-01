@@ -46,16 +46,16 @@ class test_http_auth_detect(unittest.TestCase):
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, '' , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'auth')), 0 )
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'userPassUri')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'auth')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'userPassUri')), 0 )
         
     def test_http_auth_detect_negative_long(self):
         body = 'ABC ' * 10000
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'auth')), 0 )
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'userPassUri')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'auth')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'userPassUri')), 0 )
     
     def test_http_auth_detect_uri(self):
         body = 'ABC ' * 100
@@ -64,21 +64,21 @@ class test_http_auth_detect(unittest.TestCase):
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'auth')), 0 )
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'userPassUri')), 1 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'auth')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'userPassUri')), 1 )
     
     def test_http_auth_detect_non_rfc(self):
         body = ''
         headers = {'content-type': 'text/html'}
         response = httpResponse(401, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'non_rfc_auth')), 1 )
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'userPassUri')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'non_rfc_auth')), 1 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'userPassUri')), 0 )
     
     def test_http_auth_detect_simple(self):
         body = ''
         headers = {'content-type': 'text/html', 'www-authenticate': 'realm-w3af'}
         response = httpResponse(401, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'auth')), 1 )
-        self.assertEqual( len(kb.kb.getData('http_auth_detect', 'userPassUri')), 0 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'auth')), 1 )
+        self.assertEqual( len(kb.kb.get('http_auth_detect', 'userPassUri')), 0 )

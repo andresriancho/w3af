@@ -50,7 +50,7 @@ class info(dict):
             self.setDesc( data_obj.getDesc() )
             self.setMethod( data_obj.get_method() )
             self.setVar( data_obj.getVar() )
-            self.setId( data_obj.getId() )
+            self.set_id( data_obj.getId() )
             self.setName( data_obj.getName() )
             self.setDc( data_obj.getDc() )
             for k in data_obj.keys():
@@ -204,7 +204,7 @@ class info(dict):
     def __repr__( self ):
         return '<info object for issue: "'+self._desc+'">'
         
-    def setId( self, id ):
+    def set_id( self, id ):
         '''
         The id is a unique number that identifies every request and response performed
         by the framework.
@@ -216,19 +216,19 @@ class info(dict):
         
         For example, in the cases where the info object is related to one request / response, we get
         this call:
-            setId( 3 )
+            set_id( 3 )
             
         And we save this to the attribute:
             [ 3, ]
             
         When the info object is related to more than one request / response, we get this call:
-            setId( [3, 4] )
+            set_id( [3, 4] )
             
         And we save this to the attribute:
             [ 3, 4]
             
         Also, the list is sorted!
-            setId( [4, 3] )
+            set_id( [4, 3] )
         
         Will save:
             [3, 4]
@@ -246,7 +246,7 @@ class info(dict):
     def getId( self ):
         '''
         @return: The list of ids related to this information object. Please read
-                 the documentation of setId().
+                 the documentation of set_id().
         '''
         return self._id
         

@@ -57,7 +57,7 @@ class http_auth_detect(GrepPlugin):
             
             # Doing this after the other if in order to be faster.
             already_reported = [i.getURL().getDomainPath() for i in \
-                                kb.kb.getData('http_auth_detect', 'auth')]
+                                kb.kb.get('http_auth_detect', 'auth')]
             if response.getURL().getDomainPath() not in already_reported:
             
                 # Perform all the work in this method
@@ -83,7 +83,7 @@ class http_auth_detect(GrepPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL(response.getURL())
-            v.setId(response.id)
+            v.set_id(response.id)
             desc = 'The resource: "%s" has a user and password in ' \
             'the URI.' % response.getURI()
             v.setDesc(desc)
@@ -117,7 +117,7 @@ class http_auth_detect(GrepPlugin):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
                 v.setURL(response.getURL())
-                v.setId( response.id )
+                v.set_id( response.id )
                 msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
                 msg += ' body. The offending URL is: "' + url + '".'
                 v.setDesc(msg)
@@ -148,7 +148,7 @@ class http_auth_detect(GrepPlugin):
             i.setPluginName(self.getName())
             i.setName('Authentication without www-authenticate header')
             i.setURL( response.getURL() )
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setDesc( 'The resource: "'+ response.getURL() + '" requires authentication ' +
             '(HTTP Code 401) but the www-authenticate header is not present. This requires ' + 
             'human verification.')
@@ -163,7 +163,7 @@ class http_auth_detect(GrepPlugin):
             else:
                 i.setName('HTTP Basic authentication')
             i.setURL( response.getURL() )
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setDesc( 'The resource: "'+ response.getURL() + '" requires authentication.' +
             ' The realm is: "' + realm + '".')
             i['message'] = realm

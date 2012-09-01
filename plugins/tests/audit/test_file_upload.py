@@ -41,7 +41,7 @@ class TestFileUpload(PluginTest):
     def test_reported_file_uploads(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        fuvulns = self.kb.getData('file_upload', 'file_upload')
+        fuvulns = self.kb.get('file_upload', 'file_upload')
         self.assertEquals(1, len(fuvulns))
         
         v = fuvulns[0]

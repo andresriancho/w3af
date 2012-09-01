@@ -60,7 +60,7 @@ class redos(AuditPlugin):
         #
         #   TODO: Add other frameworks that are not vulnerable!
         #
-        for powered_by in kb.kb.getData('server_header','poweredByString'):
+        for powered_by in kb.kb.get('server_header','poweredByString'):
             if 'php' in powered_by.lower():
                 return
         
@@ -116,7 +116,7 @@ class redos(AuditPlugin):
                     v.setSeverity(severity.MEDIUM)
                     v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setURI( response.getURI() )
                     kb.kb.append( self, 'redos', v )
 
@@ -125,7 +125,7 @@ class redos(AuditPlugin):
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('Possible ReDoS vulnerability')
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.setDc( mutant.getDc() )
                     i.setMethod( mutant.get_method() )
                     msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
@@ -142,7 +142,7 @@ class redos(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'redos', 'redos' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'redos', 'redos' ), 'VAR' )
     
     def _get_wait_patterns( self, run ):
         '''

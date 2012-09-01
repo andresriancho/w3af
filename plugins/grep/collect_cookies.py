@@ -28,7 +28,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
+from core.controllers.misc.group_by_min_key import group_by_min_key
 
 
 class collect_cookies(GrepPlugin):
@@ -121,7 +121,7 @@ class collect_cookies(GrepPlugin):
                     kb.kb.append( self, 'invalid-cookies', i )
                 else:
                     
-                    for cookie_info in kb.kb.getData( self, 'cookies' ):
+                    for cookie_info in kb.kb.get( self, 'cookies' ):
                         stored_cookie_obj = cookie_info['cookie-object']
                         if cookie_object == stored_cookie_obj:
                             break
@@ -140,7 +140,7 @@ class collect_cookies(GrepPlugin):
                         if 'expires' in cookie_object:
                             i['persistent'] = True
                             
-                        i.setId( response.id )
+                        i.set_id( response.id )
                         i.addToHighlight(i['cookie-string'])
                         msg = 'The URL: "' + i.getURL() + '" sent the cookie: "'
                         msg += i['cookie-string'] + '".'
@@ -186,7 +186,7 @@ class collect_cookies(GrepPlugin):
             The rest of the page is HTTP
         '''
         if request.getURL().getProtocol().lower() == 'http':
-            for cookie in kb.kb.getData( 'collect_cookies', 'cookies' ):
+            for cookie in kb.kb.get( 'collect_cookies', 'cookies' ):
                 if cookie.getURL().getProtocol().lower() == 'https' and \
                 request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
@@ -207,7 +207,7 @@ class collect_cookies(GrepPlugin):
                                         v.setURL( response.getURL() )
                                         self._set_cookie_to_rep(v, cobj=cookie)
                                         v.setSeverity(severity.HIGH)
-                                        v.setId( response.id )
+                                        v.set_id( response.id )
                                         v.setName( 'Secure cookies over insecure channel' )
                                         msg = 'Cookie values that were set over HTTPS, are sent over '
                                         msg += 'an insecure channel when requesting URL: "' 
@@ -225,7 +225,7 @@ class collect_cookies(GrepPlugin):
                 if cookie[1] not in self._already_reported_server:
                     i = info.info()
                     i.setPluginName(self.getName())
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.setName('Identified cookie')
                     i.setURL( response.getURL() )
                     self._set_cookie_to_rep(i, cobj=cookieObj)
@@ -256,7 +256,7 @@ class collect_cookies(GrepPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( response.getURL() )
-            v.setId( response.getId() )
+            v.set_id( response.getId() )
             self._set_cookie_to_rep(v, cobj=cookieObj)
             v.setSeverity(severity.HIGH)
             v.setName( 'Secure cookies over insecure channel' )
@@ -269,7 +269,7 @@ class collect_cookies(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        cookies = kb.kb.getData( 'collect_cookies', 'cookies' )
+        cookies = kb.kb.get( 'collect_cookies', 'cookies' )
             
         # Group correctly
         tmp = []
@@ -279,7 +279,7 @@ class collect_cookies(GrepPlugin):
         # And don't print duplicates
         tmp = list(set(tmp))
         
-        resDict, itemIndex = groupbyMinKey( tmp )
+        resDict, itemIndex = group_by_min_key( tmp )
         if itemIndex == 0:
             # Grouped by cookies
             msg = 'The cookie: "%s" was sent by these URLs:'

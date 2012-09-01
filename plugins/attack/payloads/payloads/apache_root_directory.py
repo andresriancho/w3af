@@ -42,8 +42,8 @@ class apache_root_directory(base_payload):
                 if parse_config_file(file_content) != '':
                     directory.append(parse_config_file(file_content)+'/')
 
-        if kb.kb.getData('pathdisclosure', 'webroot'):
-            directory.append(kb.kb.getData('pathdisclosure', 'webroot'))
+        if kb.kb.get('pathdisclosure', 'webroot'):
+            directory.append(kb.kb.get('pathdisclosure', 'webroot'))
         
         # perform some normalization and filtering
         directory= [p.replace('//','/') for p in directory if p != '']

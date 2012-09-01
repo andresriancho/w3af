@@ -210,7 +210,7 @@ class w3af_core_strategy(object):
         #
         from core.controllers.core_helpers.fingerprint_404 import is_404
         
-        for url in cf.cf.getData('targets'):
+        for url in cf.cf.get('targets'):
             try:
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
                 is_404(response)
@@ -234,7 +234,7 @@ class w3af_core_strategy(object):
             
             self._discovery_consumer = crawl_infrastructure(discovery_plugins,
                                                             self._w3af_core,
-                                                            cf.cf.getData('maxDiscoveryTime'))
+                                                            cf.cf.get('maxDiscoveryTime'))
             self._discovery_consumer.start()
     
     def _setup_grep(self):
@@ -292,7 +292,7 @@ class w3af_core_strategy(object):
         #    GET the initial target URLs in order to save them
         #    in a list and use them as our bootstrap URLs
         #
-        self._seed_producer.seed_output_queue( cf.cf.getData('targets') )
+        self._seed_producer.seed_output_queue( cf.cf.get('targets') )
     
     def _setup_bruteforce(self):
         '''

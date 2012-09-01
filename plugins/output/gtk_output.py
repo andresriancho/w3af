@@ -30,15 +30,15 @@ from core.controllers.plugins.output_plugin import OutputPlugin
 
 class gtk_output(OutputPlugin):
     '''
-    Saves messages to kb.kb.getData('gtk_output', 'queue') to be displayed in the UI.
+    Saves messages to kb.kb.get('gtk_output', 'queue') to be displayed in the UI.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
     def __init__(self):
         OutputPlugin.__init__(self)
-        if not kb.kb.getData('gtk_output', 'queue') == []:
-            self.queue = kb.kb.getData('gtk_output', 'queue')
+        if not kb.kb.get('gtk_output', 'queue') == []:
+            self.queue = kb.kb.get('gtk_output', 'queue')
         else:
             self.queue = Queue.Queue(500)
             kb.kb.save('gtk_output', 'queue' , self.queue)
@@ -103,7 +103,7 @@ class gtk_output(OutputPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Saves messages to kb.kb.getData('gtk_output', 'queue'), messages are
+        Saves messages to kb.kb.get('gtk_output', 'queue'), messages are
         saved in the form of objects. This plugin was created to be able to
         communicate with the gtkUi and should be enabled if you are using it.
         '''

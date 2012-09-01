@@ -26,7 +26,7 @@ class apache_config_files(base_payload):
                 for filename in files:
                     yield directory+filename
 
-                profiled_words_list = kb.kb.getData('password_profiling',
+                profiled_words_list = kb.kb.get('password_profiling',
                                                     'password_profiling')
                 domain_name = self.exec_payload('domainname')['domain_name']
                 hostname = self.exec_payload('hostname')['hostname']

@@ -59,7 +59,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
-    headers = dict((h, '') for h in cf.cf.getData('fuzzableHeaders'))
+    headers = dict((h, '') for h in cf.cf.get('fuzzableHeaders'))
     req_headers = dict(headers)
     req_headers.update(request and request.getHeaders() or {})
     
@@ -128,7 +128,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 res.append(wspdr)
     else:
         # Create one httpPostDataRequest for each form variant
-        mode = cf.cf.getData('fuzzFormComboValues')
+        mode = cf.cf.get('fuzzFormComboValues')
         for form in form_list:
             for variant in form.getVariants(mode):
                 if form.get_method().upper() == 'POST':

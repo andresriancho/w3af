@@ -66,15 +66,15 @@ class w3af_core_target(configurable):
         '''        
         d1 = 'A comma separated list of URLs'
         o1 = option('target', ','.join(str(tar) for tar in 
-                                       cf.cf.getData('targets')), d1, 'list')
+                                       cf.cf.get('targets')), d1, 'list')
         
         d2 = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
         h2 = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
         tmpList = self._operatingSystems[:]
-        tmpList.remove( cf.cf.getData('targetOS') )
-        tmpList.insert(0, cf.cf.getData('targetOS') )
+        tmpList.remove( cf.cf.get('targetOS') )
+        tmpList.insert(0, cf.cf.get('targetOS') )
         o2 = comboOption('targetOS', tmpList, d2, 'combo', help=h2)
 
         d3 = 'Target programming framework ('+ '/'.join(self._programmingFrameworks) +')'
@@ -82,8 +82,8 @@ class w3af_core_target(configurable):
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
         tmpList = self._programmingFrameworks[:]
-        tmpList.remove( cf.cf.getData('targetFramework') )
-        tmpList.insert(0, cf.cf.getData('targetFramework') )
+        tmpList.remove( cf.cf.get('targetFramework') )
+        tmpList.insert(0, cf.cf.get('targetFramework') )
         o3 = comboOption('targetFramework', tmpList, d3, 'combo', help=h3)
         
         ol = OptionList()

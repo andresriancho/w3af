@@ -90,7 +90,7 @@ class form_autocomplete(GrepPlugin):
                     i = info()
                     i.setName('Auto-completable form')
                     i.setURL(url)
-                    i.setId(response.id)
+                    i.set_id(response.id)
                     msg = 'The URL: "%s" has a "<form>" element with ' \
                     'auto-complete enabled.' % url
                     i.setDesc(msg)

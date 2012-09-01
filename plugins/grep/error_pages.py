@@ -174,7 +174,7 @@ class error_pages(GrepPlugin):
                 i.setName( name )
                 
                 i.setURL( response.getURL() )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.setDesc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
                 i.addToHighlight( msg ) 
                 kb.kb.append( self , 'errorPage' , i )
@@ -196,7 +196,7 @@ class error_pages(GrepPlugin):
                         i.setPluginName(self.getName())
                         i.setName('Error page with information disclosure')
                         i.setURL( response.getURL() )
-                        i.setId( response.id )
+                        i.set_id( response.id )
                         i.setName( 'Error page with information disclosure' )
                         i.setDesc( 'An error page sent this ' + server +' version: "' + match_string + '".'  )
                         i.addToHighlight( server )
@@ -220,7 +220,7 @@ class error_pages(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'error_pages', 'errorPage' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'error_pages', 'errorPage' ), 'URL' )
 
     def get_plugin_deps( self ):
         '''

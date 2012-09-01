@@ -236,7 +236,7 @@ class w3afCore(object):
             msg = 'You must call the plugins.init_plugins() method before calling start()'
             raise w3afException( msg )
         
-        if not cf.cf.getData('targets'):
+        if not cf.cf.get('targets'):
             raise w3afException( 'No target URI configured.' )
             
         if not len( self.plugins.get_enabled_plugins('audit') )\

@@ -79,7 +79,7 @@ class user_defined_regex(GrepPlugin):
                             if not info_object is None:
                                 ids = info_object.getId()
                                 ids.append(response.id)
-                                info_object.setId(ids)
+                                info_object.set_id(ids)
                             else:
                                 info_object = info.info()
                                 info_object.setPluginName(self.getName())
@@ -96,7 +96,7 @@ class user_defined_regex(GrepPlugin):
                                 msg += str(match_object.group(0))
                                 msg += '\n'
                                 info_object.setDesc( msg )
-                                info_object.setId( response.id )
+                                info_object.set_id( response.id )
                                 info_object.setName( 'User defined regex - ' + str(regex.pattern) )
                                 kb.kb.append( self , 'user_defined_regex' , info_object )
                             #set the info_object
@@ -179,7 +179,7 @@ class user_defined_regex(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
     
     def get_long_desc( self ):
         '''

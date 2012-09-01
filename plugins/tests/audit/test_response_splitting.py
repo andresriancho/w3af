@@ -48,7 +48,7 @@ class TestResponseSplitting(PluginTest):
     def test_found_direct(self):
         cfg = self._run_configs['cfg_direct']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('response_splitting', 'response_splitting')
+        vulns = self.kb.get('response_splitting', 'response_splitting')
         self.assertEquals(1, len(vulns), vulns)
         
         # Now some tests around specific details of the found vuln
@@ -60,7 +60,7 @@ class TestResponseSplitting(PluginTest):
     def test_found_error(self):
         cfg = self._run_configs['cfg_error']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('response_splitting', 'response_splitting')
+        vulns = self.kb.get('response_splitting', 'response_splitting')
         self.assertEquals(1, len(vulns), vulns)
         
         # Now some tests around specific details of the found vuln

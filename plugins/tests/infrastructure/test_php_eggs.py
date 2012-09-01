@@ -38,13 +38,13 @@ class TestPHPEggs(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
         
-        eggs = self.kb.getData('php_eggs', 'eggs')
+        eggs = self.kb.get('php_eggs', 'eggs')
         self.assertEqual( len(eggs), 4, eggs )
         
         for egg in eggs:
             self.assertTrue( egg.getName().startswith('PHP Egg - ') )
                     
-        php_version = self.kb.getData('php_eggs', 'version')
+        php_version = self.kb.get('php_eggs', 'version')
         self.assertEqual( len(php_version), 1, php_version )
         
         php_version = php_version[0]

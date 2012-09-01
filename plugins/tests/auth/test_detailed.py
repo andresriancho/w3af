@@ -56,7 +56,7 @@ class TestDetailed(PluginTest):
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
-        vulns = self.kb.getData('xss', 'xss')
+        vulns = self.kb.get('xss', 'xss')
         
         self.assertEquals( len(vulns), 1, vulns)
         

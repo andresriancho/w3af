@@ -67,6 +67,6 @@ class LogHandler(urllib2.BaseHandler):
         else:
             resp = httpResponse.from_httplib_resp(
                                   response, original_url=request.url_object)
-            resp.setId(response.id)
+            resp.set_id(response.id)
         
         om.out.logHttp(fr, resp)

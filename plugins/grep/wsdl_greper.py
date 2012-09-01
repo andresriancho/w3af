@@ -63,7 +63,7 @@ class wsdl_greper(GrepPlugin):
                 i.setPluginName(self.getName())
                 i.setName('WSDL file')
                 i.setURL( response.getURL() )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.addToHighlight( *match_list )
                 msg = 'The URL: "' +  i.getURL() + '" is a Web Services '
                 msg += 'Description Language page.'
@@ -97,8 +97,8 @@ class wsdl_greper(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'wsdl_greper', 'wsdl' ), 'URL' )
-        self.print_uniq( kb.kb.getData( 'wsdl_greper', 'disco' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'wsdl_greper', 'wsdl' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'wsdl_greper', 'disco' ), 'URL' )
         
     def get_long_desc( self ):
         '''

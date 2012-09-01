@@ -70,7 +70,7 @@ class global_redirect(AuditPlugin):
         if self._find_redirect( response ) and self._has_no_bug(mutant):
             v = vuln.vuln( mutant )
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'Insecure redirection' )
             v.setSeverity(severity.MEDIUM)
             v.setDesc( 'Global redirect was found at: ' + mutant.foundAt() )
@@ -80,7 +80,7 @@ class global_redirect(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'global_redirect', 'global_redirect' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'global_redirect', 'global_redirect' ), 'VAR' )
         
     def _find_redirect( self, response ):
         '''

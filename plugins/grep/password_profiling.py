@@ -71,7 +71,7 @@ class password_profiling(GrepPlugin):
         @return: None.
         '''
         # Initial setup
-        lang = kb.kb.getData( 'lang', 'lang' ) or 'unknown'
+        lang = kb.kb.get( 'lang', 'lang' ) or 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
         if response.getCode() not in [500, 401, 403, 404] \
@@ -82,7 +82,7 @@ class password_profiling(GrepPlugin):
             data = self._run_plugins(response)
             
             with self._plugin_lock:
-                old_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
+                old_data = kb.kb.get( 'password_profiling', 'password_profiling' )
                 
                 # "merge" both maps and update the repetitions
                 for d in data:
@@ -153,7 +153,7 @@ class password_profiling(GrepPlugin):
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
         
-        profiling_data = kb.kb.getData( 'password_profiling', 'password_profiling' )
+        profiling_data = kb.kb.get( 'password_profiling', 'password_profiling' )
         
         # This fixes a very strange bug where for some reason the kb doesn't 
         # have a dict anymore (threading issue most likely) Seen here:

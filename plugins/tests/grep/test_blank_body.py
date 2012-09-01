@@ -49,14 +49,14 @@ class test_blank_body(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('blank_body', 'blank_body')) , 1 )
+        self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 1 )
     
     def test_blank_body_none(self):
         body = 'header body footer'
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 0 )
+        self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
     
     def test_blank_body_method(self): 
         body = ''
@@ -64,7 +64,7 @@ class test_blank_body(unittest.TestCase):
         response = httpResponse(200, body , headers, self.url, self.url)
         request = fuzzable_request(self.url, method='ARGENTINA')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('ssn', 'ssn')) , 0 )
+        self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
     
     def test_blank_body_code(self):
         body = ''
@@ -72,4 +72,4 @@ class test_blank_body(unittest.TestCase):
         response = httpResponse(401, body , headers, self.url, self.url)
         request = fuzzable_request(self.url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.getData('blank_body', 'blank_body')) , 0 )
+        self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 0 )

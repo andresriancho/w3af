@@ -80,7 +80,7 @@ class favicon_identification(InfrastructurePlugin):
                     i.setPluginName(self.getName())
                     i.setName('Favicon identification')
                     i.setURL( favicon_url )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     desc = 'Favicon.ico file was identified as "%s".' % favicon_desc
                     i.setDesc( desc )
                     kb.kb.append( self, 'info', i )
@@ -95,7 +95,7 @@ class favicon_identification(InfrastructurePlugin):
                 i.setPluginName(self.getName())
                 i.setName('Favicon identification failed')
                 i.setURL( favicon_url )
-                i.setId( response.id )
+                i.set_id( response.id )
                 desc = 'Favicon identification failed. If the remote site is using'
                 desc += ' framework that is being exposed by its favicon, please send'
                 desc += ' an email to w3af-develop@lists.sourceforge.net including'

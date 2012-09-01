@@ -38,7 +38,7 @@ class TestUpdateURLs(unittest.TestCase):
         u1 = url_object('http://w3af.org/')
         r1 = fuzzable_request(u1, method='GET')
         update_kb( r1 )
-        result = kb.kb.getData('urls', 'url_objects')
+        result = kb.kb.get('urls', 'url_objects')
         self.assertEquals(len(result), 1)
         self.assertEquals("http://w3af.org/", list(result)[0].url_string)
         
@@ -50,7 +50,7 @@ class TestUpdateURLs(unittest.TestCase):
         update_kb( r2 )
         update_kb( r3 )
         
-        result = kb.kb.getData('urls', 'url_objects')
+        result = kb.kb.get('urls', 'url_objects')
         self.assertEquals(len(result), 2)
         expected_set = set(["http://w3af.org/", "http://w3af.org/blog/"])
         self.assertEqual( expected_set,

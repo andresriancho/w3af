@@ -37,7 +37,7 @@ class TestFormatString(PluginTest):
     def test_found_format(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('format_string', 'format_string')
+        vulns = self.kb.get('format_string', 'format_string')
         self.assertEquals(1, len(vulns))
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]

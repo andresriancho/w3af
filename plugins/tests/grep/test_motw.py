@@ -44,7 +44,7 @@ class TestMOTW(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        infos = self.kb.getData('motw', 'motw')
+        infos = self.kb.get('motw', 'motw')
         
         self.assertEquals(1, len(infos))
         

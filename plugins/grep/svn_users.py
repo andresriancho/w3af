@@ -67,7 +67,7 @@ class svn_users(GrepPlugin):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
                     v.setURI(uri)
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     msg = 'The URL: "' + uri + '" contains a SVN versioning '
                     msg += 'signature with the username: "' + m[0] + '" .'
                     v.setDesc(msg)
@@ -82,7 +82,7 @@ class svn_users(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'svn_users', 'users' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'svn_users', 'users' ), 'URL' )
     
     def get_long_desc( self ):
         '''

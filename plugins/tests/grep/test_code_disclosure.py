@@ -51,7 +51,7 @@ class test_code_disclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
+        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 1 )
             
     def test_PHP_code_disclosure(self):
         body = 'header <? echo $a; ?> footer'
@@ -60,7 +60,7 @@ class test_code_disclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 1 )
+        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 1 )
 
 
     def test_no_code_disclosure_blank(self):
@@ -70,7 +70,7 @@ class test_code_disclosure(unittest.TestCase):
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.getData('code_disclosure', 'code_disclosure')) == 0 )
+        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 0 )
 
     def test_no_code_disclosure(self):
         raise SkipTest('Add this test')

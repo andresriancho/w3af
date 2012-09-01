@@ -34,7 +34,7 @@ class request:
         self.method = method
         self.local_uri = local_uri
         self.version = version
-        self.headers = [['User-Agent', cf.cf.getData('User-Agent')]]
+        self.headers = [['User-Agent', cf.cf.get('User-Agent')]]
         self.line_joiner = '\r\n'
         self.body = ''
         self.adhoc_method_line = ''

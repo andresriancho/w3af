@@ -93,7 +93,7 @@ class blind_sqli(AuditPlugin):
         @return: True if there IS a reported SQL injection for this URL/parameter
                  combination.
         '''
-        sql_injection_list = kb.kb.getData('sqli','sqli')
+        sql_injection_list = kb.kb.get('sqli','sqli')
         for sql_injection in sql_injection_list:
             if  sql_injection.getURL() == mutant.getURL() and \
                 sql_injection.getVar() == mutant.getVar():

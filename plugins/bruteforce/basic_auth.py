@@ -45,7 +45,7 @@ class basic_auth(BruteforcePlugin):
         @param freq: A fuzzable_request
         '''
         auth_url_list = [ i.getURL().getDomainPath() for i in 
-                          kb.kb.getData( 'http_auth_detect', 'auth' )]
+                          kb.kb.get( 'http_auth_detect', 'auth' )]
         
         domain_path = freq.getURL().getDomainPath()
         if domain_path in auth_url_list and domain_path not in self._already_tested:
@@ -89,8 +89,8 @@ class basic_auth(BruteforcePlugin):
             uri_opener.settings.setBasicAuth( url, user, passwd  )
             # The next lines replace the uri_opener opener with a new one that has
             # the basic auth settings configured
-            uri_opener.settings.buildOpeners()
-            uri_opener._opener = uri_opener.settings.getCustomUrlopen()
+            uri_opener.settings.build_openers()
+            uri_opener._opener = uri_opener.settings.get_custom_opener()
             
             try:
                 response = uri_opener.GET( url, cache=False, grep=False )
@@ -103,7 +103,7 @@ class basic_auth(BruteforcePlugin):
                 if response.getCode() != 401:
                     self._found = True
                     v = vuln.vuln()
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     v.setPluginName(self.getName())
                     v.setURL( url )
                     v.setDesc( 'Found authentication credentials to: "'+ url +
@@ -121,7 +121,7 @@ class basic_auth(BruteforcePlugin):
         '''
         Configure the main urllib with the newly found credentials.
         '''
-        for v in kb.kb.getData( 'basic_auth' , 'auth' ):
+        for v in kb.kb.get( 'basic_auth' , 'auth' ):
             self._uri_opener.settings.setBasicAuth( v.getURL(),
                                                     v['user'],
                                                     v['pass'] )

@@ -86,7 +86,7 @@ class feeds(GrepPlugin):
                 fmt = 'The URL "%s" is a %s version %s feed.'
                 msg = fmt % (uri, feed_type, version) 
                 i.setDesc( msg )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.addToHighlight( feed_type )
                 kb.kb.append( self, 'feeds', i )
     
@@ -104,7 +104,7 @@ class feeds(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'feeds', 'feeds' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'feeds', 'feeds' ), 'URL' )
 
     def get_plugin_deps( self ):
         '''

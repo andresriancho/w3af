@@ -138,7 +138,7 @@ class htaccess_methods(AuditPlugin):
             v = vuln.vuln()
             v.setPluginName(self.getName())
             v.setURL( url )
-            v.setId([i for m, i in allowed_methods])
+            v.set_id([i for m, i in allowed_methods])
             v.setName( 'Misconfigured access control' )
             v.setSeverity(severity.MEDIUM)
             msg = 'The resource: "'+ url + '" requires authentication but the access'

@@ -89,7 +89,7 @@ class rfi(AttackPlugin):
             msg += ' that can be reached by the vulnerable Web application.'
             raise w3afException(msg)
         
-        rfi_vulns = kb.kb.getData('rfi' , 'rfi')
+        rfi_vulns = kb.kb.get('rfi' , 'rfi')
         if vuln_to_exploit is not None:
             rfi_vulns = [v for v in rfi_vulns if v.getId() == vuln_to_exploit]
         
@@ -103,7 +103,7 @@ class rfi(AttackPlugin):
             #
             if self._use_XSS_vuln:
                 
-                xss_vulns = kb.kb.getData('xss', 'xss')
+                xss_vulns = kb.kb.get('xss', 'xss')
 
                 if not xss_vulns:
                     msg = 'rfi plugin is configured to use a XSS bug to'

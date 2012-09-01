@@ -40,7 +40,7 @@ class TestFingerprintOS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
         
-        os_str = self.kb.getData('fingerprint_os', 'operating_system_str')
+        os_str = self.kb.get('fingerprint_os', 'operating_system_str')
         
         self.assertEqual('unix', os_str )
         
@@ -55,6 +55,6 @@ class TestFingerprintOS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
         
-        os_str = self.kb.getData('fingerprint_os', 'operating_system_str')
+        os_str = self.kb.get('fingerprint_os', 'operating_system_str')
         
         self.assertEqual('unix', os_str )

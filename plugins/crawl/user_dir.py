@@ -79,7 +79,7 @@ class user_dir(CrawlPlugin):
                                            url_user_list)
         
         # Only do this if I already know that users can be identified.
-        if kb.kb.getData( 'user_dir', 'users' ) != []:
+        if kb.kb.get( 'user_dir', 'users' ) != []:
             if self._identify_OS:
                 self._advanced_identification( base_url, 'os' )
                 
@@ -107,11 +107,11 @@ class user_dir(CrawlPlugin):
             if relative_distance_lt(response_body, self._non_existent, 0.7):
                 
                 # Avoid duplicates
-                if user not in [ u['user'] for u in kb.kb.getData( 'user_dir', 'users') ]:
+                if user not in [ u['user'] for u in kb.kb.get( 'user_dir', 'users') ]:
                     i = info.info()
                     i.setPluginName(self.getName())
                     i.setName('User directory: ' + response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.setURL( response.getURL() )
                     i.setDesc( 'A user directory was found at: ' + response.getURL() )
                     i['user'] = user
@@ -241,13 +241,13 @@ class user_dir(CrawlPlugin):
         Print all the findings to the output manager.
         @return : None
         '''
-        userList = [ u['user'] for u in kb.kb.getData( 'user_dir', 'users') ]
+        userList = [ u['user'] for u in kb.kb.get( 'user_dir', 'users') ]
         if userList:
             om.out.information('The following users were found on the remote operating system:')
             for u in userList:
                 om.out.information('- ' + u )
         
-        OS_list = [ u['rOS'] for u in kb.kb.getData( 'user_dir', 'os') ]
+        OS_list = [ u['rOS'] for u in kb.kb.get( 'user_dir', 'os') ]
         if OS_list:
             om.out.information('The remote operating system was identifyed as:')
             OS_list = list( set( OS_list ) )
@@ -257,9 +257,9 @@ class user_dir(CrawlPlugin):
             msg = 'Failed to identify the remote OS based on the users available in'
             msg += ' the user_dir plugin database.'
             om.out.information(msg)
-        OS_list = [ u['rOS'] for u in kb.kb.getData( 'user_dir', 'os') ]
+        OS_list = [ u['rOS'] for u in kb.kb.get( 'user_dir', 'os') ]
         
-        app_list = [ u['application'] for u in kb.kb.getData( 'user_dir', 'applications') ]
+        app_list = [ u['application'] for u in kb.kb.get( 'user_dir', 'applications') ]
         if app_list:
             om.out.information('The remote server has the following applications installed:')
             app_list = list( set( app_list ) )
@@ -293,7 +293,7 @@ class user_dir(CrawlPlugin):
         '''
         res = []
         
-        infoList = kb.kb.getData( 'emails', 'emails' )
+        infoList = kb.kb.get( 'emails', 'emails' )
         
         for i in infoList:
             res.append( i['user'] )

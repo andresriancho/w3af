@@ -38,14 +38,14 @@ class TestFaviconIdentification(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.no_favicon_url, cfg['plugins'])
         
-        infos = self.kb.getData('favicon_identification', 'info')
+        infos = self.kb.get('favicon_identification', 'info')
         self.assertEqual( len(infos), 0, infos)
     
     def test_favicon_identification_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.favicon_url, cfg['plugins'])
         
-        infos = self.kb.getData('favicon_identification', 'info')
+        infos = self.kb.get('favicon_identification', 'info')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]

@@ -37,12 +37,12 @@ class TestPykto(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns = self.kb.getData('pykto', 'vuln')
+        vulns = self.kb.get('pykto', 'vuln')
         
         self.assertTrue( len(vulns) > 10 , vulns )
         
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         self.assertTrue( len(urls) > 5, urls )
         
         hidden_url = 'http://moth/hidden/'

@@ -41,7 +41,7 @@ class TestRFI(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.getData('rfi', 'rfi')
+        vulns = self.kb.get('rfi', 'rfi')
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]

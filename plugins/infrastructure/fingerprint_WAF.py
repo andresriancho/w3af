@@ -291,7 +291,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         i = info.info()
         i.setPluginName(self.getName())
         i.setURL( response.getURL() )
-        i.setId( response.id )
+        i.set_id( response.id )
         msg = 'The remote network seems to have a "'+name+'" WAF deployed to' \
               ' protect access to the web server.'
         if protected_by:

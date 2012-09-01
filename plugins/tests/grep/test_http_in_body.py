@@ -44,14 +44,14 @@ class TestHttpInBody(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        infos = self.kb.getData('http_in_body', 'request')
+        infos = self.kb.get('http_in_body', 'request')
         info = infos[0]
         self.assertEquals(1, len(infos))
         self.assertEquals('http://moth/w3af/grep/http_in_body/http_request.html', str(info.getURL()))
         self.assertEquals(severity.INFORMATION, info.getSeverity())
         self.assertEquals('HTTP Request in HTTP body',info.getName())
 
-        infos = self.kb.getData('http_in_body', 'response')
+        infos = self.kb.get('http_in_body', 'response')
         info = infos[0]
         self.assertEquals(1, len(infos))
         self.assertEquals('http://moth/w3af/grep/http_in_body/http_response.html', str(info.getURL()))

@@ -76,7 +76,7 @@ class oracle_discovery(CrawlPlugin):
                         i.setName('Oracle application')
                         i.setURL( response.getURL() )
                         i.setDesc( self._parse( url, response ) )
-                        i.setId( response.id )
+                        i.set_id( response.id )
                         kb.kb.append( self, 'info', i )
                         om.out.information( i.getDesc() )
                     else:

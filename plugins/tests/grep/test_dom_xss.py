@@ -44,7 +44,7 @@ class TestDOMXSS(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('dom_xss', 'dom_xss')
+        vulns = self.kb.get('dom_xss', 'dom_xss')
         
         self.assertEquals(1, len(vulns))
         

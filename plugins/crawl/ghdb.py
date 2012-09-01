@@ -107,7 +107,7 @@ class ghdb(CrawlPlugin):
                 msg = 'ghdb plugin found a vulnerability at URL: "' + result.URL
                 msg += '" . Vulnerability description: ' + gh.desc
                 v.setDesc( msg  )
-                v.setId( response.id )
+                v.set_id( response.id )
                 kb.kb.append( self, 'vuln', v )
                 om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
                         

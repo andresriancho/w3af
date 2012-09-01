@@ -44,7 +44,7 @@ class TestClickJacking(PluginTest):
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('click_jacking', 'click_jacking')
+        vulns = self.kb.get('click_jacking', 'click_jacking')
         
         self.assertEquals(1, len(vulns))
         

@@ -33,13 +33,13 @@ class TestPHPInfo(PluginTest):
     def test_phpinfo(self):
         self._scan( self._run_config['target'], self._run_config['plugins'] )
         
-        urls = self.kb.getData('urls', 'url_objects')
+        urls = self.kb.get('urls', 'url_objects')
         urls = [ url.url_string for url in urls ]
         
         self.assertTrue( self.base_url + 'phpinfo.php' in urls )
         
         
-        infos = self.kb.getData('phpinfo', 'phpinfo')
+        infos = self.kb.get('phpinfo', 'phpinfo')
         self.assertTrue( len(infos) > 5, infos)
         
         EXPECTED_INFOS = (

@@ -39,9 +39,9 @@ class TestFindDVCS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns_git = self.kb.getData('find_dvcs', 'GIT')
-        vulns_bzr = self.kb.getData('find_dvcs', 'BZR')
-        vulns_hg = self.kb.getData('find_dvcs', 'HG')
+        vulns_git = self.kb.get('find_dvcs', 'GIT')
+        vulns_bzr = self.kb.get('find_dvcs', 'BZR')
+        vulns_hg = self.kb.get('find_dvcs', 'HG')
         
         self.assertEqual( len(vulns_git), 1, vulns_git )
         self.assertEqual( len(vulns_bzr), 1, vulns_bzr )

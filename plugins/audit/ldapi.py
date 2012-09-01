@@ -115,7 +115,7 @@ class ldapi(AuditPlugin):
                 if ldap_error_string not in mutant.getOriginalResponseBody():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setSeverity(severity.HIGH)
                     v.setName( 'LDAP injection vulnerability' )
                     v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
@@ -127,7 +127,7 @@ class ldapi(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'ldapi', 'ldapi' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'ldapi', 'ldapi' ), 'VAR' )
         
     def _find_ldap_error( self, response ):
         '''

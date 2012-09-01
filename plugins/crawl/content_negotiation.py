@@ -262,7 +262,7 @@ class content_negotiation(CrawlPlugin):
                 desc = 'HTTP Content negotiation is enabled in the remote web server. This'
                 desc += ' could be used to bruteforce file names and find new resources.'
                 i.setDesc( desc )
-                i.setId( response.id )
+                i.set_id( response.id )
                 kb.kb.append( self, 'content_negotiation', i )
                 om.out.information( i.getDesc() )
             else:

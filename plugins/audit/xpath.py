@@ -119,7 +119,7 @@ class xpath(AuditPlugin):
                     v.setName( 'XPATH injection vulnerability' )
                     v.setSeverity(severity.MEDIUM)
                     v.setDesc( 'XPATH injection was found at: ' + mutant.foundAt() )
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.addToHighlight( xpath_error )
                     kb.kb.append( self, 'xpath', v )
                     break
@@ -128,7 +128,7 @@ class xpath(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'xpath', 'xpath' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'xpath', 'xpath' ), 'VAR' )
     
     def _find_xpath_error( self, response ):
         '''

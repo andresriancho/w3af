@@ -204,7 +204,7 @@ class text_file(OutputPlugin):
                                                   options_dict[plugin_type])
         
         # And now the target information
-        str_targets = ', '.join( [u.url_string for u in cf.cf.getData('targets')] )
+        str_targets = ', '.join( [u.url_string for u in cf.cf.get('targets')] )
         to_print += 'target\n'
         to_print += '    set target ' + str_targets + '\n'
         to_print += '    back'

@@ -138,7 +138,7 @@ class path_disclosure(GrepPlugin):
                             v = vuln.vuln()
                             v.setPluginName( self.getName() )
                             v.setURL( realurl )
-                            v.setId( response.id )
+                            v.set_id( response.id )
                             msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
                             msg += 'vulnerability which discloses: "' + match  + '".'
                             v.setDesc( msg )
@@ -182,7 +182,7 @@ class path_disclosure(GrepPlugin):
         If a path disclosure was found, I can create a list of full paths to all URLs ever visited.
         This method updates that list.
         '''
-        path_disc_vulns = kb.kb.getData( 'path_disclosure', 'path_disclosure' ) 
+        path_disc_vulns = kb.kb.get( 'path_disclosure', 'path_disclosure' ) 
         if len( path_disc_vulns ) == 0:
             # I can't calculate the list !
             pass
@@ -192,7 +192,7 @@ class path_disclosure(GrepPlugin):
             
             # Note that this list is recalculated every time a new page is accesed
             # this is goood :P
-            url_list = kb.kb.getData( 'urls', 'url_objects' )
+            url_list = kb.kb.get( 'urls', 'url_objects' )
             
             # Now I find the longest match between one of the URLs that w3af has
             # discovered, and one of the path disclosure strings that this plugin has
@@ -246,7 +246,7 @@ class path_disclosure(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        inform = kb.kb.getData( 'path_disclosure', 'path_disclosure' )
+        inform = kb.kb.get( 'path_disclosure', 'path_disclosure' )
         
         tmp = {}
         ids = {}

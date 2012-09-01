@@ -135,7 +135,7 @@ class buffer_overflow(AuditPlugin):
             self._has_no_bug(mutant):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Buffer overflow vulnerability' )
                 msg = 'A possible buffer overflow (detection is really hard...)'
@@ -148,7 +148,7 @@ class buffer_overflow(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'buffer_overflow', 'buffer_overflow' ), 'VAR' )
+        self.print_uniq( kb.kb.get( 'buffer_overflow', 'buffer_overflow' ), 'VAR' )
 
     def get_plugin_deps( self ):
         '''

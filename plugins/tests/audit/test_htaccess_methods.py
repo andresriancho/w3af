@@ -42,7 +42,7 @@ class TestHTAccess(PluginTest):
     def test_found_htaccess_methods(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.getData('htaccess_methods', 'auth')
+        vulns = self.kb.get('htaccess_methods', 'auth')
         
         self.assertEquals(1, len(vulns))
         

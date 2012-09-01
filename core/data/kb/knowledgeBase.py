@@ -20,15 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import threading
+
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.kb.shell as shell
 
 
-class KnowledgeBase:
+class KnowledgeBase(object):
     '''
     This class saves the data that is sent to it by plugins. It is the only way
-    in which plugins can talk to each other.
+    in which plugins can exchange information.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -37,64 +38,60 @@ class KnowledgeBase:
         self._kb = {}
         self._kb_lock = threading.RLock()
 
-    def save( self, callingInstance, variableName, value ):
+    def save( self, calling_instance, variable_name, value ):
         '''
-        This method saves the variableName value to a dict.
+        This method saves the variable_name value to a dict.
         '''
-        name = self._get_real_name(callingInstance)
+        name = self._get_real_name(calling_instance)
         
         with self._kb_lock:
             if name not in self._kb.keys():
-                self._kb[ name ] = {variableName: value}
+                self._kb[ name ] = {variable_name: value}
             else:
-                self._kb[ name ][ variableName ] = value
+                self._kb[ name ][ variable_name ] = value
         
-    def append( self, callingInstance, variableName, value ):
+    def append( self, calling_instance, variable_name, value ):
         '''
-        This method appends the variableName value to a dict.
+        This method appends the variable_name value to a dict.
         '''
-        name = self._get_real_name(callingInstance)
+        name = self._get_real_name(calling_instance)
 
         with self._kb_lock:
             if name not in self._kb.keys():
-                self._kb[name] = {variableName: [value]}
+                self._kb[name] = {variable_name: [value]}
             else:
-                if variableName in self._kb[ name ] :
-                    self._kb[name][variableName].append(value)
+                if variable_name in self._kb[ name ] :
+                    self._kb[name][variable_name].append(value)
                 else:
-                    self._kb[name][variableName] = [value]
+                    self._kb[name][variable_name] = [value]
         
-    def getData( self, pluginWhoSavedTheData, variableName=None ):
+    def get( self, plugin_name, variable_name=None ):
         '''
-        @parameter pluginWhoSavedTheData: The plugin that saved the data to the
-                                          kb.info Typically the name of the plugin,
-                                          but could also be the plugin instance.
+        @parameter plugin_name: The plugin that saved the data to the
+                                kb.info Typically the name of the plugin,
+                                but could also be the plugin instance.
         
-        @parameter variableName: The name of the variables under which the vuln 
+        @parameter variable_name: The name of the variables under which the vuln 
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set 
                                  to None, a dict with all the vuln objects found
-                                 by the pluginWhoSavedTheData is returned.
+                                 by the plugin_name is returned.
         
         @return: Returns the data that was saved by another plugin.
         '''
-        name = self._get_real_name(pluginWhoSavedTheData)
+        name = self._get_real_name(plugin_name)
             
-        res = []
-        
         with self._kb_lock:
-            if name not in self._kb.keys():
-                res = []
+            if name not in self._kb:
+                return []
             else:
-                if variableName is None:
-                    res = self._kb[name]
-                elif variableName not in self._kb[name].keys():
-                    res = []
+                if variable_name is None:
+                    return self._kb[name]
+                elif variable_name not in self._kb[name]:
+                    return []
                 else:
-                    res = self._kb[name][variableName]
-                    
-        return res
+                    return self._kb[name][variable_name]
 
     def getAllEntriesOfClass(self, klass):
         '''

@@ -37,7 +37,7 @@ class TestHmap(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('hmap', 'server')
+        infos = self.kb.get('hmap', 'server')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
@@ -47,7 +47,7 @@ class TestHmap(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'].replace('http', 'https'), cfg['plugins'])
         
-        infos = self.kb.getData('hmap', 'server')
+        infos = self.kb.get('hmap', 'server')
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]

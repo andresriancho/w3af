@@ -106,7 +106,7 @@ class lfi(AuditPlugin):
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
         # Feel free to mail me ( Andres Riancho ) if you know about other default files that
         # could be installed on AIX ? Solaris ? and are not /etc/passwd
-        if cf.cf.getData('targetOS') in ['unix', 'unknown']:
+        if cf.cf.get('targetOS') in ['unix', 'unknown']:
             local_files.append("../" * 15 + "etc/passwd")
             local_files.append("../" * 15 + "etc/passwd\0")
             local_files.append("../" * 15 + "etc/passwd\0.html")
@@ -122,7 +122,7 @@ class lfi(AuditPlugin):
                 local_files.append("/etc/passwd%00."+ extension)
                 local_files.append("../" * 15 + "etc/passwd%00."+ extension)
         
-        if cf.cf.getData('targetOS') in ['windows', 'unknown']:
+        if cf.cf.get('targetOS') in ['windows', 'unknown']:
             local_files.append("../" * 15 + "boot.ini\0")
             local_files.append("../" * 15 + "boot.ini\0.html")
             local_files.append("C:\\boot.ini")
@@ -168,7 +168,7 @@ class lfi(AuditPlugin):
                 if file_pattern_match not in mutant.getOriginalResponseBody():
                     v = vuln.vuln(mutant)
                     v.setPluginName(self.getName())
-                    v.setId(response.id)
+                    v.set_id(response.id)
                     v.setName('Local file inclusion vulnerability')
                     v.setSeverity(severity.MEDIUM)
                     v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
@@ -191,7 +191,7 @@ class lfi(AuditPlugin):
                     #   local file read
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setName( 'Local file read vulnerability' )
                     v.setSeverity(severity.MEDIUM)
                     msg = 'An arbitrary local file read vulnerability was found at: '
@@ -217,7 +217,7 @@ class lfi(AuditPlugin):
                 if match and not regex.search( mutant.getOriginalResponseBody() ):
                     i = info.info( mutant )
                     i.setPluginName(self.getName())
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.setName( 'File read error' )
                     i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
                     kb.kb.append( self, 'error', i )        
@@ -226,8 +226,8 @@ class lfi(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(kb.kb.getData('lfi', 'lfi'), 'VAR')
-        self.print_uniq(kb.kb.getData('lfi', 'error'), 'VAR')
+        self.print_uniq(kb.kb.get('lfi', 'lfi'), 'VAR')
+        self.print_uniq(kb.kb.get('lfi', 'error'), 'VAR')
 
     def _find_file( self, response ):
         '''

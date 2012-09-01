@@ -82,10 +82,10 @@ class test_symfony(unittest.TestCase):
         response = self.http_resp(read=self.PROTECTED_BODY, info=self.SYMFONY_HEADERS)
         request = fuzzable_request(self.url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('symfony', 'symfony')) , 0 )
+        self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 0 )
     
     def test_symfony_unprotected(self):
         request = fuzzable_request(self.url, method='GET')
         response = self.http_resp(read=self.UNPROTECTED_BODY, info=self.SYMFONY_HEADERS)
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.getData('symfony', 'symfony')) , 1 )
+        self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 1 )

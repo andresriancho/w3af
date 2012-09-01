@@ -35,7 +35,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 from core.controllers.w3afException import w3afRunOnce
 import core.data.constants.httpConstants as httpConstants
-from core.controllers.misc.groupbyMinKey import groupbyMinKey
+from core.controllers.misc.group_by_min_key import group_by_min_key
 
 
 class allowed_methods(InfrastructurePlugin):
@@ -143,7 +143,7 @@ class allowed_methods(InfrastructurePlugin):
                     i.setPluginName(self.getName())
                     i.setName( 'Non existent methods default to GET' )
                     i.setURL( url )
-                    i.setId( [non_exist_response.getId(), get_response.getId()] )
+                    i.set_id( [non_exist_response.getId(), get_response.getId()] )
                     msg = 'The remote Web server has a custom configuration, in which any non'
                     msg += ' existent methods that are invoked are defaulted to GET instead of'
                     msg += ' returning a "Not Implemented" response.'
@@ -186,7 +186,7 @@ class allowed_methods(InfrastructurePlugin):
             i.setPluginName(self.getName())
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
-            i.setId( id_list )
+            i.set_id( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods, which'
             msg += ' include DAV methods: ' + ', '.join(allowed_methods)
@@ -199,7 +199,7 @@ class allowed_methods(InfrastructurePlugin):
             i.setPluginName(self.getName())
             i.setName('Allowed methods for ' + url )
             i.setURL( url )
-            i.setId( id_list )
+            i.set_id( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods:'
             msg += ' ' + ', '.join(allowed_methods)
@@ -213,10 +213,10 @@ class allowed_methods(InfrastructurePlugin):
         Print the results.
         '''
         # First I get the data from the kb
-        all_info_obj = kb.kb.getData( 'allowed_methods', 'methods' )
-        dav_info_obj = kb.kb.getData( 'allowed_methods', 'dav-methods' )
+        all_info_obj = kb.kb.get( 'allowed_methods', 'methods' )
+        dav_info_obj = kb.kb.get( 'allowed_methods', 'dav-methods' )
         
-        # Now I transform it to something I can use with groupbyMinKey
+        # Now I transform it to something I can use with group_by_min_key
         allMethods = []
         for i in all_info_obj:
             allMethods.append( (i.getURL() , i['methods']) )
@@ -237,7 +237,7 @@ class allowed_methods(InfrastructurePlugin):
         for url, methodList in to_show:
             tmp.append( (url, ', '.join( methodList ) ) )
         
-        result_dict, itemIndex = groupbyMinKey( tmp )
+        result_dict, itemIndex = group_by_min_key( tmp )
             
         for k in result_dict:
             if itemIndex == 0:

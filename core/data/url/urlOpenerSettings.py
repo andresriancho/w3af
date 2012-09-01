@@ -61,7 +61,7 @@ class urlOpenerSettings( configurable ):
         self._mangleHandler = None
         self._urlParameterHandler = None
         self._ntlmAuthHandler = None
-        # Keep alive handlers are created on buildOpeners()
+        # Keep alive handlers are created on build_openers()
         
         cj = cookielib.MozillaCookieJar()
         self._cookieHandler = CookieHandler(cj)
@@ -71,7 +71,7 @@ class urlOpenerSettings( configurable ):
         self._cacheOpener = None
 
         # Some internal variables
-        self.needUpdate = True
+        self.need_update = True
         
         #
         #   I've found some websites that check the user-agent string, and don't allow you to access
@@ -80,17 +80,17 @@ class urlOpenerSettings( configurable ):
         user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0;'
         user_agent += ' w3af.sf.net)'
         #   which basically is the UA for IE8 running in Windows 7, plus our website :)
-        self.HeaderList = [('User-Agent', user_agent)]
+        self.header_list = [('User-Agent', user_agent)]
         
         # By default, dont mangle any request/responses
         self._manglePlugins = []
 
         # User configured variables
-        if cfg.getData('timeout') is None:
+        if cfg.get('timeout') is None:
             # This is the first time we are executed...
         
             cfg.save('timeout', 15 )
-            socket.setdefaulttimeout(cfg.getData('timeout'))
+            socket.setdefaulttimeout(cfg.get('timeout'))
             cfg.save('headersFile', '' )
             cfg.save('cookieJarFile', '' )
             cfg.save('User-Agent', 'w3af.sourceforge.net' )
@@ -150,11 +150,11 @@ class urlOpenerSettings( configurable ):
         @return: nothing
         '''
         for h, v in hList:
-            self.HeaderList.append( (h,v) )
+            self.header_list.append( (h,v) )
             om.out.debug( 'Added the following header: '+ h+ ': '+ v)
         
     def getHeadersFile( self ):
-        return cfg.getData('headersFile')
+        return cfg.get('headersFile')
         
     def setCookieJarFile(self, CookieJarFile ):
         om.out.debug( 'Called SetCookie')
@@ -170,7 +170,7 @@ class urlOpenerSettings( configurable ):
             cfg.save('cookieJarFile', CookieJarFile )
         
     def getCookieJarFile( self ):
-        return cfg.getData('cookieJarFile')
+        return cfg.get('cookieJarFile')
     
     def get_cookies(self):
         '''
@@ -187,19 +187,19 @@ class urlOpenerSettings( configurable ):
             
             # Set the default timeout
             # I dont need to use timeoutsocket.py , it has been added to python sockets
-            socket.setdefaulttimeout(cfg.getData('timeout'))
+            socket.setdefaulttimeout(cfg.get('timeout'))
         
     def getTimeout( self ):
-        return cfg.getData('timeout')
+        return cfg.get('timeout')
         
     def setUserAgent( self, useragent ):
         om.out.debug( 'Called SetUserAgent')
-        self.HeaderList = [ i for i in self.HeaderList if i[0]!='User-Agent']
-        self.HeaderList.append( ('User-Agent',useragent) )
+        self.header_list = [ i for i in self.header_list if i[0]!='User-Agent']
+        self.header_list.append( ('User-Agent',useragent) )
         cfg.save('User-Agent', useragent)
         
     def getUserAgent( self ):
-        return cfg.getData('User-Agent')
+        return cfg.get('User-Agent')
         
     def setProxy( self, ip , port):
         '''
@@ -241,7 +241,7 @@ class urlOpenerSettings( configurable ):
         self._proxyHandler = urllib2.ProxyHandler( proxyMap )
 
     def getProxy( self ):
-        return cfg.getData('proxyAddress') + ':' + str(cfg.getData('proxyPort'))
+        return cfg.get('proxyAddress') + ':' + str(cfg.get('proxyPort'))
         
     def setBasicAuth(self, url, username, password):
         om.out.debug( 'Called SetBasicAuth')
@@ -269,7 +269,7 @@ class urlOpenerSettings( configurable ):
     
             # Only for w3af, no usage in urllib2
             self._basicAuthStr = protocol + '://' + username + ':' + password + '@' + domain + '/'
-            self.needUpdate = True
+            self.need_update = True
         
         # Save'em!
         cfg.save('basicAuthPass',  password)
@@ -277,9 +277,9 @@ class urlOpenerSettings( configurable ):
         cfg.save('basicAuthDomain', url)
 
     def getBasicAuth( self ):
-        scheme, domain, path, x1, x2, x3 = urlparse.urlparse( cfg.getData('basicAuthDomain') )
-        res = scheme + '://' + cfg.getData('basicAuthUser') + ':' 
-        res += cfg.getData('basicAuthPass') + '@' + domain + '/'
+        scheme, domain, path, x1, x2, x3 = urlparse.urlparse( cfg.get('basicAuthDomain') )
+        res = scheme + '://' + cfg.get('basicAuthUser') + ':' 
+        res += cfg.get('basicAuthPass') + '@' + domain + '/'
         return res
         
     def setNtlmAuth( self, url, ntlm_domain, username, password ):
@@ -302,10 +302,10 @@ class urlOpenerSettings( configurable ):
         self._password_mgr.add_password(None, url, username, password)
         self._ntlmAuthHandler = HTTPNtlmAuthHandler.HTTPNtlmAuthHandler(self._password_mgr)
    
-        self.needUpdate = True
+        self.need_update = True
                         
-    def buildOpeners(self):
-        om.out.debug('Called buildOpeners')
+    def build_openers(self):
+        om.out.debug('Called build_openers')
         
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
@@ -325,7 +325,7 @@ class urlOpenerSettings( configurable ):
             if handler:
                 handlers.append(handler)
         
-        if cfg.getData('ignoreSessCookies'):
+        if cfg.get('ignoreSessCookies'):
             handlers.remove(self._cookieHandler)
         
         self._nonCacheOpener = urllib2.build_opener(*handlers)
@@ -333,7 +333,7 @@ class urlOpenerSettings( configurable ):
         # Prevent the urllib from putting his user-agent header
         self._nonCacheOpener.addheaders = [ ('Accept', '*/*') ]
         
-    def getCustomUrlopen(self):
+    def get_custom_opener(self):
         return self._nonCacheOpener
 
     def setManglePlugins( self, mp ):
@@ -348,7 +348,7 @@ class urlOpenerSettings( configurable ):
         return self._manglePlugins
         
     def getMaxFileSize( self ):
-        return cfg.getData('maxFileSize')
+        return cfg.get('maxFileSize')
         
     def setMaxFileSize( self, fsize ):
         cfg.save('maxFileSize', fsize)
@@ -357,7 +357,7 @@ class urlOpenerSettings( configurable ):
         cfg.save('maxRetrys', retryN)
     
     def getMaxRetrys( self ):
-        return cfg.getData('maxRetrys')
+        return cfg.get('maxRetrys')
     
     def setUrlParameter ( self, urlParam ):
         # Do some input cleanup/validation
@@ -369,7 +369,7 @@ class urlOpenerSettings( configurable ):
             self._urlParameterHandler = URLParameterHandler(urlParam)
     
     def getUrlParameter ( self ):
-        return cfg.getData('urlParameter')
+        return cfg.get('urlParameter')
 
     def get_options( self ):
         '''
@@ -377,38 +377,38 @@ class urlOpenerSettings( configurable ):
         '''        
         d1 = 'The timeout for connections to the HTTP server'
         h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
-        o1 = option('timeout', cfg.getData('timeout'), d1, 'integer', help=h1)
+        o1 = option('timeout', cfg.get('timeout'), d1, 'integer', help=h1)
         
         d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
-        o2 = option('headersFile', cfg.getData('headersFile'), d2, 'string')
+        o2 = option('headersFile', cfg.get('headersFile'), d2, 'string')
 
         d3 = 'Set the basic authentication username for HTTP requests'
-        o3 = option('basicAuthUser', cfg.getData('basicAuthUser'), d3, 'string', tabid='Basic HTTP Authentication')
+        o3 = option('basicAuthUser', cfg.get('basicAuthUser'), d3, 'string', tabid='Basic HTTP Authentication')
 
         d4 = 'Set the basic authentication password for HTTP requests'
-        o4 = option('basicAuthPass', cfg.getData('basicAuthPass'), d4, 'string', tabid='Basic HTTP Authentication')
+        o4 = option('basicAuthPass', cfg.get('basicAuthPass'), d4, 'string', tabid='Basic HTTP Authentication')
 
         d5 = 'Set the basic authentication domain for HTTP requests'
         h5 = 'This configures on which requests to send the authentication settings configured'
         h5 += ' in basicAuthPass and basicAuthUser. If you are unsure, just set it to the'
         h5 += ' target domain name.'
-        o5 = option('basicAuthDomain', cfg.getData('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
+        o5 = option('basicAuthDomain', cfg.get('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
 
         
         d6a= 'Set the NTLM authentication domain (the windows domain name) for HTTP requests'
-        o6a = option('ntlmAuthDomain', cfg.getData('ntlmAuthDomain'), d6a, 'string', tabid='NTLM Authentication')
+        o6a = option('ntlmAuthDomain', cfg.get('ntlmAuthDomain'), d6a, 'string', tabid='NTLM Authentication')
         
         d6= 'Set the NTLM authentication username for HTTP requests'
-        o6 = option('ntlmAuthUser', cfg.getData('ntlmAuthUser'), d6, 'string', tabid='NTLM Authentication')
+        o6 = option('ntlmAuthUser', cfg.get('ntlmAuthUser'), d6, 'string', tabid='NTLM Authentication')
 
         d7 = 'Set the NTLM authentication password for HTTP requests'
-        o7 = option('ntlmAuthPass', cfg.getData('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
+        o7 = option('ntlmAuthPass', cfg.get('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
 
         d7b = 'Set the NTLM authentication domain for HTTP requests'
         h7b = 'This configures on which requests to send the authentication settings configured'
         h7b += ' in ntlmAuthPass and ntlmAuthUser. If you are unsure, just set it to the'
         h7b += ' target domain name.'
-        o7b = option('ntlmAuthURL', cfg.getData('ntlmAuthURL'), d7b, 'string', tabid='NTLM Authentication')
+        o7b = option('ntlmAuthURL', cfg.get('ntlmAuthURL'), d7b, 'string', tabid='NTLM Authentication')
                 
         d8 = 'Set the cookiejar filename.'
         h8 = 'The cookiejar file MUST be in mozilla format.'
@@ -416,46 +416,46 @@ class urlOpenerSettings( configurable ):
         h8 += '# Netscape HTTP Cookie File\n'
         h8 += '.domain.com    TRUE   /       FALSE   1731510001      user    admin\n\n'
         h8 += 'The comment IS mandatory. Take special attention to spaces.'
-        o8 = option('cookieJarFile', cfg.getData('cookieJarFile'), d8, 'string', help=h8, tabid='Cookies')
+        o8 = option('cookieJarFile', cfg.get('cookieJarFile'), d8, 'string', help=h8, tabid='Cookies')
 
         d9 = 'Ignore session cookies'
         h9 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
-        o9 = option('ignoreSessCookies', cfg.getData('ignoreSessCookies'), d9, 'boolean', help=h9, tabid='Cookies')
+        o9 = option('ignoreSessCookies', cfg.get('ignoreSessCookies'), d9, 'boolean', help=h9, tabid='Cookies')
        
         d10 = 'Proxy TCP port'
         h10 = 'TCP port for the remote proxy server to use. On Microsoft Windows systems, w3af'
         h10 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o10 = option('proxyPort', cfg.getData('proxyPort'), d10, 'integer', help=h10, tabid='Outgoing proxy')
+        o10 = option('proxyPort', cfg.get('proxyPort'), d10, 'integer', help=h10, tabid='Outgoing proxy')
 
         d11 = 'Proxy IP address'
         h11 = 'IP address for the remote proxy server to use. On Microsoft Windows systems, w3af'
         h11 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o11 = option('proxyAddress', cfg.getData('proxyAddress'), d11, 'string', help=h11, tabid='Outgoing proxy')
+        o11 = option('proxyAddress', cfg.get('proxyAddress'), d11, 'string', help=h11, tabid='Outgoing proxy')
 
         d12 = 'User Agent header'
         h12 = 'User Agent header to send in request.'
-        o12 = option('userAgent', cfg.getData('User-Agent'), d12, 'string', help=h12, tabid='Misc')
+        o12 = option('userAgent', cfg.get('User-Agent'), d12, 'string', help=h12, tabid='Misc')
 
         d13 = 'Maximum file size'
         h13 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
-        o13 = option('maxFileSize', cfg.getData('maxFileSize'), d13, 'integer', help=h13, tabid='Misc')
+        o13 = option('maxFileSize', cfg.get('maxFileSize'), d13, 'integer', help=h13, tabid='Misc')
 
         d14 = 'Maximum number of retries'
         h14 = 'Indicates the maximum number of retries when requesting an URL.'
-        o14 = option('maxRetrys', cfg.getData('maxRetrys'), d14, 'integer', help=h14, tabid='Misc')
+        o14 = option('maxRetrys', cfg.get('maxRetrys'), d14, 'integer', help=h14, tabid='Misc')
 
         d15 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
-        o15 = option('always404', cfg.getData('always404'), d15, 'list', tabid='404 settings')
+        o15 = option('always404', cfg.get('always404'), d15, 'list', tabid='404 settings')
 
         d16 = 'A comma separated list that determines what URLs will NEVER be detected as 404 pages.'
-        o16 = option('never404', cfg.getData('never404'), d16, 'list', tabid='404 settings')
+        o16 = option('never404', cfg.get('never404'), d16, 'list', tabid='404 settings')
 
         d17 = 'If this string is found in an HTTP response, then it will be tagged as a 404.'
-        o17 = option('404string', cfg.getData('404string'), d17, 'string', tabid='404 settings')
+        o17 = option('404string', cfg.get('404string'), d17, 'string', tabid='404 settings')
 
         d18 = 'Append the given URL parameter to every accessed URL.'
         d18 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
-        o18 = option('urlParameter', cfg.getData('urlParameter'), d18, 'string')    
+        o18 = option('urlParameter', cfg.get('urlParameter'), d18, 'string')    
 
         ol = OptionList()
         ol.add(o1)

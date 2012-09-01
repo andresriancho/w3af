@@ -37,7 +37,7 @@ class TestFrontpageVersion(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('frontpage_version', 'frontpage_version')
+        infos = self.kb.get('frontpage_version', 'frontpage_version')
         
         EXPECTED = ('/_vti_inf.html',
                     '/_vti_bin/_vti_adm/admin.exe',

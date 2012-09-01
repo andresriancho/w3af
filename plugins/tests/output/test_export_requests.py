@@ -50,8 +50,8 @@ class TestExportRequests(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        urls = self.kb.getData('urls', 'url_objects')
-        freq = self.kb.getData('urls', 'fuzzable_requests')
+        urls = self.kb.get('urls', 'url_objects')
+        freq = self.kb.get('urls', 'fuzzable_requests')
 
         self.assertTrue(os.path.exists('output-fr.csv'))
         

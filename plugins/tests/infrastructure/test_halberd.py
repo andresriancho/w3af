@@ -38,7 +38,7 @@ class TestHalberd(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('halberd', 'halberd')
+        infos = self.kb.get('halberd', 'halberd')
         self.assertEqual( len(infos), 0, infos)
         
 

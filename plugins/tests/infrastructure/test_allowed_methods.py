@@ -40,7 +40,7 @@ class Testallowed_methods(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
         
-        infos = self.kb.getData('allowed_methods', 'custom-configuration')
+        infos = self.kb.get('allowed_methods', 'custom-configuration')
         
         self.assertEqual( len(infos), 1, infos )
         
@@ -61,7 +61,7 @@ class Testallowed_methods(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
         
-        infos = self.kb.getData('allowed_methods', 'custom-configuration')
+        infos = self.kb.get('allowed_methods', 'custom-configuration')
 
         self.assertEqual( len(infos), 0, infos )
         

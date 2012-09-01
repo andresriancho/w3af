@@ -76,7 +76,7 @@ class dot_net_event_validation(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     i.addToHighlight(res.group())
                     msg = 'The URL: "' + i.getURL() + '" has .NET Event Validation disabled. '
                     msg += 'This programming/configuration error should be manually verified.'
@@ -89,7 +89,7 @@ class dot_net_event_validation(GrepPlugin):
                     i.setPluginName(self.getName())
                     i.setName('.NET ViewState encryption is disabled')
                     i.setURL( response.getURL() )
-                    i.setId( response.id )
+                    i.set_id( response.id )
                     msg = 'The URL: "' + i.getURL() + '" has .NET ViewState encryption disabled. '
                     msg += 'This programming/configuration error could be exploited '
                     msg += 'to decode the viewstate contents.'
@@ -101,7 +101,7 @@ class dot_net_event_validation(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'dot_net_event_validation', 
+        self.print_uniq( kb.kb.get( 'dot_net_event_validation', 
                                         'dot_net_event_validation' ), 'URL' )
         
     def get_long_desc( self ):

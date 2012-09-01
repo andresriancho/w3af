@@ -106,7 +106,7 @@ class html_comments(GrepPlugin):
                 msg = 'A comment with the string "' + word + '" was found in: "'
                 msg += response.getURL() + '". This could be interesting.'
                 i.setDesc( msg )
-                i.setId( response.id )
+                i.set_id( response.id )
                 i.setDc( request.getDc )
                 i.setURI( response.getURI() )
                 i.addToHighlight( word )
@@ -130,7 +130,7 @@ class html_comments(GrepPlugin):
             desc = 'A comment with the string "' +comment + '" was found in: "'
             desc += response.getURL() + '" . This could be interesting.'
             i.setDesc( desc )
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setDc( request.getDc )
             i.setURI( response.getURI() )
             i.addToHighlight( html_in_comment.group(0) )

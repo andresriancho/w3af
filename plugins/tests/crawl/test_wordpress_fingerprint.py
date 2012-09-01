@@ -49,7 +49,7 @@ class Testwordpress_fingerprint(PluginTest):
         cfg = self._run_configs['direct']
         self._scan(cfg['target'], cfg['plugins'])
         
-        infos = self.kb.getData('wordpress_fingerprint', 'info')
+        infos = self.kb.get('wordpress_fingerprint', 'info')
         
         self.assertEqual( len(infos), 4)
         

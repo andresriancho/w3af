@@ -157,7 +157,7 @@ class file_upload(AuditPlugin):
             
             # Gen expr for directories where I can search for the uploaded file
             domain_path_list = set(u.getDomainPath() for u in 
-                                   kb.kb.getData('urls' , 'url_objects'))
+                                   kb.kb.get('urls' , 'url_objects'))
             
             # FIXME: Note that in all cases where I'm using kb's url_object info
             # I'll be making a mistake if the audit plugin is run before all
@@ -190,7 +190,7 @@ class file_upload(AuditPlugin):
             mutant.setModValue('<file_object>')
             v = vuln.vuln(mutant)
             v.setPluginName(self.getName())
-            v.setId([http_response.id, get_response.id])
+            v.set_id([http_response.id, get_response.id])
             v.setSeverity(severity.HIGH)
             v.setName('Insecure file upload')
             v['fileDest'] = get_response.getURL()
@@ -205,7 +205,7 @@ class file_upload(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'file_upload', 'file_upload' ), 'VAR' )        
+        self.print_uniq( kb.kb.get( 'file_upload', 'file_upload' ), 'VAR' )        
         
     def _generate_urls( self, domain_path_list, uploaded_file_name ):
         '''

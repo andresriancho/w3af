@@ -45,10 +45,10 @@ class TestGetEmails(PluginTest):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         
-        target_emails = self.kb.getData('emails', 'emails')
+        target_emails = self.kb.get('emails', 'emails')
         self.assertEqual( len(target_emails), 0)
         
-        all_email_infos = self.kb.getData('emails', 'external_emails')
+        all_email_infos = self.kb.get('emails', 'external_emails')
         all_emails = set([ i['mail'] for i in all_email_infos ])
         
         EXPECTED = set([u'f00@moth.com', u'bar@moth.com', u'hello@world.com',

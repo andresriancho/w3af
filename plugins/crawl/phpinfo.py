@@ -123,7 +123,7 @@ class phpinfo(CrawlPlugin):
                 if (php_version and sysinfo):
                     v = vuln.vuln()
                     v.setPluginName(self.getName())
-                    v.setId( response.id )
+                    v.set_id( response.id )
                     v.setName( 'phpinfo() file found' )
                     v.setSeverity(severity.MEDIUM)
                     v.setURL( response.getURL() )
@@ -160,7 +160,7 @@ class phpinfo(CrawlPlugin):
             if(rg == 'On'):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'register_globals: On' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -181,7 +181,7 @@ class phpinfo(CrawlPlugin):
         if allow_url_fopen:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'allow_url_fopen: On' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -197,7 +197,7 @@ class phpinfo(CrawlPlugin):
         if allow_url_include:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'allow_url_include: On' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -213,7 +213,7 @@ class phpinfo(CrawlPlugin):
         if display_errors:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'display_errors: On' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -229,7 +229,7 @@ class phpinfo(CrawlPlugin):
         if expose_php:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'expose_php: On' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -251,7 +251,7 @@ class phpinfo(CrawlPlugin):
             if( lpt_uid < 99 or lpt_gid < 99 or re.match('root|apache|daemon|bin|operator|adm',lpt_uname,re.IGNORECASE)):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'lowest_privilege_test:fail' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -282,7 +282,7 @@ class phpinfo(CrawlPlugin):
             if(len(dfe) < secure_df):    
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'disable_functions:few' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -324,7 +324,7 @@ class phpinfo(CrawlPlugin):
             if(curl_vuln == 1):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'curl_file_support:not_fixed' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -344,7 +344,7 @@ class phpinfo(CrawlPlugin):
             if(utd != 'On'):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'cgi_force_redirect: Off' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -360,7 +360,7 @@ class phpinfo(CrawlPlugin):
         if session_cookie_httponly:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'session.cookie_httponly: Off' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -376,7 +376,7 @@ class phpinfo(CrawlPlugin):
         if session_save_path:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'session_save_path:Everyone' )
             v.setSeverity(severity.LOW)
             v.setURL( response.getURL() )
@@ -392,7 +392,7 @@ class phpinfo(CrawlPlugin):
         if session_use_trans:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'session_use_trans: On' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -408,7 +408,7 @@ class phpinfo(CrawlPlugin):
         if default_charset:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'default_charset: Off' )
             v.setSeverity(severity.MEDIUM)
             v.setURL( response.getURL() )
@@ -428,7 +428,7 @@ class phpinfo(CrawlPlugin):
             if(rg == 'On'):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'enable_dl: On' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -452,7 +452,7 @@ class phpinfo(CrawlPlugin):
             if(ml > secure_ml):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'memory_limit:high' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( response.getURL() )
@@ -473,7 +473,7 @@ class phpinfo(CrawlPlugin):
             if(pms > secure_pms):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'post_max_size:high' )
                 v.setSeverity(severity.LOW)
                 v.setURL( response.getURL() )
@@ -494,7 +494,7 @@ class phpinfo(CrawlPlugin):
             if(umf > secure_umf):
                 v = vuln.vuln()
                 v.setPluginName(self.getName())
-                v.setId( response.id )
+                v.set_id( response.id )
                 v.setName( 'post_max_size:high' )
                 v.setSeverity(severity.LOW)
                 v.setURL( response.getURL() )
@@ -510,7 +510,7 @@ class phpinfo(CrawlPlugin):
         if upload_tmp_dir:
             v = vuln.vuln()
             v.setPluginName(self.getName())
-            v.setId( response.id )
+            v.set_id( response.id )
             v.setName( 'upload_tmp_dir:Everyone' )
             v.setSeverity(severity.LOW)
             v.setURL( response.getURL() )
@@ -531,7 +531,7 @@ class phpinfo(CrawlPlugin):
         if lpt_flag == 'info':
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName(lpt_name )            
             i.setURL( response.getURL() )                            
             i.setDesc( lpt_desc )
@@ -543,7 +543,7 @@ class phpinfo(CrawlPlugin):
         if rg_flag=='info':
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName( rg_name )            
             i.setURL( response.getURL() )            
             i.setDesc( rg_desc )
@@ -555,7 +555,7 @@ class phpinfo(CrawlPlugin):
         if ed_flag == 'info':
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName(ed_name )            
             i.setURL( response.getURL() )                            
             i.setDesc( ed_desc )
@@ -569,7 +569,7 @@ class phpinfo(CrawlPlugin):
         if file_uploads:
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setName( 'file_uploads: On' )            
             i.setURL( response.getURL() )
             desc = 'The phpinfo()::file_uploads is enabled.'            
@@ -585,7 +585,7 @@ class phpinfo(CrawlPlugin):
             mqg = magic_quotes_gpc.group(1)
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setURL( response.getURL() )
             if (mqg == 'On'):            
                 i.setName( 'magic_quotes_gpc: On' )                            
@@ -607,7 +607,7 @@ class phpinfo(CrawlPlugin):
             obd = open_basedir.group(1)
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setURL( response.getURL() )
             
             if(obd == '<i>no value</i>'):
@@ -630,7 +630,7 @@ class phpinfo(CrawlPlugin):
         if session_hash_function:
             i = info.info()
             i.setPluginName(self.getName())
-            i.setId( response.id )
+            i.set_id( response.id )
             i.setURL( response.getURL() )
             if (session_hash_function.group(1) == 0 or session_hash_function.group(1) != 'no'):
                 i.setName( 'session.hash_function:md5' )            
@@ -661,10 +661,10 @@ class phpinfo(CrawlPlugin):
         res.extend( ['test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php'] )
         res.extend( ['PHPversion.php', 'x.php', 'xx.php', 'xxx.php'] )            
         
-        identified_os = kb.kb.getData('fingerprint_os','operating_system_str')
+        identified_os = kb.kb.get('fingerprint_os','operating_system_str')
         
         if not isinstance(identified_os, basestring):
-            identified_os = cf.cf.getData('targetOS')
+            identified_os = cf.cf.get('targetOS')
        
         if re.match('windows', identified_os, re.IGNORECASE):
             res = list(set([path.lower() for path in res]))

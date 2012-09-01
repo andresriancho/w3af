@@ -199,7 +199,7 @@ class xml_file(OutputPlugin):
         '''
         # Add the user configured targets to scaninfo
         strTargets = ''
-        for url in cf.cf.getData('targets'):
+        for url in cf.cf.get('targets'):
             strTargets += str(url) + ","
         self._scanInfo.setAttribute("target", strTargets[:-1])
         

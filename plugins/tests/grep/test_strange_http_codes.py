@@ -61,11 +61,11 @@ class test_strange_http_codes(unittest.TestCase):
         for resp in KNOWN_GOOD:
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
-            self.assertEquals( len(kb.kb.getData('strange_http_codes', 
+            self.assertEquals( len(kb.kb.get('strange_http_codes', 
                                                  'strange_http_codes')), 0)
         
         for resp in KNOWN_BAD:
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
-            self.assertEquals( len(kb.kb.getData('strange_http_codes', 
+            self.assertEquals( len(kb.kb.get('strange_http_codes', 
                                                  'strange_http_codes')), 1)

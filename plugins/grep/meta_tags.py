@@ -106,7 +106,7 @@ class meta_tags(GrepPlugin):
                                 i.setPluginName(self.getName())
                                 i.setName('Interesting META tag')
                                 i.setURI( response.getURI() )
-                                i.setId( response.id )
+                                i.set_id( response.id )
                                 msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
                                 msg += 'attribute '+ where +' "'+ content +'" which'
                                 msg += ' looks interesting.'
@@ -131,7 +131,7 @@ class meta_tags(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.getData( 'meta_tags', 'meta_tags' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'meta_tags', 'meta_tags' ), 'URL' )
 
     def get_long_desc( self ):
         '''

@@ -40,7 +40,7 @@ class TestGTKOutput(unittest.TestCase):
         self.plugin.debug('4')
         self.plugin.error('5')
         
-        gtk_output_queue = kb.kb.getData('gtk_output', 'queue')
+        gtk_output_queue = kb.kb.get('gtk_output', 'queue')
         
         EXPECTED = set([
                         ('console','1'),

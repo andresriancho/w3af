@@ -121,7 +121,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         i.setPluginName(p_name)
         i.setName('WordPress user "'+ username +'" found')
         i.setURL( url )
-        i.setId( response_id )
+        i.set_id( response_id )
         i.setDesc( 'WordPress user "'+ username +'" found from enumeration.' )
         kb.kb.append( self, 'info', i )
         om.out.information( i.getDesc() )

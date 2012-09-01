@@ -52,7 +52,7 @@ class GrepPlugin(Plugin):
         if response.getFromCache():
             return
         
-        if response.getURL().getDomain() in cf.cf.getData('targetDomains'):
+        if response.getURL().getDomain() in cf.cf.get('targetDomains'):
             self.grep(fuzzable_request, response)
     
     def grep(self, fuzzable_request, response):
