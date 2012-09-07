@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+import platform
 import subprocess
 
 import core.controllers.outputManager as om
@@ -27,12 +27,14 @@ import core.controllers.outputManager as om
 
 def gtkui_dependency_check():
     '''
-    This function verifies that the dependencies that are needed by the GTK user interface are met.
+    This function verifies that the dependencies that are needed by the GTK
+    user interface are met.
     '''
     reason_for_exit = False
     packages = []
     packages_debian = []
     packages_mac_ports = []
+    packages_openbsd = []
     additional_information = []
     
     om.out.debug('Checking GTK UI dependencies')
@@ -43,6 +45,7 @@ def gtkui_dependency_check():
         packages.append('sqlite3')
         packages_debian.append('python-pysqlite2')
         packages_mac_ports.append('py26-sqlite3')
+        packages_openbsd.append('sqlite3')
         reason_for_exit = True
 
     try:
@@ -50,6 +53,7 @@ def gtkui_dependency_check():
     except:
         packages_debian.append('graphviz')
         packages_mac_ports.append('graphviz')
+        packages_openbsd.append('graphviz')
         reason_for_exit = True
     else:
         if 'graphviz' not in proc.stderr.read().lower():
@@ -74,6 +78,7 @@ def gtkui_dependency_check():
     except:
         packages.append('gtksourceview2')
         packages_debian.append('python-gtksourceview2')
+        packages_openbsd.append('gtksourceview')
         reason_for_exit = True
         
     if packages:
@@ -87,6 +92,11 @@ def gtkui_dependency_check():
     if packages_mac_ports:
         msg = 'On a mac with mac ports installed:\n'
         msg += '    sudo port install '+' '.join(packages_mac_ports)
+        print msg, '\n'
+    if packages_openbsd:
+        msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
+        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"'
+        msg += '    pkg_add -v  '+' '.join(packages_openbsd)
         print msg, '\n'
     if additional_information:
         msg = 'Additional information:\n'

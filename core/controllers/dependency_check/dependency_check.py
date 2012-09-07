@@ -48,10 +48,11 @@ def dependency_check():
         print msg
         sys.exit( 1 )
         
-    reasonForExit = False
+    reason_for_exit = False
     packages = []
     packages_debian = []
     packages_mac_ports = []
+    packages_openbsd = []
     additional_information = []
     
     if platform.system() != 'Windows':
@@ -63,7 +64,7 @@ def dependency_check():
             msg += '        sudo apt-get install python2.7-dev\n'
             msg += '        sudo easy_install pybloomfiltermmap'
             additional_information.append(msg)
-            reasonForExit = True
+            reason_for_exit = True
     #mem_test('after bloom filter import')
     try:
         import esmre
@@ -91,6 +92,7 @@ def dependency_check():
     if not lazy_load('nltk'):
         packages.append('nltk')
         packages_debian.append('python-nltk')
+        packages_openbsd.append('py-nltk')
         #TODO
         #packages_mac_port.append()
         msg  = '    If you can not install nltk, please try the following:\n'
@@ -104,16 +106,17 @@ def dependency_check():
         msg += '        cd nltk-2.0b9\n'
         msg += '        python setup.py install'
         additional_information.append(msg)
-        reasonForExit = True
+        reason_for_exit = True
     #mem_test('after nltk import')
     
     if not lazy_load('extlib.SOAPpy.SOAPpy'):
         if not lazy_load('SOAPpy'):
             packages.append('SOAPpy')
             packages_debian.append('python-soappy')
+            packages_openbsd.append('py-SOAPpy')
             #TODO
             #packages_mac_port.append()
-            reasonForExit = True
+            reason_for_exit = True
     #mem_test('after soappy import')
     try:
         import extlib.pyPdf.pyPdf as pyPdf
@@ -125,7 +128,7 @@ def dependency_check():
             packages_debian.append('python-pypdf')
             #TODO
             #packages_mac_port.append()
-            reasonForExit = True
+            reason_for_exit = True
     #mem_test('after pypdf import')   
     try:
         from OpenSSL import SSL
@@ -133,16 +136,18 @@ def dependency_check():
         packages.append('pyOpenSSL')
         packages_debian.append('python-pyopenssl')
         packages_mac_ports.extend(['py26-openssl'])
-        reasonForExit = True
+        packages_openbsd.append('py-openssl')
+        reason_for_exit = True
     #mem_test('after ssl import')
     try:
         from lxml import etree
     except:
         packages.append('lxml')
         packages_debian.append('python-lxml')
+        packages_openbsd.append('py-lxml')
         #TODO
         #packages_mac_port.append()
-        reasonForExit = True
+        reason_for_exit = True
     #mem_test('after lxml import')
     try:
         import pysvn
@@ -163,9 +168,10 @@ def dependency_check():
 
         packages.append('pysvn')
         packages_debian.append('python-svn')
+        packages_openbsd.append('py-pysvn')
         #TODO
         #packages_mac_port.append()
-        reasonForExit = True       
+        reason_for_exit = True       
     #mem_test('after pysvn import')
     import logging
     logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -173,9 +179,10 @@ def dependency_check():
     if not lazy_load('scapy'):
         packages.append('scapy')
         packages_debian.append('python-scapy')
+        packages_openbsd.append('scapy')
         #TODO
         #packages_mac_port.append()
-        reasonForExit = True
+        reason_for_exit = True
     else:
         try:
             import scapy.config
@@ -188,14 +195,16 @@ def dependency_check():
             msg += '        cd scapy-2*\n'
             msg += '        sudo python setup.py install\n'
             additional_information.append(msg)
-            reasonForExit = True
+            reason_for_exit = True
         else:
             if not scapy.config.conf.version.startswith('2.'):
                 msg = '    Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
                 additional_information.append(msg)
-                reasonForExit = True
+                reason_for_exit = True
     #mem_test('after scapy import')
-    #Now output the results of the dependency check
+    # Now output the results of the dependency check
+    curr_platform = platform.system()
+    
     if packages:
         msg = 'Your python installation needs the following packages:\n'
         msg += '    '+' '.join(packages)
@@ -208,12 +217,17 @@ def dependency_check():
         msg = 'On a mac with mac ports installed:\n'
         msg += '    sudo port install '+' '.join(packages_mac_ports)
         print msg, '\n'
+    if packages_openbsd:
+        msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
+        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"'
+        msg += '    pkg_add -v  '+' '.join(packages_openbsd)
+        print msg, '\n'
     if additional_information:
         msg = 'Additional information:\n'
         msg += '\n'.join(additional_information)
         print msg
     #Now exit if necessary
-    if reasonForExit:
+    if reason_for_exit:
         exit(1)
         
 
