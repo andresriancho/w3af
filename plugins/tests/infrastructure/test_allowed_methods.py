@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from ..helper import PluginTest, PluginConfig
 
-class Testallowed_methods(PluginTest):
+class TestAllowedMethods(PluginTest):
     
     modsecurity_url = 'http://modsecurity/'
     moth_url = 'http://moth/'
@@ -35,7 +35,7 @@ class Testallowed_methods(PluginTest):
     
     def test_moth(self):
         '''
-        Test the "default" configuration for Apache+PHP.
+        test_moth in test_allowed_methods, test the "default" configuration for Apache+PHP.
         '''
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
@@ -53,7 +53,7 @@ class Testallowed_methods(PluginTest):
         
     def test_modsecurity(self):
         '''
-        Test a different configuration:
+        test_modsecurity in test_allowed_methods, test a different configuration:
             RewriteEngine on
             RewriteCond %{THE_REQUEST} !^(POST|GET)\ /.*\ HTTP/1\.1$
             RewriteRule .* - [F]
