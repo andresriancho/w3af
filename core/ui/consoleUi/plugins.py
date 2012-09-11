@@ -122,9 +122,8 @@ class pluginsTypeMenu(menu):
         for p in plugins:
             try:
                 options = self._w3af.plugins.get_plugin_inst(self._name, p).get_options()
-            except w3afException, w3:
-                om.out.error('Error while reading plugin options.')                
-                om.out.error(str(w3))
+            except Exception, e:
+                om.out.error('Error while reading plugin options: "%s"' % e)                
                 sys.exit(-8)
             else:
                 self._plugins[p] = len(options)
