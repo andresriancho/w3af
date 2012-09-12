@@ -60,9 +60,13 @@ def dependency_check():
             from pybloomfilter import BloomFilter as mmap_filter
         except Exception, e:
             msg = '    pybloomfiltermmap is a required dependency in *nix systems,'
-            msg += ' in order to install it please run the following commands:\n'
-            msg += '        sudo apt-get install python2.7-dev\n'
+            msg += ' in order to install it please run the following command'
+            msg += ' after installing the Python development headers and Python'
+            msg += ' setup tools:'
             msg += '        sudo easy_install pybloomfiltermmap'
+            packages.append('pybloomfilter')
+            packages_debian.extend(['python2.7-dev', 'python-setuptools'])
+            packages_openbsd.extend(['NEED-HELP', 'py-setuptools'])
             additional_information.append(msg)
             reason_for_exit = True
     #mem_test('after bloom filter import')
@@ -161,7 +165,8 @@ def dependency_check():
             msg += '    that was fixed by them in their devel repositories, in order to\n'
             msg += '    enable them you need to follow these steps:\n'
             msg += '        1. vim /etc/apt/sources.list\n'
-            msg += '        2. Un-comment the BackTrack Devel Repository line (deb http://archive.offensive-security.com/repotest/ ./)'
+            msg += '        2. Un-comment the BackTrack Devel Repository line ' \
+                            '(deb http://archive.offensive-security.com/repotest/ ./)'
             msg += '        3. apt-get update && apt-get dist-upgrade'
 
             additional_information.append(msg)
@@ -198,8 +203,9 @@ def dependency_check():
             reason_for_exit = True
         else:
             if not scapy.config.conf.version.startswith('2.'):
-                msg = '    Your version of scapy (%s) is not compatible with w3af. Please install scapy version >= 2.0 .' % scapy.config.conf.version
-                additional_information.append(msg)
+                msg = '    Your version of scapy (%s) is not compatible with w3af. '
+                msg += 'Please install scapy version >= 2.0 .'
+                additional_information.append(msg % scapy.config.conf.version)
                 reason_for_exit = True
     #mem_test('after scapy import')
     # Now output the results of the dependency check
@@ -210,15 +216,15 @@ def dependency_check():
         msg += '    '+' '.join(packages)
         print msg, '\n'
     if packages_debian:
-        msg = 'On debian based systems:\n'
+        msg = 'On Debian based systems:\n'
         msg += '    sudo apt-get install '+' '.join(packages_debian)
         print msg, '\n'
     if packages_mac_ports:
-        msg = 'On a mac with mac ports installed:\n'
+        msg = 'On Mac OSX with mac ports installed:\n'
         msg += '    sudo port install '+' '.join(packages_mac_ports)
         print msg, '\n'
     if packages_openbsd:
-        msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
+        msg = 'On OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"'
         msg += '    pkg_add -v  '+' '.join(packages_openbsd)
         print msg, '\n'
