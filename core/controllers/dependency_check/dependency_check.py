@@ -227,7 +227,7 @@ def dependency_check():
         print msg, '\n'
     if packages_openbsd:
         msg = 'On OpenBSD 5.1 install the requirements by running:\n'
-        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"'
+        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
         msg += '    pkg_add -v  '+' '.join(packages_openbsd)
         print msg, '\n'
     if additional_information:
