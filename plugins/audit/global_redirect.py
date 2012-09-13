@@ -86,6 +86,9 @@ class global_redirect(AuditPlugin):
         '''
         This method checks if the browser was redirected (using a 302 code) 
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
+        
+        One day we should be able to identify all redirect methods:
+        http://code.google.com/p/html5security/wiki/RedirectionMethods
         '''
         lheaders = response.getLowerCaseHeaders()
         
