@@ -101,7 +101,7 @@ def dependency_check():
         packages_openbsd.append('py-nltk')
         #TODO
         #packages_mac_port.append()
-        msg  = '    If you can not install nltk, please try the following:\n'
+        msg  = '    If you can not install nltk with the system package manager, try the following:\n'
         msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n'
         msg += '        tar -xzvf PyYAML-3.09.tar.gz\n'
         msg += '        cd PyYAML-3.09\n'
@@ -211,21 +211,21 @@ def dependency_check():
                 reason_for_exit = True
     #mem_test('after scapy import')
     # Now output the results of the dependency check
-    curr_platform = platform.system()
+    curr_platform = platform.system().lower()
     
     if packages:
         msg = 'Your python installation needs the following packages:\n'
         msg += '    '+' '.join(packages)
         print msg, '\n'
-    if packages_debian:
+    if packages_debian and 'linux' in curr_platform:
         msg = 'On Debian based systems:\n'
         msg += '    sudo apt-get install '+' '.join(packages_debian)
         print msg, '\n'
-    if packages_mac_ports:
+    if packages_mac_ports and is_mac(curr_platform):
         msg = 'On Mac OSX with mac ports installed:\n'
         msg += '    sudo port install '+' '.join(packages_mac_ports)
         print msg, '\n'
-    if packages_openbsd:
+    if packages_openbsd and 'openbsd' in curr_platform:
         msg = 'On OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
         msg += '    pkg_add -v  '+' '.join(packages_openbsd)
@@ -234,6 +234,7 @@ def dependency_check():
         msg = 'Additional information:\n'
         msg += '\n'.join(additional_information)
         print msg
+    
     #Now exit if necessary
     if reason_for_exit:
         exit(1)
@@ -247,3 +248,6 @@ def mem_test(when):
                                                   human(shareds[cmd[0]]), human(cmd[1])
                                                 )
     print 'Total memory usage %s: %s' % (when,msg)
+
+def is_mac(curr_platform):
+    return 'darwin' in curr_platform or 'mac' in curr_platform
