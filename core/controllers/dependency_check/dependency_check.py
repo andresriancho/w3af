@@ -80,6 +80,8 @@ def dependency_check():
         msg += ' the following command to install it:\n'
         msg += '        sudo easy_install esmre\n'
         
+        #packages_debian.append('python-setuptools')
+        #packages_openbsd.append('py-setuptools')
         #packages.append('esmre')
         #packages.append('esm')
         #additional_information.append(msg)
