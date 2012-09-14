@@ -24,6 +24,8 @@ import subprocess
 
 import core.controllers.outputManager as om
 
+from core.controllers.dependency_check.dependency_check import is_mac
+
 
 def gtkui_dependency_check():
     '''
@@ -45,7 +47,7 @@ def gtkui_dependency_check():
         packages.append('sqlite3')
         packages_debian.append('python-pysqlite2')
         packages_mac_ports.append('py26-sqlite3')
-        packages_openbsd.append('sqlite3')
+        packages_openbsd.append('py-sqlite2')
         reason_for_exit = True
 
     try:
@@ -80,22 +82,24 @@ def gtkui_dependency_check():
         packages_debian.append('python-gtksourceview2')
         packages_openbsd.append('gtksourceview')
         reason_for_exit = True
-        
+    
+    curr_platform = platform.system().lower()
+    
     if packages:
         msg = 'Your python installation needs the following packages:\n'
         msg += '    '+' '.join(packages)
         print msg, '\n'
-    if packages_debian:
+    if packages_debian and 'linux' in curr_platform:
         msg = 'On debian based systems:\n'
         msg += '    sudo apt-get install '+' '.join(packages_debian)
         print msg, '\n'
-    if packages_mac_ports:
+    if packages_mac_ports and is_mac(curr_platform):
         msg = 'On a mac with mac ports installed:\n'
         msg += '    sudo port install '+' '.join(packages_mac_ports)
         print msg, '\n'
-    if packages_openbsd:
+    if packages_openbsd and 'openbsd' in curr_platform:
         msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
-        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"'
+        msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
         msg += '    pkg_add -v  '+' '.join(packages_openbsd)
         print msg, '\n'
     if additional_information:
