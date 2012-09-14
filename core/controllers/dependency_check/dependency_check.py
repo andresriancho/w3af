@@ -66,7 +66,8 @@ def dependency_check():
             msg += '        sudo easy_install pybloomfiltermmap'
             packages.append('pybloomfilter')
             packages_debian.extend(['python2.7-dev', 'python-setuptools'])
-            packages_openbsd.extend(['NEED-HELP', 'py-setuptools'])
+            # Openbsd's python package already includes dev stuff
+            packages_openbsd.append('py-setuptools')
             additional_information.append(msg)
             reason_for_exit = True
     #mem_test('after bloom filter import')
