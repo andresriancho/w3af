@@ -60,6 +60,43 @@ class test_analyze_cookies(unittest.TestCase):
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1 )
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
 
+    def test_analyze_cookies_collect(self):
+        body = ''
+        url = url_object('http://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        self.plugin.grep(request, response)
+        
+        headers = {'content-type': 'text/html', 'Set-Cookie': '123=456'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        self.plugin.grep(request, response)
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 2 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
+
+    def test_analyze_cookies_collect_uniq(self):
+        body = ''
+        url = url_object('http://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        self.plugin.grep(request, response)
+        
+        headers = {'content-type': 'text/html', 'Set-Cookie': '123=456'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        self.plugin.grep(request, response)
+        
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=456'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        self.plugin.grep(request, response)
+
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 2 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
+
     def test_analyze_cookies_secure_httponly(self):
         body = ''
         url = url_object('http://www.w3af.com/')
@@ -89,8 +126,78 @@ class test_analyze_cookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
         
-        cookies = kb.kb.get('analyze_cookies', 'cookies')
+        security = kb.kb.get('analyze_cookies', 'security')
         
-        self.assertEqual( len(cookies), 2 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1 )
+        self.assertEqual( len(security), 2 )
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
-        self.assertTrue( any([True for i in cookies if 'The remote platform is: "PHP"' in i.getDesc()]) )
+        self.assertTrue( any([True for i in security if 'The remote platform is: "PHP"' in i.getDesc()]) )
+
+    def test_analyze_cookies_secure_over_http(self):
+        body = ''
+        url = url_object('http://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure;'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        security = kb.kb.get('analyze_cookies', 'security')
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(security), 2)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
+        self.assertTrue( any([True for i in security if 'A cookie marked with the secure flag' in i.getDesc()]) )
+
+    def test_analyze_cookies_no_httponly(self):
+        body = ''
+        url = url_object('http://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        security = kb.kb.get('analyze_cookies', 'security')
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(security), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
+        self.assertTrue( any([True for i in security if 'A cookie without the HttpOnly flag' in i.getDesc()]) )
+
+    def test_analyze_cookies_with_httponly(self):
+        body = ''
+        url = url_object('https://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; httponly'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'security')), 0)
+
+    def test_analyze_cookies_with_httponly_case_sensitive(self):
+        body = ''
+        url = url_object('https://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def;Secure;HttpOnly'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'security')), 0)
+
+    def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
+        body = ''
+        url = url_object('https://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'name2=value2; Expires=Wed, 09-Jun-2021 10:18:14 GMT;Secure;HttpOnly'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'security')), 0)
+

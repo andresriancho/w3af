@@ -276,4 +276,5 @@ class info(dict):
         
     def addToHighlight(self, *str_match):
         for s in str_match:
-            self._string_matches.add(s)
+            if s:
+                self._string_matches.add(s)

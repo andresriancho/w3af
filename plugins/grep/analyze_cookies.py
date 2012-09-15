@@ -108,9 +108,64 @@ class analyze_cookies(GrepPlugin):
         
         for header_name in headers:  
             if header_name.lower() in self.COOKIE_HEADERS:
-                self._analyze_cookie( request, response, headers[header_name].strip() )
+                
+                cookie_header_value = headers[header_name].strip()
+                cookie_object = self._parse_cookie( request, response, cookie_header_value )
+                
+                if cookie_object is not None:
+                    self._collect_cookies( request, response,
+                                           cookie_object,
+                                           cookie_header_value )
     
-    def _analyze_cookie(self, request, response, cookie_header_value):
+                    # Find if the cookie introduces any vulnerability,
+                    # or discloses information
+                    self._analyze_cookie_security( request, response, 
+                                                   cookie_object,
+                                                   cookie_header_value )
+
+    def _collect_cookies(self, request, response, cookie_object, cookie_header_value):
+        '''
+        Store (unique) cookies in the KB for later analysis.
+        '''
+        for cookie_info in kb.kb.get( self, 'cookies' ):
+            stored_cookie_obj = cookie_info['cookie-object']
+            # Cookie class has an __eq__ which compares Cookies' keys for
+            # equality, not the values, so these two cookies are equal:
+            #        a=1;
+            #        a=2;
+            # And these two are not:
+            #        a=1;
+            #        b=1;
+            if cookie_object == stored_cookie_obj:
+                break
+        else:
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('Cookie')
+            i.setURL( response.getURL() )
+            
+            self._set_cookie_to_rep(i, cstr=cookie_header_value)
+            
+            i['cookie-object'] = cookie_object
+
+            '''
+            The expiration date tells the browser when to delete the 
+            cookie. If no expiration date is provided, the cookie is
+            deleted at the end of the user session, that is, when the
+            user quits the browser. As a result, specifying an expiration
+            date is a means for making cookies to survive across
+            browser sessions. For this reason, cookies that have an
+            expiration date are called persistent.
+            '''
+            i['persistent'] = 'expires' in cookie_object
+            i.set_id( response.id )
+            i.addToHighlight(i['cookie-string'])
+            msg = 'The URL: "%s" sent the cookie: "%s".' 
+            i.setDesc( msg % (i.getURL(), i['cookie-string']) )
+            kb.kb.append( self, 'cookies', i )
+
+    
+    def _parse_cookie(self, request, response, cookie_header_value):
         '''
         If the response sets more than one Cookie, this method will
         be called once for each "Set-Cookie" header.
@@ -118,64 +173,31 @@ class analyze_cookies(GrepPlugin):
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @param cookie_header_value: The cookie, as sent in the HTTP response
-        '''
-        # Create the object to save the cookie in the kb
-        i = info.info()
-        i.setPluginName(self.getName())
-        i.setName('Cookie')
-        i.setURL( response.getURL() )
-
-        self._set_cookie_to_rep(i, cstr=cookie_header_value)
-         
+        
+        @return: The cookie object or None if the parsing failed
+        '''         
         cookie_object = Cookie.SimpleCookie()
         try:
             # Note to self: This line may print some chars to the console
             cookie_object.load( cookie_header_value )
         except Cookie.CookieError:
-            # The cookie is invalid, this is worth mentioning ;)
-            msg = 'The cookie that was sent by the remote web' \
-                  ' application does NOT respect the RFC.'
-            om.out.information(msg)
-            i.setDesc(msg)
-            i.setName('Invalid cookie')
-            kb.kb.append( self, 'invalid-cookies', i )
-        else:
-            
-            for cookie_info in kb.kb.get( self, 'cookies' ):
-                stored_cookie_obj = cookie_info['cookie-object']
-                # Cookie class has an __eq__ which compares Cookies' keys for
-                # equality, not the values, so these two cookies are equal:
-                #        a=1;
-                #        a=2;
-                # And these two are not:
-                #        a=1;
-                #        b=1;
-                if cookie_object == stored_cookie_obj:
-                    break
-            else:
-                i['cookie-object'] = cookie_object
 
-                '''
-                The expiration date tells the browser when to delete the 
-                cookie. If no expiration date is provided, the cookie is
-                deleted at the end of the user session, that is, when the
-                user quits the browser. As a result, specifying an expiration
-                date is a means for making cookies to survive across
-                browser sessions. For this reason, cookies that have an
-                expiration date are called persistent.
-                '''
-                i['persistent'] = 'expires' in cookie_object
-                i.set_id( response.id )
-                i.addToHighlight(i['cookie-string'])
-                msg = 'The URL: "%s" sent the cookie: "%s".' 
-                i.setDesc( msg % (i.getURL(), i['cookie-string']) )
-                kb.kb.append( self, 'cookies', i )
-                
-                # Find if the cookie introduces any vulnerability,
-                # or discloses information
-                self._analyze_cookie_security( request, response, 
-                                               cookie_object,
-                                               cookie_header_value )
+            i = info.info()
+            i.setPluginName(self.getName())
+            i.setName('Invalid cookie')
+            i.setURL( response.getURL() )
+            
+            self._set_cookie_to_rep(i, cstr=cookie_header_value)
+            
+            # The cookie is invalid, this is worth mentioning ;)
+            msg = 'The remote Web application sent a cookie with an incorrect' \
+                  ' format: "%s" that does NOT respect the RFC.' % cookie_header_value
+            i.setDesc(msg)
+            kb.kb.append( self, 'invalid-cookies', i )
+            return None
+        
+        else:
+            return cookie_object
         
     
     def _analyze_cookie_security( self, request, response, cookie_obj, 
@@ -208,7 +230,7 @@ class analyze_cookies(GrepPlugin):
         @param fingerprinted: True if the cookie was fingerprinted 
         @return: None
         '''
-        if self.HTTPONLY_RE.search(cookie_header_value):
+        if not self.HTTPONLY_RE.search(cookie_header_value):
             
             v = vuln.vuln()
             v.setPluginName(self.getName())
@@ -225,7 +247,7 @@ class analyze_cookies(GrepPlugin):
                   ' accessing the cookie value through Cross-Site Scripting' \
                   ' attacks.'
             v.setDesc( msg % response.getURL() )
-            kb.kb.append( self, 'cookies', v )
+            kb.kb.append( self, 'security', v )
             
     def _ssl_cookie_via_http( self, request, response ):
         '''
@@ -255,7 +277,7 @@ class analyze_cookies(GrepPlugin):
                                   ' to "%s".' % request.getURL() 
                             v.setDesc( msg )
                             self._set_cookie_to_rep(v, cobj=cookie)
-                            kb.kb.append( self, 'cookies', v )
+                            kb.kb.append( self, 'security', v )
             
     def _match_cookie_fingerprint( self, request, response, cookie_obj ):
         '''
@@ -280,7 +302,7 @@ class analyze_cookies(GrepPlugin):
                                ' has been found when requesting "%s".' \
                                ' The remote platform is: "%s".' \
                                % (response.getURL(), system_name) )
-                    kb.kb.append( self, 'cookies', i )
+                    kb.kb.append( self, 'security', i )
                     self._already_reported_server.append( system_name )
                     return True
         
@@ -331,7 +353,7 @@ class analyze_cookies(GrepPlugin):
                   ' designed to run over SSL and was deployed without security'\
                   ' or that the developer does not understand the "secure" flag.' 
             v.setDesc( msg % response.getURL() )
-            kb.kb.append( self, 'cookies', v )
+            kb.kb.append( self, 'security', v )
         
     def _not_secure_over_https( self, request, response, cookie_obj, 
                                 cookie_header_value ):
@@ -361,7 +383,7 @@ class analyze_cookies(GrepPlugin):
                   ' channel, thus preventing potential session hijacking' \
                   ' attacks.'
             v.setDesc( msg % response.getURL() )
-            kb.kb.append( self, 'cookies', v )
+            kb.kb.append( self, 'security', v )
 
     def end(self):
         '''
@@ -391,7 +413,7 @@ class analyze_cookies(GrepPlugin):
             info_inst['cookie-object'] = cobj
             cstr = cobj.output(header='')
         
-        if cstr is not None and cstr:
+        if cstr is not None:
             info_inst['cookie-string'] = cstr
             info_inst.addToHighlight(cstr)
     
