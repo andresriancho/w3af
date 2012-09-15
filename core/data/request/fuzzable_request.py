@@ -24,6 +24,8 @@ import copy
 from itertools import chain, izip_longest
 from urllib import unquote
 
+import core.controllers.outputManager as om
+
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
@@ -31,7 +33,7 @@ from core.data.dc.header import Header
 from core.data.dc.dataContainer import DataContainer
 from core.data.db.disk_item import disk_item
 from core.data.parsers.urlParser import url_object
-import core.controllers.outputManager as om
+
 
 #CR = '\r'
 CR = ''
