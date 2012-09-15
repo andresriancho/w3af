@@ -189,6 +189,18 @@ class test_analyze_cookies(unittest.TestCase):
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'security')), 0)
 
+    def test_analyze_cookies_with_httponly_secure(self):
+        body = ''
+        url = url_object('https://www.w3af.com/')
+        headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def;HttpOnly;  secure;'}
+        response = httpResponse(200, body , headers, url, url)
+        request = fuzzable_request(url, method='GET')
+        
+        self.plugin.grep(request, response)
+        
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'security')), 0)
+
     def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
         body = ''
         url = url_object('https://www.w3af.com/')
