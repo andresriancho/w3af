@@ -1,5 +1,5 @@
 '''
-test_collect_cookies.py
+test_analyze_cookies.py
 
 Copyright 2012 Andres Riancho
 
@@ -27,60 +27,60 @@ from core.data.url.httpResponse import httpResponse
 from core.data.request.fuzzable_request import fuzzable_request
 from core.data.parsers.urlParser import url_object
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
-from plugins.grep.collect_cookies import collect_cookies
+from plugins.grep.analyze_cookies import analyze_cookies
 
 
-class test_collect_cookies(unittest.TestCase):
+class test_analyze_cookies(unittest.TestCase):
     
     def setUp(self):
         fingerprint_404_singleton( [False, False, False] )
         kb.kb.cleanup()
-        self.plugin = collect_cookies()
+        self.plugin = analyze_cookies()
     
     def tearDown(self):
         self.plugin.end()
         
-    def test_collect_cookies_negative(self):
+    def test_analyze_cookies_negative(self):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'cookies')), 0 )
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'invalid-cookies')), 0 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 0 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
     
-    def test_collect_cookies_simple_cookie(self):
+    def test_analyze_cookies_simple_cookie(self):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'cookies')), 1 )
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'invalid-cookies')), 0 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
 
-    def test_collect_cookies_secure_httponly(self):
+    def test_analyze_cookies_secure_httponly(self):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'abc=def; secure; HttpOnly'}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'cookies')), 1)
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'invalid-cookies')), 0 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
 
-    def test_collect_cookies_empty(self):
+    def test_analyze_cookies_empty(self):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': ''}
         response = httpResponse(200, body , headers, url, url)
         request = fuzzable_request(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'cookies')), 1 )
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'invalid-cookies')), 0)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1 )
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
-    def test_collect_cookies_fingerprint(self):
+    def test_analyze_cookies_fingerprint(self):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html', 'Set-Cookie': 'PHPSESSID=d98238ab39de038'}
@@ -89,8 +89,8 @@ class test_collect_cookies(unittest.TestCase):
 
         self.plugin.grep(request, response)
         
-        cookies = kb.kb.get('collect_cookies', 'cookies')
+        cookies = kb.kb.get('analyze_cookies', 'cookies')
         
         self.assertEqual( len(cookies), 2 )
-        self.assertEqual( len(kb.kb.get('collect_cookies', 'invalid-cookies')), 0)
+        self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
         self.assertTrue( any([True for i in cookies if 'The remote platform is: "PHP"' in i.getDesc()]) )

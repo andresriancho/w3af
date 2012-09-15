@@ -99,7 +99,7 @@ execOneTime = True
 
 [grep.directory_indexing]
 
-[grep.collect_cookies]
+[grep.analyze_cookies]
 
 [grep.get_emails]
 onlyTargetDomain = True

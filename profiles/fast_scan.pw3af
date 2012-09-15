@@ -89,7 +89,7 @@ description = Perform a fast scan of the target site, using only a few discovery
 
 [grep.code_disclosure]
 
-[grep.collect_cookies]
+[grep.analyze_cookies]
 
 [grep.get_emails]
 onlyTargetDomain = True

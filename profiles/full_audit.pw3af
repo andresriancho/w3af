@@ -141,7 +141,7 @@ regex_file_path =
 
 [grep.dom_xss]
 
-[grep.collect_cookies]
+[grep.analyze_cookies]
 
 [grep.html_comments]
 

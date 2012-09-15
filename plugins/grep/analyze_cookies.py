@@ -1,5 +1,5 @@
 '''
-collect_cookies.py
+analyze_cookies.py
 
 Copyright 2006 Andres Riancho
 
@@ -32,7 +32,7 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.group_by_min_key import group_by_min_key
 
 
-class collect_cookies(GrepPlugin):
+class analyze_cookies(GrepPlugin):
     '''
     Grep every response for session cookies sent by the web application.
       
@@ -235,7 +235,7 @@ class collect_cookies(GrepPlugin):
             The rest of the page is HTTP
         '''
         if request.getURL().getProtocol().lower() == 'http':
-            for cookie in kb.kb.get( 'collect_cookies', 'cookies' ):
+            for cookie in kb.kb.get( 'analyze_cookies', 'cookies' ):
                 if cookie.getURL().getProtocol().lower() == 'https' and \
                 request.getURL().getDomain() == cookie.getURL().getDomain():
                     # The cookie was sent using SSL, I'll check if the current 
@@ -367,7 +367,7 @@ class collect_cookies(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        cookies = kb.kb.get( 'collect_cookies', 'cookies' )
+        cookies = kb.kb.get( 'analyze_cookies', 'cookies' )
             
         tmp = list(set([(c['cookie-string'], c.getURL() ) for c in cookies]))
         res_dict, item_idx = group_by_min_key( tmp )
