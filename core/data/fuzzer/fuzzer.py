@@ -644,21 +644,21 @@ def _createFuzzable(freq):
     config = cf.cf
     
     # Add the fuzzable headers
-    fuzzheaders = dict((h, '') for h in config.getData('fuzzableHeaders', []))
+    fuzzheaders = dict((h, '') for h in config.get('fuzzableHeaders', []))
     
     if fuzzheaders:
         _fuzzable['headers'] = fuzzheaders
         
-    if config.getData('fuzzableCookie'):     
+    if config.get('fuzzableCookie'):     
         _fuzzable['cookie'] = Cookie()
     
-    if config.getData('fuzzFileName'):
+    if config.get('fuzzFileName'):
         _fuzzable['fuzzedFname'] = None
         
-    if config.getData('fuzzFileContent'):
+    if config.get('fuzzFileContent'):
         _fuzzable['fuzzFileContent'] = None
 
-    if config.getData('fuzzURLParts'):
+    if config.get('fuzzURLParts'):
         _fuzzable['fuzzURLParts'] = None
     
     return _fuzzable
