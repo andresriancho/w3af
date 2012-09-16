@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import sys
 import traceback
 
@@ -55,9 +54,9 @@ def factory(module_name, *args):
         try:
             module_inst = sys.modules[module_name]
             a_class = getattr(module_inst , class_name)
-        except:
-            msg = 'The requested plugin ("%s") doesn\'t have a correct format.'
-            raise w3afException( msg % module_name)
+        except Exception, e:
+            msg = 'The requested plugin ("%s") doesn\'t have a correct format: "%s".'
+            raise w3afException( msg % (module_name, e))
         else:
             try:
                 inst = a_class(*args)
