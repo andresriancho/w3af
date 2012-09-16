@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import sys
+import Queue
 
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
@@ -147,24 +148,22 @@ class crawl_infrastructure(BaseConsumer):
         '''
         Retrieve the results from all plugins and put them in our output Queue.
         '''
-        # Before I had a while True: and a break inside with, but after reading
-        # some docs, it seems that doing it like this is faster.
-        while plugin.output_queue.qsize() > 0:
+        while True:
             
-            # Note that I'm NOT wrapping this get_nowait in a try/except stm
-            # because I run a qsize before; AND we should be the only plugin
-            # queue consumer.
-            fuzzable_request = plugin.output_queue.get_nowait() 
-
-            # The plugin has finished and now we need to analyze which of
-            # the returned fuzzable_requests are new and should be put in the
-            # input_queue again.
-            if self._is_new_fuzzable_request( plugin, fuzzable_request ):
-            
-                # Update the list / set that lives in the KB
-                update_kb(fuzzable_request)
+            try:
+                fuzzable_request = plugin.output_queue.get_nowait() 
+            except Queue.Empty:
+                break
+            else:
+                # The plugin has finished and now we need to analyze which of
+                # the returned fuzzable_requests are new and should be put in the
+                # input_queue again.
+                if self._is_new_fuzzable_request( plugin, fuzzable_request ):
                 
-                self._out_queue.put( (plugin.getName(), None, fuzzable_request) )
+                    # Update the list / set that lives in the KB
+                    update_kb(fuzzable_request)
+                    
+                    self._out_queue.put( (plugin.getName(), None, fuzzable_request) )
         
     def join(self):
         super(crawl_infrastructure, self).join()
