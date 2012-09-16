@@ -169,6 +169,9 @@ class analyze_cookies(GrepPlugin):
         '''
         If the response sets more than one Cookie, this method will
         be called once for each "Set-Cookie" header.
+        
+        BUGBUG: The urllib2 library concatenates , values of repeated headers.
+                See HTTPMessage.addheader() in httplib.py
 
         @param request: The HTTP request object.
         @param response: The HTTP response object
