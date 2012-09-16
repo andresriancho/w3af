@@ -717,7 +717,8 @@ class KeepAliveHandler:
         except (socket.error, httplib.HTTPException), err:
             raise urllib2.URLError(err)
         else:
-            # Add headers.
+            # Add headers
+            # BUGBUG: This does NOT support multiple headers with the same name
             headerDict = dict(self.parent.addheaders)
             headerDict.update(req.headers)
             headerDict.update(req.unredirected_hdrs)
