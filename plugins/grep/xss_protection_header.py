@@ -1,5 +1,5 @@
 '''
-xss_protecion_header.py
+xss_protection_header.py
 
 Copyright 2006 Andres Riancho
 
@@ -25,7 +25,7 @@ import core.data.kb.info as info
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
-class xss_protecion_header(GrepPlugin):
+class xss_protection_header(GrepPlugin):
     '''
     Grep headers for "X-XSS-Protection: 0" which disables security features in
     the browser.
@@ -56,14 +56,14 @@ class xss_protecion_header(GrepPlugin):
                   ' be subject to review.'
             i.setDesc( msg )
             i.addToHighlight( 'X-XSS-Protection' )
-            kb.kb.append( self , 'xss_protecion_header' , i )
+            kb.kb.append( self , 'xss_protection_header' , i )
 
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'xss_protecion_header', 
-                                    'xss_protecion_header' ), 'URL' )
+        self.print_uniq( kb.kb.get( 'xss_protection_header', 
+                                    'xss_protection_header' ), 'URL' )
             
     def get_long_desc( self ):
         '''
