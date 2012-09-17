@@ -29,7 +29,7 @@ execOneTime = False
 
 [audit.csrf]
 
-[grep.hash_find]
+[grep.hash_analysis]
 
 [infrastructure.dns_wildcard]
 

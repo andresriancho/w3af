@@ -57,7 +57,7 @@ withoutMOTW = False
 checkStored = True
 numberOfChecks = 3
 
-[grep.hash_find]
+[grep.hash_analysis]
 
 [profile]
 name = fast_scan

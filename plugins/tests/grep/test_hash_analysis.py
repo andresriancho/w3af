@@ -1,5 +1,5 @@
 '''
-test_hash_find.py
+test_hash_analysis.py
 
 Copyright 2012 Andres Riancho
 
@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 
-from plugins.grep.hash_find import hash_find
+from plugins.grep.hash_analysis import hash_analysis
 
 
-class test_hash_find(unittest.TestCase):
+class test_hash_analysis(unittest.TestCase):
     
-    def test_hash_find(self):
-        p = hash_find()
+    def test_hash_analysis(self):
+        p = hash_analysis()
         self.assertTrue( p._has_hash_distribution( 'cdf13c6f85b216a18665e7bba74cc1a7' ) )
         
         self.assertFalse( p._has_hash_distribution( 'AB_Halloween_Wallpaper_1920x1080' ) )

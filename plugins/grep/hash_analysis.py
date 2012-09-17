@@ -1,5 +1,5 @@
 '''
-hash_find.py
+hash_analysis.py
 
 Copyright 2006 Andres Riancho
 
@@ -28,7 +28,7 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
-class hash_find(GrepPlugin):
+class hash_analysis(GrepPlugin):
     '''
     Identify hashes in HTTP responses.
       
@@ -80,7 +80,7 @@ class hash_find(GrepPlugin):
                                 msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
                                 msg += '". This is uncommon and requires human verification.'
                                 i.setDesc( msg )
-                                kb.kb.append( self, 'hash_find', i )
+                                kb.kb.append( self, 'hash_analysis', i )
                                 
                                 self._already_reported.add( (possible_hash, response.getURL()) )
     
@@ -132,7 +132,7 @@ class hash_find(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'hash_find', 'hash_find' ), None )
+        self.print_uniq( kb.kb.get( 'hash_analysis', 'hash_analysis' ), None )
     
     def get_long_desc( self ):
         '''

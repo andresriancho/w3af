@@ -159,7 +159,7 @@ regex_file_path =
 
 [grep.feeds]
 
-[grep.hash_find]
+[grep.hash_analysis]
 
 [grep.lang]
 
