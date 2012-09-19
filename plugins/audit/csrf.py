@@ -100,7 +100,6 @@ class csrf(AuditPlugin):
         @return: True if the request can have a CSRF vulnerability
         '''
         for cookie in self._uri_opener.get_cookies():
-            print cookie
             if cookie.domain == freq.getURL().getDomain():
                 break
         else:
