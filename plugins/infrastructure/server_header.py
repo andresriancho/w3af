@@ -66,7 +66,7 @@ class server_header(InfrastructurePlugin):
                 i = info.info()
                 i.setPluginName(self.getName())
                 i.setName('Server header')
-                i.setId( response.getId() )
+                i.set_id( response.getId() )
                 i.setDesc('The server header for the remote web server is: "' + server + '".' )
                 i['server'] = server
                 om.out.information( i.getDesc() )
@@ -85,7 +85,7 @@ class server_header(InfrastructurePlugin):
             i = info.info()
             i.setPluginName(self.getName())
             i.setName('Omitted server header')
-            i.setId( response.getId() )
+            i.set_id( response.getId() )
             msg = 'The remote HTTP Server omitted the "server" header in its response.'
             i.setDesc( msg )
             om.out.information( i.getDesc() )
@@ -126,7 +126,7 @@ class server_header(InfrastructurePlugin):
                         i = info.info()
                         i.setPluginName(self.getName())
                         i.setName('"%s" header' % header_name)
-                        i.setId( response.getId() )
+                        i.set_id( response.getId() )
                         msg = '"' + header_name + '" header for this HTTP server is: "'
                         msg += powered_by + '".'
                         i.setDesc( msg )
