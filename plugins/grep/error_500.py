@@ -29,7 +29,8 @@ from core.data.db.disk_set import disk_set
 
 class error_500(GrepPlugin):
     '''
-    Grep every page for error 500 pages that haven't been identified as bugs by other plugins.
+    Grep every page for error 500 pages that haven't been identified as bugs by
+    other plugins.
       
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
