@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import sys
+import shlex
+import random
+import traceback
+
 try:
-    from shlex import *
-    import os
-    import random
-    import traceback
     from core.controllers.auto_update import UIUpdater
     from core.controllers.misc.homeDir import verify_dir_has_perm
     from core.ui.consoleUi.rootMenu import *
@@ -408,24 +407,30 @@ class consoleUi(object):
         return ''.join(self._line)
 
     def _parseLine(self, line=None):
+        '''
+        >>> console = consoleUi(do_upd=False)
+        >>> console._parseLine('abc')
+        ['abc']
+
+        >>> console._parseLine('abc def')
+        ['abc', 'def']
+        
+        >>> console._parseLine('abc "def jkl"')
+        ['abc', 'def jkl']
+        
+        >>> console._parseLine('abc "def jkl')
+        No closing quotation
+        
+        '''
         if line is None:
             line = self._getLineStr()
-        result = []
-        parser = shlex(line)
-        parser.whitespace_split = True
-        while True:
-            try:
-                token = parser.get_token()
-            except ValueError, ve:
-                term.write( str(ve) + '\n')
-                result = []
-                break
-            else:
-                if token == parser.eof:
-                    break
-                result.append(token)
-
-        return result
+        
+        try:
+            result = shlex.split(line)
+        except ValueError, ve:
+            term.write( str(ve) + '\n')
+        else:
+            return result
 
     def _paste(self, text):
 
