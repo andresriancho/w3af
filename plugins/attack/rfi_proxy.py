@@ -137,7 +137,7 @@ class rfi_proxy(AttackPlugin, Process):
                 pass
             self._running = False
         
-    def specific_user_input( self, command ):
+    def specific_user_input( self, command, parameters ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         
@@ -312,14 +312,15 @@ class RFIProxyShell(shell):
     def __init__(self, proxy_url):
         self._proxy_url = proxy_url
     
-    def generic_user_input( self, command ):
+    def generic_user_input( self, command, params ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @param command: The command to handle ( ie. "read", "exec", etc ).
+        @param params: Parameters for @command
         @return: The result of the command.
         '''
-        msg = 'This is a place holder. You should use your browser to interact with this plugin.'
+        msg = 'You should use your browser to interact with this plugin.'
         return msg
     
     def end( self ):

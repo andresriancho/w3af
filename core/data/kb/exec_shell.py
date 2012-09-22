@@ -135,25 +135,26 @@ class exec_shell(shell):
             return 'File upload was successful.'
 
         
-    def specific_user_input( self, user_command ):
+    def specific_user_input( self, command, parameters ):
         '''
         This is the method that is called when a user wants to execute something
         in the shell and is called from shell.generic_user_input() which
         provides generic commands like "help".
 
-        @param user_command: The string representing the command that the user
-                             types in the shell.
+        @param command: The string representing the command that the user
+                        types in the shell.
+        @param parameters: A list with the parameters for @command
         '''
-        # Get the command and the parameters
-        parameters = user_command.split(' ')[1:]
-        command = user_command.split(' ')[0]
-        
         #
         #    Read remote files
         #
-        if command == 'read' and len(parameters) == 1:
-            filename = parameters[0]
-            return self.read( filename )
+        if command == 'read':
+            if len(parameters) == 1:
+                filename = parameters[0]
+                return self.read( filename )
+            else:
+                return 'Only one parameter is expected. Usage examples: ' \
+                       '"read /etc/passwd", "read \'/var/foo bar/spam.eggs\'"'
 
         #
         #    Write remote files
@@ -182,7 +183,7 @@ class exec_shell(shell):
             return self.execute( ' '.join(parameters) )
                     
         else:
-            return 'Command "%s" not found. Please type "help".' % user_command
+            return 'Command "%s" not found. Please type "help".' % command
     
     def get_unlink_command(self):
         '''
@@ -205,8 +206,11 @@ class exec_shell(shell):
         unlink_command = unlink_command_format % (filename,)
         return self.execute( unlink_command )
 
-    def get_read_command(self):
+    def get_read_command(self, filename):
         '''
+        @param filename: Need the filename to determine if we need to put quotes
+                         around it (because of spaces in the filename) or not.
+        
         @return: The command to be used to read files in the remote operating system.
         Examples:
             - cat %s
@@ -214,9 +218,14 @@ class exec_shell(shell):
         The %s will be replaced by the file to be read.
         '''
         if self._rOS == 'windows':
-            return 'type %s'
+            command = 'type %s'
         else:
-            return 'cat %s'
+            command = 'cat %s'
+        
+        if ' ' in filename:
+            return command.replace('%s', '"%s"')
+        
+        return command
 
     @read_debug
     def read(self, filename):
@@ -224,7 +233,7 @@ class exec_shell(shell):
         Read a file in the remote server by running "cat" or "type" depending
         on the identified OS.
         '''
-        read_command_format = self.get_read_command()
+        read_command_format = self.get_read_command(filename)
         read_command = read_command_format % (filename,)
         return self.execute( read_command )
         

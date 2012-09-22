@@ -19,16 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
 
 from core.data.kb.shell import shell as shell
 from core.data.request.httpPostDataRequest import httpPostDataRequest
 from core.data.request.httpQsRequest import HTTPQSRequest
 from core.data.fuzzer.fuzzer import create_mutants
-from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.urlParser import parse_qs
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 
@@ -316,14 +314,7 @@ class sqlmap(AttackPlugin):
         '''
 
 class sqlShellObj(shell):
-    def _parse( self, command ):
-        '''
-        @return: The command as a string, and the parameters as a list.
-        '''
-        cmd = command.split(' ')[0]
-        params = command.split(' ')[1:]
-        return cmd, params
-
+    
     def setDriver( self, driver ):
         '''
         @parameter driver: The DB driver from sqlmap.
@@ -336,61 +327,52 @@ class sqlShellObj(shell):
         '''
         self._goodSamaritan = good_samaritan
     
-    def specific_user_input( self, command ):
+    def specific_user_input( self, command, parameters ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         
         Before calling this method, the framework calls the generic_user_input method
         from the shell class.
 
-        @parameter command: The command to handle ( ie. "dbs", "users", etc ).
+        @param command: The command to handle ( ie. "dbs", "users", etc ).
+        @param parameters: A list with the parameters for @command
         @return: The result of the command.
         '''
         if not self._driver:
             raise w3afException('No driver could be created.')
         
-        _methodMap = {}
-        _methodMap['fingerprint'] = self._driver.getFingerprint
-        _methodMap['banner'] = self._driver.getBanner
-        _methodMap['current-user'] = self._driver.getCurrentUser
-        _methodMap['current-db'] = self._driver.getCurrentDb
-        _methodMap['users'] = self._driver.getUsers
-        _methodMap['dbs'] = self._driver.getDbs
-        _methodMap['tables'] = self._driver.auxGetTables
-        _methodMap['columns'] = self._driver.auxGetColumns
-        _methodMap['dump'] = self._driver.auxDump
-        _methodMap['file'] = self._driver.getFile
-        _methodMap['expression'] = self._driver.getExpr
-        _methodMap['union-check'] = self._driver.unionCheck
-        _methodMap['help'] = self.help
+        _method_map = {}
+        _method_map['fingerprint'] = self._driver.getFingerprint
+        _method_map['banner'] = self._driver.getBanner
+        _method_map['current-user'] = self._driver.getCurrentUser
+        _method_map['current-db'] = self._driver.getCurrentDb
+        _method_map['users'] = self._driver.getUsers
+        _method_map['dbs'] = self._driver.getDbs
+        _method_map['tables'] = self._driver.auxGetTables
+        _method_map['columns'] = self._driver.auxGetColumns
+        _method_map['dump'] = self._driver.auxDump
+        _method_map['file'] = self._driver.getFile
+        _method_map['expression'] = self._driver.getExpr
+        _method_map['union-check'] = self._driver.unionCheck
+        _method_map['help'] = self.help
     
-        command_list = command.split(' ')
-        if not len( command_list ):
-            om.out.console('Empty command. Please read the shell help:')
-            self.help()
-            return ''
+        if command in _method_map:
+            method = _method_map[ command ]
         else:
-            cmd = command_list[0]
-            method = ''
-            if command_list[0] in _methodMap:
-                method = _methodMap[ cmd ]
+            if self._goodSamaritan and self._driver.isRunningGoodSamaritan():
+                self._driver.goodSamaritanContribution( command )
+                return None
             else:
-                if self._goodSamaritan and self._driver.isRunningGoodSamaritan():
-                    self._driver.goodSamaritanContribution( command )
-                    return None
-                else:
-                    om.out.console('Unknown command: "%s". Please read the help:' % cmd)
-                    self.help()
-                    return ''
+                om.out.console('Unknown command: "%s". Please read the help:' % command)
+                self.help()
+                return ''
 
-            tm.apply_async( target=self._runCommand, args=(method, command,), ownerObj=self, restrict=False )
-            #self._runCommand(method, command)
-            return None
+        tm.apply_async( target=self._runCommand, args=(method, command, parameters), ownerObj=self, restrict=False )
+        #self._runCommand(method, command)
+        return None
             
-    def _runCommand( self, method, command ):
-        # Parse this, separate user and command
-        command, parameterList = self._parse( command )
-        args = tuple( parameterList )
+    def _runCommand( self, method, command, parameters ):
+        args = tuple( parameters )
 
         if self._goodSamaritan and command.strip() != 'help':
             self._driver.startGoodSamaritan()

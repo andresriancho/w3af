@@ -19,11 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.ui.consoleUi.history import history
 
-from core.ui.consoleUi.history import *
 
 #TODO: extract a base class from this one and menu
-class callbackMenu:
+class callbackMenu(object):
     '''
     This is a menu-wrapper which delegates the command execution 
     to the callback agent.

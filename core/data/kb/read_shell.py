@@ -19,15 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.data.kb.vuln import vuln as vuln
-from core.data.kb.exploitResult import exploitResult
-from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
-
 import core.controllers.outputManager as om
 
 from core.data.kb.shell import shell
-
+from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
@@ -82,24 +77,29 @@ class read_shell(shell):
                 fh.close()
                 return 'Success.'
 
-    def specific_user_input( self, user_command ):
+    def specific_user_input( self, command, parameters ):
         '''
-        This is the method that is called when a user wants to execute something in the shell and is called from
-        shell.generic_user_input() which provides generic commands like "help".
-
-        @param user_command: The string representing the command that the user types in the shell.
-        '''
-        # Get the command and the parameters
-        parameters = user_command.split(' ')[1:]
-        command = user_command.split(' ')[0]
+        This is the method that is called when a user wants to execute something
+        in the shell.
         
+        It is called from shell.generic_user_input() which provides generic
+        commands like "help".
+
+        @param command: The string representing the command that the user
+                        types in the shell.
+        @param parameters: A list with the parameters for @command
+        '''
         #
         #    Read remote files
         #
-        if command == 'read' and len(parameters) == 1:
-            filename = parameters[0]
-            return self.read( filename )
-
+        if command == 'read':
+            if len(parameters) == 1:
+                filename = parameters[0]
+                return self.read( filename )
+            else:
+                return 'Only one parameter is expected. Usage examples: ' \
+                       '"read /etc/passwd", "read \'/var/foo bar/spam.eggs\'"'
+        
         #
         #    Download remote files
         #
@@ -109,7 +109,7 @@ class read_shell(shell):
             return self.download(remote_filename, local_filename)
 
         else:
-            return 'Command "%s" not found. Please type "help".' % user_command
+            return 'Command "%s" not found. Please type "help".' % command
 
     def _identifyOs( self ):
         '''

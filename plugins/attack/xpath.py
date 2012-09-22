@@ -326,20 +326,17 @@ class xpath_reader(shell):
         result.append('')
         return '\n'.join(result)
  
-    def specific_user_input( self, command ):
+    def specific_user_input( self, command, parameters ):
         '''
         This method is called when a user writes a command in the shell and hits enter.
         
         Before calling this method, the framework calls the generic_user_input method
         from the shell class.
 
-        @parameter command: The command to handle ( ie. "read", "exec", etc ).
+        @param command: The command to handle ( ie. "read", "exec", etc ).
+        @param parameters: The parameters for @command.
         @return: The result of the command.
         '''
-        # Get the command and the parameters
-        splist = command.split(' ')
-        command = splist[0]
-        
         if command.strip() == 'getxml':
             return self.getxml()
         

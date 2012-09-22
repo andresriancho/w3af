@@ -82,14 +82,14 @@ class TestOSCommandingShell(PluginTest):
         # Now I start testing the shell itself!
         #
         shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('exec cat /etc/passwd')
+        etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'] )
         
         self.assertTrue( 'root' in etc_passwd )
         
-        lsp = shell.generic_user_input('lsp')
+        lsp = shell.generic_user_input('lsp', [])
         self.assertTrue( 'apache_config_directory' in lsp )
         
-        payload = shell.generic_user_input('payload apache_config_directory')
+        payload = shell.generic_user_input('payload', ['apache_config_directory'])
         self.assertTrue( payload is None )
         
         
