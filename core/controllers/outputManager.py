@@ -22,8 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import functools
 import os
 import sys
-import threading
 import Queue
+
+from multiprocessing.dummy import Process
 
 from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
@@ -45,7 +46,7 @@ def start_thread_on_demand(func):
     return od_wrapper
 
 
-class outputManager(threading.Thread):
+class outputManager(Process):
     '''
     This class manages output. It has a list of output plugins and sends the 
     messages to every plugin on that list.
