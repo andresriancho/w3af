@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-
 import core.controllers.outputManager as om
+
 from core.ui.consoleUi.util import formatParagraph
 
 
-class table:
+class table(object):
     '''
     An utility class which stores the table-structured data and implements 
     a clever method of drawing the tables. Ok, clever enough for our purposes.

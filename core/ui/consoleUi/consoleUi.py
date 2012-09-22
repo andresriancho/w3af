@@ -25,19 +25,18 @@ import random
 import traceback
 
 try:
-    from core.controllers.auto_update import UIUpdater
-    from core.controllers.misc.homeDir import verify_dir_has_perm
-    from core.ui.consoleUi.rootMenu import *
-    from core.ui.consoleUi.callbackMenu import *
-    from core.ui.consoleUi.util import *
     import core.ui.consoleUi.io.console as term
-    from core.ui.consoleUi.history import *
     import core.ui.consoleUi.tables as tables
     import core.controllers.w3afCore
     import core.controllers.outputManager as om
-    import core.controllers.miscSettings as miscSettings
-    from core.controllers.w3afException import w3afException, \
-        w3afMustStopException
+    
+    from core.controllers.auto_update import UIUpdater
+    from core.ui.consoleUi.rootMenu import rootMenu
+    from core.ui.consoleUi.callbackMenu import callbackMenu
+    from core.ui.consoleUi.util import commonPrefix
+    from core.ui.consoleUi.history import historyTable
+    from core.controllers.w3afException import (w3afException, 
+                                                w3afMustStopException)
 except KeyboardInterrupt:
     sys.exit(0)
 

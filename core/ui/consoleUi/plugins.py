@@ -25,9 +25,10 @@ import textwrap
 
 import core.controllers.outputManager as om
 
-from core.ui.consoleUi.menu import *
-from core.ui.consoleUi.config import *
-from core.ui.consoleUi.util import *
+from core.ui.consoleUi.menu import menu
+from core.ui.consoleUi.config import configMenu
+from core.ui.consoleUi.util import suggest
+from core.controllers.w3afException import w3afException
 
 
 class pluginsMenu(menu):

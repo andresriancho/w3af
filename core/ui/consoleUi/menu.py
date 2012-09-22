@@ -19,16 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import traceback
 import pprint
 
 import core.data.kb.knowledgeBase as kb        
-from core.ui.consoleUi.util import *
-from core.ui.consoleUi.history import *
-from core.ui.consoleUi.help import *
 import core.controllers.outputManager as om
+
 from core.controllers.w3afException import w3afException
+from core.ui.consoleUi.util import splitPath, suggest
+from core.ui.consoleUi.history import history
+from core.ui.consoleUi.help import helpMainRepository, HelpContainer
 
 
 class menu(object):
@@ -41,8 +40,8 @@ class menu(object):
         self._name = name
         self._history = history()
         
-        self._help = help()
-        self._keysHelp = help()
+        self._help = HelpContainer()
+        self._keysHelp = HelpContainer()
         self._w3af = w3af
         self._handlers = {}
         self._parent = parent

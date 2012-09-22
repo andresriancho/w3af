@@ -19,8 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import core.controllers.outputManager as om
 
-from core.ui.consoleUi.menu import *
+from core.ui.consoleUi.menu import menu
+
 
 class sessionMenu(menu):
     '''

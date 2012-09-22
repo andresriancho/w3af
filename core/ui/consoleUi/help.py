@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os.path
 
 from string import Template
 from xml.dom.minidom import *
-import os.path
 
 try:
     import xml.etree.ElementTree as ET
@@ -67,7 +67,7 @@ class helpRepository(object):
             return Template(templ).safe_substitute(vars)
 
         if not obj:
-            obj = help()
+            obj = HelpContainer()
         elt = self.__map[topic]
         for catElt in elt.findall('category'):
             catName = 'name' in catElt.attrib and catElt.attrib['name'] or 'default'
@@ -104,7 +104,7 @@ class helpRepository(object):
 helpMainRepository = helpRepository()
 
     
-class help(object):
+class HelpContainer(object):
     '''
     Container for help items.
     '''

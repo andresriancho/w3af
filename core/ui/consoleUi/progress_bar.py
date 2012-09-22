@@ -19,11 +19,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
-import core.controllers.outputManager as om
 import time
 
-class progress_bar:
+import core.controllers.outputManager as om
+
+
+class progress_bar(object):
     """
     This class defines methods to update and draw a progress bar.
     

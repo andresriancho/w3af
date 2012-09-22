@@ -19,19 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import traceback
-        
 import core.data.kb.knowledgeBase as kb        
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.kb.shell as shell
-from core.ui.consoleUi.util import suggest
-from core.ui.consoleUi.history import *
-from core.ui.consoleUi.help import *
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
-from core.ui.consoleUi.menu import *
+
+from core.ui.consoleUi.menu import menu
+from core.ui.consoleUi.util import suggest
+
 
 class kbMenu(menu):
 
@@ -40,8 +36,8 @@ class kbMenu(menu):
     and (in the nearest future) to manipulate it.
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-    def __init__(self, name, console, w3af, parent=None, **other):
-        menu.__init__(self, name, console, core, parent)
+    def __init__(self, name, console, w3afcore, parent=None, **other):
+        menu.__init__(self, name, console, w3afcore, parent)
         self._loadHelp( 'kb' )
 
         # A mapping of KB data types to how to display it.

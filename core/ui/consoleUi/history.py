@@ -19,11 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-
 import copy
 
-class historyTable:
+
+class historyTable(object):
     '''
     A wrapper around a dictionary which stores menu-related history objects.
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
@@ -45,7 +44,7 @@ class historyTable:
 
         return result
 
-class history:
+class history(object):
     '''
     Remembers the commands which were executed and allows navigate in that list.
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
