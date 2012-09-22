@@ -18,14 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
-from datetime import datetime, date, timedelta
 import os
 import re
 import sys
 import time
 import ConfigParser
 import threading
+
+from datetime import datetime, date, timedelta
+from multiprocessing.dummy import Process
 
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 from core.controllers.misc.decorators import retry
@@ -207,8 +208,7 @@ class w3afSVNClient(SVNClient):
                         exc = SVNError(*exc.args)
                     self._exc = exc
             # Run wrapped_meth in new thread.
-            th = threading.Thread(target=wrapped_meth, args=args,
-                                  kwargs=kwargs)
+            th = Process(target=wrapped_meth, args=args, kwargs=kwargs)
             th.setDaemon(True)
             try:
                 th.start()
