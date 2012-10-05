@@ -31,7 +31,7 @@ from core.data.constants.encodings import UTF8
 from core.controllers.w3afException import w3afException
 
 
-class profile:
+class profile(object):
     '''
     This class represents a profile.
     
@@ -55,7 +55,7 @@ class profile:
         
         if profname:
             # Get profile name's complete path
-            profname = self._get_real_profile_name(profname, workdir)
+            profname = self._get_real_profile_path(profname, workdir)
             with codecs.open(profname, "rb", UTF8) as fp:
                 try:
                     self._config.readfp(fp)
@@ -70,12 +70,18 @@ class profile:
         # Save the profname variable
         self._profile_file_name = profname
     
-    def _get_real_profile_name(self, profilename, workdir):
+    def _get_real_profile_path(self, profilename, workdir):
         '''
         Return the complete path for `profilename`.
         
         @raise w3afException: If no existing profile file is found this
-            exception is raised with the proper desc message.
+                              exception is raised with the proper desc
+                              message.
+        
+        >>> p = profile()
+        >>> p._get_real_profile_path('OWASP_TOP10', '.')
+        './profiles/OWASP_TOP10.pw3af'
+        
         '''
         # Alias for os.path. Minor optimization
         ospath = os.path
@@ -84,22 +90,28 @@ class profile:
         # Add extension if necessary
         if not profilename.endswith('.pw3af'):
             profilename += '.pw3af'
-        profname = profilename
         
-        # Try to find the file
-        found = pathexists(profname)
+        if pathexists(profilename):
+            return profilename
         
-        if not (ospath.isabs(profname) or found):
-            profname = ospath.join(get_home_dir(), 'profiles', profilename)
-            found = pathexists(profname)
-            # Ok, let's try to find it in the passed working directory.
-            if not found and workdir:
-                profname = ospath.join(workdir, profilename)
-                found = pathexists(profname)
+        # Let's try to find it in the workdir directory.
+        if workdir is not None:
+            tmp_path = ospath.join(workdir, profilename)
+            if pathexists(tmp_path):
+                return tmp_path
+            
+        # Let's try to find it in the "profiles" directory inside workdir
+        if workdir is not None:
+            tmp_path = ospath.join(workdir, 'profiles', profilename)
+            if pathexists(tmp_path):
+                return tmp_path
+
+        if not ospath.isabs(profilename):
+            tmp_path = ospath.join(get_home_dir(), 'profiles', profilename)
+            if pathexists(tmp_path):
+                return tmp_path
                         
-        if not found:
-            raise w3afException('The profile "%s" wasn\'t found.' % profilename)
-        return profname
+        raise w3afException('The profile "%s" wasn\'t found.' % profilename)
     
 
     def get_profile_file(self):

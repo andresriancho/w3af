@@ -193,7 +193,6 @@ fastSearch = False
 [infrastructure.favicon_identification]
 
 [infrastructure.server_header]
-execOneTime = True
 
 [infrastructure.shared_hosting]
 resultLimit = 300

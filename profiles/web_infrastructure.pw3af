@@ -25,9 +25,6 @@ interface = ppp0
 localAddress = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
 
-[infrastructure.server_header]
-execOneTime = True
-
 [infrastructure.fingerprint_os]
 
 [infrastructure.halberd]
@@ -79,7 +76,6 @@ verbose = False
 [infrastructure.favicon_identification]
 
 [infrastructure.server_header]
-execOneTime = True
 
 [infrastructure.shared_hosting]
 

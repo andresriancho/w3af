@@ -89,7 +89,6 @@ caFileName = plugins/audit/ssl_certificate/ca.pem
 [audit.ssi]
 
 [infrastructure.server_header]
-execOneTime = True
 
 [audit.sqli]
 

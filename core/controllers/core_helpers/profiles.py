@@ -43,7 +43,8 @@ class w3af_core_profiles(object):
         @parameter profile_name: The profile to clone
         @parameter profileDesc: The description of the new profile
         
-        @return: The new profile instance if the profile was successfully saved. Else, raise a w3afException.
+        @return: The new profile instance if the profile was successfully saved.
+                 Else, raise a w3afException.
         '''
         # Create the new profile.
         profile_inst = profile()
@@ -177,8 +178,10 @@ class w3af_core_profiles(object):
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages) )
             raise w3afException( msg ) 
             
-    def getProfileList( self ):
+    def getProfileList( self, directory=HOME_DIR ):
         '''
+        @param directory: The directory from which profiles are loaded
+        
         @return: Two different lists:
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
@@ -191,7 +194,7 @@ class w3af_core_profiles(object):
         True
         
         '''
-        profile_home = os.path.join(HOME_DIR, 'profiles')
+        profile_home = os.path.join(directory, 'profiles')
         str_profile_list = get_file_list(profile_home, extension='.pw3af')
         
         instance_list = []
