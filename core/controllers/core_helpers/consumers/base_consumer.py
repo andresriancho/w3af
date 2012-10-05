@@ -89,6 +89,8 @@ class BaseConsumer(Process):
 
     def _task_done(self, result):
         self._tasks_in_progress_counter -= 1
+        assert self._tasks_in_progress_counter > 0, 'You can not _task_done()' \
+                                                    ' more than you _add_task().' 
     
     def _add_task(self):
         self._tasks_in_progress_counter += 1
