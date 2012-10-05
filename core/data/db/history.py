@@ -80,7 +80,7 @@ class HistoryItem(object):
             self._db = kb.kb.get('history', 'db')
             self._session_dir = kb.kb.get('history', 'session_dir')
         else:
-            self.initStructure()
+            self.init_structure()
 
     @property
     def response(self):
@@ -106,8 +106,12 @@ class HistoryItem(object):
     def request(self, req):
         self._request = req    
     
-    def initStructure(self):
+    def init_structure(self):
         '''Init history structure.'''
+        # FIXME: The error is here! When running a test twice the cf is NOT automatically cleared
+        # and thus the directory is not created again. Reproduce with:
+        # nosetests -v -s --rednose --with-doctest --doctest-tests core/data/url/handlers/tests/test_cookie_handler.py
+        #                                                          core/data/url/handlers/tests/test_cookie_handler.py 
         session_name = cf.cf.get('session_name')
         if session_name is None:
             # This is the case of unittests where we "forget" to set the proper
