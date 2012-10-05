@@ -145,8 +145,8 @@ class HistoryItem(object):
         except OSError, oe:
             # [Errno EEXIST] File exists
             if oe.errno != EEXIST:
-                msg = 'Unable to write to the user home directory: ' + get_temp_dir()
-                raise w3afException(msg)
+                msg = 'Unable to write to the user home directory "%s".'
+                raise w3afException(msg % get_temp_dir())
         kb.kb.save('history', 'db', self._db)
         kb.kb.save('history', 'session_dir', self._session_dir)
 
