@@ -116,7 +116,7 @@ class server_header(InfrastructurePlugin):
                     #
                     #    Check if I already have this info in the KB
                     #
-                    pow_by_kb = kb.kb.getData( 'server_header', 'poweredBy' )
+                    pow_by_kb = kb.kb.get( 'server_header', 'poweredBy' )
                     powered_by_in_kb = [ j['poweredBy'] for j in pow_by_kb ]
                     if powered_by not in powered_by_in_kb:
                     
@@ -140,7 +140,7 @@ class server_header(InfrastructurePlugin):
                         #     kb.kb.save( self , 'poweredBy' , poweredBy )
                         # But I have seen an IIS server with PHP that returns
                         # both the ASP.NET and the PHP headers
-                        pow_by_kb = kb.kb.getData( 'server_header', 'poweredBy' )
+                        pow_by_kb = kb.kb.get( 'server_header', 'poweredBy' )
                         powered_by_in_kb = [ j['poweredBy'] for j in pow_by_kb ]
                         
                         if powered_by not in powered_by_in_kb:
