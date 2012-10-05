@@ -69,8 +69,7 @@ class BaseConsumer(Process):
                 self._threadpool.join()
                 
                 self._teardown()
-                self._task_done(None)
-                
+
                 # Finish this consumer and everyone consuming the output
                 self._out_queue.put( POISON_PILL )
                 self.in_queue.task_done()
@@ -88,16 +87,39 @@ class BaseConsumer(Process):
         raise NotImplementedError
 
     def _task_done(self, result):
+        '''
+        The task_in_progress_counter is needed because we want to know if the
+        consumer is processing something and let it finish. It is mainly used
+        in the has_pending_work().
+        
+        For example:
+        
+            * You can have pending work if there are items in the input_queue
+            
+            * You can have pending work if there are still items to be read from
+            the output_queue by one of the consumers that reads our output.
+            
+            * You can have pending work when there are no items in input_queue
+            and no items in output_queue but the threadpool inside the consumer
+            is processing something. This situation is handled by the
+            self._tasks_in_progress_counter attribute and the _add_task and
+            _task_done methods. 
+        
+        So, for each _add_task() there has to be a _task_done() even if the
+        task ends in an error or exception.
+        '''
         self._tasks_in_progress_counter -= 1
         assert self._tasks_in_progress_counter >= 0, 'You can not _task_done()' \
                                                      ' more than you _add_task().' 
     
     def _add_task(self):
+        '''
+        @see: _task_done()'s documentation.
+        '''
         self._tasks_in_progress_counter += 1
     
     def in_queue_put(self, work):
         if work is not None:
-            self._add_task()
             return self.in_queue.put( work )
         
     def in_queue_put_iter(self, work_iter):
@@ -107,6 +129,8 @@ class BaseConsumer(Process):
                     
     def has_pending_work(self):
         '''
+        @see: _task_done() documentation
+        
         @return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         '''

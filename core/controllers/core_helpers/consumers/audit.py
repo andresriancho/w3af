@@ -57,6 +57,9 @@ class audit(BaseConsumer):
     def _consume(self, work_unit):
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            
+            self._add_task()
+            
             result = self._threadpool.apply_async( plugin.audit_wrapper,
                                                    (work_unit,),
                                                    callback=self._task_done)

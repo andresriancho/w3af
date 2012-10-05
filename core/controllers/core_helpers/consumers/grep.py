@@ -85,4 +85,3 @@ class grep(BaseConsumer):
                         exception_handler.handle( status, e , exec_info, enabled_plugins )
                 
                 self.in_queue.task_done()
-                self._task_done(None)

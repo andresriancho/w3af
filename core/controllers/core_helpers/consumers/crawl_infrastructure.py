@@ -85,7 +85,6 @@ class crawl_infrastructure(BaseConsumer):
                     self._threadpool.join()
                     
                     self._teardown()
-                    self._task_done(None)
                     
                     # Finish this consumer and everyone consuming the output
                     self._out_queue.put( POISON_PILL )
@@ -96,7 +95,6 @@ class crawl_infrastructure(BaseConsumer):
                     
                     self._consume(work_unit)
                     self.in_queue.task_done()
-                    self._task_done(None)
             finally:
                 self._route_all_plugin_results()
                 

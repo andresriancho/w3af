@@ -79,6 +79,11 @@ class auth(BaseConsumer):
         This is the method that actually calls the plugins in order to login
         to the web application.        
         '''
+        # Adding task here because we want to let the rest of the world know
+        # that we're still doing something. The _task_done below will "undo"
+        # this action.
+        self._add_task()
+
         for plugin in self._consumer_plugins:
             try:
                 try:
@@ -97,14 +102,12 @@ class auth(BaseConsumer):
                 exception_handler.handle( self._w3af_core.status, e , 
                                           exec_info, enabled_plugins )
         
+        # See comment above in _add_task
         self._task_done(None)
     
     def async_force_login(self):
         self.in_queue_put( FORCE_LOGIN )
     
     def force_login(self):
-        # Adding task here because _login() will _task_done() later and all
-        # tasks need to be accounted for in order to have a clean process end
-        self._add_task()
         self._login()
         

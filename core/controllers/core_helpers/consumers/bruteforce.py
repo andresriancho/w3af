@@ -54,9 +54,6 @@ class bruteforce(BaseConsumer):
 
     def _consume(self, work_unit):
         
-        # Consumed the item that was put in the in_queue by the strategy
-        self._task_done(None)
-        
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
             
