@@ -61,7 +61,6 @@ class crawl_infrastructure(BaseConsumer):
         self._variant_db = variant_db()
         self._already_seen_urls = scalable_bloomfilter()
         
-        self._tasks_in_progress_counter = 0
         self._disabled_plugins = set()
     
     def run(self):
