@@ -35,7 +35,7 @@ from core.controllers.core_helpers.consumers.bruteforce import bruteforce
 from core.controllers.core_helpers.consumers.seed import seed
 from core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_infrastructure 
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
-from core.controllers.w3afException import w3afException
+from core.controllers.w3afException import w3afMustStopException
 
 
 class w3af_core_strategy(object):
@@ -217,7 +217,7 @@ class w3af_core_strategy(object):
             except Exception, e:
                 msg = 'Failed to initialize the 404 detection, original exception'
                 msg += ' was: "%s".'
-                raise w3afException( msg % e)
+                raise w3afMustStopException( msg % e)
                         
     def _setup_crawl_infrastructure(self):
         '''
