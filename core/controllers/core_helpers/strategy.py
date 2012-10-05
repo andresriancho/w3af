@@ -171,6 +171,9 @@ class w3af_core_strategy(object):
                 if len(_input) == len(finished | consumer_forced_end):
                     return
                 
+                if url_producer in finished:
+                    continue
+                
                 try:
                     result_item = url_producer.get_result(timeout=0.2)
                 except TimeoutError:
