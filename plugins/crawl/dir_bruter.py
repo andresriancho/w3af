@@ -64,21 +64,20 @@ class dir_bruter(CrawlPlugin):
         if not self._exec:
             raise w3afRunOnce()
         else:
+            domain_path = fuzzable_request.getURL().getDomainPath()
+            base_url = fuzzable_request.getURL().baseUrl()
             
             if not self._be_recursive:
                 # Only run once
                 self._exec = False
 
-            domain_path = fuzzable_request.getURL().getDomainPath()
-            base_url = fuzzable_request.getURL().baseUrl()
-            
-            if base_url not in self._already_tested:
-                self._bruteforce_directories( base_url )
-                self._already_tested.add( base_url )
+                if base_url not in self._already_tested:
+                    self._already_tested.add( base_url )
+                    self._bruteforce_directories( base_url )
                 
-            if self._be_recursive and domain_path not in self._already_tested:
-                self._bruteforce_directories( domain_path )
+            elif domain_path not in self._already_tested:
                 self._already_tested.add( domain_path )
+                self._bruteforce_directories( domain_path )
 
     def _dir_name_generator(self, base_path):
         '''
@@ -99,7 +98,7 @@ class dir_bruter(CrawlPlugin):
         '''
         Performs a GET and verifies that the response is not a 404.
         
-        @return: None, data is stored in self.out_queue 
+        @return: None, data is stored in self.output_queue 
         '''
         try:
             http_response = self._uri_opener.GET( dir_url, cache=False )
@@ -136,7 +135,7 @@ class dir_bruter(CrawlPlugin):
                           can be something like http://host.tld/ or
                           http://host.tld/images/ .
                           
-        @return: None, the data is stored in self.out_queue
+        @return: None, the data is stored in self.output_queue
         '''
         dir_name_generator = self._dir_name_generator(base_path)
         base_path_repeater = repeat(base_path)
@@ -184,8 +183,12 @@ class dir_bruter(CrawlPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds directories on a web server by bruteforcing the names
-        using a list.
+        This plugin finds directories on a web server by brute-forcing their
+        names using a wordlist.
+        
+        Given the large amount of time that this plugin can consume, by default,
+        it will only try to identify directories in the web root ("/"), ignoring
+        the path that is sent as its input.
 
         Two configurable parameters exist:
             - wordlist: The wordlist to be used in the directory bruteforce process.
