@@ -27,6 +27,7 @@ from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.threads.threadpool import return_args
 
 
 class bruteforce(BaseConsumer):
@@ -52,12 +53,28 @@ class bruteforce(BaseConsumer):
                 om.out.error( str(e) )
 
     def _consume(self, work_unit):
+        
+        # Consumed the item that was put in the in_queue by the strategy
+        self._task_done(None)
+        
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
-            result = self._threadpool.apply_async( self._bruteforce,
-                                                   (plugin, work_unit,),
-                                                   callback=self._task_done)
-            self._out_queue.put( (plugin.getName(), work_unit, result) )
+            
+            # Now I'm adding new tasks that will be in progress until the
+            # self._plugin_finished_cb is called.
+            self._add_task()
+            
+            self._threadpool.apply_async( return_args(self._bruteforce),
+                                          (plugin, work_unit,),
+                                          callback=self._plugin_finished_cb)
+    
+    def _plugin_finished_cb(self, ((plugin, input_fuzzable_request), plugin_result)):
+        for new_fuzzable_request in plugin_result:
+            self._out_queue.put( (plugin.getName(), 
+                                  input_fuzzable_request,
+                                  new_fuzzable_request) )
+        
+        self._task_done(None)
             
     def _bruteforce(self, plugin, fuzzable_request):
         '''
@@ -93,5 +110,5 @@ class bruteforce(BaseConsumer):
         
         else:
             res.update( new_frs )
-                
+        
         return res

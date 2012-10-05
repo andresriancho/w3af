@@ -73,7 +73,7 @@ class xUrllib(object):
         self._countLock = threading.RLock()
         
         # User configured options (in an indirect way)
-        self._grep_queue = None
+        self._grep_queue_put = None
         self._evasion_plugins = []
         self._paused = False
         self._must_stop = False
@@ -769,8 +769,8 @@ class xUrllib(object):
             self._last_errors.clear()
             om.out.debug('Resetting global error count. GEC: 0')
     
-    def set_grep_queue(self, grep_queue ):
-        self._grep_queue = grep_queue
+    def set_grep_queue_put(self, grep_queue_put ):
+        self._grep_queue_put = grep_queue_put
     
     def set_evasion_plugins( self, evasion_plugins ):
         # I'm sorting evasion plugins based on priority
@@ -800,7 +800,7 @@ class xUrllib(object):
         url_instance = request.url_object
         domain = url_instance.getDomain()
         
-        if self._grep_queue is not None and\
+        if self._grep_queue_put is not None and\
            domain in cf.cf.get('targetDomains'):
             
             # Create a fuzzable request based on the urllib2 request object
@@ -811,4 +811,4 @@ class xUrllib(object):
                                         request.headers
                                         )
             
-            self._grep_queue.put( (fr, response) )    
+            self._grep_queue_put( (fr, response) )    

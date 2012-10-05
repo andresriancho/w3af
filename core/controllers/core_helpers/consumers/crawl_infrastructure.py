@@ -130,10 +130,10 @@ class crawl_infrastructure(BaseConsumer):
             #       on those ApplyResults generated here?
             self._threadpool.apply_async( return_args(self._discover_worker),
                                           (plugin, work_unit,),
-                                          callback=self._finished_plugin_cb )
+                                          callback=self._plugin_finished_cb )
             self._route_all_plugin_results()
                         
-    def _finished_plugin_cb(self, ((plugin, fuzzable_request), plugin_result)):
+    def _plugin_finished_cb(self, ((plugin, fuzzable_request), plugin_result)):
         self._route_plugin_results(plugin)
         
         # Finished one fuzzable_request, inc!

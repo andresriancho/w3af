@@ -100,8 +100,11 @@ class auth(BaseConsumer):
         self._task_done(None)
     
     def async_force_login(self):
-        self.in_queue.put( FORCE_LOGIN )
+        self.in_queue_put( FORCE_LOGIN )
     
     def force_login(self):
+        # Adding task here because _login() will _task_done() later and all
+        # tasks need to be accounted for in order to have a clean process end
+        self._add_task()
         self._login()
         

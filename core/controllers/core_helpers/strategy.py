@@ -27,6 +27,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
+from core.data.request.fuzzable_request import fuzzable_request as FuzzableRequest
+
 from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.core_helpers.consumers.grep import grep
 from core.controllers.core_helpers.consumers.auth import auth
@@ -190,9 +192,17 @@ class w3af_core_strategy(object):
                         # remove it from the list.
                         consumer_forced_end.add(url_producer)
                     else:
-                        _, _, fuzzable_request = result_item
+                        _, _, fuzzable_request_inst = result_item
+                        
+                        # Safety check, I need these to be fuzzable_request objects
+                        # if not, the url_producer is doing something wrong and I
+                        # don't want to do anything with this data
+                        fmt = '%s is returning objects of class %s instead of fuzzable_request.'
+                        msg = fmt % (url_producer, type(fuzzable_request_inst))
+                        assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
+                        
                         for url_consumer in output:
-                            url_consumer.in_queue_put( fuzzable_request )
+                            url_consumer.in_queue_put( fuzzable_request_inst )
                         
                         # This is rather complex to digest... so pay attention :)
                         # A consumer might be 100% idle (no tasks in input or 
@@ -251,7 +261,7 @@ class w3af_core_strategy(object):
         
         if grep_plugins:
             self._grep_consumer = grep(grep_plugins, self._w3af_core)
-            self._w3af_core.uri_opener.set_grep_queue( self._grep_consumer.in_queue )
+            self._w3af_core.uri_opener.set_grep_queue_put( self._grep_consumer.in_queue_put )
             self._grep_consumer.start()
         
     def _teardown_grep(self):
