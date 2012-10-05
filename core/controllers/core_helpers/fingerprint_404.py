@@ -104,9 +104,11 @@ class fingerprint_404:
         #   This is a list of the most common handlers, in some configurations, the 404
         #   depends on the handler, so I want to make sure that I catch the 404 for each one
         #
-        handlers = ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do', 'gif', 'htm' ]
-        handlers.extend( ['pl', 'cgi', 'xhtml', 'htmls', extension] )
-        handlers = list(set(handlers))
+        handlers = set()
+        handlers.update( ['py', 'php', 'asp', 'aspx', 'do', 'jsp', 'rb', 'do' ] )
+        handlers.update( ['gif', 'htm', 'pl', 'cgi', 'xhtml', 'htmls', 'foobar'] )
+        if extension:
+            handlers.add(extension)
         
         args_list = []
         
