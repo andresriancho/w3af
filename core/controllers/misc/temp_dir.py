@@ -40,10 +40,9 @@ def create_temp_dir():
     @return: A string that contains the temp directory to use, in Linux: "~/.w3af/tmp/<pid>"
     '''
     complete_dir = get_temp_dir()
-    if os.path.exists(complete_dir):
-        remove_temp_dir()
-    os.makedirs(complete_dir)
-    os.chmod(complete_dir, stat.S_IRWXU)
+    if not os.path.exists(complete_dir):
+        os.makedirs(complete_dir)
+        os.chmod(complete_dir, stat.S_IRWXU)
     return complete_dir
 
 def remove_temp_dir():

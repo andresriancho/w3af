@@ -25,15 +25,16 @@ import os.path
 import StringIO
 import urllib2
 
+import core.controllers.outputManager as om
+import core.data.url.httpResponse as httpResponse
+
+from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.number_generator import (consecutive_number_generator
                                             as core_num_gen)
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.request.frFactory import create_fuzzable_request
-
-import core.controllers.outputManager as om
-import core.data.url.httpResponse as httpResponse
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
@@ -67,7 +68,9 @@ class CacheHandler(urllib2.BaseHandler):
     @author: Version 0.2 by Andres Riancho
     @author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
     '''
-        
+    def __init__(self):
+        CacheClass.init()
+
     def default_open(self, request):
         
         method = request.get_method().upper()
@@ -216,6 +219,14 @@ class CachedResponse(StringIO.StringIO):
         @raises NotImplementedError: if the method is not redefined
         '''
         raise NotImplementedError
+    
+    @staticmethod
+    def init():
+        '''
+        Takes all the actions needed for the CachedResponse class to work,
+        in most cases this means creating a file, directory or databse. 
+        '''
+        raise NotImplementedError
 
 
 class DiskCachedResponse(CachedResponse):
@@ -305,6 +316,11 @@ class DiskCachedResponse(CachedResponse):
         reqfname = os.path.join(cache_loc, reqid)
         return exists(reqfname + ".headers") and exists(reqfname + ".body") \
                 and exists(reqfname + ".code") and exists(reqfname + ".msg")
+    
+    @staticmethod
+    def init():
+        if not os.path.exists(CACHE_LOCATION):
+            os.makedirs(CACHE_LOCATION)
 
 
 class SQLCachedResponse(CachedResponse):
@@ -379,9 +395,10 @@ class SQLCachedResponse(CachedResponse):
         '''
         return True
 
+    @staticmethod
+    def init():
+        create_temp_dir()
 
+# This is the default implementation
 CacheClass = SQLCachedResponse
-
-if not os.path.exists(CACHE_LOCATION) and CacheClass == DiskCachedResponse:
-    os.makedirs(CACHE_LOCATION)
 

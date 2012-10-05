@@ -26,7 +26,6 @@ from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.HTTPRequest import HTTPRequest
 from core.data.parsers.urlParser import url_object
 from core.data.url.xUrllib import xUrllib
-from core.controllers.misc.temp_dir import create_temp_dir
 
 
 class TestCookieHandler(unittest.TestCase):
@@ -57,7 +56,6 @@ class TestCookieHandler(unittest.TestCase):
         self.assertTrue('Cookie was sent.' in with_cookie_res)
         
     def test_xurllib(self):
-        create_temp_dir()
         uri_opener = xUrllib()
         uri_opener.GET(self.URL_SENDS_COOKIE)
         
