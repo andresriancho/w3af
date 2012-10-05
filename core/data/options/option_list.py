@@ -45,10 +45,10 @@ class OptionList(object):
         return '<OptionList: '+ '|'.join([i.getName() for i in self._internal_opt_list]) +'>'
 
     def __eq__(self, other):
-        if not isinstance(other, OptionsList):
+        if not isinstance(other, OptionList):
             return False
         
-        return self._internal_opt_list == other._oList
+        return self._internal_opt_list == other._internal_opt_list
             
         
     def __contains__( self, item_name ):

@@ -72,7 +72,7 @@ class test_questions(object):
         assert 'New' == new
         
         opt = question_inst.getOptionObjects()
-        assert isinstance(opt, OptionsList) == True
+        assert isinstance(opt, OptionList) == True
         
         qid = question_inst.getQuestionId()
         assert qid not in self.unique_question_ids
