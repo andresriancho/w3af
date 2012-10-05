@@ -31,13 +31,17 @@ import sqlite3
 
 from collections import deque
 
+import core.controllers.outputManager as om
+import core.data.kb.config as cf
+import urlOpenerSettings
+
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import \
-    consecutive_number_generator as seq_gen
+     consecutive_number_generator as seq_gen
 from core.controllers.w3afException import (w3afMustStopException,
-    w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,
-    w3afException, w3afMustStopOnUrlError)
+     w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,
+     w3afException, w3afMustStopOnUrlError)
 from core.data.constants.httpConstants import NO_CONTENT
 from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
@@ -47,9 +51,6 @@ from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.httpResponse import httpResponse, from_httplib_resp
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
-import core.controllers.outputManager as om
-import core.data.kb.config as cf
-import urlOpenerSettings
 
 
 class xUrllib(object):
