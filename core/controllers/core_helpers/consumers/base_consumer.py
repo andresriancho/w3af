@@ -89,8 +89,8 @@ class BaseConsumer(Process):
 
     def _task_done(self, result):
         self._tasks_in_progress_counter -= 1
-        assert self._tasks_in_progress_counter > 0, 'You can not _task_done()' \
-                                                    ' more than you _add_task().' 
+        assert self._tasks_in_progress_counter >= 0, 'You can not _task_done()' \
+                                                     ' more than you _add_task().' 
     
     def _add_task(self):
         self._tasks_in_progress_counter += 1
@@ -103,8 +103,7 @@ class BaseConsumer(Process):
     def in_queue_put_iter(self, work_iter):
         if work_iter is not None:
             for work in work_iter:
-                self._add_task()
-                self.in_queue.put( work )
+                self.in_queue_put( work )
                     
     def has_pending_work(self):
         '''
@@ -136,7 +135,7 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         '''
-        self.in_queue.put( POISON_PILL )
+        self.in_queue_put( POISON_PILL )
         self.in_queue.join()
 
     def terminate(self):
@@ -149,7 +148,7 @@ class BaseConsumer(Process):
             self.in_queue.get()
             self.in_queue.task_done()
         
-        self.in_queue.put( POISON_PILL )
+        self.in_queue_put( POISON_PILL )
         self.in_queue.join()
 
     def get_result(self, timeout=0.5):

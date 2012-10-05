@@ -96,6 +96,7 @@ class crawl_infrastructure(BaseConsumer):
                     
                     self._consume(work_unit)
                     self.in_queue.task_done()
+                    self._task_done(None)
             finally:
                 self._route_all_plugin_results()
                 
@@ -119,6 +120,10 @@ class crawl_infrastructure(BaseConsumer):
             if plugin in self._disabled_plugins: continue
             
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            
+            # Please note that I add a task to self, this task is marked as DONE
+            # in _finished_plugin_cb().
+            self._add_task()
             
             # TODO: unittest what happens if an exception (which is not handled
             #       by the exception handler) is raised. Who's doing a .get()
