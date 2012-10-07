@@ -1,5 +1,5 @@
 '''
-frFactory.py
+factory.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,9 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from StringIO import StringIO
 import cgi
 import json
+
+from StringIO import StringIO
+
+import core.controllers.outputManager as om
+import core.data.kb.config as cf
+import core.data.parsers.dpCache as dpCache
+import core.data.parsers.wsdlParser as wsdlParser
 
 from .httpPostDataRequest import httpPostDataRequest
 from .httpQsRequest import HTTPQSRequest
@@ -34,18 +40,16 @@ from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
-import core.controllers.outputManager as om
-import core.data.kb.config as cf
-import core.data.parsers.dpCache as dpCache
-import core.data.parsers.wsdlParser as wsdlParser
 
 
 __all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
 
+URL_HEADERS = ('location', 'uri', 'content-location')
+
 
 def create_fuzzable_requests(resp, request=None, add_self=True):
     '''
-    Generates the fuzzable requests based on an http response instance.
+    Generates the fuzzable requests based on an HTTP response instance.
     
     @parameter resp: An HTTPResponse instance.
     @parameter request: The HTTP request that generated the resp
@@ -54,12 +58,11 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     
     @return: A list of fuzzable requests.
     '''
-    is_redirect = lambda resp: 300 <= resp.getCode() < 400
     res = []
     
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
-    headers = dict((h, '') for h in cf.cf.get('fuzzableHeaders'))
+    headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
     req_headers = dict(headers)
     req_headers.update(request and request.getHeaders() or {})
     
@@ -76,21 +79,21 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     )
         res.append(qsr)
     
+    headers = resp.getLowerCaseHeaders()
+    
     # If response was a 30X (i.e. a redirect) then include the
-    # corresponding fuzzable request. 
-    if is_redirect(resp):
-        redir_headers = resp.getLowerCaseHeaders()
-        location = redir_headers.get('location') or \
-                        redir_headers.get('uri', '')
-        if location:
-            location = smart_unicode(location, encoding=resp.charset)
+    # corresponding fuzzable request.
+    for url_header_name in URL_HEADERS:
+        url_header_value = headers.get(url_header_name, '')
+        if url_header_value:
+            url = smart_unicode(url_header_value, encoding=resp.charset)
             try:
-                absolute_location = resp.getURL().urlJoin(location)
+                absolute_location = resp.getURL().urlJoin(url)
             except ValueError:
-                msg = 'The application sent a 30x redirect "Location:" that'
-                msg += ' w3af failed to correctly parse as an URL, the header'
-                msg += ' value was: "%s"'
-                om.out.debug( msg % location )
+                msg = 'The application sent a "%s" redirect that w3af' \
+                      ' failed to correctly parse as an URL, the header' \
+                      ' value was: "%s"'
+                om.out.debug( msg % (url_header_name,url) )
             else:
                 qsr = HTTPQSRequest(
                     absolute_location,
@@ -258,6 +261,6 @@ def _create_cookie(httpResponse):
             del cookie_inst[key]
         except:
             pass
-    
+
     return cookie_inst 
 

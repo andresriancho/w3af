@@ -28,7 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,
                                                      password_bruteforcer)
-from core.data.request.frFactory import create_fuzzable_requests
+from core.data.request.factory import create_fuzzable_requests
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 

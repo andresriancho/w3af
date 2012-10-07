@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urlparse
 
 from core.data.parsers.urlParser import url_object
-from core.data.request.frFactory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request
 from core.controllers.w3afException import w3afException
 
 

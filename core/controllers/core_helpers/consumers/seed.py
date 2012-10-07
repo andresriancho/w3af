@@ -30,7 +30,7 @@ from core.controllers.w3afException import (w3afMustStopException,
 from core.controllers.core_helpers.update_urls_in_kb import update_kb
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.w3afException import w3afException
-from core.data.request.frFactory import create_fuzzable_requests
+from core.data.request.factory import create_fuzzable_requests
 
 
 class seed(Process):

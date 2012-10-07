@@ -33,7 +33,7 @@ from core.controllers.plugins.mangle_plugin import headersToString, stringToHead
 import re
 
 from core.controllers.w3afException import w3afException
-from core.data.request.frFactory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request
 
 
 class sed(ManglePlugin):

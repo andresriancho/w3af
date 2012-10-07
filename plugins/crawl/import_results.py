@@ -27,7 +27,7 @@ from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
-from core.data.request.frFactory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request
 from core.data.parsers.urlParser import url_object
 
 import csv

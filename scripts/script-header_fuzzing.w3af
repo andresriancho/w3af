@@ -2,7 +2,7 @@
 
 misc-settings
 set fuzzCookie False
-set fuzzableHeaders user-agent
+set fuzzable_headers user-agent
 back
 
 plugins

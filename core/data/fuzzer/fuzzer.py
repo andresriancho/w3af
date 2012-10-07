@@ -644,7 +644,7 @@ def _createFuzzable(freq):
     config = cf.cf
     
     # Add the fuzzable headers
-    fuzzheaders = dict((h, '') for h in config.get('fuzzableHeaders', []))
+    fuzzheaders = dict((h, '') for h in config.get('fuzzable_headers', []))
     
     if fuzzheaders:
         _fuzzable['headers'] = fuzzheaders

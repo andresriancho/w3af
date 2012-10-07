@@ -34,7 +34,7 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
                                             as core_num_gen)
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
-from core.data.request.frFactory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?

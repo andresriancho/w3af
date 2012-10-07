@@ -51,7 +51,7 @@ class miscSettings(configurable):
             cf.cf.save('fuzzFCExt', 'txt' )
             cf.cf.save('fuzzFormComboValues', 'tmb')
             cf.cf.save('maxDiscoveryTime', 120 )
-            cf.cf.save('fuzzableHeaders', [] )
+            cf.cf.save('fuzzable_headers', [] )
             cf.cf.save('msf_location', '/opt/metasploit3/bin/' )
             
             #
@@ -113,7 +113,7 @@ class miscSettings(configurable):
         ol.add(opt)
         
         desc = 'A list with all fuzzable header names'
-        opt = option('fuzzableHeaders', cf.cf.get('fuzzableHeaders'), desc, 'list',
+        opt = option('fuzzable_headers', cf.cf.get('fuzzable_headers'), desc, 'list',
                             tabid='Fuzzer parameters')
         ol.add(opt)
         
@@ -191,7 +191,7 @@ class miscSettings(configurable):
         cf.cf.save('fuzzFormComboValues', options_list['fuzzFormComboValues'].getValue() )
         cf.cf.save('maxDiscoveryTime', options_list['maxDiscoveryTime'].getValue() )
         
-        cf.cf.save('fuzzableHeaders', options_list['fuzzableHeaders'].getValue() )
+        cf.cf.save('fuzzable_headers', options_list['fuzzable_headers'].getValue() )
         cf.cf.save('interface', options_list['interface'].getValue() )
         cf.cf.save('localAddress', options_list['localAddress'].getValue() )
         cf.cf.save('demo', options_list['demo'].getValue()  )

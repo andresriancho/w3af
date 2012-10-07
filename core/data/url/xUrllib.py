@@ -45,7 +45,7 @@ from core.controllers.w3afException import (w3afMustStopException,
 from core.data.constants.httpConstants import NO_CONTENT
 from core.data.parsers.httpRequestParser import httpRequestParser
 from core.data.parsers.urlParser import url_object
-from core.data.request.frFactory import create_fuzzable_request
+from core.data.request.factory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers.logHandler import LogHandler
 from core.data.url.httpResponse import httpResponse, from_httplib_resp
