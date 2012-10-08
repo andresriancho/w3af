@@ -78,7 +78,8 @@ if (!xmlhttp && window.createRequest) {
 }
 /* Finished AJAX initialization */
 
-/* Create the request */
+/* Create the request, please remember the same-origin policy, which might
+affect how and if this request is sent by the browser */
 '''
     
     # Set the method and the path
@@ -95,7 +96,9 @@ xmlhttp.onreadystatechange=function() {
 }
 
 
-/* Add headers to the request and send it */
+/* Add headers to the request and send it, please note taht custom headers
+might be removed by the browser and/or generate an exception that will
+make the request fail */
 '''
 
     # Now I add the headers:
