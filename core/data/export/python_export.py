@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.data.parsers.httpRequestParser import httpRequestParser
-import re
 
 
 def python_escape_string( str_in ):
@@ -59,7 +58,7 @@ def python_export( request_string ):
     for header_name in headers:
         header_value = python_escape_string(headers[header_name])
         header_name = python_escape_string(header_name)        
-        res += '\t"' + header_name + '" : "' + header_value + '",\n'
+        res += '    "' + header_name + '" : "' + header_value + '",\n'
         
     res = res [:-2]
     res += '\n}\n'
