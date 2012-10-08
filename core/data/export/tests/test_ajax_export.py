@@ -24,8 +24,8 @@ import unittest
 from core.data.export.ajax_export import ajax_export
 
 EXPECTED_SIMPLE = '''/* Init AJAX stuff */
-    
-var xmlhttp=false;
+
+var xmlhttp = false;
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
 // JScript gives us Conditional compilation, we can cope with old IE versions.
@@ -41,30 +41,30 @@ try {
 }
 @end @*/
 
-if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
     try {
         xmlhttp = new XMLHttpRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 if (!xmlhttp && window.createRequest) {
     try {
         xmlhttp = window.createRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 /* Finished AJAX initialization */
 
 /* Create the request, please remember the same-origin policy, which might
 affect how and if this request is sent by the browser */
-xmlhttp.open("GET", "http://www.w3af.org/",true);
+xmlhttp.open("GET", "http://www.w3af.org/", true);
 
 /* Debugging code, this should be removed for real life XSS exploits */
-xmlhttp.onreadystatechange=function() {
-    if (xmlhttp.readyState==4) {
-        alert(xmlhttp.responseText)
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 ) {
+        alert(xmlhttp.responseText);
     }
 }
 
@@ -78,8 +78,8 @@ xmlhttp.send(null);
 '''
 
 EXPECTED_POST = '''/* Init AJAX stuff */
-    
-var xmlhttp=false;
+
+var xmlhttp = false;
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
 // JScript gives us Conditional compilation, we can cope with old IE versions.
@@ -95,30 +95,30 @@ try {
 }
 @end @*/
 
-if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
     try {
         xmlhttp = new XMLHttpRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 if (!xmlhttp && window.createRequest) {
     try {
         xmlhttp = window.createRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 /* Finished AJAX initialization */
 
 /* Create the request, please remember the same-origin policy, which might
 affect how and if this request is sent by the browser */
-xmlhttp.open("POST", "http://www.w3af.org/",true);
+xmlhttp.open("POST", "http://www.w3af.org/", true);
 
 /* Debugging code, this should be removed for real life XSS exploits */
-xmlhttp.onreadystatechange=function() {
-    if (xmlhttp.readyState==4) {
-        alert(xmlhttp.responseText)
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 ) {
+        alert(xmlhttp.responseText);
     }
 }
 
@@ -139,6 +139,7 @@ class TestAjaxExport(unittest.TestCase):
                        'Foo: bar\n' \
                        '\n'
         ajax_code = ajax_export(http_request)
+        file('/tmp/get.txt', 'w').write(ajax_code)
         self.assertEqual(ajax_code, EXPECTED_SIMPLE)
 
     def test_export_POST(self):
@@ -148,5 +149,6 @@ class TestAjaxExport(unittest.TestCase):
                        '\n' \
                        'a=1'
         ajax_code = ajax_export(http_request)
+        file('/tmp/post.txt', 'w').write(ajax_code)
         self.assertEquals(ajax_code, EXPECTED_POST)
         

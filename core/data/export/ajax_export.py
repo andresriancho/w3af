@@ -45,8 +45,8 @@ def ajax_export( request_string ):
     # Now I do the real magic...
     # This is the header, to include the AJAX stuff:
     res = '''/* Init AJAX stuff */
-    
-var xmlhttp=false;
+
+var xmlhttp = false;
 /*@cc_on @*/
 /*@if (@_jscript_version >= 5)
 // JScript gives us Conditional compilation, we can cope with old IE versions.
@@ -62,18 +62,18 @@ try {
 }
 @end @*/
 
-if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
     try {
         xmlhttp = new XMLHttpRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 if (!xmlhttp && window.createRequest) {
     try {
         xmlhttp = window.createRequest();
     } catch (e) {
-        xmlhttp=false;
+        xmlhttp = false;
     }
 }
 /* Finished AJAX initialization */
@@ -84,14 +84,14 @@ affect how and if this request is sent by the browser */
     
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.get_method() + '", "'
-    res +=  ajax_escape_string( http_request.getURI().url_string ) + '",true);\n'
+    res +=  ajax_escape_string( http_request.getURI().url_string ) + '", true);\n'
 
     # For debugging
     res += '''
 /* Debugging code, this should be removed for real life XSS exploits */
-xmlhttp.onreadystatechange=function() {
-    if (xmlhttp.readyState==4) {
-        alert(xmlhttp.responseText)
+xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 ) {
+        alert(xmlhttp.responseText);
     }
 }
 
