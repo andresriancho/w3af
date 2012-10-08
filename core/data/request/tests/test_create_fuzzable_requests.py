@@ -1,5 +1,5 @@
 '''
-test_factory.py
+test_create_fuzzable_requests.py
 
 Copyright 2012 Andres Riancho
 
@@ -31,7 +31,7 @@ import core.data.kb.config as cf
 
 
 @attr('smoke')
-class TestFactory(unittest.TestCase):
+class TestCreateFuzzableRequests(unittest.TestCase):
 
     def setUp(self):
         self.url = url_object('http://www.w3af.com/')

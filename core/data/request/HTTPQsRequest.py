@@ -1,5 +1,5 @@
 '''
-httpQsRequest.py
+HTTPQsRequest.py
 
 Copyright 2006 Andres Riancho
 

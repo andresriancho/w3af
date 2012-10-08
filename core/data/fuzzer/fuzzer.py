@@ -37,8 +37,8 @@ from core.controllers.misc.io import NamedStringIO
 from core.data.dc.cookie import Cookie
 from core.data.dc.form import Form
 from core.data.dc.dataContainer import DataContainer
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 
 from core.data.fuzzer.formFiller import smartFill
 from core.data.fuzzer.mutantQs import mutantQs
@@ -96,7 +96,7 @@ def create_mutants(freq, mutant_str_list, append=False,
                                  mutant_str_list, fuzzable_param_list, append))
  
     # POST-data parameters
-    elif isinstance(freq, httpPostDataRequest):
+    elif isinstance(freq, HTTPPostDataRequest):
         # If this is a POST request, it could be a JSON request, and I want
         # to fuzz it!
         
@@ -402,11 +402,11 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
 
     SmartFill of parameters
     >>> from core.data.dc.form import Form
-    >>> from core.data.request.httpPostDataRequest import httpPostDataRequest
+    >>> from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
     >>> f = Form()
     >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
     >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
-    >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/'), dc=f)
+    >>> pdr = HTTPPostDataRequest(url_object('http://www.w3af.com/'), dc=f)
     >>> f = _create_mutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [Form({'address': ['abc'], 'foo': ['56']}), Form({'address': ['def'], 'foo': ['56']}), Form({'address': ['Bonsai Street 123'], 'foo': ['abc']}), Form({'address': ['Bonsai Street 123'], 'foo': ['def']})]
@@ -414,7 +414,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     Support for HTTP requests that have both QS and POST-Data
     >>> f = Form()
     >>> _ = f.addInput( [("name", "password") , ("type", "password")] )
-    >>> pdr = httpPostDataRequest(url_object('http://www.w3af.com/foo.bar?action=login'), dc=f)
+    >>> pdr = HTTPPostDataRequest(url_object('http://www.w3af.com/foo.bar?action=login'), dc=f)
     >>> mutants = _create_mutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
     >>> [ i.getURI() for i in mutants ]
     [<url_object for "http://www.w3af.com/foo.bar?action=login">, <url_object for "http://www.w3af.com/foo.bar?action=login">]

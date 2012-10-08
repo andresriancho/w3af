@@ -57,7 +57,7 @@ class detailed(AuthPlugin):
         try:
             functor = getattr(self._uri_opener, self.method)
             
-            # TODO Why we don't use httpPostDataRequest here?
+            # TODO Why we don't use HTTPPostDataRequest here?
             functor(self.auth_url, data)
             
             if not self.is_logged():

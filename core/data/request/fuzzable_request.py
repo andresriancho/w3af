@@ -51,7 +51,7 @@ class fuzzable_request(disk_item):
     
     Other classes should inherit from this one and change the behaviour of
     getURI() and getData(). For example: the class HTTPQSRequest should return
-    the _dc in the querystring (getURI) and httpPostDataRequest should return
+    the _dc in the querystring (getURI) and HTTPPostDataRequest should return
     the _dc in the POSTDATA (getData()).
     
     @author: Andres Riancho (andres.riancho@gmail.com)

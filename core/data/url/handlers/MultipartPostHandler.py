@@ -123,15 +123,16 @@ class MultipartPostHandler(urllib2.BaseHandler):
             m = hashlib.md5()
             m.update(mimetools.choose_boundary())
             boundary = m.hexdigest()
+        
         if buffer is None:
             buffer = ''
         
-        for(key, value) in vars:
+        for (key, value) in vars:
             buffer += '--%s\r\n' % boundary
             buffer += 'Content-Disposition: form-data; name="%s"' % key
             buffer += '\r\n\r\n' + value + '\r\n'
         
-        for(key, fd) in files:
+        for (key, fd) in files:
             filename = fd.name.split( os.path.sep )[-1]
             contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
             buffer += '--%s\r\n' % boundary
@@ -141,6 +142,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
             fd.seek(0)
             buffer += '\r\n' + fd.read() + '\r\n'
         buffer += '--%s--\r\n\r\n' % boundary
+        
         return boundary, buffer
 
 

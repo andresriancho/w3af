@@ -51,7 +51,7 @@ class generic(AuthPlugin):
         om.out.debug( msg )
 
         try:
-            # TODO Why we don't use httpPostDataRequest here?
+            # TODO Why we don't use HTTPPostDataRequest here?
             self._uri_opener.POST(self.auth_url, urlencode({
                 self.username_field: self.username,
                 self.password_field: self.password,

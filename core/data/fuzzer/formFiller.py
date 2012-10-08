@@ -25,22 +25,25 @@ import core.controllers.outputManager as om
 
 
 parameter_name_knowledge = {
-    'John8212': ['username','user','uname','usuario','benutzername','benutzer', 'nickname', 'logname', 'ident'],
+    'John8212': ['username','user','uname','usuario','benutzername','benutzer',
+                 'nickname', 'logname', 'ident'],
     'John': ['name','nombre','nome','name', 'naam'],  
     'Smith': ['lastname','surname','apellido','sobrenome','vorname','nachname'], 
     
-    'FrAmE30.': ['pass','word','pswd','pwd','auth','password','passwort', u'contraseña','senha',
-                                    'key', 'hash', 'pword', 'passe'], 
+    'FrAmE30.': ['pass','word','pswd','pwd','auth','password','passwort',
+                 u'contraseña','senha', 'key', 'hash', 'pword', 'passe'], 
 
     'w3af@email.com':['mail','email','e-mail','correo','correio', 'to', 'cc', 'bcc'], 
-    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website', 'web', 'url', 'page', 'homepage'], 
+    'http://w3af.sf.net/':['link', 'enlace', 'target', 'destino', 'website',
+                           'web', 'url', 'page', 'homepage'], 
     
     'AK':['state','estado'], 
     'Argentina':['location','country','pais', u'país','land'], 
     'English':['language', 'lang',  'idioma'], 
     'Buenos Aires':['city','ciudad','cidade','stadt'], 
-    'Bonsai Street 123':['addr','address','residence', u'dirección','direccion','residencia',
-                                    u'endereço','endereco', u'residência','addresse','wohnsitz','wohnort'],
+    'Bonsai Street 123':['addr','address','residence', u'dirección','direccion',
+                         'residencia', u'endereço','endereco', u'residência',
+                         'addresse','wohnsitz','wohnort'],
     
     'Bonsai':['company','empresa','companhia','unternehmen'],  
     'Manager':['position','jon','cargo', u'posição','unternehmung','position'],
@@ -49,19 +52,22 @@ parameter_name_knowledge = {
     '3419':['pin','id', 'suffix'],
     '22':['floor','age','piso','edad','stock','alter', 'port', 'puerto'],
     '555':['area', 'prefijo','prefix'],
-    '55550178':['phone','fax','code','number','telefono','numero', u'número', u'código','codigo','telefon',
-                        'tel','code','nummer', 'call', 'llamar', 'passport', 'pasaporte'],
+    '55550178':['phone','fax','code','number','telefono','numero', u'número',
+                u'código','codigo','telefon', 'tel','code','nummer', 'call',
+                'llamar', 'passport', 'pasaporte'],
     '987654320': ['ssn', 'social'],
     'C00001234': ['passport'],  
-    '7':['month','day','birthday','birthmonth','mes','dia', u'día','monat','tag','geburts', u'mês',
-            'amount', 'cantidad', 'precio', 'price', 'value', 'type', 'tipo', 'article', 'score', 'puntos', 
-            'hour', 'hora', 'minute', 'minuto', 'second', 'segundo', 'weight','peso', 'largo', 'length',
-             'height', 'altura', 'step', 'pageid'], 
+    '7':['month','day','birthday','birthmonth','mes','dia', u'día','monat','tag',
+         'geburts', u'mês', 'amount', 'cantidad', 'precio', 'price', 'value',
+         'type', 'tipo', 'article', 'score', 'puntos', 'hour', 'hora', 'minute',
+         'minuto', 'second', 'segundo', 'weight','peso', 'largo', 'length',
+         'height', 'altura', 'step', 'pageid'], 
     '1982':['year','birthyear', u'año','ano','jahr', 'since', 'desde'], 
     
-    'Hello World':['content','text', 'words', 'query', 'search', 'keyword', 'title', 'desc', 'data',
-                             'payload', 'answer', 'respuesta', 'description', 'descripcion', 
-                             'message', 'mensaje', 'excerpt', 'comment', 'comentario'], 
+    'Hello World':['content','text', 'words', 'query', 'search', 'keyword',
+                   'title', 'desc', 'data','payload', 'answer', 'respuesta',
+                   'description', 'descripcion', 'message', 'mensaje', 'excerpt',
+                   'comment', 'comentario'], 
                              
     'Spam or Eggs?':['question', 'pregunta'], 
     
@@ -99,22 +105,12 @@ def get_match_rate(variable_name, variable_name_db):
 
 def smartFill( variable_name ):
     '''
-    This method returns a "smart" option for a variable name inside a form. For example, if the
-    variable_name is "username" a smartFill response would be "john1309", not "0800-111-2233".
-    This helps A LOT with server side validation.
+    This method returns a "smart" option for a variable name inside a form. For
+    example, if the variable_name is "username" a smartFill response would be
+    "john1309", not "0800-111-2233". This helps A LOT with server side validation.
     
-    @return: The "most likely to be validated as a good value" string, OR '5672' if no match is found.
-
-    >>> smartFill('address')
-    'Bonsai Street 123'
-    >>> smartFill('ip')
-    '127.0.0.1'
-    >>> smartFill('IP')
-    '127.0.0.1'
-    >>> smartFill('street_address')
-    'Bonsai Street 123'
-    >>> smartFill('foobar')
-    '56'
+    @return: The "most likely to be validated as a good value" string, OR '5672'
+    if no match is found.
     '''
     variable_name = variable_name.lower()
 
@@ -125,8 +121,8 @@ def smartFill( variable_name ):
         for variable_name_db in variable_name_list:
             
             #
-            #   If the name in the database is eq to the variable name, there is not much thinking
-            #   involved. We just return it.
+            #   If the name in the database is eq to the variable name, there 
+            #   is not much thinking involved. We just return it.
             #
             if variable_name_db == variable_name:
                 return filled_value
@@ -140,7 +136,8 @@ def smartFill( variable_name ):
                 possible_results.append( (filled_value, match_rate) )
                 
     #
-    #   We get here when there is not a 100% match and we need to analyze the possible_results
+    #   We get here when there is not a 100% match and we need to analyze the
+    #   possible_results
     #
     if possible_results:
         possible_results.sort(sortfunc)

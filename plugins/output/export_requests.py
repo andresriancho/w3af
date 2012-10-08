@@ -29,7 +29,7 @@ from core.controllers.w3afException import w3afException
 # options
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.request.wsPostDataRequest import wsPostDataRequest
+from core.data.request.WebServiceRequest import WebServiceRequest
 
 
 class export_requests(OutputPlugin):
@@ -60,8 +60,8 @@ class export_requests(OutputPlugin):
             file.write('HTTP-METHOD,URI,POSTDATA\n')
         
             for fr in fuzzable_request_list:
-                # TODO: How shall we export wsPostDataRequests?
-                if not isinstance(fr, wsPostDataRequest):
+                # TODO: How shall we export WebServiceRequests?
+                if not isinstance(fr, WebServiceRequest):
                     file.write(fr.export() + '\n')
             
             file.close()

@@ -19,9 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from .request.httpPostDataRequest import httpPostDataRequest
-from .request.httpQsRequest import HTTPQSRequest
+from .request.HTTPPostDataRequest import HTTPPostDataRequest
+from .request.HTTPQsRequest import HTTPQSRequest
 
 
 def isExchangable(uri_opener, freq):
@@ -35,15 +34,15 @@ def isExchangable(uri_opener, freq):
     @return: [True|False]
     '''
     if not (isinstance(freq, HTTPQSRequest) or
-             isinstance(freq, httpPostDataRequest)) :
+             isinstance(freq, HTTPPostDataRequest)) :
         return False
         
     response = uri_opener.send_mutant(freq)
     
     if freq.get_method() == 'GET':
-        # I have to create a httpPostDataRequest and set all
+        # I have to create a HTTPPostDataRequest and set all
         # the parameters to it.
-        pdr = httpPostDataRequest(
+        pdr = HTTPPostDataRequest(
                           freq.getURL(),
                           headers=freq.getHeaders(),
                           cookie=freq.getCookie(),

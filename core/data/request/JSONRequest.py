@@ -1,5 +1,5 @@
 '''
-jsonPostDataRequest.py
+JSONRequest.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,9 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import json
 
-from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
-class JSONPostDataRequest(httpPostDataRequest):
+class JSONPostDataRequest(HTTPPostDataRequest):
     '''
     This class represents a fuzzable request for a http request that contains JSON postdata.
     

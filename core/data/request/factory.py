@@ -29,11 +29,11 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
 
-from .httpPostDataRequest import httpPostDataRequest
-from .httpQsRequest import HTTPQSRequest
-from .jsonPostDataRequest import JSONPostDataRequest
-from .wsPostDataRequest import wsPostDataRequest
-from .xmlrpcRequest import XMLRPCRequest
+from .HTTPPostDataRequest import HTTPPostDataRequest
+from .HTTPQsRequest import HTTPQSRequest
+from .JSONRequest import JSONPostDataRequest
+from .WebServiceRequest import WebServiceRequest
+from .XMLRPCRequest import XMLRPCRequest
 from core.controllers.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
@@ -120,7 +120,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
             pass
         else:
             for rem_meth in wsdlp.get_methods():
-                wspdr = wsPostDataRequest(
+                wspdr = WebServiceRequest(
                                   rem_meth.getLocation(),
                                   rem_meth.getAction(),
                                   rem_meth.getParameters(),
@@ -130,12 +130,12 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                   )
                 res.append(wspdr)
     else:
-        # Create one httpPostDataRequest for each form variant
+        # Create one HTTPPostDataRequest for each form variant
         mode = cf.cf.get('fuzzFormComboValues')
         for form in form_list:
             for variant in form.getVariants(mode):
                 if form.get_method().upper() == 'POST':
-                    r = httpPostDataRequest(
+                    r = HTTPPostDataRequest(
                                         variant.getAction(),
                                         variant.get_method(),
                                         headers,
@@ -184,7 +184,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
 
     # Just a query string request! No postdata
     if not post_data:
-        req = HTTPQSRequest(url, method, headers)
+        return HTTPQSRequest(url, method, headers)
  
     else: # Seems to be something that has post data
         data = {}
@@ -234,17 +234,28 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
                     om.out.debug('Failed to create a data container that '
                                  'can store this data: "' + post_data + '".')
             # Finally create request
-            req = httpPostDataRequest(url, method, headers, dc=data)
-    return req
+            req = HTTPPostDataRequest(url, method, headers, dc=data)
+            
+        return req
 
-def _create_cookie(httpResponse):
+def _create_cookie(http_response):
     '''
     Create a cookie object based on a HTTP response.
+
+    >>> from core.data.parsers.urlParser import url_object
+    >>> from core.data.url.httpResponse import httpResponse
+    >>> url = url_object('http://www.w3af.com/')
+    >>> headers = {'content-type': 'text/html', 'Cookie': 'abc=def' }
+    >>> response = httpResponse(200, '' , headers, url, url)
+    >>> cookie = _create_cookie(response)
+    >>> cookie
+    Cookie({'abc': ['def']})
+    
     '''
     cookies = []
         
     # Get data from RESPONSE
-    responseHeaders = httpResponse.getHeaders()
+    responseHeaders = http_response.getHeaders()
     
     for hname, hvalue in responseHeaders.items():
         if 'cookie' in hname.lower():

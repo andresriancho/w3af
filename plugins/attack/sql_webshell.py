@@ -29,8 +29,8 @@ import core.controllers.outputManager as om
 
 import plugins.attack.payloads.shell_handler as shell_handler
 
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.parsers.urlParser import parse_qs
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
 from core.data.kb.shell import shell as shell
@@ -83,7 +83,7 @@ class sql_webshell(AttackPlugin):
             raise w3afException('You have to configure the plugin parameters')
         else:
             if self._method == 'POST':
-                freq = httpPostDataRequest(self._url)
+                freq = HTTPPostDataRequest(self._url)
             elif self._method == 'GET':
                 freq = HTTPQSRequest(self._url)
             else:

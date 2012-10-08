@@ -1,5 +1,5 @@
 '''
-httpPostDataRequest.py
+HTTPPostDataRequest.py
 
 Copyright 2006 Andres Riancho
 
@@ -26,7 +26,7 @@ from core.controllers.misc.io import is_file_like
 from core.data.request.fuzzable_request import fuzzable_request
 
 
-class httpPostDataRequest(fuzzable_request):
+class HTTPPostDataRequest(fuzzable_request):
     '''
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.

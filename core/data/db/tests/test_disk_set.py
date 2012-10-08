@@ -26,8 +26,8 @@ from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_set import disk_set
 
 from core.data.parsers.urlParser import url_object
-from core.data.request.httpQsRequest import HTTPQSRequest
-from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
 @attr('smoke')
 class test_disk_set(unittest.TestCase):
@@ -84,17 +84,17 @@ class test_disk_set(unittest.TestCase):
         qsr2.getURL().url_string
         self.assertTrue( qsr2 in ds )
 
-    def test_add_httpPostDataRequest(self):
+    def test_add_HTTPPostDataRequest(self):
         ds = disk_set()
         
         uri = url_object('http://w3af.org/?id=2')
-        pdr1 = httpPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.org/'})
+        pdr1 = HTTPPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.org/'})
 
         uri = url_object('http://w3af.org/?id=3')
-        pdr2 = httpPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.com/'})
+        pdr2 = HTTPPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.com/'})
         
         uri = url_object('http://w3af.org/?id=7')
-        pdr3 = httpPostDataRequest(uri, method='FOO', headers={'Referer': 'http://w3af.com/'})
+        pdr3 = HTTPPostDataRequest(uri, method='FOO', headers={'Referer': 'http://w3af.com/'})
         
         ds.add( pdr1 )
         ds.add( pdr2 )

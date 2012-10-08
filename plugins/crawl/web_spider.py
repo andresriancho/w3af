@@ -39,7 +39,7 @@ from core.data.db.disk_set import disk_set
 from core.data.fuzzer.formFiller import smartFill
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.request.httpPostDataRequest import httpPostDataRequest as \
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest as \
                                                   HttpPostDataRequest
 
 

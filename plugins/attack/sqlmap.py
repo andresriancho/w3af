@@ -23,8 +23,8 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
 from core.data.kb.shell import shell as shell
-from core.data.request.httpPostDataRequest import httpPostDataRequest
-from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.parsers.urlParser import parse_qs
 from core.data.options.option import option
@@ -84,7 +84,7 @@ class sqlmap(AttackPlugin):
             
             freq = None
             if self._method == 'POST':
-                freq = httpPostDataRequest(self._url)
+                freq = HTTPPostDataRequest(self._url)
             elif self._method == 'GET':
                 freq = HTTPQSRequest(self._url)
             else:

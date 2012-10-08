@@ -1,5 +1,5 @@
 '''
-xmlrpcRequest.py
+XMLRPCRequest.py
 
 Copyright 2009 Andres Riancho
 
@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.request.httpPostDataRequest import httpPostDataRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.parsers.xmlrpc import parse_xmlrpc, build_xmlrpc
 
 
-class XMLRPCRequest(httpPostDataRequest):
+class XMLRPCRequest(HTTPPostDataRequest):
     '''
     This class represents a fuzzable request for a http request
     that contains XMLRPC postdata.
@@ -37,7 +37,7 @@ class XMLRPCRequest(httpPostDataRequest):
         @parameter xml: The original XML string that represents
             the call to the RPC
         '''
-        httpPostDataRequest.__init__(self)
+        HTTPPostDataRequest.__init__(self, uri)
         self._xml = xml
 
     def getData(self):

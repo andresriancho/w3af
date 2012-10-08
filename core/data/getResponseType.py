@@ -27,8 +27,8 @@ def isTextOrHtml( headers ):
     '''
     for key in headers.keys():
         if 'Content-Type'.lower() == key.lower():
-            type = headers[ key ]
-            if type.lower().count('txt') or type.lower().count('html'):
+            _type = headers[ key ]
+            if _type.lower().count('txt') or _type.lower().count('html'):
                 return True
             else:
                 return False
@@ -42,8 +42,8 @@ def isPDF( headers ):
     '''
     for key in headers.keys():
         if 'Content-Type'.lower() == key.lower():
-            type = headers[ key ]
-            if type.lower().count('pdf'):
+            _type = headers[ key ]
+            if _type.lower().count('pdf'):
                 return True
             else:
                 return False

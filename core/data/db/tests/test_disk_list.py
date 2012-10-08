@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_list import disk_list
 from core.data.parsers.urlParser import url_object
-from core.data.request.httpQsRequest import HTTPQSRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 
 
 class test_disk_list(unittest.TestCase):
