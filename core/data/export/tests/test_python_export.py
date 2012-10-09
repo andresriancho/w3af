@@ -53,6 +53,22 @@ response_body = response.read()
 print response_body
 '''
 
+EXPECTED_POST_REPEATED = '''import urllib2
+
+url = "http://www.w3af.org/"
+data = "a=1&a=2"
+headers = { 
+    "Host" : "www.w3af.org",
+    "Foo" : "spam",
+    "Foo" : "eggs"
+}
+
+request = urllib2.Request(url, data, headers)
+response = urllib2.urlopen(request)
+response_body = response.read()
+print response_body
+'''
+
 class TestPythonExport(unittest.TestCase):
 
     def test_export_GET(self):
@@ -73,4 +89,29 @@ class TestPythonExport(unittest.TestCase):
         python_code = python_export(http_request)
         self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
         self.assertEquals(python_code, EXPECTED_POST)
+    
+    def test_export_POST_repeated(self):
+        http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
+                       'Host: www.w3af.org\n' \
+                       'Content-Length: 7\n' \
+                       'Foo: spam\n' \
+                       'Foo: eggs\n' \
+                       '\n' \
+                       'a=1&a=2'
+        python_code = python_export(http_request)
+        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
+        self.assertEquals(python_code, EXPECTED_POST_REPEATED)
+    
+    def test_export_inject(self):
+        http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
+                       'Host: www.w3af.org\n' \
+                       'Content-Length: 7\n' \
+                       'Foo: sp"am\n' \
+                       'Foo: eggs\n' \
+                       '\n' \
+                       'a=1&a=2"3'
+        python_code = python_export(http_request)
+        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
+        self.assertTrue( 'a=1&a=2%223' in python_code)
+        self.assertTrue( "sp\\\"am" in python_code)
         

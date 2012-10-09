@@ -22,9 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 import gobject
 import pango
+
 from core.ui.gtkUi.httpeditor import HttpEditor
 from core.ui.gtkUi.entries import RememberingVPaned
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 CR = '\r'
 LF = '\n'
@@ -167,9 +168,11 @@ class HttpHeadersView(RememberingVPaned):
         self._headersStore.clear()
         self._raw.clear()
         self.startLine = ''
+    
     def highlight(self, text, tag):
         '''Highlight word in thetext.'''
         self._raw.highlight(text, tag)
+    
     def showObject(self, obj):
         '''Show object in view.'''
         if self.is_request:
@@ -190,6 +193,6 @@ class HttpHeadersView(RememberingVPaned):
         for header in self._headersStore:
             head += header[0] + ':' + header[1] + CRLF
         if self.is_request:
-            return httpRequestParser(head, self._raw.get_text())
+            return HTTPRequestParser(head, self._raw.get_text())
         else:
             raise Exception('HttpResponseParser is not implemented')

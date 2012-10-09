@@ -21,9 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.data.parsers.httpRequestParser import httpRequestParser
-import re
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
 def ruby_escape_string( str_in ):
@@ -41,7 +39,7 @@ def ruby_export( request_string ):
     header = splitted_request[0]
     body = '\n\n'.join(splitted_request[1:])
     
-    http_request = httpRequestParser( header, body)
+    http_request = HTTPRequestParser(header, body)
     
     # Now I do the real magic...
     res = 'require \'net/https\'\n\n'
@@ -57,9 +55,10 @@ def ruby_export( request_string ):
     res += 'headers = { \n'
     headers = http_request.getHeaders()
     for header_name in headers:
-        header_value = ruby_escape_string(headers[header_name])        
-        header_name = ruby_escape_string(header_name)
-        res += '\t"' + header_name + '" => "' + header_value + '",\n'
+        for header_value in headers[header_name]:
+            header_value = ruby_escape_string(header_value)        
+            header_name = ruby_escape_string(header_name)
+            res += '\t"' + header_name + '" => "' + header_value + '",\n'
         
     res = res [:-2]
     res += '\n}\n'

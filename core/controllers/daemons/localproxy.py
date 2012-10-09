@@ -27,7 +27,7 @@ import traceback
 
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 from core.controllers.w3afException import w3afException
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.url.xUrllib import xUrllib
 import core.controllers.outputManager as om
 
@@ -100,7 +100,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         The user may have changed the postdata of the request, and not the content-length header;
         so we are going to fix that problem.
         '''
-        fuzzReq = httpRequestParser(head, postdata)
+        fuzzReq = HTTPRequestParser(head, postdata)
         headers = fuzzReq.getHeaders()
         for h in headers:
             if h.lower() == 'content-length':

@@ -43,7 +43,7 @@ from core.controllers.w3afException import (w3afMustStopException,
      w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,
      w3afException, w3afMustStopOnUrlError)
 from core.data.constants.httpConstants import NO_CONTENT
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.urlParser import url_object
 from core.data.request.factory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
@@ -204,7 +204,7 @@ class xUrllib(object):
         @return: An httpResponse object.
         '''
         # Parse the two strings
-        fuzzReq = httpRequestParser(head, postdata)
+        fuzzReq = HTTPRequestParser(head, postdata)
         
         # Fix the content length
         if fixContentLength:

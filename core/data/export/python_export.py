@@ -21,8 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
 def python_escape_string( str_in ):
@@ -40,7 +39,7 @@ def python_export( request_string ):
     header = splitted_request[0]
     body = '\n\n'.join(splitted_request[1:])
     
-    http_request = httpRequestParser( header, body)
+    http_request = HTTPRequestParser(header, body)
     
     # Now I do the real magic...
     res = 'import urllib2\n\n'
@@ -56,9 +55,17 @@ def python_export( request_string ):
     res += 'headers = { \n'
     headers = http_request.getHeaders()
     for header_name in headers:
-        header_value = python_escape_string(headers[header_name])
-        header_name = python_escape_string(header_name)        
-        res += '    "' + header_name + '" : "' + header_value + '",\n'
+        #
+        # TODO: While this looks like it supports repeated parameter names,
+        # the generated code doesn't actually do it because the dict will
+        # ignore all but the last value:
+        #         >>> {1:2, 1:3}
+        #         {1: 3}
+        #
+        for header_value in headers[header_name]:
+            header_value = python_escape_string(header_value)
+            header_name = python_escape_string(header_name)        
+            res += '    "' + header_name + '" : "' + header_value + '",\n'
         
     res = res [:-2]
     res += '\n}\n'

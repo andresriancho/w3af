@@ -20,12 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import gtk
-from core.ui.gtkUi.entries import RememberingVPaned
-from core.ui.gtkUi.entries import RememberingWindow
-from core.ui.gtkUi.entries import SemiStockButton
+
 from core.ui.gtkUi.httpeditor import HttpEditor
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.controllers.w3afException import w3afException
+
 
 class HttpRawView(HttpEditor):
     '''Raw view with HTTP Editor.'''
@@ -40,16 +39,19 @@ class HttpRawView(HttpEditor):
         if editable:
             buf = self.textView.get_buffer()
             buf.connect("changed", self._changed)
+    
     def showObject(self, obj):
         '''Show object in textview.'''
         self.set_text(obj.dump())
+        
     def getObject(self):
         '''Return object (request or resoponse).'''
         head, body = self.get_text(splitted=True)
         if self.is_request:
-            return httpRequestParser(head, body)
+            return HTTPRequestParser(head, body)
         else:
             raise Exception('HttpResponseParser is not implemented!:(')
+    
     def _changed(self, widg=None):
         '''Synchronize changes with other views (callback).'''
         if not self.initial:

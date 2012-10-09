@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
 def ajax_escape_string( str_in ):
@@ -40,7 +40,7 @@ def ajax_export( request_string ):
     header = splitted_request[0]
     body = '\n\n'.join(splitted_request[1:])
     
-    http_request = httpRequestParser( header, body)
+    http_request = HTTPRequestParser(header, body)
     
     # Now I do the real magic...
     # This is the header, to include the AJAX stuff:
@@ -104,8 +104,9 @@ make the request fail */
     # Now I add the headers:
     headers = http_request.getHeaders()
     for header_name in headers:
-        res += 'xmlhttp.setRequestHeader("' + ajax_escape_string(header_name) + '", "'
-        res += ajax_escape_string(headers[header_name]) + '");\n'
+        for header_value in headers[header_name]:
+            res += 'xmlhttp.setRequestHeader("' + ajax_escape_string(header_name) + '", "'
+            res += ajax_escape_string(header_value) + '");\n'
         
     # And finally the post data (if any)
     if http_request.getData() and http_request.getData() != '\n':

@@ -1,5 +1,5 @@
 '''
-httpRequestParser.py
+HTTPRequestParser.py
 
 Copyright 2008 Andres Riancho
 
@@ -93,7 +93,7 @@ def checkURISyntax(uri, host=None):
     res = urlparse.urlunparse( (scheme, domain, path, params, qs, fragment) )
     return res
 
-def httpRequestParser(head, postdata):
+def HTTPRequestParser(head, postdata):
     '''
     This function parses HTTP Requests from a string to a fuzzable_request.
     
@@ -104,26 +104,6 @@ def httpRequestParser(head, postdata):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
 
-    >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', 'foo=bar')
-    <postdata fuzzable request | 200 | http://www.w3af.com/>
-
-    >>> httpRequestParser('200 http://www.w3af.com/ HTTP/1.0', '')
-    <QS fuzzable request | 200 | http://www.w3af.com/>
-
-    >>> httpRequestParser('200 / HTTP/1.0', '')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: /
-
-    >>> httpRequestParser('ABCDEF', '')
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in ?
-    w3afException: The HTTP request has an invalid <method> <uri> <version> token: "ABCDEF".
-
-    >>> head = "200 http://www.w3af.com/ HTTP/1.0"
-    >>> head += '\\nHost: www.w3af.com'
-    >>> httpRequestParser( head, 'foo=bar')
-    <postdata fuzzable request | 200 | http://www.w3af.com/>
     '''
     # Parse the request head
     splitted_head = head.split('\n')
@@ -134,36 +114,43 @@ def httpRequestParser(head, postdata):
         raise w3afException(msg)        
     
     # Get method, uri, version
-    metUriVer = splitted_head[0]
-    firstLine = metUriVer.split(' ')
-    if len(firstLine) == 3:
+    method_uri_version = splitted_head[0]
+    first_line = method_uri_version.split(' ')
+    if len(first_line) == 3:
         # Ok, we have something like "GET /foo HTTP/1.0". This is the best case for us!
-        method, uri, version = firstLine
-    elif len(firstLine) < 3:
+        method, uri, version = first_line
+    elif len(first_line) < 3:
         msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
-        msg += metUriVer +'".'
+        msg += method_uri_version +'".'
         raise w3afException(msg)
-    elif len(firstLine) > 3:
+    elif len(first_line) > 3:
         # GET /hello world.html HTTP/1.0
         # Mostly because we are permissive... we are going to try to send the request...
-        method = firstLine[0]
-        version = firstLine[-1]
-        uri = ' '.join( firstLine[1:-1] )
+        method = first_line[0]
+        version = first_line[-1]
+        uri = ' '.join( first_line[1:-1] )
     
     checkVersionSyntax(version)
     
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
     headers = splitted_head[1:]
-    headersDict = {}
+    headers_dict = {}
     for header in headers:
         one_splitted_header = header.split(':', 1)
         if len(one_splitted_header) == 1:
             raise w3afException('The HTTP request has an invalid header: "' + header + '"')
-        headersDict[ one_splitted_header[0].strip() ] = one_splitted_header[1].strip()
+        
+        header_name = one_splitted_header[0].strip()
+        header_value = one_splitted_header[1].strip()
+        if header_name in headers_dict:
+            headers_dict[header_name].append(header_value)
+        else:
+            headers_dict[header_name] = [header_value,]
+
     host = ''
-    for headerName in headersDict:
-        if headerName.lower() == 'host':
-            host = headersDict[headerName]
+    for header_name in headers_dict:
+        if header_name.lower() == 'host':
+            host = headers_dict[header_name]
     uri = url_object(checkURISyntax(uri, host))
-    return create_fuzzable_request(uri, method, postdata, headersDict)
+    return create_fuzzable_request(uri, method, postdata, headers_dict)

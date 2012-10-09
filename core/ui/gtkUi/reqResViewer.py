@@ -30,7 +30,7 @@ from core.controllers.w3afException import w3afException, w3afMustStopException,
 
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
-from core.data.parsers.httpRequestParser import httpRequestParser
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.visualization.string_representation import string_representation
 
 from core.ui.gtkUi.entries import RememberingVPaned
@@ -375,7 +375,7 @@ class requestPart(requestResponsePart):
             raise AttributeError, msg
     
     def showRaw(self, head, body):
-        self._obj = httpRequestParser(head, body)
+        self._obj = HTTPRequestParser(head, body)
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
         #######################        
@@ -407,12 +407,16 @@ class reqResWindow(RememberingWindow):
     def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True, editableRequest=False,
                  editableResponse=False, widgname="default"):
+        
         # Create the window
-        RememberingWindow.__init__(
-            self, w3af, "reqResWin", _("w3af - HTTP Request/Response"), "Browsing_the_Knowledge_Base")
+        RememberingWindow.__init__( self, w3af, "reqResWin", 
+                                    _("w3af - HTTP Request/Response"),
+                                    "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
-        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, withCompare, withAudit, editableRequest, editableResponse, widgname)
+        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, 
+                                withCompare, withAudit, editableRequest,
+                                editableResponse, widgname)
 
         # Search the id in the DB
         historyItem = HistoryItem()
