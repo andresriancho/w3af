@@ -18,8 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from collections import Iterable
-
 from core.data.constants.encodings import UTF8
 from core.data.dc.dataContainer import DataContainer
 
@@ -45,7 +43,7 @@ class Header(DataContainer):
     def __str__(self):
         '''
         >>> str(Header({'HoST': u'w3af.com', 'AccEpt': '*/*'}))
-        'Host: w3af.com\\nAccept: */*\\n'
+        'HoST: w3af.com\\nAccEpt: */*\\n'
 
         >>> str(Header({'Foo': ['spam', 'eggs']}))
         'Foo: spam\\nFoo: eggs\\n'
@@ -55,21 +53,7 @@ class Header(DataContainer):
 
         @return: string representation of the Header object.
         '''
-        lst = []
-        for k, v in self.items():
-            if isinstance(v, basestring):
-                v = [v]
-            else:
-                if not isinstance(v, Iterable):
-                    v = [(v if v is None else unicode(v, UTF8))]
-                    
-            for ele in v:
-                if not ele:
-                    toapp = k.title() + u': '
-                else:
-                    toapp = k.title() + u': ' + ele
-                lst.append(toapp)
-        return u'\n'.join(lst) + u'\n'
+        return self._to_str_with_separators(u': ', u'\n') + u'\n'
     
     def __unicode__(self):
         return str(self).decode(self.encoding)

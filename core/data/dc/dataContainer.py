@@ -101,6 +101,9 @@ class DataContainer(OrderedDict):
         >>> unicode(DataContainer([(u'aaa', u'')]))
         u'aaa='
         '''
+        return self._to_str_with_separators(u'=', u'&')
+    
+    def _to_str_with_separators(self, key_val_sep, pair_sep):
         lst = []
         for k, v in self.items():
             if isinstance(v, basestring):
@@ -111,10 +114,9 @@ class DataContainer(OrderedDict):
                     
             for ele in v:
                 if not ele:
-                    toapp = k + u'='
+                    toapp = k + key_val_sep
                 else:
-                    toapp = k + u'=' + ele
+                    toapp = k + key_val_sep + ele
                 lst.append(toapp)
-        return u'&'.join(lst)
-    
-    
+        return pair_sep.join(lst)
+        
