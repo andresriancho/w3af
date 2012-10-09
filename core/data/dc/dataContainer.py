@@ -22,9 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
+import core.data.parsers.encode_decode as enc_dec
+
 from core.data.constants.encodings import UTF8
 from core.controllers.misc.ordereddict import OrderedDict
-import core.data.parsers.encode_decode as enc_dec
 
 
 class DataContainer(OrderedDict):
@@ -50,7 +51,12 @@ class DataContainer(OrderedDict):
                     key, val = item
                 except TypeError:
                     raise TypeError('key, val = item')
-                #BUGBUG: Do we have a bug here related to repeated parameters?
+                
+                if key in self:
+                    msg = 'Not supported init_val, the way of using repeated parameter' \
+                          ' names is [(u"b", [u"2", u"3"])]'
+                    TypeError(msg)
+                    
                 self[key] = val
     
     def copy(self):
