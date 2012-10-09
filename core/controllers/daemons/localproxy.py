@@ -42,15 +42,15 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         # First of all, we create a fuzzable request based on the attributes
         # that are set to this object
-        fuzzReq = self._createFuzzableRequest()
+        fuzzable_request = self._createFuzzableRequest()
         try:
             # Now we check if we need to add this to the queue, or just let
             # it go through.
-            if self._shouldBeTrapped(fuzzReq):
-                res = self._do_trap(fuzzReq)
+            if self._shouldBeTrapped(fuzzable_request):
+                res = self._do_trap(fuzzable_request)
             else:
                 # Send the request to the remote webserver
-                res = self._sendFuzzableRequest(fuzzReq)
+                res = self._sendFuzzableRequest(fuzzable_request)
         except Exception, e:
             self._sendError( e, trace=str(traceback.format_exc()) )
         else:
@@ -59,14 +59,14 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             except Exception, e:
                 om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )        
     
-    def _do_trap(self, fuzzReq):
+    def _do_trap(self, fuzzable_request):
         # Add it to the request queue, and wait for the user to edit the request...
-        self.server.w3afLayer._requestQueue.put(fuzzReq)
+        self.server.w3afLayer._requestQueue.put(fuzzable_request)
         # waiting...
         while 1:
-            if id(fuzzReq) in self.server.w3afLayer._editedRequests:
-                head,  body = self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
-                del self.server.w3afLayer._editedRequests[ id(fuzzReq) ]
+            if id(fuzzable_request) in self.server.w3afLayer._editedRequests:
+                head,  body = self.server.w3afLayer._editedRequests[ id(fuzzable_request) ]
+                del self.server.w3afLayer._editedRequests[ id(fuzzable_request) ]
                 
                 if head == body is None:
                     # The request was dropped!
@@ -88,7 +88,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                         res = e
 
                     # Save it so the upper layer can read this response.
-                    self.server.w3afLayer._editedResponses[ id(fuzzReq) ] = res
+                    self.server.w3afLayer._editedResponses[ id(fuzzable_request) ] = res
                     
                     # From here, we send it to the browser
                     return res
@@ -100,37 +100,25 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         The user may have changed the postdata of the request, and not the content-length header;
         so we are going to fix that problem.
         '''
-        fuzzReq = HTTPRequestParser(head, postdata)
-        headers = fuzzReq.getHeaders()
-        for h in headers:
-            if h.lower() == 'content-length':
-                length = headers[ h ]
-                try:
-                    length = int(length)
-                except Exception,  e:
-                    om.out.debug('Failed to fix the content length, the value of the header is: "'+ length +'".')
-                else:
-                    if length == len(fuzzReq.getData()):
-                        # I don't have to fix anything
-                        pass
-                    else:
-                        # fixing length!
-                        headers[ h ] = str(len(fuzzReq.getData()))
-                        fuzzReq.setHeaders(headers)
+        fuzzable_request = HTTPRequestParser(head, postdata)
+        headers = fuzzable_request.getHeaders()
         
-        head = fuzzReq.dumpRequestHead()
+        headers[ 'content-length' ] = [ str(len(fuzzable_request.getData())), ]
+        
+        fuzzable_request.setHeaders(headers)
+        head = fuzzable_request.dumpRequestHead()
         return head,  postdata
     
-    def _sendFuzzableRequest(self, fuzzReq):
+    def _sendFuzzableRequest(self, fuzzable_request):
         '''
         Sends a fuzzable request to the remote web server.
         '''
-        uri = fuzzReq.getURI()
-        data = fuzzReq.getData()
-        headers = fuzzReq.getHeaders()
-        method = fuzzReq.get_method()
+        uri = fuzzable_request.getURI()
+        data = fuzzable_request.getData()
+        headers = fuzzable_request.getHeaders()
+        method = fuzzable_request.get_method()
         # Also add the cookie header.
-        cookie = fuzzReq.getCookie()
+        cookie = fuzzable_request.getCookie()
         if cookie:
             headers['Cookie'] = str(cookie)
 
@@ -140,7 +128,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         res = apply( functor, args, {'data': data, 'headers': headers, 'grep': True } ) 
         return res
     
-    def _shouldBeTrapped(self, fuzzReq):
+    def _shouldBeTrapped(self, fuzzable_request):
         '''
         Determine, based on the user configured parameters:
             - self._whatToTrap
@@ -149,20 +137,20 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             - self._trap
         
         If the request needs to be trapped or not.
-        @parameter fuzzReq: The request to analyze.
+        @parameter fuzzable_request: The request to analyze.
         '''
 
         if not self.server.w3afLayer._trap:
             return False
 
         if len(self.server.w3afLayer._methodsToTrap) and \
-                fuzzReq.get_method() not in self.server.w3afLayer._methodsToTrap:
+                fuzzable_request.get_method() not in self.server.w3afLayer._methodsToTrap:
             return False
 
-        if self.server.w3afLayer._whatNotToTrap.search( fuzzReq.getURL().url_string ):
+        if self.server.w3afLayer._whatNotToTrap.search( fuzzable_request.getURL().url_string ):
             return False
 
-        if not self.server.w3afLayer._whatToTrap.search( fuzzReq.getURL().url_string ):
+        if not self.server.w3afLayer._whatToTrap.search( fuzzable_request.getURL().url_string ):
             return False
 
         return True
