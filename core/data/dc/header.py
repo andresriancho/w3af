@@ -48,7 +48,7 @@ class Header(DataContainer):
         >>> repr(Header({'Host': u'w3af.com', 'AccEpt': ' */*'}))
         "Header({'Host': 'w3af.com', 'AccEpt': ' */*'})"
 
-        @return: string representation of the QueryString object.
+        @return: string representation of the Header object.
         '''
         return ''.join("%s: %s%s" % (h.title(), v, '\n')
                        for h, v in self.iteritems())
