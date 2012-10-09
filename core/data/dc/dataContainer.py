@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
+from collections import Iterable
+
 import core.data.parsers.encode_decode as enc_dec
 
 from core.data.constants.encodings import UTF8
@@ -104,11 +106,9 @@ class DataContainer(OrderedDict):
             if isinstance(v, basestring):
                 v = [v]
             else:
-                try:
-                    # is this a sufficient test for sequence-ness?
-                    len(v)
-                except TypeError:
+                if not isinstance(v, Iterable):
                     v = [(v if v is None else unicode(v, UTF8))]
+                    
             for ele in v:
                 if not ele:
                     toapp = k + u'='
