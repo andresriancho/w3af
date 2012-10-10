@@ -20,19 +20,22 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import csv
-import re
+import base64
 import os
+
+from lxml import etree
 
 import core.controllers.outputManager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
 from core.data.parsers.urlParser import url_object
+from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
 class import_results(CrawlPlugin):
@@ -45,7 +48,6 @@ class import_results(CrawlPlugin):
 
         # User configured parameters
         self._input_csv = ''
-        self._input_webscarab = ''
         self._input_burp = ''
 
     @runonce(exc_class=w3afRunOnce)
@@ -60,7 +62,6 @@ class import_results(CrawlPlugin):
                                     is read from the input files.
         '''
         self._load_data_from_csv()
-        self._load_data_from_webscarab()
         self._load_data_from_burp()
     
     def _load_data_from_csv(self):
@@ -70,7 +71,7 @@ class import_results(CrawlPlugin):
         if self._input_csv != '':
             try:
                 file_handler = file( self._input_csv )
-            except Exception, e:
+            except w3afException, e:
                 msg = 'An error was found while trying to read "%s": "%s".'
                 om.out.error( msg % (self._input_csv, e) )
             else:
@@ -79,27 +80,6 @@ class import_results(CrawlPlugin):
                     if obj:
                         self.output_queue.put( obj )
     
-    def _load_data_from_webscarab(self):
-        '''
-        Load data from WebScarab's saved conversations
-        '''
-        if self._input_webscarab != '':
-            try:
-                files = os.listdir( self._input_webscarab )
-            except Exception, e:
-                msg = 'An error was found while trying to read the conversations' \
-                      ' directory (%s): "%s".'
-                om.out.error( msg (self._input_webscarab, e))
-            else:
-                files.sort()
-                for req_file in files:
-                    # Only read requests, not the responses.
-                    if not re.search( "([\d]+)\-request", req_file ):
-                        continue
-                    objs = self._objs_from_log( os.path.join( self._input_webscarab, req_file ) )
-                    for fr in objs:
-                        self.output_queue.put( fr )
-    
     def _load_data_from_burp(self):
         '''
         Load data from Burp's log
@@ -107,8 +87,8 @@ class import_results(CrawlPlugin):
         if self._input_burp != '':
             if os.path.isfile( self._input_burp ):
                 try:
-                    fuzzable_requests = self._objs_from_log(self._input_burp)
-                except Exception,  e:
+                    fuzzable_requests = self._objs_from_burp_log(self._input_burp)
+                except w3afException,  e:
                     msg = 'An error was found while trying to read the Burp log' \
                           ' file (%s): "%s".'
                     om.out.error( msg % (self._input_burp, e))
@@ -146,105 +126,69 @@ class import_results(CrawlPlugin):
             if uri.is_valid_domain():
                 return create_fuzzable_request(uri, method, postdata)
 
-    def _objs_from_log( self, req_file ):
+    def _objs_from_burp_log( self, burp_file ):
         '''
-        This code was largely copied from Bernardo Damele's sqlmap[0] . See
-        __feedTargetsDict() in lib/core/options.py. So credits belong to the
-        sqlmap project.
-
-        [0] http://sqlmap.sourceforge.net/
-
-        @author Patrick Hof
+        Read a burp log (XML) and extract the information.
         '''
-        res = []
-        fp = open( req_file, "r" )
-        fread = fp.read()
-        fread = fread.replace( "\r", "" )
-        req_res_list = fread.split( "======================================================" )
-        
-        port   = None
-        scheme = None
-
-        for request in req_res_list:
-            if scheme is None:
-                scheme_port = re.search(
-                        "\d\d[\:|\.]\d\d[\:|\.]\d\d\s+(http[\w]*)\:\/\/.*?\:([\d]+)",
-                        request,
-                        re.I
-                )
-
-            if scheme_port:
-                scheme = scheme_port.group( 1 )
-                port   = scheme_port.group( 2 )
-
-            if not re.search ( "^[\n]*(GET|POST).*?\sHTTP\/", request, re.I ):
-                continue
-
-            if re.search( "^[\n]*(GET|POST).*?\.(gif|jpg|png)\sHTTP\/", request, re.I ):
-                continue
-
-            method       = None
-            url          = None
-            postdata     = None
-            host = None
-            headers      = {}
-            get_post_req = False
-            lines        = request.split( "\n" )
-
-            for line in lines:
-                if len( line ) == 0 or line == "\n":
-                    continue
-
-                if line.startswith( "GET " ) or line.startswith( "POST " ):
-                    if line.startswith( "GET " ):
-                        index = 4
-                    else:
-                        index = 5
-
-                    url    = line[index:line.index(" HTTP/")]
-                    method = line[:index-1]
-
-                    get_post_req = True
-
-                # XXX do we really need this? This is from the sqlmap code.
-                # 'data' would be 'postdata' here. I can't figure out why this
-                # is needed. Does WebScarab occasionally split requests to a new
-                # line if they are overly long, so that we need to search for
-                # GET parameters even after the URL was parsed? But that
-                # wouldn't make sense with the way 'url' is set in line 168.
-                # 
-                # GET parameters 
-                # elif "?" in line and "=" in line and ": " not in line:
-                #     data    = line
-
-                # Parse headers
-                elif ": " in line:
-                    key, value = line.split(": ", 1)
-                    headers[key] = value
-                    
-                    if key.lower() == 'host':
-                        host = value
-
-                # POST parameters
-                elif method is not None and method == "POST" and "=" in line:
-                    postdata = line
-
-            if get_post_req:
-                if not url.startswith( "http" ):
-                    url    = "%s://%s:%s%s" % ( scheme or "http", host, port or "80", url )
-                    scheme = None
-                    port   = None
-
-                url_instance = url_object(url)
-                res.append(
-                       create_fuzzable_request(
-                                  url_instance, method,
-                                  postdata, headers
-                                  )
-                           )
+        class XMLParser(object):
+            '''
+            TODO: Support protocol (http|https) and port extraction. Now it only 
+            works with http and 80. 
+            '''
+            requests = []
+            parsing_request = False
+            current_is_base64 = False
+            
+            def start(self, tag, attrib):
+                '''
+                <request base64="true"><![CDATA[R0VUI...4zDQoNCg==]]></request>
                 
-        return res
+                or
+                
+                <request base64="false"><![CDATA[GET /w3af/ HTTP/1.1
+                Host: moth
+                ...
+                ]]></request>                
+                '''
+                if tag == 'request':
+                    self.parsing_request = True
+                    
+                    if not 'base64' in attrib:
+                        # Invalid file?
+                        return
+                    
+                    use_base64 = attrib['base64']
+                    if use_base64.lower() == 'true':
+                        self.current_is_base64 = True
+                    else:
+                        self.current_is_base64 = False
+            
+            def data(self, data):
+                if self.parsing_request:
+                    if not self.current_is_base64:
+                        request_text = data
+                        head, postdata = request_text.split('\n\n', 1)
+                    else:
+                        request_text_b64 = data
+                        request_text = base64.b64decode(request_text_b64)
+                        head, postdata = request_text.split('\r\n\r\n', 1)
+                    
+                    fuzzable_request = HTTPRequestParser(head, postdata)
+                    self.requests.append(fuzzable_request)
+            
+            def end(self, tag):
+                if tag == 'request':
+                    self.parsing_request = False
+                    
+            def close(self):
+                return self.requests
         
+        xp = XMLParser()
+        parser = etree.XMLParser(target=xp)
+        requests = etree.fromstring(file(burp_file).read(), parser)
+        return requests
+ 
+    
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
@@ -262,12 +206,6 @@ class import_results(CrawlPlugin):
         o = option('input_burp', self._input_burp, d, 'string', help=h)
         ol.add(o)
         
-        d = 'Define the WebScarab conversation directory from which to create' \
-            ' the fuzzable requests.'
-        h = 'The directory needs to contain WebScarab conversation files.'
-        o = option('input_webscarab', self._input_webscarab, d, 'string', help=h)
-        ol.add(o)
-        
         return ol
         
     def set_options( self, options_list ):
@@ -280,7 +218,6 @@ class import_results(CrawlPlugin):
         ''' 
         self._input_csv = options_list['input_csv'].getValue()
         self._input_burp = options_list['input_burp'].getValue()
-        self._input_webscarab = options_list['input_webscarab'].getValue()
         
     def get_long_desc( self ):
         '''
@@ -291,10 +228,9 @@ class import_results(CrawlPlugin):
         identify URLs. The plugin reads from different input files and directories
         and creates the fuzzable requests which are needed by the audit plugins.
         
-        Three configurable parameter exist:
+        Two configurable parameter exist:
             - input_csv
             - input_burp
-            - input_webscarab
         
         One or more of these need to be configured in order for this plugin to
         yield any results.
