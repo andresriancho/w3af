@@ -179,8 +179,7 @@ class SourceforgeXMLRPC(Sourceforge):
         
         summary, desc = self._build_summary_and_desc(
                             summary, userdesc, tback, fname, plugins,
-                            autogen, email
-                            )
+                            autogen, email)
         
         values = {
             'type': 'defect',
