@@ -38,6 +38,7 @@ from core.controllers.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
+from core.data.dc.header import Header
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
 
@@ -178,11 +179,11 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
         url = req_url.url_object
         post_data = str(req_url.get_data() or '')
         method = req_url.get_method()
-        headers = dict(req_url.headers)
-        headers.update(add_headers or {})
+        headers = Header(req_url.headers)
+        headers.update(add_headers or Header())
     else:
         url = req_url
-        headers = add_headers or {}
+        headers = add_headers or Header()
 
     # Just a query string request! No postdata
     if not post_data:
@@ -197,51 +198,59 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
                 del headers[hname]
             
             # TODO: What about repeated header names? Are we missing one for
-            # loop here to address this structure? {'a': ['1', '2']}
+            # loop here to address this structure? {'a': ['1', '2']}, please
+            # note the awful [0] before the .lower().
             elif hnamelow == 'content-type':
                 conttype = headers.get(hname, '')[0].lower()
         
+        #
         # Case #1 - JSON request
+        #
         try:
             data = json.loads(post_data)
         except:
             pass
-
-        if data:
-            req = JSONPostDataRequest(url, method, headers, dc=data)
-        
-        # Case #2 - XMLRPC request
-        elif all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS)):
-            req = XMLRPCRequest(post_data, url, method, headers)
-
         else:
-            # Case #3 - multipart form data - prepare data container
-            if conttype.startswith('multipart/form-data'):
-                pdict = cgi.parse_header(conttype)[1]
-                try:
-                    dc = cgi.parse_multipart(StringIO(post_data), pdict)
-                except:
-                    om.out.debug('Multipart form data is invalid, the browser '
-                                 'sent something weird.')
-                else:
-                    data = QueryString()
-                    data.update(dc)
-                    # We process multipart requests as x-www-form-urlencoded
-                    # TODO: We need native support of multipart requests!
-                    headers['content-type'] = \
-                                        'application/x-www-form-urlencoded'
-            
-            # Case #4 - a typical post request
+            if data:
+                return JSONPostDataRequest(url, method, headers, dc=data)
+        
+        #
+        # Case #2 - XMLRPC request
+        #
+        if all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS)):
+            return XMLRPCRequest(post_data, url, method, headers)
+
+        #
+        # Case #3 - multipart form data - prepare data container
+        #
+        if conttype.startswith('multipart/form-data'):
+            pdict = cgi.parse_header(conttype)[1]
+            try:
+                dc = cgi.parse_multipart(StringIO(post_data), pdict)
+            except:
+                om.out.debug('Multipart form data is invalid, the browser '
+                             'sent something weird.')
             else:
-                try:
-                    data = parse_qs(post_data)
-                except:
-                    om.out.debug('Failed to create a data container that '
-                                 'can store this data: "' + post_data + '".')
+                data = QueryString()
+                data.update(dc)
+                # We process multipart requests as x-www-form-urlencoded
+                # TODO: We need native support of multipart requests!
+                headers['content-type'] = ['application/x-www-form-urlencoded',]
+                return HTTPPostDataRequest(url, method, headers, dc=data)
+        
+        #
+        # Case #4 - a typical post request
+        #
+        try:
+            data = parse_qs(post_data)
+        except:
+            om.out.debug('Failed to create a data container that '
+                         'can store this data: "' + post_data + '".')
+        else:
             # Finally create request
-            req = HTTPPostDataRequest(url, method, headers, dc=data)
+            return HTTPPostDataRequest(url, method, headers, dc=data)
             
-        return req
+        return None
 
 def _create_cookie(http_response):
     '''
