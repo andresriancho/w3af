@@ -76,9 +76,10 @@ def checkURISyntax(uri, host=None):
       File "<stdin>", line 1, in ?
     w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: ABCDEF
     '''
-    supportedSchemes = ['http', 'https']
+    supported_schemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
-
+    scheme = scheme.lower()
+    
     if not scheme:
         scheme = 'http'
     if not domain:
@@ -86,7 +87,7 @@ def checkURISyntax(uri, host=None):
     if not path:
         path = '/'
 
-    if scheme not in supportedSchemes or not domain:
+    if scheme not in supported_schemes or not domain:
         msg = 'You have to specify the complete URI, including the protocol and the host.'
         msg += ' Invalid URI: ' + uri
         raise w3afException(msg)
@@ -106,7 +107,7 @@ def HTTPRequestParser(head, postdata):
     @author: Andres Riancho (andres.riancho@gmail.com)
 
     '''
-    # Parse the request head
+    # Parse the request head, the strip() helps us deal with the \r (if any)
     splitted_head = head.split('\n')
     splitted_head = [h.strip() for h in splitted_head if h]
     
@@ -150,11 +151,13 @@ def HTTPRequestParser(head, postdata):
             headers_dict[header_name] = [header_value,]
 
     headers = Header(headers_dict.items())
-
-    host = ''
-    for header_name in headers_dict:
+    
+    host = None
+    for header_name in headers:
         if header_name.lower() == 'host':
-            host = headers_dict[header_name]
+            host = headers_dict[header_name][0]
+            break
+        
     uri = url_object(checkURISyntax(uri, host))
     
     return create_fuzzable_request(uri, method, postdata, headers)
