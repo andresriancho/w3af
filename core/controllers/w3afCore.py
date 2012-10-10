@@ -34,6 +34,7 @@ from core.controllers.core_helpers.plugins import w3af_core_plugins
 from core.controllers.core_helpers.target import w3af_core_target
 from core.controllers.core_helpers.strategy import w3af_core_strategy
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+from core.controllers.core_helpers.exception_handler import ExceptionHandler
 from core.controllers.threads.threadManager import thread_manager
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
@@ -80,10 +81,18 @@ class w3afCore(object):
         self._initializeInternalVariables()
         self.plugins.zero_enabled_plugins()
         
-        # I init the 404 detection for the whole framework
+        # Init the 404 detection for the whole framework
         self.uri_opener = xUrllib()
         fp_404_db = fingerprint_404_singleton()
         fp_404_db.set_url_opener( self.uri_opener )
+        
+        # And one of the most important aspects of our core, the exception handler
+        self.exception_handler = ExceptionHandler()
+        
+        # FIXME: In the future, when the outputManager is not an awful singleton
+        # anymore, this line should be removed and the outputManager object
+        # should take a w3afCore object as a parameter in its __init__
+        om.out.set_w3af_core(self)
         
     def start(self):
         '''
@@ -94,7 +103,11 @@ class w3afCore(object):
         '''
         om.out.debug('Called w3afCore.start()')
         thread_manager.start()
-       
+        
+        # If this is not the first scan, I want to clear the old bug data that
+        # might be stored in the exception_handler.
+        self.exception_handler.clear()
+        
         # This will help identify the total scan time
         self._start_time_epoch = time.time()
         

@@ -24,7 +24,7 @@ from nose.plugins.attrib import attr
 
 import core.controllers.outputManager as om
 
-from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.w3afCore import w3afCore
 
 
 class TestOutputManager(PyMockTestCase):
@@ -130,11 +130,13 @@ class TestOutputManager(PyMockTestCase):
         
         invalid_plugin = InvalidPlugin() 
         
+        w3af_core = w3afCore()
+        
         om.out._output_plugin_list = [invalid_plugin,]
         om.out.information('abc')
         om.out.process_all_messages()
         
-        exc_list = exception_handler.get_all_exceptions()
+        exc_list = w3af_core.exception_handler.get_all_exceptions()
         self.assertEqual(len(exc_list), 1, exc_list)
         
         edata = exc_list[0]

@@ -27,7 +27,6 @@ import core.data.kb.config as cf
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
                                                             get_urls_from_kb,
                                                             get_fuzzable_requests_from_kb)
@@ -370,8 +369,8 @@ class crawl_infrastructure(BaseConsumer):
             # exceptions                        
             exec_info = sys.exc_info()
             enabled_plugins = pprint_plugins(self._w3af_core)
-            exception_handler.handle( self._w3af_core.status, e , 
-                                      exec_info, enabled_plugins )
+            self._w3af_core.exception_handler.handle( self._w3af_core.status, e , 
+                                                      exec_info, enabled_plugins )
         
         else:
             # The plugin output is retrieved and analyzed by the 

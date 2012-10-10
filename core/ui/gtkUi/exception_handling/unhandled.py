@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import sys
 import traceback
 
@@ -29,10 +28,9 @@ from core.controllers.exception_handling.helpers import create_crash_file
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 
 
-
-def handle_crash(type, value, tb, plugins=''):
+def handle_crash(w3af_core, _type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
-    if issubclass(type, KeyboardInterrupt ):
+    if issubclass(_type, KeyboardInterrupt ):
         helpers.endThreads()
         import core.controllers.outputManager as om
         om.out.console(_('Thanks for using w3af.'))
@@ -41,7 +39,7 @@ def handle_crash(type, value, tb, plugins=''):
         return
     
     # Print the information to the console so everyone can see it 
-    exception = traceback.format_exception(type, value, tb)
+    exception = traceback.format_exception(_type, value, tb)
     exception = "".join(exception)
     print exception
 
@@ -52,7 +50,8 @@ def handle_crash(type, value, tb, plugins=''):
     filename = create_crash_file( clean_exception )
     
     # Create the dialog that allows the user to send the bug to Trac
-    bug_report_win = unhandled_bug_report.bug_report_window( _('Bug detected!'), 
+    bug_report_win = unhandled_bug_report.bug_report_window( w3af_core,
+                                                             _('Bug detected!'), 
                                                              clean_exception,
                                                              filename, plugins)
     

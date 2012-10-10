@@ -24,7 +24,6 @@ import shutil
 
 from nose.plugins.attrib import attr
 
-from core.controllers.core_helpers.exception_handler import exception_handler
 from ..helper import PluginTest, PluginConfig
 
 
@@ -67,7 +66,7 @@ class TestCrawlExceptions(PluginTest):
 
         # This is a very special case in which I don't want the assertion in
         # the original tearDown() to trigger on me!
-        exception_handler.clear()
+        self.w3afcore.exception_handler.clear()
         
         super(TestCrawlExceptions, self).tearDown()
         

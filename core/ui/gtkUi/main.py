@@ -30,9 +30,12 @@ from . import dependency_check
 dependency_check.gtkui_dependency_check()
 
 # Now that I know that I have them, import them!
-import gtk, gobject
-import threading, shelve, os
-import webbrowser, time
+import gtk
+import gobject
+import shelve
+import os
+import webbrowser
+import time
 import sys
 
 from multiprocessing.dummy import Process
@@ -45,7 +48,6 @@ from core.controllers.w3afCore import w3af_core
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.gtkUi.splash import Splash
@@ -661,7 +663,7 @@ class MainApp(object):
         '''
         This method is called when the scan finishes successfully. 
         '''
-        exception_list = exception_handler.get_all_exceptions()
+        exception_list = self.w3af.exception_handler.get_all_exceptions()
         if exception_list:
             # damn...
             self.sb(_("Scan finished with exceptions"))

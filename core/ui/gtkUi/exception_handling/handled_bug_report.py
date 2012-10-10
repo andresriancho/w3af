@@ -19,10 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import gettempdir
 from core.ui.gtkUi.exception_handling.common_windows import (simple_base_window,
                                                              trac_multi_bug_report)
@@ -39,11 +37,11 @@ class bug_report_window(simple_base_window, trac_multi_bug_report):
     see in unhandled.py . 
     '''
     
-    def __init__(self, title ):
+    def __init__(self, w3af_core, title ):
         simple_base_window.__init__(self)
         
-        exception_list = exception_handler.get_all_exceptions()
-        scan_id = exception_handler.get_scan_id()
+        exception_list = w3af_core.exception_handler.get_all_exceptions()
+        scan_id = w3af_core.exception_handler.get_scan_id()
         
         trac_multi_bug_report.__init__(self, exception_list, scan_id )
         

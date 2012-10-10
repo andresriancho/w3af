@@ -74,6 +74,10 @@ class outputManager(Process):
         
         # Internal variables
         self.in_queue = Queue.Queue()
+        self._w3af_core = None
+    
+    def set_w3af_core(self, w3af_core):
+        self._w3af_core = w3af_core
     
     def run(self):
         '''
@@ -162,29 +166,30 @@ class outputManager(Process):
                 opl_func_ptr = getattr(o_plugin, actionname)
                 apply(opl_func_ptr, args, kwds)
             except Exception, e:
-                # Smart error handling, much better than just crashing.
-                # Doing this here and not with something similar to:
-                # sys.excepthook = handle_crash because we want to handle
-                # plugin exceptions in this way, and not framework 
-                # exceptions
-                #
-                # FIXME: I need to import these here because of the awful
-                #        singletons I use all over the framework. If imported
-                #        at the top, they will generate circular import errors
-                from core.controllers.core_helpers.exception_handler import exception_handler
-                from core.controllers.core_helpers.status import w3af_core_status
-                
-                class fake_status(w3af_core_status):
-                    pass
-    
-                status = fake_status()
-                status.set_running_plugin( o_plugin.getName(), log=False )
-                status.set_phase( 'output' )
-                status.set_current_fuzzable_request( 'n/a' )
-                
-                exec_info = sys.exc_info()
-                enabled_plugins = 'n/a'
-                exception_handler.handle( status, e , exec_info, enabled_plugins )
+                if self._w3af_core is not None:
+                    # Smart error handling, much better than just crashing.
+                    # Doing this here and not with something similar to:
+                    # sys.excepthook = handle_crash because we want to handle
+                    # plugin exceptions in this way, and not framework 
+                    # exceptions
+                    #
+                    # FIXME: I need to import this here because of the awful
+                    #        singletons I use all over the framework. If imported
+                    #        at the top, they will generate circular import errors
+                    from core.controllers.core_helpers.status import w3af_core_status
+                    
+                    class fake_status(w3af_core_status):
+                        pass
+        
+                    status = fake_status()
+                    status.set_running_plugin( o_plugin.getName(), log=False )
+                    status.set_phase( 'output' )
+                    status.set_current_fuzzable_request( 'n/a' )
+                    
+                    exec_info = sys.exc_info()
+                    enabled_plugins = 'n/a'
+                    self._w3af_core.exception_handler.handle( status, e , 
+                                                              exec_info, enabled_plugins )
     
     def set_output_plugins(self, outputPlugins):
         '''

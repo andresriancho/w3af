@@ -24,7 +24,6 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.w3afCore import w3afCore
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
 from core.data.options.option import option as Option
@@ -100,8 +99,8 @@ class PluginTest(unittest.TestCase):
         #
         # I want to make sure that we don't have *any hidden* exceptions in our tests.
         #
-        msg = [e.get_summary() for e in exception_handler.get_all_exceptions()]        
-        assert len(exception_handler.get_all_exceptions() ) == 0, msg
+        msg = [e.get_summary() for e in self.w3afcore.exception_handler.get_all_exceptions()]        
+        assert len(self.w3afcore.exception_handler.get_all_exceptions() ) == 0, msg
         
         self.w3afcore.quit()
         self.kb.cleanup()

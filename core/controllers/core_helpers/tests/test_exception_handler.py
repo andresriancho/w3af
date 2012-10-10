@@ -25,14 +25,15 @@ import sys
 
 from nose.plugins.attrib import attr
 
-from core.controllers.core_helpers.exception_handler import exception_handler
+from core.controllers.core_helpers.exception_handler import ExceptionHandler
 from core.controllers.core_helpers.status import w3af_core_status
 
 
 class TestExceptionHandler(unittest.TestCase):
 
     def setUp(self):
-        exception_handler.clear()
+        self.exception_handler = ExceptionHandler()
+        self.exception_handler.clear()
         
         self.status = fake_status()
         self.status.set_running_plugin( 'plugin' )
@@ -47,12 +48,12 @@ class TestExceptionHandler(unittest.TestCase):
         except Exception, e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
-            exception_handler.handle( self.status, e , exec_info, enabled_plugins )
+            self.exception_handler.handle( self.status, e , exec_info, enabled_plugins )
         
-        scan_id = exception_handler.get_scan_id()
+        scan_id = self.exception_handler.get_scan_id()
         self.assertTrue( scan_id )
         
-        all_edata = exception_handler.get_all_exceptions()
+        all_edata = self.exception_handler.get_all_exceptions()
         
         self.assertEqual(1, len(all_edata))
         
@@ -75,12 +76,12 @@ class TestExceptionHandler(unittest.TestCase):
             except Exception, e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
-                exception_handler.handle( self.status, e , exec_info, enabled_plugins )
+                self.exception_handler.handle( self.status, e , exec_info, enabled_plugins )
         
-        exception_handler.get_scan_id()
-        all_edata = exception_handler.get_all_exceptions()
+        self.exception_handler.get_scan_id()
+        all_edata = self.exception_handler.get_all_exceptions()
         
-        self.assertEqual(exception_handler.MAX_EXCEPTIONS_PER_PLUGIN, len(all_edata))
+        self.assertEqual(self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN, len(all_edata))
         
         edata = all_edata[0]
         

@@ -24,10 +24,8 @@ import core.controllers.outputManager as om
 
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.ui.consoleUi.menu import menu
 from core.ui.consoleUi.util import suggest
-
 
 
 class bug_report_menu(menu):
@@ -42,11 +40,11 @@ class bug_report_menu(menu):
         self._loadHelp( 'bug-report' )
 
     def _cmd_summary(self, params):
-        summary = exception_handler.generate_summary_str()
+        summary = self._w3af.exception_handler.generate_summary_str()
         om.out.console(summary)
         
     def _cmd_list(self, params):
-        all_edata = exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_all_exceptions()
         
         if len(params) == 0:
             ptype = 'all'
@@ -73,7 +71,7 @@ class bug_report_menu(menu):
         '''
         Show details for a bug referenced by id.
         '''
-        all_edata = exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_all_exceptions()
         
         if len(params) != 1:
             om.out.console('The exception ID needs to be specified, please read help:')
@@ -96,7 +94,7 @@ class bug_report_menu(menu):
         '''
         Report one or more bugs to w3af's Trac, menu command.
         '''
-        all_edata = exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_all_exceptions()
         
         if not all_edata:
             om.out.console('There are no exceptions to report for this scan.')
@@ -152,7 +150,7 @@ class bug_report_menu(menu):
         if len(params):
             return []
         
-        all_edata = exception_handler.get_all_exceptions()
+        all_edata = self._w3af.exception_handler.get_all_exceptions()
         suggestions = [str(i) for i in xrange(len(all_edata))]
         
         return suggest(suggestions, part) 

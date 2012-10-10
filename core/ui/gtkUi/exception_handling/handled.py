@@ -19,15 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.core_helpers.exception_handler import exception_handler
-
 from core.controllers.exception_handling.helpers import gettempdir, create_crash_file
 from core.ui.gtkUi.exception_handling import handled_bug_report
 
 
-
-def handle_exceptions():
+def handle_exceptions(w3af_core):
     '''
     In w3af's new exception handling method, some exceptions raising from
     plugins are "allowed" and the scan is NOT stopped because of them.
@@ -42,7 +38,7 @@ def handle_exceptions():
     and you should read it before this one.
     ''' 
     # Save the info to a file for later analysis by the user   
-    for edata in exception_handler.get_all_exceptions():
+    for edata in w3af_core.exception_handler.get_all_exceptions():
         edata_str = edata.get_details()
         create_crash_file(edata_str)
 
@@ -51,13 +47,13 @@ def handle_exceptions():
     
     # We do this because it would be both awful and useless to simply
     # print all exceptions one below the other in the console
-    print exception_handler.generate_summary_str()
+    print w3af_core.exception_handler.generate_summary_str()
     
     # Create the dialog that allows the user to send the bugs, potentially more
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Trac.
     title = _('Handled exceptions to report')
-    bug_report_win = handled_bug_report.bug_report_window( title )
+    bug_report_win = handled_bug_report.bug_report_window( w3af_core, title )
     
     # Blocks waiting for user interaction
     bug_report_win.show()

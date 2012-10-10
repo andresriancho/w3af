@@ -24,7 +24,6 @@ import Queue
 
 from .constants import POISON_PILL, FORCE_LOGIN
 
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
@@ -99,8 +98,8 @@ class auth(BaseConsumer):
                 # exceptions                        
                 exec_info = sys.exc_info()
                 enabled_plugins = pprint_plugins(self._w3af_core)
-                exception_handler.handle( self._w3af_core.status, e , 
-                                          exec_info, enabled_plugins )
+                self._w3af_core.exception_handler.handle( self._w3af_core.status, e , 
+                                                          exec_info, enabled_plugins )
         
         # See comment above in _add_task
         self._task_done(None)

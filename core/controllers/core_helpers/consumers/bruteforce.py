@@ -24,7 +24,6 @@ import sys
 import core.controllers.outputManager as om
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.w3afException import w3afException
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadpool import return_args
@@ -102,8 +101,8 @@ class bruteforce(BaseConsumer):
             # exceptions                    
             exec_info = sys.exc_info()
             enabled_plugins = pprint_plugins(self._w3af_core)
-            exception_handler.handle( self._w3af_core.status, e , 
-                                      exec_info, enabled_plugins )
+            self._w3af_core.exception_handler.handle( self._w3af_core.status, e , 
+                                                      exec_info, enabled_plugins )
         
         else:
             res.update( new_frs )

@@ -29,7 +29,6 @@ import core.controllers.outputManager as om
 
 from core.data.request.fuzzable_request import fuzzable_request as FuzzableRequest
 
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.core_helpers.consumers.grep import grep
 from core.controllers.core_helpers.consumers.auth import auth
 from core.controllers.core_helpers.consumers.audit import audit
@@ -89,10 +88,6 @@ class w3af_core_strategy(object):
         
         @return: No value is returned.
         '''
-        # If this is not the first scan, I want to clear the old bug data that
-        # might be stored in the exception_handler.
-        exception_handler.clear()
-        
         try:
             self._setup_grep()
             self._setup_auth()
@@ -154,6 +149,9 @@ class w3af_core_strategy(object):
         This is one of the most important methods, it will take things from the
         discovery Queue and store them in one or more Queues (audit, bruteforce,
         etc).
+        
+        Also keep in mind that is one of the only methods that will be run in
+        the "main thread" and lives during the whole scan process.
         '''
         _input = [self._seed_producer, self._discovery_consumer, 
                   self._bruteforce_consumer]

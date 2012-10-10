@@ -23,7 +23,6 @@ import sys
 
 from .constants import POISON_PILL
 
-from core.controllers.core_helpers.exception_handler import exception_handler
 from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
@@ -82,6 +81,8 @@ class grep(BaseConsumer):
                         
                         exec_info = sys.exc_info()
                         enabled_plugins = pprint_plugins(self._w3af_core)
-                        exception_handler.handle( status, e , exec_info, enabled_plugins )
+                        self._w3af_core.exception_handler.handle( status, e , 
+                                                                  exec_info, 
+                                                                  enabled_plugins )
                 
                 self.in_queue.task_done()
