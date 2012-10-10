@@ -35,7 +35,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
     
     def test_useProfile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.useProfile('OWASP_TOP10')
+        w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
         
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
         
@@ -47,7 +47,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
     
     def test_saveCurrentToNewProfile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.useProfile('OWASP_TOP10')
+        w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
         
         audit = w3af_core.plugins.get_enabled_plugins('audit')
         disabled_plugin = audit[-1]
