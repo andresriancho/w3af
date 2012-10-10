@@ -218,6 +218,15 @@ class url_object(disk_item):
           File "<stdin>", line 1, in ?
         ValueError: Invalid URL "http://"
 
+        #
+        # And protocols are case insensitive
+        #
+        >>> u = url_object('HtTp://w3af.com')
+        >>> u.getDomain()
+        'w3af.com'
+        >>> u.getProtocol()
+        'http'
+
         >>> u = url_object(u'http://w3af.com/foo/bar.txt')
         >>> u.path
         u'/foo/bar.txt'
