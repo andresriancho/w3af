@@ -120,14 +120,25 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertIsInstance( fr, XMLRPCRequest)
 
     def test_multipart_post(self):
-        '''
-        This shows that:
-            # Case #3 - multipart form data - prepare data container
-        
-        In factory.py doesn't really work. 
-        '''
         boundary, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
 
+        headers = {'content-length': str(len(post_data)) ,
+                   'content-type': 'multipart/form-data; boundary=%s' % boundary}
+        
+        fr = create_fuzzable_request(self.url, add_headers=headers, 
+                                     post_data=post_data, method='POST')
+        
+        self.assertEqual( fr.getURL(), self.url )
+        self.assertEqual( fr.getHeaders(), headers )
+        self.assertEqual( fr.get_method(), 'POST' )
+        self.assertEqual( fr.getDc(), {'a': ['bcd',]})
+        self.assertIsInstance( fr, HTTPPostDataRequest)
+
+    def test_invalid_multipart_post(self):
+        boundary, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
+
+        # It is invalid because there is a missing boundary parameter in the
+        # content-type header
         headers = {'content-length': str(len(post_data)) ,
                    'content-type': 'multipart/form-data'}
         
@@ -137,6 +148,10 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertEqual( fr.getURL(), self.url )
         self.assertEqual( fr.getHeaders(), headers )
         self.assertEqual( fr.get_method(), 'POST' )
-        self.assertEqual( fr.getData(), post_data)
+        
+        # And this is how it affects the result:
+        self.assertEqual( fr.getData(), '')
+        self.assertEqual( fr.getDc(), {})
+        
         self.assertIsInstance( fr, HTTPPostDataRequest)
         
