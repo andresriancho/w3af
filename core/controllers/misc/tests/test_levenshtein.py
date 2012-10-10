@@ -20,9 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
-from ..misc.levenshtein import relative_distance_boolean, relative_distance
+
+from core.controllers.misc.levenshtein import relative_distance_boolean, relative_distance
 
 
 class TestLevenshtein(unittest.TestCase):
