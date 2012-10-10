@@ -343,6 +343,7 @@ class crawl_infrastructure(BaseConsumer):
         
         # Status reporting
         status = self._w3af_core.status
+        status.set_phase('crawl')
         status.set_running_plugin(plugin.getName())
         status.set_current_fuzzable_request(fuzzable_request)
         om.out.debug('%s is testing "%s"' % (plugin.getName(), fuzzable_request.getURI() ) )
