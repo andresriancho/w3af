@@ -19,20 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce
-from core.data.request.factory import create_fuzzable_request
-from core.data.parsers.urlParser import url_object
-
 import csv
 import re
 import os
+
+import core.controllers.outputManager as om
+
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
+from core.controllers.w3afException import w3afRunOnce
+from core.controllers.misc.decorators import runonce
+
+from core.data.options.option import option
+from core.data.options.option_list import OptionList
+from core.data.request.factory import create_fuzzable_request
+from core.data.parsers.urlParser import url_object
 
 
 class import_results(CrawlPlugin):
@@ -43,72 +43,78 @@ class import_results(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-        # Internal variables
-        self._exec = True
-        
         # User configured parameters
         self._input_csv = ''
         self._input_webscarab = ''
         self._input_burp = ''
 
+    @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):
         '''
-        Read the input file, and create the fuzzable_requests based on that information.
+        Read the input file, and create the fuzzable_requests based on that
+        information.
         
         @parameter fuzzable_request: A fuzzable_request instance that contains
-                                    (among other things) the URL to test. It ain't used.
+                                    (among other things) the URL to test.
+                                    In this case it is simply ignored and data
+                                    is read from the input files.
         '''
-        if not self._exec:
-            # This will remove the plugin from the crawl plugins to be run.
-            raise w3afRunOnce()
-
-        else:
-            self._exec = False
-
-            # Load data from the csv file
-            if self._input_csv != '':
+        self._load_data_from_csv()
+        self._load_data_from_webscarab()
+        self._load_data_from_burp()
+    
+    def _load_data_from_csv(self):
+        '''
+        Load data from the csv file
+        '''
+        if self._input_csv != '':
+            try:
+                file_handler = file( self._input_csv )
+            except Exception, e:
+                msg = 'An error was found while trying to read "%s": "%s".'
+                om.out.error( msg % (self._input_csv, e) )
+            else:
+                for row in csv.reader(file_handler):
+                    obj = self._obj_from_csv( row )
+                    if obj:
+                        self.output_queue.put( obj )
+    
+    def _load_data_from_webscarab(self):
+        '''
+        Load data from WebScarab's saved conversations
+        '''
+        if self._input_webscarab != '':
+            try:
+                files = os.listdir( self._input_webscarab )
+            except Exception, e:
+                msg = 'An error was found while trying to read the conversations' \
+                      ' directory (%s): "%s".'
+                om.out.error( msg (self._input_webscarab, e))
+            else:
+                files.sort()
+                for req_file in files:
+                    # Only read requests, not the responses.
+                    if not re.search( "([\d]+)\-request", req_file ):
+                        continue
+                    objs = self._objs_from_log( os.path.join( self._input_webscarab, req_file ) )
+                    for fr in objs:
+                        self.output_queue.put( fr )
+    
+    def _load_data_from_burp(self):
+        '''
+        Load data from Burp's log
+        '''
+        if self._input_burp != '':
+            if os.path.isfile( self._input_burp ):
                 try:
-                    file_handler = file( self._input_csv )
-                except Exception, e:
-                    msg = 'An error was found while trying to read the input file: "'
-                    msg += str(e) + '".'
-                    om.out.error( msg )
+                    fuzzable_requests = self._objs_from_log(self._input_burp)
+                except Exception,  e:
+                    msg = 'An error was found while trying to read the Burp log' \
+                          ' file (%s): "%s".'
+                    om.out.error( msg % (self._input_burp, e))
                 else:
-                    for row in csv.reader(file_handler):
-                        obj = self._obj_from_csv( row )
-                        if obj:
-                            self.out_queue.put( obj )
-            
-            # Load data from WebScarab's saved conversations
-            elif self._input_webscarab != '':
-                try:
-                    files = os.listdir( self._input_webscarab )
-                except Exception, e:
-                    msg = 'An error was found while trying to read the conversations directory: "'
-                    msg += str(e) + '".'
-                    om.out.error( msg )
-                else:
-                    files.sort()
-                    for req_file in files:
-                        # Only read requests, not the responses.
-                        if not re.search( "([\d]+)\-request", req_file ):
-                            continue
-                        objs = self._objs_from_log( os.path.join( self._input_webscarab, req_file ) )
-                        for fr in objs:
-                            self.out_queue.put( fr )
-                        
-            # Load data from Burp's log
-            elif self._input_burp != '':
-                if os.path.isfile( self._input_burp ):
-                    try:
-                        fuzzable_requests = self._objs_from_log(self._input_burp)
-                    except Exception,  e:
-                        msg = 'An error was found while trying to read the Burp log file: "'
-                        msg += str(e) + '".'
-                        om.out.error( msg )
-                    else:
-                        for fr in fuzzable_requests:
-                            self.out_queue.put( fr )
+                    for fr in fuzzable_requests:
+                        self.output_queue.put( fr )
     
     def _obj_from_csv( self, csv_row ):
         '''
@@ -243,23 +249,25 @@ class import_results(CrawlPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'Define the CSV input file from which to create the fuzzable requests'
-        h1 = 'The input file is comma separated and holds the following data:'
-        h1 += ' HTTP-METHOD,URI,POSTDATA'
-        o1 = option('input_csv', self._input_csv, d1, 'string', help=h1)
-        
-        d2 = 'Define the Burp log file from which to create the fuzzable requests'
-        h2 = 'The input file needs to be in Burp format.'
-        o2 = option('input_burp', self._input_burp, d2, 'string', help=h2)
-        
-        d3 = 'Define the WebScarab conversation directory from which to create the fuzzable requests'
-        h3 = 'The directory needs to contain WebScarab conversation files.'
-        o3 = option('input_webscarab', self._input_webscarab, d3, 'string', help=h3)
-
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
+        
+        d = 'Define the CSV input file from which to create the fuzzable requests'
+        h = 'The input file is comma separated and holds the following data:'
+        h += ' HTTP-METHOD,URI,POSTDATA'
+        o = option('input_csv', self._input_csv, d, 'string', help=h)
+        ol.add(o)
+        
+        d = 'Define the Burp log file from which to create the fuzzable requests'
+        h = 'The input file needs to be in Burp format.'
+        o = option('input_burp', self._input_burp, d, 'string', help=h)
+        ol.add(o)
+        
+        d = 'Define the WebScarab conversation directory from which to create' \
+            ' the fuzzable requests.'
+        h = 'The directory needs to contain WebScarab conversation files.'
+        o = option('input_webscarab', self._input_webscarab, d, 'string', help=h)
+        ol.add(o)
+        
         return ol
         
     def set_options( self, options_list ):
@@ -274,24 +282,20 @@ class import_results(CrawlPlugin):
         self._input_burp = options_list['input_burp'].getValue()
         self._input_webscarab = options_list['input_webscarab'].getValue()
         
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin serves as an entry point for the results of other tools that search for URLs.
-        The plugin reads from different input files and directories and creates the fuzzable requests
-        that are needed by the audit plugins.
+        This plugin serves as an entry point for the results of other tools that
+        identify URLs. The plugin reads from different input files and directories
+        and creates the fuzzable requests which are needed by the audit plugins.
         
         Three configurable parameter exist:
             - input_csv
             - input_burp
             - input_webscarab
+        
+        One or more of these need to be configured in order for this plugin to
+        yield any results.
         '''
