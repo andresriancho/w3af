@@ -64,7 +64,7 @@ class wordnet(CrawlPlugin):
         '''
         Actually check if the mutated URL exists.
         
-        @return: None, all important data is saved to self.out_queue
+        @return: None, all important data is put() to self.output_queue
         '''
         response = self._uri_opener.send_mutant(mutant)
         if not is_404( response ) and \

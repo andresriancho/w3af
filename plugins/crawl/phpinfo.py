@@ -74,7 +74,7 @@ class phpinfo(CrawlPlugin):
     def _check_and_analyze(self, domain_path, php_info_filename):
         '''
         Check if a php_info_filename exists in the domain_path.
-        @return: None, everything is saved to the self.out_queue.
+        @return: None, everything is put() into the self.output_queue.
         '''
         # Request the file
         php_info_url = domain_path.urlJoin( php_info_filename )

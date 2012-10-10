@@ -111,7 +111,7 @@ class urllist_txt(CrawlPlugin):
         GET and URL that was found in the robots.txt file, and parse it.
         
         @parameter url: The URL to GET.
-        @return: None, everything is saved to self.out_queue.
+        @return: None, everything is put() to self.output_queue.
         '''
         try:
             http_response = self._uri_opener.GET( url, cache=True )
