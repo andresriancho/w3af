@@ -189,12 +189,14 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     else: # Seems to be something that has post data
         data = {}
         conttype = ''
-        for hname in headers.keys(): # '.keys()' is just fine. Don't
-            hnamelow = hname.lower() # remove it.
+        for hname in headers.keys():
+            # TODO: What about repeated header names? Are we missing one for
+            # loop here to address this structure? {'a': ['1', '2']}
+            hnamelow = hname.lower()
             if hnamelow == 'content-length':
                 del headers[hname]
             elif hnamelow == 'content-type':
-                conttype = headers.get('content-type', '').lower()
+                conttype = headers.get(hname, '').lower()
         
         # Case #1 - JSON request
         try:
