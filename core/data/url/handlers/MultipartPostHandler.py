@@ -36,18 +36,22 @@ Further Example:
   The main function of this file is a sample which downloads a page and
   then uploads it to the W3C validator.
 '''
-
 import sys
 import urllib
 import urllib2
-import mimetools, mimetypes
-import os, stat, hashlib
+import mimetools
+import mimetypes
+import os
+import stat
+import hashlib
+
 from core.controllers.misc.io import is_file_like
 from core.data.constants.encodings import DEFAULT_ENCODING
 
-# Controls how sequences are uncoded. If true, elements may be given multiple values by
-#  assigning a sequence.
+# Controls how sequences are uncoded. If true, elements may be given multiple
+# values by assigning a sequence.
 doseq = 1
+
 
 class MultipartPostHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPHandler.handler_order - 10 # needs to run first
@@ -55,62 +59,84 @@ class MultipartPostHandler(urllib2.BaseHandler):
     def http_request(self, request):
         data = request.get_data()
         
-        to_str = lambda _str: _str.encode(DEFAULT_ENCODING) if \
-                                isinstance(_str, unicode) else _str
-        
         if data and not isinstance(data, basestring):
-            v_files = []
-            v_vars = []
             
-            try:
-                for pname, val in data.items():
-                    # Added to support repeated parameter names
-                    enc_pname = to_str(pname)
-                    
-                    if isinstance(val, basestring):
-                        val = [val]
-                    else:
-                        try:
-                            # is this a sufficient test for sequence-ness?
-                            len(val)
-                        except:
-                            val = [val]
-                    
-                    for elem in val:
-                        if is_file_like(elem):
-                            if not elem.closed:
-                                v_files.append((enc_pname, elem))
-                            else:
-                                v_vars.append((enc_pname, ''))
-                        elif hasattr(elem, 'isFile'):
-                            v_files.append((enc_pname, elem))
-                        else:
-                            # Ensuring we actually send a string
-                            elem = to_str(elem)
-                            v_vars.append((enc_pname, elem))
-            except TypeError:
-                try:
-                    tb = sys.exc_info()[2]
-                    raise (TypeError, "not a valid non-string sequence or "
-                           "mapping object", tb)
-                finally:
-                    del tb
-                
-
-            if not v_files:
+            multipart, v_vars, v_files = self._send_as_multipart(request, data)
+            
+            if not multipart:
                 data = urllib.urlencode(v_vars, doseq)
             else:
                 boundary, data = self.multipart_encode(v_vars, v_files)
                 contenttype = 'multipart/form-data; boundary=%s' % boundary
-                if(request.has_header('Content-Type') and request.get_header('Content-Type').find('multipart/form-data') != 0):
-                    print "Replacing %s with %s" % (request.get_header('content-type'), 'multipart/form-data')
+                # Note that this replaces any old content-type
                 request.add_unredirected_header('Content-Type', contenttype)
-
+    
             request.add_data(data)
+        
         return request
     
     # I also want this to work with HTTPS!
     https_request = http_request
+    
+    def _send_as_multipart(self, request, data):
+        '''
+        Based on the request it decides if we should send the request as multipart
+        or not.
+        
+        @return: (Boolean that indicates if multipart should be used,
+                  List with string variables,
+                  List with file variables)
+        '''
+        multipart = False
+        v_vars = []
+        v_files = []
+        
+        to_str = lambda _str: _str.encode(DEFAULT_ENCODING) if \
+                                isinstance(_str, unicode) else _str
+        
+        
+        header_items = request.header_items()
+        for name, value in header_items:
+            if name.lower() == 'content-type' and 'multipart/form-data' in value:
+                multipart = True 
+            
+        try:
+            for pname, val in data.items():
+                # Added to support repeated parameter names
+                enc_pname = to_str(pname)
+                
+                if isinstance(val, basestring):
+                    val = [val]
+                else:
+                    try:
+                        # is this a sufficient test for sequence-ness?
+                        len(val)
+                    except:
+                        val = [val]
+                
+                for elem in val:
+                    if is_file_like(elem):
+                        if not elem.closed:
+                            v_files.append((enc_pname, elem))
+                            multipart = True
+                        else:
+                            v_vars.append((enc_pname, ''))
+                    elif hasattr(elem, 'isFile'):
+                        v_files.append((enc_pname, elem))
+                        multipart = True
+                    else:
+                        # Ensuring we actually send a string
+                        elem = to_str(elem)
+                        v_vars.append((enc_pname, elem))
+        except TypeError:
+            try:
+                tb = sys.exc_info()[2]
+                raise (TypeError, "not a valid non-string sequence or "
+                       "mapping object", tb)
+            finally:
+                del tb
+        
+        return multipart, v_vars, v_files        
     
     @staticmethod
     def multipart_encode(vars, files, boundary=None, buffer=None):
