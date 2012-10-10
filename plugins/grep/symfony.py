@@ -91,8 +91,8 @@ class symfony(GrepPlugin):
             for form in forms:
                 inputs = form.xpath('//input[@id]')
                 if inputs:
-                    for input in inputs:
-                        if csrf_protection_regex_re.search(input.attrib["id"]):
+                    for _input in inputs:
+                        if csrf_protection_regex_re.search(_input.attrib["id"]):
                             return True
         return False
 
