@@ -110,6 +110,8 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         form_list = []
     else:
         form_list = dp.getForms()
+        same_domain = lambda f: f.getAction().getDomain() == resp.getURL().getDomain()
+        form_list = [f for f in form_list if same_domain(f)]
     
     if not form_list:
         # Check if its a wsdl file

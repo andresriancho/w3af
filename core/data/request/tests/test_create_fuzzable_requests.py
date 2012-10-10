@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from core.data.request.factory import create_fuzzable_requests
 from core.data.url.httpResponse import httpResponse
@@ -80,6 +81,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         redir_fr = redir_fr[0]
         self.assertEqual( redir_fr.getURL().url_string, self.url.url_string[:-1] + redir_url)
 
+    raise SkipTest('FIXME: See TODO.')
     def test_body_parse_a(self):
         '''
         TODO: I need to decide if I'm going to implement this in create_fuzzable_requests
