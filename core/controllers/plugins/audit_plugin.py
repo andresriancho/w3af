@@ -39,7 +39,8 @@ class AuditPlugin(Plugin):
         Plugin.__init__( self )
         self._uri_opener = None
 
-    # FIXME: This method is awful and returns LOTS of false positives
+    # FIXME: This method is awful and returns LOTS of false positives. Only
+    #        used by ./core/ui/gtkUi/reqResViewer.py
     def audit_wrapper( self, fuzzable_request ):
         '''
         Receives a fuzzable_request and forwards it to the internal method
@@ -47,16 +48,11 @@ class AuditPlugin(Plugin):
         
         @parameter fuzzable_request: A fuzzable_request instance
         '''
-        # I copy the fuzzable request, to avoid cross plugin contamination
-        # in other words, if one plugin modified the fuzzable request object
-        # INSIDE that plugin, I don't want the next plugin to suffer from that
-        fuzzable_request_copy = fuzzable_request.copy()
-        
         # These lines were added because we need to return the new vulnerabilities found by this
         # audit plugin, and I don't want to change the code of EVERY plugin!
         before_vuln_dict = kb.kb.get( self )
         
-        self.audit( fuzzable_request_copy )
+        self.audit_with_copy( fuzzable_request )
         
         after_vuln_dict = kb.kb.get( self )
         
@@ -75,6 +71,16 @@ class AuditPlugin(Plugin):
         
         # And return it,
         return new_ones
+    
+    def audit_with_copy(self, fuzzable_request):
+        '''
+        Copy the fuzzable_request before auditing.
+
+        I copy the fuzzable request, to avoid cross plugin contamination.
+        In other words, if one plugins modified the fuzzable request object
+        INSIDE that plugin, I don't want the next plugin to suffer from that.
+        '''
+        return self.audit( fuzzable_request.copy() )
         
     def audit( self, freq ):
         '''

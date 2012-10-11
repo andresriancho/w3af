@@ -53,16 +53,16 @@ class audit(BaseConsumer):
             except w3afException, e:
                 om.out.error( str(e) )
 
-    def _consume(self, work_unit):
+    def _consume(self, fuzzable_request):
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), fuzzable_request ) )
             
             self._add_task()
             
-            result = self._threadpool.apply_async( plugin.audit_wrapper,
-                                                   (work_unit,),
-                                                   callback=self._task_done)
-            self._out_queue.put( (plugin.getName(), work_unit, result) )
+            apply_result = self._threadpool.apply_async( plugin.audit_with_copy,
+                                                         (fuzzable_request,),
+                                                         callback=self._task_done)
+            self._out_queue.put( (plugin.getName(), fuzzable_request, apply_result) )
     
     def handle_audit_results(self):
         '''
@@ -81,14 +81,14 @@ class audit(BaseConsumer):
         strategy execution.
         '''
         while True:
-            queue_item = self.out_queue.get()
+            queue_item = self._out_queue.get()
 
             if queue_item == POISON_PILL:
                 break
             else:
-                plugin_name, request, result = queue_item
+                plugin_name, request, apply_result = queue_item
                 try:
-                    result.get()
+                    apply_result.get()
                 except Exception, e:
                     # Smart error handling, much better than just crashing.
                     # Doing this here and not with something similar to:
@@ -105,7 +105,9 @@ class audit(BaseConsumer):
                     
                     exec_info = sys.exc_info()
                     enabled_plugins = pprint_plugins(self._w3af_core)
-                    self._w3af_core.exception_handler.handle( status, e , exec_info, enabled_plugins )
+                    self._w3af_core.exception_handler.handle( status, e , 
+                                                              exec_info,
+                                                              enabled_plugins )
                 else:
                     # Please note that this is not perfect, it is showing which
                     # plugin result was JUST taken from the Queue. The good thing is

@@ -84,7 +84,7 @@ class BruteforcePlugin(AuditPlugin):
         return p_bf.generator()
 
     def bruteforce_wrapper( self, fuzzable_request ):
-        self.audit_wrapper( fuzzable_request.copy() )
+        self.audit( fuzzable_request.copy() )
         
         res = []
         for v in kb.kb.get( self.getName(), 'auth' ):
