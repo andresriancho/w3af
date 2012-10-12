@@ -156,7 +156,7 @@ class sqli(AuditPlugin):
                     v = vuln.vuln(mutant)
                     v.setPluginName(self.getName())
                     v.set_id(response.id)
-                    v.setName('SQL injection vulnerability')
+                    v.setName('SQL injection')
                     v.setSeverity(severity.HIGH)
                     v.addToHighlight(sql_error_string)
                     v['error'] = sql_error_string
