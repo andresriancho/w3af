@@ -80,28 +80,25 @@ class rfi(AuditPlugin):
         
         @param freq: A fuzzable_request object
         '''
-        # Sanity check 
-        if not self._correctly_configured():
-            # Report error to the user only once
-            self._error_reported = True
-            raise w3afException(self.CONFIG_ERROR_MSG)
-        
-        if not self._error_reported:
-            # 1- create a request that will include a file from a local web server
-            self._local_test_inclusion(freq)
+        # The plugin is going to use two different techniques:
+        # 1- create a request that will include a file from the w3af site
+        if self._use_w3af_site:
+            self._w3af_site_test_inclusion(freq)
             
-            # The plugin is going to use two different techniques:
-            # 2- create a request that will include a file from the w3af official site
-            if self._use_w3af_site:
-                self._w3af_site_test_inclusion(freq)
-        
+        # Sanity check 
+        if self._correctly_configured():
+            # 2- create a request that will include a file from a local web server
+            self._local_test_inclusion(freq)
+        else:
+            # Report error to the user only once
+            if not self._error_reported:
+                self._error_reported = True
+                om.out.error(self.CONFIG_ERROR_MSG)
+                
     def _correctly_configured(self):
         '''
         @return: True if the plugin is correctly configured to run.
         '''
-        if self._use_w3af_site:
-            return True
-        
         listen_address = self._listen_address
         listen_port = self._listen_port
         
@@ -111,17 +108,17 @@ class rfi(AuditPlugin):
                 if webserver.is_running(listen_address, 
                                         listen_port):
                     return True
-                else:
-                    # Now test if it's possible to bind the address
-                    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    try:
-                        s.bind((listen_address, listen_port))
-                    except socket.error:
-                        return False
-                    finally:
-                        s.close()
-                        del s
-                    return True
+
+                # Test if it's possible to bind the address
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                try:
+                    s.bind((listen_address, listen_port))
+                except socket.error:
+                    return False
+                finally:
+                    s.close()
+                    del s
+                return True
     
     def _local_test_inclusion(self, freq):
         '''
@@ -381,7 +378,7 @@ class rfi(AuditPlugin):
         self._listen_port = options_list['listenPort'].getValue()
         self._use_w3af_site = options_list['usew3afSite'].getValue()
         
-        if not self._correctly_configured():
+        if not self._correctly_configured() and not self._use_w3af_site:
             raise w3afException(self.CONFIG_ERROR_MSG)
 
     def get_long_desc( self ):
