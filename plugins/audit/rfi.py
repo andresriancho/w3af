@@ -24,6 +24,8 @@ from __future__ import with_statement
 import socket
 import BaseHTTPServer
 
+from functools import partial
+
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
@@ -68,10 +70,6 @@ class rfi(AuditPlugin):
         self._error_reported = False
         
         # User configured parameters
-        self._rfi_url = None
-        self._rfi_result = None
-        self._rfi_result_part_1 = None
-        self._rfi_result_part_2 = None
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
@@ -151,7 +149,7 @@ class rfi(AuditPlugin):
             om.out.debug('w3af is running a webserver')
             try:
                 # Create file for remote inclusion
-                php_code = self._create_file()
+                php_code, rfi_data = self._create_file()
                 
                 # Setup the web server handler to return always the same response
                 # body. This is important for the test, since it might be the case
@@ -172,7 +170,7 @@ class rfi(AuditPlugin):
                                           RFIWebHandler)
                 
                 # Perform the real work
-                self._test_inclusion(freq)
+                self._test_inclusion(freq, rfi_data)
             except Exception, e:
                 om.out.error('An error occurred while running local webserver:'
                              ' "%s"' % e)
@@ -184,27 +182,34 @@ class rfi(AuditPlugin):
         @param freq: A fuzzable_request object
         @return: None, everything is saved to the kb
         '''        
-        self._rfi_url = url_object(self.RFI_TEST_URL)
-        self._rfi_result = 'w3af by Andres Riancho'
-        self._rfi_result_part_1 = 'w3af '
-        self._rfi_result_part_2 = 'by Andres Riancho'
-        # Perform the real work
-        self._test_inclusion(freq)
+        rfi_url = url_object(self.RFI_TEST_URL)
+        rfi_result = 'w3af by Andres Riancho'
+        rfi_result_part_1 = 'w3af '
+        rfi_result_part_2 = 'by Andres Riancho'
         
-    def _test_inclusion(self, freq):
+        rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
+        
+        # Perform the real work
+        self._test_inclusion(freq, rfi_data)
+        
+    def _test_inclusion(self, freq, rfi_data):
         '''
         Checks a fuzzable_request for remote file inclusion bugs.
         
-        @return: None
+        @param freq: The fuzzable request that we want to inject into
+        @param rfi_data: A RFIData object with all the information about the RFI
+        @return: None, vulnerabilities are stored in the KB in _analyze_result
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         
-        rfi_url_list = self._mutate_rfi_urls(self._rfi_url)
+        rfi_url_list = self._mutate_rfi_urls(rfi_data.rfi_url)
         mutants = create_mutants(freq, rfi_url_list, orig_resp=orig_resp)
+        
+        analyze_result_par = partial(self._analyze_result, rfi_data)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
-                                      self._analyze_result)
+                                      analyze_result_par)
 
     def _mutate_rfi_urls(self, orig_url):
         '''
@@ -233,7 +238,7 @@ class rfi(AuditPlugin):
         
         return result
                         
-    def _analyze_result(self, mutant, response):
+    def _analyze_result(self, rfi_data, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
@@ -242,7 +247,7 @@ class rfi(AuditPlugin):
         #
         if self._has_no_bug(mutant):
             
-            if self._rfi_result in response:
+            if rfi_data.rfi_result in response:
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
                 v.set_id(response.id)
@@ -253,10 +258,10 @@ class rfi(AuditPlugin):
                 v.setDesc( msg )
                 kb.kb.append(self, 'rfi', v)
             
-            elif self._rfi_result_part_1 in response \
-            and  self._rfi_result_part_2 in response:
+            elif rfi_data.rfi_result_part_1 in response \
+            and  rfi_data.rfi_result_part_2 in response:
                 # This means that both parts ARE in the response body but the
-                # self._rfi_result is NOT in it. In other words, the remote
+                # rfi_data.rfi_result is NOT in it. In other words, the remote
                 # content was embedded but not executed
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
@@ -323,9 +328,9 @@ class rfi(AuditPlugin):
         able to reduce the number of HTTP requests for testing many languages.
         '''
         # First, generate the php file to be included.
-        self._rfi_result_part_1 = rand1 = rand_alnum(9)
-        self._rfi_result_part_2 = rand2 = rand_alnum(9)
-        self._rfi_result = rand1 + rand2
+        rfi_result_part_1 = rand1 = rand_alnum(9)
+        rfi_result_part_2 = rand2 = rand_alnum(9)
+        rfi_result = rand1 + rand2
         
         filename = rand_alnum(8)
         php_code = '<? \n echo "%s";\n echo "%s";\n ?>' % (rand1, rand2)
@@ -333,9 +338,11 @@ class rfi(AuditPlugin):
         # Define the required parameters
         netloc = self._listen_address +':' + str(self._listen_port)
         path = '/' + filename
-        self._rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
+        rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
         
-        return php_code
+        rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
+        
+        return php_code, rfi_data
         
     def get_options(self):
         '''
@@ -419,4 +426,11 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.rfile.close()
             self.wfile.close()
             return
+        
+class RFIData(object):
+    def __init__(self, rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result):
+        self.rfi_url = rfi_url
+        self.rfi_result_part_1 = rfi_result_part_1
+        self.rfi_result_part_2 = rfi_result_part_2
+        self.rfi_result = rfi_result
         
