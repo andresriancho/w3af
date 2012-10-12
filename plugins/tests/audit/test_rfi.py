@@ -18,26 +18,48 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import urllib2
 
+import core.controllers.daemons.webserver as webserver
+
+from plugins.audit.rfi import RFIWebHandler
+from core.data.constants.w3afPorts import REMOTEFILEINCLUDE
 from ..helper import PluginTest, PluginConfig
 
 
 class TestRFI(PluginTest):
     
-    target_url = 'http://moth/w3af/audit/rfi/vulnerable.php'
+    target_rce = 'http://moth/w3af/audit/rfi/vulnerable.php'
+    target_read = 'https://moth/w3af/audit/local_file_read/local_file_read.php'
     
     _run_configs = {
-        'cfg': {
-            'target': target_url + '?file=section.php',
+        'default': {
+            'target': target_rce + '?file=section.php',
             'plugins': {
                  'audit': (PluginConfig('rfi'),),
                  }
+            },
+                    
+        'local': {
+            'target': target_rce + '?file=section.php',
+            'plugins': {
+                 'audit': (PluginConfig('rfi',
+                                        ('usew3afSite', False, PluginConfig.BOOL),),),
+                 }
+            },
+
+        'read': {
+            'target': target_read + '?file=section.txt',
+            'plugins': {
+                 'audit': (PluginConfig('rfi',
+                                        ('usew3afSite', False, PluginConfig.BOOL),),),
+                 }
             }
+
         }
     
-    def test_found_rfi(self):
-        # Run the scan
-        cfg = self._run_configs['cfg']
+    def test_found_rfi_with_w3af_site(self):
+        cfg = self._run_configs['default']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
@@ -45,6 +67,40 @@ class TestRFI(PluginTest):
         self.assertEquals(len(vulns), 1)
         
         vuln = vulns[0]
-        self.assertEquals("Remote file inclusion vulnerability", vuln.getName() )
-        self.assertEquals(self.target_url, vuln.getURL().url_string)
+        self.assertEquals("Remote code execution", vuln.getName() )
+        self.assertEquals(self.target_rce, vuln.getURL().url_string)
+    
+    def test_found_rfi_with_local_server_rce(self):
+        cfg = self._run_configs['local']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('rfi', 'rfi')
+        self.assertEquals(len(vulns), 1)
+        
+        vuln = vulns[0]
+        self.assertEquals("Remote code execution", vuln.getName() )
+        self.assertEquals(self.target_rce, vuln.getURL().url_string)
+        
+    def test_found_rfi_with_local_server_read(self):
+        cfg = self._run_configs['read']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('rfi', 'rfi')
+        self.assertEquals(len(vulns), 1)
+        
+        vuln = vulns[0]
+        self.assertEquals("Remote file inclusion", vuln.getName() )
+        self.assertEquals(self.target_read, vuln.getURL().url_string)
+        
+    def test_custom_web_server(self):
+        RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
+        webserver.start_webserver('127.0.0.1', REMOTEFILEINCLUDE, '.', RFIWebHandler)
+        
+        response_foobar = urllib2.urlopen('http://localhost:44449/foobar').read()
+        response_spameggs = urllib2.urlopen('http://localhost:44449/spameggs').read()
+        
+        self.assertEqual( response_foobar, response_spameggs )
+        self.assertEqual( response_foobar, RFIWebHandler.RESPONSE_BODY )
         

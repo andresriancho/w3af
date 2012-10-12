@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import os
 import socket
+import BaseHTTPServer
 
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
@@ -32,7 +32,6 @@ import core.controllers.daemons.webserver as webserver
 import core.data.constants.w3afPorts as w3afPorts
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afException
@@ -42,19 +41,25 @@ from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
 from core.data.parsers.urlParser import url_object
 
-CONFIG_ERROR_MSG = ('audit.rfi plugin has to be correctly '
-'configured to use. Please set the correct values for local address and '
-'port, or use the official w3af site as the target server for remote '
-'inclusions.')
-
-RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/rfi.html'
-
 
 class rfi(AuditPlugin):
     '''
     Find remote file inclusion vulnerabilities.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+
+    CONFIG_ERROR_MSG = 'audit.rfi plugin needs to be correctly configured to use.' \
+                       ' Please set valid values for local address (eg. 10.5.2.5)' \
+                       ' and port (eg. 44449), or use the official w3af site as' \
+                       ' the target server for remote inclusions.'
+    
+    RFI_TEST_URL = 'http://w3af.sourceforge.net/w3af/rfi.html'
+    
+    RFI_ERRORS = ('php_network_getaddresses: getaddrinfo',
+                  'failed to open stream: Connection refused in'
+                  'java.io.FileNotFoundException',
+                  'java.net.ConnectException',
+                  'java.net.UnknownHostException')
 
     def __init__(self):
         AuditPlugin.__init__(self)
@@ -65,6 +70,8 @@ class rfi(AuditPlugin):
         # User configured parameters
         self._rfi_url = None
         self._rfi_result = None
+        self._rfi_result_part_1 = None
+        self._rfi_result_part_2 = None
         self._listen_port = w3afPorts.REMOTEFILEINCLUDE
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
@@ -79,7 +86,7 @@ class rfi(AuditPlugin):
         if not self._correctly_configured():
             # Report error to the user only once
             self._error_reported = True
-            raise w3afException(CONFIG_ERROR_MSG)
+            raise w3afException(self.CONFIG_ERROR_MSG)
         
         if not self._error_reported:
             # 1- create a request that will include a file from a local web server
@@ -104,13 +111,13 @@ class rfi(AuditPlugin):
             with self._plugin_lock:
                 # If we have an active instance then we're OK!
                 if webserver.is_running(listen_address, 
-                                        self._listen_port):
+                                        listen_port):
                     return True
                 else:
                     # Now test if it's possible to bind the address
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     try:
-                        s.bind((listen_address, self._listen_port))
+                        s.bind((listen_address, listen_port))
                     except socket.error:
                         return False
                     finally:
@@ -144,20 +151,31 @@ class rfi(AuditPlugin):
             om.out.debug('w3af is running a webserver')
             try:
                 # Create file for remote inclusion
-                self._create_file()
+                php_code = self._create_file()
+                
+                # Setup the web server handler to return always the same response
+                # body. This is important for the test, since it might be the case
+                # that the web application prepends/appends something to the
+                # URL being included, and we don't want to fail there!
+                #
+                # Also, this allows us to remove the payloads we sent with \0
+                # which tried to achieve the same result.
+                RFIWebHandler.RESPONSE_BODY = php_code
                 
                 # Start web server
-                webroot = os.path.join(get_home_dir(), 'webroot')
+                #
+                # No real webroot is required since the custom handler returns
+                # always the same HTTP response body 
+                webroot = '.'
                 webserver.start_webserver(self._listen_address,
-                                          self._listen_port, webroot)
+                                          self._listen_port, webroot,
+                                          RFIWebHandler)
                 
                 # Perform the real work
                 self._test_inclusion(freq)
             except Exception, e:
                 om.out.error('An error occurred while running local webserver:'
                              ' "%s"' % e)
-            finally:
-                self._rm_file()
             
     def _w3af_site_test_inclusion(self, freq):
         '''
@@ -166,8 +184,10 @@ class rfi(AuditPlugin):
         @param freq: A fuzzable_request object
         @return: None, everything is saved to the kb
         '''        
-        self._rfi_url = url_object(RFI_TEST_URL)
-        self._rfi_result = 'w3af is goood!'
+        self._rfi_url = url_object(self.RFI_TEST_URL)
+        self._rfi_result = 'w3af by Andres Riancho'
+        self._rfi_result_part_1 = 'w3af '
+        self._rfi_result_part_2 = 'by Andres Riancho'
         # Perform the real work
         self._test_inclusion(freq)
         
@@ -179,17 +199,40 @@ class rfi(AuditPlugin):
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         
-        rfi_url = str(self._rfi_url)
-        # FIXME: We don't really care about this null byte, but we should have
-        # a handler that returns the content we want for every HTTP request,
-        # without checking the filename
-        rfi_url_list = [rfi_url, rfi_url + '\0']
+        rfi_url_list = self._mutate_rfi_urls(self._rfi_url)
         mutants = create_mutants(freq, rfi_url_list, orig_resp=orig_resp)
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-                
+
+    def _mutate_rfi_urls(self, orig_url):
+        '''
+        @param orig_url: url_object with the URL to mutate
+        @return: A list of strings with URLs that will be sent to the remote
+                 site to test if the inclusion is successful or not. Techniques
+                 used to mutate:
+                     * Remove protocol
+                     * Case sensitive protocol
+                     * Same as input
+        '''
+        result = []
+        
+        # same as input
+        result.append( orig_url.url_string )
+        
+        # url without protocol
+        url_str = orig_url.url_string.replace(orig_url.getProtocol()+'://','', 1)
+        result.append(url_str)
+
+        # url without case insensitive protocol
+        orig_proto = orig_url.getProtocol()
+        mutated_proto = orig_proto.replace('http', 'hTtP')
+        url_str = orig_url.url_string.replace(orig_proto, mutated_proto, 1)
+        result.append(url_str)
+        
+        return result
+                        
     def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
@@ -204,27 +247,46 @@ class rfi(AuditPlugin):
                 v.setPluginName(self.getName())
                 v.set_id(response.id)
                 v.setSeverity(severity.HIGH)
-                v.setName('Remote file inclusion vulnerability')
-                v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                v.setName('Remote code execution')
+                msg = 'A remote file inclusion vulnerability that allows remote' \
+                      ' code execution was found at: ' + mutant.foundAt()
+                v.setDesc( msg )
+                kb.kb.append(self, 'rfi', v)
+            
+            elif self._rfi_result_part_1 in response \
+            and  self._rfi_result_part_2 in response:
+                # This means that both parts ARE in the response body but the
+                # self._rfi_result is NOT in it. In other words, the remote
+                # content was embedded but not executed
+                v = vuln.vuln(mutant)
+                v.setPluginName(self.getName())
+                v.set_id(response.id)
+                v.setSeverity(severity.MEDIUM)
+                v.setName('Remote file inclusion')
+                msg = 'A remote file inclusion vulnerability without code' \
+                      ' execution was found at: ' + mutant.foundAt()
+                v.setDesc( msg )
                 kb.kb.append(self, 'rfi', v)
             
             else:
                 #
-                #   Analyze some errors that indicate that there is a RFI but with some
-                #   "configuration problems"
+                #   Analyze some errors that indicate that there is a RFI but
+                #   with some "configuration problems"
                 #
-                rfi_errors = ['php_network_getaddresses: getaddrinfo',
-                              'failed to open stream: Connection refused in']
-                for error in rfi_errors:
+                for error in self.RFI_ERRORS:
                     if error in response and not error in mutant.getOriginalResponseBody():
                         v = vuln.vuln( mutant )
                         v.setPluginName(self.getName())
                         v.set_id( response.id )
-                        v.setSeverity(severity.MEDIUM)
+                        v.setSeverity(severity.LOW)
                         v.addToHighlight(error)
-                        v.setName('Remote file inclusion vulnerability')
-                        v.setDesc('Remote file inclusion was found at: ' + mutant.foundAt())
+                        v.setName('Potential remote file inclusion')
+                        msg = 'A potential remote file inclusion vulnerability' \
+                              ' was identified by the means of application error' \
+                              '  messages at: ' + mutant.foundAt()
+                        v.setDesc( msg )
                         kb.kb.append(self, 'rfi', v)
+                        break
 
     def end(self):
         '''
@@ -236,32 +298,45 @@ class rfi(AuditPlugin):
         '''
         Create random name file php with random php content. To be used in the
         remote file inclusion test.
+        
+        @return: The file content to be served via the webserver.
+        
+        TODO: make this code compatible with: asp/aspx, jsp, js (nodejs), pl,
+              py, rb, etc. Some code snippets that might help to achieve this
+              task:
+              
+        asp_code = 'response.write("%s");\n response.write("%s");' % (rand1, rand2)
+        asp_code = '<% \n '+asp_code+'\n %>'
+        
+        jsp_code = 'out.print("%s");\n out.print("%s");' % (rand1, rand2)
+        jsp_code = '<% \n '+jsp_code+'\n %>'
+
+        Also, what about having only one file that has all languages and including
+        that? For example, generate a file with the following:
+        
+        <? php_code ?>
+        <% asp_code %>
+        <% jsp_code %>
+        
+        That way, if the languages "are compatible" and ignore the errors that
+        might be generated by the invalid code in the other block, we might be
+        able to reduce the number of HTTP requests for testing many languages.
         '''
         # First, generate the php file to be included.
-        rand1 = rand_alnum(9)
-        rand2 = rand_alnum(9)
-        filename = rand_alnum()
-        php_code = '<? \n echo "%s";\n echo "%s";\n ?>' % (rand1, rand2)
+        self._rfi_result_part_1 = rand1 = rand_alnum(9)
+        self._rfi_result_part_2 = rand2 = rand_alnum(9)
+        self._rfi_result = rand1 + rand2
         
-        # Write the php to the webroot
-        file_handler = open(os.path.join(get_home_dir(), 'webroot', filename), 'w')
-        file_handler.write(php_code)
-        file_handler.close()
+        filename = rand_alnum(8)
+        php_code = '<? \n echo "%s";\n echo "%s";\n ?>' % (rand1, rand2)
         
         # Define the required parameters
         netloc = self._listen_address +':' + str(self._listen_port)
         path = '/' + filename
         self._rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
-        self._rfi_result = rand1 + rand2
         
-    def _rm_file(self):
-        '''
-        Stop the server, remove the file from the webroot.
-        '''
-        # Remove the file
-        filename = self._rfi_url.getFileName()
-        os.remove(os.path.join(get_home_dir(), 'webroot', filename))
-
+        return php_code
+        
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.
@@ -300,7 +375,7 @@ class rfi(AuditPlugin):
         self._use_w3af_site = options_list['usew3afSite'].getValue()
         
         if not self._correctly_configured():
-            raise w3afException(CONFIG_ERROR_MSG)
+            raise w3afException(self.CONFIG_ERROR_MSG)
 
     def get_long_desc( self ):
         '''
@@ -314,10 +389,34 @@ class rfi(AuditPlugin):
             - listenPort
             - usew3afSite
         
-        There are two ways of running this plugin, one is the most common one,
-        by using the w3af site ( w3af.sf.net ) as the place from where the target
-        web application will fetch the remote file. The other way to test for
-        inclusion is to run a webserver on the local machine that is performing
-        the scan. The second option is configured using the "listenAddress" and
-        "listenPort" parameters.
+        There are two ways of running this plugin, the most common one is to use
+        w3af's site (w3af.sf.net) as the URL to include. This is convenient and
+        requires zero configuration but leaks information about vulnerable sites
+        to w3af.sf.net staff.
+        
+        The second way to configure this plugin runs a webserver on the box
+        running w3af on the IP address and port specified by "listenAddress"
+        and "listenPort". This method requires the target web application to be
+        able to contact the newly created server and will not work unless
+        you also configure your NAT router and firewalls (if any exist).
         '''
+
+class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+
+    RESPONSE_BODY = None
+
+    def do_GET(self):
+        try:
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            self.wfile.write(self.RESPONSE_BODY)
+        except Exception, e:
+            om.out.debug('[RFIWebHandler] Exception: "%s".' % e)
+        finally:
+            # Clean up
+            self.close_connection = 1
+            self.rfile.close()
+            self.wfile.close()
+            return
+        
