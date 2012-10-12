@@ -111,6 +111,7 @@ class rfi(AuditPlugin):
 
                 # Test if it's possible to bind the address
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 try:
                     s.bind((listen_address, listen_port))
                 except socket.error:
@@ -181,8 +182,8 @@ class rfi(AuditPlugin):
         '''        
         rfi_url = url_object(self.RFI_TEST_URL)
         rfi_result = 'w3af by Andres Riancho'
-        rfi_result_part_1 = 'w3af '
-        rfi_result_part_2 = 'by Andres Riancho'
+        rfi_result_part_1 = 'w3af'
+        rfi_result_part_2 = ' by Andres Riancho'
         
         rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
         
