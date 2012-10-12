@@ -35,27 +35,6 @@ _servers = {}
 SERVER_TIMEOUT = 3 * 60
 
 
-def start_webserver(ip, port, webroot):
-    '''Create a http server deamon. The returned instance is unique for <ip>
-    and <port>.
-    
-    @param ip: IP number
-    @param port: Port number
-    @param webroot: webserver's root directory
-    @return: A local webserver instance bound to the requested address (<ip>, <port>)
-    '''
-    server_thread = _get_inst(ip, port)
-
-    if server_thread is None or server_thread.is_down():
-        web_server = w3afHTTPServer((ip, port), webroot, w3afWebHandler)
-        _servers[(ip, port)] = web_server
-        # Start server!
-        server_thread = threading.Thread(target=web_server.serve_forever)
-        server_thread.daemon = True
-        server_thread.start()
-    
-    return server_thread
-
 def is_running(ip, port):
     '''
     Given `ip` and `port` determine if a there's a bound webserver instance
@@ -145,11 +124,11 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             else:
                 try:
                     self.send_response(200)
-                    # This aint nice, but this aint a complete web server implementation
+                    # This isn't nice, but this is NOT a complete web server implementation
                     # it is only here to serve some files to "victim" web servers
-                    type, encoding = mimetypes.guess_type(self.path)
-                    if type is not None:
-                        self.send_header('Content-type', type)
+                    content_type, encoding = mimetypes.guess_type(self.path)
+                    if content_type is not None:
+                        self.send_header('Content-type', content_type)
                     else:
                         self.send_header('Content-type', 'text/html')
                     self.end_headers()
@@ -172,3 +151,24 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         '''
         message = "webserver.py: %s - %s" % (self.address_string(), fmt % args)
         om.out.debug(message)
+
+def start_webserver(ip, port, webroot, handler=w3afWebHandler):
+    '''Create a http server deamon. The returned instance is unique for <ip>
+    and <port>.
+    
+    @param ip: IP number
+    @param port: Port number
+    @param webroot: webserver's root directory
+    @return: A local webserver instance bound to the requested address (<ip>, <port>)
+    '''
+    server_thread = _get_inst(ip, port)
+
+    if server_thread is None or server_thread.is_down():
+        web_server = w3afHTTPServer((ip, port), webroot, handler)
+        _servers[(ip, port)] = web_server
+        # Start server!
+        server_thread = threading.Thread(target=web_server.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
+    
+    return server_thread
