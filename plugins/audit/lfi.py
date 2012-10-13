@@ -273,6 +273,11 @@ class lfi(AuditPlugin):
         else:
             read_errors = []
             read_errors.append("java.io.FileNotFoundException:")
+            read_errors.append('java.lang.Exception:')
+            read_errors.append('java.lang.IllegalArgumentException:')
+            read_errors.append('java.net.MalformedURLException:')
+            read_errors.append('The server encountered an internal error \\(.*\\) that prevented it from fulfilling this request.')
+            read_errors.append('The requested resource \\(.*\\) is not available.')
             read_errors.append("fread\\(\\):")
             read_errors.append("for inclusion '\\(include_path=")
             read_errors.append("Failed opening required")
