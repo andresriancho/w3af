@@ -33,14 +33,14 @@ class TestRFI(PluginTest):
     target_read = 'https://moth/w3af/audit/local_file_read/local_file_read.php'
     
     _run_configs = {
-        'default': {
+        'remote_rce': {
             'target': target_rce + '?file=section.php',
             'plugins': {
                  'audit': (PluginConfig('rfi'),),
                  }
             },
                     
-        'local': {
+        'local_rce': {
             'target': target_rce + '?file=section.php',
             'plugins': {
                  'audit': (PluginConfig('rfi',
@@ -48,7 +48,15 @@ class TestRFI(PluginTest):
                  }
             },
 
-        'read': {
+        'local_read': {
+            'target': target_read + '?file=section.txt',
+            'plugins': {
+                 'audit': (PluginConfig('rfi',
+                                        ('usew3afSite', False, PluginConfig.BOOL),),),
+                 }
+            },
+
+        'remote_read': {
             'target': target_read + '?file=section.txt',
             'plugins': {
                  'audit': (PluginConfig('rfi',
@@ -59,7 +67,7 @@ class TestRFI(PluginTest):
         }
     
     def test_found_rfi_with_w3af_site(self):
-        cfg = self._run_configs['default']
+        cfg = self._run_configs['remote_rce']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
@@ -71,7 +79,7 @@ class TestRFI(PluginTest):
         self.assertEquals(self.target_rce, vuln.getURL().url_string)
     
     def test_found_rfi_with_local_server_rce(self):
-        cfg = self._run_configs['local']
+        cfg = self._run_configs['local_rce']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
@@ -83,7 +91,7 @@ class TestRFI(PluginTest):
         self.assertEquals(self.target_rce, vuln.getURL().url_string)
         
     def test_found_rfi_with_local_server_read(self):
-        cfg = self._run_configs['read']
+        cfg = self._run_configs['local_read']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
@@ -93,7 +101,19 @@ class TestRFI(PluginTest):
         vuln = vulns[0]
         self.assertEquals("Remote file inclusion", vuln.getName() )
         self.assertEquals(self.target_read, vuln.getURL().url_string)
+
+    def test_found_rfi_with_remote_server_read(self):
+        cfg = self._run_configs['remote_read']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('rfi', 'rfi')
+        self.assertEquals(len(vulns), 1)
         
+        vuln = vulns[0]
+        self.assertEquals("Remote file inclusion", vuln.getName() )
+        self.assertEquals(self.target_read, vuln.getURL().url_string)
+                
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
         webserver.start_webserver('127.0.0.1', REMOTEFILEINCLUDE, '.', RFIWebHandler)
