@@ -1,0 +1,110 @@
+# -*- encoding: utf-8 -*-
+'''
+test_utils.py
+
+Copyright 2012 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+'''
+import unittest
+
+from mock import MagicMock, Mock
+
+from core.data.url.httpResponse import httpResponse
+from core.data.request.fuzzable_request import fuzzable_request
+from core.data.parsers.urlParser import url_object
+from core.data.dc.header import Header
+
+from core.controllers.cors.utils import (build_cors_request, retrieve_cors_header,
+                                         provides_cors_features)
+
+class TestUtils(unittest.TestCase):
+    
+    def test_provides_cors_features_fails(self):
+        self.assertRaises(AttributeError, provides_cors_features, None, None)
+    
+    def test_provides_cors_features_false(self):
+        url = url_object('http://moth/')
+        fr = fuzzable_request(url)
+        
+        http_response = httpResponse(200, '', Header(), url, url)
+        
+        url_opener_mock = Mock()
+        url_opener_mock.HEAD = MagicMock(return_value=http_response)
+        
+        cors = provides_cors_features(fr, url_opener_mock)
+        
+        url_opener_mock.HEAD.assert_called_with(url)
+        
+        self.assertFalse( cors )
+
+    def test_provides_cors_features_true(self):
+        url = url_object('http://moth/')
+        fr = fuzzable_request(url)
+        
+        cors_headers = Header({'Access-Control-Allow-Origin': 'http://www.w3af.org/'})
+        http_response = httpResponse(200, '', cors_headers, url, url)
+        
+        url_opener_mock = Mock()
+        url_opener_mock.HEAD = MagicMock(return_value=http_response)
+        
+        cors = provides_cors_features(fr, url_opener_mock)
+        
+        url_opener_mock.HEAD.assert_called_with(url)
+        
+        self.assertTrue( cors ) 
+
+    def test_retrieve_cors_header_true(self):
+        url = url_object('http://moth/')
+        
+        w3af_url = 'http://www.w3af.org/'
+        cors_headers = Header({'Access-Control-Allow-Origin': w3af_url})
+        http_response = httpResponse(200, '', cors_headers, url, url)
+        
+        value = retrieve_cors_header(http_response, 'Access-Control-Allow-Origin')
+        
+        self.assertEqual( value, w3af_url )
+
+    def test_retrieve_cors_header_false(self):
+        url = url_object('http://moth/')
+        
+        cors_headers = Header({'Access-Control': 'Allow-Origin'})
+        http_response = httpResponse(200, '', cors_headers, url, url)
+        
+        value = retrieve_cors_header(http_response, 'Access-Control-Allow-Origin')
+        
+        self.assertEqual( value, None )
+
+    def test_build_cors_request_true(self):
+        url = url_object('http://moth/')
+        
+        fr = build_cors_request(url, 'http://foo.com/')
+        
+        self.assertEquals(fr.getURL(), url)
+        self.assertEquals(fr.get_method(), 'GET')
+        self.assertEquals(fr.getHeaders(), {'Origin': 'http://foo.com/'})
+
+    def test_build_cors_request_false(self):
+        url = url_object('http://moth/')
+        
+        fr = build_cors_request(url, None)
+        
+        self.assertEquals(fr.getURL(), url)
+        self.assertEquals(fr.get_method(), 'GET')
+        self.assertEquals(fr.getHeaders(), {})
+        
+        
