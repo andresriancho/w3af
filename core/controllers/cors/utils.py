@@ -38,20 +38,19 @@ def provides_cors_features(freq, url_opener):
                        HTTP request/response processing.
     @return: True if the URL provides CORS features, False otherwise. 
     '''        
-    #Initialize detection result flag
-    supports_cors = False
+    response = url_opener.GET(freq.getURL())
     
-    # Send request and analyze response
-    response = url_opener.HEAD(freq.getURL())
+    ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
+    if ac_value is not None:
+        return True
     
-    # Analyze response (explicitly do not care about response code)         
-    for header_name in response.getHeaders().keys():
-        if header_name.upper().strip() == ACCESS_CONTROL_ALLOW_ORIGIN:  
-            supports_cors = True
-            break
+    headers = Header({'Origin': 'www.w3af.org'})
+    response = url_opener.GET(freq.getURL(), headers=headers)
+    ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
+    if ac_value is not None:
+        return True
     
-    # Return detection result flag
-    return supports_cors             
+    return False             
    
    
 def retrieve_cors_header(response, key):   
