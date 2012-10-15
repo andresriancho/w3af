@@ -240,56 +240,51 @@ class rfi(AuditPlugin):
         '''
         Analyze results of the _send_mutant method.
         '''
-        #
-        #   I will only report the vulnerability once.
-        #
-        if self._has_no_bug(mutant):
-            
-            if rfi_data.rfi_result in response:
-                v = vuln.vuln(mutant)
-                v.setPluginName(self.getName())
-                v.set_id(response.id)
-                v.setSeverity(severity.HIGH)
-                v.setName('Remote code execution')
-                msg = 'A remote file inclusion vulnerability that allows remote' \
-                      ' code execution was found at: ' + mutant.foundAt()
-                v.setDesc( msg )
-                kb.kb.append(self, 'rfi', v)
-            
-            elif rfi_data.rfi_result_part_1 in response \
-            and  rfi_data.rfi_result_part_2 in response:
-                # This means that both parts ARE in the response body but the
-                # rfi_data.rfi_result is NOT in it. In other words, the remote
-                # content was embedded but not executed
-                v = vuln.vuln(mutant)
-                v.setPluginName(self.getName())
-                v.set_id(response.id)
-                v.setSeverity(severity.MEDIUM)
-                v.setName('Remote file inclusion')
-                msg = 'A remote file inclusion vulnerability without code' \
-                      ' execution was found at: ' + mutant.foundAt()
-                v.setDesc( msg )
-                kb.kb.append(self, 'rfi', v)
-            
-            else:
-                #
-                #   Analyze some errors that indicate that there is a RFI but
-                #   with some "configuration problems"
-                #
-                for error in self.RFI_ERRORS:
-                    if error in response and not error in mutant.getOriginalResponseBody():
-                        v = vuln.vuln( mutant )
-                        v.setPluginName(self.getName())
-                        v.set_id( response.id )
-                        v.setSeverity(severity.LOW)
-                        v.addToHighlight(error)
-                        v.setName('Potential remote file inclusion')
-                        msg = 'A potential remote file inclusion vulnerability' \
-                              ' was identified by the means of application error' \
-                              '  messages at: ' + mutant.foundAt()
-                        v.setDesc( msg )
-                        kb.kb.append(self, 'rfi', v)
-                        break
+        if rfi_data.rfi_result in response:
+            v = vuln.vuln(mutant)
+            v.setPluginName(self.getName())
+            v.set_id(response.id)
+            v.setSeverity(severity.HIGH)
+            v.setName('Remote code execution')
+            msg = 'A remote file inclusion vulnerability that allows remote' \
+                  ' code execution was found at: ' + mutant.foundAt()
+            v.setDesc( msg )
+            kb.kb.append_uniq(self, 'rfi', v)
+        
+        elif rfi_data.rfi_result_part_1 in response \
+        and  rfi_data.rfi_result_part_2 in response:
+            # This means that both parts ARE in the response body but the
+            # rfi_data.rfi_result is NOT in it. In other words, the remote
+            # content was embedded but not executed
+            v = vuln.vuln(mutant)
+            v.setPluginName(self.getName())
+            v.set_id(response.id)
+            v.setSeverity(severity.MEDIUM)
+            v.setName('Remote file inclusion')
+            msg = 'A remote file inclusion vulnerability without code' \
+                  ' execution was found at: ' + mutant.foundAt()
+            v.setDesc( msg )
+            kb.kb.append_uniq(self, 'rfi', v)
+        
+        else:
+            #
+            #   Analyze some errors that indicate that there is a RFI but
+            #   with some "configuration problems"
+            #
+            for error in self.RFI_ERRORS:
+                if error in response and not error in mutant.getOriginalResponseBody():
+                    v = vuln.vuln( mutant )
+                    v.setPluginName(self.getName())
+                    v.set_id( response.id )
+                    v.setSeverity(severity.LOW)
+                    v.addToHighlight(error)
+                    v.setName('Potential remote file inclusion')
+                    msg = 'A potential remote file inclusion vulnerability' \
+                          ' was identified by the means of application error' \
+                          '  messages at: ' + mutant.foundAt()
+                    v.setDesc( msg )
+                    kb.kb.append_uniq(self, 'rfi', v)
+                    break
 
     def end(self):
         '''
