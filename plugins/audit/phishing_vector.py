@@ -69,9 +69,9 @@ class phishing_vector(AuditPlugin):
         Analyze results of the _send_mutant method.
         '''
         if self._has_no_bug(mutant):
-                vulns = self._find_phishing_vector(mutant, response)
-                for vuln in vulns:
-                    kb.kb.append(self, 'phishing_vector', vuln)
+            vulns = self._find_phishing_vector(mutant, response)
+            for vuln in vulns:
+                kb.kb.append_uniq(self, 'phishing_vector', vuln)
     
     def _find_phishing_vector( self, mutant, response ):
         '''

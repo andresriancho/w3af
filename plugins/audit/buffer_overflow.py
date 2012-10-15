@@ -115,13 +115,13 @@ class buffer_overflow(AuditPlugin):
         except (w3afException,w3afMustStopException):
             i = info.info( mutant )
             i.setPluginName(self.getName())
-            i.setName( 'Possible buffer overflow vulnerability' )
+            i.setName( 'Potential buffer overflow vulnerability' )
             msg = 'A potential (most probably a false positive than a bug) buffer-'
             msg += 'overflow was found when requesting: "%s", using HTTP method'
             msg += ' %s. The data sent was: "%s".' 
             msg = msg % ( mutant.getURL(), mutant.get_method(), mutant.getDc())
             i.setDesc( msg )
-            kb.kb.append( self, 'buffer_overflow', i )
+            kb.kb.append_uniq( self, 'buffer_overflow', i )
         else:
             self._analyze_result( mutant, response )
                 
@@ -138,11 +138,11 @@ class buffer_overflow(AuditPlugin):
                 v.set_id( response.id )
                 v.setSeverity(severity.MEDIUM)
                 v.setName( 'Buffer overflow vulnerability' )
-                msg = 'A possible buffer overflow (detection is really hard...)'
+                msg = 'A potential buffer overflow (accurate detection is hard...)'
                 msg += ' was found at: ' + mutant.foundAt()
                 v.setDesc( msg )
                 v.addToHighlight( error_str )
-                kb.kb.append( self, 'buffer_overflow', v )
+                kb.kb.append_uniq( self, 'buffer_overflow', v )
     
     def end(self):
         '''

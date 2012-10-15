@@ -158,69 +158,70 @@ class lfi(AuditPlugin):
         #
         #   I will only report the vulnerability once.
         #
-        if self._has_no_bug(mutant):
+        if self._has_bug(mutant):
+            return
             
-            #
-            #   Identify the vulnerability
-            #
-            file_content_list = self._find_file(response)
-            for file_pattern_match in file_content_list:
-                if file_pattern_match not in mutant.getOriginalResponseBody():
-                    v = vuln.vuln(mutant)
-                    v.setPluginName(self.getName())
-                    v.set_id(response.id)
-                    v.setName('Local file inclusion vulnerability')
-                    v.setSeverity(severity.MEDIUM)
-                    v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
-                    v['file_pattern'] = file_pattern_match
-                    v.addToHighlight(file_pattern_match)
-                    kb.kb.append(self, 'lfi', v)
-                    return
+        #
+        #   Identify the vulnerability
+        #
+        file_content_list = self._find_file(response)
+        for file_pattern_match in file_content_list:
+            if file_pattern_match not in mutant.getOriginalResponseBody():
+                v = vuln.vuln(mutant)
+                v.setPluginName(self.getName())
+                v.set_id(response.id)
+                v.setName('Local file inclusion vulnerability')
+                v.setSeverity(severity.MEDIUM)
+                v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
+                v['file_pattern'] = file_pattern_match
+                v.addToHighlight(file_pattern_match)
+                kb.kb.append_uniq(self, 'lfi', v)
+                return
 
+        
+        #
+        #   If the vulnerability could not be identified by matching strings that commonly
+        #   appear in "/etc/passwd", then I'll check one more thing...
+        #   (note that this is run if no vulns were identified)
+        #
+        #   http://host.tld/show_user.php?id=show_user.php
+        if mutant.getModValue() == mutant.getURL().getFileName():
+            match, lang = is_source_file( response.getBody() )
+            if match:
+                #   We were able to read the source code of the file that is vulnerable to
+                #   local file read
+                v = vuln.vuln( mutant )
+                v.setPluginName(self.getName())
+                v.set_id( response.id )
+                v.setName( 'Local file read vulnerability' )
+                v.setSeverity(severity.MEDIUM)
+                msg = 'An arbitrary local file read vulnerability was found at: '
+                msg += mutant.foundAt()
+                v.setDesc( msg )
+                
+                #
+                #    Set which part of the source code to match
+                #
+                match_source_code = match.group(0)
+                v['file_pattern'] = match_source_code
+                
+                kb.kb.append_uniq( self, 'lfi', v )
+                return
+                
+        #
+        #   Check for interesting errors (note that this is run if no vulns were identified)
+        #
+        for regex in self.get_include_errors():
             
-            #
-            #   If the vulnerability could not be identified by matching strings that commonly
-            #   appear in "/etc/passwd", then I'll check one more thing...
-            #   (note that this is run if no vulns were identified)
-            #
-            #   http://host.tld/show_user.php?id=show_user.php
-            if mutant.getModValue() == mutant.getURL().getFileName():
-                match, lang = is_source_file( response.getBody() )
-                if match:
-                    #   We were able to read the source code of the file that is vulnerable to
-                    #   local file read
-                    v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.set_id( response.id )
-                    v.setName( 'Local file read vulnerability' )
-                    v.setSeverity(severity.MEDIUM)
-                    msg = 'An arbitrary local file read vulnerability was found at: '
-                    msg += mutant.foundAt()
-                    v.setDesc( msg )
-                    
-                    #
-                    #    Set which part of the source code to match
-                    #
-                    match_source_code = match.group(0)
-                    v['file_pattern'] = match_source_code
-                    
-                    kb.kb.append( self, 'lfi', v )
-                    return
-                    
-            #
-            #   Check for interesting errors (note that this is run if no vulns were identified)
-            #
-            for regex in self.get_include_errors():
-                
-                match = regex.search( response.getBody() )
-                
-                if match and not regex.search( mutant.getOriginalResponseBody() ):
-                    i = info.info( mutant )
-                    i.setPluginName(self.getName())
-                    i.set_id( response.id )
-                    i.setName( 'File read error' )
-                    i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
-                    kb.kb.append( self, 'error', i )        
+            match = regex.search( response.getBody() )
+            
+            if match and not regex.search( mutant.getOriginalResponseBody() ):
+                i = info.info( mutant )
+                i.setPluginName(self.getName())
+                i.set_id( response.id )
+                i.setName( 'File read error' )
+                i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
+                kb.kb.append_uniq( self, 'error', i )        
     
     def end(self):
         '''

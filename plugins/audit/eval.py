@@ -136,7 +136,7 @@ class eval(AuditPlugin):
                 v.setSeverity(severity.HIGH)
                 v.setName('eval() input injection vulnerability')
                 v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
-                kb.kb.append(self, 'eval', v)
+                kb.kb.append_uniq(self, 'eval', v)
                 break
                         
     def _analyze_echo(self, mutant, response):
@@ -146,15 +146,14 @@ class eval(AuditPlugin):
         '''
         eval_error_list = self._find_eval_result(response)
         for eval_error in eval_error_list:
-            if not re.search(eval_error, mutant.getOriginalResponseBody(), re.IGNORECASE)\
-            and self._has_no_bug(mutant):
+            if not re.search(eval_error, mutant.getOriginalResponseBody(), re.I):
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.getName())
                 v.set_id(response.id)
                 v.setSeverity(severity.HIGH)
                 v.setName('eval() input injection vulnerability')
                 v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
-                kb.kb.append(self, 'eval', v)
+                kb.kb.append_uniq(self, 'eval', v)
 
     def end(self):
         '''

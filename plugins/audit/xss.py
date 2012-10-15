@@ -353,7 +353,7 @@ class xss(AuditPlugin):
                     msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
                     v.setDesc(msg)
                     v.addToHighlight(mod_value)
-                    kb.kb.append(self, 'xss', v)
+                    kb.kb.append_uniq(self, 'xss', v)
     
     def _checkHTML(self, xss_string , response):
         '''

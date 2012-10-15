@@ -81,7 +81,8 @@ class format_string(AuditPlugin):
                     msg += mutant.foundAt()
                     v.setDesc( msg )
                     v.addToHighlight( error )
-                    kb.kb.append( self, 'format_string', v )
+                    kb.kb.append_uniq( self, 'format_string', v )
+                    break
     
     def end(self):
         '''
@@ -101,8 +102,8 @@ class format_string(AuditPlugin):
 
     def get_plugin_deps( self ):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+                 the current one.
         '''
         return ['grep.error_500']
     

@@ -118,7 +118,7 @@ class redos(AuditPlugin):
                     v.setDc( mutant.getDc() )
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
-                    kb.kb.append( self, 'redos', v )
+                    kb.kb.append_uniq( self, 'redos', v )
 
                 else:
                     # The first delay existed... I must report something...

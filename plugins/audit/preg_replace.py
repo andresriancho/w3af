@@ -79,7 +79,8 @@ class preg_replace(AuditPlugin):
                     v.setName( 'Unsafe usage of preg_replace' )
                     v.setDesc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
                     v.addToHighlight( preg_error_string )
-                    kb.kb.append( self, 'preg_replace', v )
+                    kb.kb.append_uniq( self, 'preg_replace', v )
+                    break
         
     def end(self):
         '''

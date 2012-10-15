@@ -23,15 +23,12 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.sql_tools.blind_sqli_response_diff import \
-    blind_sqli_response_diff
-from core.controllers.sql_tools.blind_sqli_time_delay import \
-    blind_sqli_time_delay
+from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
+from core.controllers.sql_tools.blind_sqli_time_delay import blind_sqli_time_delay
 
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
-
 
 
 class blind_sqli(AuditPlugin):
@@ -82,10 +79,9 @@ class blind_sqli(AuditPlugin):
             for method in method_list:
                 found_vuln = method.is_injectable( mutant )
 
-                if found_vuln is not None and \
-                self._has_no_bug(freq, varname=found_vuln.getVar()):
+                if found_vuln is not None:
                     om.out.vulnerability(found_vuln.getDesc())
-                    kb.kb.append(self, 'blind_sqli', found_vuln)
+                    kb.kb.append_uniq(self, 'blind_sqli', found_vuln)
                     break
     
     def _has_sql_injection(self, mutant):

@@ -135,7 +135,7 @@ class os_commanding(AuditPlugin):
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
                     v.addToHighlight( file_pattern_match )
-                    kb.kb.append( self, 'os_commanding', v )
+                    kb.kb.append_uniq( self, 'os_commanding', v )
                     break
     
     def _get_os_separator(self, mutant):
@@ -183,7 +183,7 @@ class os_commanding(AuditPlugin):
                     v.setDc( mutant.getDc() )
                     v.set_id( [r.id for r in responses] )
                     v.setURI( r.getURI() )
-                    kb.kb.append( self, 'os_commanding', v )
+                    kb.kb.append_uniq( self, 'os_commanding', v )
                     
                     break
 

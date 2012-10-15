@@ -47,6 +47,7 @@ class xpath(AuditPlugin):
         'Cannot convert expression to a number',
         'Document Axis does not allow any context Location Steps',
         'Empty Path Expression',
+        'DOMXPath::'
         'Empty Relative Location Path',
         'Empty Union Expression',
         "Expected ')' in",

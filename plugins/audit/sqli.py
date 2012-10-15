@@ -163,7 +163,7 @@ class sqli(AuditPlugin):
                     v['db'] = dbms_type
                     v.setDesc('SQL injection in a %s was found at: %s' %
                               (v['db'], mutant.foundAt()))
-                    kb.kb.append(self, 'sqli', v)
+                    kb.kb.append_uniq(self, 'sqli', v)
                     break
     
     def end(self):

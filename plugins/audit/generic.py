@@ -100,8 +100,8 @@ class generic(AuditPlugin):
        
     def _analyze_responses( self, orig_resp, limit_response, error_response, mutant ):
         '''
-        Analyze responses; if error_response doesn't look like orig_resp nor limit_response,
-        then we have a vuln.
+        Analyze responses; if error_response doesn't look like orig_resp nor
+        limit_response, then we have a vuln.
         
         @return: None
         '''

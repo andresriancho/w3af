@@ -107,7 +107,7 @@ class ssi(AuditPlugin):
                 v.setDesc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
                 v.set_id( response.id )
                 v.addToHighlight( e_res )
-                kb.kb.append( self, 'ssi', v )
+                kb.kb.append_uniq( self, 'ssi', v )
     
     def end(self):
         '''
