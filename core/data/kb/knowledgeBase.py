@@ -49,7 +49,32 @@ class KnowledgeBase(object):
                 self._kb[ name ] = {variable_name: value}
             else:
                 self._kb[ name ][ variable_name ] = value
+    
+    def append_uniq(self, location_a, location_b, info_inst):
+        '''
+        Append to a location in the KB if and only if there it no other
+        vulnerability in the same location for the same URL and parameter.
         
+        Does this in a thread-safe manner.
+        
+        @return: True if the vuln was added. False if there was already a
+                 vulnerability in the KB location with the same URL and
+                 parameter.
+        '''
+        if not isinstance(info_inst, info.info):
+            ValueError('append_unique requires an info object as parameter.')
+            
+        with self._kb_lock:
+            for saved_vuln in self.get(location_a, location_b):
+                if saved_vuln.getVar() == info_inst.getVar() and\
+                saved_vuln.getURL() == info_inst.getURL() and \
+                saved_vuln.getDc().keys() == info_inst.getDc().keys():
+                    return False
+            
+            self.append(location_a, location_b, info_inst)
+            return True
+            
+    
     def append( self, calling_instance, variable_name, value ):
         '''
         This method appends the variable_name value to a dict.

@@ -21,7 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from core.data.parsers.urlParser import url_object
 from core.data.kb.knowledgeBase import kb
+from core.data.kb.info import info
+from core.data.dc.queryString import QueryString
+
 
 class test_knowledge_base(unittest.TestCase):
     
@@ -52,6 +56,36 @@ class test_knowledge_base(unittest.TestCase):
         kb.append('a', 'b', 3)
         self.assertEqual( kb.get('a', 'b'), [1,2,3] )
     
+    def test_append_uniq_true(self):
+        i1 = info()
+        i1.setURI(url_object('http://moth/abc.html?id=1'))
+        i1.setDc(QueryString([('id', '1')]))
+        i1.setVar('id')
+
+        i2 = info()
+        i2.setURI(url_object('http://moth/abc.html?id=3'))
+        i2.setDc(QueryString([('id', '3')]))
+        i2.setVar('id')
+        
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        self.assertEqual( kb.get('a', 'b'), [i1,] )
+    
+    def test_append_uniq_false(self):
+        i1 = info()
+        i1.setURI(url_object('http://moth/abc.html?id=1'))
+        i1.setDc(QueryString([('id', '1')]))
+        i1.setVar('id')
+
+        i2 = info()
+        i2.setURI(url_object('http://moth/def.html?id=3'))
+        i2.setDc(QueryString([('id', '3')]))
+        i2.setVar('id')
+        
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        self.assertEqual( kb.get('a', 'b'), [i1, i2] )
+
     def test_append_save(self):
         kb.append('a', 'b', 1)
         kb.append('a', 'b', 2)
