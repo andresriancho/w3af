@@ -315,24 +315,25 @@ class rfi(AuditPlugin):
         asp_code = 'response.write("%s");\n response.write("%s");' % (rand1, rand2)
         asp_code = '<% \n '+asp_code+'\n %>'
         '''
-        # First, generate the php file to be included.
-        rfi_result_part_1 = rand1 = rand_alnum(9)
-        rfi_result_part_2 = rand2 = rand_alnum(9)
-        rfi_result = rand1 + rand2
-        
-        filename = rand_alnum(8)
-        php_jsp_code = '<? echo "%s"; echo "%s"; ?>'
-        php_jsp_code += '<%% out.print("%s"); out.print("%s"); %%>'
-        php_jsp_code = php_jsp_code % (rand1, rand2, rand1, rand2)
-        
-        # Define the required parameters
-        netloc = self._listen_address +':' + str(self._listen_port)
-        path = '/' + filename
-        rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
-        
-        rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
-        
-        return php_jsp_code, rfi_data
+        with self._plugin_lock:
+            # First, generate the php file to be included.
+            rfi_result_part_1 = rand1 = rand_alnum(9)
+            rfi_result_part_2 = rand2 = rand_alnum(9)
+            rfi_result = rand1 + rand2
+            
+            filename = rand_alnum(8)
+            php_jsp_code = '<? echo "%s"; echo "%s"; ?>'
+            php_jsp_code += '<%% out.print("%s"); out.print("%s"); %%>'
+            php_jsp_code = php_jsp_code % (rand1, rand2, rand1, rand2)
+            
+            # Define the required parameters
+            netloc = self._listen_address +':' + str(self._listen_port)
+            path = '/' + filename
+            rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
+            
+            rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
+            
+            return php_jsp_code, rfi_data
         
     def get_options(self):
         '''
