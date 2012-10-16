@@ -18,21 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import unittest
 
-from pymock import PyMockTestCase
-from nose.plugins.skip import Skip, SkipTest
+from nose.plugins.skip import SkipTest
 
 from ..sca import PhpSCA, Scope, CodeSyntaxError
 
 
-class TestPHPSCA(PyMockTestCase):
+class TestPHPSCA(unittest.TestCase):
     '''
     Test unit for PHP Static Code Analyzer
     '''
     
-    def setUp(self):
-        PyMockTestCase.setUp(self)
-
     def test_vars(self):
         code = '''
             <?
@@ -290,10 +287,9 @@ class TestPHPSCA(PyMockTestCase):
         self.assertRaises(CodeSyntaxError, PhpSCA, invalidcode)
 
 
-class TestScope(PyMockTestCase):
+class TestScope(unittest.TestCase):
     
     def setUp(self):
-        PyMockTestCase.setUp(self)
         self.scope = Scope(None, parent_scope=None)
     
     def test_has_builtin_container(self):
