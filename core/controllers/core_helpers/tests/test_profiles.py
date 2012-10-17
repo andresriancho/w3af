@@ -27,12 +27,9 @@ from nose.plugins.attrib import attr
 from core.controllers.w3afCore import w3afCore
 from core.controllers.w3afException import w3afException
 
-@attr('smoke')
 class Test_w3afCore_profiles(unittest.TestCase):
 
-    def setUp(self):
-        pass
-    
+    @attr('smoke')
     def test_useProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
@@ -85,7 +82,8 @@ class Test_w3afCore_profiles(unittest.TestCase):
     def test_removeProfile_not_exists(self):
         w3af_core = w3afCore()
         self.assertRaises(w3afException, w3af_core.profiles.removeProfile,'not-exists')
-        
+    
+    @attr('smoke')
     def test_use_all_profiles(self):
         '''
         This test catches the errors in my profiles that generate these messages:
