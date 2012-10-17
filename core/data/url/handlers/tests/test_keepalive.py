@@ -22,34 +22,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 import random
 import unittest
+import time
 
-from time import time
-from pymock import PyMockTestCase, method, override
+from mock import MagicMock, Mock
 
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.data.url.handlers.keepalive import (KeepAliveHandler, ConnectionManager,
                                               HTTPResponse, URLTimeoutError)
 
 
-class dummy: pass
 
-
-class test_keepalive(PyMockTestCase):
+class test_keepalive(unittest.TestCase):
 
     def setUp(self):
-        # Setup objects
-        PyMockTestCase.setUp(self)
         # The handler
         self.kahdler = KeepAliveHandler()
         self.kahdler._curr_check_failures = 1 # Only one timeout in-a-row
         # Host name
         self.host = 'host'
         # The connection
-        self.conn = dummy()
+        self.conn = Mock()
         self.conn.is_fresh = 1
         self.conn.getresponse = 'blah'
         # The request obj mock
-        self.req = self.mock()
+        self.req = Mock()
 
     def test_get_and_remove_conn(self):
         '''
@@ -60,27 +56,32 @@ class test_keepalive(PyMockTestCase):
         host = self.host
         conn = self.conn
         req = self.req
-        ## Start recording ##
-        method(req, 'get_host').expects().returns(host)
-        method(req, 'get_full_url').expects().returns('test_full_url')
+        
+        req.get_host = MagicMock(return_value=host)
+        req.get_full_url = MagicMock(return_value='test_full_url')
+        
         # Override KeepAliveHandler._start_transaction
-        override(kah, '_start_transaction').expects(conn, req).returns(None)
+        kah._start_transaction = MagicMock(return_value=None)
+        
         conn_factory = kah._get_connection
         # Mock conn's getresponse()
         resp = HTTPResponse(socket.socket())
         resp.will_close = True
-        override(conn, 'getresponse').expects().returns(resp)
+        conn.getresponse = MagicMock(return_value=resp)
+        
         # The connection mgr
-        conn_mgr_mock = self.mock()
-        method(conn_mgr_mock, 'get_available_connection').expects(host, conn_factory).returns(conn)
-        method(conn_mgr_mock, 'remove_connection').expects(conn, host).returns(None)
-        ## Stop Recording.Time to Play! ##
-        self.replay()
+        conn_mgr_mock = Mock()
+        conn_mgr_mock.get_available_connection = MagicMock(return_value=conn)
+        conn_mgr_mock.remove_connection = MagicMock(return_value=None)
+        
         # Replace with mocked out ConnMgr.
         kah._cm = conn_mgr_mock
         kah.do_open(req)
+        
         ## Verify ##
-        self.verify()
+        kah._start_transaction.assert_called_once_with(conn, req)
+        conn_mgr_mock.get_available_connection.assert_called_once_with(host, conn_factory)
+        conn_mgr_mock.remove_connection.assert_called_once_with(conn, host)
 
     def test_timeout(self):
         """
@@ -91,44 +92,44 @@ class test_keepalive(PyMockTestCase):
         host = self.host
         conn = self.conn
         req = self.req
-        ## Start recording ##
-        method(req, 'get_host').expects().returns(host)
-        method(req, 'get_host').expects().returns(host)
+        
+        req.get_host = MagicMock(side_effect=[host, host])
 
         # Override KeepAliveHandler._start_transaction - raises timeout
-        override(kah, '_start_transaction').expects(conn, req).raises(socket.timeout)
-        conn_factory = kah._get_connection;
+        kah._start_transaction = MagicMock(side_effect=socket.timeout())
+        
+        conn_factory = kah._get_connection
+        
         # The connection mgr
-        conn_mgr = self.mock()
-        method(conn_mgr, 'get_available_connection').expects(host, conn_factory).returns(conn)
-        method(conn_mgr, 'remove_connection').expects(conn, host).returns(None)
-        ## Stop Recording.Time to Play! ##
-        self.replay()
+        conn_mgr = Mock()
+        conn_mgr.get_available_connection = MagicMock(return_value=conn)
+        conn_mgr.remove_connection = MagicMock(return_value=None)
+        
         # Replace with mocked out ConnMgr.
         kah._cm = conn_mgr
         self.assertRaises(URLTimeoutError, kah.do_open, req)
         self.assertRaises(w3afMustStopException, kah.do_open, req)
-        ## Verify ##
-        self.verify()
+        
+        kah._start_transaction.assert_called_once_with(conn, req)
+        conn_mgr.get_available_connection.assert_called_once_with(host, conn_factory)
+        conn_mgr.remove_connection.assert_called_once_with(conn, host)
 
     def test_free_connection(self):
         """
         Ensure that conns are returned back to the pool when requests are
         closed.
         """
-        override = self.override
         kah = self.kahdler
         conn = self.conn
-        ## Start recording ##
+        
         # The connection mgr
-        conn_mgr = self.mock()
-        override(conn_mgr, 'free_connection').expects(conn)
-        ## Stop Recording.Time to Play! ##
-        self.replay()
+        conn_mgr = Mock()
+        conn_mgr.free_connection = MagicMock()
+        
         kah._cm = conn_mgr
         kah._request_closed(conn)        
-        ## Verify ##
-        self.verify()
+        
+        conn_mgr.free_connection.assert_called_once_with(conn)
     
     def test_single_conn_mgr(self):
         '''
@@ -145,7 +146,7 @@ class test_connection_mgr(unittest.TestCase):
 
     def setUp(self):
         self.cm = ConnectionManager()
-        self.host = dummy()
+        self.host = Mock()
     
     def test_get_available_conn(self):
         '''
@@ -156,7 +157,7 @@ class test_connection_mgr(unittest.TestCase):
         self.assertEquals(0, len(self.cm._used_cons))
         self.assertEquals(0, len(self.cm._free_conns))
         # Get connection
-        cf = lambda h: dummy()
+        cf = lambda h: Mock()
         conn = self.cm.get_available_connection(self.host, cf)
         self.assertEquals(1, len(self.cm._hostmap))
         self.assertEquals(1, len(self.cm._used_cons))
@@ -168,13 +169,13 @@ class test_connection_mgr(unittest.TestCase):
         self.assertEquals(1, len(self.cm._free_conns))
         # Ask for a conn again
         conn = self.cm.get_available_connection(self.host, cf)
-        t0 = time()
+        t0 = time.time()
         self.assertRaises(w3afException, self.cm.get_available_connection, self.host, cf)
-        self.assertTrue(time()-t0 >= 2.9, "Method returned before expected time")
+        self.assertTrue(time.time()-t0 >= 2.9, "Method returned before expected time")
     
     def test_replace_conn(self):
-        cf = lambda h: dummy()
-        bad_conn = dummy()
+        cf = lambda h: Mock()
+        bad_conn = Mock()
         self.assertRaises(ValueError, self.cm.replace_connection, bad_conn, self.host, cf)
         bad_conn = self.cm.get_available_connection(self.host, cf)
         old_len = self.cm.get_connections_total()
@@ -187,9 +188,9 @@ class test_connection_mgr(unittest.TestCase):
     
     def test_remove_conn(self):
         # Rem a non existing conn
-        non_exist_conn = dummy()
+        non_exist_conn = Mock()
         self.assertRaises(ValueError, self.cm.remove_connection, non_exist_conn)
-        conn = self.cm.get_available_connection(self.host, lambda h: dummy())
+        conn = self.cm.get_available_connection(self.host, lambda h: Mock())
         old_len = self.cm.get_connections_total()
         non_exist_host  = "non_host"
         self.assertRaises(ValueError, self.cm.remove_connection, conn, non_exist_host)
