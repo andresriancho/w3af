@@ -225,32 +225,42 @@ class TestSVNVersion(unittest.TestCase):
     
     def setUp(self):
         self.cli = Mock()
-        pysvn.Client = MagicMock(return_value=self.cli)
-    
-    def test_get_svnversion_with_non_svn_path(self):
-        def side_effect(path):
-            for fake_data in [('x', 'y', 'z'),
-                              ('x', 'y', 'z'),
-                              ('x', 'y', 'z')]:
-                yield fake_data
-        os.walk = MagicMock(side_effect=side_effect)
         
+        self.pysvn_client_patch = patch('pysvn.Client', return_value=self.cli)
+        self.pysvn_client_patch.start()
+    
+    def tearDown(self):
+        self.pysvn_client_patch.stop()
+        
+    def test_get_svnversion_with_non_svn_path(self):
         cli = self.cli
         Rev = TestSVNVersion.Rev
         cli.info = MagicMock(side_effect=[{'revision': Rev(22)},
                                           {'revision': Rev(23)},
                                           pysvn.ClientError()])
+        def side_effect(path):
+            for fake_data in [('x', 'y', 'z'),
+                              ('x', 'y', 'z'),
+                              ('x', 'y', 'z')]:
+                yield fake_data
+        
+        os_walk_patch = patch('os.walk',side_effect=side_effect)
+        os_walk_patch.start()
         
         self.assertEquals('22:23', get_svnversion(W3AF_LOCAL_PATH))
-    
+        os_walk_patch.stop()
+        
     def test_non_svn_install(self):
         '''
         Ensure that SVNError is raised when `get_svnversion` is called
         in a non svn copy.
         '''
-        os.walk = MagicMock(return_value=[])
+        os_walk_patch = patch('os.walk',return_value=[])
+        os_walk_patch.start()
+
         with self.assertRaises(SVNError) as cm:
             get_svnversion(W3AF_LOCAL_PATH)
         self.assertTrue("is not a svn working copy" in cm.exception.message)
         
-    
+        os_walk_patch.stop()
+        
