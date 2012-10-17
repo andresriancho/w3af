@@ -21,14 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import datetime
 import pysvn
 import unittest
-import os
 
 from mock import MagicMock, Mock, patch
-from pysvn import wc_notify_action as wcna
-from pysvn import Revision
-from pysvn import wc_status_kind as wcsk
 from collections import namedtuple
-from nose.plugins.skip import SkipTest
 
 import core.controllers.auto_update.auto_update as autoupdmod
 
@@ -59,14 +54,7 @@ class Testw3afSVNClient(unittest.TestCase):
         self.client = w3afSVNClient(LOCAL_PATH)
         self.client._repourl = REPO_URL
         self.client._svnclient = Mock()
-        
-        self.pysvn_client_patcher_side_effect = None
-        self.pysvn_client_patcher = patch('pysvn.Client', side_effect=self.pysvn_client_patcher_side_effect)
-        self.pysvn_client_mock = self.pysvn_client_patcher.start()
-    
-    def tearDown(self):
-        self.pysvn_client_patcher.stop()
-    
+            
     def test_has_repourl(self):
         self.assertTrue(self.client._repourl is not None)
 
@@ -110,18 +98,19 @@ class Testw3afSVNClient(unittest.TestCase):
 
     def test_filter_files(self):
         client = self.client
-        os.path.isdir = MagicMock(return_value=False)
+        os_path_isdir_patcher = patch('os.path.isdir', return_value=False)
+        os_path_isdir_patcher.start()
         
         # Call client's callback function several times
         f1 = '/path/to/file/foo.py'
-        ev = {'action': wcna.update_delete,
+        ev = {'action': pysvn.wc_notify_action.update_delete,
                'error': None, 'mime_type': None,
                'path': f1,
                'revision': Revision(pysvn.opt_revision_kind.number, 11)}
         client._register(ev)
 
         f2 = '/path/to/file/foo2.py'        
-        ev2 = {'action': wcna.update_update,
+        ev2 = {'action': pysvn.wc_notify_action.update_update,
                'error': None, 'mime_type': None,
                'path': f2,
                'revision': Revision(pysvn.opt_revision_kind.number, 11)}
@@ -130,16 +119,18 @@ class Testw3afSVNClient(unittest.TestCase):
         expected_res = SVNFilesList([(f1, FILE_DEL), (f2, FILE_UPD)])
         self.assertEquals(expected_res, 
             client._filter_files(filterbyactions=w3afSVNClient.UPD_ACTIONS))
+        
+        os_path_isdir_patcher.stop()
 
     def test_status(self):
         # Mock pysvnstatus objects
         smock1 = Mock()
         smock1.path = '/some/path/foo'
-        smock1.text_status = wcsk.modified
+        smock1.text_status = pysvn.wc_status_kind.modified
         
         smock2 = Mock()
         smock2.path = '/some/path/foo2'
-        smock2.text_status = wcsk.conflicted
+        smock2.text_status = pysvn.wc_status_kind.conflicted
         
         smock3 = Mock()
         smock3.path = '/some/path/foo3'
@@ -157,14 +148,24 @@ class Testw3afSVNClient(unittest.TestCase):
     def test_not_working_copy(self):
         cli = Mock()
         cli.status = MagicMock(side_effect=Exception())
-        self.pysvn_client_patcher_side_effect = [cli,]
+
+        pysvn_client_patcher = patch('pysvn.Client', return_value=cli)
+        pysvn_client_patcher.start()
+    
         self.assertFalse( w3afSVNClient.is_working_copy(LOCAL_PATH) )
+        
+        pysvn_client_patcher.stop()
     
     def test_a_working_copy(self):
         cli = Mock()
-        cli.status = MagicMock()
-        self.pysvn_client_patcher_side_effect = [cli,]
-        self.assertTrue(w3afSVNClient.is_working_copy(LOCAL_PATH))
+        cli.status = MagicMock(return_value=True)
+
+        pysvn_client_patcher = patch('pysvn.Client', return_value=cli)
+        pysvn_client_patcher.start()
+    
+        self.assertTrue( w3afSVNClient.is_working_copy(LOCAL_PATH) )
+        
+        pysvn_client_patcher.stop()
 
     def test_commit(self):
         pass
