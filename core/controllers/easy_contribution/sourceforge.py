@@ -129,14 +129,6 @@ class SourceforgeXMLRPC(Sourceforge):
         self._proxy = None
     
     def login(self):
-        '''
-        >>> sf = SourceforgeXMLRPC('fake','12345')
-        >>> sf.login()
-        False
-        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
-        >>> sf.login()
-        True
-        '''
         self._proxy = xmlrpclib.ServerProxy(
                     SourceforgeXMLRPC.LOGIN_URL % (self.username, self.passwd)
                     )
@@ -153,28 +145,6 @@ class SourceforgeXMLRPC(Sourceforge):
 
     def report_bug(self, summary, userdesc, tback='',
                    fname=None, plugins='', autogen=True, email=None):
-        '''
-        Without logging in:
-        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
-        >>> summary = 'Unittest bug report'
-        >>> userdesc = 'Please mark this ticket as invalid' 
-        >>> ticket_url = sf.report_bug(summary,userdesc)
-        Traceback (most recent call last):
-        ...
-        AssertionError: You should login first
-
-        Logged in:
-        >>> sf = SourceforgeXMLRPC('unittest','unittest12345')
-        >>> sf.login()
-        True
-        >>> summary = 'Unittest bug report'
-        >>> userdesc = 'Please mark this ticket as invalid' 
-        >>> ticket_id, ticket_url = sf.report_bug(summary,userdesc)
-        >>> ticket_id.isdigit()
-        True
-        >>> ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1')
-        True
-        '''
         assert self.logged_in, "You should login first"
         
         summary, desc = self._build_summary_and_desc(
