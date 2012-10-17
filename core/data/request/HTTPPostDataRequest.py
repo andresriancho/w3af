@@ -24,6 +24,7 @@ from itertools import imap
 
 from core.controllers.misc.io import is_file_like
 from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.dc.headers import Headers
 
 
 class HTTPPostDataRequest(FuzzableRequest):
@@ -33,7 +34,7 @@ class HTTPPostDataRequest(FuzzableRequest):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, uri, method='POST', headers=None,
+    def __init__(self, uri, method='POST', headers=Headers(),
                  cookie=None, dc=None, files=None):
         FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
         self._files = files or []

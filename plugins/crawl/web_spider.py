@@ -36,6 +36,7 @@ from core.controllers.misc.itertools_toolset import unique_justseen
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.variant_db import variant_db as variant_db
 from core.data.db.disk_set import disk_set
+from core.data.dc.headers import Headers
 from core.data.fuzzer.formFiller import smartFill
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
@@ -276,11 +277,11 @@ class web_spider(CrawlPlugin):
         referer = originalURL.baseUrl()
         if not referer.url_string.endswith('/'):
             referer += '/'
-        headers = {'Referer': referer}
+        headers = Headers([('Referer', referer)])
         
         try:
             resp = self._uri_opener.GET(reference, cache=True, 
-                                       headers=headers, follow_redir=False)
+                                        headers=headers, follow_redir=False)
         except w3afMustStopOnUrlError:
             pass
         else:

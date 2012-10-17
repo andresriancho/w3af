@@ -42,7 +42,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         '''
         # First of all, we create a fuzzable request based on the attributes
         # that are set to this object
-        fuzzable_request = self._createFuzzableRequest()
+        fuzzable_request = self._create_fuzzable_request()
         try:
             # Now we check if we need to add this to the queue, or just let
             # it go through.
@@ -233,21 +233,21 @@ class localproxy(proxy):
         '''Get Fix Content Length flag.'''
         return self._fixContentLength
     
-    def dropRequest(self,  originalFuzzableRequest):
+    def dropRequest(self,  orig_fuzzable_req):
         '''Let the handler know that the request was dropped.'''
-        self._editedRequests[ id(originalFuzzableRequest) ] = (None,  None)
+        self._editedRequests[ id(orig_fuzzable_req) ] = (None,  None)
     
-    def sendRawRequest( self, originalfuzzable_request, head, postdata):
+    def sendRawRequest( self, orig_fuzzable_req, head, postdata):
         # the handler is polling this dict and will extract the information from it and
         # then send it to the remote web server
-        self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)
+        self._editedRequests[ id(orig_fuzzable_req) ] = (head,  postdata)
         
         # Loop until I get the data from the remote web server
         for i in xrange(60):
             time.sleep(0.1)
-            if id(originalFuzzableRequest) in self._editedResponses:
-                res = self._editedResponses[ id(originalFuzzableRequest) ]
-                del self._editedResponses[ id(originalFuzzableRequest) ]
+            if id(orig_fuzzable_req) in self._editedResponses:
+                res = self._editedResponses[ id(orig_fuzzable_req) ]
+                del self._editedResponses[ id(orig_fuzzable_req) ]
                 # Now we return it...
                 if isinstance(res, Exception):
                     raise res

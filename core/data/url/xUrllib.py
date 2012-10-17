@@ -30,6 +30,8 @@ import urllib, urllib2
 import sqlite3
 
 from collections import deque
+from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
+                  ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
 
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
@@ -72,7 +74,7 @@ class xUrllib(object):
         self._last_request_failed = False
         self._last_errors = deque(maxlen=10)
         self._error_count = {}
-        self._countLock = threading.RLock()
+        self._count_lock = threading.RLock()
         
         # User configured options (in an indirect way)
         self._grep_queue_put = None
@@ -121,18 +123,13 @@ class xUrllib(object):
             if self._must_stop:
                 self._must_stop = False
                 self._paused = False
-                # This raises a keyboard interrupt in the middle of the crawl process.
-                # It has almost the same effect that a ctrl+c by the user if in consoleUi
-                raise KeyboardInterrupt
+                raise w3afMustStopException()
         
         # The user can simply STOP the scan
         if self._must_stop:
             self._must_stop = False
             self._paused = False
-            # This raises a keyboard interrupt in the middle of the crawl process.
-            # It has almost the same effect that a ctrl+c by the user if in consoleUi
-            # TODO: THIS SUCKS
-            raise KeyboardInterrupt
+            raise w3afMustStopException('')
     
     def end(self):
         '''
@@ -546,11 +543,11 @@ class xUrllib(object):
             
             # Return this info to the caller
             code = int(e.code)
-            info = e.info()
+            headers = Headers(e.info().items())
             geturl_instance = url_object(e.geturl())
             read = self._readRespose(e)
-            http_resp = HTTPResponse(code, read, info, geturl_instance,
-                                      original_url_inst, id=e.id,
+            http_resp = HTTPResponse(code, read, headers, geturl_instance,
+                                      original_url_inst, _id=e.id,
                                       time=time.time()-start_time, msg=e.msg,
                                       charset=getattr(e.fp, 'encoding', None))
             
@@ -591,9 +588,6 @@ class xUrllib(object):
             req._Request__original = original_url
             # Then retry!
             return self._retry(req, e, cache)
-        except KeyboardInterrupt:
-            # TODO: Fix control+c handling...
-            raise
         except sqlite3.Error, e:
             msg = 'A sqlite3 error was raised: "%s".' % e
             if 'disk' in str(e).lower():
@@ -719,22 +713,29 @@ class xUrllib(object):
         
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
         
-        with self._countLock:
+        with self._count_lock:
             if errtotal >= 10 and not self._must_stop:
                 # Stop using xUrllib instance
                 self.stop()
                 # Known reason errors. See errno module for more info on these
                 # errors.
-                from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-                    ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
                 EUNKNSERV = -2 # Name or service not known error
                 EINVHOSTNAME = -5 # No address associated with hostname
                 known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
                                 ECONNRESET, ENETDOWN, ENETUNREACH,
                                 EINVHOSTNAME, ETIMEDOUT, ENOSPC)
                 
-                msg = ('xUrllib found too much consecutive errors. The '
-                'remote webserver doesn\'t seem to be reachable anymore.')
+                msg = ('w3af found too many consecutive errors while performing'
+                       ' HTTP requests. Either the web server is not reachable'
+                       ' anymore or there is an internal error. The last error'
+                       ' message is "%s".')
+                
+                if parsed_traceback:
+                    tback_str = ''
+                    for path, line, call in parsed_traceback[-3:]:
+                        tback_str += '    %s:%s at %s\n' % (path, line, call)
+                    
+                    msg += ' The last calls in the traceback are: \n%s' % tback_str
                 
                 if type(error) is urllib2.URLError:
                     # URLError exceptions may wrap either httplib.HTTPException
@@ -763,10 +764,10 @@ class xUrllib(object):
                         reason_msg = '%s: %s' % (error.__class__.__name__,
                                              error.args)
                     if reason_msg is not None:
-                        raise w3afMustStopByKnownReasonExc(reason_msg,
-                                                           reason=reason_err)
+                        raise w3afMustStopByKnownReasonExc(msg % error, reason=reason_err)
                 
-                raise w3afMustStopByUnknownReasonExc(msg, errs=last_errors)                    
+                errors = [] if parsed_traceback else last_errors
+                raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)                   
 
     def ignore_errors(self, yes_no):
         '''
@@ -823,7 +824,7 @@ class xUrllib(object):
                                         url_instance,
                                         request.get_method(),
                                         request.get_data(),
-                                        request.headers
+                                        Headers(request.headers.items())
                                         )
             
             self._grep_queue_put( (fr, response) )    

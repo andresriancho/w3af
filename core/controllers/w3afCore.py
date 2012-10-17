@@ -147,7 +147,7 @@ class w3afCore(object):
         except w3afMustStopException, wmse:
             self._end(wmse, ignore_err=True)
             om.out.error('\n**IMPORTANT** The following error was '
-             'detected by w3af and couldn\'t be resolved:\n %s\n' % wmse)
+             'detected by w3af and couldn\'t be resolved:\n%s\n' % wmse)
         except Exception:
             om.out.error('\nUnhandled error, traceback: %s\n' %
                          traceback.format_exc()) 

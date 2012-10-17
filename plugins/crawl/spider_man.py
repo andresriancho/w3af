@@ -193,7 +193,7 @@ class proxyHandler(w3afProxyHandler):
         om.out.debug("[spider_man] Handling request: %s %s" %
                                                 (self.command, path))
         #   Send this information to the plugin so it can send it to the core
-        freq = self._createFuzzableRequest()
+        freq = self._create_fuzzable_request()
         self._spider_man.append_fuzzable_request( freq )
         
         grep = True if path.getDomain() == self.server.w3afLayer.targetDomain else False

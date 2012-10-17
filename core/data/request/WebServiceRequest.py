@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import cgi
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.dc.headers import Headers
 
 
 class WebServiceRequest(HTTPPostDataRequest):
@@ -32,7 +33,7 @@ class WebServiceRequest(HTTPPostDataRequest):
     '''
 
     def __init__(self, url, action, params,
-                 ns, meth_name, headers=None):
+                 ns, meth_name, headers=Headers()):
         HTTPPostDataRequest.__init__(self, url, headers=headers)
         self._action = action
         self._NS = ns

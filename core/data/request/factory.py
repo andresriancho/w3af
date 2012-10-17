@@ -67,6 +67,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
     req_headers = dict(headers)
     req_headers.update(request and request.getHeaders() or {})
+    req_headers = Headers(req_headers.items())
     
     # Get the cookie!
     cookieObj = _create_cookie(resp)

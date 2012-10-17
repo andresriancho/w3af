@@ -52,7 +52,7 @@ def from_httplib_resp(httplibresp, original_url=None):
     '''
     resp = httplibresp
     code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
-    hdrs = Headers(hdrs)
+    hdrs = Headers(hdrs.items())
     
     if original_url:
         url_inst = url_object(resp.geturl(), original_url.encoding)
@@ -315,7 +315,8 @@ class HTTPResponse(object):
         
         The only thing that changes is the header name.
         '''
-        return dict((k.lower(), v) for k, v in self.headers.iteritems())
+        lcase_headers = dict((k.lower(), v) for k, v in self.headers.iteritems())
+        return Headers(lcase_headers.items())
 
     def setURL(self, url):
         '''

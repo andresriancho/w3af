@@ -159,15 +159,12 @@ class fingerprint_404:
             # I don't use the cache, because the URLs are random and the only thing that
             # cache does is to fill up disk space
             response = self._uri_opener.GET(url404, cache=False, grep=False)
-        except w3afException, w3:
-            raise w3afException('Exception while fetching a 404 page, error: ' + str(w3))
-        except w3afMustStopException, mse:
-            # Someone else will raise this exception and handle it as expected
-            # whenever the next call to GET is done
-            raise w3afException('w3afMustStopException <%s> found by _send_404,' \
-                                ' someone else will handle it.' % mse)
+        except w3afException, e:
+            raise
         except Exception, e:
-            om.out.error('Unhandled exception while fetching a 404 page, error: ' + str(e))
+            msg = 'Unhandled exception while fetching "%s" (404 page),' \
+                  ' exception: "%s".'
+            om.out.error(msg % (url404, e))
             raise
 
         else:

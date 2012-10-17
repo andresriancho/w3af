@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.parsers.xmlrpc import parse_xmlrpc, build_xmlrpc
+from core.data.dc.headers import Headers
 
 
 class XMLRPCRequest(HTTPPostDataRequest):
@@ -32,7 +33,7 @@ class XMLRPCRequest(HTTPPostDataRequest):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, xml, uri, method='POST', headers=None):
+    def __init__(self, xml, uri, method='POST', headers=Headers()):
         '''
         @parameter xml: The original XML string that represents
             the call to the RPC

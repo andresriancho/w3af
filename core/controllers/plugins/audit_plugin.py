@@ -80,7 +80,7 @@ class AuditPlugin(Plugin):
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         '''
-        return self.audit( FuzzableRequest.copy() )
+        return self.audit( fuzzable_request.copy() )
         
     def audit( self, freq ):
         '''

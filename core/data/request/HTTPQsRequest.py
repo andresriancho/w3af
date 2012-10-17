@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.dc.headers import Headers
 
 
 class HTTPQSRequest(FuzzableRequest):
@@ -30,7 +31,7 @@ class HTTPQSRequest(FuzzableRequest):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, uri, method='GET', headers=None, cookie=None):
+    def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
         super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
         
     def setURI(self, uri):

@@ -35,6 +35,7 @@ from core.controllers.misc.number_generator import (consecutive_number_generator
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.request.factory import create_fuzzable_request
+from core.data.dc.headers import Headers
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
@@ -360,10 +361,9 @@ class SQLCachedResponse(CachedResponse):
         hi = HistoryItem()
         
         # Set the request
-        req = create_fuzzable_request(
-                                 request,
-                                 add_headers=request.unredirected_hdrs
-                                 )
+        headers = Headers(request.unredirected_hdrs.items())
+        req = create_fuzzable_request(request,
+                                      add_headers=headers)
         hi.request = req
 
         # Set the response

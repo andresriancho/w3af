@@ -227,8 +227,8 @@ class w3af_core_strategy(object):
                 is_404(response)
             except Exception, e:
                 msg = 'Failed to initialize the 404 detection, original exception'
-                msg += ' was: "%s".'
-                raise w3afMustStopException( msg % e)
+                msg += ' was: "%s".'                
+                raise w3afMustStopException(msg % e)
                         
     def _setup_crawl_infrastructure(self):
         '''
