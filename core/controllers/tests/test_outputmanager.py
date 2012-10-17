@@ -29,12 +29,12 @@ import core.controllers.outputManager as om
 from core.controllers.w3afCore import w3afCore
 
 
+@attr('smoke')
 class TestOutputManager(unittest.TestCase):
     
     OUTPUT_PLUGIN_ACTIONS = ('debug', 'information', 'error',
                              'console', 'vulnerability')
 
-    @attr('smoke')
     def test_output_plugins_actions(self):
         '''Call all actions on output plugins'''
         
@@ -54,7 +54,6 @@ class TestOutputManager(unittest.TestCase):
             
             plugin_action.assert_called_once_with(msg, True)
             
-    @attr('smoke')
     def test_output_plugins_actions_with_unicode_message(self):
         '''Call all actions on output plugins using a unicode message'''
         msg = u'<< ÑñçÇyruZZ!! <<'
@@ -74,7 +73,6 @@ class TestOutputManager(unittest.TestCase):
             
             plugin_action.assert_called_once_with(msg, True)     
     
-    @attr('smoke')
     def test_method_that_not_exists(self):
         '''The output manager implements __getattr__ and we don't want it to
         catch-all, just the ones I define!'''
@@ -83,7 +81,6 @@ class TestOutputManager(unittest.TestCase):
         except AttributeError, ae:
             self.assertTrue(True, ae)
 
-    @attr('smoke')
     def test_kwds(self):
         '''The output manager implements __getattr__ with some added
         functools.partial magic. This verifies that it works well with kwds'''
@@ -103,7 +100,6 @@ class TestOutputManager(unittest.TestCase):
         
         plugin_action.assert_called_once_with(msg, False)
             
-    @attr('smoke')
     def test_error_handling(self):
         class InvalidPlugin(object):
             def information(self, msg, newLine=True):
