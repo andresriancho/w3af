@@ -52,7 +52,7 @@ class global_redirect(AuditPlugin):
         '''
         Tests an URL for global redirect vulnerabilities.
         
-        @param freq: A fuzzable_request object
+        @param freq: A FuzzableRequest object
         '''
         mutants = create_mutants( freq , self.TEST_URLS )
         

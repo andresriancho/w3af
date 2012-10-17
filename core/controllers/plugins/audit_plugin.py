@@ -43,7 +43,7 @@ class AuditPlugin(Plugin):
     #        used by ./core/ui/gtkUi/reqResViewer.py
     def audit_wrapper( self, fuzzable_request ):
         '''
-        Receives a fuzzable_request and forwards it to the internal method
+        Receives a FuzzableRequest and forwards it to the internal method
         audit()
         
         @parameter fuzzable_request: A fuzzable_request instance
@@ -74,21 +74,21 @@ class AuditPlugin(Plugin):
     
     def audit_with_copy(self, fuzzable_request):
         '''
-        Copy the fuzzable_request before auditing.
+        Copy the FuzzableRequest before auditing.
 
         I copy the fuzzable request, to avoid cross plugin contamination.
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         '''
-        return self.audit( fuzzable_request.copy() )
+        return self.audit( FuzzableRequest.copy() )
         
     def audit( self, freq ):
         '''
-        The freq is a fuzzable_request that is going to be modified and sent.
+        The freq is a FuzzableRequest that is going to be modified and sent.
         
         This method MUST be implemented on every plugin.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         raise w3afException('Plugin is not implementing required method audit' )
     

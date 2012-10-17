@@ -50,7 +50,7 @@ class oracle(GrepPlugin):
             self._already_analyzed.add(url)
 
             for msg in self._getDescriptiveMessages():
-                # Remember that httpResponse objects have a faster "__in__" than
+                # Remember that HTTPResponse objects have a faster "__in__" than
                 # the one in strings; so string in response.getBody() is slower than
                 # string in response
                 if msg in response:

@@ -76,7 +76,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     def _worker(self, func, fuzzable_request):
         return func(fuzzable_request)
     
-    def _fingerprint_SecureIIS(self,  fuzzable_request):
+    def _fingerprint_SecureIIS(self, fuzzable_request):
         '''
         Try to verify if SecureIIS is installed or not.
         '''
@@ -92,14 +92,14 @@ class fingerprint_WAF(InfrastructurePlugin):
             if lock_response2.getCode() == 404:
                 self._report_finding('SecureIIS', lock_response2)
         
-    def _fingerprint_ModSecurity(self,  fuzzable_request):
+    def _fingerprint_ModSecurity(self, fuzzable_request):
         '''
         Try to verify if mod_security is installed or not AND try to get the
         installed version.
         '''
         pass
 
-    def _fingerprint_Airlock(self,  fuzzable_request):
+    def _fingerprint_Airlock(self, fuzzable_request):
         '''
         Try to verify if Airlock is present.
         '''
@@ -114,7 +114,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else 
                 # more checks, like path /error_path or encrypted URL in response
 
-    def _fingerprint_Barracuda(self,  fuzzable_request):
+    def _fingerprint_Barracuda(self, fuzzable_request):
         '''
         Try to verify if Barracuda is present.
         '''
@@ -130,7 +130,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else 
                 # don't know ...
 
-    def _fingerprint_DenyAll(self,  fuzzable_request):
+    def _fingerprint_DenyAll(self, fuzzable_request):
         '''
         Try to verify if Deny All rWeb is present.
         '''
@@ -145,7 +145,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like detection=detected cookie
 
-    def _fingerprint_F5ASM(self,  fuzzable_request):
+    def _fingerprint_F5ASM(self, fuzzable_request):
         '''
         Try to verify if F5 ASM (also TrafficShield) is present.
         '''
@@ -160,7 +160,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like special string in response
 
-    def _fingerprint_F5TrafficShield(self,  fuzzable_request):
+    def _fingerprint_F5TrafficShield(self, fuzzable_request):
         '''
         Try to verify if the older version F5 TrafficShield is present.
         Ref: Hacking Exposed - Web Application
@@ -177,7 +177,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like special string in response
                     
-    def _fingerprint_TEROS(self,  fuzzable_request):
+    def _fingerprint_TEROS(self, fuzzable_request):
         '''
         Try to verify if TEROS is present.
         Ref: Hacking Exposed - Web Application
@@ -194,7 +194,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like special string in response
      
-    def _fingerprint_NetContinuum(self,  fuzzable_request):
+    def _fingerprint_NetContinuum(self, fuzzable_request):
         '''
         Try to verify if NetContinuum is present.
         Ref: Hacking Exposed - Web Application
@@ -211,7 +211,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like special string in response
     
-    def _fingerprint_BinarySec(self,  fuzzable_request):
+    def _fingerprint_BinarySec(self, fuzzable_request):
         '''
         Try to verify if BinarySec is present.
         '''
@@ -227,7 +227,7 @@ class fingerprint_WAF(InfrastructurePlugin):
                 # more checks like special string in response
 
     
-    def _fingerprint_HyperGuard(self,  fuzzable_request):
+    def _fingerprint_HyperGuard(self, fuzzable_request):
         '''
         Try to verify if HyperGuard is present.
         '''
@@ -242,7 +242,7 @@ class fingerprint_WAF(InfrastructurePlugin):
             # else
                 # more checks like special string in response
 
-    def _fingerprint_URLScan(self,  fuzzable_request):
+    def _fingerprint_URLScan(self, fuzzable_request):
         '''
         Try to verify if URLScan is installed or not.
         '''

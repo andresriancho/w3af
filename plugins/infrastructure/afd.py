@@ -68,7 +68,7 @@ class afd(InfrastructurePlugin):
     def _send_requests( self, fuzzable_request ):
         '''
         Actually send the requests that might be blocked.
-        @parameter fuzzable_request: The fuzzable_request to modify in order to
+        @parameter fuzzable_request: The FuzzableRequest to modify in order to
                                      see if it's blocked
         '''
         rnd_param = rand_alnum(7)

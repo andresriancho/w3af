@@ -28,6 +28,8 @@ from core.data.db.disk_set import disk_set
 from core.data.parsers.urlParser import url_object
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.dc.headers import Headers
+
 
 @attr('smoke')
 class test_disk_set(unittest.TestCase):
@@ -61,13 +63,15 @@ class test_disk_set(unittest.TestCase):
         ds = disk_set()
         
         uri = url_object('http://w3af.org/?id=2')
-        qsr1 = HTTPQSRequest(uri, method='GET', headers={'Referer': 'http://w3af.org/'})
+        hdr = Headers([('Referer', 'http://w3af.org/')])
+        
+        qsr1 = HTTPQSRequest(uri, method='GET', headers=hdr)
 
         uri = url_object('http://w3af.org/?id=3')
-        qsr2 = HTTPQSRequest(uri, method='GET', headers={'Referer': 'http://w3af.com/'})
+        qsr2 = HTTPQSRequest(uri, method='GET', headers=hdr)
         
         uri = url_object('http://w3af.org/?id=7')
-        qsr3 = HTTPQSRequest(uri, method='FOO', headers={'Referer': 'http://w3af.com/'})
+        qsr3 = HTTPQSRequest(uri, method='FOO', headers=hdr)
         
         ds.add( qsr1 )
         ds.add( qsr2 )
@@ -88,13 +92,15 @@ class test_disk_set(unittest.TestCase):
         ds = disk_set()
         
         uri = url_object('http://w3af.org/?id=2')
-        pdr1 = HTTPPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.org/'})
+        hdr = Headers([('Referer', 'http://w3af.org/')])
+        
+        pdr1 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
 
         uri = url_object('http://w3af.org/?id=3')
-        pdr2 = HTTPPostDataRequest(uri, method='GET', headers={'Referer': 'http://w3af.com/'})
+        pdr2 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
         
         uri = url_object('http://w3af.org/?id=7')
-        pdr3 = HTTPPostDataRequest(uri, method='FOO', headers={'Referer': 'http://w3af.com/'})
+        pdr3 = HTTPPostDataRequest(uri, method='FOO', headers=hdr)
         
         ds.add( pdr1 )
         ds.add( pdr2 )

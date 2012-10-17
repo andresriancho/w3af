@@ -30,7 +30,7 @@ import core.data.kb.knowledgeBase as kb
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.w3afException import w3afRunOnce, w3afException
 
 
@@ -52,7 +52,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst._has_permission = MagicMock(return_value=True)
         
         url = url_object('https://host.tld:4444/')
-        fuzz_req = fuzzable_request(url)
+        fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with one different hop
         tracedict1 = copy.deepcopy(self.tracedict)
@@ -74,7 +74,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst._has_permission = MagicMock(return_value=True)
         
         url = url_object('https://host.tld:80/')
-        fuzz_req = fuzzable_request(url)
+        fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with the same hops
         tracedict1 = copy.deepcopy(self.tracedict)
@@ -97,7 +97,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst._has_permission = MagicMock(return_value=True)
         
         url = url_object('https://host.tld/')
-        fuzz_req = fuzzable_request(url)
+        fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with one different hop
         tracedict1 = copy.deepcopy(self.tracedict)
@@ -118,7 +118,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         ''' Discovery routine must be executed only once. Upcoming calls should
         fail'''
         url = url_object('https://host.tld/')
-        fuzz_req = fuzzable_request(url)
+        fuzz_req = FuzzableRequest(url)
         
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(side_effect=[True, True])

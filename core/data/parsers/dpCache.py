@@ -47,7 +47,7 @@ class dpCache:
         self._calculated_more_than_once = 0.0
         self._total = 0.0
                 
-    def getDocumentParserFor(self, httpResponse):
+    def getDocumentParserFor(self, HTTPResponse):
         res = None
         
         #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with
@@ -68,7 +68,7 @@ class dpCache:
         #   given that the LRU has only 30 positions, the real probability of a colission is too low.
         #
         self._total += 1
-        hash_string = hash(httpResponse.body)
+        hash_string = hash(HTTPResponse.body)
         
         with self._LRULock:
             if hash_string in self._cache:
@@ -76,7 +76,7 @@ class dpCache:
                 self._debug_in_cache(hash_string)
             else:
                 # Create a new instance of dp, add it to the cache
-                res = documentParser.documentParser(httpResponse)
+                res = documentParser.documentParser(HTTPResponse)
                 self._cache[ hash_string ] = res
                 self._debug_not_in_cache(hash_string)
             return res

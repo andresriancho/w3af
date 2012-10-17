@@ -118,33 +118,33 @@ class urlOpenerSettings( configurable ):
             cfg.save('always404', [] )
             cfg.save('404string', '' )
     
-    def setHeadersFile(self, HeadersFile ):
+    def setHeadersFile(self, headers_file ):
         '''
         Sets the special headers to use, this headers are specified in a file by the user.
         The file can have multiple lines, each line should have the following structure :
             - HEADER:VALUE_OF_HEADER
         
-        @parameter HeadersFile: The filename where the special headers are specified.
+        @parameter headers_file: The filename where the special headers are specified.
         @return: No value is returned.
         '''
-        om.out.debug( 'Called SetHeaders')
-        if HeadersFile != '':
+        om.out.debug( 'Called SetHeaders()')
+        if headers_file != '':
             try:
-                f=open(HeadersFile, 'r')
+                f=open(headers_file, 'r')
             except:
-                raise w3afException('Unable to open headers file: ' + HeadersFile )
+                raise w3afException('Unable to open headers file: ' + headers_file )
             
             hList = []
             for line in f:
-                HeaderName = line.split(':')[0]
-                HeaderValue = ':'.join( line.split(':')[1:] )
-                HeaderValue = HeaderValue.strip()
-                hList.append( (HeaderName,HeaderValue) )
+                header_name = line.split(':')[0]
+                header_value = ':'.join( line.split(':')[1:] )
+                header_value = header_value.strip()
+                hList.append( (header_name,header_value) )
             
-            self.setHeadersList( hList )
-            cfg.save('headersFile', HeadersFile )
+            self.setHeaderList( hList )
+            cfg.save('headersFile', headers_file )
     
-    def setHeadersList( self, hList ):
+    def setHeaderList( self, hList ):
         '''
         @parameter hList: A list of tuples with (header,value) to be added to every request.
         @return: nothing
@@ -153,7 +153,7 @@ class urlOpenerSettings( configurable ):
             self.header_list.append( (h,v) )
             om.out.debug( 'Added the following header: '+ h+ ': '+ v)
         
-    def getHeadersFile( self ):
+    def getheaders_file( self ):
         return cfg.get('headersFile')
         
     def setCookieJarFile(self, CookieJarFile ):

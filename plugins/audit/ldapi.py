@@ -92,7 +92,7 @@ class ldapi(AuditPlugin):
         '''
         Tests an URL for LDAP injection vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         mutants = create_mutants( freq , self.LDAPI_STRINGS, orig_resp=orig_resp )

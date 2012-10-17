@@ -376,7 +376,7 @@ def get_clean_body(response):
     The same works with filenames.
     All of them, are removed encoded and "as is".
     
-    @parameter response: The httpResponse object to clean
+    @parameter response: The HTTPResponse object to clean
     @return: A string that represents the "cleaned" response body of the response.
     '''
     

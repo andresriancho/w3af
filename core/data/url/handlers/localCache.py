@@ -26,7 +26,7 @@ import StringIO
 import urllib2
 
 import core.controllers.outputManager as om
-import core.data.url.httpResponse as httpResponse
+import core.data.url.HTTPResponse as HTTPResponse
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
@@ -367,7 +367,7 @@ class SQLCachedResponse(CachedResponse):
         hi.request = req
 
         # Set the response
-        resp = httpResponse.from_httplib_resp(response,
+        resp = HTTPResponse.from_httplib_resp(response,
                                               original_url=request.url_object)
         resp.set_id(response.id)
         resp.setAlias(gen_hash(request))

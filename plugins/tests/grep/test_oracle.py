@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.misc.temp_dir import create_temp_dir
@@ -46,8 +46,8 @@ class test_oracle(unittest.TestCase):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
     
@@ -55,8 +55,8 @@ class test_oracle(unittest.TestCase):
         body = 'ABC ' * 10000
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
     
@@ -66,7 +66,7 @@ class test_oracle(unittest.TestCase):
         body += '</br> ' * 50
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 1 )

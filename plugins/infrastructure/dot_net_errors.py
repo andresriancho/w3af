@@ -83,7 +83,7 @@ class dot_net_errors(InfrastructurePlugin):
 
     def _send_and_check(self, url):
         '''
-        @parameter response: The httpResponse object that holds the content of
+        @parameter response: The HTTPResponse object that holds the content of
                              the response to analyze.
         '''
         response = self._uri_opener.GET( url, cache=True )

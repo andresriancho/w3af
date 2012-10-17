@@ -38,9 +38,10 @@ from core.controllers.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
-from core.data.dc.header import Header
+from core.data.dc.headers import Headers
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
+from core.data.dc.headers import Headers
 
 
 __all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
@@ -172,18 +173,22 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
         headers.
     @param method: A string that represents the method ('GET', 'POST', etc)
     @param post_data: A string that represents the postdata.
-    @param add_headers: A dict that holds the headers. If `req_url` is a
-        request then this dict will be merged with the request's headers.
+    @param add_headers: A Headers object that holds the headers. If `req_url` is a
+                        request then this dict will be merged with the request's
+                        headers.
     '''
+    if add_headers is not None and not isinstance(add_headers, Headers):
+        raise ValueError('create_fuzzable_request requires Headers object.')
+    
     if isinstance(req_url, HTTPRequest):
         url = req_url.url_object
         post_data = str(req_url.get_data() or '')
         method = req_url.get_method()
-        headers = Header(req_url.headers)
-        headers.update(add_headers or Header())
+        headers = Headers(req_url.headers.items())
+        headers.update(add_headers or Headers())
     else:
         url = req_url
-        headers = add_headers or Header()
+        headers = add_headers or Headers()
 
     # Just a query string request! No postdata
     if not post_data:
@@ -202,26 +207,9 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
             # note the awful [0] before the .lower().
             elif hnamelow == 'content-type':
                 conttype = headers.get(hname, '')[0].lower()
-        
-        #
-        # Case #1 - JSON request
-        #
-        try:
-            data = json.loads(post_data)
-        except:
-            pass
-        else:
-            if data:
-                return JSONPostDataRequest(url, method, headers, dc=data)
-        
-        #
-        # Case #2 - XMLRPC request
-        #
-        if all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS)):
-            return XMLRPCRequest(post_data, url, method, headers)
 
         #
-        # Case #3 - multipart form data - prepare data container
+        # Case #1 - multipart form data - prepare data container
         #
         if conttype.startswith('multipart/form-data'):
             pdict = cgi.parse_header(conttype)[1]
@@ -233,10 +221,29 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
             else:
                 data = QueryString()
                 data.update(dc)
-                # We process multipart requests as x-www-form-urlencoded
-                # TODO: We need native support of multipart requests!
-                headers['content-type'] = ['application/x-www-form-urlencoded',]
+                print dc
+                print data
+                # Please note that the QueryString is just a container for the
+                # information. When the HTTPPostDataRequest is sent it should
+                # be serialized into multipart again by the MultipartPostHandler
                 return HTTPPostDataRequest(url, method, headers, dc=data)
+        
+        #
+        # Case #2 - JSON request
+        #
+        try:
+            data = json.loads(post_data)
+        except:
+            pass
+        else:
+            if data:
+                return JSONPostDataRequest(url, method, headers, dc=data)
+        
+        #
+        # Case #3 - XMLRPC request
+        #
+        if all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS)):
+            return XMLRPCRequest(post_data, url, method, headers)
         
         #
         # Case #4 - a typical post request
@@ -257,10 +264,10 @@ def _create_cookie(http_response):
     Create a cookie object based on a HTTP response.
 
     >>> from core.data.parsers.urlParser import url_object
-    >>> from core.data.url.httpResponse import httpResponse
+    >>> from core.data.url.HTTPResponse import HTTPResponse
     >>> url = url_object('http://www.w3af.com/')
-    >>> headers = {'content-type': 'text/html', 'Cookie': 'abc=def' }
-    >>> response = httpResponse(200, '' , headers, url, url)
+    >>> headers = Headers({'content-type': 'text/html', 'Cookie': 'abc=def' }.items())
+    >>> response = HTTPResponse(200, '' , headers, url, url)
     >>> cookie = _create_cookie(response)
     >>> cookie
     Cookie({'abc': ['def']})
@@ -269,9 +276,9 @@ def _create_cookie(http_response):
     cookies = []
         
     # Get data from RESPONSE
-    responseHeaders = http_response.getHeaders()
+    response_headers = http_response.getHeaders()
     
-    for hname, hvalue in responseHeaders.items():
+    for hname, hvalue in response_headers.iteritems():
         if 'cookie' in hname.lower():
             cookies.append(hvalue)
                 

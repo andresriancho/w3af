@@ -60,7 +60,7 @@ class content_negotiation(CrawlPlugin):
     def crawl(self, fuzzable_request ):
         '''
         1- Check if HTTP server is vulnerable
-        2- Exploit using fuzzable_request
+        2- Exploit using FuzzableRequest
         3- Perform bruteforce for each new directory
         
         @parameter fuzzable_request: A fuzzable_request instance that contains 

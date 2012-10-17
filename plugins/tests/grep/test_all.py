@@ -29,8 +29,8 @@ from itertools import repeat
 
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.w3afCore import w3af_core
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
@@ -86,12 +86,12 @@ class test_all(unittest.TestCase):
                     file_path = os.path.join('plugins','tests','grep','data',file_name)
                     
                     body = file( file_path ).read()
-                    response = httpResponse(200, body, {'Content-Type': 'text/html'},
+                    response = HTTPResponse(200, body, {'Content-Type': 'text/html'},
                                             url_object( self.url_str + str(counter) ),
                                             url_object( self.url_str + str(counter) ),
                                             id=random.randint(1,5000) )
 
-                    request = fuzzable_request(self.url_inst)
+                    request = FuzzableRequest(self.url_inst)
                     for pinst in self._plugins:
                         pinst.grep( request, response )
             

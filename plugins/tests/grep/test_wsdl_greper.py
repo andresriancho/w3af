@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
@@ -39,7 +39,7 @@ class test_wsdl_greper(unittest.TestCase):
         fingerprint_404_singleton( [False, False, False] )
         self.plugin = wsdl_greper()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzable_request(self.url)
+        self.request = FuzzableRequest(self.url)
 
     def tearDown(self):
         self.plugin.end()
@@ -47,14 +47,14 @@ class test_wsdl_greper(unittest.TestCase):
     def test_wsdl_greper_empty(self):
         body = ''
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )
     
     def test_wsdl_greper_long(self):
         body = 'ABC ' * 10000
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )
     
@@ -63,7 +63,7 @@ class test_wsdl_greper(unittest.TestCase):
         body += '/s:sequence'
         body += '</br> ' * 50
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 1 )
 
@@ -72,7 +72,7 @@ class test_wsdl_greper(unittest.TestCase):
         body += 'disco:discovery '
         body += '</br> ' * 50
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('wsdl_greper', 'disco')), 1 )
         self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )

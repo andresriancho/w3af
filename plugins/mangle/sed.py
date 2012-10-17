@@ -19,21 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
 
-
-import core.controllers.outputManager as om
-
-# options
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
+from core.data.request.factory import create_fuzzable_request
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.mangle_plugin import headersToString, stringToHeaders
-
-import re
-
 from core.controllers.w3afException import w3afException
-from core.data.request.factory import create_fuzzable_request
 
 
 class sed(ManglePlugin):
@@ -175,13 +169,6 @@ class sed(ManglePlugin):
         ol.add(o3)
         return ol
   
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def getPriority( self ):
         '''
         This function is called when sorting mangle plugins.

@@ -52,14 +52,14 @@ class mutantFileName(mutant):
         @return: The URL, as modified by "setModValue()"
         
         >>> from core.data.parsers.urlParser import url_object
-        >>> from core.data.request.fuzzable_request import fuzzable_request
+        >>> from core.data.request.fuzzable_request import FuzzableRequest
         >>> from core.data.dc.dataContainer import DataContainer
         >>> divided_file_name = DataContainer()
         >>> divided_file_name['start'] = ''
         >>> divided_file_name['fuzzedFname'] = 'ping!'
         >>> divided_file_name['end'] = '.html'
         
-        >>> fr = fuzzable_request(url_object('http://www.w3af.com/abc/def.html'))        
+        >>> fr = FuzzableRequest(url_object('http://www.w3af.com/abc/def.html'))        
         >>> m = mutantFileName( fr )
         >>> m.setMutantDc(divided_file_name)
         >>> m.setVar( 'fuzzedFname' )

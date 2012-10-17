@@ -46,7 +46,7 @@ class dav(AuditPlugin):
         '''
         Searches for file upload vulns using PUT method.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         # Start
         domain_path = freq.getURL().getDomainPath()

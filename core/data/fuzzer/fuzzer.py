@@ -314,9 +314,9 @@ def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzable_param_li
     @return: Mutants that have the filename URL changed with the strings at mutant_str_list
     
     >>> from core.data.parsers.urlParser import url_object
-    >>> from core.data.request.fuzzable_request import fuzzable_request
+    >>> from core.data.request.fuzzable_request import FuzzableRequest
     >>> url = url_object('http://www.w3af.com/abc/def.html')
-    >>> fr = fuzzable_request(url)
+    >>> fr = FuzzableRequest(url)
     >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['ping!','pong-'], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/abc/ping%21.html', u'http://www.w3af.com/abc/pong-.html', u'http://www.w3af.com/abc/def.ping%21', u'http://www.w3af.com/abc/def.pong-']
@@ -370,7 +370,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     
     @return: A list of mutants.
 
-    >>> from core.data.request.fuzzable_request import fuzzable_request
+    >>> from core.data.request.fuzzable_request import FuzzableRequest
     >>> from core.data.parsers.urlParser import url_object
     >>> from core.data.dc.dataContainer import DataContainer
 
@@ -378,7 +378,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d = DataContainer()
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
-    >>> freq = fuzzable_request(url_object('http://www.w3af.com/'), dc=d)
+    >>> freq = FuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
     >>> f = _create_mutantsWorker( freq, mutantQs, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['abc'], 'b': ['2']}), DataContainer({'a': ['def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['abc']}), DataContainer({'a': ['1'], 'b': ['def']})]
@@ -387,7 +387,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d = DataContainer()
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
-    >>> freq = fuzzable_request(url_object('http://www.w3af.com/'), dc=d)
+    >>> freq = FuzzableRequest(url_object('http://www.w3af.com/'), dc=d)
     >>> f = _create_mutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['1abc'], 'b': ['2']}), DataContainer({'a': ['1def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['2abc']}), DataContainer({'a': ['1'], 'b': ['2def']})]
@@ -523,9 +523,9 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzable_param_li
     @return: Mutants that have the filename URL changed with the strings at mutant_str_list
     
     >>> from core.data.parsers.urlParser import url_object
-    >>> from core.data.request.fuzzable_request import fuzzable_request
+    >>> from core.data.request.fuzzable_request import FuzzableRequest
     >>> url = url_object('http://www.w3af.com/abc/def')
-    >>> fr = fuzzable_request(url)
+    >>> fr = FuzzableRequest(url)
     >>> mutant_list = _createUrlPartsMutants(fr, mutantUrlParts, ['ping!'], [], False)
     >>> [m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/ping%21/def', u'http://www.w3af.com/ping%2521/def', u'http://www.w3af.com/abc/ping%21', u'http://www.w3af.com/abc/ping%2521']

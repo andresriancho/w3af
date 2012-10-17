@@ -26,7 +26,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.dc.headers import Headers
 
 
 class xst(AuditPlugin):
@@ -57,9 +58,9 @@ class xst(AuditPlugin):
             
             uri = freq.getURL().getDomainPath()
             method = 'TRACE'
-            headers = {}
-            headers['FalseHeader'] = 'XST'
-            fr = fuzzable_request(uri,
+            headers = Headers()
+            headers['FakeHeader'] = 'XST'
+            fr = FuzzableRequest(uri,
                                  method=method,
                                  headers=headers
                                  )
@@ -68,7 +69,7 @@ class xst(AuditPlugin):
             response = self._uri_opener.send_mutant(fr)
 
             # create a regex to test the response. 
-            regex = re.compile("FalseHeader: *?XST", re.IGNORECASE)
+            regex = re.compile("FakeHeader: *?XST", re.IGNORECASE)
             if re.search(regex, response.getBody()):
                 # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln( freq )

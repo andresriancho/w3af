@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.blank_body import blank_body
@@ -37,7 +37,7 @@ class test_blank_body(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = blank_body()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzable_request(self.url)
+        self.request = FuzzableRequest(self.url)
 
     def tearDown(self):
         self.plugin.end()
@@ -46,30 +46,30 @@ class test_blank_body(unittest.TestCase):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 1 )
     
     def test_blank_body_none(self):
         body = 'header body footer'
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
     
     def test_blank_body_method(self): 
         body = ''
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, self.url, self.url)
-        request = fuzzable_request(self.url, method='ARGENTINA')
+        response = HTTPResponse(200, body , headers, self.url, self.url)
+        request = FuzzableRequest(self.url, method='ARGENTINA')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
     
     def test_blank_body_code(self):
         body = ''
         headers = {'content-type': 'text/html'}
-        response = httpResponse(401, body , headers, self.url, self.url)
-        request = fuzzable_request(self.url, method='GET')
+        response = HTTPResponse(401, body , headers, self.url, self.url)
+        request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 0 )

@@ -105,7 +105,7 @@ make the request fail */
     headers = http_request.getHeaders()
     for header_name in headers:
         for header_value in headers[header_name]:
-            res += 'xmlhttp.setRequestHeader("' + ajax_escape_string(header_name) + '", "'
+            res += 'xmlhttp.setRequestHeaders("' + ajax_escape_string(header_name) + '", "'
             res += ajax_escape_string(header_value) + '");\n'
         
     # And finally the post data (if any)

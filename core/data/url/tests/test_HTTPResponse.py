@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-test_httpResponse.py
+test_HTTPResponse.py
 
 Copyright 2011 Andres Riancho
 
@@ -23,9 +23,10 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from ..httpResponse import httpResponse, DEFAULT_CHARSET
+from ..HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 
 TEST_RESPONSES = {
     'hebrew': (u'ולהכיר טוב יותר את המוסכמות, האופי', 'Windows-1255'),
@@ -40,16 +41,16 @@ TEST_RESPONSES = {
 class TestHTTPResponse(unittest.TestCase):
     
     def setUp(self):
-        self.resp = self.create_resp({'Content-Type': 'text/html'})
+        self.resp = self.create_resp(Headers([('Content-Type', 'text/html')]))
     
     def create_resp(self, headers, body=u'body'):
         url = url_object('http://w3af.com')
-        return httpResponse(200, body, headers, url, url)
+        return HTTPResponse(200, body, headers, url, url)
     
     def test_unicode_body_no_charset(self):
         '''
         A charset *must* be passed as arg when creating a new
-        httpResponse; otherwise expect an error.
+        HTTPResponse; otherwise expect an error.
         '''
         self.assertRaises(AssertionError, self.resp.getBody)
     
@@ -72,19 +73,19 @@ class TestHTTPResponse(unittest.TestCase):
             'text/css', 'text/csv', 'text/javascript', 'text/plain'
             )
         for mimetype in text_or_html_mime_types:
-            resp = self.create_resp({'Content-Type': mimetype})
+            resp = self.create_resp(Headers([('Content-Type', mimetype)]))
             self.assertEquals(
                 True, resp.is_text_or_html(),
                 "MIME type '%s' wasn't recognized as a valid '%s' type"
-                % (mimetype, httpResponse.DOC_TYPE_TEXT_OR_HTML)
+                % (mimetype, HTTPResponse.DOC_TYPE_TEXT_OR_HTML)
             )
         
         # PDF
-        resp = self.create_resp({'Content-Type': 'application/pdf'})
+        resp = self.create_resp(Headers([('Content-Type', 'application/pdf')]))
         self.assertEquals(True, resp.is_pdf())
         
         # SWF
-        resp = self.create_resp({'Content-Type': 'application/x-shockwave-flash'})
+        resp = self.create_resp(Headers([('Content-Type', 'application/x-shockwave-flash')]))
         self.assertEquals(True, resp.is_swf())
         
         # Image
@@ -93,11 +94,11 @@ class TestHTTPResponse(unittest.TestCase):
             'image/svg+xml', 'image/vnd.microsoft.icon'
             )
         for mimetype in image_mime_types:
-            resp = self.create_resp({'Content-Type': mimetype})
+            resp = self.create_resp(Headers([('Content-Type', mimetype)]))
             self.assertEquals(
                 True, resp.is_image(),
                 "MIME type '%s' wasn't recognized as a valid '%s' type"
-                % (mimetype, httpResponse.DOC_TYPE_IMAGE)
+                % (mimetype, HTTPResponse.DOC_TYPE_IMAGE)
             )
     
     def test_parse_response_with_charset_in_both_headers(self):
@@ -108,7 +109,7 @@ class TestHTTPResponse(unittest.TestCase):
             body = ('<meta http-equiv=Content-Type content="text/html;'
                     'charset=utf-16"/>' + body)
             htmlbody = '%s' % body.encode(charset)
-            resp = self.create_resp({'content-type': hvalue}, htmlbody)
+            resp = self.create_resp(Headers([('Content-Type', hvalue)]), htmlbody)
             self.assertEquals(body, resp.getBody())
     
     def test_parse_response_with_charset_in_meta_header(self):
@@ -118,7 +119,7 @@ class TestHTTPResponse(unittest.TestCase):
             body = ('<meta http-equiv=Content-Type content="text/html;'
                     'charset=%s/>' % charset)
             htmlbody = '%s' % body.encode(charset)
-            resp = self.create_resp({}, htmlbody)
+            resp = self.create_resp(Headers(), htmlbody)
             self.assertEquals(body, resp.body)
     
     def test_parse_response_with_no_charset_in_header(self):
@@ -126,7 +127,7 @@ class TestHTTPResponse(unittest.TestCase):
         # error handling scheme
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
-            resp = self.create_resp({'Content-Type':'text/xml'}, html)
+            resp = self.create_resp(Headers([('Content-Type', 'text/xml')]), html)
             self.assertEquals(
                 smart_unicode(html, DEFAULT_CHARSET,
                               ESCAPED_CHAR, on_error_guess=False),
@@ -139,8 +140,8 @@ class TestHTTPResponse(unittest.TestCase):
         from random import choice
         for body, charset in TEST_RESPONSES.values():
             html = body.encode(charset)
-            headers = {'Content-Type': 'text/xml; charset=%s' % 
-                                            choice(('XXX', 'utf-8'))}
+            headers = Headers([('Content-Type', 'text/xml; charset=%s' %
+                                                choice(('XXX', 'utf-8')))])
             resp = self.create_resp(headers, html)
             self.assertEquals(
                 smart_unicode(html, DEFAULT_CHARSET,
@@ -159,19 +160,19 @@ class TestHTTPResponse(unittest.TestCase):
             <input name="pass" type="password">
           </body>
         </html>"""
-        headers = {'Content-Type': 'text/xml'}
+        headers = Headers([('Content-Type', 'text/xml')])
         resp = self.create_resp(headers, html)
         self.assertEquals(2, len(resp.getDOM().xpath('.//input')))
     
     def test_dom_are_the_same(self):
-        resp = self.create_resp({'conten-type': 'text/html'}, "<html/>")
+        resp = self.create_resp(Headers([('Content-Type', 'text/html')]), "<html/>")
         domid = id(resp.getDOM())
         self.assertEquals(domid, id(resp.getDOM()))
     
     def test_get_clear_text_body(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         clear_text = 'header ABC-DEF-XYZ footer'
-        headers = {'Content-Type': 'text/html'}
+        headers = Headers([('Content-Type', 'text/html')])
         resp = self.create_resp(headers, html)
         self.assertEquals(clear_text, resp.getClearTextBody())        
     

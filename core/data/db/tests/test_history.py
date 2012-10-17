@@ -31,9 +31,10 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.fuzzer import rand_alnum
-from core.data.request.fuzzable_request import fuzzable_request as FuzzReq
+from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
 from core.data.parsers.urlParser import url_object
-from core.data.url.httpResponse import httpResponse
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.dc.headers import Headers
 
 
 @attr('smoke')
@@ -72,7 +73,9 @@ class TestHistoryItem(unittest.TestCase):
             code = 200
             if i == find_id:
                 code = 302
-            res = httpResponse(code, '<html>',{'Content-Type':'text/html'}, url, url)
+            
+            hdr = Headers([('Content-Type', 'text/html')])
+            res = HTTPResponse(code, '<html>',hdr, url, url)
             h1 = HistoryItem()
             h1.request = fr
             res.set_id(i)
@@ -99,7 +102,8 @@ class TestHistoryItem(unittest.TestCase):
         url = url_object('http://w3af.org/a/b/c.php')
         for i in xrange(0, 500):
             fr = FuzzReq(url, dc={'a': ['1']})
-            res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
+            hdr = Headers([('Content-Type', 'text/html')])
+            res = HTTPResponse(200, '<html>', hdr, url, url)
             h1 = HistoryItem()
             h1.request = fr
             res.set_id(i)
@@ -115,7 +119,8 @@ class TestHistoryItem(unittest.TestCase):
         i = random.randint(1, 499)
         url = url_object('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
-        res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>',hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -130,7 +135,8 @@ class TestHistoryItem(unittest.TestCase):
         i = random.randint(1, 499)
         url = url_object('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
-        res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>',hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -147,7 +153,8 @@ class TestHistoryItem(unittest.TestCase):
         i = random.randint(1, 499)
         url = url_object('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
-        res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>',hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -168,7 +175,8 @@ class TestHistoryItem(unittest.TestCase):
 
         for i in xrange(501, 1000):
             fr = FuzzReq(url, dc={'a': ['1']})
-            res = httpResponse(200, '<html>',{'Content-Type':'text/html'}, url, url)
+            hdr = Headers([('Content-Type', 'text/html')])
+            res = HTTPResponse(200, '<html>',hdr, url, url)
             h1 = HistoryItem()
             h1.request = fr
             res.set_id(i)

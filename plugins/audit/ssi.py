@@ -52,7 +52,7 @@ class ssi(AuditPlugin):
         '''
         Tests an URL for server side inclusion vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         

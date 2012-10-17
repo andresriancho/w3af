@@ -53,7 +53,7 @@ class redos(AuditPlugin):
         '''
         Tests an URL for ReDoS vulnerabilities using time delays.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         #
         #   We know for a fact that PHP is NOT vulnerable to this attack
@@ -67,7 +67,7 @@ class redos(AuditPlugin):
         if 'php' in freq.getURL().getExtension().lower():
             return
         
-        # Send the fuzzable_request without any fuzzing, so we can measure the
+        # Send the FuzzableRequest without any fuzzing, so we can measure the
         # response time of this script in order to compare it later
         res = self._uri_opener.send_mutant(freq, grep=False)
         self._original_wait_time = res.getWaitTime()

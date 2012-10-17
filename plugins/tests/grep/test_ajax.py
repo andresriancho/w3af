@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.ajax import ajax
@@ -37,7 +37,7 @@ class test_ajax(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = ajax()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzable_request(self.url)
+        self.request = FuzzableRequest(self.url)
         kb.kb.save('ajax','ajax',[])
 
     def tearDown(self):
@@ -47,8 +47,8 @@ class test_ajax(unittest.TestCase):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 0 )
     
@@ -56,8 +56,8 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
@@ -65,8 +65,8 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
@@ -74,8 +74,8 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
@@ -83,8 +83,8 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
     
@@ -92,7 +92,7 @@ class test_ajax(unittest.TestCase):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )

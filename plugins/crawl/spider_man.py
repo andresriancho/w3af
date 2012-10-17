@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.outputManager as om
-import core.data.url.httpResponse as httpResponse
+import core.data.url.HTTPResponse as HTTPResponse
 import core.data.constants.w3afPorts as w3afPorts
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -225,6 +225,6 @@ class proxyHandler(w3afProxyHandler):
         html = '<html>spider_man plugin finished its execution.</html>'
         headers = {'Content-Length': str(len(html))}
         
-        r = httpResponse.httpResponse( 200, html, headers, 
+        r = HTTPResponse.HTTPResponse( 200, html, headers, 
             TERMINATE_URL, TERMINATE_URL,)
         self._sendToBrowser(r)

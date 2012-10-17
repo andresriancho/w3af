@@ -41,7 +41,7 @@ class documentParser:
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, httpResponse):
+    def __init__(self, HTTPResponse):
 
         # Create the proper parser instance, please note that
         # the order in which we ask for the type is not random,
@@ -50,30 +50,30 @@ class documentParser:
         # a very specific thing to match, then we try text or HTML
         # which is very generic (if we would have exchanged these two
         # we would have never got to WML), etc.
-        if httpResponse.is_image():
+        if HTTPResponse.is_image():
             msg = 'There is no parser for images.'
             raise w3afException(msg)
-        elif self._isWML(httpResponse):
-            parser = wmlParser.wmlParser(httpResponse)
-        elif httpResponse.is_text_or_html():
-            parser = htmlParser.HTMLParser(httpResponse)
-        elif self._isPDF(httpResponse):
-            parser = pdfParser.pdfParser(httpResponse)
-        elif self._isSWF(httpResponse):
-            parser = swfParser.swfParser(httpResponse)
+        elif self._isWML(HTTPResponse):
+            parser = wmlParser.wmlParser(HTTPResponse)
+        elif HTTPResponse.is_text_or_html():
+            parser = htmlParser.HTMLParser(HTTPResponse)
+        elif self._isPDF(HTTPResponse):
+            parser = pdfParser.pdfParser(HTTPResponse)
+        elif self._isSWF(HTTPResponse):
+            parser = swfParser.swfParser(HTTPResponse)
         else:
-            msg = 'There is no parser for "%s".' % httpResponse.getURL()
+            msg = 'There is no parser for "%s".' % HTTPResponse.getURL()
             raise w3afException(msg)
         
         self._parser = parser
     
-    def _isPDF(self, httpResponse):
+    def _isPDF(self, HTTPResponse):
         '''
-        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
+        @HTTPResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a PDF document.
         '''
-        if httpResponse.content_type in ('application/x-pdf', 'application/pdf'):
-            document = httpResponse.body
+        if HTTPResponse.content_type in ('application/x-pdf', 'application/pdf'):
+            document = HTTPResponse.body
             
             #   With the objective of avoiding this bug:
             #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
@@ -94,13 +94,13 @@ class documentParser:
         
         return False
     
-    def _isSWF(self, httpResponse):
+    def _isSWF(self, HTTPResponse):
         '''
-        @return: True if the httpResponse contains a SWF file.
+        @return: True if the HTTPResponse contains a SWF file.
         '''
-        if httpResponse.content_type == 'application/x-shockwave-flash':
+        if HTTPResponse.content_type == 'application/x-shockwave-flash':
             
-            body = httpResponse.getBody()
+            body = HTTPResponse.getBody()
         
             if len(body) > 5:
                 magic = body[:3]
@@ -113,14 +113,14 @@ class documentParser:
     
     WML_RE = re.compile('<!DOCTYPE wml PUBLIC', re.IGNORECASE)
     
-    def _isWML( self, httpResponse ):
+    def _isWML( self, HTTPResponse ):
         '''
-        @httpResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
+        @HTTPResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
         @return: True if the document parameter is a string that contains a WML document.
         '''
-        if httpResponse.content_type == 'text/vnd.wap.wml':
+        if HTTPResponse.content_type == 'text/vnd.wap.wml':
         
-            document = httpResponse.getBody()
+            document = HTTPResponse.getBody()
         
             if self.WML_RE.search( document ):
                 return True
@@ -184,5 +184,5 @@ class documentParser:
         return self._parser.getMetaTags()
     
     
-def document_parser_factory(httpResponse):
-    return documentParser(httpResponse)
+def document_parser_factory(HTTPResponse):
+    return documentParser(HTTPResponse)

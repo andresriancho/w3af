@@ -99,7 +99,7 @@ class xss(AuditPlugin):
         '''
         Tests an URL for XSS vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         # Save it here, so I can search for permanent XSS
         self._fuzzable_requests.append(freq)
@@ -411,7 +411,7 @@ class xss(AuditPlugin):
                                                          cache=False)
 
                 for mutant, mutant_response_id in self._xssMutants:
-                    # Remember that httpResponse objects have a faster "__in__" than
+                    # Remember that HTTPResponse objects have a faster "__in__" than
                     # the one in strings; so string in response.getBody() is slower than
                     # string in response                    
                     if mutant.getModValue() in response:

@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
+import core.data.dc.form as form
 import core.controllers.outputManager as om
 
 from core.data.parsers.sgmlParser import SGMLParser
 from core.data.parsers.urlParser import url_object
-
-import core.data.dc.form as form
+from core.data.dc.headers import Headers
 
 
 class wmlParser(SGMLParser):
@@ -35,17 +34,17 @@ class wmlParser(SGMLParser):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
-    def __init__(self, httpResponse):
+    def __init__(self, HTTPResponse):
         self._select_tag_name = ""
-        SGMLParser.__init__(self, httpResponse)
+        SGMLParser.__init__(self, HTTPResponse)
         
-    def _pre_parse(self, httpResponse):
+    def _pre_parse(self, HTTPResponse):
         '''
-        @parameter httpResponse: The HTTP response document that contains the WML
+        @parameter HTTPResponse: The HTTP response document that contains the WML
         document inside its body.
 
         Init,
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
         >>> u = url_object('http://www.w3af.com/')
         
         Parse a simple form,
@@ -55,13 +54,13 @@ class wmlParser(SGMLParser):
         ...        <postfield name="cuenta" value="$(cuenta)"/>
         ...        <postfield name="tipdat" value="D"/>
         ...    </go>"""
-        >>> response = httpResponse( 200, form, {}, u, u )
+        >>> response = HTTPResponse( 200, form, Headers(), u, u )
         >>> w = wmlParser(response)
         >>> w.getForms()
         [Form({'clave': ['$(clave)'], 'cuenta': ['$(cuenta)'], 'tipdat': ['D']})]
 
         Get the simplest link
-        >>> response = httpResponse( 200, '<a href="/index.aspx">ASP.NET</a>', {}, u, u )
+        >>> response = HTTPResponse( 200, '<a href="/index.aspx">ASP.NET</a>', Headers(), u, u )
         >>> w = wmlParser( response )
         >>> re, parsed = w.getReferences()
         
@@ -76,7 +75,7 @@ class wmlParser(SGMLParser):
         #    u'http://www.w3af.com/index.aspx'
 
         Get a link by applying regular expressions
-        >>> response = httpResponse(200, 'header /index.aspx footer', {}, u, u)
+        >>> response = HTTPResponse(200, 'header /index.aspx footer', Headers(), u, u)
         >>> w = wmlParser( response )
         >>> re, parsed = w.getReferences()
         >>> #
@@ -87,7 +86,7 @@ class wmlParser(SGMLParser):
         >>> parsed[0].url_string
         u'http://www.w3af.com/index.aspx'
         '''
-        SGMLParser._pre_parse(self, httpResponse)
+        SGMLParser._pre_parse(self, HTTPResponse)
         assert self._baseUrl is not None, 'The base URL must be set.'
     
     def _handle_go_tag_start(self, tag, attrs):

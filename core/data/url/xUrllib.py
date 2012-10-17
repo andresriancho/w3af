@@ -37,20 +37,22 @@ import urlOpenerSettings
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
-from core.controllers.misc.number_generator import \
-     consecutive_number_generator as seq_gen
-from core.controllers.w3afException import (w3afMustStopException,
-     w3afMustStopByUnknownReasonExc, w3afMustStopByKnownReasonExc,
-     w3afException, w3afMustStopOnUrlError)
+from core.controllers.misc.number_generator import consecutive_number_generator as seq_gen
+from core.controllers.w3afException import (w3afMustStopException, w3afException,
+                                            w3afMustStopByUnknownReasonExc,
+                                            w3afMustStopByKnownReasonExc,
+                                            w3afMustStopOnUrlError)
+
 from core.data.constants.httpConstants import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.parsers.urlParser import url_object
 from core.data.request.factory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers.logHandler import LogHandler
-from core.data.url.httpResponse import httpResponse, from_httplib_resp
+from core.data.url.HTTPResponse import HTTPResponse, from_httplib_resp
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.url.handlers.localCache import CachedResponse
+from core.data.dc.headers import Headers
 
 
 class xUrllib(object):
@@ -158,12 +160,14 @@ class xUrllib(object):
 
     def getHeaders(self, uri):
         '''
-        Returns a dict with the headers that would be used when sending a request
-        to the remote server.
+        @param uri: The URI we want to know the request headers
+        
+        @return: A Headers object with the HTTP headers that would be added by
+                the library when sending a request to uri.
         '''
         req = HTTPRequest( uri )
         req = self._add_headers( req )
-        return req.headers
+        return Headers(req.headers)
     
     def _is_blacklisted(self, uri):
         '''
@@ -190,7 +194,7 @@ class xUrllib(object):
         '''
         return self.settings.get_cookies()
     
-    def sendRawRequest(self, head, postdata, fixContentLength=True):
+    def sendRawRequest(self, head, postdata, fix_content_len=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed 
         in a textbox or is stored in a file. When something like that happens,
@@ -199,16 +203,16 @@ class xUrllib(object):
         
         @parameter head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
         @parameter postdata: The postdata, if any. If set to '' or None, no postdata is sent.
-        @parameter fixContentLength: Indicates if the content length has to be fixed or not.
+        @parameter fix_content_len: Indicates if the content length has to be fixed or not.
         
-        @return: An httpResponse object.
+        @return: An HTTPResponse object.
         '''
         # Parse the two strings
-        fuzzReq = HTTPRequestParser(head, postdata)
+        fuzz_req = HTTPRequestParser(head, postdata)
         
         # Fix the content length
-        if fixContentLength:
-            headers = fuzzReq.getHeaders()
+        if fix_content_len:
+            headers = fuzz_req.getHeaders()
             fixed = False
             for h in headers:
                 if h.lower() == 'content-length':
@@ -216,12 +220,12 @@ class xUrllib(object):
                     fixed = True
             if not fixed and postdata:
                 headers[ 'content-length' ] = str(len(postdata))
-            fuzzReq.setHeaders(headers)
+            fuzz_req.setHeaders(headers)
         
         # Send it
-        function_reference = getattr( self , fuzzReq.get_method() )
-        return function_reference(fuzzReq.getURI(), data=fuzzReq.getData(),
-                                  headers=fuzzReq.getHeaders(), cache=False,
+        function_reference = getattr( self , fuzz_req.get_method() )
+        return function_reference(fuzz_req.getURI(), data=fuzz_req.getData(),
+                                  headers=fuzz_req.getHeaders(), cache=False,
                                   grep=False)
     
     def send_mutant( self, mutant, callback=None, grep=True, cache=True,
@@ -233,7 +237,7 @@ class xUrllib(object):
                          the callback with the mutant and the http response as
                          parameters.
         
-        @return: The httpResponse object associated with the request
+        @return: The HTTPResponse object associated with the request
                  that was just sent.
         '''
         #
@@ -270,7 +274,7 @@ class xUrllib(object):
 
         return res
             
-    def GET(self, uri, data=None, headers={}, cache=False,
+    def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
         HTTP GET a URI using a proxy, user agent, and other settings
@@ -287,16 +291,19 @@ class xUrllib(object):
         @param follow_redir: Follow redirects that are generated by this request
         @param cookies: Send stored cookies in request (or not)
 
-        @return: An httpResponse object.
+        @return: An HTTPResponse object.
         '''
-        #
-        # Validate what I'm sending, init the library (if needed) and check
-        # blacklists.
-        #
         if not isinstance(uri, url_object):
             raise TypeError('The uri parameter of xUrllib.GET() must be of '
                             'urlParser.url_object type.')
 
+        if not isinstance(headers, Headers):
+            raise TypeError('The header parameter of xUrllib.GET() must be of '
+                            'Headers type.')
+
+        # Validate what I'm sending, init the library (if needed) and check
+        # blacklists.
+        #
         self._init()
 
         if self._is_blacklisted(uri):
@@ -326,7 +333,7 @@ class xUrllib(object):
 
     def _new_no_content_resp(self, uri, log_it=False):
         '''
-        Return a new NO_CONTENT httpResponse object. Optionally call the
+        Return a new NO_CONTENT HTTPResponse object. Optionally call the
         subscribed log handlers
         
         @param uri: URI string or request object
@@ -345,7 +352,8 @@ class xUrllib(object):
             raise Exception( msg )
 
         # Work,
-        no_content_response = httpResponse(NO_CONTENT, '', {}, uri, uri, msg='No Content')
+        no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
+                                           uri, msg='No Content')
         if log_it:
             # This also assigns the id to both objects.
             LogHandler.log_req_resp(req, no_content_response)
@@ -355,7 +363,7 @@ class xUrllib(object):
             
         return no_content_response
             
-    def POST(self, uri, data='', headers={}, grep=True,
+    def POST(self, uri, data='', headers=Headers(), grep=True,
              cache=False, follow_redir=True, cookies=True):
         '''
         POST's data to a uri using a proxy, user agents, and other settings
@@ -363,17 +371,20 @@ class xUrllib(object):
         
         @param uri: This is the url where to post.
         @param data: A string with the data for the POST.
-        @return: An httpResponse object.
+        @return: An HTTPResponse object.
         '''
-        #
+        if not isinstance(uri, url_object):
+            raise TypeError('The uri parameter of xUrllib.POST() must be of '
+                            'urlParser.url_object type.')            
+
+        if not isinstance(headers, Headers):
+            raise TypeError('The header parameter of xUrllib.POST() must be of '
+                            'Headers type.')
+
+
         #    Validate what I'm sending, init the library (if needed) and check
         #    blacklists.
         #
-        if not isinstance(uri, url_object):
-            msg = 'The uri parameter of xUrllib.POST() must be of urlParser.'
-            msg += 'url_object type.'
-            raise ValueError(msg)
-
         self._init()
 
         if self._is_blacklisted(uri):
@@ -442,10 +453,10 @@ class xUrllib(object):
                 self._xurllib = xu
                 self._method = method
             
-            def __call__(self, uri, data=None, headers={}, cache=False,
+            def __call__(self, uri, data=None, headers=Headers(), cache=False,
                          grep=True, follow_redir=True, cookies=True):
                 '''
-                @return: An httpResponse object that's the result of
+                @return: An HTTPResponse object that's the result of
                     sending the request with a method different from
                     "GET" or "POST".
                 '''
@@ -453,6 +464,10 @@ class xUrllib(object):
                     raise TypeError('The uri parameter of AnyMethod.'
                          '__call__() must be of urlParser.url_object type.')
                 
+                if not isinstance(uri, Headers):
+                    raise TypeError('The headers parameter of AnyMethod.'
+                         '__call__() must be of Headers type.')
+                    
                 self._xurllib._init()
                 
                 if self._xurllib._is_blacklisted(uri):
@@ -467,8 +482,8 @@ class xUrllib(object):
         
         return AnyMethod(self, method_name)
 
-    def _add_headers( self , req, headers={} ):
-        # Add all custom Headers if they exist
+    def _add_headers( self , req, headers=Headers() ):
+        # Add all custom Headers() if they exist
         for h, v in self.settings.header_list:
             req.add_header( h, v )
         
@@ -478,7 +493,7 @@ class xUrllib(object):
         return req
     
     def _check_uri( self, req ):
-        #bug bug !
+        # BUGBUG!
         #
         # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
         # Too many retries when trying to get: http://localhost/w3af/global_redirect/2.php?url=javascript%3Aalert
@@ -497,7 +512,7 @@ class xUrllib(object):
         Actually send the request object.
         
         @param req: The HTTPRequest object that represents the request.
-        @return: An httpResponse object.
+        @return: An HTTPResponse object.
         '''
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
@@ -534,7 +549,7 @@ class xUrllib(object):
             info = e.info()
             geturl_instance = url_object(e.geturl())
             read = self._readRespose(e)
-            http_resp = httpResponse(code, read, info, geturl_instance,
+            http_resp = HTTPResponse(code, read, info, geturl_instance,
                                       original_url_inst, id=e.id,
                                       time=time.time()-start_time, msg=e.msg,
                                       charset=getattr(e.fp, 'encoding', None))

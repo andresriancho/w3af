@@ -40,10 +40,10 @@ class pdfParser(BaseParser):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, httpResponse):
-        super(pdfParser, self).__init__(httpResponse)
+    def __init__(self, HTTPResponse):
+        super(pdfParser, self).__init__(HTTPResponse)
         # Work !
-        self._pre_parse(httpResponse.body)
+        self._pre_parse(HTTPResponse.body)
         
     def _pre_parse(self, document):
         content_text = self.getPDFContent(document)

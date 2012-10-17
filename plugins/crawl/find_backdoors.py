@@ -175,7 +175,7 @@ class find_backdoors(CrawlPlugin):
         Heuristic to infer if the content of <response> has the pattern of a
         backdoor response.
         
-        @param response: httpResponse object
+        @param response: HTTPResponse object
         @return: A bool value
         '''
         if not is_404(response):

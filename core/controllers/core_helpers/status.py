@@ -39,7 +39,7 @@ class w3af_core_status(object):
         # This indicates the plugin that is running right now
         self._runningPlugin = ''
         # The current fuzzable request that the core is analyzing
-        self._currentFuzzableRequest = ''
+        self._current_fuzzable_request = ''
     
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
@@ -133,11 +133,11 @@ class w3af_core_status(object):
         '''
         @return: The current fuzzable request that the w3afCore is working on.
         '''
-        return self._currentFuzzableRequest
+        return self._current_fuzzable_request
         
     def set_current_fuzzable_request( self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: The fuzzable_request that the w3afCore is
+        @parameter fuzzable_request: The FuzzableRequest that the w3afCore is
         working on right now.
         '''
-        self._currentFuzzableRequest = fuzzable_request
+        self._current_fuzzable_request = fuzzable_request

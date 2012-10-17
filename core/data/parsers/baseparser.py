@@ -27,6 +27,7 @@ import urllib
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from core.controllers.misc.encoding import is_known_encoding
 
 
@@ -55,22 +56,22 @@ class BaseParser(object):
     PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
     
     
-    def __init__(self, httpResponse):
+    def __init__(self, HTTPResponse):
         
-        encoding = httpResponse.getCharset()
+        encoding = HTTPResponse.getCharset()
         if not is_known_encoding( encoding ):
             raise ValueError('Unknown encoding: %s' % encoding)
         
         # "setBaseUrl"
-        url = httpResponse.getURL()
-        redirURL = httpResponse.getRedirURL()
+        url = HTTPResponse.getURL()
+        redirURL = HTTPResponse.getRedirURL()
         if redirURL:
             url = redirURL
         
         self._baseUrl = url
         self._baseDomain = url.getDomain()
         self._rootDomain = url.getRootDomain()
-        self._encoding = httpResponse.getCharset()
+        self._encoding = HTTPResponse.getCharset()
         
         # To store results
         self._emails = []
@@ -83,9 +84,9 @@ class BaseParser(object):
                        
         @return: A list of email accounts that are inside the document.
         
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
         >>> u = url_object('http://www.w3af.com/')
-        >>> response = httpResponse( 200, '', {}, u, u )
+        >>> response = HTTPResponse( 200, '', Headers(), u, u )
         >>> a = BaseParser(response)
         >>> a._emails = ['a@w3af.com', 'foo@not-w3af.com']
         
@@ -159,9 +160,9 @@ class BaseParser(object):
         @return: A list with all mail users that are present in the doc_str.
 
         Init,
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
         >>> u = url_object('http://www.w3af.com/')
-        >>> response = httpResponse( 200, '', {}, u, u )
+        >>> response = HTTPResponse( 200, '', Headers(), u, u )
         >>> a = BaseParser(response)
         
         First test, no emails.
@@ -215,18 +216,18 @@ class BaseParser(object):
         '''
         Use regular expressions to find new URLs.
         
-        @param httpResponse: The http response object that stores the
+        @param HTTPResponse: The http response object that stores the
             response body and the URL.
         @return: None. The findings are stored in self._re_urls as url_objects
 
         Init,
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
         >>> u = url_object('http://www.w3af.com/')
-        >>> response = httpResponse(200, '', {}, u, u)
+        >>> response = HTTPResponse(200, '', Headers(), u, u)
 
         Simple, empty result
         >>> a = BaseParser(response)
-        >>> response = httpResponse(200, '', {}, u, u)
+        >>> response = HTTPResponse(200, '', Headers(), u, u)
         >>> a._regex_url_parse(response.body)
         >>> len(a._re_urls)
         0
@@ -338,9 +339,9 @@ class BaseParser(object):
         True
         
         Init,
-        >>> from core.data.url.httpResponse import httpResponse as httpResponse
+        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
         >>> u = url_object('http://www.w3af.com/')
-        >>> response = httpResponse(200, u'', {}, u, u, charset='latin1')
+        >>> response = HTTPResponse(200, u'', Headers(), u, u, charset='latin1')
         >>> a = BaseParser(response)
         >>> a._encoding = 'latin1'
         

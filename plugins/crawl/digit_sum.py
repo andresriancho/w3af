@@ -128,7 +128,7 @@ class digit_sum(CrawlPlugin):
         '''
         Mangle the digits (if any) in the fr URL.
         
-        @param fuzzable_request: The original fuzzable_request
+        @param fuzzable_request: The original FuzzableRequest
         @return: A generator which returns mangled fuzzable requests 
         '''
         # First i'll mangle the digits in the URL file

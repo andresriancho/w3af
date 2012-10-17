@@ -120,7 +120,7 @@ class GoogleAPISearch(object):
     def __init__(self, uri_opener):
         self._status = IS_NEW
         self._uri_opener = uri_opener
-        # list of httpResponse objects
+        # list of HTTPResponse objects
         self._pages = []
         # list of URLs
         self._links = []
@@ -281,7 +281,7 @@ class GStandardSearch(GoogleAPISearch):
             google_url_instance = url_object(self.GOOGLE_SEARCH_URL + params)
             response = self._do_GET( google_url_instance )
             
-            # Remember that httpResponse objects have a faster "__in__" than
+            # Remember that HTTPResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
             if GOOGLE_SORRY_PAGE in response:

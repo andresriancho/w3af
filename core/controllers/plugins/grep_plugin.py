@@ -43,7 +43,7 @@ class GrepPlugin(Plugin):
         This method CAN be implemented on a plugin, but its better to
         do your searches in _testResponse().
         
-        @param response: This is the httpResponse object to test.
+        @param response: This is the HTTPResponse object to test.
         @param fuzzable_request: This is the fuzzable request object that
             generated the current response being analyzed.
         @return: If something is found it must be reported to the Output

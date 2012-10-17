@@ -30,9 +30,9 @@ from core.data.parsers.urlParser import url_object
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
-from core.data.request.WebServiceRequest import WebServiceRequest
 from core.data.request.XMLRPCRequest import XMLRPCRequest
 from core.data.url.handlers.MultipartPostHandler import MultipartPostHandler
+from core.data.dc.headers import Headers
 
 
 @attr('smoke')
@@ -45,22 +45,24 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url)
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), {} )
+        self.assertEqual( fr.getHeaders(), Headers() )
         self.assertEqual( fr.get_method(), 'GET' )
         
     def test_headers(self):
-        fr = create_fuzzable_request(self.url, add_headers={'foo': 'bar'})
+        hdr = Headers([('foo', 'bar')])
+        fr = create_fuzzable_request(self.url, add_headers=hdr)
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), {'foo': 'bar'} )
+        self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'GET' )
         
     def test_headers_method(self):
+        hdr = Headers([('foo', 'bar')])
         fr = create_fuzzable_request(self.url, method='PUT', 
-                                     add_headers={'foo': 'bar'})
+                                     add_headers=hdr)
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), {'foo': 'bar'} )
+        self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'PUT' )
 
     def test_from_HTTPRequest(self):
@@ -71,35 +73,36 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertEqual( fr.get_method(), 'GET' )
 
     def test_from_HTTPRequest_headers(self):
-        request = HTTPRequest(self.url, headers={'Foo': 'bar'})
+        hdr = Headers([('Foo', 'bar')])
+        request = HTTPRequest(self.url, headers=hdr)
         fr = create_fuzzable_request(request)
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), {'Foo': 'bar'} )
+        self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'GET' )
         self.assertIsInstance( fr, HTTPQSRequest)
         
     def test_simple_post(self):
         post_data = 'a=b&d=3'
-        headers = {'content-length': str(len(post_data))}
+        hdr = Headers([('content-length', str(len(post_data)))])
         
-        fr = create_fuzzable_request(self.url, add_headers=headers, 
+        fr = create_fuzzable_request(self.url, add_headers=hdr, 
                                      post_data=post_data, method='POST')
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), headers )
+        self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'POST' )
         self.assertIsInstance( fr, HTTPPostDataRequest)
 
     def test_json_post(self):
         post_data = '{"1":"2"}'
-        headers = {'content-length': str(len(post_data))}
+        hdr = Headers([('content-length', str(len(post_data)))])
         
-        fr = create_fuzzable_request(self.url, add_headers=headers, 
+        fr = create_fuzzable_request(self.url, add_headers=hdr, 
                                      post_data=post_data, method='POST')
         
         self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), headers )
+        self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'POST' )
         self.assertIsInstance( fr, JSONPostDataRequest)
 
@@ -109,7 +112,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
             <params></params>
         </methodCall>'''
         
-        headers = {'content-length': str(len(post_data))}
+        headers = Headers([('content-length', str(len(post_data)))])
         
         fr = create_fuzzable_request(self.url, add_headers=headers, 
                                      post_data=post_data, method='POST')
@@ -122,8 +125,8 @@ class TestCreateFuzzableRequest(unittest.TestCase):
     def test_multipart_post(self):
         boundary, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
 
-        headers = {'content-length': str(len(post_data)) ,
-                   'content-type': 'multipart/form-data; boundary=%s' % boundary}
+        headers = Headers([('content-length', str(len(post_data))),
+                           ('content-type', 'multipart/form-data; boundary=%s' % boundary)])
         
         fr = create_fuzzable_request(self.url, add_headers=headers, 
                                      post_data=post_data, method='POST')
@@ -135,12 +138,12 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertIsInstance( fr, HTTPPostDataRequest)
 
     def test_invalid_multipart_post(self):
-        boundary, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
+        _, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
 
         # It is invalid because there is a missing boundary parameter in the
         # content-type header
-        headers = {'content-length': str(len(post_data)) ,
-                   'content-type': 'multipart/form-data'}
+        headers = Headers([('content-length', str(len(post_data))),
+                           ('content-type', 'multipart/form-data')])
         
         fr = create_fuzzable_request(self.url, add_headers=headers, 
                                      post_data=post_data, method='POST')

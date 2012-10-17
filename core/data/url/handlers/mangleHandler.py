@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib2
-import core.data.request.fuzzable_request as fuzzable_request
 
-import core.data.url.httpResponse as httpResponse
+import core.data.url.HTTPResponse as HTTPResponse
+
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from core.data.parsers.urlParser import url_object
-
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 from core.data.url.handlers.logHandler import LogHandler
 
@@ -44,28 +43,26 @@ class mangleHandler(urllib2.BaseHandler):
         
     def _urllibReq2fr( self, request ):
         '''
-        Convert a urllib2 request object to a fuzzable_request.
+        Convert a urllib2 request object to a FuzzableRequest.
         Used in http_request.
         
         @parameter request: A urllib2 request obj.
-        @return: A fuzzable_request.
+        @return: A FuzzableRequest.
         '''
         headers = request.headers
         headers.update(request.unredirected_hdrs)
-        fr = fuzzable_request.fuzzable_request(
-                                     request.url_object,
-                                     request.get_method(),
-                                     headers
-                                     )
+        fr = FuzzableRequest(request.url_object,
+                             request.get_method(),
+                             headers)
         fr.setData(request.get_data() or '')
         return fr
     
     def _fr2urllibReq(self, fuzzable_request, orig_req):
         '''
-        Convert a fuzzable_request to a urllib2 request object. 
+        Convert a FuzzableRequest to a urllib2 request object. 
         Used in http_request.
         
-        @parameter fuzzable_request: A fuzzable_request.
+        @parameter fuzzable_request: A FuzzableRequest.
         @return: A urllib2 request obj.
         '''
         host = fuzzable_request.getURL().getDomain()
@@ -96,28 +93,28 @@ class mangleHandler(urllib2.BaseHandler):
     def http_response(self, request, response):
 
         if len( self._pluginList ) and response._connection.sock is not None:
-            # Create the httpResponse object
+            # Create the HTTPResponse object
             code, msg, hdrs = response.code, response.msg, response.info()
             url_instance = url_object( response.geturl() )
             body = response.read()
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id
 
-            httpRes = httpResponse.httpResponse(code, body, hdrs, url_instance,
+            httpRes = HTTPResponse.HTTPResponse(code, body, hdrs, url_instance,
                                                 request.url_object, msg=msg)
             
             for plugin in self._pluginList:
                 plugin.mangleResponse( httpRes )
             
-            response = self._httpResponse2httplib( response, httpRes )
+            response = self._HTTPResponse2httplib( response, httpRes )
 
         return response
 
-    def _httpResponse2httplib( self, originalResponse, mangledResponse ):
+    def _HTTPResponse2httplib( self, originalResponse, mangledResponse ):
         '''
-        Convert an httpResponse.httpResponse object to a httplib.httpresponse subclass that I created in keepalive.
+        Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse subclass that I created in keepalive.
         
-        @parameter httpResponse: httpResponse.httpResponse object
+        @parameter HTTPResponse: HTTPResponse.HTTPResponse object
         @return: httplib.httpresponse subclass 
         '''
         kaRes = kaHTTPResponse( originalResponse._connection.sock, debuglevel=0, strict=0, method=None )

@@ -31,11 +31,11 @@ class swfParser(BaseParser):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, httpResponse):
-        BaseParser.__init__(self , httpResponse)
+    def __init__(self, HTTPResponse):
+        BaseParser.__init__(self , HTTPResponse)
         
         # work !
-        swf = httpResponse.getBody()
+        swf = HTTPResponse.getBody()
         if self._is_compressed(swf):
             try:
                 swf = self._inflate(swf)

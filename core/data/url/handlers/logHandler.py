@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urllib2
 
-from core.data.request.factory import create_fuzzable_request
 import core.controllers.outputManager as om
-import core.data.url.httpResponse as httpResponse
+import core.data.url.HTTPResponse as HTTPResponse
+
+from core.data.dc.headers import Headers
+from core.data.request.factory import create_fuzzable_request
 
 
 class LogHandler(urllib2.BaseHandler):
@@ -60,12 +62,13 @@ class LogHandler(urllib2.BaseHandler):
         '''
         Send the request and the response to the output manager.
         '''        
-        fr = create_fuzzable_request(
-                             request, add_headers=request.unredirected_hdrs)
-        if isinstance(response, httpResponse.httpResponse):
+        orig_headers = request.unredirected_hdrs.items()
+        fr = create_fuzzable_request(request,
+                                     add_headers=Headers(orig_headers))
+        if isinstance(response, HTTPResponse.HTTPResponse):
             resp = response
         else:
-            resp = httpResponse.from_httplib_resp(
+            resp = HTTPResponse.from_httplib_resp(
                                   response, original_url=request.url_object)
             resp.set_id(response.id)
         

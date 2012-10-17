@@ -75,7 +75,7 @@ class lfi(AuditPlugin):
         '''
         Tests an URL for local file inclusion vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         

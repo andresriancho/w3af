@@ -72,8 +72,8 @@ xmlhttp.onreadystatechange = function() {
 /* Add headers to the request and send it, please note taht custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
-xmlhttp.setRequestHeader("Host", "www.w3af.org");
-xmlhttp.setRequestHeader("Foo", "bar");
+xmlhttp.setRequestHeaders("Host", "www.w3af.org");
+xmlhttp.setRequestHeaders("Foo", "bar");
 xmlhttp.send(null);
 '''
 
@@ -126,7 +126,7 @@ xmlhttp.onreadystatechange = function() {
 /* Add headers to the request and send it, please note taht custom headers
 might be removed by the browser and/or generate an exception that will
 make the request fail */
-xmlhttp.setRequestHeader("Host", "www.w3af.org");
+xmlhttp.setRequestHeaders("Host", "www.w3af.org");
 var post_data = (<r><![CDATA[a=1]]></r>).toString();
 xmlhttp.send(post_data);
 '''

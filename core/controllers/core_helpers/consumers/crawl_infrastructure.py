@@ -157,7 +157,7 @@ class crawl_infrastructure(BaseConsumer):
                 break
             else:
                 # The plugin has finished and now we need to analyze which of
-                # the returned fuzzable_requests are new and should be put in the
+                # the returned fuzzable_request_list are new and should be put in the
                 # input_queue again.
                 if self._is_new_fuzzable_request( plugin, fuzzable_request ):
                 
@@ -258,7 +258,7 @@ class crawl_infrastructure(BaseConsumer):
         
         @param fuzzable_request: A potentially new fuzzable request
 
-        @return: True if @fuzzable_request is new (never seen before).
+        @return: True if @FuzzableRequest is new (never seen before).
         '''
         base_urls_cf = cf.cf.get('baseURLs')
         
@@ -327,7 +327,7 @@ class crawl_infrastructure(BaseConsumer):
     
     def _discover_worker(self, plugin, fuzzable_request):
         '''
-        This method runs @plugin with fuzzable_request as parameter and returns
+        This method runs @plugin with FuzzableRequest as parameter and returns
         new fuzzable requests and/or stores vulnerabilities in the knowledge base.
         
         TODO: unit-test this method

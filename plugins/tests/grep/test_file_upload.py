@@ -24,8 +24,8 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from plugins.grep.file_upload import file_upload
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
@@ -47,8 +47,8 @@ class test_file_upload(unittest.TestCase):
         body = 'header <form><input type="file"></form> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('file_upload', 'file_upload')), 1 )
@@ -59,8 +59,8 @@ class test_file_upload(unittest.TestCase):
         body = 'header <form><Input type="File"></form> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('file_upload', 'file_upload')), 1 )
@@ -71,8 +71,8 @@ class test_file_upload(unittest.TestCase):
         body = 'header <form><noinput type="file"></form> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('file_upload', 'file_upload')), 0 )

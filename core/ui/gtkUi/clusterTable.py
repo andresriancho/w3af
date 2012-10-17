@@ -33,7 +33,7 @@ from . import helpers, entries
 import threading
 
 # For testing
-from core.data.url.httpResponse import httpResponse as httpResponse
+from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 
 
 class clusterCellWindow(entries.RememberingWindow):
@@ -41,7 +41,7 @@ class clusterCellWindow(entries.RememberingWindow):
         '''
         A window that stores the clusterCellData and the level changer.
         
-        @parameter data: A list with the httpResponse objects to be clustered.
+        @parameter data: A list with the HTTPResponse objects to be clustered.
         '''
         # First we save the data        
         self._data = data
@@ -160,7 +160,7 @@ class clusterCellData(gtk.TreeView):
         # Save the data
         self._data = data
         
-        # A cache of distances between httpResponses
+        # A cache of distances between HTTPResponses
         self._distance_cache = {}
         
         self.setNewLevel(level)
@@ -213,8 +213,8 @@ class clusterCellData(gtk.TreeView):
         '''
         Computes the relative levenshtein distance between two strings. Its in the range
         (0-1] where 1 means total equality.
-        @param a: httpResponse object
-        @param b: httpResponse object
+        @param a: HTTPResponse object
+        @param b: HTTPResponse object
         @return: A float with the distance
         '''
         # After some tests I realized that the amount of calls to this method was HUGE
@@ -430,11 +430,11 @@ if __name__ == "__main__":
     
     #    We create the data
     data = [
-        httpResponse(200, 'my data1 looks like this and has no errors', {}, url_instance, url_instance, id=1),
-        httpResponse(200, 'errors? i like errors like this one: SQL', {}, url_instance, url_instance, id=2),
-        httpResponse(200, 'my data is really happy', {}, url_instance, url_instance, id=3),
-        httpResponse(200, 'my data1 loves me', {}, url_instance, url_instance, id=4),
-        httpResponse(200, 'my data likes me', {}, url_instance, url_instance, id=5)
+        HTTPResponse(200, 'my data1 looks like this and has no errors', {}, url_instance, url_instance, id=1),
+        HTTPResponse(200, 'errors? i like errors like this one: SQL', {}, url_instance, url_instance, id=2),
+        HTTPResponse(200, 'my data is really happy', {}, url_instance, url_instance, id=3),
+        HTTPResponse(200, 'my data1 loves me', {}, url_instance, url_instance, id=4),
+        HTTPResponse(200, 'my data likes me', {}, url_instance, url_instance, id=5)
         ]
             
     cl_win = clusterCellWindow( data=data )

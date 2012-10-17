@@ -59,7 +59,7 @@ class ssl_certificate(AuditPlugin):
         '''
         Get the cert and do some checks against it.
 
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         url = freq.getURL()
         domain = url.getDomain()

@@ -53,7 +53,7 @@ class import_results(CrawlPlugin):
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):
         '''
-        Read the input file, and create the fuzzable_requests based on that
+        Read the input file, and create the fuzzable_request_list based on that
         information.
         
         @parameter fuzzable_request: A fuzzable_request instance that contains
@@ -87,18 +87,18 @@ class import_results(CrawlPlugin):
         if self._input_burp != '':
             if os.path.isfile( self._input_burp ):
                 try:
-                    fuzzable_requests = self._objs_from_burp_log(self._input_burp)
+                    fuzzable_request_list = self._objs_from_burp_log(self._input_burp)
                 except w3afException,  e:
                     msg = 'An error was found while trying to read the Burp log' \
                           ' file (%s): "%s".'
                     om.out.error( msg % (self._input_burp, e))
                 else:
-                    for fr in fuzzable_requests:
+                    for fr in fuzzable_request_list:
                         self.output_queue.put( fr )
     
     def _obj_from_csv( self, csv_row ):
         '''
-        @return: A fuzzable_request based on the csv_line.
+        @return: A FuzzableRequest based on the csv_line.
         
         >>> i = import_results()
         

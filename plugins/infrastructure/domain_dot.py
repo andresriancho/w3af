@@ -75,9 +75,9 @@ class domain_dot(InfrastructurePlugin):
 
     def _analyze_response(self, original_resp, resp):
         '''
-        @parameter original_resp: The httpResponse object that holds the
+        @parameter original_resp: The HTTPResponse object that holds the
                                   ORIGINAL response.
-        @parameter resp: The httpResponse object that holds the content of
+        @parameter resp: The HTTPResponse object that holds the content of
                          the response to analyze.
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):

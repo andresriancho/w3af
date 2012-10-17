@@ -47,7 +47,7 @@ class un_ssl(AuditPlugin):
             - input: https://a/
             - check: http://a/
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         if not self._run:
             return

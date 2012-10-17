@@ -52,7 +52,7 @@ class generic(AuditPlugin):
         '''
         Find all kind of bugs without using a fixed database of errors.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         # First, get the original response and create the mutants
         orig_resp = self._uri_opener.send_mutant(freq)

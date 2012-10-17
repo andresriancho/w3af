@@ -31,7 +31,8 @@ from nose.plugins.attrib import attr
 from ..htmlParser import HTMLParser
 from ..sgmlParser import SGMLParser
 from core.data.parsers.urlParser import url_object
-from core.data.url.httpResponse import httpResponse
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.dc.headers import Headers
 
 HTML_DOC = u'''
 <html>
@@ -126,10 +127,10 @@ BODY_FRAGMENT_WITH_EMAILS = u'''===>jandalia@bing.com%^&1!
 
 URL = url_object('http://w3af.com')
 
-def _build_http_response(url, body_content, headers={}):
+def _build_http_response(url, body_content, headers=Headers()):
     if 'content-type' not in headers:
         headers['content-type'] = 'text/html'
-    return httpResponse(200, body_content, headers, url, url, charset='utf-8')
+    return HTTPResponse(200, body_content, headers, url, url, charset='utf-8')
 
 # We subclass SGMLParser to prevent that the parsing process
 # while init'ing the parser instance
@@ -339,7 +340,7 @@ class TestHTMLParser(unittest.TestCase):
     
     def test_form_without_action(self):
         '''
-        If the form has no 'content' => httpResponse's url will be used
+        If the form has no 'content' => HTTPResponse's url will be used
         '''
         body = HTML_DOC % \
                     {'head': '',

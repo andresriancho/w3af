@@ -52,7 +52,7 @@ class sitemap_xml(CrawlPlugin):
         sitemap_url = base_url.urlJoin( 'sitemap.xml' )
         response = self._uri_opener.GET( sitemap_url, cache=True )
         
-        # Remember that httpResponse objects have a faster "__in__" than
+        # Remember that HTTPResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response
         if '</urlset>' in response and not is_404( response ):

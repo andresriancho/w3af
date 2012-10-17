@@ -55,8 +55,8 @@ class InfrastructurePlugin(Plugin):
         '''
         raise w3afException('Plugin is not implementing required method discover' )
     
-    def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
-        return create_fuzzable_requests( httpResponse, request, add_self )
+    def _create_fuzzable_requests( self, HTTPResponse, request=None, add_self=True ):
+        return create_fuzzable_requests( HTTPResponse, request, add_self )
     
     def getType( self ):
         return 'infrastructure'

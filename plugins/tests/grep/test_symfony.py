@@ -25,8 +25,8 @@ from functools import partial
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
 from plugins.grep.symfony import symfony
@@ -51,8 +51,8 @@ class test_symfony(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = symfony()
         self.url = url_object('http://www.w3af.com/')
-        self.request = fuzzable_request(self.url)
-        self.http_resp = partial(httpResponse, code=200, geturl=self.url, original_url=self.url) 
+        self.request = FuzzableRequest(self.url)
+        self.http_resp = partial(HTTPResponse, code=200, geturl=self.url, original_url=self.url) 
 
     def tearDown(self):
         self.plugin.end()
@@ -80,12 +80,12 @@ class test_symfony(unittest.TestCase):
 
     def test_symfony_protected(self):
         response = self.http_resp(read=self.PROTECTED_BODY, info=self.SYMFONY_HEADERS)
-        request = fuzzable_request(self.url, method='GET')
+        request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 0 )
     
     def test_symfony_unprotected(self):
-        request = fuzzable_request(self.url, method='GET')
+        request = FuzzableRequest(self.url, method='GET')
         response = self.http_resp(read=self.UNPROTECTED_BODY, info=self.SYMFONY_HEADERS)
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 1 )

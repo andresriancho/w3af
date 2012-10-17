@@ -28,6 +28,7 @@ from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_list import disk_list
 from core.data.parsers.urlParser import url_object
 from core.data.request.HTTPQsRequest import HTTPQSRequest
+from core.data.dc.headers import Headers
 
 
 class test_disk_list(unittest.TestCase):
@@ -94,13 +95,13 @@ class test_disk_list(unittest.TestCase):
         dl = disk_list()
         
         uri = url_object('http://w3af.org/?id=2')
-        qsr1 = HTTPQSRequest(uri, method='GET', headers={'Referer': 'http://w3af.org/'})
+        qsr1 = HTTPQSRequest(uri, method='GET', headers=Headers([('Referer', 'http://w3af.org/')]))
 
         uri = url_object('http://w3af.org/?id=3')
-        qsr2 = HTTPQSRequest(uri, method='OPTIONS', headers={'Referer': 'http://w3af.com/'})
+        qsr2 = HTTPQSRequest(uri, method='OPTIONS', headers=Headers([('Referer', 'http://w3af.org/')]))
         
         uri = url_object('http://w3af.org/?id=7')
-        qsr3 = HTTPQSRequest(uri, method='FOO', headers={'Referer': 'http://w3af.com/'})
+        qsr3 = HTTPQSRequest(uri, method='FOO', headers=Headers([('Referer', 'http://w3af.org/')]))
 
         dl.append( qsr1 )
         dl.append( qsr2 )

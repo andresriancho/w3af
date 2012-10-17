@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-test_httpResponse.py
+test_HTTPResponse.py
 
 Copyright 2011 Andres Riancho
 

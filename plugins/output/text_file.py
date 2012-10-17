@@ -268,7 +268,7 @@ class text_file(OutputPlugin):
         '''
         log the http req / res to file.
         @parameter request: A fuzzable request object
-        @parameter response: A httpResponse object
+        @parameter response: A HTTPResponse object
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)

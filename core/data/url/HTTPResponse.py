@@ -1,5 +1,5 @@
 '''
-httpResponse.py
+HTTPResponse.py
 
 Copyright 2006 Andres Riancho
 
@@ -31,6 +31,7 @@ import core.controllers.outputManager as om
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
 CR = '\r'
@@ -41,16 +42,17 @@ SP = ' '
 
 def from_httplib_resp(httplibresp, original_url=None):
     '''
-    Factory function. Build a httpResponse object from a httplib.HTTPResponse
+    Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
     instance
     
     @param httplibresp: httplib.HTTPResponse instance
     @param original_url: Optional 'url_object' instance.
     
-    @return: A httpResponse instance
+    @return: A HTTPResponse instance
     '''
     resp = httplibresp
     code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
+    hdrs = Headers(hdrs)
     
     if original_url:
         url_inst = url_object(resp.geturl(), original_url.encoding)
@@ -59,11 +61,11 @@ def from_httplib_resp(httplibresp, original_url=None):
         url_inst = original_url = url_object(resp.geturl())
     
     charset = getattr(resp, 'encoding', None)
-    return httpResponse(code, body, hdrs, url_inst,
+    return HTTPResponse(code, body, hdrs, url_inst,
                         original_url, msg, charset=charset)
 
 
-class httpResponse(object):
+class HTTPResponse(object):
     
     DOC_TYPE_TEXT_OR_HTML = 'DOC_TYPE_TEXT_OR_HTML'
     DOC_TYPE_SWF = 'DOC_TYPE_SWF'
@@ -71,12 +73,12 @@ class httpResponse(object):
     DOC_TYPE_IMAGE = 'DOC_TYPE_IMAGE'
     DOC_TYPE_OTHER = 'DOC_TYPE_OTHER'
 
-    def __init__(self, code, read, info, geturl, original_url,
-                 msg='OK', id=None, time=0.2, alias=None, charset=None):
+    def __init__(self, code, read, headers, geturl, original_url,
+                 msg='OK', _id=None, time=0.2, alias=None, charset=None):
         '''
         @param code: HTTP code
         @param read: HTTP body text; typically a string
-        @param info: HTTP headers, typically a dict or a httplib.HTTPMessage
+        @param headers: HTTP headers, typically a dict or a httplib.HTTPMessage
         @param geturl: url_object instance
         @param original_url: url_object instance
         @param msg: HTTP message
@@ -85,6 +87,18 @@ class httpResponse(object):
         @param alias: Optional alias for the response
         @param charset: Response's encoding; obligatory when `read` is unicode
         '''
+        if not isinstance(geturl, url_object):
+            raise TypeError('Invalid type %s for HTTPResponse ctor param geturl.'
+                            % type(geturl))
+
+        if not isinstance(original_url, url_object):
+            raise TypeError('Invalid type %s for HTTPResponse ctor param original_url.'
+                            % type(original_url))
+
+        if not isinstance(headers, Headers):
+            raise TypeError('Invalid type %s for HTTPResponse ctor param headers.' 
+                            % type(headers))
+        
         self._charset = charset
         self._headers = None
         self._body = None
@@ -93,11 +107,11 @@ class httpResponse(object):
         self._dom = None
         self._clear_text_body = None
         # A unique id identifier for the response
-        self.id = id
+        self.id = _id
         # From cache defaults to False
         self._fromCache = False
         # Set the info
-        self._info = info
+        self._info = headers
         # Set code
         self.setCode(code)
         
@@ -133,7 +147,7 @@ class httpResponse(object):
             'id': self.id and ' | id:%s' % self.id or '',
             'fcache': self._fromCache and ' | fromCache:True' or ''
             }
-        return '<httpResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
+        return '<HTTPResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
     
     def set_id(self, id):
         self.id = id
@@ -246,7 +260,7 @@ class httpResponse(object):
     def headers(self, headers):
         # Fix lowercase in header names from HTTPMessage
         if isinstance(headers, httplib.HTTPMessage):
-            self._headers = {}
+            self._headers = Headers()
             for header in headers.headers:
                 key, value = header.split(':', 1)
                 self._headers[key.strip()] = value.strip()
@@ -254,7 +268,7 @@ class httpResponse(object):
             self._headers = headers
 
         # Set the type, for easy access.
-        self._doc_type = httpResponse.DOC_TYPE_OTHER
+        self._doc_type = HTTPResponse.DOC_TYPE_OTHER
         find_word = lambda w: content_type.find(w) != -1
         
         for key in self._headers:
@@ -264,20 +278,20 @@ class httpResponse(object):
                 content_type = self._content_type.lower()
                 # Image?
                 if content_type.count('image'):
-                    self._doc_type = httpResponse.DOC_TYPE_IMAGE
+                    self._doc_type = HTTPResponse.DOC_TYPE_IMAGE
                 
                 # PDF?
                 elif content_type.count('pdf'):
-                    self._doc_type = httpResponse.DOC_TYPE_PDF
+                    self._doc_type = HTTPResponse.DOC_TYPE_PDF
                 
                 # SWF?
                 elif content_type.count('x-shockwave-flash'):
-                    self._doc_type = httpResponse.DOC_TYPE_SWF
+                    self._doc_type = HTTPResponse.DOC_TYPE_SWF
                 
                 # Text or HTML?
                 elif any(imap(find_word,
                               ('text', 'html', 'xml', 'txt', 'javascript'))):
-                    self._doc_type = httpResponse.DOC_TYPE_TEXT_OR_HTML
+                    self._doc_type = HTTPResponse.DOC_TYPE_TEXT_OR_HTML
                 break
 
     def setHeaders(self, headers):
@@ -306,17 +320,17 @@ class httpResponse(object):
     def setURL(self, url):
         '''
         >>> url = url_object('http://www.google.com')
-        >>> r = httpResponse(200, '' , {}, url, url)
+        >>> r = HTTPResponse(200, '' , Headers(), url, url)
         >>> r.setURL('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URL of a httpResponse object must be of urlParser.url_object type.
+        TypeError: The URL of a HTTPResponse object must be of urlParser.url_object type.
         >>> r.setURL(url)
         >>> r.getURL() == url
         True
         '''
         if not isinstance(url, url_object):
-            raise TypeError('The URL of a httpResponse object must be of '
+            raise TypeError('The URL of a HTTPResponse object must be of '
                              'urlParser.url_object type.')
         
         self._realurl = url.uri2url()
@@ -327,18 +341,18 @@ class httpResponse(object):
     def setURI(self, uri):
         '''
         >>> uri = url_object('http://www.google.com/')
-        >>> r = httpResponse(200, '' , {}, uri, uri)
+        >>> r = HTTPResponse(200, '' , Headers(), uri, uri)
         >>> r.setURI('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URI of a httpResponse object must be of urlParser.url_object type.
+        TypeError: The URI of a HTTPResponse object must be of urlParser.url_object type.
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True
         
         '''
         if not isinstance(uri, url_object):
-            raise TypeError('The URI of a httpResponse object must be of '
+            raise TypeError('The URI of a HTTPResponse object must be of '
                              'urlParser.url_object type.')
         
         self._uri = uri
@@ -403,16 +417,16 @@ class httpResponse(object):
         
         Note: If the body is already a unicode string return it as it is.
         '''
-        lowerCaseHeaders = self.getLowerCaseHeaders()
+        lcase_headers = self.getLowerCaseHeaders()
         charset = self._charset
         rawbody = self._raw_body
         
         # Only try to decode <str> strings. Skip <unicode> strings
         if type(rawbody) is unicode:
             _body = rawbody
-            assert charset is not None, ("httpResponse objects containing "
+            assert charset is not None, ("HTTPResponse objects containing "
                              "unicode body must have an associated charset")
-        elif not 'content-type' in lowerCaseHeaders:
+        elif not 'content-type' in lcase_headers:
             om.out.debug("The remote web server failed to send the 'content-type'"
                          " header in HTTP response with id %s" % self.id)
             _body = rawbody
@@ -426,7 +440,7 @@ class httpResponse(object):
             if not charset:
                 # Start with the headers
                 charset_mo = re.search('charset=\s*?([\w-]+)',
-                                        lowerCaseHeaders['content-type'],
+                                        lcase_headers['content-type'],
                                         re.I)
                 if charset_mo:
                     # Seems like the response's headers contain a charset
@@ -487,25 +501,25 @@ class httpResponse(object):
         '''
         @return: True if this response is text or html
         '''
-        return self.doc_type == httpResponse.DOC_TYPE_TEXT_OR_HTML
+        return self.doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML
     
     def is_pdf(self):
         '''
         @return: True if this response is a PDF file
         '''
-        return self.doc_type == httpResponse.DOC_TYPE_PDF
+        return self.doc_type == HTTPResponse.DOC_TYPE_PDF
     
     def is_swf(self):
         '''
         @return: True if this response is a SWF file
         '''
-        return self.doc_type == httpResponse.DOC_TYPE_SWF
+        return self.doc_type == HTTPResponse.DOC_TYPE_SWF
 
     def is_image(self):
         '''
         @return: True if this response is an image file
         '''
-        return self.doc_type == httpResponse.DOC_TYPE_IMAGE
+        return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
     
     def dumpResponseHead(self):
         '''

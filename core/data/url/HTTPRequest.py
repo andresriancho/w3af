@@ -22,10 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import copy
 
+from core.data.dc.headers import Headers
+
 
 class HTTPRequest(urllib2.Request):
     
-    def __init__(self, url, data=None, headers={},
+    def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
                  follow_redir=True, cookies=True):
         '''
@@ -43,6 +45,8 @@ class HTTPRequest(urllib2.Request):
         self.url_object = url
         self.follow_redir = follow_redir
         self.cookies = cookies
+        
+        headers = dict(headers)
         
         # Call the base class
         urllib2.Request.__init__(self, url.urlEncode(), data,

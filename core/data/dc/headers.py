@@ -1,5 +1,5 @@
 '''
-header.py
+headers.py
 
 Copyright 2012 Andres Riancho
 
@@ -22,36 +22,41 @@ from core.data.constants.encodings import UTF8
 from core.data.dc.dataContainer import DataContainer
 
 
-class Header(DataContainer):
+class Headers(DataContainer):
     '''
     This class represents the set of HTTP request headers. 
     
     @author: Javier Andalia (jandalia AT gmail DOT com)
     '''
-    def __init__(self, init_val=None, encoding=UTF8):
-        super(Header, self).__init__((), encoding)
-        if init_val:
-            self.update(init_val)
+    def __init__(self, init_val=(), encoding=UTF8):
+        super(Headers, self).__init__(init_val, encoding)
+        
+    def i_get_header_val(self, header_name):
+        '''
+        @param header_name: The name of the header we want the value for
+        @return: The value for a header given a name (be case insensitive)
+        '''
+        for stored_header_name in self:
+            if header_name.lower() == stored_header_name.lower():
+                return self[stored_header_name]
+        return None
 
     def __setitem__(self, k, v):
         if isinstance(k, unicode):
             k = k.encode(self.encoding, 'replace').title()
         if isinstance(v, unicode):
             v = v.encode(self.encoding, 'replace')
-        super(Header, self).__setitem__(k, v)
+        super(Headers, self).__setitem__(k, v)
     
     def __str__(self):
         '''
-        >>> str(Header({'HoST': u'w3af.com', 'AccEpt': '*/*'}))
+        >>> str(Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items()))
         'HoST: w3af.com\\nAccEpt: */*\\n'
 
-        >>> str(Header({'Foo': ['spam', 'eggs']}))
-        'Foo: spam\\nFoo: eggs\\n'
+        >>> repr(Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items()))
+        "Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})"
 
-        >>> repr(Header({'Host': u'w3af.com', 'AccEpt': '*/*'}))
-        "Header({'Host': 'w3af.com', 'AccEpt': '*/*'})"
-
-        @return: string representation of the Header object.
+        @return: string representation of the Headers() object.
         '''
         return self._to_str_with_separators(u': ', u'\n') + u'\n'
     

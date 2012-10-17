@@ -234,7 +234,7 @@ class wordnet(CrawlPlugin):
             return result
             
         else:
-            mutants = create_mutants( fuzzable_request , result_set,
+            mutants = create_mutants( fuzzable_request, result_set,
                                      fuzzable_param_list=[analyzed_variable,] )
             return mutants
         

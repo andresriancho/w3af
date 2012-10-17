@@ -52,14 +52,14 @@ class mutantUrlParts(mutant):
         @return: The URL, as modified by "setModValue()"
         
         >>> from core.data.parsers.urlParser import url_object
-        >>> from core.data.request.fuzzable_request import fuzzable_request
+        >>> from core.data.request.fuzzable_request import FuzzableRequest
         >>> from core.data.dc.dataContainer import DataContainer
         >>> divided_path = DataContainer()
         >>> divided_path['start'] = '/'
         >>> divided_path['fuzzedUrlParts'] = 'ping!'
         >>> divided_path['end'] = '/def'
         
-        >>> fr = fuzzable_request(url_object('http://www.w3af.com/abc/def'))        
+        >>> fr = FuzzableRequest(url_object('http://www.w3af.com/abc/def'))        
         >>> m = mutantUrlParts( fr )
         >>> m.setMutantDc(divided_path)
         >>> m.setVar('fuzzedUrlParts')

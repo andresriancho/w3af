@@ -48,7 +48,7 @@ class htaccess_methods(AuditPlugin):
         '''
         Tests an URL for htaccess misconfigurations.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         response = self._uri_opener.GET( freq.getURL() , cache=True )
 

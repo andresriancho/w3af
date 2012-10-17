@@ -56,7 +56,7 @@ class phishing_vector(AuditPlugin):
         '''
         Find those phishing vectors!
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         mutants = create_mutants( freq , self._test_urls )
         

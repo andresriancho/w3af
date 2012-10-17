@@ -57,8 +57,8 @@ class CrawlPlugin(Plugin):
         '''
         raise w3afException('Plugin is not implementing required method crawl' )
 
-    def _create_fuzzable_requests( self, httpResponse, request=None, add_self=True ):
-        return create_fuzzable_requests( httpResponse, request, add_self )
+    def _create_fuzzable_requests( self, HTTPResponse, request=None, add_self=True ):
+        return create_fuzzable_requests( HTTPResponse, request, add_self )
     
     discover_wrapper = crawl_wrapper
     

@@ -48,7 +48,7 @@ class blind_sqli(AuditPlugin):
         '''
         Tests an URL for blind SQL injection vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         #
         #    Setup blind SQL injection detector objects

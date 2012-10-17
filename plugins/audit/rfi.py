@@ -78,7 +78,7 @@ class rfi(AuditPlugin):
         '''
         Tests an URL for remote file inclusion vulnerabilities.
         
-        @param freq: A fuzzable_request object
+        @param freq: A FuzzableRequest object
         '''
         # The plugin is going to use two different techniques:
         # 1- create a request that will include a file from the w3af site
@@ -125,7 +125,7 @@ class rfi(AuditPlugin):
         '''
         Check for RFI using a local web server
         
-        @param freq: A fuzzable_request object
+        @param freq: A FuzzableRequest object
         @return: None, everything is saved to the kb
         '''
         #
@@ -177,7 +177,7 @@ class rfi(AuditPlugin):
         '''
         Check for RFI using the official w3af site.
         
-        @param freq: A fuzzable_request object
+        @param freq: A FuzzableRequest object
         @return: None, everything is saved to the kb
         '''        
         rfi_url = url_object(self.RFI_TEST_URL)
@@ -192,7 +192,7 @@ class rfi(AuditPlugin):
         
     def _test_inclusion(self, freq, rfi_data):
         '''
-        Checks a fuzzable_request for remote file inclusion bugs.
+        Checks a FuzzableRequest for remote file inclusion bugs.
         
         @param freq: The fuzzable request that we want to inject into
         @param rfi_data: A RFIData object with all the information about the RFI

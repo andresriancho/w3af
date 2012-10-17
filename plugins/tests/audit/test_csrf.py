@@ -23,9 +23,9 @@ from nose.plugins.skip import SkipTest
 
 from plugins.audit.csrf import csrf
 
-from core.data.url.httpResponse import httpResponse
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.xUrllib import xUrllib
 
 
@@ -52,16 +52,16 @@ class TestCSRF(PluginTest):
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         
-        r1 = httpResponse(200, 'body' , headers, url, url)
-        r2 = httpResponse(404, 'body' , headers, url, url)
+        r1 = HTTPResponse(200, 'body' , headers, url, url)
+        r2 = HTTPResponse(404, 'body' , headers, url, url)
         self.assertFalse( x._is_resp_equal(r1, r2) )
         
-        r1 = httpResponse(200, 'a' , headers, url, url)
-        r2 = httpResponse(200, 'b' , headers, url, url)
+        r1 = HTTPResponse(200, 'a' , headers, url, url)
+        r2 = HTTPResponse(200, 'b' , headers, url, url)
         self.assertFalse( x._is_resp_equal(r1,r2) )
         
-        r1 = httpResponse(200, 'a' , headers, url, url)
-        r2 = httpResponse(200, 'a' , headers, url, url)
+        r1 = HTTPResponse(200, 'a' , headers, url, url)
+        r2 = HTTPResponse(200, 'a' , headers, url, url)
         self.assertTrue( x._is_resp_equal(r1,r2) )
         
     def test_is_suitable(self):
@@ -70,18 +70,18 @@ class TestCSRF(PluginTest):
         x.set_url_opener( uri_opener )
         
         url = url_object('http://www.w3af.com/')
-        req = fuzzable_request(url, method='GET')
+        req = FuzzableRequest(url, method='GET')
         self.assertFalse( x._is_suitable( req )[0] )
 
         url = url_object('http://www.w3af.com/?id=3')
-        req = fuzzable_request(url, method='GET')
+        req = FuzzableRequest(url, method='GET')
         self.assertFalse( x._is_suitable( req )[0] )
 
         url_sends_cookie = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
         uri_opener.GET( url_sends_cookie )
 
         url = url_object('http://www.w3af.com/?id=3')
-        req = fuzzable_request(url, method='GET')
+        req = FuzzableRequest(url, method='GET')
         self.assertTrue( x._is_suitable( req )[0] )
 
 

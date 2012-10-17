@@ -25,14 +25,14 @@ from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
 from core.data.request.factory import create_fuzzable_requests
-from core.data.url.httpResponse import httpResponse
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.urlParser import url_object
 
 import core.data.kb.config as cf
 
 
 @attr('smoke')
-class TestCreateFuzzableRequests(unittest.TestCase):
+class TestCreatefuzzable_request_list(unittest.TestCase):
 
     def setUp(self):
         self.url = url_object('http://www.w3af.com/')
@@ -42,14 +42,14 @@ class TestCreateFuzzableRequests(unittest.TestCase):
     def test_not_add_self(self):
         body = ''
         headers = {'content-type': 'text/html'}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         request_lst = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(request_lst), 0 )
 
     def test_add_self(self):
         body = ''
         headers = {'content-type': 'text/html'}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         request_lst = create_fuzzable_requests(http_response, add_self=True)
         self.assertEqual( len(request_lst), 1 )
@@ -61,7 +61,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         body = ''
         redir_url = 'http://www.w3af.org/'
         headers = {'content-type': 'text/html', 'location': redir_url}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(redir_fr), 1 )
@@ -73,7 +73,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         body = ''
         redir_url = '/foo.bar'
         headers = {'content-type': 'text/html', 'uri': redir_url}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(redir_fr), 1 )
@@ -96,7 +96,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         '''
         body = '<a href="http://www.google.com/?id=1">click here</a>'
         headers = {'content-type': 'text/html'}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         request_lst = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(request_lst), 1 )
@@ -110,7 +110,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
                     B: <input name="b" value="123" />
                   </form>'''
         headers = {'content-type': 'text/html'}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         post_request_lst = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(post_request_lst), 1 )
@@ -124,7 +124,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         body = ''
         redir_url = '/foo.bar'
         headers = {'content-type': 'text/html', 'uri': redir_url, 'cookie': 'abc=def'}
-        http_response = httpResponse(200, body , headers, self.url, self.url)
+        http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr_cookie = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(redir_fr_cookie), 1 )

@@ -62,8 +62,8 @@ class code_disclosure(GrepPlugin):
         @return: None
         Init
         >>> import code_disclosure
-        >>> from core.data.url.httpResponse import httpResponse
-        >>> from core.data.request.fuzzable_request import fuzzable_request
+        >>> from core.data.url.HTTPResponse import HTTPResponse
+        >>> from core.data.request.fuzzable_request import FuzzableRequest
         >>> from core.controllers.misc.temp_dir import create_temp_dir
         >>> from core.data.parsers.urlParser import url_object
         >>> from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
@@ -77,8 +77,8 @@ class code_disclosure(GrepPlugin):
         >>> body = ''
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzable_request(url, method='GET')
+        >>> response = HTTPResponse(200, body , headers, url, url)
+        >>> request = FuzzableRequest(url, method='GET')
         >>> c = code_disclosure.code_disclosure()
         >>> c.grep(request, response)
         >>> len(kb.kb.get('code_disclosure', 'code_disclosure'))
@@ -89,8 +89,8 @@ class code_disclosure(GrepPlugin):
         >>> body = 'header <? echo "a"; ?> footer'
         >>> url = url_object('http://www.w3af.com/')
         >>> headers = {'content-type': 'text/html'}
-        >>> response = httpResponse(200, body , headers, url, url)
-        >>> request = fuzzable_request(url, method='GET')
+        >>> response = HTTPResponse(200, body , headers, url, url)
+        >>> request = FuzzableRequest(url, method='GET')
         >>> c = code_disclosure.code_disclosure()
         >>> c.grep(request, response)
         >>> len(kb.kb.get('code_disclosure', 'code_disclosure'))

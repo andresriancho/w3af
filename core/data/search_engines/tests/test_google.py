@@ -25,7 +25,7 @@ import re
 import unittest
 
 from core.data.search_engines.google import google, GAjaxSearch, GStandardSearch, GMobileSearch
-from core.data.url.httpResponse import httpResponse
+from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.xUrllib import xUrllib
 
 URL_OPENER = xUrllib()
@@ -127,7 +127,7 @@ class BaseGoogleAPISearchTest(object):
             self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
         
         for page in searcher.pages:
-            self.assertTrue(isinstance(page, httpResponse))
+            self.assertTrue(isinstance(page, HTTPResponse))
     
     
 class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):

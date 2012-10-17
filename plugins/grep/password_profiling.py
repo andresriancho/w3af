@@ -124,7 +124,7 @@ class password_profiling(GrepPlugin):
     def _run_plugins( self, response ):
         '''
         Runs password profiling plugins to collect data from HTML, TXT, PDF, etc files.
-        @parameter response: A httpResponse object
+        @parameter response: A HTTPResponse object
         @return: A map with word:repetitions
         '''
         # Create plugin instances only once

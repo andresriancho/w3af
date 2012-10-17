@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urlparse
 
 from core.data.parsers.urlParser import url_object
-from core.data.dc.header import Header
+from core.data.dc.headers import Headers
 from core.data.request.factory import create_fuzzable_request
 from core.controllers.w3afException import w3afException
 
@@ -97,11 +97,11 @@ def checkURISyntax(uri, host=None):
 
 def HTTPRequestParser(head, postdata):
     '''
-    This function parses HTTP Requests from a string to a fuzzable_request.
+    This function parses HTTP Requests from a string to a FuzzableRequest.
     
     @parameter head: The head of the request.
     @parameter postdata: The post data of the request
-    @return: A fuzzable_request object with all the corresponding information
+    @return: A FuzzableRequest object with all the corresponding information
         that was sent in head and postdata
     
     @author: Andres Riancho (andres.riancho@gmail.com)
@@ -150,7 +150,7 @@ def HTTPRequestParser(head, postdata):
         else:
             headers_dict[header_name] = [header_value,]
 
-    headers = Header(headers_dict.items())
+    headers = Headers(headers_dict.items())
     
     host = None
     for header_name in headers:

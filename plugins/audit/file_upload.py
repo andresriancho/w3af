@@ -58,7 +58,7 @@ class file_upload(AuditPlugin):
         '''
         Searches for file upload vulns.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         if freq.get_method().upper() == 'POST' and len ( freq.get_file_vars() ) != 0:
 

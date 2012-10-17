@@ -75,7 +75,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
         real_extension = extension
         known_framework.append( (filename, real_extension) )
     else:
-        poweredByHeaders = kb.kb.get( 'server_header' , 'poweredByString' )
+        poweredByHeader = kb.kb.get( 'server_header' , 'poweredByString' )
         filename = ''
         
         file_list = [ x for x in os.listdir( path ) if x.startswith(type_of_list) ]
@@ -87,7 +87,7 @@ def _get_file_list( type_of_list, extension, forceExtension=False ):
                 
             # Using the powered By headers
             # More than one header can have been sent by the server
-            for h in poweredByHeaders:
+            for h in poweredByHeader:
                 if h.lower().count( real_extension ):
                     known_framework.append( (filename, real_extension) )
             

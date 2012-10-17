@@ -79,7 +79,7 @@ class xpath(AuditPlugin):
         '''
         Tests an URL for xpath injection vulnerabilities.
         
-        @param freq: A fuzzable_request
+        @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         xpath_strings = self._get_xpath_strings()

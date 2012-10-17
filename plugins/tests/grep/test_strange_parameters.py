@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 from plugins.grep.strange_parameters import strange_parameters
 
@@ -36,44 +36,44 @@ class test_strange_parameters(unittest.TestCase):
         self.plugin = strange_parameters()
         self.url = url_object('http://www.w3af.com/')
         self.headers = {'content-type': 'text/html'}
-        self.request = fuzzable_request(self.url)
+        self.request = FuzzableRequest(self.url)
 
     def tearDown(self):
         self.plugin.end()
         
     def test_strange_parameters_empty(self):
         body = ''
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 0 )
     
     def test_strange_parameters_not_find_1(self):
         body = '<html><a href="/?id=3">x</a></html>'
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 0 )
     
     def test_strange_parameters_not_find_2(self):
         body = '<html><a href="/?id=3&id=3&id=5&foo=bar">x</a></html>'
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 0 )
     
     def test_strange_parameters_not_find_3(self):
         body = '<html><a href="http://moth/abc.jsp?id=3&id=3&id=5&foo=bar">x</a></html>'
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 0 )
     
     def test_strange_parameters_find(self):
         body = '<html><a href="http://moth/abc.jsp?call=s(12,3)">x</a></html>'
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 1 )
 
     def test_strange_parameters_find_sql(self):
         body = '<html><a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a></html>'
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 1 )
 
@@ -82,7 +82,7 @@ class test_strange_parameters(unittest.TestCase):
                   <a href="http://moth/abc.jsp?call=SELECT x FROM TABLE">x</a>
                   <a href="http://moth/abc.jsp?call=s(12,3)">x</a>
                   </html>'''
-        response = httpResponse(200, body , self.headers, self.url, self.url)
+        response = HTTPResponse(200, body , self.headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('strange_parameters', 'strange_parameters')) , 2 )
         

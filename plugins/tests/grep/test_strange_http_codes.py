@@ -23,8 +23,8 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
@@ -45,17 +45,17 @@ class test_strange_http_codes(unittest.TestCase):
         body = ''
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        request = fuzzable_request(url, method='GET')
+        request = FuzzableRequest(url, method='GET')
         
-        resp_200 = httpResponse(200, body , headers, url, url)
-        resp_404 = httpResponse(404, body , headers, url, url)
+        resp_200 = HTTPResponse(200, body , headers, url, url)
+        resp_404 = HTTPResponse(404, body , headers, url, url)
         KNOWN_GOOD = [resp_200, resp_404]
         
-        resp_999 = httpResponse(999, body , headers, url, url)
-        resp_123 = httpResponse(123, body , headers, url, url)
-        resp_567 = httpResponse(567, body , headers, url, url)
-        resp_666 = httpResponse(666, body , headers, url, url)
-        resp_777 = httpResponse(777, body , headers, url, url)
+        resp_999 = HTTPResponse(999, body , headers, url, url)
+        resp_123 = HTTPResponse(123, body , headers, url, url)
+        resp_567 = HTTPResponse(567, body , headers, url, url)
+        resp_666 = HTTPResponse(666, body , headers, url, url)
+        resp_777 = HTTPResponse(777, body , headers, url, url)
         KNOWN_BAD = [resp_999, resp_123, resp_567, resp_666, resp_777]
         
         for resp in KNOWN_GOOD:

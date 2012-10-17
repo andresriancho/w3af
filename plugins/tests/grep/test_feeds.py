@@ -24,8 +24,8 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from plugins.grep.feeds import feeds
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
@@ -47,8 +47,8 @@ class test_feeds(unittest.TestCase):
         body = 'header <rss version="3"> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
@@ -60,8 +60,8 @@ class test_feeds(unittest.TestCase):
         body = 'header <feed foo="4" version="3"> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
@@ -74,8 +74,8 @@ class test_feeds(unittest.TestCase):
         body = 'header <opml version="3" foo="4"> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )
@@ -87,8 +87,8 @@ class test_feeds(unittest.TestCase):
         body = 'header <nofeed version="3" foo="4"> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 0 )
@@ -97,8 +97,8 @@ class test_feeds(unittest.TestCase):
         body = 'header <rss foo="3"> footer'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         
         self.assertEquals( len(kb.kb.get('feeds', 'feeds')), 1 )

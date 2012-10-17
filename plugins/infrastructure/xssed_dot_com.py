@@ -136,8 +136,8 @@ class xssed_dot_com(InfrastructurePlugin):
                 #   Add the fuzzable request, this is useful if I have the XSS plugin enabled
                 #   because it will re-test this and possibly confirm the vulnerability
                 #
-                fuzzable_requests = self._create_fuzzable_requests( xss_report_response )
-                return fuzzable_requests
+                fuzzable_request_list = self._create_fuzzable_requests( xss_report_response )
+                return fuzzable_request_list
         else:
             #   Nothing to see here...
             om.out.debug('xssed_dot_com did not find any previously reported XSS vulnerabilities.')

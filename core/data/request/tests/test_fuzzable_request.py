@@ -23,7 +23,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from ..fuzzable_request import fuzzable_request as FuzzReq
+from ..fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 @attr('smoke')
@@ -34,35 +34,35 @@ class TestFuzzableRequest(unittest.TestCase):
     
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative
-        fr = FuzzReq(self.url, method='POST', dc={'a': ['1']})
-        fr_other = FuzzReq(self.url, method='POST', dc={'a': ['1']})
+        fr = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
+        fr_other = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
         self.assertTrue(fr.is_variant_of(fr_other))
         self.assertTrue(fr_other.is_variant_of(fr))
 
     def test_variants_false_diff_meths(self):
         # Different methods
-        fr_get = FuzzReq(self.url, method='GET', dc={'a': ['1']})
-        fr_post = FuzzReq(self.url, method='POST', dc={'a': ['1']})
+        fr_get = FuzzableRequest(self.url, method='GET', dc={'a': ['1']})
+        fr_post = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
         self.assertFalse(fr_get.is_variant_of(fr_post))
     
     def test_variants_false_diff_params_type(self):
-        fr = FuzzReq(self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
-        fr_other = FuzzReq(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
+        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertFalse(fr.is_variant_of(fr_other))
     
     def test_variants_false_nonetype_in_params(self):
-        fr = FuzzReq(self.url, method='GET', dc={'a': [None]})
-        fr_other = FuzzReq(self.url, method='GET', dc={'a': ['s']})
+        fr = FuzzableRequest(self.url, method='GET', dc={'a': [None]})
+        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['s']})
         self.assertFalse(fr.is_variant_of(fr_other))
     
     def test_variants_true_similar_params(self):
         # change the url by adding a querystring. shouldn't affect anything.
         url = self.url.urlJoin('?a=z')
-        fr = FuzzReq(url, method='GET', dc={'a': ['1'], 'b': ['bb']})
-        fr_other = FuzzReq(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+        fr = FuzzableRequest(url, method='GET', dc={'a': ['1'], 'b': ['bb']})
+        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertTrue(fr.is_variant_of(fr_other))
     
     def test_variants_true_similar_params_two(self):
-        fr = FuzzReq(self.url, method='GET', dc={'a':['b']})
-        fr_other = FuzzReq(self.url, method='GET', dc={'a': ['']})
+        fr = FuzzableRequest(self.url, method='GET', dc={'a':['b']})
+        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['']})
         self.assertTrue(fr.is_variant_of(fr_other))

@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
-from core.data.request.fuzzable_request import fuzzable_request
-from core.data.dc.header import Header
+from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.dc.headers import Headers
 
 #Keys representing CORS headers for manipulations.
 ACCESS_CONTROL_ALLOW_ORIGIN = "ACCESS-CONTROL-ALLOW-ORIGIN"
@@ -44,7 +44,7 @@ def provides_cors_features(freq, url_opener):
     if ac_value is not None:
         return True
     
-    headers = Header({'Origin': 'www.w3af.org'})
+    headers = Headers({'Origin': 'www.w3af.org'})
     response = url_opener.GET(freq.getURL(), headers=headers)
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:
@@ -57,7 +57,7 @@ def retrieve_cors_header(response, key):
     '''
     Method to retrieve a CORS header value from a HTTP response.
     
-    @param response: A httpResponse object.
+    @param response: A HTTPResponse object.
     @param key: A key representing the desired header value to retrieve.
     @return: The header value or None if the header do not exists. 
     '''
@@ -81,9 +81,9 @@ def build_cors_request(url, origin_header_value):
     @return: A fuzzable request that will be sent to @url and has
              @origin_header_value in the Origin header.
     '''
-    headers = Header()
+    headers = Headers()
     if origin_header_value != None:
         headers["Origin"] = origin_header_value.strip()           
     
-    forged_req = fuzzable_request(url, 'GET', headers=headers)
+    forged_req = FuzzableRequest(url, 'GET', headers=headers)
     return forged_req

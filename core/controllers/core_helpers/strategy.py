@@ -27,7 +27,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
-from core.data.request.fuzzable_request import fuzzable_request as FuzzableRequest
+from core.data.request.fuzzable_request import FuzzableRequest
 
 from core.controllers.core_helpers.consumers.grep import grep
 from core.controllers.core_helpers.consumers.auth import auth
@@ -192,10 +192,10 @@ class w3af_core_strategy(object):
                     else:
                         _, _, fuzzable_request_inst = result_item
                         
-                        # Safety check, I need these to be fuzzable_request objects
+                        # Safety check, I need these to be FuzzableRequest objects
                         # if not, the url_producer is doing something wrong and I
                         # don't want to do anything with this data
-                        fmt = '%s is returning objects of class %s instead of fuzzable_request.'
+                        fmt = '%s is returning objects of class %s instead of FuzzableRequest.'
                         msg = fmt % (url_producer, type(fuzzable_request_inst))
                         assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
                         

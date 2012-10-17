@@ -194,7 +194,7 @@ class web_diff(CrawlPlugin):
         '''
         A GET wrapper.
         
-        @return: The httpResponse object.
+        @return: The HTTPResponse object.
         '''
         response = None
         try:

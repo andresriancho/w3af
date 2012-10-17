@@ -24,8 +24,8 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from plugins.grep.credit_cards import credit_cards
-from core.data.url.httpResponse import httpResponse
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
@@ -47,8 +47,8 @@ class test_credit_cards(unittest.TestCase):
         body = '378282246310005'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
 
@@ -56,8 +56,8 @@ class test_credit_cards(unittest.TestCase):
         body = '3566 0020 2036 0505'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
 
@@ -65,8 +65,8 @@ class test_credit_cards(unittest.TestCase):
         body = '<a> 378282246310005</a>'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
 
@@ -82,8 +82,8 @@ class test_credit_cards(unittest.TestCase):
             body = '<A href="#123">%s</A>' % card
             url = url_object('http://www.w3af.com/')
             headers = {'content-type': 'text/html'}
-            response = httpResponse(200, body , headers, url, url)
-            request = fuzzable_request(url, method='GET')
+            response = HTTPResponse(200, body , headers, url, url)
+            request = FuzzableRequest(url, method='GET')
             self.plugin.grep(request, response)
             self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 0 )
             kb.kb.save('credit_cards', 'credit_cards', [])
@@ -92,7 +92,7 @@ class test_credit_cards(unittest.TestCase):
         body = '3566 0020 2036 0705'
         url = url_object('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
-        response = httpResponse(200, body , headers, url, url)
-        request = fuzzable_request(url, method='GET')
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 0 )

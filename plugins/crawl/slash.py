@@ -71,8 +71,8 @@ class slash(CrawlPlugin):
         '''
         Generate a new Url by adding or substracting the '/' character.
         
-        @param fuzzable_request: The original fuzzable_request
-        @return: The modified fuzzable_request.
+        @param fuzzable_request: The original FuzzableRequest
+        @return: The modified FuzzableRequest.
         '''
         fr = fuzzable_request.copy()
         
@@ -102,8 +102,8 @@ class slash(CrawlPlugin):
             if relative_distance_lt(a_body, b_body, 0.7) \
             and not is_404(http_response_a) and not is_404(http_response_b):
                 res = []
-                res.extend(self._createfuzzable_requests(http_response_a))
-                res.extend(self._createfuzzable_requests(http_response_b))
+                res.extend(self._createfuzzable_request_list(http_response_a))
+                res.extend(self._createfuzzable_request_list(http_response_b))
                 return res
         
         return []

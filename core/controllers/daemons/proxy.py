@@ -36,7 +36,7 @@ import core.controllers.outputManager as om
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
 from core.data.parsers.urlParser import url_object
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.request.fuzzable_request import FuzzableRequest
 
 
 class proxy(Process):
@@ -226,7 +226,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.rfile.reset()
         return postData
 
-    def _createFuzzableRequest(self):
+    def _create_fuzzable_request(self):
         '''
         Based on the attributes, return a fuzzable request object.
         
@@ -242,15 +242,15 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             path = self.path
 
-        fuzzReq = fuzzable_request(
-                              url_object(path), 
-                              self.command,
-                              self.headers.dict
-                              )
-        postData = self._getPostData()
-        if postData:
-            fuzzReq.setData(postData)
-        return fuzzReq
+        fuzzable_request = FuzzableRequest(
+                                           url_object(path), 
+                                           self.command,
+                                           self.headers.dict
+                                           )
+        post_data = self._getPostData()
+        if post_data:
+            fuzzable_request.setData(post_data)
+        return fuzzable_request
 
     def do_ALL( self ):
         '''

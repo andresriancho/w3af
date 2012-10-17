@@ -237,7 +237,7 @@ class localproxy(proxy):
         '''Let the handler know that the request was dropped.'''
         self._editedRequests[ id(originalFuzzableRequest) ] = (None,  None)
     
-    def sendRawRequest( self, originalFuzzableRequest, head, postdata):
+    def sendRawRequest( self, originalfuzzable_request, head, postdata):
         # the handler is polling this dict and will extract the information from it and
         # then send it to the remote web server
         self._editedRequests[ id(originalFuzzableRequest) ] = (head,  postdata)

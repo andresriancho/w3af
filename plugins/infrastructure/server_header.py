@@ -92,7 +92,7 @@ class server_header(InfrastructurePlugin):
             
             # Save the results in the KB so that other plugins can use this 
             # information
-            kb.kb.append( self, 'omittedHeader', i )
+            kb.kb.append( self, 'omittedHeaders', i )
 
             # Also save this for easy internal use
             # other plugins can use this information

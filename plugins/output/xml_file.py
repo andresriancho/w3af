@@ -37,7 +37,7 @@ from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.request.fuzzable_request import fuzzable_request
+from core.data.request.fuzzable_request import FuzzableRequest
 
 # Override builtin 'str' function in order to avoid encoding
 # errors while generating objects' utf8 bytestring representations.
@@ -164,7 +164,7 @@ class xml_file(OutputPlugin):
         '''
         log the http req / res to file.
         @parameter request: A fuzzable request object
-        @parameter response: A httpResponse object
+        @parameter response: A HTTPResponse object
         '''
         pass
     
@@ -239,13 +239,13 @@ class xml_file(OutputPlugin):
         parentNode.appendChild(actionStatusNode)
         
         # Put out the headers as XML entity
-        actionHeaderNode = self._xmldoc.createElement("headers")
+        actionHeadersNode = self._xmldoc.createElement("headers")
         for (header, header_content) in headers.iteritems():
             headerdetail = self._xmldoc.createElement("header")
             headerdetail.setAttribute("content", str(header_content) )
             headerdetail.setAttribute("field", str(header) )            
-            actionHeaderNode.appendChild(headerdetail)
-        parentNode.appendChild(actionHeaderNode)
+            actionHeadersNode.appendChild(headerdetail)
+        parentNode.appendChild(actionHeadersNode)
         
         # if the body is defined, put it out
         if body:

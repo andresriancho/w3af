@@ -233,7 +233,7 @@ def get_clean_body(mutant, response):
     All injected values are removed encoded and "as is".
     
     @param mutant: The mutant where I can get the value from.
-    @param response: The httpResponse object to clean
+    @param response: The HTTPResponse object to clean
     @return: A string that represents the "cleaned" response body.
     '''
     
