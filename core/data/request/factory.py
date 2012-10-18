@@ -203,11 +203,8 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
             if hnamelow == 'content-length':
                 del headers[hname]
             
-            # TODO: What about repeated header names? Are we missing one for
-            # loop here to address this structure? {'a': ['1', '2']}, please
-            # note the awful [0] before the .lower().
             elif hnamelow == 'content-type':
-                conttype = headers.get(hname, '')[0].lower()
+                conttype = headers.get(hname, '').lower()
 
         #
         # Case #1 - multipart form data - prepare data container
@@ -216,17 +213,20 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
             pdict = cgi.parse_header(conttype)[1]
             try:
                 dc = cgi.parse_multipart(StringIO(post_data), pdict)
-            except:
-                om.out.debug('Multipart form data is invalid, the browser '
-                             'sent something weird.')
+            except Exception, e:
+                msg = 'Multipart form data is invalid, exception: "%s".' \
+                      ' Returning our best match HTTPPostDataRequest.'
+                om.out.debug(msg % e)
+                
+                data = QueryString()
+                return HTTPPostDataRequest(url, method, headers, dc=data)
             else:
                 data = QueryString()
                 data.update(dc)
-                print dc
-                print data
                 # Please note that the QueryString is just a container for the
                 # information. When the HTTPPostDataRequest is sent it should
                 # be serialized into multipart again by the MultipartPostHandler
+                # because the headers contain the multipart/form-data header
                 return HTTPPostDataRequest(url, method, headers, dc=data)
         
         #
