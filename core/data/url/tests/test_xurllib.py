@@ -67,7 +67,7 @@ class TestXUrllib(unittest.TestCase):
         url = url_object('http://www.google.com.ar/')
         res = self.uri_opener.GET( url )
         headers = res.getHeaders()
-        content_encoding = headers.iget('content-encoding', '')
+        content_encoding, header_name = headers.iget('content-encoding', '')
         self.assertTrue('gzip' in content_encoding or 'compress' in content_encoding, content_encoding )
     
     def test_get_cookies(self):

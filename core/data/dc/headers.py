@@ -38,8 +38,9 @@ class Headers(DataContainer):
         '''
         for stored_header_name in self:
             if header_name.lower() == stored_header_name.lower():
-                return self[stored_header_name]
-        return default
+                return self[stored_header_name], stored_header_name
+        
+        return default, None
 
     def __setitem__(self, k, v):
         if isinstance(k, unicode):
