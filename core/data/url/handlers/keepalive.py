@@ -719,11 +719,11 @@ class KeepAliveHandler:
         else:
             # Add headers
             # BUGBUG: This does NOT support multiple headers with the same name
-            headerDict = dict(self.parent.addheaders)
-            headerDict.update(req.headers)
-            headerDict.update(req.unredirected_hdrs)
+            header_dict = dict(self.parent.addheaders)
+            header_dict.update(req.headers)
+            header_dict.update(req.unredirected_hdrs)
     
-            for k, v in headerDict.iteritems():
+            for k, v in header_dict.iteritems():
                 conn.putheader(k, v)
             conn.endheaders()
     
