@@ -42,7 +42,6 @@ import urllib2
 import mimetools
 import mimetypes
 import os
-import stat
 import hashlib
 
 from core.controllers.misc.io import is_file_like
@@ -54,7 +53,8 @@ doseq = 1
 
 
 class MultipartPostHandler(urllib2.BaseHandler):
-    handler_order = urllib2.HTTPHandler.handler_order - 10 # needs to run first
+    # needs to run first
+    handler_order = urllib2.HTTPHandler.handler_order - 10
 
     def http_request(self, request):
         data = request.get_data()
@@ -66,7 +66,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
             if not multipart:
                 data = urllib.urlencode(v_vars, doseq)
             else:
-                boundary, data = self.multipart_encode(v_vars, v_files)
+                boundary, data = multipart_encode(v_vars, v_files)
                 contenttype = 'multipart/form-data; boundary=%s' % boundary
                 # Note that this replaces any old content-type
                 request.add_unredirected_header('Content-Type', contenttype)
@@ -138,49 +138,36 @@ class MultipartPostHandler(urllib2.BaseHandler):
         
         return multipart, v_vars, v_files        
     
-    @staticmethod
-    def multipart_encode(vars, files, boundary=None, buffer=None):
-        if boundary is None:
-            # Before :
-            # boundary = mimetools.choose_boundary()
-            # '127.0.0.1.1000.6267.1173556103.828.1'
-            # This contains my IP address, I dont like that...
-            # Now:
-            m = hashlib.md5()
-            m.update(mimetools.choose_boundary())
-            boundary = m.hexdigest()
-        
-        if buffer is None:
-            buffer = ''
-        
-        for (key, value) in vars:
-            buffer += '--%s\r\n' % boundary
-            buffer += 'Content-Disposition: form-data; name="%s"' % key
-            buffer += '\r\n\r\n' + value + '\r\n'
-        
-        for (key, fd) in files:
-            filename = fd.name.split( os.path.sep )[-1]
-            contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-            buffer += '--%s\r\n' % boundary
-            buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
-            buffer += 'Content-Type: %s\r\n' % contenttype
-            # buffer += 'Content-Length: %s\r\n' % getFileSize(fd)
-            fd.seek(0)
-            buffer += '\r\n' + fd.read() + '\r\n'
-        buffer += '--%s--\r\n\r\n' % boundary
-        
-        return boundary, buffer
+def multipart_encode(_vars, files, boundary=None, _buffer=None):
+    if boundary is None:
+        # Before:
+        #     boundary = mimetools.choose_boundary()
+        #     '127.0.0.1.1000.6267.1173556103.828.1'
+        # This contains my IP address, I dont like that...
+        # Now:
+        m = hashlib.md5()
+        m.update(mimetools.choose_boundary())
+        boundary = m.hexdigest()
+    
+    if _buffer is None:
+        _buffer = ''
+    
+    for key, value in _vars:
+        _buffer += '--%s\r\n' % boundary
+        _buffer += 'Content-Disposition: form-data; name="%s"' % key
+        _buffer += '\r\n\r\n' + value + '\r\n'
+    
+    for key, fd in files:
+        fd.seek(0)
+        filename = fd.name.split( os.path.sep )[-1]
+        contenttype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+        _buffer += '--%s\r\n' % boundary
+        _buffer += 'Content-Disposition: form-data; name="%s"; filename="%s"\r\n' % (key, filename)
+        _buffer += 'Content-Type: %s\r\n' % contenttype
+        _buffer += '\r\n' + fd.read() + '\r\n'
+    
+    _buffer += '--%s--\r\n\r\n' % boundary
+    
+    return boundary, _buffer
 
 
-def getFileSize(f):
-    '''
-    Aux function to get the file size. Needed if I want to use my
-    modified string to fuzz file content.
-    '''
-    if isinstance(f, file):
-        size = os.fstat(f.fileno())[stat.ST_SIZE]
-    elif hasattr(f, '__len__'):
-        size = len(f)
-    else:
-        size = f.len
-    return size

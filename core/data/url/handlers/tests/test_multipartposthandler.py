@@ -19,13 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
 import os
 import tempfile
 import unittest
 import urllib2
 
-from ..MultipartPostHandler import MultipartPostHandler 
+from core.data.url.handlers.MultipartPostHandler import MultipartPostHandler, multipart_encode
 from core.controllers.misc.io import NamedStringIO
 
 
@@ -61,3 +60,29 @@ class TestMultipartPostHandler(unittest.TestCase):
         resp = self.opener.open(self.MOTH_FILE_UP_URL, data)
         self.assertTrue('was successfully uploaded' in resp.read())
     
+    def test_encode_vars(self):
+        _, encoded = multipart_encode( [('a', 'b')], {}, boundary='fakeboundary')
+        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"\r\n\r\nb\r\n--fakeboundary--\r\n\r\n'
+        self.assertEqual(EXPECTED, encoded)
+        
+    def test_encode_vars_files(self):
+        _vars = [('a', 'b')]
+        _files = [('file', NamedStringIO('file content', name='test.txt'))]
+        
+        _, encoded = multipart_encode( _vars, _files, boundary='fakeboundary')
+        
+        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="a"'\
+                   '\r\n\r\nb\r\n--fakeboundary\r\nContent-Disposition: form-data;'\
+                   ' name="file"; filename="test.txt"\r\nContent-Type: text/plain'\
+                   '\r\n\r\nfile content\r\n--fakeboundary--\r\n\r\n'
+        self.assertEqual(EXPECTED, encoded)
+
+    def test_encode_file_null(self):
+        _files = [('file', NamedStringIO('\0hello world', name='test.txt'))]
+        
+        _, encoded = multipart_encode( (), _files, boundary='fakeboundary')
+        
+        EXPECTED = '--fakeboundary\r\nContent-Disposition: form-data; name="file";'\
+                   ' filename="test.txt"\r\nContent-Type: text/plain\r\n\r\n\x00'\
+                   'hello world\r\n--fakeboundary--\r\n\r\n'
+        self.assertEqual(EXPECTED, encoded)
