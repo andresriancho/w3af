@@ -37,7 +37,7 @@ class TestBloomFilter(unittest.TestCase):
         f = BloomFilter(capacity=10000, error_rate=0.001)
 
         for i in xrange(0, f.capacity):
-             _ = f.add(i)
+            _ = f.add(i)
             
         self.assertEqual( len(f), f.capacity)
         
@@ -72,7 +72,7 @@ class TestScalableBloomfilter(unittest.TestCase):
         f = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
 
         for i in xrange(0, 10000):
-             _ = f.add(i)
+            _ = f.add(i)
         
         self.assertEqual( len(f), 10000)
         
