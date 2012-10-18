@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import core.data.parsers.encode_decode as enc_dec
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.dataContainer import DataContainer
-import core.data.parsers.encode_decode as enc_dec
 
 
 class QueryString(DataContainer):
