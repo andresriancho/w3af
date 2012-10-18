@@ -34,8 +34,8 @@ class XMLRPCRequest(HTTPPostDataRequest):
 
     def __init__(self, xml, uri, method='POST', headers=Headers()):
         '''
-        @parameter xml: The original XML string that represents
-            the call to the RPC
+        @param xml: The original XML string that represents
+                    the call to the RPC.
         '''
         HTTPPostDataRequest.__init__(self, uri)
         self._xml = xml

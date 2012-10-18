@@ -49,7 +49,7 @@ class HTTPPostDataRequest(FuzzableRequest):
 
         # TODO: This is a hack I'm not comfortable with. There should
         # be a fancier way to do this.
-        # If it contains a file then we are not interested on returning
+        # If it contains a file then we are not interested in returning
         # its string representation
         for value in self._dc.itervalues():
             
