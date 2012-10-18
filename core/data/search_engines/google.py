@@ -27,6 +27,7 @@ import json
 from core.controllers import outputManager as om
 from core.controllers.w3afException import w3afException
 
+from core.data.dc.headers import Headers
 from core.data.search_engines.search_engine import SearchEngine
 from core.data.parsers.urlParser import url_object
 from core.data.user_agent.random_user_agent import get_random_user_agent
@@ -154,7 +155,7 @@ class GoogleAPISearch(object):
             raise ValueError( msg )
         
         random_ua = get_random_user_agent()
-        headers = {'User-Agent': random_ua}
+        headers = Headers([('User-Agent', random_ua)])
 
         return self._uri_opener.GET(url, headers=headers)
 
@@ -313,7 +314,15 @@ class GStandardSearch(GoogleAPISearch):
                     url = 'http://' + url
                     
                 # Save the links
-                links.append( googleResult( url_object(url) ) )
+                try:
+                    url_inst = url_object(url)
+                except:
+                    msg = 'Google might have changed its output format.' \
+                          ' The regular expression failed to extract a valid' \
+                          ' URL from the page. Extracted (invalid) URL is: "%s"'
+                    om.out.error(msg % url[:15])
+                else:
+                    links.append( googleResult( url_inst ) )
 
         return links[:self._count]
     
