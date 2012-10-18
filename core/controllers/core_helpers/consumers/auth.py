@@ -44,7 +44,7 @@ class auth(BaseConsumer):
         @param w3af_core: The w3af core that we'll use for status reporting
         @param timeout: The time to wait between each login check
         '''
-        super(auth, self).__init__(auth_plugins, w3af_core)
+        super(auth, self).__init__(auth_plugins, w3af_core, thread_name='Authenticator')
         
         self._timeout = timeout
     

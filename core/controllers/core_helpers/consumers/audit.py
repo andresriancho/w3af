@@ -43,7 +43,7 @@ class audit(BaseConsumer):
         @param audit_plugins: Instances of audit plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(audit, self).__init__(audit_plugins, w3af_core)
+        super(audit, self).__init__(audit_plugins, w3af_core, thread_name='Auditor')
         
     def _teardown(self):
         # End plugins

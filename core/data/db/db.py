@@ -113,8 +113,9 @@ class DBClientSQLite(Process, DBClient):
         self.reqs = Queue(50)
         
         # Setting the thread to daemon mode so it dies with the rest of the
-        # process
+        # process, and a name so we can identify it during debugging sessions
         self.daemon = True
+        self.name = 'DBClientSQLite'
         
         # This put/join is here in order to wait for the setup phase in the run
         # method to execute before we return from this method, also see 

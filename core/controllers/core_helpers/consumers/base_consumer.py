@@ -34,7 +34,7 @@ class BaseConsumer(Process):
     requests.
     '''
     
-    def __init__(self, consumer_plugins, w3af_core):
+    def __init__(self, consumer_plugins, w3af_core, thread_name='Consumer'):
         '''
         @param in_queue: The input queue that will feed the base_consumer plugins
         @param base_consumer_plugins: Instances of base_consumer plugins in a list
@@ -47,7 +47,7 @@ class BaseConsumer(Process):
         self._out_queue = Queue.Queue()
         self._consumer_plugins = consumer_plugins
         self._w3af_core = w3af_core
-        self._threadpool = Pool(10)
+        self._threadpool = Pool(10, worker_names=thread_name)
         self._tasks_in_progress_counter = 0
     
     def run(self):
