@@ -308,7 +308,7 @@ class test_form(unittest.TestCase):
             {'tagname': 'input', 'name': 'eggs', 'type': 'text'}]
         
         new_form = create_form_helper(form_with_plus)
-        self.assertEqual( str(new_form), 'foo=bar%2Bspam&eggs=')
+        self.assertEqual( str(new_form), 'eggs=&foo=bar%2Bspam')
         
     def test_form_str_simple(self):
         form_data = [{'tagname': 'input','type':'text', 'name':'abc', 'value':'123'}]
