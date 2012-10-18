@@ -98,7 +98,10 @@ class path_disclosure(GrepPlugin):
                 path_disc_regex = self._compiled_regexes[ potential_disclosure ]
                 match_list = path_disc_regex.findall( html_string  )
 
-                # Decode the realurl
+                # Decode the URL, this will transform things like
+                #     http://host.tld/?id=%2Fhome
+                # into,
+                #     http://host.tld/?id=/home
                 realurl = response.getURL().urlDecode()
 
                 
