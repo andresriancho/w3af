@@ -27,7 +27,7 @@ import webbrowser
 
 from multiprocessing.dummy import Process, Event
 
-from . import helpers, kbtree, httpLogTab, reqResViewer, craftedRequests, entries
+from . import kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 from extlib.xdot import xdot
 from core.data.db.history import HistoryItem
 
@@ -302,7 +302,7 @@ class URLsGraph(gtk.VBox):
         # let's draw!
         q = Queue.Queue()
         evt = Event()
-        th = Process(target=self._draw_real, args=(q,evt))
+        th = Process(target=self._draw_real, args=(q,evt), name='GTKDraw')
         th.start()
         gobject.timeout_add(500, self._draw_end, q, evt)
         return False

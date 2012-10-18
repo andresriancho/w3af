@@ -210,6 +210,7 @@ class w3afSVNClient(SVNClient):
             # Run wrapped_meth in new thread.
             th = Process(target=wrapped_meth, args=args, kwargs=kwargs)
             th.setDaemon(True)
+            th.name = 'AutoUpdate'
             try:
                 th.start()
                 while th.isAlive():

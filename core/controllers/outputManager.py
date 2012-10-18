@@ -66,6 +66,7 @@ class outputManager(Process):
     def __init__(self):
         super(outputManager, self).__init__()
         self.daemon = True
+        self.name = 'OutputManager'
         
         # User configured options
         self._output_plugin_list = []
