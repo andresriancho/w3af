@@ -90,7 +90,7 @@ class HTMLParser(SGMLParser):
         if not missing_or_invalid_action:
             action = self._decode_url(action)
             try:
-                action = self._baseUrl.urlJoin(action)
+                action = self._baseUrl.urlJoin(action, encoding=self._encoding)
             except ValueError:
                 missing_or_invalid_action = True
         if missing_or_invalid_action:

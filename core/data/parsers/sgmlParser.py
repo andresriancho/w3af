@@ -170,8 +170,7 @@ class SGMLParser(BaseParser):
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
                 url_path = self._decode_url(url_path)
-                url = unicode(self._baseUrl.urlJoin(url_path))
-                url = url_object(url, encoding=self._encoding)
+                url = self._baseUrl.urlJoin(url_path, encoding=self._encoding)
             except ValueError:
                 # Just ignore it, this happens in many cases but one
                 # of the most noticeable is "d:url.html", where the 
