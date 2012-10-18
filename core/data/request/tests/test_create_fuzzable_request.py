@@ -31,7 +31,7 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.JSONRequest import JSONPostDataRequest
 from core.data.request.XMLRPCRequest import XMLRPCRequest
-from core.data.url.handlers.MultipartPostHandler import MultipartPostHandler
+from core.data.url.handlers.MultipartPostHandler import multipart_encode
 from core.data.dc.headers import Headers
 
 
@@ -123,7 +123,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertIsInstance( fr, XMLRPCRequest)
 
     def test_multipart_post(self):
-        boundary, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
+        boundary, post_data = multipart_encode( [('a', 'bcd'), ], []  )
 
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', 'multipart/form-data; boundary=%s' % boundary)])
@@ -138,7 +138,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertIsInstance( fr, HTTPPostDataRequest)
 
     def test_invalid_multipart_post(self):
-        _, post_data = MultipartPostHandler.multipart_encode( [('a', 'bcd'), ], []  )
+        _, post_data = multipart_encode( [('a', 'bcd'), ], []  )
 
         # It is invalid because there is a missing boundary parameter in the
         # content-type header
