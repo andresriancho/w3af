@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.parsers.xmlrpc import parse_xmlrpc, build_xmlrpc
 from core.data.dc.headers import Headers

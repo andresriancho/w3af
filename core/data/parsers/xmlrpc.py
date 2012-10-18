@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import xml.sax
-from xml.sax.handler import ContentHandler 
 import copy
 import cgi
 import base64
+
+from xml.sax.handler import ContentHandler 
 
 
 class xmlrpc_read_handler(ContentHandler): 
@@ -143,48 +143,3 @@ def build_xmlrpc(xml_string, fuzzed_parameters):
     return handler.fuzzed_xml_string
     
     
-    
-if __name__ == '__main__':
-    #
-    #   Test the reader
-    #
-    handler = xmlrpc_read_handler() 
-
-    s = '''
-     <array>
-       <data>
-         <value><i4>1404</i4></value>
-         <value><string>Algo aca</string></value>
-         <value><i4>1</i4></value>
-         <value><string>Algo mas aca</string></value>
-       </data>
-     </array>'''
-
-    xml.sax.parseString(s, handler)
-
-    print handler.fuzzable_parameters
-    
-    #
-    #   Test the writer
-    #
-
-    fuzzable_parameters = copy.deepcopy(handler.fuzzable_parameters)
-    fuzzable_parameters[0][1] = '<script>alert(1)</script>'
-
-    handler = xmlrpc_write_handler(fuzzable_parameters) 
-
-    s = '''
-     <array>
-       <data>
-         <value a="ab"><i4>1404</i4></value>
-         <value><string>Algo aca</string></value>
-         <value><i4>1</i4></value>
-         <value><string>Algo mas aca</string></value>
-       </data>
-     </array>'''
-
-    xml.sax.parseString(s, handler)
-    print handler.fuzzed_xml_string == s
-
-    print handler.fuzzed_xml_string
-    print s
