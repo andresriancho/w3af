@@ -124,6 +124,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual( post_request.getURL().url_string, 'http://www.w3af.com/foo.bar')
         self.assertEqual( post_request.getData(), 'a=&b=123')
         self.assertEqual( post_request.get_method(), 'POST')
+        self.assertFalse( 'content-type' in post_request.getHeaders())
 
     def test_cookie(self):
         body = ''

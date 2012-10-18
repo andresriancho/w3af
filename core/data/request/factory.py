@@ -41,7 +41,6 @@ from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers
 from core.data.parsers.urlParser import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
-from core.data.dc.headers import Headers
 
 
 __all__ = ['create_fuzzable_requests', 'create_fuzzable_request']
@@ -64,8 +63,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
-    headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
-    req_headers = dict(headers)
+    req_headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
     req_headers.update(request and request.getHeaders() or {})
     req_headers = Headers(req_headers.items())
     
@@ -82,12 +80,12 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     )
         res.append(qsr)
     
-    headers = resp.getLowerCaseHeaders()
-    
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request.
+    resp_headers = resp.getHeaders()
+    
     for url_header_name in URL_HEADERS:
-        url_header_value = headers.get(url_header_name, '')
+        url_header_value, _ = resp_headers.iget(url_header_name, '')
         if url_header_value:
             url = smart_unicode(url_header_value, encoding=resp.charset)
             try:
@@ -131,7 +129,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                   rem_meth.getParameters(),
                                   rem_meth.getNamespace(),
                                   rem_meth.get_methodName(),
-                                  headers
+                                  req_headers
                                   )
                 res.append(wspdr)
     else:
@@ -143,7 +141,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     r = HTTPPostDataRequest(
                                         variant.getAction(),
                                         variant.get_method(),
-                                        headers,
+                                        req_headers,
                                         cookieObj,
                                         variant,
                                         form.get_file_vars()
@@ -152,7 +150,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                     # The default is a GET request
                     r = HTTPQSRequest(
                                   variant.getAction(),
-                                  headers=headers,
+                                  headers=req_headers,
                                   cookie=cookieObj
                                   )
                     r.setDc(variant)
@@ -197,14 +195,11 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
  
     else: # Seems to be something that has post data
         data = {}
-        conttype = ''
-        for hname in headers.keys():
-            hnamelow = hname.lower()
-            if hnamelow == 'content-length':
-                del headers[hname]
-            
-            elif hnamelow == 'content-type':
-                conttype = headers.get(hname, '').lower()
+        conttype, header_name = headers.iget('content-type', '')
+        if conttype: del headers[header_name]
+        
+        contlen, header_name = headers.iget('content-length', '')            
+        if contlen: del headers[header_name]
 
         #
         # Case #1 - multipart form data - prepare data container
@@ -218,15 +213,18 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
                       ' Returning our best match HTTPPostDataRequest.'
                 om.out.debug(msg % e)
                 
-                data = QueryString()
-                return HTTPPostDataRequest(url, method, headers, dc=data)
+                empty_data = QueryString()
+                return HTTPPostDataRequest(url, method, headers, dc=empty_data)
             else:
                 data = QueryString()
                 data.update(dc)
+                
                 # Please note that the QueryString is just a container for the
                 # information. When the HTTPPostDataRequest is sent it should
                 # be serialized into multipart again by the MultipartPostHandler
                 # because the headers contain the multipart/form-data header
+                headers['content-type'] = conttype
+                
                 return HTTPPostDataRequest(url, method, headers, dc=data)
         
         #

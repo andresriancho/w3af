@@ -92,6 +92,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertEqual( fr.getURL(), self.url )
         self.assertEqual( fr.getHeaders(), hdr )
         self.assertEqual( fr.get_method(), 'POST' )
+        self.assertFalse( 'content-type' in fr.getHeaders() )        
         self.assertIsInstance( fr, HTTPPostDataRequest)
 
     def test_json_post(self):
@@ -133,6 +134,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         
         self.assertEqual( fr.getURL(), self.url )
         self.assertEqual( fr.getHeaders(), headers )
+        self.assertTrue( 'multipart/form-data' in fr.getHeaders()['content-type'])
         self.assertEqual( fr.get_method(), 'POST' )
         self.assertEqual( fr.getDc(), {'a': ['bcd',]})
         self.assertIsInstance( fr, HTTPPostDataRequest)
