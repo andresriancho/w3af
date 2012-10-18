@@ -20,28 +20,46 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import commands
-import unittest
+import socket
 import tempfile
+import unittest
+
+from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
 import core.data.kb.config as cf
 
 from core.controllers.payload_transfer.clientless_reverse_http import ClientlessReverseHTTP
 from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
 from core.controllers.misc.temp_dir import create_temp_dir
+from core.controllers.w3afException import w3afException
 
 
 class TestClientlessReverseHTTP(unittest.TestCase):
     
-    def test_upload_file(self):
+    def get_usable_port(self, address):
+        for listen_port in xrange(48488, 48497):
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                s.bind((address, listen_port))
+            except socket.error:
+                continue
+            else:
+                s.close()
+                del s
+                return listen_port
+        
+        return None
+    
+    def test_upload_file_mock(self):
         exec_method = commands.getoutput
         os = 'linux'
         
         create_temp_dir()
         cf.cf.save( 'interface', 'lo' )
         cf.cf.save( 'localAddress', '127.0.0.1' )
-        es = extrusionScanner( exec_method )
-        inbound_port = es.get_inbound_port()
-        
+        inbound_port = self.get_usable_port('127.0.0.1')
         echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
         
         self.assertTrue( echo_linux.can_transfer() )
@@ -52,8 +70,36 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         
         temp_file_inst = tempfile.NamedTemporaryFile()
         temp_fname = temp_file_inst.name
-        upload_success = echo_linux.transfer( file_content, temp_fname)
+        upload_success = echo_linux.transfer(file_content, temp_fname)
 
         self.assertTrue( upload_success )
-
+    
+    @attr('root')
+    def test_upload_file_root(self):
+        exec_method = commands.getoutput
+        os = 'linux'
+        
+        create_temp_dir()
+        cf.cf.save( 'interface', 'lo' )
+        cf.cf.save( 'localAddress', '127.0.0.1' )
+        es = extrusionScanner( exec_method )
+        try:
+            inbound_port = es.get_inbound_port()
+        except w3afException:
+            raise SkipTest('You need to be root to run test_upload_file_root().')
+        else:
+            echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
+            
+            self.assertTrue( echo_linux.can_transfer() )
+            
+            file_len = 8195 
+            file_content = 'A' * file_len
+            echo_linux.estimate_transfer_time(file_len)
+            
+            temp_file_inst = tempfile.NamedTemporaryFile()
+            temp_fname = temp_file_inst.name
+            upload_success = echo_linux.transfer( file_content, temp_fname)
+    
+            self.assertTrue( upload_success )
+    
         
