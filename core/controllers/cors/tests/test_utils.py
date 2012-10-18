@@ -48,7 +48,7 @@ class TestUtils(unittest.TestCase):
         
         cors = provides_cors_features(fr, url_opener_mock)
 
-        call_header = Headers({'Origin': 'www.w3af.org'})
+        call_header = Headers({'Origin': 'www.w3af.org'}.items())
         url_opener_mock.GET.assert_called_with(url, headers=call_header)
                 
         self.assertFalse( cors )
@@ -57,7 +57,8 @@ class TestUtils(unittest.TestCase):
         url = url_object('http://moth/')
         fr = FuzzableRequest(url)
         
-        cors_headers = Headers({'Access-Control-Allow-Origin': 'http://www.w3af.org/'})
+        hdrs = {'Access-Control-Allow-Origin': 'http://www.w3af.org/'}.items()
+        cors_headers = Headers(hdrs)
         http_response = HTTPResponse(200, '', cors_headers, url, url)
         
         url_opener_mock = Mock()
@@ -73,7 +74,8 @@ class TestUtils(unittest.TestCase):
         url = url_object('http://moth/')
         
         w3af_url = 'http://www.w3af.org/'
-        cors_headers = Headers({'Access-Control-Allow-Origin': w3af_url})
+        hrds = {'Access-Control-Allow-Origin': w3af_url}.items()
+        cors_headers = Headers(hrds)
         http_response = HTTPResponse(200, '', cors_headers, url, url)
         
         value = retrieve_cors_header(http_response, 'Access-Control-Allow-Origin')
@@ -83,7 +85,7 @@ class TestUtils(unittest.TestCase):
     def test_retrieve_cors_header_false(self):
         url = url_object('http://moth/')
         
-        cors_headers = Headers({'Access-Control': 'Allow-Origin'})
+        cors_headers = Headers({'Access-Control': 'Allow-Origin'}.items())
         http_response = HTTPResponse(200, '', cors_headers, url, url)
         
         value = retrieve_cors_header(http_response, 'Access-Control-Allow-Origin')

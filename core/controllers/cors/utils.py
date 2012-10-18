@@ -44,7 +44,7 @@ def provides_cors_features(freq, url_opener):
     if ac_value is not None:
         return True
     
-    headers = Headers({'Origin': 'www.w3af.org'})
+    headers = Headers({'Origin': 'www.w3af.org'}.items())
     response = url_opener.GET(freq.getURL(), headers=headers)
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:
