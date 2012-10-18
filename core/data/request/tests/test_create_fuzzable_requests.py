@@ -27,12 +27,13 @@ from nose.plugins.skip import SkipTest
 from core.data.request.factory import create_fuzzable_requests
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 
 import core.data.kb.config as cf
 
 
 @attr('smoke')
-class TestCreatefuzzable_request_list(unittest.TestCase):
+class TestCreateFuzzableRequests(unittest.TestCase):
 
     def setUp(self):
         self.url = url_object('http://www.w3af.com/')
@@ -41,14 +42,14 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
     
     def test_not_add_self(self):
         body = ''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         request_lst = create_fuzzable_requests(http_response, add_self=False)
         self.assertEqual( len(request_lst), 0 )
 
     def test_add_self(self):
         body = ''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         request_lst = create_fuzzable_requests(http_response, add_self=True)
@@ -56,11 +57,13 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
         
         fr = request_lst[0]
         self.assertEqual( fr.getURL(), self.url)
+        self.assertFalse( 'content-type' in fr.getHeaders())
     
     def test_redirect_location(self):
         body = ''
         redir_url = 'http://www.w3af.org/'
-        headers = {'content-type': 'text/html', 'location': redir_url}
+        headers = Headers([('content-type', 'text/html'),
+                           ('location', redir_url)])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr = create_fuzzable_requests(http_response, add_self=False)
@@ -72,7 +75,8 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
     def test_redirect_uri_relative(self):
         body = ''
         redir_url = '/foo.bar'
-        headers = {'content-type': 'text/html', 'uri': redir_url}
+        headers = Headers([('content-type', 'text/html'),
+                           ('uri', redir_url)])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr = create_fuzzable_requests(http_response, add_self=False)
@@ -81,7 +85,6 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
         redir_fr = redir_fr[0]
         self.assertEqual( redir_fr.getURL().url_string, self.url.url_string[:-1] + redir_url)
 
-    raise SkipTest('FIXME: See TODO.')
     def test_body_parse_a(self):
         '''
         TODO: I need to decide if I'm going to implement this in create_fuzzable_requests
@@ -94,8 +97,10 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
               
               And they all need to be analyzed before making a decision.
         '''
+        raise SkipTest('FIXME: See TODO.')
+        
         body = '<a href="http://www.google.com/?id=1">click here</a>'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         request_lst = create_fuzzable_requests(http_response, add_self=False)
@@ -109,7 +114,7 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
                     A: <input name="a" />
                     B: <input name="b" value="123" />
                   </form>'''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         post_request_lst = create_fuzzable_requests(http_response, add_self=False)
@@ -123,7 +128,9 @@ class TestCreatefuzzable_request_list(unittest.TestCase):
     def test_cookie(self):
         body = ''
         redir_url = '/foo.bar'
-        headers = {'content-type': 'text/html', 'uri': redir_url, 'cookie': 'abc=def'}
+        headers = Headers([('content-type', 'text/html'),
+                           ('uri', redir_url),
+                           ('cookie', 'abc=def')])
         http_response = HTTPResponse(200, body , headers, self.url, self.url)
         
         redir_fr_cookie = create_fuzzable_requests(http_response, add_self=False)
