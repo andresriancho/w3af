@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib
 import re
 
-from core.data.search_engines.searchEngine import searchEngine as searchEngine
+from core.data.search_engines.search_engine import SearchEngine
 from core.data.parsers.urlParser import url_object
 
 
-class bing(searchEngine):
+class bing(SearchEngine):
     '''
     This class is a wrapper for doing bing searches. It allows the user to use
     GET requests to search bing.com.
@@ -37,7 +37,7 @@ class bing(searchEngine):
                                'onlinehelp.microsoft.com', 'go.microsoft.com'])
     
     def __init__(self, urlOpener):
-        searchEngine.__init__(self)
+        SearchEngine.__init__(self)
         self._uri_opener = urlOpener
 
     def search(self, query, start, count=10):

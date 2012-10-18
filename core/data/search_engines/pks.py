@@ -24,11 +24,11 @@ import re
 import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
-from core.data.search_engines.searchEngine import searchEngine as searchEngine
+from core.data.search_engines.search_engine import SearchEngine
 from core.data.parsers.urlParser import url_object
 
 
-class pks(searchEngine):
+class pks(SearchEngine):
     '''
     This class is a wrapper for doing PKS searches on the MIT PKS server. 
     
@@ -36,7 +36,7 @@ class pks(searchEngine):
     '''
     
     def __init__(self, uri_opener ):
-        searchEngine.__init__(self)
+        SearchEngine.__init__(self)
         self._uri_opener = uri_opener
         
     def search( self, hostname ):

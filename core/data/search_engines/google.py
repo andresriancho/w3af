@@ -27,7 +27,7 @@ import json
 from core.controllers import outputManager as om
 from core.controllers.w3afException import w3afException
 
-from core.data.search_engines.searchEngine import searchEngine
+from core.data.search_engines.search_engine import SearchEngine
 from core.data.parsers.urlParser import url_object
 from core.data.user_agent.random_user_agent import get_random_user_agent
 
@@ -40,7 +40,7 @@ GOOGLE_PRIORITY_SEARCH_SEQ = ('GAjaxSearch', 'GMobileSearch',
                               'GStandardSearch',)
 
 
-class google(searchEngine):
+class google(SearchEngine):
     '''
     This class is a wrapper for doing google searches. It allows the user to do
     GET requests to the mobile version, the Ajax API and the standard www.google.com
@@ -51,7 +51,7 @@ class google(searchEngine):
     '''
     
     def __init__(self, uri_opener):
-        searchEngine.__init__(self)
+        SearchEngine.__init__(self)
         self._uri_opener = uri_opener
     
     def getNResults(self, query, limit=0):

@@ -1,5 +1,5 @@
 '''
-searchEngine.py
+SearchEngine.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from core.controllers.w3afException import w3afException
 from core.controllers import outputManager as om
+from core.data.dc.headers import Headers
 
 
-class searchEngine:
+class SearchEngine(object):
     '''
-    This class represents a searchEngine .
+    This class represents a search engine .
     
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
@@ -36,7 +36,8 @@ class searchEngine:
         #   Based on some tests performed by Nahuel Sanchez, Google will allow us to automate
         #   searches if we use this user agent:
         #
-        self._headers = {'User-Agent': 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)'}
+        hdrs = [('User-Agent', 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)')]
+        self._headers = Headers(hdrs)
 
     def getNResults(self, query, limit=0):
         '''
@@ -52,7 +53,7 @@ class searchEngine:
                 raise
             except Exception, e:
                 msg = 'An unhandled exception was found in ' \
-                      'search_engines.searchEngine.search(): "%s"' % str(e)
+                      'search_engines.SearchEngine.search(): "%s"' % str(e)
                 om.out.error(msg)
                 raise w3afException(msg)
             else:
@@ -85,7 +86,7 @@ class searchEngine:
                 om.out.debug(str(w3))
                 raise
             except Exception, e:
-                om.out.debug('Unhandled exception in search_engines.searchEngine.search(): ' + str(e))
+                om.out.debug('Unhandled exception in search_engines.SearchEngine.search(): ' + str(e))
                 raise
             else:
                 result.extend(res_page)
@@ -110,7 +111,7 @@ class searchEngine:
 
     def search(self, query, start, count=10):
         '''
-        This method is meant to be overriden by the subclasses of searchEngine.py
+        This method is meant to be overriden by the subclasses of SearchEngine.py
         
         This method searches the web and returns a list of URLs.
         
@@ -118,11 +119,11 @@ class searchEngine:
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''
-        raise w3afException('searchEngine subclasses should implement the search method.')
+        raise w3afException('SearchEngine subclasses should implement the search method.')
 
     def page_search(self, query, start, count=10):
         '''
-        This method is meant to be overriden by the subclasses of searchEngine.py
+        This method is meant to be overriden by the subclasses of SearchEngine.py
         
         This method searches the web and returns a list of http response objects.
         
@@ -130,6 +131,6 @@ class searchEngine:
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''
-        raise w3afException('searchEngine subclasses should implement the page_search method.')
+        raise w3afException('SearchEngine subclasses should implement the page_search method.')
 
 

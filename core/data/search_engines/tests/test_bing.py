@@ -36,17 +36,13 @@ class test_bing(unittest.TestCase):
         
     
     def test_get_links_results(self):
-        try:
-            results = self.bing_se.getNResults(self.query, self.limit)
-        except KeyboardInterrupt:
-            raise Exception('Caught KeyboardInterrupt and avoided nosetests crash.')
-        else:
-            # Len of results must be le. than limit
-            self.assertTrue(len(results) <= self.limit)
-            
-            # I want to get some results...
-            self.assertTrue(len(results) >= 10, results)
-            self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
-            
-            # URLs should be unique
-            self.assertTrue(len(results) == len(set([r.URL for r in results])))
+        results = self.bing_se.getNResults(self.query, self.limit)
+        # Len of results must be le. than limit
+        self.assertTrue(len(results) <= self.limit)
+        
+        # I want to get some results...
+        self.assertTrue(len(results) >= 10, results)
+        self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
+        
+        # URLs should be unique
+        self.assertTrue(len(results) == len(set([r.URL for r in results])))
