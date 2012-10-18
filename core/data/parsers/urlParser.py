@@ -180,7 +180,7 @@ class url_object(disk_item):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     
-    ALWAYS_SAFE = "%/:=&?~#+!$,;'@()*[]|"
+    SAFE_CHARS = "%/:=&?~#+!$,;'@()*[]|"
     
     def __init__(self, data, encoding=DEFAULT_ENCODING):
         '''
@@ -674,7 +674,7 @@ class url_object(disk_item):
                 # Just in case...
                 return 80
                 
-    def urlJoin(self, relative):
+    def urlJoin(self, relative, encoding=None):
         '''
         Construct a full (''absolute'') URL by combining a ''base URL'' (self)
         with a ``relative URL'' (relative). Informally, this uses components
@@ -685,6 +685,9 @@ class url_object(disk_item):
         For more information read RFC 1808 especially section 5.
         
         @param relative: The relative url to add to the base url
+        @param encoding: The encoding to use for the final url_object being returned.
+                         If no encoding is specified, the returned url_object will
+                         have the same encoding that the current url_object.
         @return: The joined URL.
 
         Examples:
@@ -729,8 +732,9 @@ class url_object(disk_item):
 
 
         '''
+        resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
-        jurl_obj = url_object(joined_url, self._encoding)
+        jurl_obj = url_object(joined_url, resp_encoding)
         jurl_obj.normalizeURL()
         return jurl_obj
     
@@ -1133,38 +1137,18 @@ class url_object(disk_item):
     
     def urlDecode(self):
         '''
-        >>> False
-        True
-
-        This is just a reminder to myself to make sure I fix the '+' handling.
-        The examples below might be broken, and the usage of the modified parse_qsl
-        might also be a bug. 
-        
-        >>> str(url_object(u'https://w3af.com:443/xyz/file.asp?id=1').urlDecode())
-        'https://w3af.com:443/xyz/file.asp?id=1'
-        >>> url_object(u'https://w3af.com:443/xyz/file.asp?id=1%202').urlDecode().url_string
-        u'https://w3af.com:443/xyz/file.asp?id=1 2'
-        >>> url_object(u'https://w3af.com:443/xyz/file.asp?id=1+2').urlDecode().url_string
-        u'https://w3af.com:443/xyz/file.asp?id=1 2'
-
-        @return: An URL-Decoded version of the URL.
+        @see: Unittests at test_urlParser
+        @return: An url_object that represents the current URL without URL
+                 encoded characters.
         '''
-        unquotedurl = urllib.unquote_plus(str(self))
+        unquotedurl = urllib.unquote(str(self))
         enc = self._encoding
         return url_object(unquotedurl.decode(enc, 'ignore'), enc)
     
     def urlEncode(self):
         '''
-        >>> url_object(u'https://w3af.com:443/file.asp?id=1 2').urlEncode()
-        'https://w3af.com:443/file.asp?id=1%202'
-        >>> url_object(u'https://w3af.com:443/file.asp?id=1+2').urlEncode()
-        'https://w3af.com:443/file.asp?id=1%2B2'
-        >>> url_object(u'http://w3af.com/x.py?ec=x*y/2==3').urlEncode()
-        'http://w3af.com/x.py?ec=x%2Ay%2F2%3D%3D3'
-        >>> url_object(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
-        'http://w3af.com/x.py;id=1?y=3'
-        >>> url_object(u'http://w3af.com').urlEncode()
-        'http://w3af.com/'
+        @see: Unittests at test_urlParser
+        @return: String that represents the current URL
         '''
         self_str = str(self)
         qs = ''
@@ -1174,7 +1158,7 @@ class url_object(disk_item):
             qs = '?' + str(self.querystring)
             self_str = self_str[:qs_start_index]
         
-        return "%s%s" % (urllib.quote_plus(self_str, safe=self.ALWAYS_SAFE), qs)
+        return "%s%s" % (urllib.quote(self_str, safe=self.SAFE_CHARS), qs)
     
     def getDirectories( self ):
         '''
@@ -1491,7 +1475,3 @@ class url_object(disk_item):
 
     def get_eq_attrs(self):
         return ['url_string']
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
