@@ -409,7 +409,7 @@ class TestHTMLParser(unittest.TestCase):
         self.assertEquals([''], f['foo5']) # radio input
         self.assertEquals([''], f['foo6']) # checkbox input
         self.assertEquals(['bar'], f['foo7']) # hidden input
-        self.assertEquals('', f._submitMap['foo4']) # submit input
+        self.assertEquals('', f._submit_map['foo4']) # submit input
         
         # Finally assert that the parsed forms are equals
         self.assertEquals(f, p2.forms[0])
