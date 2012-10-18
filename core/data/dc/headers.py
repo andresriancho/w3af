@@ -31,7 +31,7 @@ class Headers(DataContainer):
     def __init__(self, init_val=(), encoding=UTF8):
         super(Headers, self).__init__(init_val, encoding)
         
-    def i_get_header_val(self, header_name):
+    def iget(self, header_name, default=None):
         '''
         @param header_name: The name of the header we want the value for
         @return: The value for a header given a name (be case insensitive)
@@ -39,7 +39,7 @@ class Headers(DataContainer):
         for stored_header_name in self:
             if header_name.lower() == stored_header_name.lower():
                 return self[stored_header_name]
-        return None
+        return default
 
     def __setitem__(self, k, v):
         if isinstance(k, unicode):
