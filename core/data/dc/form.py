@@ -20,15 +20,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import operator
 import random
+
+import core.controllers.outputManager as om
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.dataContainer import DataContainer
 from core.data.parsers.encode_decode import urlencode
 from core.data.parsers.urlParser import url_object
-import core.controllers.outputManager as om
 
 
 class Form(DataContainer):
@@ -36,12 +36,21 @@ class Form(DataContainer):
     This class represents a HTML form.
     
     @author: Andres Riancho (andres.riancho@gmail.com) |
-        Javier Andalia (jandalia =at= gmail.com)
+             Javier Andalia (jandalia =at= gmail.com)
     '''
     # Max
     TOP_VARIANTS = 15
     MAX_VARIANTS_TOTAL = 10**9
     SEED = 1
+    
+    INPUT_TYPE_FILE = 'file'
+    INPUT_TYPE_CHECKBOX = 'checkbox'
+    INPUT_TYPE_RADIO = 'radio'
+    INPUT_TYPE_TEXT = 'text'
+    INPUT_TYPE_HIDDEN = 'hidden'
+    INPUT_TYPE_SUBMIT = 'submit'
+    INPUT_TYPE_SELECT = 'select'
+    
     
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
         super(Form, self).__init__(init_val, encoding)
@@ -52,7 +61,7 @@ class Form(DataContainer):
         self._types = {}
         self._files = []
         self._selects = {}
-        self._submitMap = {}
+        self._submit_map = {}
         
         # This is used for processing checkboxes
         self._secret_value = "3_!21#47w@"
@@ -124,39 +133,30 @@ class Form(DataContainer):
             self._setVar(name, '')
             # TODO: This does not work if there are different parameters in a form
             # with the same name, and different types
-            self._types[name] = 'file'
+            self._types[name] = self.INPUT_TYPE_FILE
     
     def __str__(self):
         '''
         This method returns a string representation of the Form object.
         
-        >>> f = Form()
-        >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
-        >>> str(f)
-        'abc=123'
-
-        >>> f = Form()
-        >>> _ = f.addInput([("type", "text"), ("name", "abc"), ("value", "123")])
-        >>> _ = f.addInput([("type", "text"), ("name", "def"), ("value", "000")])        
-        >>> str(f)
-        'abc=123&def=000'
+        Please note that if the form has radio/select/checkboxes the
+        first value will be put into the string representation and the
+        others will be lost.
         
-        >>> import urllib
-        >>> f = Form() # Default encoding UTF-8
-        >>> _ = f.addInput([("type", "text"), ("name", u"v"),("value", u"áéíóú")])
-        >>> _ = f.addInput([("type", "text"), ("name", u"c"), ("value", u"ñçÑÇ")])
-        >>> f.addSubmit('address', 'bsas')
-        >>> urllib.unquote(str(f)).decode('utf-8') == u'c=ñçÑÇ&address=bsas&v=áéíóú'
-        True
-
+        @see: Unittest in test_form.py
         @return: string representation of the Form object.
         '''
-        #
-        # FIXME: hmmm I think that we are missing something here... what about
-        # self._select values. See FIXME below.
-        #
         d = dict(self)
-        d.update(self._submitMap)
+        d.update(self._submit_map)
+        
+        avoid_duplicates = (self.INPUT_TYPE_CHECKBOX, self.INPUT_TYPE_RADIO,
+                            self.INPUT_TYPE_SELECT)
+        
+        for key in d:
+            key_type = self._types.get(key, None)
+            if key_type in avoid_duplicates:
+                d[key] = d[key][:1]
+        
         return urlencode(d, encoding=self.encoding)
         
     def addSubmit( self, name, value ):
@@ -164,7 +164,7 @@ class Form(DataContainer):
         This is something I hadn't thought about !
         <input type="submit" name="b0f" value="Submit Request">
         '''
-        self._submitMap[name] = value
+        self._submit_map[name] = value
         
     def addInput(self, attrs):
         '''
@@ -175,7 +175,7 @@ class Form(DataContainer):
         @parameter attrs: attrs=[("class", "screen")]
         '''
         # Set the default input type to text.
-        attr_type = 'text'
+        attr_type = self.INPUT_TYPE_TEXT
         name = value = ''
         
         # Try to get the name:
@@ -200,7 +200,7 @@ class Form(DataContainer):
             if attr[0] == 'value':
                 value = attr[1]
 
-        if attr_type == 'submit':
+        if attr_type == self.INPUT_TYPE_SUBMIT:
             self.addSubmit( name, value )
         else:
             self._setVar(name, value)
@@ -233,7 +233,7 @@ class Form(DataContainer):
             self._selects[name].append(value)
             self._selects[name].append(self._secret_value)
             
-        self._types[name] = 'checkbox'
+        self._types[name] = self.INPUT_TYPE_CHECKBOX
 
     def addRadio(self, attrs):
         """
@@ -244,7 +244,7 @@ class Form(DataContainer):
         if not name:
             return
         
-        self._types[name] = 'radio'
+        self._types[name] = self.INPUT_TYPE_RADIO
         
         if name not in self._selects:
             self._selects[name] = []
@@ -265,7 +265,7 @@ class Form(DataContainer):
             return
         
         self._selects.setdefault(name, [])
-        self._types[name] = 'select'
+        self._types[name] = self.INPUT_TYPE_SELECT
         
         value = ""
         for option in options:

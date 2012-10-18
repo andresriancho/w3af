@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import urllib
 
 from nose.plugins.attrib import attr
 
@@ -281,6 +282,57 @@ class test_form(unittest.TestCase):
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc + form_select_empty)
         [ i for i in new_form.getVariants(mode="tb") ]
+    
+    def test_form_with_plus_value(self):
+        '''
+        This test verifies that a fix for the bug identified while scanning
+        demo.testfire.net is still working as expected. The issue was that the
+        site had a form that looked like:
+        
+        <form action="/xyz">
+            <intput name="foo" value="bar+spam" type="hidden">
+            <intput name="eggs" type="text">
+            ...
+        </form>
+        
+        And when trying to send a request to that form the "+" in the value
+        was sent as %20. The input was an .NET's EVENTVALIDATION thus it was
+        impossible to find any bugs in the "eggs" parameter.
+        
+        Please note that this is just a partial test, since there is much more
+        going on in w3af than just creating a form and encoding it. A functional
+        test for this issue can be found at test_special_chars.py
+        '''
+        form_with_plus = [
+            {'tagname': 'input', 'name': 'foo', 'type': 'hidden', 'value': 'bar+spam'},
+            {'tagname': 'input', 'name': 'eggs', 'type': 'text'}]
+        
+        new_form = create_form_helper(form_with_plus)
+        self.assertEqual( str(new_form), 'foo=bar%2Bspam&eggs=')
+        
+    def test_form_str_simple(self):
+        form_data = [{'tagname': 'input','type':'text', 'name':'abc', 'value':'123'}]
+        new_form = create_form_helper(form_data)
+        self.assertEqual( str(new_form), 'abc=123')
+
+    def test_form_str_simple_2(self):
+        form_data = [{'tagname': 'input','type':'text', 'name':'abc', 'value':'123'},
+                     {'tagname': 'input','type':'hidden', 'name':'def', 'value':'000'}]
+        new_form = create_form_helper(form_data)
+        self.assertEqual( str(new_form), 'abc=123&def=000')
+    
+    def test_form_str_special_chars(self):
+        form_data = [{'tagname': 'input','type':'text', 'name':'v', 'value':'áéíóú'},
+                     {'tagname': 'input','type':'hidden', 'name':'c', 'value':'ñçÑÇ'}]
+        new_form = create_form_helper(form_data)
+        new_form.addSubmit('address', 'bsas')
+        self.assertEqual( urllib.unquote(str(new_form)).decode('utf-8'),
+                          u'c=ñçÑÇ&address=bsas&v=áéíóú')
+
+    def test_form_str_radio_select(self):
+        new_form = create_form_helper(form_with_radio + form_with_checkbox +
+                                      form_select_cars)
+        self.assertEqual( str(new_form), 'cars=fiat&sex=male&vehicle=Bike')
 
 def get_gruped_data(form_data):
     '''
@@ -311,14 +363,14 @@ def create_form_helper(form_data):
         attrs = elem_data.items()
         
         if elem_type == 'input':
-            type = elem_data['type']
+            _type = elem_data['type']
             
-            if type == 'radio':
+            if _type == 'radio':
                 new_form.addRadio(attrs)
-            elif type == 'checkbox':
+            elif _type == 'checkbox':
                 new_form.addCheckBox(attrs)
-            else:
-                pass
+            elif _type in ('text', 'hidden'):
+                new_form.addInput(attrs)
             
         elif elem_type == 'select':
             new_form.addSelect(elem_data['name'], elem_data['options'])
