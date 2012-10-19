@@ -26,6 +26,7 @@ import core.data.constants.severity as severity
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alpha, rand_alnum
+from core.data.dc.headers import Headers
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
@@ -108,7 +109,9 @@ class dav(AuditPlugin):
         content += "</a:prop>\r\n"
         content += "</a:propfind>\r\n"
         
-        res = self._uri_opener.PROPFIND( domain_path , data=content, headers={'Depth': '1'} )
+        hdrs = Headers([('Depth', '1')])
+        res = self._uri_opener.PROPFIND( domain_path , data=content, headers=hdrs )
+        
         if "D:href" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
             v.setPluginName(self.getName())
