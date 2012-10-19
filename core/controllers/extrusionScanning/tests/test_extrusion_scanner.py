@@ -19,15 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
 import commands
+
+from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
 import core.data.kb.config as cf
 
 from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
 from core.controllers.w3afException import w3afException
-from nose.plugins.skip import SkipTest
 
 
 class TestExtrusionScanner(unittest.TestCase):
@@ -43,6 +44,7 @@ class TestExtrusionScanner(unittest.TestCase):
         
         self.assertTrue( es.isAvailable(54545, 'tcp') )
     
+    @attr('root')
     def test_scan(self):
         # FIXME: This unittest will only work in Linux
         cf.cf.save( 'interface', 'lo' )
