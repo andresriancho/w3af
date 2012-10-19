@@ -53,28 +53,30 @@ class TestXUrllib(unittest.TestCase):
         
     def test_basic(self):
         url = url_object('http://www.google.com.ar/')
-        body = self.uri_opener.GET( url ).getBody()
+        body = self.uri_opener.GET( url, cache=False ).getBody()
         self.assertTrue( 'Google' in body )
     
     def test_qs_params(self):
         url = url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=google')
-        self.assertTrue( 'Google Maps' in self.uri_opener.GET( url ).getBody() )
+        self.assertTrue( 'Google Maps' in self.uri_opener.GET( url, cache=False ).getBody() )
 
         url = url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=yahoo')
-        self.assertFalse( 'Google Maps' in self.uri_opener.GET( url ).getBody() )
+        self.assertFalse( 'Google Maps' in self.uri_opener.GET( url, cache=False ).getBody() )
 
     def test_gzip(self):
         url = url_object('http://www.google.com.ar/')
-        res = self.uri_opener.GET( url )
+        res = self.uri_opener.GET( url, cache=False )
         headers = res.getHeaders()
-        content_encoding, header_name = headers.iget('content-encoding', '')
-        self.assertTrue('gzip' in content_encoding or 'compress' in content_encoding, content_encoding )
+        content_encoding, _ = headers.iget('content-encoding', '')
+        test_res = 'gzip' in content_encoding or \
+                   'compress' in content_encoding
+        self.assertTrue(test_res, content_encoding)
     
     def test_get_cookies(self):
         self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 0 )
         
         url_sends_cookie = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
-        self.uri_opener.GET( url_sends_cookie )
+        self.uri_opener.GET( url_sends_cookie, cache=False )
         
         self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 1 )
         cookie = [c for c in self.uri_opener.get_cookies()][0]
