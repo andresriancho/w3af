@@ -23,21 +23,33 @@ import random
 import re
 import unittest
 
-from core.data.search_engines.google import google, GAjaxSearch, GStandardSearch, GMobileSearch
+from nose.plugins.skip import SkipTest
+
+from core.data.search_engines.google import (google, GAjaxSearch, 
+                                             GStandardSearch, GMobileSearch,
+                                             FINISHED_OK, IS_NEW)
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.url.xUrllib import xUrllib
 
-URL_OPENER = xUrllib()
 URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
 
 
 class test_google(unittest.TestCase):
+    '''
+    This unittest verifies that the Google class works. Remember that this class
+    internally calls GAjaxSearch, GStandardSearch, GMobileSearch in order to avoid
+    being blocked by Google's anti-automation.
     
+    @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
+          tests on these particular search implementations.
+    '''
     def setUp(self):
+        raise SkipTest('Skip for now.')
         self.query, self.limit = random.choice([('big bang theory', 200),
                                                 ('two and half man', 37),
                                                 ('doctor house', 55)])
-        self.gse = google(URL_OPENER)
+        opener = xUrllib()
+        self.gse = google(opener)
         
     
     def test_get_links_results_len(self):
@@ -77,63 +89,93 @@ class test_google(unittest.TestCase):
 
 class BaseGoogleAPISearchTest(object):
     '''
-    See below, this base class is not intended to be run by nosetests
-    '''
-    GOOGLE_API_SEARCHER = None
-    RESULT_SIZES = (10, 13, 15, 20, 27, 41, 50, 80)
-    COUNT = random.choice( RESULT_SIZES )
+    @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
+          tests on these particular search implementations.
     
+    This base class is not intended to be run by nosetests.
+    '''
+    GoogleApiSearcher = None
+    
+    COUNT = 10
+        
     def test_len_link_results(self):
-        # Len of results should be <= count
-        query = "pink red blue"
+        keywords = ["pink", "red", "blue"]
+        random.shuffle(keywords)
+        query = ' '.join( keywords )
         start = 0
-        searcher = self.GOOGLE_API_SEARCHER(URL_OPENER, query, start, self.COUNT)        
+        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)        
+
+        self.assertEqual(searcher.status, IS_NEW)
         
-        # the length of retrieved links should be <= 'count'
-        self.assertTrue(len(searcher.links) <= self.COUNT)
-        
-        # The length of the retrieved links should be >= min(RESULT_SIZES),
-        # this means that we got at least *some* results from Google using
-        # this specific GOOGLE_API_SEARCHER
+        # This actually does the search
+        searcher.links
         
         msg = 'This test fails randomly based on Google\'s anti automation'
         msg += ' protection, if it fails you should run it again in a couple of'
         msg += ' minutes. Many consecutive failures show that our code is NOT'
         msg += ' working anymore.'
+        self.assertEqual(searcher.status, FINISHED_OK, msg)
         
-        self.assertTrue(len(searcher.links) >= min(self.RESULT_SIZES),
-                        msg )
-    
-    def test_links_results_domain(self):
-        domain = "www.bonsai-sec.com"
-        query = "site:%s security" % domain
-        start = 0
-        searcher = self.GOOGLE_API_SEARCHER(URL_OPENER, query, start, self.COUNT)
-        
-        for link in searcher.links:
-            link_domain = link.URL.getDomain()
-            self.assertTrue(link_domain == domain, 
-                            "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain))
-    
-    def test_links_results_valid(self):
-        # result links should be valid URLs
-        query = "pink red blue"
-        start = 0
-        
-        searcher = self.GOOGLE_API_SEARCHER(query, start, self.COUNT)
+        msg = 'Got less results than expected:\n%s' % '\n'.join(str(r) for r in searcher.links)
+        self.assertEqual(len(searcher.links), self.COUNT, msg)
         
         for link in searcher.links:
             self.assertTrue(URL_REGEX.match(link.URL.url_string) is not None)
         
         for page in searcher.pages:
             self.assertTrue(isinstance(page, HTTPResponse))
+        
+        # Check that the links are related to my search
+        related = 0
+        for link in searcher.links:
+            for key in keywords:
+                if key in link.URL.url_string.lower():
+                    related += 1
+        
+        self.assertTrue( related > 5, related)
+    
+    def test_links_results_domain(self):
+        domain = "www.bonsai-sec.com"
+        query = "site:%s" % domain
+        start = 0
+        searcher = self.GoogleApiSearcher(self.opener, query, start, self.COUNT)
+        
+        self.assertEqual(searcher.status, IS_NEW)
+        
+        # This actually does the search
+        searcher.links
+        
+        msg = 'This test fails randomly based on Google\'s anti automation'
+        msg += ' protection, if it fails you should run it again in a couple of'
+        msg += ' minutes. Many consecutive failures show that our code is NOT'
+        msg += ' working anymore.'
+        self.assertEqual(searcher.status, FINISHED_OK, msg)
+        
+        msg = 'Got less results than expected:\n%s' % '\n'.join(str(r) for r in searcher.links)
+        self.assertEqual(len(searcher.links), self.COUNT, msg)
+        
+        for link in searcher.links:
+            link_domain = link.URL.getDomain()
+            msg = "Current link domain is '%s'. Expected: '%s'" % (link_domain, domain)
+            self.assertEqual(link_domain, domain,msg)
     
     
+
 class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):
-    GOOGLE_API_SEARCHER = GAjaxSearch
+    GoogleApiSearcher = GAjaxSearch
+    
+    def setUp(self):
+        self.opener = xUrllib()
+    
 
 class test_GMobileSearch(unittest.TestCase, BaseGoogleAPISearchTest):
-    GOOGLE_API_SEARCHER = GMobileSearch
+    GoogleApiSearcher = GMobileSearch
+
+    def setUp(self):
+        self.opener = xUrllib()
 
 class test_GStandardSearch(unittest.TestCase, BaseGoogleAPISearchTest):
-    GOOGLE_API_SEARCHER = GStandardSearch
+    GoogleApiSearcher = GStandardSearch
+    
+    def setUp(self):
+        self.opener = xUrllib()

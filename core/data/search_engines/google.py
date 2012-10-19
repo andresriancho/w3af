@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 import urllib
 import json
@@ -135,7 +134,7 @@ class GoogleAPISearch(object):
         if self._status == IS_NEW:
             try:
                 self._pages = self._do_google_search()
-            except Exception, e:
+            except Exception:
                 self._status = FINISHED_BAD
             else:
                 self._status = FINISHED_OK
@@ -148,14 +147,19 @@ class GoogleAPISearch(object):
 
         return self._links
 
-    def _do_GET(self, url):
+    def _do_GET(self, url, with_rand_ua=True):
         if not isinstance(url, url_object):
             msg = 'The url parameter of a _do_GET  must'
             msg += ' be of urlParser.url_object type.'
             raise ValueError( msg )
         
-        random_ua = get_random_user_agent()
-        headers = Headers([('User-Agent', random_ua)])
+        if with_rand_ua:
+            random_ua = get_random_user_agent()
+            headers = Headers([('User-Agent', random_ua)])
+        else:
+            # Please note that some tests show that this is useful for the
+            # mobile search.
+            headers = Headers([('User-Agent', '')])
 
         return self._uri_opener.GET(url, headers=headers)
 
@@ -240,7 +244,7 @@ class GAjaxSearch(GoogleAPISearch):
         for page in pages:
             # Update results list
             parsed_page = json.loads(page.getBody())
-            links += [googleResult( url_object( res['url'] ) ) for res in \
+            links += [GoogleResult( url_object( res['url'] ) ) for res in \
                         parsed_page['responseData']['results']]
         return links[:self._count]
     
@@ -255,7 +259,7 @@ class GStandardSearch(GoogleAPISearch):
     # TODO: Update this, it changes!!
     REGEX_STRING = '<h\d class="r"><a href="(.*?)" class=l'
     # Used to find out if google will return more items
-    NEXT_PAGE_REGEX = 'id=pnnext.*?\>\<span.*?\>\</span\>\<span.*?\>Next\<'
+    NEXT_PAGE_STR = 'id=pnnext.*?\>\<span.*?\>\</span\>\<span.*?\>Next\<'
     
     def __init__(self, uri_opener, query, start=0, count=10):
         '''
@@ -280,14 +284,15 @@ class GStandardSearch(GoogleAPISearch):
                                        'start': start, 'sa': 'N'})
             
             google_url_instance = url_object(self.GOOGLE_SEARCH_URL + params)
-            response = self._do_GET( google_url_instance )
+            response = self._do_GET( google_url_instance)
             
             # Remember that HTTPResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response
             if GOOGLE_SORRY_PAGE in response:
-                raise w3afException(
-                      'Google is telling us to stop doing automated tests.')
+                msg = 'Google is telling us to stop doing automated tests.'
+                raise w3afException(msg)
+            
             if not self._has_more_items(response.getBody()):
                 there_is_more = False
 
@@ -322,14 +327,12 @@ class GStandardSearch(GoogleAPISearch):
                           ' URL from the page. Extracted (invalid) URL is: "%s"'
                     om.out.error(msg % url[:15])
                 else:
-                    links.append( googleResult( url_inst ) )
+                    links.append( GoogleResult( url_inst ) )
 
         return links[:self._count]
     
     def _has_more_items(self, google_page_text):
-        x = re.search(self.NEXT_PAGE_REGEX, google_page_text, 
-                        re.IGNORECASE)
-        return x is not None
+        return self.NEXT_PAGE_STR in google_page_text
 
 
 class GMobileSearch(GStandardSearch):
@@ -337,16 +340,15 @@ class GMobileSearch(GStandardSearch):
     Search the web using Google's Mobile search. Note that Google doesn't
     restrict the access to this page right now.
     '''
-    GOOGLE_SEARCH_URL = "http://www.google.com/m?"
+    GOOGLE_SEARCH_URL = "http://www.google.com/xhtml?"
     
-    #Match stuff like (without line breaks)
-    #<a href="/gwt/x?dc=gorganic&amp;q=site:microsoft.com&amp;hl=en&amp;
-    #ei=PtqqTJjfMaO4jAeCkIrXAw&amp;ved=0CAsQFjAD&amp;start=0&amp;
-    #output=wml&amp;source=m&amp;rd=1&amp;u=http://www.microsoft.com/dynamics/">Microsoft
-    REGEX_STRING = '&amp;source=m&amp;rd=1&amp;u=(.*?)"\s?>'
+    # Used to extract URLs from Google responses
+    # Keep me updated!
+    REGEX_STRING = 'class="r"><a href="/url\?q=(.*?)&amp;sa=U'
+    
     # Used to find out if google will return more items.
-    # TODO: This changes. Check it!
-    NEXT_PAGE_REGEX = '\<a href=".*?" \>Next page'
+    # Keep me updated!
+    NEXT_PAGE_STR = 'Next</span></a></td></tr>'
     
     
     def __init__(self, uri_opener, query, start=0, count=10):
@@ -365,20 +367,20 @@ class GMobileSearch(GStandardSearch):
         start = self._start
         res_pages = []
         max_start = start + self._count
-        param_dict = {'dc': 'gorganic', 'hl': 'en', 'q': self._query,
-                      'sa': 'N', 'source': 'mobileproducts'}
+        param_dict = {'q': self._query, 'start': 0}
         there_is_more = True
         
         while start < max_start and there_is_more:
             param_dict['start'] = start
             params = urllib.urlencode(param_dict)
+            
             gm_url = self.GOOGLE_SEARCH_URL + params
             gm_url_instance = url_object(gm_url)
-            response = self._do_GET( gm_url_instance )               
+            response = self._do_GET( gm_url_instance, with_rand_ua=False )               
             
             if GOOGLE_SORRY_PAGE in response:
-                raise w3afException(
-                      'Google is telling us to stop doing automated tests.')
+                msg = 'Google is telling us to stop doing automated tests.'
+                raise w3afException(msg)
             
             if not self._has_more_items(response.getBody()):
                 there_is_more = False
@@ -389,15 +391,18 @@ class GMobileSearch(GStandardSearch):
         return res_pages
     
 
-class googleResult(object):
+class GoogleResult(object):
     '''
     This is a dummy class that represents a search engine result.
     '''    
     def __init__(self, url):
         if not isinstance(url, url_object):
-            msg = 'The url __init__ parameter of a googleResult object must'
+            msg = 'The url __init__ parameter of a GoogleResult object must'
             msg += ' be of urlParser.url_object type.'
             raise ValueError( msg )
 
         self.URL = url
+    
+    def __str__(self):
+        return str(self.URL)
 

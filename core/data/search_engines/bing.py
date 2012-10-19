@@ -47,13 +47,13 @@ class bing(SearchEngine):
         This method is based from the msn.py file from the massive enumeration toolset,
         coded by pdp and released under GPL v2.
         '''
-        class bingResult:
+        class BingResult:
             '''
             Dummy class that represents the search result.
             '''
             def __init__( self, url ):
                 if not isinstance(url, url_object):
-                    msg = 'The url __init__ parameter of a bingResult object must'
+                    msg = 'The url __init__ parameter of a BingResult object must'
                     msg += ' be of urlParser.url_object type.'
                     raise ValueError( msg )
 
@@ -83,6 +83,6 @@ class bing(SearchEngine):
                 pass
             else:
                 if url.getDomain() not in self.BLACKLISTED_DOMAINS:
-                    results.append(bingResult( url ))
+                    results.append(BingResult( url ))
 
         return results
