@@ -127,13 +127,28 @@ class SGMLParser(BaseParser):
     
     def _parse(self, http_resp):
         '''
-        Parse the response.
+        Parse the HTTP response body.
+        
+        TODO: Potential performance improvement:
+            * Note that this method receives an HTTPResponse and that it has a
+              getDOM method that generates a DOM based on the same response body
+              we use here for generating our DOM. In other words, the same
+              response body is passed through etree.fromstring twice.
+              
+            * There are some differences which avoid us from improving this
+              immediately:
+                  * The parser used here uses target=self
+                  * This method fallbacks to a different parser when errors
+                    are found (which is good and is not done in HTTPResponse)
+                    
+            * Note that a part of this issue was solved with the call to setDOM,
+              read the docs in that method to understand what.
         '''
         # Start parsing!
         parser = etree.HTMLParser(target=self, recover=True)
         resp_body = http_resp.body
         try:
-            etree.fromstring(resp_body, parser)
+            dom = etree.fromstring(resp_body, parser)
         except ValueError:
             # Sometimes we get XMLs in the response. lxml fails to parse them
             # when an encoding header is specified and the text is unicode. So
@@ -146,11 +161,14 @@ class SGMLParser(BaseParser):
                                 recover=True,
                                 encoding=http_resp.charset,
                             )
-            etree.fromstring(resp_body, parser)
+            dom = etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
             msg = 'An error occurred while parsing "%s", original exception: "%s"'
             msg = msg % (http_resp.getURL(), etree.XMLSyntaxError)
             om.out.debug(msg)
+        
+        # Performance improvement! Read the docs before removing this!
+        http_resp.setDOM(dom)
 
     def _filter_ref(self, attr):
         key = attr[0]

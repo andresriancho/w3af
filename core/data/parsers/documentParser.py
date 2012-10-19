@@ -19,23 +19,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.w3afException import w3afException
+import StringIO
+import re
+
+try:
+    from extlib.pyPdf import pyPdf as pyPdf
+except ImportError:
+    import pyPdf
 
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdfParser as pdfParser
 import core.data.parsers.swfParser as swfParser
 import core.data.parsers.wmlParser as wmlParser
 
-try:
-    from extlib.pyPdf import pyPdf as pyPdf
-except ImportError:
-    import pyPdf
-    
-import StringIO
-import re
+from core.controllers.w3afException import w3afException
 
 
-class documentParser:
+class documentParser(object):
     '''
     This class is a document parser.
     

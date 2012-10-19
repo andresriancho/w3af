@@ -201,12 +201,38 @@ class HTTPResponse(object):
         
         return clear_text_body
 
+    def setDOM(self, dom_inst):
+        '''
+        This setter is part of a performance improvement I'm talking about in
+        getDOM() and sgmlParser._parse().
+        
+        Without this setDOM() which is called from sgmlParser._parse() when the
+        code runs:
+            sgmlParser( http_response )
+            ...
+            http_response.getDOM()
+        
+        The DOM is calculated twice.
+        
+        We still need to figure out how to solve the other issue which should
+        aim to avoid the double DOM generation when:
+            http_response.getDOM()
+            ...
+            sgmlParser( http_response )
+        
+        @return: None
+        '''
+        self._dom = dom_inst
+
     def getDOM(self):
         '''
         I don't want to calculate the DOM for all responses, only for those
         which are needed. This method will first calculate the DOM, and then
         save it for upcoming calls.
         
+        @see: TODO: Potential performance improvement in sgmlParser._parse()
+                    for ideas on how to reduce CPU usage.
+                            
         @return: The DOM, or None if the HTML normalization failed.
         '''
         if self._dom is None:
