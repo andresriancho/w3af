@@ -53,10 +53,10 @@ class TestAllowedMethods(PluginTest):
         info = infos[0]
         
         msg = 'The remote Web server has a custom configuration, in which any'
-        msg += ' non existent'
+        msg += ' not implemented'
         self.assertTrue( info.getDesc().startswith(msg))
         self.assertEqual( info.getName(), 'Non existent methods default to GET')
-        
+    
     def test_modsecurity(self):
         '''
         test_modsecurity in test_allowed_methods, test a different configuration:

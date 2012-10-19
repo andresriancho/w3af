@@ -19,23 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-from core.controllers.w3afException import w3afRunOnce
 import core.data.constants.httpConstants as httpConstants
+
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.group_by_min_key import group_by_min_key
+from core.data.options.option import option
+from core.data.options.option_list import OptionList
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class allowed_methods(InfrastructurePlugin):
@@ -131,29 +125,27 @@ class allowed_methods(InfrastructurePlugin):
             #   Before doing anything else, I'll send a request with a 
             #   non-existant method if that request succeds, then all will...
             #
-            try:
-                non_exist_response = self._uri_opener.ARGENTINA( url )
-                get_response = self._uri_opener.GET( url )
-            except:
-                pass
-            else:
-                if non_exist_response.getCode() not in self.BAD_CODES\
-                and get_response.getBody() == non_exist_response.getBody():
-                    i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName( 'Non existent methods default to GET' )
-                    i.setURL( url )
-                    i.set_id( [non_exist_response.getId(), get_response.getId()] )
-                    msg = 'The remote Web server has a custom configuration, in which any non'
-                    msg += ' existent methods that are invoked are defaulted to GET instead of'
-                    msg += ' returning a "Not Implemented" response.'
-                    i.setDesc( msg )
-                    kb.kb.append( self , 'custom-configuration' , i )
-                    #
-                    #   It makes no sense to continue working, all methods will appear as enabled
-                    #   because of this custom configuration.
-                    #
-                    return []
+            non_exist_response = self._uri_opener.ARGENTINA( url )
+            get_response = self._uri_opener.GET( url )
+            
+            if non_exist_response.getCode() not in self.BAD_CODES\
+            and get_response.getBody() == non_exist_response.getBody():
+                i = info.info()
+                i.setPluginName(self.getName())
+                i.setName( 'Non existent methods default to GET' )
+                i.setURL( url )
+                i.set_id( [non_exist_response.getId(), get_response.getId()] )
+                msg = 'The remote Web server has a custom configuration, in'\
+                      ' which any not implemented methods that are invoked are'\
+                      ' defaulted to GET instead of returning a "Not Implemented"'\
+                      ' response.'
+                i.setDesc( msg )
+                kb.kb.append( self , 'custom-configuration' , i )
+                #
+                #   It makes no sense to continue working, all methods will
+                #   appear as enabled because of this custom configuration.
+                #
+                return []
 
             
             # 'DELETE' is not tested! I don't want to remove anything...
