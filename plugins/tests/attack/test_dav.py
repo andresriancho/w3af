@@ -1,5 +1,5 @@
 '''
-test_os_commanding.py
+test_dav.py
 
 Copyright 2012 Andres Riancho
 
@@ -18,62 +18,46 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from nose.plugins.attrib import attr
+
 from ..helper import PluginTest, PluginConfig
 
 
-class TestOSCommandingShell(PluginTest):
+@attr('smoke')
+class TestDAVShell(PluginTest):
     
-    target_url = 'http://moth/w3af/audit/os_commanding/'
+    target_url = 'http://moth/w3af/audit/dav/write-all/'
     
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('os_commanding'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
+                 'audit': (PluginConfig('dav',),),                 
                  }
-            }
+            },
         }
     
-    def test_found_exploit_osc(self):
+    def test_found_exploit_dav(self):
         # Run the scan
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         # Assert the general results
-        vulns = self.kb.get('os_commanding', 'os_commanding')
-        self.assertEquals(4, len(vulns))
-        self.assertEquals(all(["OS commanding vulnerability" == v.getName() for v in vulns ]),
-                          True)
-
-        # Verify the specifics about the vulnerabilities
-        EXPECTED = [
-            ('passthru.php', 'cmd'),
-            ('simple_osc.php', 'cmd'),
-            ('param_osc.php', 'param'),
-            ('blind_osc.php', 'cmd')
-        ]
-
-        found_vulns = [ (v.getURL().getFileName() , v.getMutant().getVar()) for v in vulns]
+        vulns = self.kb.get('dav', 'dav')
+        self.assertEquals(len(vulns), 2, vulns)
         
-        self.assertEquals( set(EXPECTED),
-                           set(found_vulns)
-                          )
+        vuln = vulns[0]
+        self.assertEquals('Insecure DAV configuration', vuln.getName())
 
-        vuln_to_exploit_id = [v.getId() for v in vulns 
-                              if v.getURL().getFileName() == 'simple_osc.php'][0]
+        vuln_to_exploit_id = vuln.getId()
         
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack','os_commanding' )
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack','dav' )
         
         self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
         
         exploit_result = plugin.exploit( vuln_to_exploit_id )
 
-        self.assertGreaterEqual(len(exploit_result), 1)
+        self.assertEqual(len(exploit_result), 1, exploit_result)
         
         #
         # Now I start testing the shell itself!
