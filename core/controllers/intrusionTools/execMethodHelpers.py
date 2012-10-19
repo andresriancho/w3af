@@ -27,8 +27,9 @@ from core.data.fuzzer.fuzzer import rand_alnum
 
 def os_detection_exec( exec_method ):
     '''
-    Uses the exec_method to run remote commands and determine what's the remote OS is
-    and returns a string with 'windows' or 'linux' or raises a w3afException if unknown.
+    Uses the exec_method to run remote commands and determine what's the
+    remote OS is and returns a string with 'windows' or 'linux' or raises
+    a w3afException if unknown.
     '''
     try:
         linux1 = exec_method( 'echo -n w3af' )
@@ -55,35 +56,39 @@ def os_detection_exec( exec_method ):
 
 def get_remote_temp_file( exec_method ):
     '''
-    @return: The name of a file in the remote file system that the user that I'm executing commands with
-    can write, read and execute. The normal responses for this are files in /tmp/ or %TEMP% depending
-    on the remote OS.
+    @return: The name of a file in the remote file system that the user that I'm
+             executing commands with can write, read and execute. The normal
+             responses for this are files in /tmp/ or %TEMP% depending on the
+             remote OS.
     '''
     os = os_detection_exec( exec_method )
     if  os == 'windows':
         _filename = exec_method('echo %TEMP%').strip() + '\\'
         _filename += rand_alnum(6)
         
-        # verify existance
-        dirRes = exec_method('dir '+_filename).strip().lower()
-        if 'not found' in dirRes:
+        # verify exists
+        dir_res = exec_method('dir '+_filename).strip().lower()
+        if 'not found' in dir_res:
+            return _filename
+        else:
             # Shit, the file exists, run again and see what we can do
             return get_remote_temp_file( exec_method )
-        else:
-            return _filename
+            
         return _filename
         
         
     elif os == 'linux':
         _filename = '/tmp/' + rand_alnum( 6 )
         
-        # verify existance
-        lsRes = exec_method('ls '+_filename).strip()
-        if _filename == lsRes:
+        # verify exists
+        ls_res = exec_method('ls '+_filename).strip()
+        if 'No such file' in ls_res:
+            return _filename
+        else:
             # Shit, the file exists, run again and see what we can do
             return get_remote_temp_file( exec_method )
-        else:
-            return _filename
+            
     else:
-        raise w3afException('Failed to create filename for a temporary file in the remote host.')
+        msg = 'Failed to create filename for a temporary file in the remote host.'
+        raise w3afException(msg)
 
