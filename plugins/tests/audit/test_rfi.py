@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urllib2
 
+from nose.plugins.attrib import attr
+
 import core.controllers.daemons.webserver as webserver
 
 from plugins.audit.rfi import RFIWebHandler
@@ -78,6 +80,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote code execution", vuln.getName() )
         self.assertEquals(self.target_rce, vuln.getURL().url_string)
     
+    @attr('smoke')
     def test_found_rfi_with_local_server_rce(self):
         cfg = self._run_configs['local_rce']
         self._scan(cfg['target'], cfg['plugins'])
