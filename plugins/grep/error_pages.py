@@ -19,20 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-from core.data.esmre.multi_in import multi_in
-from core.data.esmre.multi_re import multi_re
-
-from core.controllers.plugins.grep_plugin import GrepPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-import re
+from core.data.esmre.multi_in import multi_in
+from core.data.esmre.multi_re import multi_re
+from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
 class error_pages(GrepPlugin):
@@ -206,34 +198,17 @@ class error_pages(GrepPlugin):
                         kb.kb.append( self , 'server' , match_string )
                         self._already_reported_versions.append( match_string )
         
-    def set_options( self, option_list ):
-        pass
-    
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = OptionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.get( 'error_pages', 'errorPage' ), 'URL' )
 
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin scans every page for error pages, and if possible extracts the web server
-        or programming framework information.
+        This plugin scans every page for error pages, and if possible extracts
+        the web server or programming framework information.
         '''
