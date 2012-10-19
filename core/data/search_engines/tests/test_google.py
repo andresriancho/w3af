@@ -23,17 +23,18 @@ import random
 import re
 import unittest
 
-from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
 
+from core.data.url.HTTPResponse import HTTPResponse
+from core.data.url.xUrllib import xUrllib
 from core.data.search_engines.google import (google, GAjaxSearch, 
                                              GStandardSearch, GMobileSearch,
                                              FINISHED_OK, IS_NEW)
-from core.data.url.HTTPResponse import HTTPResponse
-from core.data.url.xUrllib import xUrllib
 
 URL_REGEX = re.compile('((http|https)://([\w:@\-\./]*?)/[^ \n\r\t"\'<>]*)', re.U)
 
 
+@attr('internet')
 class test_google(unittest.TestCase):
     '''
     This unittest verifies that the Google class works. Remember that this class
@@ -154,20 +155,21 @@ class BaseGoogleAPISearchTest(object):
             self.assertEqual(link_domain, domain,msg)
     
     
-
+@attr('internet')
 class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GoogleApiSearcher = GAjaxSearch
     
     def setUp(self):
         self.opener = xUrllib()
     
-
+@attr('internet')
 class test_GMobileSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GoogleApiSearcher = GMobileSearch
 
     def setUp(self):
         self.opener = xUrllib()
 
+@attr('internet')
 class test_GStandardSearch(unittest.TestCase, BaseGoogleAPISearchTest):
     GoogleApiSearcher = GStandardSearch
     
