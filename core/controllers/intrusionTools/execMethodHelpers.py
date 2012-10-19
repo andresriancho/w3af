@@ -34,7 +34,7 @@ def os_detection_exec( exec_method ):
     try:
         linux1 = exec_method( 'echo -n w3af' )
         linux2 = exec_method( 'head -n 1 /etc/passwd' )
-    except:
+    except w3afException:
         pass
     else:
         if 'w3af' == linux1 and linux2.count(':') > 2:
@@ -45,7 +45,7 @@ def os_detection_exec( exec_method ):
         # Try if it's a windows system
         win1 = exec_method( 'type %SYSTEMROOT%\\win.ini' )
         win2 = exec_method( 'echo /?' )
-    except:
+    except w3afException:
         pass
     else:
         if '[fonts]' in win1 and 'ECHO' in win2:
@@ -62,7 +62,7 @@ def get_remote_temp_file( exec_method ):
              remote OS.
     '''
     os = os_detection_exec( exec_method )
-    if  os == 'windows':
+    if os == 'windows':
         _filename = exec_method('echo %TEMP%').strip() + '\\'
         _filename += rand_alnum(6)
         
