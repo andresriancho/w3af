@@ -44,47 +44,41 @@ class test_google(unittest.TestCase):
           tests on these particular search implementations.
     '''
     def setUp(self):
-        raise SkipTest('Skip for now.')
-        self.query, self.limit = random.choice([('big bang theory', 200),
-                                                ('two and half man', 37),
-                                                ('doctor house', 55)])
+        self.query, self.limit = random.choice([('big bang theory', 20),
+                                                ('two and half man', 20),
+                                                ('doctor house', 20)])
         opener = xUrllib()
         self.gse = google(opener)
         
     
     def test_get_links_results_len(self):
-        # Len of results must be ge. than limit
-        try:
-            results = self.gse.getNResults(self.query, self.limit)
-        except KeyboardInterrupt:
-            raise Exception('Caught KeyboardInterrupt and avoided nosetests crash.')
-        else:
-            # Len of results must be le. than limit
-            self.assertTrue(len(results) <= self.limit)
-            
-            # I want to get some results...
-            self.assertTrue(len(results) >= 10, results)
-            self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
-            
-            # URLs should be unique
-            self.assertTrue(len(results) == len(set([r.URL for r in results])))
+        results = self.gse.getNResults(self.query, self.limit)
+
+        self.assertEqual(len(results), self.limit)
+
+        # Results need to be from at least three different domains, this is an
+        # easy way to verify that the REGEX is working as expected        
+        self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
+        
+        # URLs should be unique
+        self.assertTrue(len(results) == len(set([r.URL for r in results])))
     
     def test_page_body(self):
+        responses = self.gse.getNResultPages(self.query, self.limit)
+        
+        #
         # Verify that responses' body contains at least one word in query
-        try:
-            responses = self.gse.getNResultPages(self.query, self.limit)
-        except KeyboardInterrupt:
-            raise Exception('Caught KeyboardInterrupt and avoided nosetests crash.')
-        else:
-            words = self.query.split()
-            for resp in responses:
-                found = False
-                html_text = resp.getBody()
-                for word in words:
-                    if word in html_text:
-                        found = True
-                        break
-                self.assertTrue(found)
+        #
+        words = self.query.split()
+        
+        for resp in responses:
+            found = False
+            html_text = resp.getBody()
+            for word in words:
+                if word in html_text:
+                    found = True
+                    break
+            self.assertTrue(found)
 
 
 class BaseGoogleAPISearchTest(object):

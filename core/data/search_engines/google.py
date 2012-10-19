@@ -134,7 +134,7 @@ class GoogleAPISearch(object):
         if self._status == IS_NEW:
             try:
                 self._pages = self._do_google_search()
-            except Exception:
+            except w3afException:
                 self._status = FINISHED_BAD
             else:
                 self._status = FINISHED_OK
@@ -257,9 +257,10 @@ class GStandardSearch(GoogleAPISearch):
     GOOGLE_SEARCH_URL = "http://www.google.com/search?"
     
     # TODO: Update this, it changes!!
-    REGEX_STRING = '<h\d class="r"><a href="(.*?)" class=l'
+    REGEX_STRING = 'class="r"><a href="/url\?q=(.*?)&amp;sa=U'
+    
     # Used to find out if google will return more items
-    NEXT_PAGE_STR = 'id=pnnext.*?\>\<span.*?\>\</span\>\<span.*?\>Next\<'
+    NEXT_PAGE_STR = '<strong>Next</strong></a></td>'
     
     def __init__(self, uri_opener, query, start=0, count=10):
         '''
@@ -284,8 +285,8 @@ class GStandardSearch(GoogleAPISearch):
                                        'start': start, 'sa': 'N'})
             
             google_url_instance = url_object(self.GOOGLE_SEARCH_URL + params)
-            response = self._do_GET( google_url_instance)
-            
+            response = self._do_GET( google_url_instance, with_rand_ua=False)
+
             # Remember that HTTPResponse objects have a faster "__in__" than
             # the one in strings; so string in response.getBody() is slower than
             # string in response

@@ -86,7 +86,8 @@ class SearchEngine(object):
                 om.out.debug(str(w3))
                 raise
             except Exception, e:
-                om.out.debug('Unhandled exception in search_engines.SearchEngine.search(): ' + str(e))
+                msg = 'Unhandled exception in SearchEngine.getNResultPages(): "%s"'
+                om.out.debug(msg % e)
                 raise
             else:
                 result.extend(res_page)
@@ -119,7 +120,7 @@ class SearchEngine(object):
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''
-        raise w3afException('SearchEngine subclasses should implement the search method.')
+        raise NotImplementedError('SearchEngine subclasses should implement the search method.')
 
     def page_search(self, query, start, count=10):
         '''
@@ -131,6 +132,6 @@ class SearchEngine(object):
         @parameter start: The first result item
         @parameter count: How many results to get from start
         '''
-        raise w3afException('SearchEngine subclasses should implement the page_search method.')
+        raise NotImplementedError('SearchEngine subclasses should implement the page_search method.')
 
 
