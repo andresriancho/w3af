@@ -33,8 +33,8 @@ from core.data.parsers.urlParser import url_object
 
 class AttackPlugin(Plugin, CommonAttackMethods):
     '''
-    This is the base class for attack plugins, all attack plugins should inherit from it 
-    and implement the following methods :
+    This is the base class for attack plugins, all attack plugins should inherit
+    from it and implement the following methods :
         1. fastExploit(...)
         2. _generate_shell(...)
         
@@ -95,8 +95,9 @@ class AttackPlugin(Plugin, CommonAttackMethods):
 
     def GET2POST( self, vuln ):
         '''
-        This method changes a vulnerability mutant, so all the data that was sent in the query string,
-        is now sent in the postData; of course, the HTTP method is also changed from GET to POST.
+        This method changes a vulnerability mutant, so all the data that was sent
+        in the query string, is now sent in the postData; of course, the HTTP
+        method is also changed from GET to POST.
         '''
         vulnCopy = copy.deepcopy( vuln )
         mutant = vulnCopy.getMutant()
@@ -121,10 +122,12 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             
     def getRootProbability( self ):
         '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
+        @return: This method returns the probability of getting a root shell
+                 using this attack plugin. This is used by the "exploit *"
+                 function to order the plugins and first try to exploit the
+                 more critical ones. This method should return 0 for an exploit
+                 that will never return a root shell, and 1 for an exploit that
+                 WILL ALWAYS return a root shell.
         '''
         raise NotImplementedError( 'Plugin is not implementing required method getRootProbability' )
         
@@ -191,7 +194,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
     def get_plugin_deps( self ):
         '''
         @return: A list with the names of the plugins that should be run before the
-        current one. For attack plugins this doesn't make much sense since we're not
-        doing anything with the output from this method.
+                 current one. For attack plugins this doesn't make much sense since
+                 we're not doing anything with the output from this method.
         '''
         return []

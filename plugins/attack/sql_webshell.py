@@ -408,10 +408,12 @@ class sql_webshell(AttackPlugin):
     
     def getRootProbability( self ):
         '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
+        @return: This method returns the probability of getting a root shell
+                 using this attack plugin. This is used by the "exploit *"
+                 function to order the plugins and first try to exploit the
+                 more critical ones. This method should return 0 for an exploit
+                 that will never return a root shell, and 1 for an exploit that
+                 WILL ALWAYS return a root shell.
         '''
         return 0.1
 

