@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 
 from ..helper import PluginTest, PluginConfig
 
-@attr('smoke')
+
 class TestWebSpider(PluginTest):
     
     follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/'
@@ -50,6 +50,7 @@ class TestWebSpider(PluginTest):
          },
     }
 
+    @attr('smoke')
     def test_spider_found_urls(self):
         cfg = self._run_configs['basic']
         self._scan(self.follow_links_url + '1.html', cfg['plugins'])
@@ -64,6 +65,7 @@ class TestWebSpider(PluginTest):
                 set((self.follow_links_url + end) for end in expected_urls)
                 )
     
+    @attr('smoke')
     def test_spider_urls_with_strange_charsets(self):
         cfg = self._run_configs['basic']
         self._scan(self.encoding_url + 'index.html', cfg['plugins'])
@@ -77,7 +79,11 @@ class TestWebSpider(PluginTest):
             # Russian
             u'utf-8/russian.html',
             # Hebrew
-            u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php'
+            u'windows-1255/', u'windows-1255/heb1.php', u'windows-1255/heb2.php',
+            # Encoded spaces
+            'spaces/form_input_plus_POST.html', 'spaces/queryxpath.php',
+            'spaces/', 'spaces/start end.html', 'spaces/form_input_plus_GET.html',
+            'spaces/foo.html'
         ) 
         self.assertEquals(
             set([(self.encoding_url + u) for u in expected]),

@@ -18,11 +18,17 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
+from nose.plugins.attrib import attr
 from ..helper import PluginTest, PluginConfig
 
+
+@attr('smoke')
 class TestAllowedMethods(PluginTest):
-    
+    '''
+    Note that this is a smoke test because the code in allowed_methods calls
+    custom/special methods on the remote server using xUrllib and that's something
+    we want to make sure works. 
+    '''
     modsecurity_url = 'http://modsecurity/'
     moth_url = 'http://moth/'
     
