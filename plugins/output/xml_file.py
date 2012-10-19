@@ -222,7 +222,7 @@ class xml_file(OutputPlugin):
                    'javascript', 'rss+xml', 'soap+xml', 'font-woff', 'xhtml+xml', 'xml-dtd',
                    'xop+xml']
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
-        if isinstance(action, fuzzable_request):
+        if isinstance(action, FuzzableRequest):
             headers = action.getHeaders()
             body = str(action.getData() or '')
             status = action.getRequestLine()
