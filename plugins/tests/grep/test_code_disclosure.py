@@ -23,9 +23,9 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from nose.plugins.skip import SkipTest
 from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.HTTPResponse import HTTPResponse
+from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
@@ -47,34 +47,71 @@ class test_code_disclosure(unittest.TestCase):
     def test_ASP_code_disclosure(self):
         body = 'header <% Response.Write("Hello World!") %> footer'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 1 )
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 1 )
             
     def test_PHP_code_disclosure(self):
         body = 'header <? echo $a; ?> footer'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 1 )
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 1 )
 
 
     def test_no_code_disclosure_blank(self):
         body = ''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertTrue( len(kb.kb.get('code_disclosure', 'code_disclosure')) == 0 )
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
 
     def test_no_code_disclosure(self):
-        raise SkipTest('Add this test')
+        body = """Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Integer
+        eu lacus accumsan arcu fermentum euismod. Donec pulvinar porttitor
+        tellus. Aliquam venenatis. Donec facilisis pharetra tortor.  In nec
+        mauris eget magna consequat convallis. Nam sed sem vitae odio
+        pellentesque interdum. Sed consequat viverra nisl. Suspendisse arcu
+        metus, blandit quis, rhoncus <a>,</a> pharetra eget, velit. Mauris
+        urna. Morbi nonummy molestie orci. Praesent nisi elit, fringilla ac,
+        suscipit non, tristique vel, ma<?uris. Curabitur vel lorem id nisl porta
+        adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate tristique
+        enim. Donec quis lectus a justo imperdiet tempus."""
+        
+        url = url_object('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
     
     def test_no_code_disclosure_xml(self):
-        raise SkipTest('Add this test')
+        body = '''
+                <?xml version="1.0"?>
+                <note>
+                    <to>Tove</to>
+                    <from>Jani</from>
+                    <heading>Reminder</heading>
+                    <body>Don't forget me this weekend!</body>
+                </note>'''
+        url = url_object('http://www.w3af.com/')
+        headers = Headers([('content-type', 'text/html')])
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
 
+    def test_no_analysis_content_type(self):
+        body = 'header <? echo $a; ?> footer'
+        url = url_object('http://www.w3af.com/')
+        headers = Headers([('content-type', 'image/jpeg')])
+        response = HTTPResponse(200, body , headers, url, url)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
