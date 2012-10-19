@@ -20,12 +20,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
+from nose.plugins.attrib import attr
+
 from ..helper import PluginTest, PluginConfig
 
 
 class TestFormAuth(PluginTest):
     small_users_negative = os.path.join('plugins','tests','bruteforce','small-users-negative.txt')
     small_users_positive = os.path.join('plugins','tests','bruteforce','small-users-positive.txt')
+    small_passwords = os.path.join('plugins','tests','bruteforce','small-passwords.txt')
     
     target_post_url = 'http://moth/w3af/bruteforce/form_login/with_post.html'
     target_get_url = 'http://moth/w3af/bruteforce/form_login/with_get.html'
@@ -38,7 +41,8 @@ class TestFormAuth(PluginTest):
             'target': None,
             'plugins': {
                  'bruteforce': (PluginConfig('form_auth',
-                                             ('usersFile', small_users_positive, PluginConfig.STR)),
+                                             ('usersFile', small_users_positive, PluginConfig.STR),
+                                             ('passwdFile', small_passwords, PluginConfig.STR),),
                                 ),
                  }
         }
@@ -47,11 +51,13 @@ class TestFormAuth(PluginTest):
             'target': None,
             'plugins': {
                  'bruteforce': (PluginConfig('form_auth',
-                                             ('usersFile', small_users_negative, PluginConfig.STR)),
+                                             ('usersFile', small_users_negative, PluginConfig.STR),
+                                             ('passwdFile', small_passwords, PluginConfig.STR),),
                                 )
                  }
         }
     
+    @attr('smoke')
     def test_found_credentials_post(self):
         self._scan(self.target_post_url, self.positive_test['plugins'])
 

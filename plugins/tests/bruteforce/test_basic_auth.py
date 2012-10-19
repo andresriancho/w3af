@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
+
 from nose.plugins.attrib import attr
 from ..helper import PluginTest, PluginConfig
 
@@ -26,12 +28,30 @@ class TestBasicAuth(PluginTest):
     
     target_url_easy = 'http://moth/w3af/bruteforce/basic_auth/easy_guess/'
     target_url_impossible = 'http://moth/w3af/bruteforce/basic_auth/impossible_guess/'
+
+    small_users_negative = os.path.join('plugins','tests','bruteforce','small-users-negative.txt')
+    small_users_positive = os.path.join('plugins','tests','bruteforce','small-users-positive.txt')
+    small_passwords = os.path.join('plugins','tests','bruteforce','small-passwords.txt')
     
     _run_configs = {
-        'cfg': {
+        'positive': {
             'target': None,
             'plugins': {
-                 'bruteforce': (PluginConfig('basic_auth'),),
+                 'bruteforce': (PluginConfig('basic_auth',
+                                             ('usersFile', small_users_positive, PluginConfig.STR),
+                                             ('passwdFile', small_passwords, PluginConfig.STR),),
+                                ),
+                 'grep': (PluginConfig('http_auth_detect'),),
+                 }
+            },
+                    
+        'negative': {
+            'target': None,
+            'plugins': {
+                 'bruteforce': (PluginConfig('basic_auth',
+                                             ('usersFile', small_users_negative, PluginConfig.STR),
+                                             ('passwdFile', small_passwords, PluginConfig.STR),),
+                                ),
                  'grep': (PluginConfig('http_auth_detect'),),
                  }
             }
@@ -40,7 +60,7 @@ class TestBasicAuth(PluginTest):
     @attr('smoke')
     def test_found_credentials(self):
         # Run the scan
-        cfg = self._run_configs['cfg']
+        cfg = self._run_configs['positive']
         self._scan( self.target_url_easy , cfg['plugins'])
 
         # Assert the general results
@@ -57,7 +77,7 @@ class TestBasicAuth(PluginTest):
         
     def test_not_found_credentials(self):
         # Run the scan
-        cfg = self._run_configs['cfg']
+        cfg = self._run_configs['negative']
         self._scan( self.target_url_impossible , cfg['plugins'])
 
         # Assert the general results
