@@ -22,11 +22,12 @@ from nose.plugins.attrib import attr
 
 from ..helper import PluginTest, PluginConfig
 
-@attr('smoke')
+
 class TestXSS(PluginTest):
     
     xss_url = 'http://moth/w3af/audit/xss/'
     xss_302_url = 'http://moth/w3af/audit/xss/302/'
+    xss_smoke = 'http://moth/w3af/audit/xss/simple_xss_no_js.php'
     
     _run_configs = {
         'cfg': {
@@ -44,9 +45,39 @@ class TestXSS(PluginTest):
                         ('onlyForward', True, PluginConfig.BOOL)),
                 )
             },
+        },
+                    
+        'smoke': {
+            'target': xss_smoke + '?text=1',
+            'plugins': {
+                'audit': (
+                    PluginConfig(
+                         'xss',
+                         ('checkStored', True, PluginConfig.BOOL),
+                         ('numberOfChecks', 10, PluginConfig.INT)),
+                    ),
+            },
         }
+                    
     }
     
+    @attr('smoke')
+    def test_find_one_xss(self):
+        cfg = self._run_configs['smoke']
+        self._scan(cfg['target'], cfg['plugins'])
+        
+        xssvulns = self.kb.get('xss', 'xss')
+        kb_data = [(str(m.getURL()), m.getVar(), tuple(sorted(m.getDc().keys())))
+                   for m in (xv.getMutant() for xv in xssvulns)]
+                
+        EXPECTED = [('simple_xss_no_js.php', 'text', ['text']),]
+        expected_data = [(self.xss_smoke, e[1],tuple(sorted(e[2]))) for e in EXPECTED]
+        
+        self.assertEquals(
+            set(expected_data),
+            set(kb_data),
+        )
+        
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.xss_url, cfg['plugins'])
