@@ -438,7 +438,7 @@ class xUrllib(object):
         @parameter method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         '''
-        class AnyMethod:
+        class AnyMethod(object):
             
             class MethodRequest(HTTPRequest):
                 def get_method(self):
@@ -461,7 +461,7 @@ class xUrllib(object):
                     raise TypeError('The uri parameter of AnyMethod.'
                          '__call__() must be of urlParser.url_object type.')
                 
-                if not isinstance(uri, Headers):
+                if not isinstance(headers, Headers):
                     raise TypeError('The headers parameter of AnyMethod.'
                          '__call__() must be of Headers type.')
                     
