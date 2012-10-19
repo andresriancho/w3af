@@ -23,6 +23,7 @@ from nose.plugins.attrib import attr
 from ..helper import PluginTest, PluginConfig
 import core.data.constants.severity as severity
 
+
 @attr('smoke')
 class TestErrorPages(PluginTest):
     
