@@ -26,7 +26,6 @@ import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.parsers.urlParser import url_object
 
 SCRIPT_SRC_XPATH = ".//script[@src]"
 
@@ -63,7 +62,7 @@ class cross_domain_js(GrepPlugin):
             # In some strange cases, we fail to normalize the document
             if dom is not None:
                 
-                # Loop through file inputs tags                
+                # Loop through script inputs tags                
                 for script_src_tag in self._script_src_xpath( dom ):
                     
                     # This should be always False due to the XPATH we're using
