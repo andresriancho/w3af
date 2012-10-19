@@ -412,6 +412,17 @@ class RFIWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.rfile.close()
             self.wfile.close()
             return
+    
+    def log_message(self, fmt, *args):
+        '''
+        I dont want messages to be written to stderr, please ignore them.
+        
+        If I don't override this method I end up with messages like:
+        eulogia.local - - [19/Oct/2012 10:12:33] "GET /GGC8s1dk HTTP/1.0" 200 -
+        
+        being printed to the console.
+        '''
+        pass
         
 class RFIData(object):
     def __init__(self, rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result):
