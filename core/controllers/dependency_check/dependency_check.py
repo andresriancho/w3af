@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import platform
 import warnings
+import logging
 
 import core.controllers.outputManager as om
 
@@ -181,9 +182,7 @@ def dependency_check():
         #packages_mac_port.append()
         reason_for_exit = True       
     #mem_test('after pysvn import')
-    import logging
-    logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
-
+    
     if not lazy_load('scapy'):
         packages.append('scapy')
         packages_debian.append('python-scapy')
@@ -252,3 +251,4 @@ def mem_test(when):
 
 def is_mac(curr_platform):
     return 'darwin' in curr_platform or 'mac' in curr_platform
+
