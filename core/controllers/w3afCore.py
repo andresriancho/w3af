@@ -303,9 +303,9 @@ class w3afCore(object):
         # or simply because it ain't writable|readable by this user
         if not verify_dir_has_perm(HOME_DIR, perm=os.W_OK|os.R_OK, levels=1):
             print('Either the w3af home directory "%s" or its contents are not'
-                  ' writable or readable. Please set the correct permissions '
-                  'and ownership. This usually happens when running w3af as'
-                  'root.' % HOME_DIR)
+                  ' writable or readable. Please set the correct permissions'
+                  ' and ownership. This usually happens when running w3af as'
+                  ' root using "sudo".' % HOME_DIR)
             sys.exit(-3)
             
     def _tmp_directory(self):
