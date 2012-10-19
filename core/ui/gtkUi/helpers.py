@@ -147,7 +147,10 @@ class RegistThread(threading.Thread):
     def __init__(self):
         _threadPool.append(self)
         self.my_thread_ended = False
+        
         super(RegistThread,self).__init__()
+        self.name = 'RegistThread'
+        
         self.start()
 
 #--

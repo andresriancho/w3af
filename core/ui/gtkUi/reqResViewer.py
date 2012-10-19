@@ -434,6 +434,9 @@ class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
     def __init__(self, w3af, request, plugin_name, plugin_type, event):
         '''Init ThreadedURLImpact.'''
+        threading.Thread.__init__(self)
+        self.name = 'ThreadedURLImpact'
+        
         self.w3af = w3af
         self.request = request
         self.plugin_name = plugin_name
@@ -441,7 +444,7 @@ class ThreadedURLImpact(threading.Thread):
         self.event = event
         self.result = []
         self.ok = False
-        threading.Thread.__init__(self)
+        
 
     def run(self):
         '''Start the thread.'''

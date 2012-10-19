@@ -168,6 +168,7 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
         _servers[(ip, port)] = web_server
         # Start server!
         server_thread = threading.Thread(target=web_server.serve_forever)
+        server_thread.name = 'WebServer'
         server_thread.daemon = True
         server_thread.start()
     
