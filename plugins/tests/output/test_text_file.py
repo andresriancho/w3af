@@ -34,18 +34,13 @@ class TestTextFile(PluginTest):
     
     OUTPUT_FILE = 'output-unittest.txt'
     
-    xss_url = 'http://moth/w3af/audit/xss/'
+    target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
     
     _run_configs = {
         'cfg': {
-            'target': xss_url,
+            'target': target_url + '?name=xxx',
             'plugins': {
-                'audit': (
-                    PluginConfig(
-                         'xss',
-                         ('checkStored', True, PluginConfig.BOOL),
-                         ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                'audit': (PluginConfig('sqli'),),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -60,28 +55,30 @@ class TestTextFile(PluginTest):
         }
     }
     
-    def test_found_xss(self):
+    def test_found_vulns(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        xss_vulns = self.kb.get('xss', 'xss')
+        kb_vulns = self.kb.get('sqli', 'sqli')
         file_vulns = self._from_txt_get_vulns()
         
-        self.assertGreaterEqual(len(xss_vulns), 3)
+        self.assertEqual(len(kb_vulns), 1, kb_vulns)
         
         self.assertEquals(
-            set(sorted([v.getURL() for v in xss_vulns])),
+            set(sorted([v.getURL() for v in kb_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
         
         self.assertEquals(
-            set(sorted([v.get_method() for v in xss_vulns])),
+            set(sorted([v.get_method() for v in kb_vulns])),
             set(sorted([v.get_method() for v in file_vulns]))
         )
 
     def _from_txt_get_vulns(self):
         file_vulns = []
-        vuln_re = re.compile('Cross Site Scripting was found at: "(.*?)", using HTTP method (.*?). The sent .*?data was: "(.*?)"')
+        vuln_regex = 'SQL injection in a .*? was found at: "(.*?)"' \
+                     ', using HTTP method (.*?). The sent .*?data was: "(.*?)"'
+        vuln_re = re.compile(vuln_regex)
 
         for line in file(self.OUTPUT_FILE):
             mo = vuln_re.search(line)

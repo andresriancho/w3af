@@ -33,20 +33,16 @@ from ..helper import PluginTest, PluginConfig
 @attr('smoke')
 class TestXMLOutput(PluginTest):
     
-    xss_url = 'http://moth/w3af/audit/xss/'
-    filename = 'output-unittest.xml'
-    xsd = os.path.join('plugins', 'output', 'xml_file', 'report.xsd')
+    target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+    
+    FILENAME = 'output-unittest.xml'
+    XSD = os.path.join('plugins', 'output', 'xml_file', 'report.xsd')
     
     _run_configs = {
         'cfg': {
-            'target': xss_url,
+            'target': target_url + '?name=xxx',
             'plugins': {
-                'audit': (
-                    PluginConfig(
-                         'xss',
-                         ('checkStored', True, PluginConfig.BOOL),
-                         ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                'audit': (PluginConfig('sqli'),),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -55,49 +51,49 @@ class TestXMLOutput(PluginTest):
                 'output': (
                     PluginConfig(
                         'xml_file',
-                        ('fileName', filename, PluginConfig.STR)),
+                        ('fileName', FILENAME, PluginConfig.STR)),
                 )         
             },
         }
     }
     
-    def test_found_xss(self):
+    def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        xss_vulns = self.kb.get('xss', 'xss')
+        kb_vulns = self.kb.get('sqli', 'sqli')
         file_vulns = self._from_xml_get_vulns()
         
-        self.assertGreaterEqual(len(xss_vulns), 3)
+        self.assertEqual(len(kb_vulns), 1, kb_vulns)
         
         self.assertEquals(
-            set(sorted([v.getURL() for v in xss_vulns])),
+            set(sorted([v.getURL() for v in kb_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
         
         self.assertEquals(
-            set(sorted([v.getName() for v in xss_vulns])),
+            set(sorted([v.getName() for v in kb_vulns])),
             set(sorted([v.getName() for v in file_vulns]))
         )
             
         self.assertEquals(
-            set(sorted([v.getPluginName() for v in xss_vulns])),
+            set(sorted([v.getPluginName() for v in kb_vulns])),
             set(sorted([v.getPluginName() for v in file_vulns]))
         )
         
-        self.assertEqual( validate_XML(file(self.filename).read(), self.xsd) ,
+        self.assertEqual( validate_XML(file(self.FILENAME).read(), self.XSD) ,
                           '')
 
     def _from_xml_get_vulns(self):
         xp = XMLParser()
         parser = etree.XMLParser(target=xp)
-        vulns = etree.fromstring(file(self.filename).read(), parser)
+        vulns = etree.fromstring(file(self.FILENAME).read(), parser)
         return vulns
         
     def tearDown(self):
         super(TestXMLOutput, self).tearDown()
         try:
-            os.remove(self.filename)
+            os.remove(self.FILENAME)
         except:
             pass
 
