@@ -55,7 +55,18 @@ def get_shell_code( extension, forceExtension=False ):
     @return: The CODE of the web shell, suitable to use in an eval() exploit.
     '''
     return _get_file_list( 'code', extension, forceExtension )
-    
+
+def extract_result(body):
+    if SHELL_IDENTIFIER_1 not in body or SHELL_IDENTIFIER_2 not in body:
+        msg = 'Unable to execute remote command, result extraction' \
+              ' failed. Response body was "%s".' % body
+        raise w3afException(msg)
+
+    idx_1 = body.index(SHELL_IDENTIFIER_1)
+    len_1 = len(SHELL_IDENTIFIER_1)
+    idx_2 = body.index(SHELL_IDENTIFIER_2)
+    return body[idx_1+len_1:idx_2]
+
 def _get_file_list( type_of_list, extension, forceExtension=False ):
     '''
     @parameter type_of_list: Indicates what type of list to return, options:

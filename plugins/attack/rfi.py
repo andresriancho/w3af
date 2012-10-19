@@ -465,20 +465,7 @@ class RFIShell(exec_shell, PortScanShell):
         except Exception, e:
             return 'Unhandled exception from the remote web application:' + str(e)
         else:
-            return self._extract_result( http_res.getBody())
-    
-    def _extract_result(self, body):
-        if shell_handler.SHELL_IDENTIFIER_1 not in body or \
-        shell_handler.SHELL_IDENTIFIER_2 not in body:
-            msg = 'Unable to execute remote command, result extraction'
-            msg += ' failed. %s' % body
-            raise w3afException(msg)
-
-        idx_1 = body.index(shell_handler.SHELL_IDENTIFIER_1)
-        len_1 = len(shell_handler.SHELL_IDENTIFIER_1)
-        idx_2 = body.index(shell_handler.SHELL_IDENTIFIER_2)
-        return body[idx_1+len_1:idx_2]
-        
+            return shell_handler.extract_result( http_res.getBody())
         
     def end(self):
         '''
