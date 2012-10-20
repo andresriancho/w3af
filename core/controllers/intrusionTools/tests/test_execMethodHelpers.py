@@ -42,7 +42,7 @@ class TestExecHelpers(unittest.TestCase):
         self.assertEqual(os, 'windows')
     
     def test_os_detection_exec_unknown(self):
-        def side_effect():
+        def side_effect(cmd):
             return 'foobarspameggs'
         
         exec_method = MagicMock(side_effect=side_effect)
@@ -61,7 +61,7 @@ class TestExecHelpers(unittest.TestCase):
         self.assertTrue(tempfile.startswith('C:\\Windows\\Temp\\'))
     
     def test_get_remote_temp_file_unknown(self):
-        def side_effect():
+        def side_effect(cmd):
             return 'foobarspameggs'
         exec_method = MagicMock(side_effect=side_effect)        
         self.assertRaises(w3afException, get_remote_temp_file, exec_method)
