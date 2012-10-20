@@ -52,10 +52,10 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 # Send the request to the remote webserver
                 res = self._sendFuzzableRequest(fuzzable_request)
         except Exception, e:
-            self._sendError( e, trace=str(traceback.format_exc()) )
+            self._send_error( e, trace=str(traceback.format_exc()) )
         else:
             try:
-                self._sendToBrowser( res )
+                self._send_to_browser( res )
             except Exception, e:
                 om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )        
     

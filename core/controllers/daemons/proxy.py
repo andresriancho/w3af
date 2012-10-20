@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import cStringIO
 import traceback
-import time
 import socket
 import select
 import httplib
@@ -37,6 +36,7 @@ from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
 from core.data.parsers.urlParser import url_object
 from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.dc.headers import Headers
 
 
 class proxy(Process):
@@ -211,20 +211,20 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             ### FIXME: Maybe I should perform some more detailed error handling...
             om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e) )
 
-    def _getPostData(self):
+    def _get_post_data(self):
         '''
         @return: Post data preserving rfile
         '''
-        postData = None
+        post_data = None
         if self.headers.dict.has_key('content-length'):
             cl = int(self.headers['content-length'])
-            postData = self.rfile.read(cl)
+            post_data = self.rfile.read(cl)
             # rfile is not seekable, so a little trick
             if not hasattr(self.rfile, 'reset'):
-                rfile = cStringIO.StringIO(postData)
+                rfile = cStringIO.StringIO(post_data)
                 self.rfile = rfile
             self.rfile.reset()
-        return postData
+        return post_data
 
     def _create_fuzzable_request(self):
         '''
@@ -232,22 +232,22 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         
         Important variables used here:
             - self.headers : Stores the headers for the request
-            - self.rfile : A file like object that stores the postdata
+            - self.rfile : A file like object that stores the post_data
             - self.path : Stores the URL that was requested by the browser
         '''
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
-            basePath = "https://" + self.server.chainedHandler.path
-            path = basePath + self.path
+            base_path = "https://" + self.server.chainedHandler.path
+            path = base_path + self.path
         else:
             path = self.path
 
         fuzzable_request = FuzzableRequest(
                                            url_object(path), 
                                            self.command,
-                                           self.headers.dict
+                                           Headers(self.headers.dict.items())
                                            )
-        post_data = self._getPostData()
+        post_data = self._get_post_data()
         if post_data:
             fuzzable_request.setData(post_data)
         return fuzzable_request
@@ -258,25 +258,28 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         try:
             # Send the request to the remote webserver
-            # The request parameters such as the URL, the headers, etc. are stored in "self".
-            # Note: This is the way that the HTTPServer and the Handler work in python; this wasn't my choice.
-            res = self._sendToServer()
+            # The request parameters such as the URL, the headers, etc. are
+            # stored in "self". Note: This is the way that the HTTPServer and
+            # the Handler work in python; this wasn't my choice.
+            res = self._send_to_server()
         except Exception, e:
-            self._sendError( e, trace=str(traceback.format_exc()) )
+            self._send_error( e, trace=str(traceback.format_exc()) )
         else:
             try:
-                self._sendToBrowser( res )
+                self._send_to_browser( res )
             except Exception, e:
-                om.out.debug('Exception found while sending response to the browser. Exception description: ' + str(e) )
+                msg = 'Exception found while sending response to the browser.'\
+                      ' Exception details: "%s".' % str(e)
+                om.out.debug(msg)
 
 
-    def _sendToServer( self,  grep=False ):
+    def _send_to_server( self,  grep=False ):
         '''
         Send a request that arrived from the browser to the remote web server.
         
         Important variables used here:
             - self.headers : Stores the headers for the request
-            - self.rfile : A file like object that stores the postdata
+            - self.rfile : A file like object that stores the post_data
             - self.path : Stores the URL that was requested by the browser
         '''
         self.headers['Connection'] = 'close'
@@ -286,8 +289,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
-            basePath = "https://" + self.server.chainedHandler.path
-            path = basePath + path
+            base_path = "https://" + self.server.chainedHandler.path
+            path = base_path + path
             uri_instance = url_object(path)
         
         #
@@ -296,12 +299,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         post_data = None
         if self.headers.dict.has_key('content-length'):
             # most likely a POST request
-            post_data = self._getPostData()
+            post_data = self._get_post_data()
 
         try:
-            httpCommandMethod = getattr(self._uri_opener, self.command)
-            res = httpCommandMethod(uri_instance, data=post_data,
-                                    headers=self.headers, grep=grep)
+            http_method = getattr(self._uri_opener, self.command)
+            res = http_method(uri_instance, data=post_data,
+                              headers=Headers(self.headers.items()),
+                              grep=grep)
         except w3afException, w:
             traceback.print_exc()
             om.out.error('The proxy request failed, error: ' + str(w) )
@@ -312,7 +316,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             return res
     
-    def _sendError( self, exceptionObj, trace=None ):
+    def _send_error( self, exceptionObj, trace=None ):
         '''
         Send an error to the browser.
         
@@ -333,12 +337,36 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         except Exception, e:
             traceback.print_exc()
-            om.out.debug('An error occurred in proxy._sendError(). Maybe the browser closed the connection?')
+            om.out.debug('An error occurred in proxy._send_error(). Maybe the browser closed the connection?')
             om.out.debug('Exception: ' + str(e) )
         
         self.wfile.close()
     
-    def _sendToBrowser(self, res):
+    def send_response(self, code, message=None):
+        """Send the response header and log the response code.
+
+        I'm overriding this method in order to avoid this:
+        
+            ***
+            Also send two standard headers with the server
+            software version and the current date.
+            ***
+
+        """
+        self.log_request(code)
+        if message is None:
+            if code in self.responses:
+                message = self.responses[code][0]
+            else:
+                message = ''
+        if self.request_version != 'HTTP/0.9':
+            self.wfile.write("%s %d %s\r\n" %
+                             (self.protocol_version, code, message))
+            # print (self.protocol_version, code, message)
+        #self.send_header('Server', self.version_string())
+        #self.send_header('Date', self.date_time_string())
+    
+    def _send_to_browser(self, res):
         '''
         Send a response that was sent by the remote web server to the browser
 
@@ -359,23 +387,21 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # Work with the response's headers.
             # Overwrite 'content-length'
             send_header('content-length', str(len(what_to_send)))
-
+            send_header('connection', 'close')
+            
             for header, value in res.getLowerCaseHeaders().items():
                 # Ignore these headers:
                 #   - 'content-length', as it has been overwritten before
                 #   - 'transfer-encoding', when 'chunked' as the
                 #     response has already been read completely.
-                if header == 'content-length' or \
-                    (header == 'transfer-encoding' and 
-                     value.lower() == 'chunked'):
-                    continue
-                # The response has already bin gunzipped: ignore this header
-                elif value.lower() == 'gzip':
+                if (header == 'content-length') or \
+                   (header == 'connection') or \
+                   (header == 'transfer-encoding' and value.lower() == 'chunked') or \
+                   (value.lower() == 'gzip'):
                     continue
 
                 send_header(header, value)
                 
-            send_header('Connection', 'close')
             self.end_headers()
             
             self.wfile.write(what_to_send)
@@ -541,7 +567,9 @@ def wrap(socket_obj, ssl_connection, fun, *params):
                 raise ssl_error
             else:
                 if msg == 'ssl handshake failure':
-                    om.out.debug('Asking the user about the invalid w3af MITM certificate. He must accept it.')
+                    msg = 'Asking the user about the invalid w3af MITM certificate.' \
+                          ' He must accept it.'
+                    om.out.debug(msg)
                     ssl_connection.shutdown()
                     raise ssl_error
                 else:
@@ -553,8 +581,8 @@ def wrap(socket_obj, ssl_connection, fun, *params):
 
 class SSLConnectionWrapper(object):
     '''
-    This is a wrapper around an SSL connection which also implements a makefile method.
-    Thus, it imitates a socket by an SSL connection.
+    This is a wrapper around an SSL connection which also implements a makefile
+    method. Thus, it imitates a socket by an SSL connection.
     '''
 
     def __init__(self, conn, socket):
@@ -582,7 +610,8 @@ class SSLConnectionWrapper(object):
         while start < len(data):
             to_send = data[start: start + 16384]
             start += 16384
-            amount_sent += wrap(self._socket, self._connection, self._connection.send, to_send)
+            amount_sent += wrap(self._socket, self._connection,
+                                self._connection.send, to_send)
         return amount_sent
            
     def makefile(self, perm, buf):
@@ -590,8 +619,8 @@ class SSLConnectionWrapper(object):
 
 class SSLConnectionFile:
     '''
-    This class pretends to be a file to be used as rfile or wfile in request handlers.
-    Actually, it reads and writes data from and to SSL connection
+    This class pretends to be a file to be used as rfile or wfile in request
+    handlers. Actually, it reads and writes data from and to SSL connection
     '''
     
     def __init__(self, sslCon, socket):
