@@ -123,7 +123,7 @@ import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException, \
     w3afMustStopByKnownReasonExc
 import core.data.kb.config as cf
-from core.data.constants.httpConstants import NO_CONTENT
+from core.data.constants.response_codes import NO_CONTENT
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = None

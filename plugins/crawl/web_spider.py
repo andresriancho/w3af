@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 import core.data.dc.form as form
 import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
-import core.data.constants.httpConstants as http_constants
+import core.data.constants.response_codes as http_constants
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404

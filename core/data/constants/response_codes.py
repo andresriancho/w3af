@@ -1,5 +1,5 @@
 '''
-httpConstants.py
+response_codes.py
 
 Original: httplib.py
 

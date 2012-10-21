@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
-import core.data.constants.httpConstants as httpConstants
+import core.data.constants.response_codes as response_codes
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
@@ -38,8 +38,8 @@ class allowed_methods(InfrastructurePlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    BAD_CODES = set([httpConstants.UNAUTHORIZED, httpConstants.NOT_IMPLEMENTED,
-                     httpConstants.METHOD_NOT_ALLOWED, httpConstants.FORBIDDEN])
+    BAD_CODES = set([response_codes.UNAUTHORIZED, response_codes.NOT_IMPLEMENTED,
+                     response_codes.METHOD_NOT_ALLOWED, response_codes.FORBIDDEN])
     
     DAV_METHODS = set([ 'DELETE', 'PROPFIND', 'PROPPATCH', 'COPY', 'MOVE', 'LOCK', 
                         'UNLOCK', 'MKCOL'])
