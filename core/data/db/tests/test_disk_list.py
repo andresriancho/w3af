@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import random
 import unittest
 import string
+import threading
 
 from nose.plugins.attrib import attr
 
@@ -66,7 +67,6 @@ class test_disk_list(unittest.TestCase):
 
         self.assertEqual(rnd in dl, True)
     
-    @attr('smoke')
     def test_unicode(self):
         dl = disk_list()
 
@@ -90,7 +90,6 @@ class test_disk_list(unittest.TestCase):
         self.assertFalse( url_object('http://w3af.org/?id=4') in dl )
         self.assertTrue( url_object('http://w3af.org/?id=2') in dl )
     
-    @attr('smoke')
     def test_fuzzable_request(self):
         dl = disk_list()
         
@@ -111,7 +110,6 @@ class test_disk_list(unittest.TestCase):
         self.assertFalse( qsr3 in dl )
         self.assertTrue( qsr2 in dl )
     
-    @attr('smoke')
     def test_len(self):
         dl = disk_list()
 
@@ -120,7 +118,6 @@ class test_disk_list(unittest.TestCase):
 
         self.assertEqual( len(dl) == 100, True)
 
-    @attr('smoke')
     def test_pickle(self):
         dl = disk_list()
 
@@ -136,7 +133,6 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( values[1] == 1, True)
         self.assertEqual( values[2] == [3,2,1], True)
 
-    @attr('smoke')
     def test_getitem(self):
         dl = disk_list()
 
@@ -148,12 +144,10 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[1] == 1  , True)
         self.assertEqual( dl[2] == [3,2,1], True)
 
-    @attr('smoke')
     def test_not(self):
         dl = disk_list()
         self.assertFalse( dl )
     
-    @attr('smoke')
     def test_extend(self):
         dl = disk_list()
 
@@ -166,7 +160,6 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual( dl[2] , 2)
         self.assertEqual( dl[3] , 3)
     
-    @attr('smoke')
     def test_clear(self):
         dl = disk_list()
 
@@ -179,7 +172,6 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( len(dl), 0)
     
-    @attr('smoke')
     def test_sorted(self):
         dl = disk_list()
 
@@ -191,7 +183,6 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( ['aaa','abc','def'], sorted_dl)
     
-    @attr('smoke')
     def test_ordered_iter(self):
         dl = disk_list()
 
@@ -205,7 +196,6 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( ['aaa','abc','def'], sorted_dl)        
     
-    @attr('smoke')
     def test_reverse_iteration(self):
         dl = disk_list()
         dl.append(1)
@@ -218,3 +208,31 @@ class test_disk_list(unittest.TestCase):
         
         self.assertEqual( reverse_iter_res, [3,2,1])
 
+    def test_thread_safe(self):
+        dl = disk_list()
+
+        def worker(range_inst):
+            for i in range_inst:
+                dl.append(i)
+
+        threads = []
+        _min = 0
+        for _max in xrange(0, 1100, 100):
+            th = threading.Thread(target=worker, args=(xrange(_min, _max),))
+            threads.append(th)
+            _min = _max
+        
+        for th in threads:
+            th.start()
+
+        for th in threads:
+            th.join()
+
+        for i in xrange(0, 1000):
+            self.assertTrue(i in dl, i)
+
+        dl_as_list = list(dl)
+        self.assertEqual(len(dl_as_list), len(set(dl_as_list)))
+        
+        dl_as_list.sort()
+        self.assertEqual(dl_as_list, range(1000))

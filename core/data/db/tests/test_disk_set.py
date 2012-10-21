@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import unittest
+import threading
 
 from nose.plugins.attrib import attr
 
@@ -31,12 +32,12 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.dc.headers import Headers
 
 
-@attr('smoke')
 class test_disk_set(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
 
+    @attr('smoke')
     def test_add(self):
         ds = disk_set()
         ds.add(1)
@@ -45,6 +46,7 @@ class test_disk_set(unittest.TestCase):
         ds.add(1)
         
         self.assertEqual( list(ds), [1,2,3])
+        self.assertEqual( len(ds), 3)
 
     def test_add_urlobject(self):
         ds = disk_set()
@@ -88,6 +90,7 @@ class test_disk_set(unittest.TestCase):
         qsr2.getURL().url_string
         self.assertTrue( qsr2 in ds )
 
+    @attr('smoke')
     def test_add_HTTPPostDataRequest(self):
         ds = disk_set()
         
@@ -124,6 +127,40 @@ class test_disk_set(unittest.TestCase):
         
         self.assertEqual( list(ds), [1,2,3])
         
-if __name__ == '__main__':
-    unittest.main()
+    def test_thread_safe(self):
+        ds = disk_set()
 
+        def worker(range_inst):
+            for i in range_inst:
+                ds.add(i)
+
+        threads = []
+        _min = 0
+        add_dups = False
+        for _max in xrange(0, 1100, 100):
+            
+            th = threading.Thread(target=worker, args=(xrange(_min, _max),))
+            threads.append(th)
+            
+            # For testing the uniqueness of disk_sets
+            add_dups = not add_dups
+            if add_dups:
+                th = threading.Thread(target=worker, args=(xrange(_min, _max),))
+                threads.append(th)
+
+            _min = _max
+                
+        for th in threads:
+            th.start()
+
+        for th in threads:
+            th.join()
+
+        for i in xrange(0, 1000):
+            self.assertTrue(i in ds, i)
+
+        ds_as_list = list(ds)
+        self.assertEqual(len(ds_as_list), len(set(ds_as_list)))
+        
+        ds_as_list.sort()
+        self.assertEqual(ds_as_list, range(1000))

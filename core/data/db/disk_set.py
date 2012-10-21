@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import threading
 
 from core.data.db.disk_list import disk_list
 
@@ -33,6 +34,8 @@ class disk_set(disk_list):
     def __init__(self):
         super(disk_set, self).__init__()
         self.__append = super(disk_set, self).append
+        
+        self.lock = threading.RLock()
     
     def add(self, value):
         '''
@@ -42,11 +45,12 @@ class disk_set(disk_list):
         @param value: The value to append.
         @return: True if the value was added. False if it existed and was not added.
         '''
-        if self.__contains__(value):
-            return False
-        else:
-            self.__append(value)
-            return True
+        with self.lock:
+            if self.__contains__(value):
+                return False
+            else:
+                self.__append(value)
+                return True
     
     def update(self, value_list):
         '''
@@ -54,8 +58,9 @@ class disk_set(disk_list):
         
         @return: None
         '''
-        for value in value_list:
-            self.add(value)
+        with self.lock:
+            for value in value_list:
+                self.add(value)
     
     def extend(self, _):
         raise Exception('Not a valid disk_set method.')
