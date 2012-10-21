@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.controllers.daemons.webserver as webserver
 import plugins.attack.payloads.shell_handler as shell_handler
-import core.data.constants.w3afPorts as w3afPorts
+import core.data.constants.ports as ports
 
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.options.option import option
@@ -59,7 +59,7 @@ class rfi(AttackPlugin):
         self._exploit_dc = None
         
         # User configured variables
-        self._listen_port = w3afPorts.RFI_SHELL
+        self._listen_port = ports.RFI_SHELL
         self._listen_address = get_local_ip()
         self._use_XSS_vuln = True
         self._generate_only_one = True

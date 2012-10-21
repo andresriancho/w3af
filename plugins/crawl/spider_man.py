@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 import core.data.url.HTTPResponse as HTTPResponse
-import core.data.constants.w3afPorts as w3afPorts
+import core.data.constants.ports as ports
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
@@ -50,7 +50,7 @@ class spider_man(CrawlPlugin):
         
         # User configured parameters
         self._listen_address = '127.0.0.1'
-        self._listen_port = w3afPorts.SPIDERMAN
+        self._listen_port = ports.SPIDERMAN
     
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, freq ):

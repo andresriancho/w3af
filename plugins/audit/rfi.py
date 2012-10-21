@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.controllers.daemons.webserver as webserver
-import core.data.constants.w3afPorts as w3afPorts
+import core.data.constants.ports as ports
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.get_local_ip import get_local_ip
@@ -70,7 +70,7 @@ class rfi(AuditPlugin):
         self._error_reported = False
         
         # User configured parameters
-        self._listen_port = w3afPorts.REMOTEFILEINCLUDE
+        self._listen_port = ports.REMOTEFILEINCLUDE
         self._listen_address = get_local_ip() or ''
         self._use_w3af_site = True
         

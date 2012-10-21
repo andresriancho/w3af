@@ -1,5 +1,5 @@
 '''
-w3afPorts.py
+ports.py
 
 Copyright 2006 Andres Riancho
 

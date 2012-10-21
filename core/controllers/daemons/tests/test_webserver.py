@@ -25,7 +25,7 @@ import tempfile
 import os
 
 from core.controllers.daemons.webserver import start_webserver
-from core.data.constants.w3afPorts import REMOTEFILEINCLUDE
+from core.data.constants.ports import REMOTEFILEINCLUDE
 
 
 class TestWebserver(unittest.TestCase):

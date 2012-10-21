@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 import core.controllers.daemons.webserver as webserver
 
 from plugins.audit.rfi import RFIWebHandler
-from core.data.constants.w3afPorts import REMOTEFILEINCLUDE
+from core.data.constants.ports import REMOTEFILEINCLUDE
 from ..helper import PluginTest, PluginConfig
 
 

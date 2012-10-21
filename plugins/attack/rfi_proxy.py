@@ -30,7 +30,7 @@ from multiprocessing.dummy import Process
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
 import core.controllers.daemons.webserver as webserver
-import core.data.constants.w3afPorts as w3afPorts
+import core.data.constants.ports as ports
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
@@ -65,9 +65,9 @@ class rfi_proxy(AttackPlugin, Process):
         
         self._shell = None
         self._proxyAddress = '127.0.0.1'
-        self._proxyPort = w3afPorts.RFIPROXY
+        self._proxyPort = ports.RFIPROXY
         self._rfiConnGenerator = ''
-        self._httpdPort = w3afPorts.RFIPROXY2
+        self._httpdPort = ports.RFIPROXY2
         
         self._proxy = None
         self._wS = None
