@@ -19,16 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 
 from nltk.corpus.util import LazyCorpusLoader
 from nltk.data import ZipFilePathPointer
 from nltk.corpus.reader.wordnet import WordNetCorpusReader
-import os
+from nltk.corpus.reader.api import CorpusReader
 
 
 class wordnet_loader(LazyCorpusLoader):
     def __init__(self, name, reader_cls, *args, **kwargs):
-        from nltk.corpus.reader.api import CorpusReader
         assert issubclass(reader_cls, CorpusReader)
         self.__name = self.__name__ = name
         self.__reader_cls = reader_cls
