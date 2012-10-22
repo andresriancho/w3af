@@ -199,9 +199,9 @@ class proxyHandler(w3afProxyHandler):
         grep = True if path.getDomain() == self.server.w3afLayer.targetDomain else False
             
         try:
-            response = self._sendToServer(grep=grep)
+            response = self._send_to_server(grep=grep)
         except Exception, e:
-            self._sendError( e )
+            self._send_error( e )
         else:
             if response.is_text_or_html():
                 self._spider_man.ext_fuzzable_requests( response )
@@ -213,7 +213,7 @@ class proxyHandler(w3afProxyHandler):
                        'of the process in order to maintain the session.'
                        % response.getHeaders()[h])
                     om.out.information( msg )
-            self._sendToBrowser(response)
+            self._send_to_browser(response)
         return self._spider_man._fuzzable_requests
 
     do_GET = do_POST = do_HEAD = do_ALL
@@ -227,4 +227,4 @@ class proxyHandler(w3afProxyHandler):
         
         r = HTTPResponse.HTTPResponse( 200, html, headers, 
             TERMINATE_URL, TERMINATE_URL,)
-        self._sendToBrowser(r)
+        self._send_to_browser(r)
