@@ -185,7 +185,8 @@ class wordnet(CrawlPlugin):
         fname = self._get_filename( url )
         
         wordnet_result = self._search_wn( fname )
-        new_urls = self._generate_URL_from_wn_result( None, None, wordnet_result, fuzzable_request )
+        new_urls = self._generate_URL_from_wn_result( None, None, wordnet_result,
+                                                      fuzzable_request )
         return new_urls
     
     def _get_filename( self, url ):
