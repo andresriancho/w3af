@@ -19,15 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from lxml import etree
 
-# options
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.info as info
+
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.options.option_list import OptionList
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.info as info
 
 
 FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"

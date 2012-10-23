@@ -24,6 +24,7 @@ import unittest
 import core.data.kb.knowledgeBase as kb
 
 from plugins.grep.file_upload import file_upload
+from core.data.dc.headers import Headers
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
@@ -33,11 +34,6 @@ class test_file_upload(unittest.TestCase):
     
     def setUp(self):
         self.plugin = file_upload()
-
-        from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
-        from core.data.url.xUrllib import xUrllib
-        f = fingerprint_404_singleton( [False, False, False] )
-        f.set_url_opener( xUrllib() )
         kb.kb.save('file_upload', 'file_upload', [])
 
     def tearDown(self):
@@ -46,7 +42,7 @@ class test_file_upload(unittest.TestCase):
     def test_simple(self):
         body = 'header <form><input type="file"></form> footer'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -58,7 +54,7 @@ class test_file_upload(unittest.TestCase):
     def test_complex(self):
         body = 'header <form><Input type="File"></form> footer'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -70,7 +66,7 @@ class test_file_upload(unittest.TestCase):
     def test_none(self):
         body = 'header <form><noinput type="file"></form> footer'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
