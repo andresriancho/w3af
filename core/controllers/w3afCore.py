@@ -192,9 +192,10 @@ class w3afCore(object):
         # Zero internal variables from the core
         self._initializeInternalVariables()
         
-        # Not cleaning the config is a FEATURE, because the user is most likely going to start a new
-        # scan to the same target, and he wants the proxy, timeout and other configs to remain configured
-        # as he did it the first time.
+        # Not cleaning the config is a FEATURE, because the user is most likely
+        # going to start a new scan to the same target, and he wants the proxy,
+        # timeout and other configs to remain configured as he did it the first
+        # time.
         # reload(cf)
         
         # It is also a feature to keep the mist settings from the last run.
