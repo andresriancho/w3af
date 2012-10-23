@@ -19,30 +19,31 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import unittest
 import os
 import cProfile
 import random
 
+from mock import patch
 from itertools import repeat
 
-from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.w3afCore import w3af_core
 from core.data.url.HTTPResponse import HTTPResponse
+from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
 
 
 class test_all(unittest.TestCase):
+
+    PROFILING = False
     
     def setUp(self):
-        self.url_str = 'http://www.w3af.com/'
+        self.url_str = 'http://moth/'
         self.url_inst = url_object( self.url_str )
         
-        # This makes the is_404 return False to all calls made by plugins
-        fingerprint_404_singleton( repeat(False), override_instance=True )
-
+        self._is_404_patcher = patch
+        
         self._w3af = w3af_core
         self._plugins = []
         for pname in self._w3af.plugins.get_plugin_list('grep'):
@@ -67,8 +68,15 @@ class test_all(unittest.TestCase):
             plugin.get_long_desc()
             
             plugin.end()
-                
-    def test_all_grep_plugins(self):
+    
+    # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
+    #       remember about adding the patch...
+    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    def test_all_grep_plugins(self, *args):
         '''
         Run a set of 5 html files through all grep plugins.
         
@@ -86,10 +94,11 @@ class test_all(unittest.TestCase):
                     file_path = os.path.join('plugins','tests','grep','data',file_name)
                     
                     body = file( file_path ).read()
-                    response = HTTPResponse(200, body, {'Content-Type': 'text/html'},
+                    hdrs = Headers({'Content-Type': 'text/html'}.items())
+                    response = HTTPResponse(200, body, hdrs,
                                             url_object( self.url_str + str(counter) ),
                                             url_object( self.url_str + str(counter) ),
-                                            id=random.randint(1,5000) )
+                                            _id=random.randint(1,5000) )
 
                     request = FuzzableRequest(self.url_inst)
                     for pinst in self._plugins:
@@ -97,14 +106,13 @@ class test_all(unittest.TestCase):
             
             for pinst in self._plugins:
                 pinst.end()
-        #
-        #   The only test here is that we don't get any traceback
-        #
-        profile_me()
-
-        #
-        #   For profiling
-        #
-        #cProfile.run('profile_me()', 'output.stats')
+        
+        if self.PROFILING:
+            #   For profiling
+            cProfile.run('profile_me()', 'output.stats')
+        else:
+            #   The only test here is that we don't get any traceback
+            profile_me()
+            
 
 
