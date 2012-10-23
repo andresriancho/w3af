@@ -55,7 +55,7 @@ class PayloadTestHelper(PluginTest):
     
     def _get_shell(self):
         vuln, vuln_to_exploit_id = self._scan_wrapper()
-
+        
         plugin = self.w3afcore.plugins.get_plugin_inst('attack','local_file_reader' )
         
         self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
@@ -71,6 +71,10 @@ class PayloadTestHelper(PluginTest):
         super(PayloadTestHelper, self).setUp()
         cf.cf.save('targetOS', 'unix')
         self.shell = self._get_shell()
+    
+    def tearDown(self):
+        super(PayloadTestHelper, self).tearDown()
+        cf.cf.save('targetOS', 'unknown')
 
         
         
