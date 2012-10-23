@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-test_HTTPResponse.py
+test_xurllib.py
 
 Copyright 2011 Andres Riancho
 
@@ -20,48 +20,55 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
-import time
 
 from nose.plugins.attrib import attr
 
-import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
-
 from core.data.url.xUrllib import xUrllib
 from core.data.parsers.urlParser import url_object
-from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
+from core.data.dc.dataContainer import DataContainer
+
 
 @attr('smoke')
 class TestXUrllib(unittest.TestCase):
     
     def setUp(self):
-        # The next cleanup() calls are here because some other test is leaving
-        # the cf/kb objects in an inconsistent state and I need to clean them
-        # before starting my own tests.
-        cf.cf.cleanup()
-        kb.kb.cleanup()
-        
-        cf.cf.save('session_name',
-                'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         self.uri_opener = xUrllib()
-        create_temp_dir()
-        
-    def tearDown(self):
-        remove_temp_dir()
-        kb.kb.cleanup()
-        cf.cf.cleanup()
         
     def test_basic(self):
-        url = url_object('http://www.google.com.ar/')
-        body = self.uri_opener.GET( url, cache=False ).getBody()
-        self.assertTrue( 'Google' in body )
+        url = url_object('http://moth/')
+        http_response = self.uri_opener.GET( url, cache=False )
+        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
+    
+    def test_cache(self):
+        url = url_object('http://moth/')
+        http_response = self.uri_opener.GET( url )
+        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
+        
+        url = url_object('http://moth/')
+        http_response = self.uri_opener.GET( url )
+        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
     
     def test_qs_params(self):
-        url = url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=google')
-        self.assertTrue( 'Google Maps' in self.uri_opener.GET( url, cache=False ).getBody() )
+        url = url_object('http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt')
+        http_response = self.uri_opener.GET( url, cache=False )
+        self.assertTrue( 'Showing the section content.' in http_response.body, http_response.body )
 
-        url = url_object('http://www.google.com.ar/search?sourceid=chrome&ie=UTF-8&q=yahoo')
-        self.assertFalse( 'Google Maps' in self.uri_opener.GET( url, cache=False ).getBody() )
+        url = url_object('http://moth/w3af/audit/local_file_read/local_file_read.php?file=/etc/passwd')
+        http_response = self.uri_opener.GET( url, cache=False )
+        self.assertTrue( 'root:x:0:0:' in http_response.body, http_response.body )
+
+    def test_POST(self):
+        url = url_object('http://moth/w3af/audit/xss/dataReceptor2.php')
+        data = DataContainer([('empresa', 'abc'), ('firstname', 'def')])
+        http_response = self.uri_opener.POST( url, data, cache=False )
+        self.assertTrue( 'def' in http_response.body, http_response.body )
+
+    def test_POST_special_chars(self):
+        url = url_object('http://moth/w3af/audit/xss/dataReceptor2.php')
+        test_data = 'abc<def>"-á-'
+        data = DataContainer([('empresa', test_data), ('firstname', 'def')])
+        http_response = self.uri_opener.POST( url, data, cache=False )
+        self.assertTrue( test_data in http_response.body, http_response.body )
 
     def test_gzip(self):
         url = url_object('http://www.google.com.ar/')
