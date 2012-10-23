@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
-from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
 from plugins.grep.oracle import oracle
 
@@ -36,7 +36,6 @@ class test_oracle(unittest.TestCase):
     def setUp(self):
         create_temp_dir()
         kb.kb.cleanup()
-        fingerprint_404_singleton( [False, False, False] )
         self.plugin = oracle()
 
     def tearDown(self):
@@ -45,7 +44,7 @@ class test_oracle(unittest.TestCase):
     def test_oracle_empty(self):
         body = ''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -54,7 +53,7 @@ class test_oracle(unittest.TestCase):
     def test_oracle_long(self):
         body = 'ABC ' * 10000
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -65,7 +64,7 @@ class test_oracle(unittest.TestCase):
         body += '<!-- Created by Oracle '
         body += '</br> ' * 50
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
