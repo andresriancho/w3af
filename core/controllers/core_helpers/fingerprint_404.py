@@ -31,7 +31,7 @@ import core.controllers.outputManager as om
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alnum
 
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
@@ -50,7 +50,7 @@ class fingerprint_404:
 
     _instance = None
     
-    def __init__( self, test_db=None ):
+    def __init__(self):
         #
         #   Set the opener, I need it to perform some tests and gain 
         #   the knowledge about the server's 404 response bodies.
@@ -70,11 +70,6 @@ class fingerprint_404:
         # and bool as the value.
         self.is_404_LRU = LRU(200)
         
-        if test_db is not None:
-            self._test_db = iter(test_db)
-        else:
-            self._test_db = None
-
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
             
@@ -178,27 +173,24 @@ class fingerprint_404:
 
     def is_404(self, http_response):
         '''
-        All of my previous versions of is_404 were very complex and tried to struggle with all
-        possible cases. The truth is that in most "strange" cases I was failing miserably, so now
-        I changed my 404 detection once again, but keeping it as simple as possible.
+        All of my previous versions of is_404 were very complex and tried to 
+        struggle with all possible cases. The truth is that in most "strange"
+        cases I was failing miserably, so now I changed my 404 detection once
+        again, but keeping it as simple as possible.
         
-        Also, and because I was trying to cover ALL CASES, I was performing a lot of
-        requests in order to cover them, which in most situations was unnecesary.
+        Also, and because I was trying to cover ALL CASES, I was performing a
+        lot of requests in order to cover them, which in most situations was
+        unnecesary.
         
         So now I go for a much simple approach:
             1- Cover the simplest case of all using only 1 HTTP request
-            2- Give the users the power to configure the 404 detection by setting a string that
-            identifies the 404 response (in case we are missing it for some reason in case #1)
+            2- Give the users the power to configure the 404 detection by 
+               setting a string that identifies the 404 response (in case we
+               are missing it for some reason in case #1)
         
-        @parameter http_response: The HTTP response which we want to know if it is a 404 or not.
+        @parameter http_response: The HTTP response which we want to know if it
+                                  is a 404 or not.
         '''
-        #   This is here for testing
-        if self._test_db is not None:
-            try:
-                return self._test_db.next()
-            except StopIteration:
-                raise Exception('Your test_db is incomplete!')
-
         #
         #   First we handle the user configured exceptions:
         #
@@ -209,7 +201,8 @@ class fingerprint_404:
             return False        
 
         #
-        #   The user configured setting. "If this string is in the response, then it is a 404"
+        #    The user configured setting. "If this string is in the response,
+        #    then it is a 404"
         #
         if cf.cf.get('404string') and cf.cf.get('404string') in http_response:
             return True
@@ -217,9 +210,9 @@ class fingerprint_404:
         #
         #   This is the most simple case, we don't even have to think about this.
         #
-        #   If there is some custom website that always returns 404 codes, then we are
-        #   screwed, but this is open source, and the pentester working on that site can modify
-        #   these lines.
+        #   If there is some custom website that always returns 404 codes, then we
+        #   are screwed, but this is open source, and the pentester working on
+        #   that site can modify these lines.
         #
         if http_response.getCode() == 404:
             return True
@@ -234,8 +227,8 @@ class fingerprint_404:
             return False
             
         #
-        #   Before actually working, I'll check if this response is in the LRU, if it is I just return
-        #   the value stored there.
+        #   Before actually working, I'll check if this response is in the LRU,
+        #   if it is I just return the value stored there.
         #
         if http_response.getURL().getPath() in self.is_404_LRU:
             return self.is_404_LRU[ http_response.getURL().getPath() ]
@@ -340,11 +333,10 @@ class fingerprint_404:
         
         return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
         
-def fingerprint_404_singleton( test_db=None, override_instance=False ):
-    if not fingerprint_404._instance:
-        fingerprint_404._instance = fingerprint_404( test_db )
-    elif override_instance:
-        fingerprint_404._instance = fingerprint_404( test_db )
+def fingerprint_404_singleton():
+    if fingerprint_404._instance is None:
+        fingerprint_404._instance = fingerprint_404()
+        
     return fingerprint_404._instance
 
 
