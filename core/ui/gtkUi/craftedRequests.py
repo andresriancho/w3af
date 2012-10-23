@@ -72,7 +72,7 @@ class ThreadedURLImpact(threading.Thread):
     def run(self):
         '''Starts the thread.'''
         try:
-            self.httpResp = self.w3af.uri_opener.sendRawRequest(self.tsup,\
+            self.httpResp = self.w3af.uri_opener.send_raw_request(self.tsup,\
                     self.tlow, self.fixContentLength)
             self.ok = True
         except Exception, e:
@@ -529,7 +529,7 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         try:
-            httpResp = self.w3af.uri_opener.sendRawRequest(realreq, realbody, fixContentLength)
+            httpResp = self.w3af.uri_opener.send_raw_request(realreq, realbody, fixContentLength)
             errorMsg = None
             self.result_ok += 1
         except w3afException, e:

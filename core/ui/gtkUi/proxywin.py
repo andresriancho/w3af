@@ -286,7 +286,7 @@ class ProxiedRequests(entries.RememberingWindow):
         if data:
             data = str(data)
         try:
-            httpResp = helpers.coreWrap(self.proxy.sendRawRequest, self.fuzzable, headers, data)
+            httpResp = helpers.coreWrap(self.proxy.send_raw_request, self.fuzzable, headers, data)
         except w3afException:
             return
         else:

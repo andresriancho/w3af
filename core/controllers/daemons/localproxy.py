@@ -83,7 +83,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                         head, body = self._fixContentLength(head, body)
                     
                     try:
-                        res = self._uri_opener.sendRawRequest( head,  body )
+                        res = self._uri_opener.send_raw_request( head,  body )
                     except Exception,  e:
                         res = e
 
@@ -237,7 +237,7 @@ class localproxy(proxy):
         '''Let the handler know that the request was dropped.'''
         self._editedRequests[ id(orig_fuzzable_req) ] = (None,  None)
     
-    def sendRawRequest( self, orig_fuzzable_req, head, postdata):
+    def send_raw_request( self, orig_fuzzable_req, head, postdata):
         # the handler is polling this dict and will extract the information from it and
         # then send it to the remote web server
         self._editedRequests[ id(orig_fuzzable_req) ] = (head,  postdata)
@@ -266,7 +266,7 @@ if __name__ == '__main__':
         tr = lp.getTrappedRequest()
         if tr:
             print tr
-            print lp.sendRawRequest( tr,  tr.dumpRequestHead(), tr.getData() )
+            print lp.send_raw_request( tr,  tr.dumpRequestHead(), tr.getData() )
         else:
             print 'Waiting...'
     

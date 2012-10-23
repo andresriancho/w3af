@@ -123,13 +123,13 @@ class xUrllib(object):
             if self._must_stop:
                 self._must_stop = False
                 self._paused = False
-                raise w3afMustStopException()
+                raise w3afMustStopException('TODO: Better error handling.')
         
         # The user can simply STOP the scan
         if self._must_stop:
             self._must_stop = False
             self._paused = False
-            raise w3afMustStopException('')
+            raise w3afMustStopException('TODO: Better error handling.')
     
     def end(self):
         '''
@@ -191,12 +191,12 @@ class xUrllib(object):
         '''
         return self.settings.get_cookies()
     
-    def sendRawRequest(self, head, postdata, fix_content_len=True):
+    def send_raw_request(self, head, postdata, fix_content_len=True):
         '''
         In some cases the xUrllib user wants to send a request that was typed 
         in a textbox or is stored in a file. When something like that happens,
         this library allows the user to send the request by specifying two 
-        parameters for the sendRawRequest method:
+        parameters for the send_raw_request method:
         
         @parameter head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
         @parameter postdata: The postdata, if any. If set to '' or None, no postdata is sent.
@@ -321,12 +321,15 @@ class xUrllib(object):
             
         req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies)
         req = self._add_headers(req, headers)
+
         try:
-            return self._send(req, cache=cache, grep=grep)
+            http_response = self._send(req, cache=cache, grep=grep)
         finally:
             if not respect_size_limit:
                 # restore the original value
                 cf.cf.save('maxFileSize', max_file_size)
+
+            return http_response
 
     def _new_no_content_resp(self, uri, log_it=False):
         '''
