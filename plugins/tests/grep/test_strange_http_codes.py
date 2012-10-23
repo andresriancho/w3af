@@ -26,8 +26,9 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+
 from plugins.grep.strange_http_codes import strange_http_codes
 
 
@@ -36,7 +37,6 @@ class test_strange_http_codes(unittest.TestCase):
     def setUp(self):
         create_temp_dir()
         self.plugin = strange_http_codes()
-        fingerprint_404_singleton( [False, False, False] )
 
     def tearDown(self):
         self.plugin.end()
@@ -44,7 +44,7 @@ class test_strange_http_codes(unittest.TestCase):
     def test_strange_http_codes(self):
         body = ''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         
         resp_200 = HTTPResponse(200, body , headers, url, url)
@@ -62,10 +62,10 @@ class test_strange_http_codes(unittest.TestCase):
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
             self.assertEquals( len(kb.kb.get('strange_http_codes', 
-                                                 'strange_http_codes')), 0)
+                                             'strange_http_codes')), 0)
         
         for resp in KNOWN_BAD:
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
             self.assertEquals( len(kb.kb.get('strange_http_codes', 
-                                                 'strange_http_codes')), 1)
+                                             'strange_http_codes')), 1)
