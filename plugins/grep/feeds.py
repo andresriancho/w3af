@@ -19,20 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from lxml import etree
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from lxml import etree
+from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
 class feeds(GrepPlugin):
@@ -90,35 +83,19 @@ class feeds(GrepPlugin):
                 i.addToHighlight( feed_type )
                 kb.kb.append( self, 'feeds', i )
     
-    def set_options( self, option_list ):
-        pass
-    
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = OptionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq( kb.kb.get( 'feeds', 'feeds' ), 'URL' )
 
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page and finds rss, atom, opml feeds on them. This may be usefull for 
-        determining the feed generator and with that, the framework being used. Also this will be helpfull
-        for testing feed injection.
+        This plugin greps every page and finds rss, atom, opml feeds on them.
+        This may be usefull for determining the feed generator and with that,
+        the framework being used. Also this will be helpful for testing feed
+        injection.
         '''
