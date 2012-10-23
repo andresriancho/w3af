@@ -1,5 +1,5 @@
 '''
-test_environment.py
+test_xvfb_server.py
 
 Copyright 2011 Andres Riancho
 
@@ -25,7 +25,7 @@ import time
 
 from mock import patch
 
-from core.ui.gtkUi.tests.ldtp_wrapper.environment import XVFBServer, HEIGTH, WIDTH
+from core.ui.gtkUi.tests.ldtp_wrapper.xvfb_server import XVFBServer, HEIGTH, WIDTH
 
 
 class TestEnvironment(unittest.TestCase):

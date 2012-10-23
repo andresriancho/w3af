@@ -1,5 +1,5 @@
 '''
-environment.py
+xvfb_server.py
 
 Copyright 2011 Andres Riancho
 
@@ -38,6 +38,14 @@ SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
 
 
 class XVFBServer(threading.Thread):
+    '''
+    This class is a wrapper that helps me start/stop a Xvfb server and allows
+    me to run any X client in it.
+    
+    For running LDTP tests we need to run Gnome (which actually provides the a11y
+    features). Gnome is started once the Xvfb is ready and all the Gnome stuff
+    is handled in gnome.py
+    '''
     def __init__(self):
         super(XVFBServer, self).__init__()
         self.name = 'XVFBServer'
