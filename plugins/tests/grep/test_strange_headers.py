@@ -26,8 +26,8 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from plugins.grep.strange_headers import strange_headers
 
 
@@ -36,7 +36,6 @@ class test_strange_headers(unittest.TestCase):
     def setUp(self):
         create_temp_dir()
         self.plugin = strange_headers()
-        fingerprint_404_singleton( [False, False, False] )
 
     def tearDown(self):
         self.plugin.end()
@@ -44,7 +43,8 @@ class test_strange_headers(unittest.TestCase):
     def test_strange_headers_positive(self):
         body = 'Hello world'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html', 'hello-world': 'yes!'}
+        headers = Headers([('content-type', 'text/html'),
+                           ('hello-world', 'yes!')])
         request = FuzzableRequest(url, method='GET')
         
         resp_positive = HTTPResponse(200, body , headers, url, url)
@@ -60,7 +60,8 @@ class test_strange_headers(unittest.TestCase):
     def test_strange_headers_negative(self):
         body = 'Hello world'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html', 'x-pad': 'yes!'}
+        headers = Headers([('content-type', 'text/html'),
+                           ('x-pad', 'yes!')])
         request = FuzzableRequest(url, method='GET')
         
         resp_positive = HTTPResponse(200, body , headers, url, url)
