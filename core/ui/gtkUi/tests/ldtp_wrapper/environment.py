@@ -27,15 +27,14 @@ import time
 import shlex
 import os
 
-WIDTH = 1600
-HEIGTH = 1200
+WIDTH = 1024
+HEIGTH = 768
 
 XVFB_BIN = '/usr/bin/Xvfb'
-START_XVFB = '%s :9 -screen 1 %sx%sx16 -fbdir %s'  % (XVFB_BIN, WIDTH, HEIGTH, 
+START_XVFB = '%s :9 -screen 0 %sx%sx16 -fbdir %s'  % (XVFB_BIN, WIDTH, HEIGTH, 
                                                       tempfile.gettempdir())
 
 SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
-SCREEN_XWD_FILE_1 = '%s/Xvfb_screen1' % tempfile.gettempdir()
 
 
 class XVFBServer(threading.Thread):
@@ -122,10 +121,11 @@ class XVFBServer(threading.Thread):
         else:
             args = (display_cmd,)
             th = threading.Thread(target=commands.getoutput, args=args)
+            th.daemon = True
+            th.name = 'XvfbProcess'
             th.start()
         
         return True
-        
     
     def get_screenshot(self):
         '''
@@ -135,11 +135,11 @@ class XVFBServer(threading.Thread):
         
         Note: This requires Xvfb to be started with -fbdir
         '''
-        output = []
+        output_fname = None 
         
         if self.is_running():
             
-            for xwd_file in (SCREEN_XWD_FILE_0, SCREEN_XWD_FILE_1):
+            for xwd_file in (SCREEN_XWD_FILE_0, ):
                 temp_file = tempfile.mkstemp(prefix='xvfb-screenshot-')[1]
                 shutil.copy(xwd_file, temp_file)
                 target_jpeg = temp_file + '.jpeg'
@@ -148,6 +148,20 @@ class XVFBServer(threading.Thread):
                 
                 os.unlink(temp_file)
                 
-                output.append(target_jpeg)
+                output_fname = target_jpeg
                 
-        return output
+        return output_fname
+
+    def start_vnc_server(self):
+        '''
+        Starts a VNC server that will show what's being displayed in our Xvfb
+        (magic++).
+        '''
+        if self.is_running():
+            args = ('x11vnc -display :9 -shared -forever',)
+            th = threading.Thread(target=commands.getoutput, args=args)
+            th.daemon = True
+            th.name = 'VNCServer'
+            th.start()
+            return True
+        

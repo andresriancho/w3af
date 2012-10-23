@@ -79,28 +79,20 @@ class TestEnvironment(unittest.TestCase):
     
     def test_get_screenshot_not_started(self):
         output_files = self.xvfb_server.get_screenshot()
-        self.assertEqual(output_files, [])
+        self.assertEqual(output_files, None)
 
     def test_get_screenshot(self):
         self.xvfb_server.start_sync()
-        output_files = self.xvfb_server.get_screenshot()
+        output_file = self.xvfb_server.get_screenshot()
         
-        self.assertEqual( len(output_files), 2, output_files)
+        screenshot_img = Image.open(output_file)
+        img_width, img_height = screenshot_img.size
         
-        EXPECTED_SIZES = { 0: (1280, 1024),
-                           1: (WIDTH, HEIGTH), }
+        self.assertEqual(img_width, WIDTH)
+        self.assertEqual(img_height, HEIGTH)
+        self.assertTrue( self._is_black_image(screenshot_img))
         
-        for i, screenshot_file in enumerate(output_files):
-            screenshot_img = Image.open(screenshot_file)
-            img_width, img_height = screenshot_img.size
-            
-            e_width, e_height = EXPECTED_SIZES[i]
-            
-            self.assertEqual(img_width, e_width)
-            self.assertEqual(img_height, e_height)
-            self.assertTrue( self._is_black_image(screenshot_img))
-            
-            os.unlink(screenshot_file)
+        os.unlink(output_file)
     
     def _is_black_image(self, img_inst):
         '''@return: True if the image is completely black'''
@@ -120,11 +112,11 @@ class TestEnvironment(unittest.TestCase):
     
     def test_run_hello_world_in_xvfb(self):
         self.xvfb_server.start_sync()
+        self.assertTrue(self.xvfb_server.is_running())
         
-        # These two should be completely black
-        empty_scr_0, empty_scr_1 = self.xvfb_server.get_screenshot()
+        # This should be completely black
+        empty_scr_0 = self.xvfb_server.get_screenshot()
         self.assertTrue(self._is_black_image(Image.open(empty_scr_0)))
-        self.assertTrue(self._is_black_image(Image.open(empty_scr_1)))
         
         # Start the hello world in the xvfb
         run_result = self.xvfb_server.run_x_process(self.X_TEST_COMMAND, block=False)
@@ -134,7 +126,10 @@ class TestEnvironment(unittest.TestCase):
         
         # In screen 0 there should be a window, the one I started in the
         # previous step.
-        screen_0, screen_1 = self.xvfb_server.get_screenshot()
+        screen_0 = self.xvfb_server.get_screenshot()
         self.assertFalse(self._is_black_image(Image.open(screen_0)))
-        self.assertTrue(self._is_black_image(Image.open(screen_1)))
+    
+    def test_start_vnc_server(self):
+        self.xvfb_server.start_sync()
+        self.xvfb_server.start_vnc_server()
         
