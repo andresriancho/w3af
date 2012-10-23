@@ -27,15 +27,17 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.controllers.misc.temp_dir import create_temp_dir
+from core.data.dc.headers import Headers
 from core.data.parsers.urlParser import url_object
+from core.controllers.misc.temp_dir import create_temp_dir
 from plugins.grep.symfony import symfony
 
 
 class test_symfony(unittest.TestCase):
     
-    SYMFONY_HEADERS = {'set-cookie': 'symfony=sfasfasfa', 'content-type': 'text/html'}
-    NON_SYMFONY_HEADERS = {'content-type': 'text/html'}
+    SYMFONY_HEADERS = Headers([('content-type', 'text/html'),
+                               ('set-cookie','symfony=sfasfasfa')])
+    NON_SYMFONY_HEADERS = Headers([('content-type', 'text/html')])
     
     EMPTY_BODY = ''
     UNPROTECTED_BODY = '''<html><head></head><body><form action="login" method="post">
@@ -58,34 +60,34 @@ class test_symfony(unittest.TestCase):
         self.plugin.end()
             
     def test_symfony_positive(self):
-        response = self.http_resp(read=self.EMPTY_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue( self.plugin.symfonyDetected(response) )
     
     def test_symfony_negative(self):
-        response = self.http_resp(read=self.EMPTY_BODY, info=self.NON_SYMFONY_HEADERS)
+        response = self.http_resp(read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
         self.assertFalse( self.plugin.symfonyDetected(response) )
     
     def test_symfony_override(self):
         self.plugin._override = True
-        response = self.http_resp(read=self.EMPTY_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue( self.plugin.symfonyDetected(response) )
     
     def test_symfony_csrf_positive(self):
-        response = self.http_resp(read=self.PROTECTED_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue( self.plugin.csrfDetected(response.getDOM()) )
     
     def test_symfony_csrf_negative(self):
-        response = self.http_resp(read=self.UNPROTECTED_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.assertFalse( self.plugin.csrfDetected(response.getDOM()) )
 
     def test_symfony_protected(self):
-        response = self.http_resp(read=self.PROTECTED_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 0 )
     
     def test_symfony_unprotected(self):
         request = FuzzableRequest(self.url, method='GET')
-        response = self.http_resp(read=self.UNPROTECTED_BODY, info=self.SYMFONY_HEADERS)
+        response = self.http_resp(read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 1 )

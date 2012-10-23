@@ -26,6 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from plugins.grep.ssn import ssn
 
 
@@ -43,7 +44,7 @@ class test_ssn(unittest.TestCase):
                  
     def test_ssn_empty_string(self):
         body = ''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin._already_inspected = set()
         self.plugin.grep(self.request, response)
@@ -51,14 +52,14 @@ class test_ssn(unittest.TestCase):
         
     def test_ssn_separated(self):
         body = 'header 771-12-9876 footer'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 1 )
     
     def test_ssn_with_html(self):
         body = 'header <b>771</b>-<b>12</b>-<b>9878</b> footer'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 1 )
@@ -75,21 +76,21 @@ class test_ssn(unittest.TestCase):
                     <option value="11-19">11-19</option>
                     <option value="20+">20+</option>
                 </select>'''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
                 
     def test_ssn_together(self):
         body = 'header 771129876 footer'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEquals( len(kb.kb.get('ssn', 'ssn')) , 1 )
     
     def test_ssn_extra_number(self): 
         body = 'header 7711298761 footer'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')), 0 )

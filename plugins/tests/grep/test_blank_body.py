@@ -27,6 +27,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from plugins.grep.blank_body import blank_body
 
 
@@ -45,7 +46,7 @@ class test_blank_body(unittest.TestCase):
     def test_blank_body(self):
         body = ''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -53,14 +54,14 @@ class test_blank_body(unittest.TestCase):
     
     def test_blank_body_none(self):
         body = 'header body footer'
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         self.plugin.grep(self.request, response)
         self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
     
     def test_blank_body_method(self): 
         body = ''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, self.url, self.url)
         request = FuzzableRequest(self.url, method='ARGENTINA')
         self.plugin.grep(request, response)
@@ -68,7 +69,7 @@ class test_blank_body(unittest.TestCase):
     
     def test_blank_body_code(self):
         body = ''
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(401, body , headers, self.url, self.url)
         request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)

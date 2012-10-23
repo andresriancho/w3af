@@ -26,6 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 from plugins.grep.strange_reason import strange_reason
 
 
@@ -35,7 +36,7 @@ class test_strange_reason(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = strange_reason()
         self.url = url_object('http://www.w3af.com/')
-        self.headers = {'content-type': 'text/html'}
+        self.headers = Headers([('content-type', 'text/html')])
         self.request = FuzzableRequest(self.url)
 
     def tearDown(self):

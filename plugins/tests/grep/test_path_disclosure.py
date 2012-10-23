@@ -26,6 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.parsers.urlParser import url_object
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzableRequest
 from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
+from core.data.dc.headers import Headers
 from plugins.grep.path_disclosure import path_disclosure
 
 
@@ -35,19 +36,21 @@ class test_path_disclosure(unittest.TestCase):
         self.plugin = path_disclosure()
         kb.kb.cleanup()
         self.url = url_object('http://www.w3af.com/')
+        self.header = Headers([('content-type', 'text/html')])
         self.request = FuzzableRequest(self.url, method='GET')
 
     def tearDown(self):
         self.plugin.end()
             
     def test_path_disclosure(self):
-        res = HTTPResponse(200, 'header body footer' , {'Content-Type':'text/html'}, self.url, self.url)
+        
+        res = HTTPResponse(200, 'header body footer' , self.header, self.url, self.url)
         self.plugin.grep( self.request, res )
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
         self.assertEquals( len(infos), 0)
     
     def test_path_disclosure_positive(self):
-        res = HTTPResponse(200, 'header /etc/passwd footer' , {'Content-Type':'text/html'}, self.url, self.url)
+        res = HTTPResponse(200, 'header /etc/passwd footer' , self.header, self.url, self.url)
         self.plugin.grep( self.request, res )
         
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
