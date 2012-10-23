@@ -67,8 +67,8 @@ class code_disclosure(GrepPlugin):
                     v.setSeverity(severity.LOW)
                     v.setName( lang + ' code disclosure vulnerability' )
                     v.addToHighlight(match.group())
-                    msg = 'The URL: "' + v.getURL() + '" has a '+lang+' code disclosure vulnerability.'
-                    v.setDesc( msg )
+                    fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
+                    v.setDesc( fmt % (v.getURL(), lang) )
                     kb.kb.append( self, 'code_disclosure', v )
                     self._already_added.add( response.getURL() )
                 
@@ -81,9 +81,9 @@ class code_disclosure(GrepPlugin):
                     v.setSeverity(severity.LOW)
                     v.addToHighlight(match.group())
                     v.setName( lang + ' code disclosure vulnerability in 404 page' )
-                    msg = 'The URL: "' + v.getURL() + '" has a '+lang+' code disclosure vulnerability in'
-                    msg += ' the customized 404 script.'
-                    v.setDesc( msg )
+                    fmt = 'The URL: "%s" has a %s code disclosure vulnerability'\
+                          ' in the customized 404 script.'
+                    v.setDesc( fmt % (v.getURL(), lang) )
                     kb.kb.append( self, 'code_disclosure', v )
     
     def end(self):
