@@ -46,12 +46,12 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
     Now I execute the payload, by providing the shell_obj.
     
     @param shell_obj: The shell object instance where I get the syscalls from.
-                      If this is set to None, the handler will choose a shell from
-                      the KB that provide the necessary syscalls. 
+                      If this is set to None, the handler will choose a shell
+                      from the KB that provide the necessary syscalls. 
     @param payload_name: The name of the payload I want to run.
     @param args: A tuple with the args (strings) the user typed. 
-    @use_api: Indicates if I need to use the API or not in this run. This is True when
-                    exec_payload is called from base_payload.exec_payload()
+    @use_api: Indicates if I need to use the API or not in this run. This is
+              True when exec_payload is called from base_payload.exec_payload()
                     
     @return: The payload result.
     '''
