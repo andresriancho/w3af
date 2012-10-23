@@ -19,21 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# options
-from core.data.options.option import option
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.grep_plugin import GrepPlugin
+from lxml import etree
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-
-from lxml import etree
 
 
 class objects(GrepPlugin):
@@ -78,24 +70,14 @@ class objects(GrepPlugin):
                 i.setName(tag_name.title() + ' tag')
                 i.setURL(url)
                 i.set_id( response.id )
-                msg = 'The URL: "%s" has an "%s" tag. We recommend you download the '
-                msg +=  'client side code and analyze it manually.'
+                msg = 'The URL: "%s" has an "%s" tag. We recommend you download' \
+                      ' the client side code and analyze it manually.'
                 msg = msg % (i.getURI(), tag_name)
                 i.setDesc( msg )
                 i.addToHighlight( tag_name )
 
                 kb.kb.append( self, tag_name, i )
     
-    def set_options( self, option_list ):
-        pass
-    
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''    
-        ol = OptionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -103,13 +85,6 @@ class objects(GrepPlugin):
         for obj_type in self._tag_names:
             self.print_uniq( kb.kb.get( 'objects', obj_type ), 'URL' )
                 
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.

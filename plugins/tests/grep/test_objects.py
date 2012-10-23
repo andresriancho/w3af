@@ -27,17 +27,13 @@ from plugins.grep.objects import objects
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.urlParser import url_object
+from core.data.dc.headers import Headers
 
 
 class test_objects(unittest.TestCase):
     
     def setUp(self):
         self.plugin = objects()
-
-        from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
-        from core.data.url.xUrllib import xUrllib
-        f = fingerprint_404_singleton( [False, False, False] )
-        f.set_url_opener( xUrllib() )
         kb.kb.save('objects', 'objects', [])
 
     def tearDown(self):
@@ -52,7 +48,7 @@ class test_objects(unittest.TestCase):
         </OBJECT>        
         footer'''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -70,7 +66,7 @@ class test_objects(unittest.TestCase):
         </APPLET>        
         footer'''
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
@@ -82,7 +78,7 @@ class test_objects(unittest.TestCase):
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'
         url = url_object('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
