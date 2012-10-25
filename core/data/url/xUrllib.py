@@ -43,6 +43,7 @@ from core.controllers.misc.number_generator import consecutive_number_generator 
 from core.controllers.w3afException import (w3afMustStopException, w3afException,
                                             w3afMustStopByUnknownReasonExc,
                                             w3afMustStopByKnownReasonExc,
+                                            w3afMustStopByUserRequest,
                                             w3afMustStopOnUrlError)
 
 from core.data.constants.response_codes import NO_CONTENT
@@ -79,24 +80,25 @@ class xUrllib(object):
         # User configured options (in an indirect way)
         self._grep_queue_put = None
         self._evasion_plugins = []
-        self._paused = False
-        self._must_stop = False
+        self._user_paused = False
+        self._user_stopped = False
+        self._error_stopped = False
         self._ignore_errors_conf = False
     
-    def pause(self, pauseYesNo):
+    def pause(self, pause_yes_no):
         '''
         When the core wants to pause a scan, it calls this method, in order to
         freeze all actions
         
-        @param pauseYesNo: True if I want to pause the scan; False to un-pause it.
+        @param pause_yes_no: True if I want to pause the scan; False to un-pause it.
         '''
-        self._paused = pauseYesNo
+        self._user_paused = pause_yes_no
         
     def stop(self):
         '''
         Called when the user wants to finish a scan.
         '''
-        self._must_stop = True
+        self._user_stopped = True
     
     def _call_before_send(self):
         '''
@@ -114,22 +116,25 @@ class xUrllib(object):
     
     def _sleep_if_paused_die_if_stopped(self):
         '''
-        This method sleeps until self._paused is False.
+        This method sleeps until self._user_paused is False.
         '''
-        while self._paused:
-            time.sleep(0.5)
+        def analyze_state():
+            # There might be errors that make us stop the process
+            if self._error_stopped:
+                self._error_stopped = False
+                msg = 'Exceptions found while sending HTTP requests.'
+                raise w3afMustStopException(msg)
             
-            # The user can pause and then STOP
-            if self._must_stop:
-                self._must_stop = False
-                self._paused = False
-                raise w3afMustStopException('TODO: Better error handling.')
+            if self._user_stopped:
+                self._user_stopped = False
+                msg = 'The user stopped the scan.'
+                raise w3afMustStopByUserRequest(msg)
+            
+        while self._user_paused:
+            time.sleep(0.5)
+            analyze_state()
         
-        # The user can simply STOP the scan
-        if self._must_stop:
-            self._must_stop = False
-            self._paused = False
-            raise w3afMustStopException('TODO: Better error handling.')
+        analyze_state()
     
     def end(self):
         '''
@@ -270,7 +275,23 @@ class xUrllib(object):
             callback(mutant, res)
 
         return res
-            
+    
+    def raise_size_limit(self, respect_size_limit):
+        '''
+        TODO: This is an UGLY hack that allows me to download oversized files,
+              but it shouldn't be implemented like this! It should look more
+              like the follow_redir parameter.
+        '''
+        if not respect_size_limit:
+            original_size = cf.cf.get('maxFileSize')
+            cf.cf.save('maxFileSize', 10**10)
+            return
+    
+    def lower_size_limit(self, respect_size_limit, original_size):
+        if not respect_size_limit:
+            # restore the original value
+            cf.cf.save('maxFileSize', original_size)
+    
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
@@ -306,12 +327,8 @@ class xUrllib(object):
         if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
         
-        # TODO: This is an UGLY hack that allows me to download oversized files,
-        #       but it shouldn't be implemented like this! It should look more
-        #       like the follow_redir parameter.
-        if not respect_size_limit:
-            max_file_size = cf.cf.get('maxFileSize')
-            cf.cf.save('maxFileSize', 10**10)
+        original_max = self.raise_size_limit(respect_size_limit)
+        
         #
         # Create and send the request
         #
@@ -324,12 +341,12 @@ class xUrllib(object):
 
         try:
             http_response = self._send(req, cache=cache, grep=grep)
-        finally:
-            if not respect_size_limit:
-                # restore the original value
-                cf.cf.save('maxFileSize', max_file_size)
-
-            return http_response
+        except:
+            self.lower_size_limit(respect_size_limit, original_max)
+            raise
+        else:
+            self.lower_size_limit(respect_size_limit, original_max)
+            return http_response            
 
     def _new_no_content_resp(self, uri, log_it=False):
         '''
@@ -717,7 +734,7 @@ class xUrllib(object):
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
         
         with self._count_lock:
-            if errtotal >= 10 and not self._must_stop:
+            if errtotal >= 10 and not self._error_stopped:
                 # Stop using xUrllib instance
                 self.stop()
                 # Known reason errors. See errno module for more info on these

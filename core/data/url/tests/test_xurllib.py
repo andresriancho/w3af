@@ -20,6 +20,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import threading
+import time
+import Queue
 
 from nose.plugins.attrib import attr
 
@@ -27,9 +30,14 @@ from core.data.url.xUrllib import xUrllib
 from core.data.parsers.urlParser import url_object
 from core.data.dc.dataContainer import DataContainer
 
+from core.controllers.w3afException import (w3afMustStopByUserRequest,
+                                            w3afMustStopOnUrlError)
+
 
 @attr('smoke')
 class TestXUrllib(unittest.TestCase):
+    
+    MOTH_MESSAGE = 'Welcome to the moth homepage!'
     
     def setUp(self):
         self.uri_opener = xUrllib()
@@ -37,16 +45,16 @@ class TestXUrllib(unittest.TestCase):
     def test_basic(self):
         url = url_object('http://moth/')
         http_response = self.uri_opener.GET( url, cache=False )
-        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
+        self.assertTrue( self.MOTH_MESSAGE in http_response.body )
     
     def test_cache(self):
         url = url_object('http://moth/')
         http_response = self.uri_opener.GET( url )
-        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
+        self.assertTrue( self.MOTH_MESSAGE in http_response.body )
         
         url = url_object('http://moth/')
         http_response = self.uri_opener.GET( url )
-        self.assertTrue( 'Welcome to the moth homepage!' in http_response.body )
+        self.assertTrue( self.MOTH_MESSAGE in http_response.body )
     
     def test_qs_params(self):
         url = url_object('http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt')
@@ -88,3 +96,56 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 1 )
         cookie = [c for c in self.uri_opener.get_cookies()][0]
         self.assertEqual( 'moth.local', cookie.domain )
+
+    def test_unknown_url(self):
+        url = url_object('http://longsitethatdoesnotexistfoo.com/')
+        self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
+
+    def test_stop(self):
+        self.uri_opener.stop()
+        url = url_object('http://moth/')
+        self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
+        
+    def test_pause_stop(self):
+        self.uri_opener.pause(True)
+        self.uri_opener.stop()
+        url = url_object('http://moth/')
+        self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
+        
+    def test_pause(self):
+        output = Queue.Queue()
+        self.uri_opener.pause(True)
+        
+        def send(uri_opener, output):
+            url = url_object('http://moth/')
+            http_response = uri_opener.GET(url)
+            output.put(http_response)
+
+        th = threading.Thread(target=send, args=(self.uri_opener, output))
+        th.daemon = True
+        th.start()
+        
+        self.assertRaises(Queue.Empty, output.get, True, 2)
+
+    def test_pause_unpause(self):
+        output = Queue.Queue()
+        self.uri_opener.pause(True)
+        
+        def send(uri_opener, output):
+            url = url_object('http://moth/')
+            http_response = uri_opener.GET(url)
+            output.put(http_response)
+
+        th = threading.Thread(target=send, args=(self.uri_opener, output))
+        th.daemon = True
+        th.start()
+        
+        self.assertRaises(Queue.Empty, output.get, True, 2)
+        
+        self.uri_opener.pause(False)
+        
+        http_response = output.get()
+
+        self.assertEqual(http_response.getCode(), 200)
+        self.assertTrue(self.MOTH_MESSAGE in http_response.body, http_response.body)
+        
