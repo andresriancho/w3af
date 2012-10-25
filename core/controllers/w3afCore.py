@@ -112,7 +112,7 @@ class w3afCore(object):
         self._start_time_epoch = time.time()
         
         try:
-            # Just in case the gtkUi / consoleUi forgot to do this...
+            # Just in case the gtkUi / ConsoleUI forgot to do this...
             self.verify_environment()
         except Exception, e:
             error = ('verify_environment() raised an exception: "%s". This'
