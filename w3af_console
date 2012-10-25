@@ -134,7 +134,7 @@ def main():
                     return -3
     
     # console
-    from core.ui.consoleUi.consoleUi import consoleUi
+    from core.ui.console.console_ui import ConsoleUI
     
     commands_to_run = []
     if script_file is not None:
@@ -156,7 +156,11 @@ def main():
             commands_to_run.append("start")
             commands_to_run.append("exit")
 
-    console = consoleUi(commands=commands_to_run, do_upd=doupdate, rev=rev)
+    console = ConsoleUI(commands=commands_to_run, do_upd=doupdate, rev=rev)
+    
+    if not console.accept_disclaimer():
+        return -4
+    
     console.sh()
 
 
