@@ -130,13 +130,18 @@ class ConsoleUI(object):
                  not accept the disclaimer.
         '''
         startup_cfg = StartUpConfig()
-        print startup_cfg.accepted_disclaimer
+
         if startup_cfg.accepted_disclaimer:
             return True
 
         QUESTION = 'Do you accept the terms and conditions? [N|y] '
         msg = DISCLAIMER + '\n\n' + QUESTION
-        user_response = raw_input(msg)
+        try:
+            user_response = raw_input(msg)
+        except (KeyboardInterrupt, EOFError):
+            print ''
+            user_response = ''
+        
         user_response = user_response.lower()
         
         if user_response == 'y' or user_response == 'yes':
