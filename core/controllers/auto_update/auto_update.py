@@ -705,7 +705,7 @@ class VersionMgr(object): #TODO: Make it singleton?
         #
         if deps:
             depfiles = ('core/controllers/dependency_check/dependency_check.py',
-                        'core/ui/gtkUi/dependencyCheck.py')
+                        'core/ui/gui/dependencyCheck.py')
             for depfile in depfiles:
                 diff_str = client.diff(depfile)
                 nlines = (nl[1:].strip() for nl in

@@ -40,7 +40,7 @@ class AuditPlugin(Plugin):
         self._uri_opener = None
 
     # FIXME: This method is awful and returns LOTS of false positives. Only
-    #        used by ./core/ui/gtkUi/reqResViewer.py
+    #        used by ./core/ui/gui/reqResViewer.py
     def audit_wrapper( self, fuzzable_request ):
         '''
         Receives a FuzzableRequest and forwards it to the internal method

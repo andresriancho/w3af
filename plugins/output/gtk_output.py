@@ -105,7 +105,7 @@ class gtk_output(OutputPlugin):
         return '''
         Saves messages to kb.kb.get('gtk_output', 'queue'), messages are
         saved in the form of objects. This plugin was created to be able to
-        communicate with the gtkUi and should be enabled if you are using it.
+        communicate with the gui and should be enabled if you are using it.
         '''
 
 

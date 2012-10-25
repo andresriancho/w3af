@@ -29,9 +29,7 @@ w3af - Web Application Attack and Audit Framework
 
 Usage:
 
-    ./w3af_console -h
-    ./w3af_console -f
-    ./w3af_console [-s <script_file>]
+    ./w3af_gui [OPTIONS]
 
 Options:
 
@@ -92,8 +90,8 @@ def main():
         if not display:
             om.out.error("The DISPLAY environment variable is not set! You can not use any graphical program without it...")
             return -1
-    import core.ui.gtkUi.main
-    core.ui.gtkUi.main.main(profile, doupdate)
+    import core.ui.gui.main
+    core.ui.gui.main.main(profile, doupdate)
 
 if __name__ == "__main__":
     err_code = main()
