@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
-from core.ui.consoleUi.consoleUi import consoleUi
-from core.ui.consoleUi.tests.helper import ConsoleTestHelper
+from core.ui.console.console_ui import ConsoleUI
+from core.ui.console.tests.helper import ConsoleTestHelper
 
 
 @attr('smoke')
@@ -40,7 +40,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
                     'Please set the target URL',
                     '| use                            | Use a profile.')
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 
@@ -54,7 +54,7 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         
         expected = ('Unknown profile name: "do_not_exist"',)
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 

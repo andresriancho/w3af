@@ -27,18 +27,18 @@ from multiprocessing.dummy import Process
 
 import core.controllers.outputManager as om
 import core.controllers.miscSettings as ms
-import core.ui.consoleUi.io.console as term
+import core.ui.console.io.console as term
 
-from core.ui.consoleUi.menu import menu
-from core.ui.consoleUi.plugins import pluginsMenu
-from core.ui.consoleUi.profiles import profilesMenu
-from core.ui.consoleUi.exploit import exploit
-from core.ui.consoleUi.config import configMenu
-from core.ui.consoleUi.kbMenu import kbMenu
-from core.ui.consoleUi.bug_report import bug_report_menu
+from core.ui.console.menu import menu
+from core.ui.console.plugins import pluginsMenu
+from core.ui.console.profiles import profilesMenu
+from core.ui.console.exploit import exploit
+from core.ui.console.config import configMenu
+from core.ui.console.kbMenu import kbMenu
+from core.ui.console.bug_report import bug_report_menu
 from core.controllers.w3afException import w3afException, w3afMustStopException
 from core.controllers.misc.get_w3af_version import get_w3af_version
-from core.ui.consoleUi.util import mapDict
+from core.ui.console.util import mapDict
 
 
 class rootMenu(menu):

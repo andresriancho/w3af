@@ -28,7 +28,7 @@ def commonPrefix(completions):
     Utility function which is used by console to extract the string to be
     suggested as autocompletion.
     @parameter completions: [(part, completion)] where part is a prefix of completion 
-    (see core.ui.consoleUi.menu)
+    (see core.ui.console.menu)
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
 

@@ -1,5 +1,5 @@
 '''
-consoleUi.py
+ConsoleUI.py
 
 Copyright 2008 Andres Riancho
 
@@ -19,22 +19,27 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import os
 import sys
 import shlex
 import random
 import traceback
 
 try:
-    import core.ui.consoleUi.io.console as term
-    import core.ui.consoleUi.tables as tables
+    import core.ui.console.io.console as term
+    import core.ui.console.tables as tables
     import core.controllers.w3afCore
     import core.controllers.outputManager as om
     
+    from core.ui.console.rootMenu import rootMenu
+    from core.ui.console.callbackMenu import callbackMenu
+    from core.ui.console.util import commonPrefix
+    from core.ui.console.history import historyTable
+    
+    from core.data.constants.disclaimer import DISCLAIMER
+    from core.data.db.startup_cfg import StartUpConfig
+    
     from core.controllers.auto_update import UIUpdater
-    from core.ui.consoleUi.rootMenu import rootMenu
-    from core.ui.consoleUi.callbackMenu import callbackMenu
-    from core.ui.consoleUi.util import commonPrefix
-    from core.ui.consoleUi.history import historyTable
     from core.controllers.w3afException import (w3afException, 
                                                 w3afMustStopException)
 except KeyboardInterrupt:
@@ -66,7 +71,7 @@ class ConsoleUIUpdater(UIUpdater):
         # Nothing special to do here.
         pass
 
-class consoleUi(object):
+class ConsoleUI(object):
     '''
     This class represents the console. 
     It handles the keys pressed and delegate the completion and execution tasks 
@@ -117,7 +122,30 @@ class consoleUi(object):
     def __initFromParent(self, parent):
         self._context = parent._context
         self._w3af = parent._w3af
+    
+    def accept_disclaimer(self):
+        '''
+        @return: True/False depending on the user's answer to our disclaimer.
+                 Please note that in w3af_console we'll stop if the user does
+                 not accept the disclaimer.
+        '''
+        startup_cfg = StartUpConfig()
+        print startup_cfg.accepted_disclaimer
+        if startup_cfg.accepted_disclaimer:
+            return True
+
+        QUESTION = 'Do you accept the terms and conditions? [N|y] '
+        msg = DISCLAIMER + '\n\n' + QUESTION
+        user_response = raw_input(msg)
+        user_response = user_response.lower()
         
+        if user_response == 'y' or user_response == 'yes':
+            startup_cfg.accepted_disclaimer = True
+            startup_cfg.save()
+            return True
+            
+        return False
+      
     def sh(self, name='w3af', callback=None):
         '''
         Main cycle
@@ -153,7 +181,7 @@ class consoleUi(object):
         if not hasattr(self, '_parent'):
             self._w3af.quit()
             self._context.join()
-            om.out.console(self._randomMessage())
+            om.out.console(self._random_message())
             om.out.process_all_messages()
 
     def _executePending(self):
@@ -407,7 +435,7 @@ class consoleUi(object):
 
     def _parseLine(self, line=None):
         '''
-        >>> console = consoleUi(do_upd=False)
+        >>> console = ConsoleUI(do_upd=False)
         >>> console._parseLine('abc')
         ['abc']
 
@@ -481,8 +509,9 @@ class consoleUi(object):
 #        term.restorePosition()
 
 
-    def _randomMessage(self):
-        f = file('core/ui/consoleUi/exitMessages.txt', 'r')
+    def _random_message(self):
+        messages_file = os.path.join('core','ui','console','exitMessages.txt')
+        f = file( messages_file, 'r')
         lines = f.readlines()
         idx = random.randrange(len(lines))
         line = lines[idx]

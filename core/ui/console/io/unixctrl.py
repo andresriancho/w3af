@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import sys
-from core.ui.consoleUi.io.common import *
+from core.ui.console.io.common import *
 import core.controllers.outputManager as om
 import termios, tty
 

@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.outputManager as om
 
-from core.ui.consoleUi.menu import menu
-from core.ui.consoleUi.util import suggest
+from core.ui.console.menu import menu
+from core.ui.console.util import suggest
 from core.controllers.w3afException import w3afException
 
 

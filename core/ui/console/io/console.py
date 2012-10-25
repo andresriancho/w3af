@@ -135,12 +135,12 @@ def terminal_size():
 
 try:
     import tty, termios
-    from core.ui.consoleUi.io.unixctrl import * 
+    from core.ui.console.io.unixctrl import * 
 except Exception, e:
     # We arent on unix !
     try:
         import msvcrt
-        from core.ui.consoleUi.io.winctrl import * 
+        from core.ui.console.io.winctrl import * 
     except Exception, a:
         print str(e + '\n' + a)
         # We arent on windows nor unix

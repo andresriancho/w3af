@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.attrib import attr
 
-from core.ui.consoleUi.consoleUi import consoleUi
-from core.ui.consoleUi.tests.helper import ConsoleTestHelper
+from core.ui.console.console_ui import ConsoleUI
+from core.ui.console.tests.helper import ConsoleTestHelper
 
 
 @attr('smoke')
@@ -32,7 +32,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_misc(self):
         commands_to_run = ['misc-settings', 'back', 'exit']
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         expected = ('w3af>>> ','w3af/config:misc-settings>>> ')
@@ -42,7 +42,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_http(self):
         commands_to_run = ['http-settings', 'back', 'exit']
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         expected = ('w3af>>> ','w3af/config:http-settings>>> ')
@@ -52,7 +52,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_target(self):
         commands_to_run = ['target', 'back', 'exit']
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         expected = ('w3af>>> ','w3af/config:target>>> ')
@@ -69,7 +69,7 @@ class TestBasicConsoleUI(ConsoleTestHelper):
                     'result. The information stored in',
                     'previous defacements to the target website.')
         
-        console = consoleUi(commands=commands_to_run, do_upd=False)
+        console = ConsoleUI(commands=commands_to_run, do_upd=False)
         console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 

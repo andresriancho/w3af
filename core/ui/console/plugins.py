@@ -25,9 +25,9 @@ import textwrap
 
 import core.controllers.outputManager as om
 
-from core.ui.consoleUi.menu import menu
-from core.ui.consoleUi.config import configMenu
-from core.ui.consoleUi.util import suggest
+from core.ui.console.menu import menu
+from core.ui.console.config import configMenu
+from core.ui.console.util import suggest
 from core.controllers.w3afException import w3afException
 
 

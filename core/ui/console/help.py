@@ -43,7 +43,7 @@ class helpRepository(object):
     
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-    def __init__(self, path=os.path.join('core','ui','consoleUi','help.xml') ):
+    def __init__(self, path=os.path.join('core','ui','console','help.xml') ):
         self.__doc = ET.parse(path)
         self.__map = {}
         topics = self.__doc.findall('.//topic')

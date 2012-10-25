@@ -25,8 +25,8 @@ import core.data.kb.vuln as vuln
 import core.data.kb.shell as shell
 import core.controllers.outputManager as om
 
-from core.ui.consoleUi.menu import menu
-from core.ui.consoleUi.util import suggest
+from core.ui.console.menu import menu
+from core.ui.console.util import suggest
 
 
 class kbMenu(menu):

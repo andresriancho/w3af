@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
 import msvcrt
-from core.ui.consoleUi.io.common import *
+from core.ui.console.io.common import *
 
 
 SEQ_PREFIX = '\xE0'

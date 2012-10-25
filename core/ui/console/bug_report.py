@@ -24,8 +24,8 @@ import core.controllers.outputManager as om
 
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
-from core.ui.consoleUi.menu import menu
-from core.ui.consoleUi.util import suggest
+from core.ui.console.menu import menu
+from core.ui.console.util import suggest
 
 
 class bug_report_menu(menu):

@@ -25,9 +25,9 @@ import core.data.kb.knowledgeBase as kb
 import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
-from core.ui.consoleUi.util import splitPath, suggest
-from core.ui.consoleUi.history import history
-from core.ui.consoleUi.help import helpMainRepository, HelpContainer
+from core.ui.console.util import splitPath, suggest
+from core.ui.console.history import history
+from core.ui.console.help import helpMainRepository, HelpContainer
 
 
 class menu(object):
