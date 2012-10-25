@@ -482,6 +482,10 @@ class url_object(disk_item):
         >>> u = url_object('http://www.w3af.com/foo/bar.txt?id=3#foobar')
         >>> u.baseUrl().url_string
         u'http://www.w3af.com/'
+
+        >>> u = url_object('http://www.w3af.com')
+        >>> u.baseUrl().url_string
+        u'http://www.w3af.com/'
         '''
         params = (self.scheme, self.netloc, None, None, None, None)
         return url_object.from_parts(*params, encoding=self._encoding)

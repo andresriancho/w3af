@@ -275,8 +275,6 @@ class web_spider(CrawlPlugin):
         # referer
         #
         referer = originalURL.baseUrl()
-        if not referer.url_string.endswith('/'):
-            referer += '/'
         headers = Headers([('Referer', referer)])
         
         try:
