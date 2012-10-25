@@ -27,8 +27,9 @@ from collections import namedtuple
 
 import core.controllers.auto_update.auto_update as autoupdmod
 
+from core.data.db.startup_cfg import StartUpConfig
 from core.controllers.auto_update.auto_update import (
-    w3afSVNClient, Revision, VersionMgr, SVNFilesList, StartUpConfig,
+    w3afSVNClient, Revision, VersionMgr, SVNFilesList,
     FILE_UPD, FILE_NEW, FILE_DEL, ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN,
     W3AF_LOCAL_PATH, get_svnversion, SVNError, SVNUpdateError
     )
