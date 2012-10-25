@@ -24,7 +24,7 @@ from __future__ import absolute_import
 # I perform the GTK UI dependency check here
 # please note that there is also a CORE dependency check, which verifies the
 # presence of different libraries.
-# This task is done in different places because the consoleUi has different requirements
+# This task is done in different places because the ConsoleUI has different requirements
 # than the GTK UI.
 from . import dependency_check
 dependency_check.gtkui_dependency_check()
