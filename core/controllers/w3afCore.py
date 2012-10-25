@@ -45,7 +45,8 @@ from core.controllers.misc.homeDir import (create_home_dir,
 from core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
                                             TEMP_DIR)
 from core.controllers.w3afException import (w3afException, w3afMustStopException,
-                                            w3afMustStopByUnknownReasonExc)
+                                            w3afMustStopByUnknownReasonExc,
+                                            w3afMustStopByUserRequest)
 
 from core.data.url.xUrllib import xUrllib
 from core.data.kb.knowledgeBase import kb
@@ -112,7 +113,7 @@ class w3afCore(object):
         self._start_time_epoch = time.time()
         
         try:
-            # Just in case the gtkUi / ConsoleUI forgot to do this...
+            # Just in case the gui / ConsoleUI forgot to do this...
             self.verify_environment()
         except Exception, e:
             error = ('verify_environment() raised an exception: "%s". This'
@@ -124,7 +125,7 @@ class w3afCore(object):
         # Let the output plugins know what kind of plugins we're
         # using during the scan
         om.out.log_enabled_plugins(self.plugins.get_all_enabled_plugins(), 
-                                 self.plugins.get_all_plugin_options())
+                                   self.plugins.get_all_plugin_options())
 
         self.status.start()
         enable_dns_cache()
@@ -144,6 +145,12 @@ class w3afCore(object):
             # conditions.
             #
             raise
+        except w3afMustStopByUserRequest:
+            # I don't have to do anything here, since the user is the one that
+            # requested the scanner to stop. From here the code continues at the
+            # "finally" clause, which simply shows a message saying that the
+            # scan finished.
+            pass
         except w3afMustStopException, wmse:
             self._end(wmse, ignore_err=True)
             om.out.error('\n**IMPORTANT** The following error was '

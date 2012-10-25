@@ -60,6 +60,8 @@ class w3afMustStopException(Exception):
     
     __repr__ = __str__
 
+class w3afMustStopByUserRequest(w3afMustStopException):
+    pass
 
 class w3afMustStopOnUrlError(w3afMustStopException):
     

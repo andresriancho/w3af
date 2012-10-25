@@ -31,6 +31,7 @@ from os.path import basename
 
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from core.controllers.w3afException import (w3afMustStopException,
+                                            w3afMustStopByUserRequest,
                                             w3afMustStopByUnknownReasonExc)
 
         
@@ -43,7 +44,8 @@ class ExceptionHandler(object):
     '''
     
     MAX_EXCEPTIONS_PER_PLUGIN = 3
-    NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc, w3afMustStopException)
+    NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc, w3afMustStopException,
+                   w3afMustStopByUserRequest)
     
     def __init__(self):
         # TODO: Maybe this should be a disk_list just to make sure we don't
