@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
 from core.data.dc.dataContainer import DataContainer
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 from plugins.attack.payloads.base_payload import base_payload
 
 

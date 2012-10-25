@@ -2,7 +2,7 @@ import os
 
 import core.controllers.outputManager as om
 
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 from core.controllers.threads.threadpool import return_args
 from core.controllers.threads.threadManager import thread_manager
 

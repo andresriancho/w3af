@@ -3,7 +3,7 @@ import re
 import core.controllers.outputManager as om
 
 from core.controllers.threads.threadManager import thread_manager
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 
 from plugins.attack.payloads.base_payload import base_payload
 

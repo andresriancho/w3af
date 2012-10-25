@@ -1,7 +1,7 @@
 import re
 
 from core.data.constants.common_directories import get_common_directories
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 
 from plugins.attack.payloads.base_payload import base_payload
 

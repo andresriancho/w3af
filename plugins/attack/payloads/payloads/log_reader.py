@@ -1,6 +1,6 @@
 import re
 from plugins.attack.payloads.base_payload import base_payload
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 
 
 class log_reader(base_payload):

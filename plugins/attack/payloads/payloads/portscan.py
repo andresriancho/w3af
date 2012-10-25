@@ -1,4 +1,4 @@
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 from core.controllers.misc.is_private_site import is_private_site
 from plugins.attack.payloads.base_payload import base_payload
 

@@ -1,5 +1,5 @@
 from plugins.attack.payloads.base_payload import base_payload
-from core.ui.consoleUi.tables import table
+from core.ui.console.tables import table
 
 
 class get_hashes(base_payload):
