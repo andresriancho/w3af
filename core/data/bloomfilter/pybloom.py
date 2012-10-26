@@ -227,7 +227,3 @@ class BloomFilter(object):
         self.__dict__.update(d)
         self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

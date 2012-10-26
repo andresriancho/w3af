@@ -19,11 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
+import tempfile
 
-from core.ui.gui.tests.ldtp_wrapper.xvfb_server import XVFBServer 
+from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer 
 
 
-class Gnome(object):
+class Gnome(XVFBServer):
     '''
     This class runs all the required commands to have a working Gnome
     environment within a Xvfb; which is required to be able to have a11y
@@ -34,11 +35,20 @@ class Gnome(object):
     
         * http://mago.ubuntu.com/Documentation/RunningOnHudson
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
+        * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
 
     TRUE='true'
     FALSE='false'
     A11Y_GCONF_KEY = '/desktop/gnome/interface/accessibility'
+    
+    XINITRC = os.path.join( os.getcwd(), 'core', 'ui', 'gui', 'tests',
+                            'dogtail_wrapper', 'dogtail.xinitrc')
+    
+    START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
+    START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, XVFBServer.DISPLAY,
+                             XVFBServer.WIDTH, XVFBServer.HEIGTH,
+                             tempfile.gettempdir())
     
     def get_gconf_value(self, key):
         cmd = 'gconftool-2 --get ' + key

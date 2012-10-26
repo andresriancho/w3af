@@ -25,13 +25,14 @@ import time
 
 from mock import patch
 
-from core.ui.gui.tests.ldtp_wrapper.xvfb_server import XVFBServer, HEIGTH, WIDTH
+from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer
+from core.ui.gui.tests.dogtail_wrapper.tests.utils import is_black_image
 
 
 class TestEnvironment(unittest.TestCase):
 
     X_TEST_COMMAND = 'python %s' % os.path.join('core', 'ui', 'gui', 'tests',
-                                                'ldtp_wrapper', 'helloworld.py')
+                                                'dogtail_wrapper', 'helloworld.py')
         
     def setUp(self):
         self.xvfb_server = XVFBServer()
@@ -88,23 +89,11 @@ class TestEnvironment(unittest.TestCase):
         screenshot_img = Image.open(output_file)
         img_width, img_height = screenshot_img.size
         
-        self.assertEqual(img_width, WIDTH)
-        self.assertEqual(img_height, HEIGTH)
-        self.assertTrue( self._is_black_image(screenshot_img))
+        self.assertEqual(img_width, XVFBServer.WIDTH)
+        self.assertEqual(img_height, XVFBServer.HEIGTH)
+        self.assertTrue(is_black_image(screenshot_img))
         
-        os.unlink(output_file)
-    
-    def _is_black_image(self, img_inst):
-        '''@return: True if the image is completely black'''
-        img_width, img_height = img_inst.size
-        
-        for x in xrange(img_width):
-            for y in xrange(img_height):
-                # 0 means black color
-                if img_inst.getpixel((x, y)) != 0:
-                    return False
-        
-        return True
+        os.remove(output_file)
     
     def test_run_with_stopped_xvfb(self):
         run_result = self.xvfb_server.run_x_process(self.X_TEST_COMMAND)
@@ -116,7 +105,7 @@ class TestEnvironment(unittest.TestCase):
         
         # This should be completely black
         empty_scr_0 = self.xvfb_server.get_screenshot()
-        self.assertTrue(self._is_black_image(Image.open(empty_scr_0)))
+        self.assertTrue(is_black_image(Image.open(empty_scr_0)))
         
         # Start the hello world in the xvfb
         run_result = self.xvfb_server.run_x_process(self.X_TEST_COMMAND, block=False)
@@ -127,7 +116,7 @@ class TestEnvironment(unittest.TestCase):
         # In screen 0 there should be a window, the one I started in the
         # previous step.
         screen_0 = self.xvfb_server.get_screenshot()
-        self.assertFalse(self._is_black_image(Image.open(screen_0)))
+        self.assertFalse(is_black_image(Image.open(screen_0)))
     
     def test_start_vnc_server(self):
         self.xvfb_server.start_sync()

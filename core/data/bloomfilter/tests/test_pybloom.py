@@ -36,18 +36,28 @@ class TestBloomFilter(unittest.TestCase):
     def test_bloom_int(self):
         f = BloomFilter(capacity=10000, error_rate=0.001)
 
-        for i in xrange(0, f.capacity):
-            _ = f.add(i)
+        for i in xrange(0, f.capacity / 3):
+            already_in_filter = f.add(i)
+            self.assertFalse(already_in_filter)
             
-        self.assertEqual( len(f), f.capacity)
+        self.assertEqual(len(f), f.capacity / 3)
         
-        for i in xrange(0, f.capacity / 2 ):
-            r = random.randint(0,f.capacity-1)
-            self.assertEqual(r in f, True)
+        for i in xrange(0, f.capacity ):
+            r = random.randint(0, (f.capacity-3) / 3)
+            self.assertTrue(r in f, r)
 
-        for i in xrange(0, f.capacity / 2 ):
+        for i in xrange(0, f.capacity ):
             r = random.randint(f.capacity,f.capacity * 2)
-            self.assertEqual(r in f, False)
+            self.assertFalse(r in f, r)
+
+    def test_bloom_int_over_capacity(self):
+        
+        def add_too_many():
+            f = BloomFilter(capacity=10, error_rate=0.001)
+            for i in xrange(0, f.capacity * 2):
+                _ = f.add(i)
+            
+        self.assertRaises(IndexError, add_too_many)
     
     @attr('smoke')
     def test_bloom_string(self):

@@ -27,15 +27,6 @@ import time
 import shlex
 import os
 
-WIDTH = 1024
-HEIGTH = 768
-
-XVFB_BIN = '/usr/bin/Xvfb'
-START_XVFB = '%s :9 -screen 0 %sx%sx16 -fbdir %s'  % (XVFB_BIN, WIDTH, HEIGTH, 
-                                                      tempfile.gettempdir())
-
-SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
-
 
 class XVFBServer(threading.Thread):
     '''
@@ -46,15 +37,28 @@ class XVFBServer(threading.Thread):
     features). Gnome is started once the Xvfb is ready and all the Gnome stuff
     is handled in gnome.py
     '''
+    WIDTH = 1024
+    HEIGTH = 768
+    
+    DISPLAY = ':9'
+    XVFB_BIN = '/usr/bin/Xvfb'
+    START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s'  % (XVFB_BIN, DISPLAY, WIDTH,
+                                                          HEIGTH, tempfile.gettempdir())
+    
+    SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
+
+
     def __init__(self):
         super(XVFBServer, self).__init__()
         self.name = 'XVFBServer'
+        self.daemon = True
         
         self.xvfb_process = None
         self.xvfb_start_result = None
+        self.original_display = os.environ['DISPLAY']
         
     def is_installed(self):
-        status, output = commands.getstatusoutput('%s --fake' % XVFB_BIN)
+        status, output = commands.getstatusoutput('%s --fake' % self.XVFB_BIN)
         
         if status == 256 and 'use: X [:<display>] [option]' in output:
             return True
@@ -78,7 +82,7 @@ class XVFBServer(threading.Thread):
     
     def run(self):
         if self.is_installed():
-            args = shlex.split(START_XVFB)
+            args = shlex.split(self.START_CMD)
             self.xvfb_process = subprocess.Popen(args, shell=False,
                                                  stdout=subprocess.PIPE,
                                                  stderr=subprocess.PIPE)
@@ -106,6 +110,16 @@ class XVFBServer(threading.Thread):
         
         return False
     
+    def set_display_to_self(self):
+        os.environ['DISPLAY'] = self.DISPLAY
+    
+    def restore_old_display(self):
+        os.environ['DISPLAY'] = self.original_display
+    
+    def __del__(self):
+        '''Just in case, restore the DISPLAY to the original value again'''
+        os.environ['DISPLAY'] = self.original_display
+    
     def run_x_process(self, cmd, block=False):
         '''
         Run a new process (in most cases one that will open an X window) within
@@ -122,13 +136,17 @@ class XVFBServer(threading.Thread):
         if not self.is_running():
             return False
         
-        display_cmd = 'DISPLAY=:9 %s' % cmd
+        self.set_display_to_self()
         
+        def run_cmd_reset_display(cmd):
+            commands.getoutput(cmd)
+            self.restore_old_display()
+            
         if block:
-            commands.getoutput(display_cmd)
+            run_cmd_reset_display(cmd)
         else:
-            args = (display_cmd,)
-            th = threading.Thread(target=commands.getoutput, args=args)
+            args = (cmd,)
+            th = threading.Thread(target=run_cmd_reset_display, args=args)
             th.daemon = True
             th.name = 'XvfbProcess'
             th.start()
@@ -147,7 +165,7 @@ class XVFBServer(threading.Thread):
         
         if self.is_running():
             
-            for xwd_file in (SCREEN_XWD_FILE_0, ):
+            for xwd_file in (self.SCREEN_XWD_FILE_0, ):
                 temp_file = tempfile.mkstemp(prefix='xvfb-screenshot-')[1]
                 shutil.copy(xwd_file, temp_file)
                 target_jpeg = temp_file + '.jpeg'
@@ -166,7 +184,7 @@ class XVFBServer(threading.Thread):
         (magic++).
         '''
         if self.is_running():
-            args = ('x11vnc -display :9 -shared -forever',)
+            args = ('x11vnc -display %s -shared -forever' % self.DISPLAY,)
             th = threading.Thread(target=commands.getoutput, args=args)
             th.daemon = True
             th.name = 'VNCServer'
