@@ -24,7 +24,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.levenshtein import relative_distance_ge
 
@@ -69,7 +69,7 @@ class fingerprint_os(InfrastructurePlugin):
             last_url = dirs[-1]
             last_url = last_url.url_string
             
-            windows_url = url_object(last_url[0:-1] + '\\' + filename)
+            windows_url = URL(last_url[0:-1] + '\\' + filename)
             windows_response = self._uri_opener.GET(windows_url)
             
             original_response = self._uri_opener.GET(freq_url)

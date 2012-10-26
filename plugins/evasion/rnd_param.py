@@ -47,22 +47,22 @@ class rnd_param(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
         
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> rp = rnd_param()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> qs = rp.modifyRequest( r ).url_object.querystring
         >>> len(qs)
         1
 
-        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> u = URL('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u )
         >>> qs = rp.modifyRequest( r ).url_object.querystring
         >>> len(qs)
         2
 
-        >>> u = url_object('http://www.w3af.com/?id=1')
+        >>> u = URL('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u, data='a=b' )
         >>> data = parse_qs( rp.modifyRequest( r ).get_data() )
         >>> len(data)

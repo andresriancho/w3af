@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from plugins.grep.objects import objects
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 
@@ -47,7 +47,7 @@ class test_objects(unittest.TestCase):
           <PARAM name="code" value="Applet1.class">
         </OBJECT>        
         footer'''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -65,7 +65,7 @@ class test_objects(unittest.TestCase):
             No Java 2 SDK, Standard Edition v 1.4.2 support for APPLET!!
         </APPLET>        
         footer'''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -77,7 +77,7 @@ class test_objects(unittest.TestCase):
 
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

@@ -31,7 +31,7 @@ from core.controllers.w3afException import w3afRunOnce
 
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
@@ -76,7 +76,7 @@ class archive_dot_org(CrawlPlugin):
 
         # Initial check to verify if domain in archive
         start_url = self.ARCHIVE_START_URL % fuzzable_request.getURL()
-        start_url = url_object( start_url )
+        start_url = URL( start_url )
         http_response = self._uri_opener.GET( start_url, cache=True )
         
         if self.NOT_IN_ARCHIVE in http_response.body:
@@ -100,7 +100,7 @@ class archive_dot_org(CrawlPlugin):
         # Translate archive.org URL's to normal URL's
         for url in references:
             url = url.url_string[url.url_string.index('http', 1):]
-            real_URLs.append( url_object(url) )
+            real_URLs.append( URL(url) )
         real_URLs = list(set(real_URLs))
         
         if len( real_URLs ):
@@ -139,7 +139,7 @@ class archive_dot_org(CrawlPlugin):
             # Filter the ones we need
             url_regex_str = self.INTERESTING_URLS_RE % domain
             matched_urls = re.findall(url_regex_str, http_response.body)
-            new_urls = set([url_object(u).removeFragment() for u in matched_urls])
+            new_urls = set([URL(u).removeFragment() for u in matched_urls])
             
             # Go recursive
             if max_depth -1 > 0:

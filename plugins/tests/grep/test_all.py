@@ -31,7 +31,7 @@ from core.controllers.w3afCore import w3af_core
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_all(unittest.TestCase):
@@ -40,7 +40,7 @@ class test_all(unittest.TestCase):
     
     def setUp(self):
         self.url_str = 'http://moth/'
-        self.url_inst = url_object( self.url_str )
+        self.url_inst = URL( self.url_str )
         
         self._is_404_patcher = patch
         
@@ -96,8 +96,8 @@ class test_all(unittest.TestCase):
                     body = file( file_path ).read()
                     hdrs = Headers({'Content-Type': 'text/html'}.items())
                     response = HTTPResponse(200, body, hdrs,
-                                            url_object( self.url_str + str(counter) ),
-                                            url_object( self.url_str + str(counter) ),
+                                            URL( self.url_str + str(counter) ),
+                                            URL( self.url_str + str(counter) ),
                                             _id=random.randint(1,5000) )
 
                     request = FuzzableRequest(self.url_inst)

@@ -26,7 +26,7 @@ from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_net_iface import get_net_iface
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class miscSettings(configurable):
@@ -198,7 +198,7 @@ class miscSettings(configurable):
         
         url_list = []
         for url_str in options_list['nonTargets'].getValue():
-            url_list.append( url_object( url_str ) )
+            url_list.append( URL( url_str ) )
         cf.cf.save('nonTargets', url_list )
         
         cf.cf.save('msf_location', options_list['msf_location'].getValue() )

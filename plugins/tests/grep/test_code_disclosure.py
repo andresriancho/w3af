@@ -30,7 +30,7 @@ from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_code_disclosure(unittest.TestCase):
@@ -45,7 +45,7 @@ class test_code_disclosure(unittest.TestCase):
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_ASP_code_disclosure(self, *args):
         body = 'header <% Response.Write("Hello World!") %> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -55,7 +55,7 @@ class test_code_disclosure(unittest.TestCase):
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_PHP_code_disclosure(self, *args):
         body = 'header <? echo $a; ?> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -65,7 +65,7 @@ class test_code_disclosure(unittest.TestCase):
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_blank(self, *args):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -85,7 +85,7 @@ class test_code_disclosure(unittest.TestCase):
         adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate tristique
         enim. Donec quis lectus a justo imperdiet tempus."""
         
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -102,7 +102,7 @@ class test_code_disclosure(unittest.TestCase):
                     <heading>Reminder</heading>
                     <body>Don't forget me this weekend!</body>
                 </note>'''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -112,7 +112,7 @@ class test_code_disclosure(unittest.TestCase):
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_analysis_content_type(self, *args):
         body = 'header <? echo $a; ?> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'image/jpeg')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

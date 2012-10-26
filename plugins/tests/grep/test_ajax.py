@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
 from plugins.grep.ajax import ajax
@@ -37,7 +37,7 @@ class test_ajax(unittest.TestCase):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = ajax()
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
         kb.kb.save('ajax','ajax',[])
 
@@ -46,7 +46,7 @@ class test_ajax(unittest.TestCase):
         
     def test_ajax_empty(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -55,7 +55,7 @@ class test_ajax(unittest.TestCase):
     
     def test_ajax_find(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -64,7 +64,7 @@ class test_ajax(unittest.TestCase):
     
     def test_ajax_broken_html(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -73,7 +73,7 @@ class test_ajax(unittest.TestCase):
     
     def test_ajax_broken_2(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -82,7 +82,7 @@ class test_ajax(unittest.TestCase):
     
     def test_ajax_find_2(self):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -91,7 +91,7 @@ class test_ajax(unittest.TestCase):
     
     def test_ajax_two(self):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

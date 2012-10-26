@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urlparse
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.factory import create_fuzzable_request
 from core.controllers.w3afException import w3afException
@@ -158,6 +158,6 @@ def HTTPRequestParser(head, postdata):
             host = headers_dict[header_name][0]
             break
         
-    uri = url_object(checkURISyntax(uri, host))
+    uri = URL(checkURISyntax(uri, host))
     
     return create_fuzzable_request(uri, method, postdata, headers)

@@ -49,29 +49,29 @@ class rnd_path(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> import re
         >>> rp = rnd_path()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
         >>> re.match('http://www.w3af.com/\w*/../', url_string) is not None
         True
 
-        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> u = URL('http://www.w3af.com/abc/')
         >>> r = HTTPRequest( u )
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
         >>> re.match('http://www.w3af.com/\w*/../abc/', url_string) is not None
         True
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> u = URL('http://www.w3af.com/abc/def.htm')
         >>> r = HTTPRequest( u )
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
         >>> re.match('http://www.w3af.com/\w*/../abc/def.htm', url_string) is not None
         True
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
+        >>> u = URL('http://www.w3af.com/abc/def.htm?id=1')
         >>> r = HTTPRequest( u )
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
         >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None

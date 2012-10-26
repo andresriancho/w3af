@@ -29,7 +29,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 
 from plugins.tests.helper import PluginTest, PluginConfig
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.w3afException import w3afRunOnce, w3afException
 
@@ -39,7 +39,7 @@ class test_http_vs_https_dist(unittest.TestCase):
     @author: Javier Andalia <jandalia =at= gmail.com>
     '''
     
-    test_url = url_object('http://host.tld')
+    test_url = URL('http://host.tld')
     tracedict = {'localhost': {1: ('192.168.1.1', False),
                                3: ('200.115.195.33', False),
                                5: ('207.46.47.14', True)}}
@@ -51,7 +51,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
         
-        url = url_object('https://host.tld:4444/')
+        url = URL('https://host.tld:4444/')
         fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with one different hop
@@ -73,7 +73,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
         
-        url = url_object('https://host.tld:80/')
+        url = URL('https://host.tld:80/')
         fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with the same hops
@@ -96,7 +96,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
         
-        url = url_object('https://host.tld/')
+        url = URL('https://host.tld/')
         fuzz_req = FuzzableRequest(url)
         
         # HTTPS and HTTP responses, with one different hop
@@ -117,7 +117,7 @@ class test_http_vs_https_dist(unittest.TestCase):
     def test_discover_runonce(self):
         ''' Discovery routine must be executed only once. Upcoming calls should
         fail'''
-        url = url_object('https://host.tld/')
+        url = URL('https://host.tld/')
         fuzz_req = FuzzableRequest(url)
         
         plugininst = hvshsdist.http_vs_https_dist()

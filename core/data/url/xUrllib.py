@@ -48,7 +48,7 @@ from core.controllers.w3afException import (w3afMustStopException, w3afException
 
 from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.factory import create_fuzzable_request
 from core.data.url.handlers.keepalive import URLTimeoutError
 from core.data.url.handlers.logHandler import LogHandler
@@ -317,9 +317,9 @@ class xUrllib(object):
 
         @return: An HTTPResponse object.
         '''
-        if not isinstance(uri, url_object):
+        if not isinstance(uri, URL):
             raise TypeError('The uri parameter of xUrllib.GET() must be of '
-                            'urlParser.url_object type.')
+                            'url.URL type.')
 
         if not isinstance(headers, Headers):
             raise TypeError('The header parameter of xUrllib.GET() must be of '
@@ -365,13 +365,13 @@ class xUrllib(object):
         and response.  
         '''
         # accept a URI or a Request object
-        if isinstance(uri, url_object):
+        if isinstance(uri, URL):
             req = HTTPRequest(uri)
         elif isinstance(uri, HTTPRequest):
             req = uri
         else:
             msg = 'The uri parameter of xUrllib._new_content_resp() has to be of'
-            msg += ' HTTPRequest of url_object type.'
+            msg += ' HTTPRequest of URL type.'
             raise Exception( msg )
 
         # Work,
@@ -396,9 +396,9 @@ class xUrllib(object):
         @param data: A string with the data for the POST.
         @return: An HTTPResponse object.
         '''
-        if not isinstance(uri, url_object):
+        if not isinstance(uri, URL):
             raise TypeError('The uri parameter of xUrllib.POST() must be of '
-                            'urlParser.url_object type.')            
+                            'url.URL type.')            
 
         if not isinstance(headers, Headers):
             raise TypeError('The header parameter of xUrllib.POST() must be of '
@@ -483,9 +483,9 @@ class xUrllib(object):
                     sending the request with a method different from
                     "GET" or "POST".
                 '''
-                if not isinstance(uri, url_object):
+                if not isinstance(uri, URL):
                     raise TypeError('The uri parameter of AnyMethod.'
-                         '__call__() must be of urlParser.url_object type.')
+                         '__call__() must be of url.URL type.')
                 
                 if not isinstance(headers, Headers):
                     raise TypeError('The headers parameter of AnyMethod.'
@@ -570,7 +570,7 @@ class xUrllib(object):
             # Return this info to the caller
             code = int(e.code)
             headers = Headers(e.info().items())
-            geturl_instance = url_object(e.geturl())
+            geturl_instance = URL(e.geturl())
             read = self._readRespose(e)
             http_resp = HTTPResponse(code, read, headers, geturl_instance,
                                       original_url_inst, _id=e.id,

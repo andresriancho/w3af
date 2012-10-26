@@ -24,14 +24,14 @@ import urllib2
 
 from core.data.url.handlers.cookie_handler import CookieHandler 
 from core.data.url.HTTPRequest import HTTPRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.xUrllib import xUrllib
 
 
 class TestCookieHandler(unittest.TestCase):
     
-    URL_SENDS_COOKIE = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
-    URL_CHECK_COOKIE = url_object('http://moth/w3af/core/cookie_handler/has-cookie.php')
+    URL_SENDS_COOKIE = URL('http://moth/w3af/core/cookie_handler/set-cookie.php')
+    URL_CHECK_COOKIE = URL('http://moth/w3af/core/cookie_handler/has-cookie.php')
 
     def test_low_level(self):
         opener = urllib2.build_opener(CookieHandler)

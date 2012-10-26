@@ -28,7 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.headers import Headers
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.misc.temp_dir import create_temp_dir
 from plugins.grep.symfony import symfony
 
@@ -52,7 +52,7 @@ class test_symfony(unittest.TestCase):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = symfony()
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
         self.http_resp = partial(HTTPResponse, code=200, geturl=self.url, original_url=self.url) 
 

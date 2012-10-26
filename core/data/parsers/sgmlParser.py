@@ -28,7 +28,7 @@ from lxml import etree
 import core.controllers.outputManager as om
 
 from core.data.parsers.baseparser import BaseParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class SGMLParser(BaseParser):
@@ -306,7 +306,7 @@ class SGMLParser(BaseParser):
             for urlstr in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                 urlstr = self._decode_url(urlstr.strip())
                 url = unicode(self._baseUrl.urlJoin(urlstr))
-                url = url_object(url, encoding=self._encoding) 
+                url = URL(url, encoding=self._encoding) 
                 self._parsed_urls.add(url)
                 self._tag_and_url.add(('meta', url))
 

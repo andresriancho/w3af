@@ -28,7 +28,7 @@ import core.controllers.outputManager as om
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.dataContainer import DataContainer
 from core.data.parsers.encode_decode import urlencode
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class Form(DataContainer):
@@ -78,16 +78,16 @@ class Form(DataContainer):
         >>> f.setAction('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The action of a Form must be of urlParser.url_object type.
+        TypeError: The action of a Form must be of url.URL type.
         >>> f = Form()
-        >>> action = url_object('http://www.google.com/')
+        >>> action = URL('http://www.google.com/')
         >>> f.setAction(action)
         >>> f.getAction() == action
         True
         '''
-        if not isinstance(action, url_object):
+        if not isinstance(action, URL):
             raise TypeError('The action of a Form must be of '
-                             'urlParser.url_object type.')
+                             'url.URL type.')
         self._action = action
         
     def get_method(self):

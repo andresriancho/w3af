@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 
 import core.data.kb.vuln as vuln
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from ..helper import PluginTest, PluginConfig
 
 
@@ -109,7 +109,7 @@ class XMLParser:
             v = vuln.vuln()
             v.setPluginName(attrib['plugin'])
             v.setName(attrib['name'])
-            v.setURL( url_object(attrib['url']) )
+            v.setURL( URL(attrib['url']) )
             self.vulns.append(v)
     
     def close(self):

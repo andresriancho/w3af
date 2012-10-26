@@ -39,10 +39,10 @@ class HTTPQSRequest(FuzzableRequest):
         >>> r = HTTPQSRequest('http://www.w3af.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: The "uri" parameter of a HTTPQSRequest must be of urlParser.url_object type.
-        >>> from core.data.parsers.urlParser import url_object
-        >>> r = HTTPQSRequest(url_object('http://www.w3af.com/'))
-        >>> uri = url_object('http://www.w3af.com/scan')
+        TypeError: The "uri" parameter of a HTTPQSRequest must be of url.URL type.
+        >>> from core.data.parsers.url import URL
+        >>> r = HTTPQSRequest(URL('http://www.w3af.com/'))
+        >>> uri = URL('http://www.w3af.com/scan')
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True

@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from plugins.grep.http_auth_detect import http_auth_detect
 
@@ -33,7 +33,7 @@ from plugins.grep.http_auth_detect import http_auth_detect
 class test_http_auth_detect(unittest.TestCase):
     
     def setUp(self):
-        self.url = url_object('http://www.w3af.com/') 
+        self.url = URL('http://www.w3af.com/') 
         self.headers = Headers({'content-type': 'text/html'}.items())
         self.request = FuzzableRequest(self.url, method='GET')
         self.plugin = http_auth_detect()

@@ -18,6 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import gtk
+import gobject
+import threading
+
+from . import helpers, entries
 
 # The clustering stuff
 try:
@@ -25,18 +30,11 @@ try:
 except Exception, e:
     from cluster import HierarchicalClustering
 
-# For window creation
-import pygtk, gtk
-import gobject
-from . import helpers, entries
-
-import threading
-
-# For testing
 from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 
 
-class clusterCellWindow(entries.RememberingWindow):
+class ClusterCellWindow(entries.RememberingWindow):
+    
     def __init__ ( self, w3af, data=[] ):
         '''
         A window that stores the clusterCellData and the level changer.
@@ -52,7 +50,7 @@ class clusterCellWindow(entries.RememberingWindow):
         self._level = 50
         
         # Create a new window
-        super(clusterCellWindow,self).__init__(
+        super(ClusterCellWindow,self).__init__(
             w3af, "clusterWindow", "w3af - HTTP Response Clustering",
             "ClusterResponseTool")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
@@ -211,15 +209,16 @@ class clusterCellData(gtk.TreeView):
 
     def _relative_levenshtein(self, a, b):
         '''
-        Computes the relative levenshtein distance between two strings. Its in the range
-        (0-1] where 1 means total equality.
+        Computes the relative levenshtein distance between two strings. It is
+        in the range (0-1] where 1 means total equality.
+        
         @param a: HTTPResponse object
         @param b: HTTPResponse object
         @return: A float with the distance
         '''
-        # After some tests I realized that the amount of calls to this method was HUGE
-        # It seems that python-cluster compares each pair (a,b) more than once!!
-        # So I implemented this ratio cache...
+        # After some tests I realized that the amount of calls to this method 
+        # was HUGE. It seems that python-cluster compares each pair (a,b) more
+        # than once!! So I implemented this ratio cache...
         in_cache = self._distance_cache.get( (a.getId(), b.getId()), None )
         if in_cache is not None:
             return in_cache
@@ -257,9 +256,17 @@ class clusterCellData(gtk.TreeView):
         popup_win.add(label)
         
         if "path-cross-event" not in gobject.signal_list_names( gtk.TreeView ):
-            gobject.signal_new("path-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-            gobject.signal_new("column-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
-            gobject.signal_new("cell-cross-event", gtk.TreeView, gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+            gobject.signal_new("path-cross-event", gtk.TreeView,
+                               gobject.SIGNAL_RUN_LAST,
+                               gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+            
+            gobject.signal_new("column-cross-event", gtk.TreeView,
+                               gobject.SIGNAL_RUN_LAST,
+                               gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
+            
+            gobject.signal_new("cell-cross-event", gtk.TreeView,
+                               gobject.SIGNAL_RUN_LAST,
+                               gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
             
         self.connect("leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
         self.connect("motion-notify-event", self.onTreeviewMotionNotify)
@@ -292,37 +299,38 @@ class clusterCellData(gtk.TreeView):
             ]
         '''
         # First we find the largest list inside the original list
-        largerList = [ len(i) for i in clusteredData if isinstance( i, type([]) ) ]
-        largerList.sort()
-        largerList.reverse()
+        larger_list = [ len(i) for i in clusteredData if isinstance( i, type([]) ) ]
+        larger_list.sort()
+        larger_list.reverse()
         
-        if len(largerList) == 0:
+        if len(larger_list) == 0:
             # We don't have lists inside this list!
-            largerList = 0
+            larger_list = 0
         else:
-            largerList = largerList[0]
+            larger_list = larger_list[0]
             
-        paddedList = []
+        padded_list = []
         for i in clusteredData:
             if isinstance( i, type([]) ):
                 # We have a list to pad
                 i = [ w.getId() for w in i]
-                for j in xrange(largerList-len(i)):
+                for j in xrange(larger_list-len(i)):
                     i.append('')
-                paddedList.append( i )
+                padded_list.append( i )
             else:
                 # Its an object, create a list and pad it.
                 tmp = []
                 tmp.append( i.getId() )
-                for j in xrange(largerList-len(tmp)):
+                for j in xrange(larger_list-len(tmp)):
                     tmp.append('')
-                paddedList.append( tmp )
+                padded_list.append( tmp )
         
         # transpose
-        resList = [ [ '' for w in range(len( paddedList ) ) ] for i in range(len( paddedList [0] ) ) ]
+        resList = [ [ '' for w in range(len( padded_list ) ) ] 
+                    for i in range(len( padded_list [0] ) ) ]
         
-        for x, paddedList in enumerate(paddedList):
-            for y, paddedItem in enumerate( paddedList ):
+        for x, padded_list in enumerate(padded_list):
+            for y, paddedItem in enumerate( padded_list ):
                 resList[y][x] = str(paddedItem)
         return resList
             
@@ -362,7 +370,8 @@ class clusterCellData(gtk.TreeView):
         return (current_path, current_column, cell_x, cell_y, cell_x_, cell_y_)
 
     def handleDoubleClick(self, treeview, path, view_column):
-        # FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)
+        # FIXME: I'm sure there is another way to do this... but... 
+        # what a hell... nobody reads the code ;)
         # I'm talking about the self._colDict[ current_column ]!
         currentId = self.liststore[ path[0] ][ self._colDict[ view_column ] ]
         # Search the Id and show the data
@@ -377,14 +386,18 @@ class clusterCellData(gtk.TreeView):
         except Exception, e:
             return ''
         else:
-            return '<b><i>Code: </i></b>' + str(obj.getCode()) + '\n<b><i>Message: </i></b>' + obj.getMsg()\
-           + '\n<b><i>URI: </i></b>' + obj.getURI()
+            msg = '<b><i>Code: </i></b>%s\n<b><i>Message: </i></b>%s' \
+                  '\n<b><i>URI: </i></b>%s'            
+            return msg % (obj.getCode(), obj.getMsg(), obj.getURI())
         
     def handlePopup(self, treeview, event, popup_win):
-        current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = self.getCurrentCellData(treeview, event)
+        current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = \
+        self.getCurrentCellData(treeview, event)
+        
         if cell_x is not None:
             # Search the Id and show the data
-            # FIXME: I'm sure there is another way to do this... but... what a hell... nobody reads the code ;)
+            # FIXME: I'm sure there is another way to do this... but... 
+            # what a hell... nobody reads the code ;)
             # I'm talking about the self._colDict[ current_column ]!
             currentId = self.liststore[ current_path[0] ][ self._colDict[ current_column ] ]
             info = self._getInfoForId( currentId )
@@ -395,7 +408,10 @@ class clusterCellData(gtk.TreeView):
                 # Use the info and display the window
                 popup_win.get_child().set_markup( info )
                 popup_width, popup_height = popup_win.get_size()
-                pos_x, pos_y = self.computeTooltipPosition(treeview, cell_x, cell_y, cell_x_, cell_y_, popup_width, popup_height, event)
+                pos_x, pos_y = self.computeTooltipPosition(treeview, cell_x, cell_y,
+                                                           cell_x_, cell_y_,
+                                                           popup_width,
+                                                           popup_height, event)
                 popup_win.move(int(pos_x) , int(pos_y))
                 popup_win.show_all()
         else:
@@ -404,7 +420,8 @@ class clusterCellData(gtk.TreeView):
     def emitCellCrossSignal(self, treeview, event):
         treeview.emit("cell-cross-event", event)
     
-    def computeTooltipPosition(self, treeview, cell_x, cell_y, cell_x_, cell_y_, popup_width, popup_height, event):
+    def computeTooltipPosition(self, treeview, cell_x, cell_y, cell_x_, cell_y_,
+                               popup_width, popup_height, event):
         screen_width = gtk.gdk.screen_width()
         screeen_height = gtk.gdk.screen_height()
     
@@ -425,8 +442,8 @@ def main():
 
 if __name__ == "__main__":
     
-    import core.data.parsers.urlParser as url_object
-    url_instance = url_object('http://a/index.html')
+    from core.data.parsers.url import URL
+    url_instance = URL('http://a/index.html')
     
     #    We create the data
     data = [
@@ -437,5 +454,5 @@ if __name__ == "__main__":
         HTTPResponse(200, 'my data likes me', {}, url_instance, url_instance, id=5)
         ]
             
-    cl_win = clusterCellWindow( data=data )
+    cl_win = ClusterCellWindow( data=data )
     main()

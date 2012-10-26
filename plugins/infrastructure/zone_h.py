@@ -30,7 +30,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class zone_h(InfrastructurePlugin):
@@ -57,7 +57,7 @@ class zone_h(InfrastructurePlugin):
     
         # TODO: Keep this URL updated!
         zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
-        zone_h_url = url_object( zone_h_url_str )
+        zone_h_url = URL( zone_h_url_str )
 
         try:
             response = self._uri_opener.GET( zone_h_url )

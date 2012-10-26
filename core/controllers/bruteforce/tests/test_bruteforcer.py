@@ -27,14 +27,14 @@ from nose.plugins.attrib import attr
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.bruteforce.bruteforcer import (password_bruteforcer,
                                                      user_password_bruteforcer)
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_password_bruteforcer(unittest.TestCase):
 
     @attr('smoke')
     def test_contains(self):
-        url = url_object('http://www.w3af.org/')
+        url = URL('http://www.w3af.org/')
         
         pwd_bf = password_bruteforcer(url)
         
@@ -50,7 +50,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
 
     @attr('smoke')
     def test_bruteforcer_default(self):
-        url = url_object('http://www.w3af.org/')
+        url = URL('http://www.w3af.org/')
         
         bf = user_password_bruteforcer(url)
         
@@ -89,7 +89,7 @@ class test_user_password_bruteforcer(unittest.TestCase):
             
         combo_fd.close()
         
-        url = url_object('http://www.w3af.org/')
+        url = URL('http://www.w3af.org/')
         
         bf = user_password_bruteforcer(url)
         bf.combo_file = combo_filename

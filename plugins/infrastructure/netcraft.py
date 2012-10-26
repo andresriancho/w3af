@@ -33,7 +33,7 @@ from core.controllers.w3afException import w3afException, w3afRunOnce
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 import re
 
@@ -63,7 +63,7 @@ class netcraft(InfrastructurePlugin):
         #
 
         nc_url_str = 'http://toolbar.netcraft.com/site_report?url=' + target_domain
-        nc_url = url_object( nc_url_str )
+        nc_url = URL( nc_url_str )
 
         try:
             response = self._uri_opener.GET( nc_url )

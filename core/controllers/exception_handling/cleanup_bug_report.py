@@ -38,8 +38,8 @@ def cleanup_bug_report( _input ):
     >>> cleanup_bug_report( 'start C:\\Documents and Settings\\CIA\\ end' )
     'start C:/user/ end'
 
-    >>> from core.data.parsers.urlParser import url_object
-    >>> target_url = url_object('http://www.target.com/')
+    >>> from core.data.parsers.url import URL
+    >>> target_url = URL('http://www.target.com/')
     >>> cf.cf.save('targets', [target_url,] )
     >>> cleanup_bug_report( 'start http://www.target.com/ end' )
     'start http://domain/ end'

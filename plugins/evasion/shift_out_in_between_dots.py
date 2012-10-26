@@ -45,21 +45,21 @@ class shift_out_in_between_dots(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> import re
         >>> sosibd = shift_out_in_between_dots()
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
         
-        >>> u = url_object('http://www.w3af.com/../')
+        >>> u = URL('http://www.w3af.com/../')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/.%0E%0F./'
 
-        >>> u = url_object('http://www.w3af.com/abc/def/.././jkl.htm')
+        >>> u = URL('http://www.w3af.com/abc/def/.././jkl.htm')
         >>> r = HTTPRequest( u )
         >>> sosibd.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/abc/def/.%0E%0F././jkl.htm'

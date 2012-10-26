@@ -48,25 +48,25 @@ class rnd_case(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
         
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> rc = rnd_case()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rc.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/ab/')
+        >>> u = URL('http://www.w3af.com/ab/')
         >>> r = HTTPRequest( u )
         >>> rc.modifyRequest( r ).url_object.getPath() in ['/ab/','/aB/','/Ab/','/AB/']
         True
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='a=b' )
         >>> rc.modifyRequest( r ).get_data() in ['a=b','A=b','a=B','A=B']
         True
 
-        >>> u = url_object('http://www.w3af.com/a/B')
+        >>> u = URL('http://www.w3af.com/a/B')
         >>> r = HTTPRequest( u )
         >>> options = ['/a/b','/a/B','/A/b','/A/B'] 
         >>> path = rc.modifyRequest( r ).url_object.getPath()

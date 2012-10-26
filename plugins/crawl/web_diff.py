@@ -28,7 +28,7 @@ from core.data.options.option_list import OptionList
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 import os
@@ -239,7 +239,7 @@ class web_diff(CrawlPlugin):
         self._ban_url = options_list['banUrl'].getValue()
         self._local_dir = options_list['localDir'].getValue()
         try:
-            url = url_object(options_list['remotePath'].getValue())
+            url = URL(options_list['remotePath'].getValue())
             self._remote_path = url.getDomainPath()
         except ValueError:
             pass

@@ -32,7 +32,7 @@ from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 
@@ -66,7 +66,7 @@ class TestHistoryItem(unittest.TestCase):
     
     def test_find(self):
         find_id = random.randint(1, 499)
-        url = url_object('http://w3af.org/a/b/foobar.php?foo=123')
+        url = URL('http://w3af.org/a/b/foobar.php?foo=123')
         tag_value = rand_alnum(10)
         for i in xrange(0, 500):
             fr = FuzzReq(url, dc={'a': ['1']})
@@ -99,7 +99,7 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_mark(self):
         mark_id = random.randint(1, 499)
-        url = url_object('http://w3af.org/a/b/c.php')
+        url = URL('http://w3af.org/a/b/c.php')
         for i in xrange(0, 500):
             fr = FuzzReq(url, dc={'a': ['1']})
             hdr = Headers([('Content-Type', 'text/html')])
@@ -117,7 +117,7 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_save_load(self):
         i = random.randint(1, 499)
-        url = url_object('http://w3af.com/a/b/c.php')
+        url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>',hdr, url, url)
@@ -133,7 +133,7 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_delete(self):
         i = random.randint(1, 499)
-        url = url_object('http://w3af.com/a/b/c.php')
+        url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>',hdr, url, url)
@@ -151,7 +151,7 @@ class TestHistoryItem(unittest.TestCase):
 
     def test_clear(self):
         i = random.randint(1, 499)
-        url = url_object('http://w3af.com/a/b/c.php')
+        url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>',hdr, url, url)
@@ -171,7 +171,7 @@ class TestHistoryItem(unittest.TestCase):
     def test_tag(self):
         tag_id = random.randint(501, 999)
         tag_value = rand_alnum(10)
-        url = url_object('http://w3af.org/a/b/c.php')
+        url = URL('http://w3af.org/a/b/c.php')
 
         for i in xrange(501, 1000):
             fr = FuzzReq(url, dc={'a': ['1']})

@@ -74,7 +74,7 @@ def build_cors_request(url, origin_header_value):
     '''
     Method to generate a "GET" CORS HTTP request based on input context. 
 
-    @param url: A url_object object.
+    @param url: a URL object object.
     @param origin_header_value: Value of the "ORIGIN" HTTP request header
                                   (if value is set to None then the "ORIGIN"
                                   header is skipped).

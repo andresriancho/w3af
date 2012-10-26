@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_set import disk_set
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.dc.headers import Headers
@@ -51,28 +51,28 @@ class test_disk_set(unittest.TestCase):
     def test_add_urlobject(self):
         ds = disk_set()
 
-        ds.add( url_object('http://w3af.org/?id=2') )
-        ds.add( url_object('http://w3af.org/?id=3') )
-        ds.add( url_object('http://w3af.org/?id=3') )
+        ds.add( URL('http://w3af.org/?id=2') )
+        ds.add( URL('http://w3af.org/?id=3') )
+        ds.add( URL('http://w3af.org/?id=3') )
         
-        self.assertEqual( ds[0] , url_object('http://w3af.org/?id=2'))
-        self.assertEqual( ds[1] , url_object('http://w3af.org/?id=3'))
+        self.assertEqual( ds[0] , URL('http://w3af.org/?id=2'))
+        self.assertEqual( ds[1] , URL('http://w3af.org/?id=3'))
         self.assertEqual( len(ds) , 2)
-        self.assertFalse( url_object('http://w3af.org/?id=4') in ds )
-        self.assertTrue( url_object('http://w3af.org/?id=2') in ds )
+        self.assertFalse( URL('http://w3af.org/?id=4') in ds )
+        self.assertTrue( URL('http://w3af.org/?id=2') in ds )
         
     def test_add_HTTPQSRequest(self):
         ds = disk_set()
         
-        uri = url_object('http://w3af.org/?id=2')
+        uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
         
         qsr1 = HTTPQSRequest(uri, method='GET', headers=hdr)
 
-        uri = url_object('http://w3af.org/?id=3')
+        uri = URL('http://w3af.org/?id=3')
         qsr2 = HTTPQSRequest(uri, method='GET', headers=hdr)
         
-        uri = url_object('http://w3af.org/?id=7')
+        uri = URL('http://w3af.org/?id=7')
         qsr3 = HTTPQSRequest(uri, method='FOO', headers=hdr)
         
         ds.add( qsr1 )
@@ -94,15 +94,15 @@ class test_disk_set(unittest.TestCase):
     def test_add_HTTPPostDataRequest(self):
         ds = disk_set()
         
-        uri = url_object('http://w3af.org/?id=2')
+        uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
         
         pdr1 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
 
-        uri = url_object('http://w3af.org/?id=3')
+        uri = URL('http://w3af.org/?id=3')
         pdr2 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
         
-        uri = url_object('http://w3af.org/?id=7')
+        uri = URL('http://w3af.org/?id=7')
         pdr3 = HTTPPostDataRequest(uri, method='FOO', headers=hdr)
         
         ds.add( pdr1 )

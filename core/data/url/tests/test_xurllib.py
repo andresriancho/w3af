@@ -27,7 +27,7 @@ import Queue
 from nose.plugins.attrib import attr
 
 from core.data.url.xUrllib import xUrllib
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.dataContainer import DataContainer
 
 from core.controllers.w3afException import (w3afMustStopByUserRequest,
@@ -43,43 +43,43 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener = xUrllib()
         
     def test_basic(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         http_response = self.uri_opener.GET( url, cache=False )
         self.assertTrue( self.MOTH_MESSAGE in http_response.body )
     
     def test_cache(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         http_response = self.uri_opener.GET( url )
         self.assertTrue( self.MOTH_MESSAGE in http_response.body )
         
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         http_response = self.uri_opener.GET( url )
         self.assertTrue( self.MOTH_MESSAGE in http_response.body )
     
     def test_qs_params(self):
-        url = url_object('http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt')
+        url = URL('http://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt')
         http_response = self.uri_opener.GET( url, cache=False )
         self.assertTrue( 'Showing the section content.' in http_response.body, http_response.body )
 
-        url = url_object('http://moth/w3af/audit/local_file_read/local_file_read.php?file=/etc/passwd')
+        url = URL('http://moth/w3af/audit/local_file_read/local_file_read.php?file=/etc/passwd')
         http_response = self.uri_opener.GET( url, cache=False )
         self.assertTrue( 'root:x:0:0:' in http_response.body, http_response.body )
 
     def test_POST(self):
-        url = url_object('http://moth/w3af/audit/xss/dataReceptor2.php')
+        url = URL('http://moth/w3af/audit/xss/dataReceptor2.php')
         data = DataContainer([('empresa', 'abc'), ('firstname', 'def')])
         http_response = self.uri_opener.POST( url, data, cache=False )
         self.assertTrue( 'def' in http_response.body, http_response.body )
 
     def test_POST_special_chars(self):
-        url = url_object('http://moth/w3af/audit/xss/dataReceptor2.php')
+        url = URL('http://moth/w3af/audit/xss/dataReceptor2.php')
         test_data = 'abc<def>"-á-'
         data = DataContainer([('empresa', test_data), ('firstname', 'def')])
         http_response = self.uri_opener.POST( url, data, cache=False )
         self.assertTrue( test_data in http_response.body, http_response.body )
 
     def test_gzip(self):
-        url = url_object('http://www.google.com.ar/')
+        url = URL('http://www.google.com.ar/')
         res = self.uri_opener.GET( url, cache=False )
         headers = res.getHeaders()
         content_encoding, _ = headers.iget('content-encoding', '')
@@ -90,7 +90,7 @@ class TestXUrllib(unittest.TestCase):
     def test_get_cookies(self):
         self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 0 )
         
-        url_sends_cookie = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
+        url_sends_cookie = URL('http://moth/w3af/core/cookie_handler/set-cookie.php')
         self.uri_opener.GET( url_sends_cookie, cache=False )
         
         self.assertEqual( len([c for c in self.uri_opener.get_cookies()]), 1 )
@@ -98,18 +98,18 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual( 'moth.local', cookie.domain )
 
     def test_unknown_url(self):
-        url = url_object('http://longsitethatdoesnotexistfoo.com/')
+        url = URL('http://longsitethatdoesnotexistfoo.com/')
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
 
     def test_stop(self):
         self.uri_opener.stop()
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
         
     def test_pause_stop(self):
         self.uri_opener.pause(True)
         self.uri_opener.stop()
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         self.assertRaises(w3afMustStopByUserRequest, self.uri_opener.GET, url)
         
     def test_pause(self):
@@ -117,7 +117,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(True)
         
         def send(uri_opener, output):
-            url = url_object('http://moth/')
+            url = URL('http://moth/')
             http_response = uri_opener.GET(url)
             output.put(http_response)
 
@@ -132,7 +132,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(True)
         
         def send(uri_opener, output):
-            url = url_object('http://moth/')
+            url = URL('http://moth/')
             http_response = uri_opener.GET(url)
             output.put(http_response)
 

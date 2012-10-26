@@ -24,7 +24,7 @@ import cgi
 import re
 
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class option(object):
@@ -128,7 +128,7 @@ class option(object):
                 res = str(value)
             elif self._type == 'url':
                 try:
-                    res = url_object(value)
+                    res = URL(value)
                 except Exception, e:
                     msg = str(e)
                     raise w3afException( msg )

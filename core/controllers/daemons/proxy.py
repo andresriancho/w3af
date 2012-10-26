@@ -34,7 +34,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.w3afException import w3afException, w3afProxyException
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.headers import Headers
 
@@ -243,7 +243,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             path = self.path
 
         fuzzable_request = FuzzableRequest(
-                                           url_object(path), 
+                                           URL(path), 
                                            self.command,
                                            Headers(self.headers.dict.items())
                                            )
@@ -285,13 +285,13 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.headers['Connection'] = 'close'
 
         path = self.path
-        uri_instance = url_object(path)
+        uri_instance = URL(path)
 
         # See HTTPWrapperClass
         if hasattr(self.server, 'chainedHandler'):
             base_path = "https://" + self.server.chainedHandler.path
             path = base_path + path
-            uri_instance = url_object(path)
+            uri_instance = URL(path)
         
         #
         # Do the request to the remote server

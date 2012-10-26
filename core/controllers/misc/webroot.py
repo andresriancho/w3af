@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 import core.data.kb.knowledgeBase as kb
 
 
@@ -36,7 +36,7 @@ def get_webroot_dirs( domain=None ):
         result.append(obtained_webroot)
     
     if domain:
-        root_domain = url_object( 'http://' + domain ).getRootDomain()
+        root_domain = URL( 'http://' + domain ).getRootDomain()
         
         result.append('/var/www/' +  domain )
         result.append( '/var/www/' + domain + '/www/' )

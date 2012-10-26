@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from core.data.request.factory import create_fuzzable_request
 from core.data.url.HTTPRequest import HTTPRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
@@ -39,7 +39,7 @@ from core.data.dc.headers import Headers
 class TestCreateFuzzableRequest(unittest.TestCase):
 
     def setUp(self):
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
     
     def test_simplest(self):
         fr = create_fuzzable_request(self.url)

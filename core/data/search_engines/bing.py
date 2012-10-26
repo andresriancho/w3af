@@ -23,7 +23,7 @@ import urllib
 import re
 
 from core.data.search_engines.search_engine import SearchEngine
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class bing(SearchEngine):
@@ -52,9 +52,9 @@ class bing(SearchEngine):
             Dummy class that represents the search result.
             '''
             def __init__( self, url ):
-                if not isinstance(url, url_object):
+                if not isinstance(url, URL):
                     msg = 'The url __init__ parameter of a BingResult object must'
-                    msg += ' be of urlParser.url_object type.'
+                    msg += ' be of url.URL type.'
                     raise ValueError( msg )
 
                 self.URL = url
@@ -64,7 +64,7 @@ class bing(SearchEngine):
 
         url = 'http://www.bing.com/search?'
         query = urllib.urlencode({'q':query, 'first':start+1, 'FORM':'PERE'})
-        url_instance = url_object(url+query)
+        url_instance = URL(url+query)
         response = self._uri_opener.GET( url_instance, headers=self._headers,
                                          cache=True, grep=False)
         
@@ -78,7 +78,7 @@ class bing(SearchEngine):
         
         for url, _,_ in re_match:
             try:
-                url = url_object(url)
+                url = URL(url)
             except:
                 pass
             else:

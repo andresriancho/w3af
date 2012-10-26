@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from ..HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 TEST_RESPONSES = {
@@ -44,7 +44,7 @@ class TestHTTPResponse(unittest.TestCase):
         self.resp = self.create_resp(Headers([('Content-Type', 'text/html')]))
     
     def create_resp(self, headers, body=u'body'):
-        url = url_object('http://w3af.com')
+        url = URL('http://w3af.com')
         return HTTPResponse(200, body, headers, url, url)
     
     def test_unicode_body_no_charset(self):

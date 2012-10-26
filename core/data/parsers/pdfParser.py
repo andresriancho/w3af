@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.data.parsers.baseparser import BaseParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 try:
@@ -54,7 +54,7 @@ class pdfParser(BaseParser):
         # Get the URLs using a regex
         for x in re.findall(BaseParser.URL_RE, content_text):
             try:
-                self._re_urls.add( url_object(x[0]) )
+                self._re_urls.add( URL(x[0]) )
             except ValueError:
                 pass
         

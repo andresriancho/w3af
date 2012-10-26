@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
 from plugins.grep.strange_headers import strange_headers
@@ -42,7 +42,7 @@ class test_strange_headers(unittest.TestCase):
     
     def test_strange_headers_positive(self):
         body = 'Hello world'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('hello-world', 'yes!')])
         request = FuzzableRequest(url, method='GET')
@@ -59,7 +59,7 @@ class test_strange_headers(unittest.TestCase):
     
     def test_strange_headers_negative(self):
         body = 'Hello world'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-pad', 'yes!')])
         request = FuzzableRequest(url, method='GET')

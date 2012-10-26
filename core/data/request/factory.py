@@ -165,7 +165,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     '''
     Creates a fuzzable request based on the input parameters.
 
-    @param req_url: Either a url_object that represents the URL or a
+    @param req_url: Either a URL object that represents the URL or a
         HTTPRequest instance. If the latter is the case the `method` and
         `post_data` values are taken from the HTTPRequest object as well
         as the values in `add_headers` will be merged with the request's
@@ -262,9 +262,9 @@ def _create_cookie(http_response):
     '''
     Create a cookie object based on a HTTP response.
 
-    >>> from core.data.parsers.urlParser import url_object
+    >>> from core.data.parsers.url import URL
     >>> from core.data.url.HTTPResponse import HTTPResponse
-    >>> url = url_object('http://www.w3af.com/')
+    >>> url = URL('http://www.w3af.com/')
     >>> headers = Headers({'content-type': 'text/html', 'Cookie': 'abc=def' }.items())
     >>> response = HTTPResponse(200, '' , headers, url, url)
     >>> cookie = _create_cookie(response)

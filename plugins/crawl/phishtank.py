@@ -32,7 +32,7 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
@@ -196,13 +196,13 @@ class phishtank(CrawlPlugin):
                     #
                     for target_host in self._to_check_list:
                         if target_host in self.url:
-                            phish_url = url_object( self.url )
-                            target_host_url = url_object( target_host )
+                            phish_url = URL( self.url )
+                            target_host_url = URL( target_host )
                             
                             if target_host_url.getDomain() == phish_url.getDomain() or \
                             phish_url.getDomain().endswith('.' + target_host_url.getDomain() ):
                             
-                                phish_detail_url = url_object( self.phish_detail_url )
+                                phish_detail_url = URL( self.phish_detail_url )
                                 ptm = phishTankMatch( phish_url, phish_detail_url )
                                 self.matches.append( ptm )
         
@@ -262,7 +262,7 @@ class phishtank(CrawlPlugin):
         msg = 'Updating the phishtank database, this will take some minutes'
         msg += ' ( almost 7MB to download ).'
         om.out.information( msg )
-        update_url = url_object('http://data.phishtank.com/data/online-valid/')
+        update_url = URL('http://data.phishtank.com/data/online-valid/')
         res = self._uri_opener.GET( update_url )
         om.out.information('Download complete, writing to the database file.')
         

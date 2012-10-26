@@ -23,7 +23,7 @@ import core.data.dc.form as form
 import core.controllers.outputManager as om
 
 from core.data.parsers.sgmlParser import SGMLParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 
@@ -45,7 +45,7 @@ class wmlParser(SGMLParser):
 
         Init,
         >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         
         Parse a simple form,
         >>> form = """
@@ -99,7 +99,7 @@ class wmlParser(SGMLParser):
         if action:
             self._inside_form = True
             action = unicode(self._baseUrl.urlJoin(action))
-            action = url_object(self._decode_url(action),
+            action = URL(self._decode_url(action),
                                 encoding=self._encoding)
             # Create the form
             f = form.Form(encoding=self._encoding)

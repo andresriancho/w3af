@@ -29,7 +29,7 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.fuzzer.fuzzer import rand_alnum
 
 
@@ -75,7 +75,7 @@ class afd(InfrastructurePlugin):
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
         original_url_str = fmt % (fuzzable_request.getURL(), rnd_param, rnd_value)
-        original_url = url_object(original_url_str)
+        original_url = URL(original_url_str)
         
         try:
             original_response_body = self._uri_opener.GET( original_url , cache=True ).getBody()
@@ -92,7 +92,7 @@ class afd(InfrastructurePlugin):
                 offending_URL = fmt % (fuzzable_request.getURL(),
                                        rnd_param, 
                                        offending_string)
-                offending_URL = url_object(offending_URL)
+                offending_URL = URL(offending_URL)
                 tests.append( (offending_string, offending_URL,
                                original_response_body, rnd_param) )
             

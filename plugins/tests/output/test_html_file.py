@@ -24,7 +24,7 @@ import re
 
 import core.data.kb.vuln as vuln
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from ..helper import PluginTest, PluginConfig
 
 
@@ -79,7 +79,7 @@ class TestHTMLOutput(PluginTest):
             
             mo = vuln_url_re.search( line )
             if mo:
-                url = url_object( mo.group(1) )
+                url = URL( mo.group(1) )
                 v = vuln.vuln()
                 v.setURL( url )
                 vulns.append(v)

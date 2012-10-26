@@ -26,12 +26,13 @@ import gobject
 
 import core.controllers.outputManager as om
 
-from core.controllers.w3afException import w3afException, w3afMustStopException, w3afMustStopOnUrlError
+from core.controllers.w3afException import (w3afException, w3afMustStopException,
+                                            w3afMustStopOnUrlError)
 
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
-from core.data.visualization.string_representation import string_representation
+from core.data.visualization.string_representation import StringRepresentation
 
 from core.ui.gui.entries import RememberingVPaned
 from core.ui.gui.entries import RememberingWindow
@@ -46,9 +47,10 @@ from . import helpers
 
 
 def sigsegv_handler(signum, frame):
-    print _('This is a catched segmentation fault!')
-    print _('I think you hitted bug #1933524 , this is mainly a gtkhtml2 problem. Please report this error here:')
-    print _('https://sourceforge.net/tracker/index.php?func=detail&aid=1933524&group_id=170274&atid=853652')
+    print _('We caught a segmentation fault! Please report this bug to the'
+            ' w3af-develop mailing list, providing details on how to reproduce'
+            ' the issue in our environment.')
+
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
 
@@ -62,8 +64,8 @@ class reqResViewer(gtk.VBox):
 
     '''
     def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True,
-                        withCompare=True, withAudit=True, editableRequest=False, editableResponse=False,
-                        widgname="default", layout='Tabbed'):
+                        withCompare=True, withAudit=True, editableRequest=False,
+                        editableResponse=False, widgname="default", layout='Tabbed'):
         super(reqResViewer,self).__init__()
         self.w3af = w3af
         # Request
@@ -330,11 +332,11 @@ class requestResponsePart(gtk.Notebook):
 
         # String representation
         if hasattr(obj, 'getBody'):
-            str_repr_inst = string_representation(
-                                          obj.getBody(),
-                                          self._parent.draw_area.width,
-                                          self._parent.draw_area.height
-                                          )
+            str_repr_inst = StringRepresentation(
+                                                 obj.getBody(),
+                                                 self._parent.draw_area.width,
+                                                 self._parent.draw_area.height
+                                                 )
             str_repr_dict = str_repr_inst.get_representation()
             self._parent.draw_area.set_string_representation( str_repr_dict )
         
@@ -359,7 +361,8 @@ class requestResponsePart(gtk.Notebook):
 class requestPart(requestResponsePart):
     
     def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(self, parent, w3af, enableWidget,editable, widgname=widgname+"request")
+        requestResponsePart.__init__(self, parent, w3af, enableWidget,editable,
+                                     widgname=widgname+"request")
         self.addView(HttpRawView(w3af, self, editable))
         self.addView(HttpHeadersView(w3af, self, editable))
         

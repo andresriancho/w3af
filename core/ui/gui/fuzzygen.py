@@ -26,7 +26,7 @@ except ImportError:
     # this is to easy the test when executing this file directly
     w3afException = Exception
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 REPP = re.compile("\$.*?\$")
 

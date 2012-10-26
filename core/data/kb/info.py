@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.constants.severity as severity
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class info(dict):
@@ -74,14 +74,14 @@ class info(dict):
         >>> i.setURL('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URL in the info object must be of urlParser.url_object type.
-        >>> url = url_object('http://www.google.com/')
+        TypeError: The URL in the info object must be of url.URL type.
+        >>> url = URL('http://www.google.com/')
         >>> i.setURL(url)
         >>> i.getURL() == url
         True
         '''
-        if not isinstance(url, url_object):
-            raise TypeError('The URL in the info object must be of urlParser.url_object type.')
+        if not isinstance(url, URL):
+            raise TypeError('The URL in the info object must be of url.URL type.')
         
         self._url = url.uri2url()
         self._uri = url
@@ -95,15 +95,15 @@ class info(dict):
         >>> i.setURI('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: The URI in the info object must be of urlParser.url_object type.
-        >>> uri = url_object('http://www.google.com/')
+        TypeError: The URI in the info object must be of url.URL type.
+        >>> uri = URL('http://www.google.com/')
         >>> i = info()
         >>> i.setURI(uri)
         >>> i.getURI() == uri
         True
         '''
-        if not isinstance(uri, url_object):
-            raise TypeError('The URI in the info object must be of urlParser.url_object type.')
+        if not isinstance(uri, URL):
+            raise TypeError('The URI in the info object must be of url.URL type.')
         
         self._uri = uri
         self._url = uri.uri2url()

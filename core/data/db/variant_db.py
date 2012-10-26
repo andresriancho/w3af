@@ -35,7 +35,7 @@ class variant_db(object):
         Called when a new reference is found and we proved that new
         variants are still needed.
         
-        @param reference: The reference (as an url_object) to add. This method
+        @param reference: The reference (as a URL object) to add. This method
         will "normalize" it before adding it to the internal dict.
         '''
         clean_reference = self._clean_reference( reference )
@@ -57,10 +57,9 @@ class variant_db(object):
         What this method does is to "normalize" any input reference string so
         that they can be compared very simply using string match.
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> from core.controllers.misc.temp_dir import create_temp_dir
         >>> _ = create_temp_dir()
-        >>> URL = url_object
         
         >>> vdb = variant_db()
         

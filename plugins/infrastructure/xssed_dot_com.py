@@ -30,7 +30,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class xssed_dot_com(InfrastructurePlugin):
@@ -46,7 +46,7 @@ class xssed_dot_com(InfrastructurePlugin):
         #
         #   Could change in time,
         #
-        self._xssed_url = url_object("http://www.xssed.com")
+        self._xssed_url = URL("http://www.xssed.com")
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
     
     @runonce(exc_class=w3afRunOnce)

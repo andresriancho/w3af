@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.controllers.misc.temp_dir import create_temp_dir
 
@@ -43,7 +43,7 @@ class test_strange_http_codes(unittest.TestCase):
                     
     def test_strange_http_codes(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
         

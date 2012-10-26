@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 try:
     import extlib.SOAPpy.SOAPpy as SOAPpy
@@ -92,11 +92,11 @@ class wsdlParser:
     def getAction( self, methodName ):
         '''
         @methodName: The method name
-        @return: The soap action as a url_object
+        @return: The soap action as a URL object
         '''
         if methodName in self._proxy.methods.keys():
             action_str = str(self._proxy.methods[ methodName ].soapAction)
-            action_url = url_object(action_str)
+            action_url = URL(action_str)
             return action_url 
         else:
             raise w3afException('Unknown method name.')
@@ -108,7 +108,7 @@ class wsdlParser:
         '''
         if methodName in self._proxy.methods.keys():
             location_str = str(self._proxy.methods[ methodName ].location)
-            location_url = url_object(location_str)
+            location_url = URL(location_str)
             return location_url
         else:
             raise w3afException('Unknown method name.') 

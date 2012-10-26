@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from plugins.grep.feeds import feeds
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 
@@ -41,7 +41,7 @@ class test_feeds(unittest.TestCase):
         
     def test_rss(self):
         body = 'header <rss version="3"> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -54,7 +54,7 @@ class test_feeds(unittest.TestCase):
             
     def test_feed(self):
         body = 'header <feed foo="4" version="3"> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -67,7 +67,7 @@ class test_feeds(unittest.TestCase):
 
     def test_opml(self):
         body = 'header <opml version="3" foo="4"> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -80,7 +80,7 @@ class test_feeds(unittest.TestCase):
         
     def test_no_feeds(self):
         body = 'header <nofeed version="3" foo="4"> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -90,7 +90,7 @@ class test_feeds(unittest.TestCase):
     
     def test_no_version(self):
         body = 'header <rss foo="3"> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

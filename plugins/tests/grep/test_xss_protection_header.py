@@ -27,7 +27,7 @@ from plugins.grep.xss_protection_header import xss_protection_header
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_xss_protection_header(unittest.TestCase):
@@ -41,7 +41,7 @@ class test_xss_protection_header(unittest.TestCase):
         
     def test_no_xss_protection_header(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -50,7 +50,7 @@ class test_xss_protection_header(unittest.TestCase):
             
     def test_xss_protection_header_enable(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '1')])
         response = HTTPResponse(200, body , headers, url, url)
@@ -60,7 +60,7 @@ class test_xss_protection_header(unittest.TestCase):
 
     def test_xss_protection_header_disable(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '0')])
         response = HTTPResponse(200, body , headers, url, url)
@@ -70,7 +70,7 @@ class test_xss_protection_header(unittest.TestCase):
 
     def test_xss_protection_header_invalid(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', 'abc' * 45)])
         response = HTTPResponse(200, body , headers, url, url)

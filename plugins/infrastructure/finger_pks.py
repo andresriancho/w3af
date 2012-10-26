@@ -27,7 +27,7 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.search_engines.pks import pks as pks
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class finger_pks(InfrastructurePlugin):
@@ -52,7 +52,7 @@ class finger_pks(InfrastructurePlugin):
         
         for result in results:
             i = info.info()
-            i.setURL( url_object('http://pgp.mit.edu:11371/') )
+            i.setURL( URL('http://pgp.mit.edu:11371/') )
             i.setPluginName(self.getName())
             i.set_id( [] )
             mail = result.username +'@' + root_domain

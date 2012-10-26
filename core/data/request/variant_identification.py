@@ -35,8 +35,7 @@ def are_variants(uri, other_uri):
     @parameter other_uri: The other URI we want to analyze
     @return: True if the URLs are variants.
 
-    >>> from core.data.parsers.urlParser import url_object
-    >>> URL = url_object
+    >>> from core.data.parsers.url import URL
     >>> are_variants(URL('http://w3af.com/foo.php'), \
                      URL('http://w3af.com/foo.php'))
     True

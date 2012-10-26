@@ -27,7 +27,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.misc.decorators import runonce
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class sitemap_xml(CrawlPlugin):
@@ -72,7 +72,7 @@ class sitemap_xml(CrawlPlugin):
                 for url in raw_url_list:
                     try:
                         url = url.childNodes[0].data
-                        url = url_object(url)
+                        url = URL(url)
                     except ValueError, ve:
                         om.out.debug('Sitemap file had an invalid URL: "%s"' % ve)
                     except:

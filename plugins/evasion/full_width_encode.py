@@ -49,20 +49,20 @@ class full_width_encode(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> fwe = full_width_encode()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> u = URL('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
 
-        >>> u = url_object('http://www.w3af.com/hola-mundo')
+        >>> u = URL('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
         >>> fwe.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'

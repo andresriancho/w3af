@@ -27,7 +27,7 @@ from plugins.grep.credit_cards import credit_cards
 from core.data.dc.headers import Headers
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_credit_cards(unittest.TestCase):
@@ -41,7 +41,7 @@ class test_credit_cards(unittest.TestCase):
         
     def test_find_credit_card(self):
         body = '378282246310005'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -50,7 +50,7 @@ class test_credit_cards(unittest.TestCase):
 
     def test_find_credit_card_spaces(self):
         body = '3566 0020 2036 0505'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -59,7 +59,7 @@ class test_credit_cards(unittest.TestCase):
 
     def test_find_credit_card_html(self):
         body = '<a> 378282246310005</a>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -76,7 +76,7 @@ class test_credit_cards(unittest.TestCase):
                          )
         for card in invalid_cards:
             body = '<A href="#123">%s</A>' % card
-            url = url_object('http://www.w3af.com/')
+            url = URL('http://www.w3af.com/')
             headers = Headers([('content-type', 'text/html')])
             response = HTTPResponse(200, body , headers, url, url)
             request = FuzzableRequest(url, method='GET')
@@ -86,7 +86,7 @@ class test_credit_cards(unittest.TestCase):
     
     def test_invalid_check_not_find_credit_card_spaces(self):
         body = '3566 0020 2036 0705'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

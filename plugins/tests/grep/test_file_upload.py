@@ -27,7 +27,7 @@ from plugins.grep.file_upload import file_upload
 from core.data.dc.headers import Headers
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class test_file_upload(unittest.TestCase):
@@ -41,7 +41,7 @@ class test_file_upload(unittest.TestCase):
         
     def test_simple(self):
         body = 'header <form><input type="file"></form> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -53,7 +53,7 @@ class test_file_upload(unittest.TestCase):
             
     def test_complex(self):
         body = 'header <form><Input type="File"></form> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -65,7 +65,7 @@ class test_file_upload(unittest.TestCase):
 
     def test_none(self):
         body = 'header <form><noinput type="file"></form> footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

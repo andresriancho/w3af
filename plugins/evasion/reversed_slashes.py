@@ -46,20 +46,20 @@ class reversed_slashes(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
         
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> rs = reversed_slashes()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm')
+        >>> u = URL('http://www.w3af.com/abc/def.htm')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/abc\\\def.htm'
 
-        >>> u = url_object('http://www.w3af.com/abc/123/def.htm')
+        >>> u = URL('http://www.w3af.com/abc/123/def.htm')
         >>> r = HTTPRequest( u )
         >>> rs.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/abc\\\\123\\\def.htm'

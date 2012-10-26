@@ -32,8 +32,8 @@ class HTTPRequest(urllib2.Request):
                  follow_redir=True, cookies=True):
         '''
         This is a simple wrapper around a urllib2 request object.
-        >>> from core.data.parsers.urlParser import url_object
-        >>> u = url_object('http://www.w3af.com')
+        >>> from core.data.parsers.url import URL
+        >>> u = URL('http://www.w3af.com')
         >>> req = HTTPRequest(u)
         >>> req.get_full_url()
         'http://www.w3af.com/'

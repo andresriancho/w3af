@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.kb.knowledgeBase import kb
 from core.data.kb.info import info
 from core.data.dc.queryString import QueryString
@@ -58,12 +58,12 @@ class test_knowledge_base(unittest.TestCase):
     
     def test_append_uniq_true(self):
         i1 = info()
-        i1.setURI(url_object('http://moth/abc.html?id=1'))
+        i1.setURI(URL('http://moth/abc.html?id=1'))
         i1.setDc(QueryString([('id', '1')]))
         i1.setVar('id')
 
         i2 = info()
-        i2.setURI(url_object('http://moth/abc.html?id=3'))
+        i2.setURI(URL('http://moth/abc.html?id=3'))
         i2.setDc(QueryString([('id', '3')]))
         i2.setVar('id')
         
@@ -73,12 +73,12 @@ class test_knowledge_base(unittest.TestCase):
     
     def test_append_uniq_false(self):
         i1 = info()
-        i1.setURI(url_object('http://moth/abc.html?id=1'))
+        i1.setURI(URL('http://moth/abc.html?id=1'))
         i1.setDc(QueryString([('id', '1')]))
         i1.setVar('id')
 
         i2 = info()
-        i2.setURI(url_object('http://moth/def.html?id=3'))
+        i2.setURI(URL('http://moth/def.html?id=3'))
         i2.setDc(QueryString([('id', '3')]))
         i2.setVar('id')
         

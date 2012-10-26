@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import urllib
 from ..helper import PluginTest, PluginConfig
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class TestExportRequests(PluginTest):
@@ -76,7 +76,7 @@ class TestExportRequests(PluginTest):
             else:
                 url_str = line.split(',')[1]
                 url_str = urllib.unquote(url_str)
-                url = url_object(url_str)
+                url = URL(url_str)
                 file_urls.append(url)
         return file_urls
     

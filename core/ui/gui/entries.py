@@ -27,7 +27,7 @@ import threading
 from core.ui.gui import history
 from core.ui.gui import helpers
 from core.data.options.preferences import Preferences
-from core.data.parsers.urlParser import parse_qs, url_object
+from core.data.parsers.url import parse_qs, URL
 from core.data.parsers.baseparser import BaseParser
 
 
@@ -295,7 +295,7 @@ class UrlOption(ValidatedEntry, ModifiedMixIn):
         @return Always True, there's no validation to perform
         '''
         try:
-            url_object(text)
+            URL(text)
         except Exception:
             return False
         else:        

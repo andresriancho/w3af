@@ -28,7 +28,7 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.plugin import Plugin
 from core.controllers.misc.common_attack_methods import CommonAttackMethods
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class AttackPlugin(Plugin, CommonAttackMethods):
@@ -166,7 +166,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             #
             #   A couple of minor verifications before continuing to exploit a vulnerability
             #                
-            if not isinstance( vuln.getURL(), url_object):
+            if not isinstance( vuln.getURL(), URL):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an URL.'
                 om.out.debug( msg % (self.getName(), vuln.getId()) )
                 continue

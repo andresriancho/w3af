@@ -23,7 +23,7 @@ import unittest
 
 from nose.plugins.skip import SkipTest
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class TestURLParser(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestURLParser(unittest.TestCase):
     #    Decode tests
     #
     def decode_get_qs(self, url_str):
-        return url_object(url_str).urlDecode().querystring['id'][0]
+        return URL(url_str).urlDecode().querystring['id'][0]
         
     def test_decode_simple(self):
         qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1')
@@ -63,17 +63,17 @@ class TestURLParser(unittest.TestCase):
     #    Encode tests
     #
     def test_encode_simple(self):
-        res_str = url_object(u'http://w3af.com').urlEncode()
+        res_str = URL(u'http://w3af.com').urlEncode()
         EXPECTED = 'http://w3af.com/'
         self.assertEqual(res_str, EXPECTED)
     
     def test_encode_perc_20(self):
-        res_str = url_object(u'https://w3af.com:443/file.asp?id=1%202').urlEncode()
+        res_str = URL(u'https://w3af.com:443/file.asp?id=1%202').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%202'
         self.assertEqual(res_str, EXPECTED)
     
     def test_encode_space(self):
-        res_str = url_object(u'https://w3af.com:443/file.asp?id=1 2').urlEncode()
+        res_str = URL(u'https://w3af.com:443/file.asp?id=1 2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%202'
         self.assertEqual(res_str, EXPECTED)
     
@@ -89,29 +89,29 @@ class TestURLParser(unittest.TestCase):
         '''
         raise SkipTest(msg)
     
-        res_str = url_object(u'https://w3af.com:443/file.asp?id=1+2').urlEncode()
+        res_str = URL(u'https://w3af.com:443/file.asp?id=1+2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1+2'
         self.assertEqual(res_str, EXPECTED)
     
     def test_encode_url_encode_plus(self):
-        res_str = url_object(u'https://w3af.com:443/file.asp?id=1%2B2').urlEncode()
+        res_str = URL(u'https://w3af.com:443/file.asp?id=1%2B2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%2B2'
         self.assertEqual(res_str, EXPECTED)
     
     def test_encode_math(self):
-        res_str = url_object(u'http://w3af.com/x.py?ec=x*y/2==3').urlEncode()
+        res_str = URL(u'http://w3af.com/x.py?ec=x*y/2==3').urlEncode()
         EXPECTED = 'http://w3af.com/x.py?ec=x%2Ay%2F2%3D%3D3'
         self.assertEqual(res_str, EXPECTED)
     
     def test_encode_param(self):
-        res_str = url_object(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
+        res_str = URL(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
         EXPECTED = 'http://w3af.com/x.py;id=1?y=3'
         self.assertEqual(res_str, EXPECTED)
         
     def test_decode_encode(self):
         '''Encode and Decode should be able to run one on the result of the
         other and return the original'''
-        original = url_object(u'https://w3af.com:443/file.asp?id=1%202')
+        original = URL(u'https://w3af.com:443/file.asp?id=1%202')
         decoded = original.urlDecode()
         encoded = decoded.urlEncode()
         self.assertEqual(original.urlEncode(), encoded)
@@ -119,8 +119,8 @@ class TestURLParser(unittest.TestCase):
     def test_encode_decode(self):
         '''Encode and Decode should be able to run one on the result of the
         other and return the original'''
-        original = url_object(u'https://w3af.com:443/file.asp?id=1%202')
+        original = URL(u'https://w3af.com:443/file.asp?id=1%202')
         encoded = original.urlEncode()
-        decoded = url_object(encoded).urlDecode()
+        decoded = URL(encoded).urlDecode()
         self.assertEqual(original, decoded)
         

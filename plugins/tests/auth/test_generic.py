@@ -22,7 +22,7 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 from ..helper import PluginTest, PluginConfig
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.xUrllib import xUrllib
 
 
@@ -46,8 +46,8 @@ class TestGeneric(PluginTest):
                                  ('password', 'admin', PluginConfig.STR),
                                  ('username_field', 'username', PluginConfig.STR),
                                  ('password_field', 'password', PluginConfig.STR),
-                                 ('auth_url', url_object(base_url + 'auth.php') , PluginConfig.URL),
-                                 ('check_url', url_object(base_url + 'home.php') , PluginConfig.URL),
+                                 ('auth_url', URL(base_url + 'auth.php') , PluginConfig.URL),
+                                 ('check_url', URL(base_url + 'home.php') , PluginConfig.URL),
                                  ('check_string', '<title>Home page</title>', PluginConfig.STR),
                             ),
                          ),
@@ -69,8 +69,8 @@ class TestGeneric(PluginTest):
                                  ('password', 'admin', PluginConfig.STR),
                                  ('username_field', 'uid', PluginConfig.STR),
                                  ('password_field', 'passw', PluginConfig.STR),
-                                 ('auth_url', url_object(demo_testfire + 'login.aspx') , PluginConfig.URL),
-                                 ('check_url', url_object(demo_testfire + 'main.aspx') , PluginConfig.URL),
+                                 ('auth_url', URL(demo_testfire + 'login.aspx') , PluginConfig.URL),
+                                 ('check_url', URL(demo_testfire + 'main.aspx') , PluginConfig.URL),
                                  ('check_string', 'View Recent Transactions', PluginConfig.STR),
                             ),
                          ),
@@ -93,7 +93,7 @@ class TestGeneric(PluginTest):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else
         uri_opener = xUrllib()
-        login_url = url_object(self.demo_testfire + 'login.aspx')
+        login_url = URL(self.demo_testfire + 'login.aspx')
         try:
             res = uri_opener.GET(login_url)
         except:

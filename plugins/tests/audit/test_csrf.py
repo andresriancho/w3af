@@ -24,7 +24,7 @@ from nose.plugins.skip import SkipTest
 from plugins.audit.csrf import csrf
 
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.xUrllib import xUrllib
 
@@ -49,7 +49,7 @@ class TestCSRF(PluginTest):
     
     def test_resp_is_equal(self):
         x = csrf()
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = {'content-type': 'text/html'}
         
         r1 = HTTPResponse(200, 'body' , headers, url, url)
@@ -69,18 +69,18 @@ class TestCSRF(PluginTest):
         uri_opener = xUrllib()
         x.set_url_opener( uri_opener )
         
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         req = FuzzableRequest(url, method='GET')
         self.assertFalse( x._is_suitable( req )[0] )
 
-        url = url_object('http://www.w3af.com/?id=3')
+        url = URL('http://www.w3af.com/?id=3')
         req = FuzzableRequest(url, method='GET')
         self.assertFalse( x._is_suitable( req )[0] )
 
-        url_sends_cookie = url_object('http://moth/w3af/core/cookie_handler/set-cookie.php')
+        url_sends_cookie = URL('http://moth/w3af/core/cookie_handler/set-cookie.php')
         uri_opener.GET( url_sends_cookie )
 
-        url = url_object('http://www.w3af.com/?id=3')
+        url = URL('http://www.w3af.com/?id=3')
         req = FuzzableRequest(url, method='GET')
         self.assertTrue( x._is_suitable( req )[0] )
 

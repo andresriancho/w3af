@@ -23,7 +23,7 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzableRequest
 from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
 from core.data.dc.headers import Headers
@@ -35,7 +35,7 @@ class test_path_disclosure(unittest.TestCase):
     def setUp(self):
         self.plugin = path_disclosure()
         kb.kb.cleanup()
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.header = Headers([('content-type', 'text/html')])
         self.request = FuzzableRequest(self.url, method='GET')
 

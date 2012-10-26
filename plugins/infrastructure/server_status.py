@@ -28,7 +28,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
@@ -107,7 +107,7 @@ class server_status(InfrastructurePlugin):
             # Check if the requested domain and the found one are equal.    
             if domain == response.getURL().getDomain():
                 found_url = response.getURL().getProtocol() + '://' + domain + path
-                found_url = url_object(found_url)
+                found_url = URL(found_url)
             
                 # They are equal, request the URL and create the fuzzable 
                 # requests

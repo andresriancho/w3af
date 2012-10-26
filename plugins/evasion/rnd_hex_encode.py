@@ -48,25 +48,25 @@ class rnd_hex_encode(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
         
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> rhe = rnd_hex_encode()
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rhe.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/a/')
+        >>> u = URL('http://www.w3af.com/a/')
         >>> r = HTTPRequest( u )
         >>> rhe.modifyRequest( r ).url_object.getPath() in ['/a/','/%61/']
         True
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='a=b' )
         >>> rhe.modifyRequest( r ).get_data() in ['a=b','%61=b','a=%62','%61=%62']
         True
 
-        >>> u = url_object('http://www.w3af.com/aa/')
+        >>> u = URL('http://www.w3af.com/aa/')
         >>> r = HTTPRequest( u )
         >>> rhe.modifyRequest( r ).url_object.getPath() in ['/aa/','/%61a/','/a%61/','/%61%61/']
         True

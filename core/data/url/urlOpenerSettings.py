@@ -35,7 +35,7 @@ from core.controllers.w3afException import w3afException
 from core.data.kb.config import cf as cfg
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
 from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
@@ -500,7 +500,7 @@ class urlOpenerSettings( configurable ):
             bAuthUser != cfg['basicAuthUser'] or \
             bAuthPass != cfg['basicAuthPass']:
             try:
-                bAuthDomain = url_object(bAuthDomain) if bAuthDomain else ''
+                bAuthDomain = URL(bAuthDomain) if bAuthDomain else ''
             except ValueError:
                 bAuthDomain = None
             

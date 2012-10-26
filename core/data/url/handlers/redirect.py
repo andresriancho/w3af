@@ -24,7 +24,7 @@ import urlparse
 
 from core.controllers.misc.number_generator import \
                             consecutive_number_generator as core_num_gen
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
@@ -151,7 +151,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             enc = req.url_object.encoding
             
             new_request = HTTPRequest(
-                                url_object(newurl.decode(enc, 'ignore'), encoding=enc),
+                                URL(newurl.decode(enc, 'ignore'), encoding=enc),
                                 headers=req.headers,
                                 origin_req_host=req.get_origin_req_host(),
                                 unverifiable=True

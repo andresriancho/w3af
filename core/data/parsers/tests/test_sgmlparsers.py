@@ -30,7 +30,7 @@ from nose.plugins.attrib import attr
 
 from ..htmlParser import HTMLParser
 from ..sgmlParser import SGMLParser
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 
@@ -125,7 +125,7 @@ BODY_FRAGMENT_WITH_EMAILS = u'''===>jandalia@bing.com%^&1!
 תגובות_לאתר
 '''
 
-URL = url_object('http://w3af.com')
+URL = URL('http://w3af.com')
 
 def _build_http_response(url, body_content, headers=Headers()):
     if 'content-type' not in headers:
@@ -172,7 +172,7 @@ class TestSGMLParser(unittest.TestCase):
         resp = _build_http_response(URL, body)
         p = _SGMLParser(resp)
         p._parse(resp)
-        self.assertEquals(url_object('http://www.w3afbase.com/'), p._baseUrl)
+        self.assertEquals(URL('http://www.w3afbase.com/'), p._baseUrl)
         
     def test_regex_urls(self):
         u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
@@ -202,7 +202,7 @@ class TestSGMLParser(unittest.TestCase):
         self.assertTrue(2, len(p.meta_redirs))
         self.assertTrue("2;url=http://crawler.w3af.com/" in p.meta_redirs)
         self.assertTrue("600" in p.meta_redirs)
-        self.assertEquals([url_object('http://crawler.w3af.com/')], p.references[0])
+        self.assertEquals([URL('http://crawler.w3af.com/')], p.references[0])
     
     def test_case_sensitivity(self):
         '''

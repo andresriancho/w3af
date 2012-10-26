@@ -37,7 +37,7 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -136,7 +136,7 @@ class pykto(CrawlPlugin):
         A helper function that takes a scan database file and yields tests.
         
         @param scan_database_file: The file object for a scan database
-        @param url: The url_object (with the path) that I'm testing
+        @param url: The URL object (with the path) that I'm testing
         
         @return: ( A modified url_object with the special query from the scan_database,
                    The parsed parameters from the scan database line)
@@ -216,7 +216,7 @@ class pykto(CrawlPlugin):
         om.out.debug('Local version of pykto scan_database.db is: ' + local_version)
         
         # fetching remote version
-        versions_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
+        versions_url = URL('http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
         res_version = self._uri_opener.GET( versions_url )
         
         fetched_version = False
@@ -245,7 +245,7 @@ class pykto(CrawlPlugin):
             else:
                 msg = 'Updating to scan_database version: "' + str(remote_version) + '".'
                 om.out.information( msg )
-                scan_database_url = url_object('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
+                scan_database_url = URL('http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
                 res = self._uri_opener.GET( scan_database_url )
                 try:
                     # Write new scan_database

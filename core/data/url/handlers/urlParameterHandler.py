@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import urllib2
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
@@ -41,7 +41,7 @@ class URLParameterHandler(urllib2.BaseHandler):
         self._url_parameter = url_param
         
     def http_request( self, req ):
-        url_instance = url_object( req.get_full_url() )
+        url_instance = URL( req.get_full_url() )
         url_instance.setParam( self._url_parameter )
         
         new_request = HTTPRequest(url_instance, headers=req.headers,

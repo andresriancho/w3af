@@ -46,21 +46,21 @@ class self_reference(EvasionPlugin):
         @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> import re
         >>> sr = self_reference()
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/./'
 
-        >>> u = url_object('http://www.w3af.com/abc/')
+        >>> u = URL('http://www.w3af.com/abc/')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/./abc/./'
 
-        >>> u = url_object('http://www.w3af.com/abc/def.htm?id=1')
+        >>> u = URL('http://www.w3af.com/abc/def.htm?id=1')
         >>> r = HTTPRequest( u )
         >>> sr.modifyRequest( r ).url_object.url_string
         u'http://www.w3af.com/./abc/./def.htm?id=1'

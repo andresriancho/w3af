@@ -30,7 +30,7 @@ from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import rand_alpha
 from core.data.kb.exec_shell import exec_shell as exec_shell
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
 
@@ -124,7 +124,7 @@ class dav(AttackPlugin):
             # All w3af shells, when invoked with a blank command, return a 
             # specific value in the response:
             # shell_handler.SHELL_IDENTIFIER
-            exploit_url = url_object( url_to_upload + '?cmd=' )
+            exploit_url = URL( url_to_upload + '?cmd=' )
             response = self._uri_opener.GET( exploit_url )
             
             if shell_handler.SHELL_IDENTIFIER in response.getBody():
@@ -207,7 +207,7 @@ class DAVShell(exec_shell):
         @return: The result of the command.
         '''
         to_send = self.getExploitURL() + command
-        to_send = url_object( to_send )
+        to_send = URL( to_send )
         response = self._uri_opener.GET( to_send )
         return shell_handler.extract_result( response.getBody())
     

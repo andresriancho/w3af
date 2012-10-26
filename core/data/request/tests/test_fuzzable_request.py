@@ -24,13 +24,13 @@ import unittest
 from nose.plugins.attrib import attr
 
 from ..fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 @attr('smoke')
 class TestFuzzableRequest(unittest.TestCase):
 
     def setUp(self):
-        self.url = url_object('http://w3af.com/a/b/c.php')
+        self.url = URL('http://w3af.com/a/b/c.php')
     
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative

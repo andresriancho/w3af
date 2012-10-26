@@ -172,7 +172,7 @@ def parse_qs(qstr, ignore_exc=True, encoding=DEFAULT_ENCODING):
     return qs
 
 
-class url_object(disk_item):
+class URL(disk_item):
     '''
     This class represents a URL and gives access to all its parts
     with several "getter" methods.
@@ -190,7 +190,7 @@ class url_object(disk_item):
 
         Simple generic test, more detailed tests in each method!
         
-        >>> u = url_object('http://w3af.com/foo/bar.txt')
+        >>> u = URL('http://w3af.com/foo/bar.txt')
         >>> u.path
         '/foo/bar.txt'
         >>> u.scheme
@@ -204,7 +204,7 @@ class url_object(disk_item):
         #
         # http is the default protocol, we can provide URLs with no proto
         #
-        >>> u = url_object('w3af.com')
+        >>> u = URL('w3af.com')
         >>> u.getDomain()
         'w3af.com'
         >>> u.getProtocol()
@@ -213,7 +213,7 @@ class url_object(disk_item):
         #
         # But we can't specify a URL without a domain!
         #
-        >>> u = url_object('http://')
+        >>> u = URL('http://')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: Invalid URL "http://"
@@ -221,25 +221,25 @@ class url_object(disk_item):
         #
         # And protocols are case insensitive
         #
-        >>> u = url_object('HtTp://w3af.com')
+        >>> u = URL('HtTp://w3af.com')
         >>> u.getDomain()
         'w3af.com'
         >>> u.getProtocol()
         'http'
 
-        >>> u = url_object(u'http://w3af.com/foo/bar.txt')
+        >>> u = URL(u'http://w3af.com/foo/bar.txt')
         >>> u.path
         u'/foo/bar.txt'
 
-        >>> u = url_object(u'http://w3af.com')
+        >>> u = URL(u'http://w3af.com')
         >>> u.path
         u'/'
 
-        >>> u = url_object('http://w3af.org/?foo=http://w3af.com')
+        >>> u = URL('http://w3af.org/?foo=http://w3af.com')
         >>> u.netloc
         'w3af.org'
 
-        >>> u = url_object('http://w3af.org/', encoding='x-euc-jp')
+        >>> u = URL('http://w3af.org/', encoding='x-euc-jp')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         ValueError: Invalid encoding "x-euc-jp" when creating URL.
@@ -251,7 +251,7 @@ class url_object(disk_item):
         self._encoding = encoding
 
         if data is None:
-            raise ValueError('Can not build a url_object from data=None.')
+            raise ValueError('Can not build a URL from data=None.')
 
         # Verify that the encoding is a valid one. If we don't do it here,
         # things might get crazy afterwards.
@@ -264,8 +264,8 @@ class url_object(disk_item):
             scheme, netloc, path, params, qs, fragment = \
                                         urlparse.urlparse(data)
             #
-            # This is the case when someone creates a url_object like
-            # this: url_object('www.w3af.com')
+            # This is the case when someone creates a URL like
+            # this: URL('www.w3af.com')
             #
             if scheme == netloc == '' and path:
                 # By default we set the protocol to "http"
@@ -298,11 +298,11 @@ class url_object(disk_item):
         @param params: URL params
         @param qs: query string
         @param fragment: #fragments
-        @return: An instance of url_object.
+        @return: An instance of URL.
 
-        This is a "constructor" for the url_object class.
+        This is a "constructor" for the URL class.
         
-        >>> u = url_object.from_parts('http', 'w3af.com', '/foo/bar.txt', None, 'a=b', 'frag')
+        >>> u = URL.from_parts('http', 'w3af.com', '/foo/bar.txt', None, 'a=b', 'frag')
         >>> u.path
         '/foo/bar.txt'
         >>> u.scheme
@@ -315,15 +315,15 @@ class url_object(disk_item):
         return cls((scheme, netloc, path, params, qs, fragment), encoding)
 
     @classmethod
-    def from_url_object(cls, src_url_obj):
+    def from_URL(cls, src_url_obj):
         '''
         @param src_url: The url object to use as "template" for the new one
-        @return: An instance of url_object with the same data as original_url_object
+        @return: An instance of URL with the same data as original_url_object
 
-        This is a "constructor" for the url_object class.
+        This is a "constructor" for the URL class.
         
-        >>> o = url_object('http://w3af.com/foo/bar.txt')
-        >>> u = url_object.from_url_object(o)
+        >>> o = URL('http://w3af.com/foo/bar.txt')
+        >>> u = URL.from_URL(o)
         >>> u.path
         '/foo/bar.txt'
         >>> u.scheme
@@ -333,7 +333,7 @@ class url_object(disk_item):
         >>> u.getExtension()
         'txt'
         >>> 
-        >>> u = url_object('w3af.com')
+        >>> u = URL('w3af.com')
         >>> u.getDomain()
         'w3af.com'
         >>> u.getProtocol()
@@ -353,12 +353,12 @@ class url_object(disk_item):
         '''
         @return: A <unicode> representation of the URL
         
-        >>> u = url_object('http://w3af.com/foo/bar.txt?id=1')
+        >>> u = URL('http://w3af.com/foo/bar.txt?id=1')
         >>> u.url_string
         u'http://w3af.com/foo/bar.txt?id=1'
         >>> u.url_string
         u'http://w3af.com/foo/bar.txt?id=1'
-        >>> u = url_object('http://w3af.com/foo%20bar/bar.txt?id=1')
+        >>> u = URL('http://w3af.com/foo%20bar/bar.txt?id=1')
         >>> u.url_string
         u'http://w3af.com/foo%20bar/bar.txt?id=1'
         '''
@@ -385,13 +385,13 @@ class url_object(disk_item):
         '''
         Analyzes the uri to check for a query string.
         
-        >>> u = url_object('http://w3af.com/foo/bar.txt')
+        >>> u = URL('http://w3af.com/foo/bar.txt')
         >>> u.hasQueryString()
         False
-        >>> u = url_object('http://w3af.com/foo/bar.txt?id=1')
+        >>> u = URL('http://w3af.com/foo/bar.txt?id=1')
         >>> u.hasQueryString()
         True
-        >>> u = url_object('http://w3af.com/foo/bar.txt;par=3')
+        >>> u = URL('http://w3af.com/foo/bar.txt;par=3')
         >>> u.hasQueryString()
         False
     
@@ -407,7 +407,6 @@ class url_object(disk_item):
     
         @return: A QueryString Object that represents the query string.
         
-        >>> URL = url_object
         >>> URL(u'http://w3af.com/a/').querystring
         QueryString({})
         >>> URL(u'http://w3af.com/foo/bar.txt?id=3').querystring
@@ -443,11 +442,11 @@ class url_object(disk_item):
         '''
         @return: Returns a string contaning the URL without the query string.
 
-        >>> u = url_object('http://w3af.com/foo/bar.txt?id=3')
+        >>> u = URL('http://w3af.com/foo/bar.txt?id=3')
         >>> u.uri2url().url_string
         u'http://w3af.com/foo/bar.txt'
         '''
-        return url_object.from_parts(
+        return URL.from_parts(
                         self.scheme, self.netloc, self.path,
                         None, None, None, encoding=self._encoding
                         )
@@ -460,35 +459,35 @@ class url_object(disk_item):
     
     def removeFragment(self):
         '''
-        @return: A url_object containing the URL without the fragment.
+        @return: A URL containing the URL without the fragment.
         
-        >>> u = url_object('http://w3af.com/foo/bar.txt?id=3#foobar')
+        >>> u = URL('http://w3af.com/foo/bar.txt?id=3#foobar')
         >>> u.removeFragment().url_string
         u'http://w3af.com/foo/bar.txt?id=3'
-        >>> u = url_object('http://w3af.com/foo/bar.txt#foobar')
+        >>> u = URL('http://w3af.com/foo/bar.txt#foobar')
         >>> u.removeFragment().url_string
         u'http://w3af.com/foo/bar.txt'
         '''
         params = (self.scheme, self.netloc, self.path,
                   self.params, unicode(self.querystring),
                   None)
-        return url_object.from_parts(*params, encoding=self._encoding)
+        return URL.from_parts(*params, encoding=self._encoding)
     
     def baseUrl(self):
         '''
         @return: A string contaning the URL without the query string and
             without any path. 
         
-        >>> u = url_object('http://www.w3af.com/foo/bar.txt?id=3#foobar')
+        >>> u = URL('http://www.w3af.com/foo/bar.txt?id=3#foobar')
         >>> u.baseUrl().url_string
         u'http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com')
+        >>> u = URL('http://www.w3af.com')
         >>> u.baseUrl().url_string
         u'http://www.w3af.com/'
         '''
         params = (self.scheme, self.netloc, None, None, None, None)
-        return url_object.from_parts(*params, encoding=self._encoding)
+        return URL.from_parts(*params, encoding=self._encoding)
     
     def normalizeURL(self):
         '''
@@ -523,63 +522,63 @@ class url_object(disk_item):
         So, before the path normalization, I perform a small net location
         normalization that transforms:
         
-        >>> u = url_object('http://host.tld:80/foo/bar')
+        >>> u = URL('http://host.tld:80/foo/bar')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://host.tld/foo/bar'
         
-        >>> u = url_object('https://host.tld:443/foo/bar')
+        >>> u = URL('https://host.tld:443/foo/bar')
         >>> u.normalizeURL()
         >>> u.url_string
         u'https://host.tld/foo/bar'
         
-        >>> u = url_object('https://host.tld:443////////////////')
+        >>> u = URL('https://host.tld:443////////////////')
         >>> u.normalizeURL()
         >>> u.url_string
         u'https://host.tld/'
 
-        >>> u = url_object('https://host.tld:443////////////////?id=3&bar=4')
+        >>> u = URL('https://host.tld:443////////////////?id=3&bar=4')
         >>> u.normalizeURL()
         >>> u.url_string
         u'https://host.tld/?id=3&bar=4'
 
-        >>> u = url_object('http://w3af.com/../f00.b4r?id=3&bar=4')
+        >>> u = URL('http://w3af.com/../f00.b4r?id=3&bar=4')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r?id=3&bar=4'
 
-        >>> u = url_object('http://w3af.com/f00.b4r?id=3&bar=//')
+        >>> u = URL('http://w3af.com/f00.b4r?id=3&bar=//')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r?id=3&bar=//'
 
-        >>> u = url_object('http://user:passwd@host.tld:80')
+        >>> u = URL('http://user:passwd@host.tld:80')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://user:passwd@host.tld/'
         
-        >>> u = url_object('http://w3af.com/../f00.b4r')
+        >>> u = URL('http://w3af.com/../f00.b4r')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r'
         
-        >>> u = url_object('http://w3af.com/abc/../f00.b4r')
+        >>> u = URL('http://w3af.com/abc/../f00.b4r')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r'
         
-        >>> u = url_object('http://w3af.com/a//b/f00.b4r')
+        >>> u = URL('http://w3af.com/a//b/f00.b4r')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/a/b/f00.b4r'
         
-        >>> u = url_object('http://w3af.com/../../f00.b4r')
+        >>> u = URL('http://w3af.com/../../f00.b4r')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://w3af.com/f00.b4r'
         
         # IPv6 support
-        >>> u = url_object('http://fe80:0:0:0:202:b3ff:fe1e:8329/')
+        >>> u = URL('http://fe80:0:0:0:202:b3ff:fe1e:8329/')
         >>> u.normalizeURL()
         >>> u.url_string
         u'http://fe80:0:0:0:202:b3ff:fe1e:8329/'
@@ -644,22 +643,22 @@ class url_object(disk_item):
         '''
         @return: The TCP port that is going to be used to contact the remote end.
 
-        >>> u = url_object('http://w3af.com/f00.b4r')
+        >>> u = URL('http://w3af.com/f00.b4r')
         >>> u.getPort()
         80
-        >>> u = url_object('http://w3af.com:80/f00.b4r')
+        >>> u = URL('http://w3af.com:80/f00.b4r')
         >>> u.getPort()
         80
-        >>> u = url_object('http://w3af.com:443/f00.b4r')
+        >>> u = URL('http://w3af.com:443/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url_object('https://w3af.com/f00.b4r')
+        >>> u = URL('https://w3af.com/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url_object('https://w3af.com:443/f00.b4r')
+        >>> u = URL('https://w3af.com:443/f00.b4r')
         >>> u.getPort()
         443
-        >>> u = url_object('https://w3af.com:80/f00.b4r')
+        >>> u = URL('https://w3af.com:80/f00.b4r')
         >>> u.getPort()
         80
 
@@ -696,29 +695,29 @@ class url_object(disk_item):
 
         Examples:
         
-        >>> u = url_object('http://w3af.com/foo.bar')
+        >>> u = URL('http://w3af.com/foo.bar')
         >>> u.urlJoin('abc.html').url_string
         u'http://w3af.com/abc.html'
         >>> u.urlJoin('/abc.html').url_string
         u'http://w3af.com/abc.html'
 
-        >>> u = url_object('http://w3af.com/')
+        >>> u = URL('http://w3af.com/')
         >>> u.urlJoin('/abc.html').url_string
         u'http://w3af.com/abc.html'
         >>> u.urlJoin('/def/abc.html').url_string
         u'http://w3af.com/def/abc.html'
 
-        >>> u = url_object('http://w3af.com/def/jkl/')
+        >>> u = URL('http://w3af.com/def/jkl/')
         >>> u.urlJoin('/def/abc.html').url_string
         u'http://w3af.com/def/abc.html'
         >>> u.urlJoin('def/abc.html').url_string
         u'http://w3af.com/def/jkl/def/abc.html'
 
-        >>> u = url_object('http://w3af.com:8080/')
+        >>> u = URL('http://w3af.com:8080/')
         >>> u.urlJoin('abc.html').url_string
         u'http://w3af.com:8080/abc.html'
 
-        >>> u = url_object('http://w3af.com/def/')
+        >>> u = URL('http://w3af.com/def/')
         >>> u.urlJoin(u'тест').url_string == u'http://w3af.com/def/тест'
         True
 
@@ -728,7 +727,7 @@ class url_object(disk_item):
         wants to specify a URL that contains a colon he should URL
         encode it.
         
-        >>> u = url_object('http://w3af.com/')
+        >>> u = URL('http://w3af.com/')
         >>> u.urlJoin("d:url.html?id=13&subid=3")
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
@@ -738,19 +737,19 @@ class url_object(disk_item):
         '''
         resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
-        jurl_obj = url_object(joined_url, resp_encoding)
+        jurl_obj = URL(joined_url, resp_encoding)
         jurl_obj.normalizeURL()
         return jurl_obj
     
     def getDomain(self):
         '''
-        >>> url_object('http://w3af.com/def/jkl/').getDomain()
+        >>> URL('http://w3af.com/def/jkl/').getDomain()
         'w3af.com'
-        >>> url_object('http://1.2.3.4/def/jkl/').getDomain()
+        >>> URL('http://1.2.3.4/def/jkl/').getDomain()
         '1.2.3.4'
-        >>> url_object('http://555555/def/jkl/').getDomain()
+        >>> URL('http://555555/def/jkl/').getDomain()
         '555555'
-        >>> url_object('http://foo.bar.def/def/jkl/').getDomain()
+        >>> URL('http://foo.bar.def/def/jkl/').getDomain()
         'foo.bar.def'
     
         @return: Returns the domain name for the url.
@@ -761,7 +760,7 @@ class url_object(disk_item):
     @set_changed
     def setDomain(self, new_domain):
         '''
-        >>> u = url_object('http://w3af.com/def/jkl/')
+        >>> u = URL('http://w3af.com/def/jkl/')
         >>> u.getDomain()
         'w3af.com'
 
@@ -792,7 +791,7 @@ class url_object(disk_item):
           File "<stdin>", line 1, in ?
         ValueError: '' is an invalid domain
 
-        >>> u = url_object('http://w3af.com:443/def/jkl/')
+        >>> u = URL('http://w3af.com:443/def/jkl/')
         >>> u.getDomain()
         'w3af.com'
         >>> u.setDomain('host.tld')
@@ -809,27 +808,27 @@ class url_object(disk_item):
     
     def is_valid_domain(self):
         '''
-        >>> url_object("http://1.2.3.4").is_valid_domain()
+        >>> URL("http://1.2.3.4").is_valid_domain()
         True
-        >>> url_object("http://aaa.com").is_valid_domain()
+        >>> URL("http://aaa.com").is_valid_domain()
         True
-        >>> url_object("http://aaa.").is_valid_domain()
+        >>> URL("http://aaa.").is_valid_domain()
         False
-        >>> url_object("http://aaa*a").is_valid_domain()
+        >>> URL("http://aaa*a").is_valid_domain()
         False
-        >>> url_object("http://aa-bb").is_valid_domain()
+        >>> URL("http://aa-bb").is_valid_domain()
         True
-        >>> url_object("http://w3af.com").is_valid_domain()
+        >>> URL("http://w3af.com").is_valid_domain()
         True
-        >>> url_object("http://w3af.com:39").is_valid_domain()
+        >>> URL("http://w3af.com:39").is_valid_domain()
         True
-        >>> url_object("http://w3af.com:").is_valid_domain()
+        >>> URL("http://w3af.com:").is_valid_domain()
         False
-        >>> url_object("http://w3af.com:3932").is_valid_domain()
+        >>> URL("http://w3af.com:3932").is_valid_domain()
         True
-        >>> url_object("http://abc:3932322").is_valid_domain()
+        >>> URL("http://abc:3932322").is_valid_domain()
         False
-        >>> url_object("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
+        >>> URL("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
         True
         
         @parameter url: The url to parse.
@@ -839,11 +838,11 @@ class url_object(disk_item):
     
     def getNetLocation( self ):
         '''
-        >>> url_object("http://1.2.3.4").getNetLocation()
+        >>> URL("http://1.2.3.4").getNetLocation()
         '1.2.3.4'
-        >>> url_object("http://aaa.com:80").getNetLocation()
+        >>> URL("http://aaa.com:80").getNetLocation()
         'aaa.com:80'
-        >>> url_object("http://aaa:443").getNetLocation()
+        >>> URL("http://aaa:443").getNetLocation()
         'aaa:443'
     
         @return: Returns the net location for the url.
@@ -852,11 +851,11 @@ class url_object(disk_item):
     
     def getProtocol( self ):
         '''
-        >>> url_object("http://1.2.3.4").getProtocol()
+        >>> URL("http://1.2.3.4").getProtocol()
         'http'
-        >>> url_object("https://aaa.com:80").getProtocol()
+        >>> URL("https://aaa.com:80").getProtocol()
         'https'
-        >>> url_object("ftp://aaa:443").getProtocol()
+        >>> URL("ftp://aaa:443").getProtocol()
         'ftp'
 
         @return: Returns the domain name for the url.
@@ -866,7 +865,7 @@ class url_object(disk_item):
     @set_changed    
     def setProtocol( self, protocol ):
         '''
-        >>> u = url_object("http://1.2.3.4")
+        >>> u = URL("http://1.2.3.4")
         >>> u.getProtocol()
         'http'
         >>> u.setProtocol('https')
@@ -889,23 +888,23 @@ class url_object(disk_item):
         
         Code taken from: http://getoutfoxed.com/node/41
 
-        >>> url_object("http://1.2.3.4").getRootDomain()
+        >>> URL("http://1.2.3.4").getRootDomain()
         '1.2.3.4'
-        >>> url_object("https://aaa.com:80").getRootDomain()
+        >>> URL("https://aaa.com:80").getRootDomain()
         'aaa.com'
-        >>> url_object("http://aaa.com").getRootDomain()
+        >>> URL("http://aaa.com").getRootDomain()
         'aaa.com'
-        >>> url_object("http://www.aaa.com").getRootDomain()
+        >>> URL("http://www.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url_object("http://mail.aaa.com").getRootDomain()
+        >>> URL("http://mail.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url_object("http://foo.bar.spam.eggs.aaa.com").getRootDomain()
+        >>> URL("http://foo.bar.spam.eggs.aaa.com").getRootDomain()
         'aaa.com'
-        >>> url_object("http://foo.bar.spam.eggs.aaa.com.ar").getRootDomain()
+        >>> URL("http://foo.bar.spam.eggs.aaa.com.ar").getRootDomain()
         'aaa.com.ar'
-        >>> url_object("http://foo.aaa.com.ar").getRootDomain()
+        >>> URL("http://foo.aaa.com.ar").getRootDomain()
         'aaa.com.ar'
-        >>> url_object("http://foo.aaa.edu.sz").getRootDomain()
+        >>> URL("http://foo.aaa.edu.sz").getRootDomain()
         'aaa.edu.sz'
 
         '''
@@ -945,36 +944,36 @@ class url_object(disk_item):
         '''
         @return: Returns the domain name and the path for the url.
     
-        >>> url_object('http://w3af.com/def/jkl/').getDomainPath().url_string
+        >>> URL('http://w3af.com/def/jkl/').getDomainPath().url_string
         u'http://w3af.com/def/jkl/'
-        >>> url_object('http://w3af.com/def.html').getDomainPath().url_string
+        >>> URL('http://w3af.com/def.html').getDomainPath().url_string
         u'http://w3af.com/'
-        >>> url_object('http://w3af.com/xyz/def.html').getDomainPath().url_string
+        >>> URL('http://w3af.com/xyz/def.html').getDomainPath().url_string
         u'http://w3af.com/xyz/'
-        >>> url_object('http://w3af.com:80/xyz/def.html').getDomainPath().url_string
+        >>> URL('http://w3af.com:80/xyz/def.html').getDomainPath().url_string
         u'http://w3af.com:80/xyz/'
-        >>> url_object('http://w3af.com:443/xyz/def.html').getDomainPath().url_string
+        >>> URL('http://w3af.com:443/xyz/def.html').getDomainPath().url_string
         u'http://w3af.com:443/xyz/'
-        >>> url_object('https://w3af.com:443/xyz/def.html').getDomainPath().url_string
+        >>> URL('https://w3af.com:443/xyz/def.html').getDomainPath().url_string
         u'https://w3af.com:443/xyz/'
-        >>> url_object('http://w3af.com').getDomainPath().url_string
+        >>> URL('http://w3af.com').getDomainPath().url_string
         u'http://w3af.com/'
         '''
         if self.path:
             res = self.scheme + '://' +self.netloc+ self.path[:self.path.rfind('/')+1]
         else:
             res = self.scheme + '://' +self.netloc+ '/'
-        return url_object(res, self._encoding)
+        return URL(res, self._encoding)
     
     def getFileName( self ):
         '''
         @return: Returns the filename name for the given url.
     
-        >>> url_object('https://w3af.com:443/xyz/def.html').getFileName()
+        >>> URL('https://w3af.com:443/xyz/def.html').getFileName()
         'def.html'
-        >>> url_object('https://w3af.com:443/xyz/').getFileName()
+        >>> URL('https://w3af.com:443/xyz/').getFileName()
         ''
-        >>> url_object('https://w3af.com:443/xyz/d').getFileName()
+        >>> URL('https://w3af.com:443/xyz/d').getFileName()
         'd'
         '''
         return self.path[self.path.rfind('/')+1:]
@@ -984,24 +983,24 @@ class url_object(disk_item):
         '''
         @return: Sets the filename name for the given URL.
     
-        >>> u = url_object('https://w3af.com:443/xyz/def.html')
+        >>> u = URL('https://w3af.com:443/xyz/def.html')
         >>> u.setFileName( 'abc.pdf' )
         >>> u.url_string
         'https://w3af.com:443/xyz/abc.pdf'
         >>> u.getFileName()
         'abc.pdf'
         
-        >>> u = url_object('https://w3af.com:443/xyz/def.html?id=1')
+        >>> u = URL('https://w3af.com:443/xyz/def.html?id=1')
         >>> u.setFileName( 'abc.pdf' )
         >>> u.url_string
         'https://w3af.com:443/xyz/abc.pdf?id=1'
 
-        >>> u = url_object('https://w3af.com:443/xyz/def.html?file=/etc/passwd')
+        >>> u = URL('https://w3af.com:443/xyz/def.html?file=/etc/passwd')
         >>> u.setFileName( 'abc.pdf' )
         >>> u.url_string
         'https://w3af.com:443/xyz/abc.pdf?file=/etc/passwd'
 
-        >>> u = url_object('https://w3af.com/')
+        >>> u = URL('https://w3af.com/')
         >>> u.setFileName( 'abc.pdf' )
         >>> u.url_string
         'https://w3af.com/abc.pdf'
@@ -1017,11 +1016,11 @@ class url_object(disk_item):
         '''
         @return: Returns the extension of the filename, if possible, else, ''.
         
-        >>> url_object('https://w3af.com:443/xyz/d').getExtension()
+        >>> URL('https://w3af.com:443/xyz/d').getExtension()
         ''
-        >>> url_object('https://w3af.com:443/xyz/d.html').getExtension()
+        >>> URL('https://w3af.com:443/xyz/d.html').getExtension()
         'html'
-        >>> url_object('https://w3af.com:443/xyz/').getExtension()
+        >>> URL('https://w3af.com:443/xyz/').getExtension()
         ''
         '''
         fname = self.getFileName()
@@ -1038,22 +1037,22 @@ class url_object(disk_item):
         @return: None. The extension is set. An exception is raised if the
         original URL had no extension.
         
-        >>> url_object('https://www.w3af.com/xyz/foo').setExtension('xml')
+        >>> URL('https://www.w3af.com/xyz/foo').setExtension('xml')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         Exception: You can only set a new extension to a URL that had one.
 
-        >>> u = url_object('https://w3af.com:443/xyz/d.html')
+        >>> u = URL('https://w3af.com:443/xyz/d.html')
         >>> u.setExtension('xml')
         >>> u.getExtension()
         'xml'
         
-        >>> u = url_object('https://w3af.com:443/xyz/d.html?id=3')
+        >>> u = URL('https://w3af.com:443/xyz/d.html?id=3')
         >>> u.setExtension('xml')
         >>> u.getExtension()
         'xml'
 
-        >>> u = url_object('https://w3af.com:443/xyz/d.html.foo?id=3')
+        >>> u = URL('https://w3af.com:443/xyz/d.html.foo?id=3')
         >>> u.setExtension('xml')
         >>> u.getExtension()
         'xml'
@@ -1074,9 +1073,9 @@ class url_object(disk_item):
 
     def allButScheme( self ):
         '''
-        >>> url_object('https://w3af.com:443/xyz/').allButScheme()
+        >>> URL('https://w3af.com:443/xyz/').allButScheme()
         'w3af.com:443/xyz/'
-        >>> url_object('https://w3af.com:443/xyz/file.asp').allButScheme()
+        >>> URL('https://w3af.com:443/xyz/file.asp').allButScheme()
         'w3af.com:443/xyz/'
 
         @return: Returns the domain name and the path for the url.
@@ -1085,15 +1084,15 @@ class url_object(disk_item):
     
     def getPath( self ):
         '''
-        >>> url_object('https://w3af.com:443/xyz/file.asp').getPath()
+        >>> URL('https://w3af.com:443/xyz/file.asp').getPath()
         '/xyz/file.asp'
-        >>> url_object('https://w3af.com:443/xyz/file.asp?id=-2').getPath()
+        >>> URL('https://w3af.com:443/xyz/file.asp?id=-2').getPath()
         '/xyz/file.asp'
-        >>> url_object('https://w3af.com:443/xyz/').getPath()
+        >>> URL('https://w3af.com:443/xyz/').getPath()
         '/xyz/'
-        >>> url_object('https://w3af.com:443/xyz/123/456/789/').getPath()
+        >>> URL('https://w3af.com:443/xyz/123/456/789/').getPath()
         '/xyz/123/456/789/'
-        >>> url_object('https://w3af.com:443/').getPath()
+        >>> URL('https://w3af.com:443/').getPath()
         '/'
 
         @return: Returns the path for the url:
@@ -1106,11 +1105,11 @@ class url_object(disk_item):
 
     def getPathWithoutFile( self ):
         '''
-        >>> url_object('https://w3af.com:443/xyz/file.asp').getPathWithoutFile()
+        >>> URL('https://w3af.com:443/xyz/file.asp').getPathWithoutFile()
         '/xyz/'
-        >>> url_object('https://w3af.com:443/xyz/').getPathWithoutFile()
+        >>> URL('https://w3af.com:443/xyz/').getPathWithoutFile()
         '/xyz/'
-        >>> url_object('https://w3af.com:443/xyz/123/456/789/').getPathWithoutFile()
+        >>> URL('https://w3af.com:443/xyz/123/456/789/').getPathWithoutFile()
         '/xyz/123/456/789/'
 
         @return: Returns the path for the url:
@@ -1121,13 +1120,13 @@ class url_object(disk_item):
     
     def getPathQs(self):
         '''
-        >>> url_object(u'https://w3af.com:443/xyz/123/456/789/').getPath()
+        >>> URL(u'https://w3af.com:443/xyz/123/456/789/').getPath()
         u'/xyz/123/456/789/'
-        >>> url_object(u'https://w3af.com:443/xyz/123/456/789/').getPathQs()
+        >>> URL(u'https://w3af.com:443/xyz/123/456/789/').getPathQs()
         u'/xyz/123/456/789/'
-        >>> url_object(u'https://w3af.com:443/xyz/file.asp').getPathQs()
+        >>> URL(u'https://w3af.com:443/xyz/file.asp').getPathQs()
         u'/xyz/file.asp'
-        >>> url_object(u'https://w3af.com:443/xyz/file.asp?id=1').getPathQs()
+        >>> URL(u'https://w3af.com:443/xyz/file.asp?id=1').getPathQs()
         u'/xyz/file.asp?id=1'
     
         @return: Returns the domain name and the path for the url.
@@ -1142,12 +1141,12 @@ class url_object(disk_item):
     def urlDecode(self):
         '''
         @see: Unittests at test_urlParser
-        @return: An url_object that represents the current URL without URL
+        @return: A URL that represents the current URL without URL
                  encoded characters.
         '''
         unquotedurl = urllib.unquote(str(self))
         enc = self._encoding
-        return url_object(unquotedurl.decode(enc, 'ignore'), enc)
+        return URL(unquotedurl.decode(enc, 'ignore'), enc)
     
     def urlEncode(self):
         '''
@@ -1170,26 +1169,26 @@ class url_object(disk_item):
         
         Test different path levels
 
-        >>> [i.url_string for i in url_object('http://w3af.com/xyz/def/123/').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/xyz/def/123/').getDirectories()]
         [u'http://w3af.com/xyz/def/123/', u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/', u'http://w3af.com/']
-        >>> [i.url_string for i in url_object('http://w3af.com/xyz/def/').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/xyz/def/').getDirectories()]
         [u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/', u'http://w3af.com/']
-        >>> [i.url_string for i in url_object('http://w3af.com/xyz/').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/xyz/').getDirectories()]
         [u'http://w3af.com/xyz/', u'http://w3af.com/']
-        >>> [i.url_string for i in url_object('http://w3af.com/').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/').getDirectories()]
         [u'http://w3af.com/']
 
 
         Test with a filename
 
-        >>> [i.url_string for i in url_object('http://w3af.com/def.html').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/def.html').getDirectories()]
         [u'http://w3af.com/']
 
         Test with a filename and a QS
 
-        >>> [i.url_string for i in url_object('http://w3af.com/def.html?id=5').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/def.html?id=5').getDirectories()]
         [u'http://w3af.com/']
-        >>> [i.url_string for i in url_object('http://w3af.com/def.html?id=/').getDirectories()]
+        >>> [i.url_string for i in URL('http://w3af.com/def.html?id=/').getDirectories()]
         [u'http://w3af.com/']
         '''
         res = []
@@ -1207,15 +1206,15 @@ class url_object(disk_item):
         '''
         Analizes the url to check for a params
 
-        >>> url_object('http://w3af.com/').hasParams()
+        >>> URL('http://w3af.com/').hasParams()
         False
-        >>> url_object('http://w3af.com/;id=1').hasParams()
+        >>> URL('http://w3af.com/;id=1').hasParams()
         True
-        >>> url_object('http://w3af.com/?id=3;id=1').hasParams()
+        >>> URL('http://w3af.com/?id=3;id=1').hasParams()
         False
-        >>> url_object('http://w3af.com/;id=1?id=3').hasParams()
+        >>> URL('http://w3af.com/;id=1?id=3').hasParams()
         True
-        >>> url_object('http://w3af.com/foobar.html;id=1?id=3').hasParams()
+        >>> URL('http://w3af.com/foobar.html;id=1?id=3').hasParams()
         True
     
         @return: True if the URL has params.
@@ -1226,15 +1225,15 @@ class url_object(disk_item):
     
     def getParamsString(self):
         '''
-        >>> url_object(u'http://w3af.com/').getParamsString()
+        >>> URL(u'http://w3af.com/').getParamsString()
         u''
-        >>> url_object(u'http://w3af.com/;id=1').getParamsString()
+        >>> URL(u'http://w3af.com/;id=1').getParamsString()
         u'id=1'
-        >>> url_object(u'http://w3af.com/?id=3;id=1').getParamsString()
+        >>> URL(u'http://w3af.com/?id=3;id=1').getParamsString()
         u''
-        >>> url_object(u'http://w3af.com/;id=1?id=3').getParamsString()
+        >>> URL(u'http://w3af.com/;id=1?id=3').getParamsString()
         u'id=1'
-        >>> url_object(u'http://w3af.com/foobar.html;id=1?id=3').getParamsString()
+        >>> URL(u'http://w3af.com/foobar.html;id=1?id=3').getParamsString()
         u'id=1'
     
         @return: Returns the params inside the url.
@@ -1245,32 +1244,32 @@ class url_object(disk_item):
         '''
         @return: Returns a new url object contaning the URL without the parameter. Example :
 
-        >>> url_object('http://w3af.com/').removeParams().url_string
+        >>> URL('http://w3af.com/').removeParams().url_string
         u'http://w3af.com/'
-        >>> url_object('http://w3af.com/def.txt').removeParams().url_string
+        >>> URL('http://w3af.com/def.txt').removeParams().url_string
         u'http://w3af.com/def.txt'
-        >>> url_object('http://w3af.com/;id=1').removeParams().url_string
+        >>> URL('http://w3af.com/;id=1').removeParams().url_string
         u'http://w3af.com/'
-        >>> url_object('http://w3af.com/;id=1&file=2').removeParams().url_string
+        >>> URL('http://w3af.com/;id=1&file=2').removeParams().url_string
         u'http://w3af.com/'
-        >>> url_object('http://w3af.com/;id=1?file=2').removeParams().url_string
+        >>> URL('http://w3af.com/;id=1?file=2').removeParams().url_string
         u'http://w3af.com/?file=2'
-        >>> url_object('http://w3af.com/xyz.txt;id=1?file=2').removeParams().url_string
+        >>> URL('http://w3af.com/xyz.txt;id=1?file=2').removeParams().url_string
         u'http://w3af.com/xyz.txt?file=2'
 
         '''
         parts = (self.scheme, self.netloc, self.path,
                  None, unicode(self.querystring), self.fragment)
-        return url_object.from_parts(*parts, encoding=self._encoding)
+        return URL.from_parts(*parts, encoding=self._encoding)
     
     @set_changed
     def setParam( self, param_string ):
         '''
-        >>> u = url_object('http://w3af.com/;id=1')
+        >>> u = URL('http://w3af.com/;id=1')
         >>> u.setParam('file=2')
         >>> u.getParamsString()
         'file=2'
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> u.setParam('file=3')
         >>> u.getParamsString()
         'file=3'
@@ -1288,16 +1287,16 @@ class url_object(disk_item):
     
         @return: A QueryString object.
 
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> u.getParams()
         {'id': '1'}
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1&file=2?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?file=2')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1&file=2?spam=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?spam=2')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1&file=2?spam=3')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1&file=2?spam=3')
         >>> u.getParams()
         {'id': '1', 'file': '2'}
 
@@ -1322,7 +1321,7 @@ class url_object(disk_item):
         Return iterator for self.url_string
         
         >>> url = u'http://w3af.com/xyz.txt;id=1?file=2'
-        >>> url_obj = url_object(url)
+        >>> url_obj = URL(url)
         >>> ''.join(chr for chr in url_obj) == url
         True
         '''
@@ -1332,7 +1331,7 @@ class url_object(disk_item):
         '''
         @return: True if the url_strings are equal
         '''
-        return isinstance(other, url_object) and \
+        return isinstance(other, URL) and \
                 self.url_string == other.url_string
     
     def __ne__(self, other):
@@ -1340,13 +1339,13 @@ class url_object(disk_item):
     
     def __hash__(self):
         '''
-        >>> u1 = url_object('http://w3af.com/')
-        >>> u2 = url_object('http://w3af.com/def.htm')
+        >>> u1 = URL('http://w3af.com/')
+        >>> u2 = URL('http://w3af.com/def.htm')
         >>> test = [u1, u2]
         >>> len( list( set( test ) ) )
         2
-        >>> u1 = url_object('http://w3af.com/')
-        >>> u2 = url_object('http://w3af.com/')
+        >>> u1 = URL('http://w3af.com/')
+        >>> u2 = URL('http://w3af.com/')
         >>> test = [u1, u2]
         >>> len( list( set( test ) ) )
         1
@@ -1357,11 +1356,11 @@ class url_object(disk_item):
         '''
         @return: A string representation of myself
 
-        >>> str(url_object('http://w3af.com/xyz.txt;id=1?file=2'))
+        >>> str(URL('http://w3af.com/xyz.txt;id=1?file=2'))
         'http://w3af.com/xyz.txt;id=1?file=2'
-        >>> str(url_object('http://w3af.com:80/'))
+        >>> str(URL('http://w3af.com:80/'))
         'http://w3af.com:80/'
-        >>> str(url_object(u'http://w3af.com/indéx.html', 'latin1')) == \
+        >>> str(URL(u'http://w3af.com/indéx.html', 'latin1')) == \
         u'http://w3af.com/indéx.html'.encode('latin1')
         True
         '''
@@ -1376,9 +1375,9 @@ class url_object(disk_item):
         '''
         @return: A unicode representation of myself
         
-        >>> unicode(url_object('http://w3af.com:80/'))
+        >>> unicode(URL('http://w3af.com:80/'))
         u'http://w3af.com:80/'
-        >>> unicode(url_object(u'http://w3af.com/indéx.html', 'latin1')) == \
+        >>> unicode(URL(u'http://w3af.com/indéx.html', 'latin1')) == \
         u'http://w3af.com/indéx.html'
         True
         '''
@@ -1389,21 +1388,21 @@ class url_object(disk_item):
         @return: A string representation of myself for debugging
 
         '''
-        return '<url_object for "%s">' % (self,)
+        return '<URL for "%s">' % (self,)
 
     def __contains__(self, s):
         '''
         @return: True if "s" in url_string
 
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> '1' in u
         True
         
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> 'file=2' in u
         True
 
-        >>> u = url_object('http://w3af.com/xyz.txt;id=1?file=2')
+        >>> u = URL('http://w3af.com/xyz.txt;id=1?file=2')
         >>> 'hello!' in u
         False
         '''
@@ -1413,21 +1412,21 @@ class url_object(disk_item):
         '''
         @return: This URL concatenated with the "other" string.
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = u + 'abc'
         >>> x
         u'http://www.w3af.com/abc'
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = u + ' hello world!'
         >>> x
         u'http://www.w3af.com/ hello world!'
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = u + 1
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: cannot concatenate 'int' and 'url_object' objects
+        TypeError: cannot concatenate 'int' and 'URL' objects
         
         '''
         if not isinstance(other, basestring):
@@ -1441,7 +1440,7 @@ class url_object(disk_item):
         '''
         Always evaluate as True
         
-        >>> bool(url_object('http://www.w3af.com'))
+        >>> bool(URL('http://www.w3af.com'))
         True
         '''
         return True
@@ -1450,21 +1449,21 @@ class url_object(disk_item):
         '''
         @return: The "other" string concatenated with this URL.
         
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = 'abc' + u
         >>> x
         u'abchttp://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = 'hello world! ' + u
         >>> x
         u'hello world! http://www.w3af.com/'
 
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> x = 1 + u
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: cannot concatenate 'int' and 'url_object' objects
+        TypeError: cannot concatenate 'int' and 'URL' objects
         
         '''
         if not isinstance(other, basestring):

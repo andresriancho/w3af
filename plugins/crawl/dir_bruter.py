@@ -84,7 +84,7 @@ class dir_bruter(CrawlPlugin):
         Simple generator that returns the names of the directories to test. It
         extracts the information from the user configured wordlist parameter.
         
-        @yields: (A string with the directory name, an url_object with the dir name) 
+        @yields: (A string with the directory name, a URL object with the dir name) 
         '''
         for directory_name in file(self._dir_list):
             directory_name = directory_name.strip()

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.outputManager as om
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -65,7 +65,7 @@ class wsdl_finder(CrawlPlugin):
     def wsdl_url_generator( self, url_string ):
         for wsdl_parameter in self.WSDL:
             url_to_request = url_string + wsdl_parameter
-            url_instance = url_object(url_to_request)
+            url_instance = URL(url_to_request)
             yield url_instance
             
     def _do_request(self, url_to_request):

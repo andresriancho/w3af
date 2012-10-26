@@ -8,7 +8,7 @@ License: GPL v2.
 import core.controllers.outputManager as om
 from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadManager import thread_manager as tm
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 import core.data.kb.config as cf
 
 import urllib
@@ -119,7 +119,7 @@ class dbDriverFunctions:
         url page.
         """
         m = self._vuln.getMutant()
-        url = url_object( url )
+        url = URL( url )
         m.setDc(url.querystring)
         m.setURL( url.uri2url() )
         response = self._uri_opener.send_mutant( m )

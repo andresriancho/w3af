@@ -25,7 +25,7 @@ import core.data.url.HTTPResponse as HTTPResponse
 
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.url.handlers.keepalive import HTTPResponse as kaHTTPResponse
 from core.data.url.handlers.logHandler import LogHandler
 
@@ -95,7 +95,7 @@ class mangleHandler(urllib2.BaseHandler):
         if len( self._pluginList ) and response._connection.sock is not None:
             # Create the HTTPResponse object
             code, msg, hdrs = response.code, response.msg, response.info()
-            url_instance = url_object( response.geturl() )
+            url_instance = URL( response.geturl() )
             body = response.read()
             # Id is not here, the mangle is done BEFORE logging
             # id = response.id

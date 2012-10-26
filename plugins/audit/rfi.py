@@ -41,7 +41,7 @@ from core.controllers.w3afException import w3afException
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class rfi(AuditPlugin):
@@ -180,7 +180,7 @@ class rfi(AuditPlugin):
         @param freq: A FuzzableRequest object
         @return: None, everything is saved to the kb
         '''        
-        rfi_url = url_object(self.RFI_TEST_URL)
+        rfi_url = URL(self.RFI_TEST_URL)
         rfi_result = 'w3af by Andres Riancho'
         rfi_result_part_1 = 'w3af'
         rfi_result_part_2 = ' by Andres Riancho'
@@ -324,7 +324,7 @@ class rfi(AuditPlugin):
             # Define the required parameters
             netloc = self._listen_address +':' + str(self._listen_port)
             path = '/' + filename
-            rfi_url = url_object.from_parts('http', netloc, path, None, None, None)
+            rfi_url = URL.from_parts('http', netloc, path, None, None, None)
             
             rfi_data = RFIData(rfi_url, rfi_result_part_1, rfi_result_part_2, rfi_result)
             

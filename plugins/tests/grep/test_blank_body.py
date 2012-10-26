@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from plugins.grep.blank_body import blank_body
 
@@ -37,7 +37,7 @@ class test_blank_body(unittest.TestCase):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = blank_body()
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
 
     def tearDown(self):
@@ -45,7 +45,7 @@ class test_blank_body(unittest.TestCase):
     
     def test_blank_body(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')

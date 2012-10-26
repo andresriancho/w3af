@@ -24,7 +24,7 @@ import json
 
 import core.data.kb.vuln as vuln
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from ..helper import PluginTest, PluginConfig
 
 
@@ -93,7 +93,7 @@ class TestCSVFile(PluginTest):
             
             v.setName(name)
             v.setMethod( method )
-            v.setURI( url_object(uri) )
+            v.setURI( URL(uri) )
             v.setVar(var)
             v.setDc(dc)
             v.set_id(json.loads(_id) )

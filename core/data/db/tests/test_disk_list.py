@@ -27,7 +27,7 @@ from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.disk_list import disk_list
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
 
@@ -82,24 +82,24 @@ class test_disk_list(unittest.TestCase):
     def test_urlobject(self):
         dl = disk_list()
 
-        dl.append( url_object('http://w3af.org/?id=2') )
-        dl.append( url_object('http://w3af.org/?id=3') )
+        dl.append( URL('http://w3af.org/?id=2') )
+        dl.append( URL('http://w3af.org/?id=3') )
         
-        self.assertEqual( dl[0] , url_object('http://w3af.org/?id=2'))
-        self.assertEqual( dl[1] , url_object('http://w3af.org/?id=3'))
-        self.assertFalse( url_object('http://w3af.org/?id=4') in dl )
-        self.assertTrue( url_object('http://w3af.org/?id=2') in dl )
+        self.assertEqual( dl[0] , URL('http://w3af.org/?id=2'))
+        self.assertEqual( dl[1] , URL('http://w3af.org/?id=3'))
+        self.assertFalse( URL('http://w3af.org/?id=4') in dl )
+        self.assertTrue( URL('http://w3af.org/?id=2') in dl )
     
     def test_fuzzable_request(self):
         dl = disk_list()
         
-        uri = url_object('http://w3af.org/?id=2')
+        uri = URL('http://w3af.org/?id=2')
         qsr1 = HTTPQSRequest(uri, method='GET', headers=Headers([('Referer', 'http://w3af.org/')]))
 
-        uri = url_object('http://w3af.org/?id=3')
+        uri = URL('http://w3af.org/?id=3')
         qsr2 = HTTPQSRequest(uri, method='OPTIONS', headers=Headers([('Referer', 'http://w3af.org/')]))
         
-        uri = url_object('http://w3af.org/?id=7')
+        uri = URL('http://w3af.org/?id=7')
         qsr3 = HTTPQSRequest(uri, method='FOO', headers=Headers([('Referer', 'http://w3af.org/')]))
 
         dl.append( qsr1 )

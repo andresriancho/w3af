@@ -34,7 +34,7 @@ from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
@@ -122,7 +122,7 @@ class import_results(CrawlPlugin):
             om.out.error(msg)
         else:
             # Create the obj based on the information
-            uri = url_object(uri)
+            uri = URL(uri)
             if uri.is_valid_domain():
                 return create_fuzzable_request(uri, method, postdata)
 

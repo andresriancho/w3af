@@ -32,7 +32,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class url_fuzzer(CrawlPlugin):
@@ -158,19 +158,19 @@ class url_fuzzer(CrawlPlugin):
             - http://www.foobar.com/www.foobar.rar
             - etc...
         
-        @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed
+        @parameter url: A URL to transform.
+        @return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> u = url_fuzzer()
-        >>> url = url_object('http://www.w3af.com/')
+        >>> url = URL('http://www.w3af.com/')
         >>> mutants = list(u._mutate_domain_name(url))
-        >>> url_object('http://www.w3af.com/www.tar.gz') in mutants
+        >>> URL('http://www.w3af.com/www.tar.gz') in mutants
         True
-        >>> url_object('http://www.w3af.com/www.w3af.tar.gz') in mutants
+        >>> URL('http://www.w3af.com/www.w3af.tar.gz') in mutants
         True
-        >>> url_object('http://www.w3af.com/www.w3af.com.tar.gz') in mutants
+        >>> URL('http://www.w3af.com/www.w3af.com.tar.gz') in mutants
         True
         >>> len(mutants) > 20
         True
@@ -194,20 +194,20 @@ class url_fuzzer(CrawlPlugin):
         '''
         Adds something to the end of the url (mutate the file being requested)
         
-        @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed
+        @parameter url: A URL to transform.
+        @return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> u = url_fuzzer()
-        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> url = URL( 'http://www.w3af.com/' )
         >>> mutants = u._mutate_by_appending( url )
         >>> list(mutants)
         []
         
-        >>> url = url_object( 'http://www.w3af.com/foo.html' )
+        >>> url = URL( 'http://www.w3af.com/foo.html' )
         >>> mutants = u._mutate_by_appending( url )
-        >>> url_object( 'http://www.w3af.com/foo.html~' ) in mutants
+        >>> URL( 'http://www.w3af.com/foo.html~' ) in mutants
         True
         >>> len(list(mutants)) > 20
         True
@@ -237,19 +237,19 @@ class url_fuzzer(CrawlPlugin):
             - http://www.foobar.com/asd.tgz
             - etc...
         
-        @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed as parameter.
+        @parameter url: A URL to transform.
+        @return: A list of URL's that mutate the original url passed as parameter.
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> u = url_fuzzer()
-        >>> list(u._mutate_file_type(url_object('http://www.w3af.com/')))
+        >>> list(u._mutate_file_type(URL('http://www.w3af.com/')))
         []
         
-        >>> url = url_object('http://www.w3af.com/foo.html')
+        >>> url = URL('http://www.w3af.com/foo.html')
         >>> mutants = list(u._mutate_file_type( url))
-        >>> url_object('http://www.w3af.com/foo.tar.gz') in mutants
+        >>> URL('http://www.w3af.com/foo.tar.gz') in mutants
         True
-        >>> url_object('http://www.w3af.com/foo.disco') in mutants
+        >>> URL('http://www.w3af.com/foo.disco') in mutants
         True
         >>> len(mutants) > 20
         True
@@ -266,27 +266,27 @@ class url_fuzzer(CrawlPlugin):
         '''
         Mutate the path instead of the file.
         
-        @parameter url: An url_object to transform.
-        @return: A list of url_object's that mutate the original url passed
+        @parameter url: A URL to transform.
+        @return: A list of URL's that mutate the original url passed
                  as parameter.
 
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> u = url_fuzzer()
-        >>> url = url_object( 'http://www.w3af.com/' )
+        >>> url = URL( 'http://www.w3af.com/' )
         >>> list(u._mutate_path(url))
         []
         
-        >>> url = url_object( 'http://www.w3af.com/foo.html' )
+        >>> url = URL( 'http://www.w3af.com/foo.html' )
         >>> list(u._mutate_path(url))
         []
         
-        >>> url = url_object('http://www.w3af.com/foo/bar.html' )
+        >>> url = URL('http://www.w3af.com/foo/bar.html' )
         >>> mutants = list(u._mutate_path(url))
-        >>> url_object('http://www.w3af.com/foo.tar.gz') in mutants
+        >>> URL('http://www.w3af.com/foo.tar.gz') in mutants
         True
-        >>> url_object('http://www.w3af.com/foo.old') in mutants
+        >>> URL('http://www.w3af.com/foo.old') in mutants
         True
-        >>> url_object('http://www.w3af.com/foo.zip') in mutants
+        >>> URL('http://www.w3af.com/foo.zip') in mutants
         True
         '''
         url_string = url.url_string
@@ -296,7 +296,7 @@ class url_fuzzer(CrawlPlugin):
             url_string = url_string[:url_string.rfind('/')]
             to_append_list = self._appendables
             for to_append in to_append_list:
-                newurl = url_object(url_string + to_append)
+                newurl = URL(url_string + to_append)
                 yield newurl
         
     def _verify_head_enabled(self, url):

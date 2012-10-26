@@ -26,7 +26,7 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class slash(CrawlPlugin):
@@ -79,9 +79,9 @@ class slash(CrawlPlugin):
         url_string = str(fuzzable_request.getURL()) 
         
         if url_string.endswith('/'):
-            new_url = url_object(url_string.rstrip('/'))
+            new_url = URL(url_string.rstrip('/'))
         else:
-            new_url = url_object(url_string + '/')
+            new_url = URL(url_string + '/')
         
         fr.setURL(new_url)
         return fr

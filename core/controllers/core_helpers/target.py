@@ -27,7 +27,7 @@ import core.data.kb.config as cf
 from core.controllers.configurable import configurable
 from core.controllers.w3afException import w3afException
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.options.option import option
 from core.data.options.comboOption import comboOption
 from core.data.options.option_list import OptionList
@@ -110,7 +110,7 @@ class w3af_core_target(configurable):
         @return: None. A w3afException is raised on error.
         '''
         try:
-            target_url = url_object(target_url)
+            target_url = URL(target_url)
         except ValueError:
             is_invalid = True
         else:
@@ -156,7 +156,7 @@ class w3af_core_target(configurable):
                 target_urls_strings.remove( target_url_string )
         
         # Convert to objects
-        target_url_objects = [url_object(u) for u in target_urls_strings]
+        target_url_objects = [URL(u) for u in target_urls_strings]
         
         # Now we perform a check to see if the user has specified more than one target
         # domain, for example: "http://google.com, http://yahoo.com".

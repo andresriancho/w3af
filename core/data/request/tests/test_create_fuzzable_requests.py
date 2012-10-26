@@ -26,7 +26,7 @@ from nose.plugins.skip import SkipTest
 
 from core.data.request.factory import create_fuzzable_requests
 from core.data.url.HTTPResponse import HTTPResponse
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 import core.data.kb.config as cf
@@ -36,7 +36,7 @@ import core.data.kb.config as cf
 class TestCreateFuzzableRequests(unittest.TestCase):
 
     def setUp(self):
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         cf.cf.save('fuzzable_headers', [])
         cf.cf.save('fuzzFormComboValues', 'tmb')
     

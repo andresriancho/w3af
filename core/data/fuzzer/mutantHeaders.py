@@ -31,9 +31,9 @@ class mutantHeaders(mutant):
         '''
 
         >>> from core.data.request.fuzzable_request import FuzzableRequest
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
 
-        >>> freq = FuzzableRequest( url_object('http://www.w3af.com/') )
+        >>> freq = FuzzableRequest( URL('http://www.w3af.com/') )
         >>> fake_ref = 'http://w3af.org/'
         >>> mutant = mutantHeaders( freq.copy() )
         >>> mutant.setVar('Referer')

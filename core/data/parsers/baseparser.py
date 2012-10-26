@@ -25,7 +25,7 @@ import urllib
 
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.controllers.misc.encoding import is_known_encoding
 
@@ -84,7 +84,7 @@ class BaseParser(object):
         @return: A list of email accounts that are inside the document.
         
         >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> response = HTTPResponse( 200, '', Headers(), u, u )
         >>> a = BaseParser(response)
         >>> a._emails = ['a@w3af.com', 'foo@not-w3af.com']
@@ -160,7 +160,7 @@ class BaseParser(object):
 
         Init,
         >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> response = HTTPResponse( 200, '', Headers(), u, u )
         >>> a = BaseParser(response)
         
@@ -221,7 +221,7 @@ class BaseParser(object):
 
         Init,
         >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> response = HTTPResponse(200, '', Headers(), u, u)
 
         Simple, empty result
@@ -234,24 +234,24 @@ class BaseParser(object):
         Full URL
         >>> a = BaseParser(response)
         >>> a._regex_url_parse(u'header http://www.w3af.com/foo/bar/index.html footer')
-        >>> url_object('http://www.w3af.com/foo/bar/index.html') in a._re_urls
+        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
         True
 
         One relative URL
         >>> a = BaseParser(response)
         >>> a._regex_url_parse(u'header /foo/bar/index.html footer')
-        >>> url_object('http://www.w3af.com/foo/bar/index.html') in a._re_urls
+        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
         True
 
         >>> a = BaseParser(response)
         >>> a._regex_url_parse(u'header /subscribe.aspx footer')
-        >>> url_object('http://www.w3af.com/subscribe.aspx') in a._re_urls
+        >>> URL('http://www.w3af.com/subscribe.aspx') in a._re_urls
         True
 
         Relative with initial "/" , inside an href
         >>> a = BaseParser(response)
         >>> a._regex_url_parse(u'header <a href="/foo/bar/index.html">foo</a> footer')
-        >>> url_object('http://www.w3af.com/foo/bar/index.html') in a._re_urls
+        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
         True
 
         Simple index relative URL
@@ -266,7 +266,7 @@ class BaseParser(object):
             # This try is here because the _decode_url method raises an
             # exception whenever it fails to decode a url.
             try:
-                decoded_url = url_object(self._decode_url(url[0]),
+                decoded_url = URL(self._decode_url(url[0]),
                                          encoding=self._encoding)
             except ValueError:
                 pass
@@ -305,7 +305,7 @@ class BaseParser(object):
                         
             try:
                 url = self._baseUrl.urlJoin(match_str).url_string
-                url = url_object(self._decode_url(url),
+                url = URL(self._decode_url(url),
                                  encoding=self._encoding)
             except ValueError:
                 # In some cases, the relative URL is invalid and triggers an 
@@ -339,7 +339,7 @@ class BaseParser(object):
         
         Init,
         >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = url_object('http://www.w3af.com/')
+        >>> u = URL('http://www.w3af.com/')
         >>> response = HTTPResponse(200, u'', Headers(), u, u, charset='latin1')
         >>> a = BaseParser(response)
         >>> a._encoding = 'latin1'

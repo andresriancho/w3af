@@ -30,7 +30,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 DEFAULT_CHARSET = DEFAULT_ENCODING
@@ -55,10 +55,10 @@ def from_httplib_resp(httplibresp, original_url=None):
     hdrs = Headers(hdrs.items())
     
     if original_url:
-        url_inst = url_object(resp.geturl(), original_url.encoding)
+        url_inst = URL(resp.geturl(), original_url.encoding)
         url_inst = url_inst.urlDecode()
     else:
-        url_inst = original_url = url_object(resp.geturl())
+        url_inst = original_url = URL(resp.geturl())
     
     charset = getattr(resp, 'encoding', None)
     return HTTPResponse(code, body, hdrs, url_inst,
@@ -79,19 +79,19 @@ class HTTPResponse(object):
         @param code: HTTP code
         @param read: HTTP body text; typically a string
         @param headers: HTTP headers, typically a dict or a httplib.HTTPMessage
-        @param geturl: url_object instance
-        @param original_url: url_object instance
+        @param geturl: URL object instance
+        @param original_url: URL object instance
         @param msg: HTTP message
         @param id: Optional response identifier
         @parameter time: The time between the request and the response
         @param alias: Optional alias for the response
         @param charset: Response's encoding; obligatory when `read` is unicode
         '''
-        if not isinstance(geturl, url_object):
+        if not isinstance(geturl, URL):
             raise TypeError('Invalid type %s for HTTPResponse ctor param geturl.'
                             % type(geturl))
 
-        if not isinstance(original_url, url_object):
+        if not isinstance(original_url, URL):
             raise TypeError('Invalid type %s for HTTPResponse ctor param original_url.'
                             % type(original_url))
 
@@ -346,19 +346,19 @@ class HTTPResponse(object):
 
     def setURL(self, url):
         '''
-        >>> url = url_object('http://www.google.com')
+        >>> url = URL('http://www.google.com')
         >>> r = HTTPResponse(200, '' , Headers(), url, url)
         >>> r.setURL('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URL of a HTTPResponse object must be of urlParser.url_object type.
+        TypeError: The URL of a HTTPResponse object must be of url.URL type.
         >>> r.setURL(url)
         >>> r.getURL() == url
         True
         '''
-        if not isinstance(url, url_object):
+        if not isinstance(url, URL):
             raise TypeError('The URL of a HTTPResponse object must be of '
-                             'urlParser.url_object type.')
+                             'url.URL type.')
         
         self._realurl = url.uri2url()
         
@@ -367,20 +367,20 @@ class HTTPResponse(object):
 
     def setURI(self, uri):
         '''
-        >>> uri = url_object('http://www.google.com/')
+        >>> uri = URL('http://www.google.com/')
         >>> r = HTTPResponse(200, '' , Headers(), uri, uri)
         >>> r.setURI('http://www.google.com/')
         Traceback (most recent call last):
           ...
-        TypeError: The URI of a HTTPResponse object must be of urlParser.url_object type.
+        TypeError: The URI of a HTTPResponse object must be of url.URL type.
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True
         
         '''
-        if not isinstance(uri, url_object):
+        if not isinstance(uri, URL):
             raise TypeError('The URI of a HTTPResponse object must be of '
-                             'urlParser.url_object type.')
+                             'url.URL type.')
         
         self._uri = uri
         self._realurl = uri.uri2url()

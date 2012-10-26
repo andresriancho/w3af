@@ -30,12 +30,12 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 # Cohny changed the original http://w3af/spider_man?terminate
 # to http://127.7.7.7/spider_man?terminate because in Opera we got
 # an error if we used the original one! Thanks Cohny!
-TERMINATE_URL = url_object('http://127.7.7.7/spider_man?terminate')
+TERMINATE_URL = URL('http://127.7.7.7/spider_man?terminate')
 
 
 class spider_man(CrawlPlugin):
@@ -181,7 +181,7 @@ class proxyHandler(w3afProxyHandler):
             om.out.information('The user is navigating through the spider_man proxy.')
         
         # Convert to url_object
-        path = url_object(self.path)
+        path = URL(self.path)
             
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')

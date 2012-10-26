@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from plugins.grep.private_ip import private_ip
 
@@ -35,7 +35,7 @@ class test_private_ip(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
         self.plugin = private_ip()
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
 
     def tearDown(self):
@@ -43,7 +43,7 @@ class test_private_ip(unittest.TestCase):
         
     def test_private_ip_empty(self):
         body = ''
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -52,7 +52,7 @@ class test_private_ip(unittest.TestCase):
     
     def test_private_ip_find(self):
         body = '<html><head>192.168.1.1</head></html>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -61,7 +61,7 @@ class test_private_ip(unittest.TestCase):
     
     def test_private_ip_broken_html(self):
         body = '<html><head>192.168.1.1</html>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -70,7 +70,7 @@ class test_private_ip(unittest.TestCase):
     
     def test_private_ip_find_10(self):
         body = 'header 10.2.34.2 footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         response = HTTPResponse(200, body , headers, url, url)
         request = FuzzableRequest(url, method='GET')
@@ -79,7 +79,7 @@ class test_private_ip(unittest.TestCase):
     
     def test_private_ip_find_header(self):
         body = 'header content footer'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-via','10.3.4.5')])
         response = HTTPResponse(200, body , headers, url, url)
@@ -89,7 +89,7 @@ class test_private_ip(unittest.TestCase):
 
     def test_private_ip_no(self):
         body = '<script> 1010.2.3.4 </script>'
-        url = url_object('http://www.w3af.com/')
+        url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-via', '10.256.3.10.1.2.3')])
         response = HTTPResponse(200, body , headers, url, url)

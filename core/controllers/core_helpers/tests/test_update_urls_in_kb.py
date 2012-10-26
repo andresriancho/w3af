@@ -23,7 +23,7 @@ import unittest
 
 import core.data.kb.knowledgeBase as kb
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.controllers.core_helpers.update_urls_in_kb import update_kb
 
@@ -35,16 +35,16 @@ class TestUpdateURLs(unittest.TestCase):
         kb.kb.save('urls', 'fuzzable_requests', set())
     
     def test_basic(self):
-        u1 = url_object('http://w3af.org/')
+        u1 = URL('http://w3af.org/')
         r1 = FuzzableRequest(u1, method='GET')
         update_kb( r1 )
         result = kb.kb.get('urls', 'url_objects')
         self.assertEquals(len(result), 1)
         self.assertEquals("http://w3af.org/", list(result)[0].url_string)
         
-        u2 = url_object('http://w3af.org/blog/')
+        u2 = URL('http://w3af.org/blog/')
         r2 = FuzzableRequest(u2, method='GET')    
-        u3 = url_object('http://w3af.org/')
+        u3 = URL('http://w3af.org/')
         r3 = FuzzableRequest(u3, method='GET')    
         update_kb( r1 )
         update_kb( r2 )

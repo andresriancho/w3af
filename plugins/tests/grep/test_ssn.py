@@ -25,7 +25,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from plugins.grep.ssn import ssn
 
@@ -36,7 +36,7 @@ class test_ssn(unittest.TestCase):
         kb.kb.cleanup()
         self.plugin = ssn()
         self.plugin._already_inspected = set()        
-        self.url = url_object('http://www.w3af.com/')
+        self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
 
     def tearDown(self):

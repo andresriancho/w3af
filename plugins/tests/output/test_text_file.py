@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 import core.data.kb.vuln as vuln
 
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from ..helper import PluginTest, PluginConfig
 
 
@@ -85,7 +85,7 @@ class TestTextFile(PluginTest):
 
             if mo:
                 v = vuln.vuln()
-                v.setURL( url_object(mo.group(1)) )
+                v.setURL( URL(mo.group(1)) )
                 v.setMethod( mo.group(2) )
                 file_vulns.append(v)
         

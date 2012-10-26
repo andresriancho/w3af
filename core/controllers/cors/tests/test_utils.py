@@ -26,7 +26,7 @@ from mock import MagicMock, Mock
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
 from core.controllers.cors.utils import (build_cors_request, retrieve_cors_header,
@@ -38,7 +38,7 @@ class TestUtils(unittest.TestCase):
         self.assertRaises(AttributeError, provides_cors_features, None, None)
     
     def test_provides_cors_features_false(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         fr = FuzzableRequest(url)
         
         http_response = HTTPResponse(200, '', Headers(), url, url)
@@ -54,7 +54,7 @@ class TestUtils(unittest.TestCase):
         self.assertFalse( cors )
 
     def test_provides_cors_features_true(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         fr = FuzzableRequest(url)
         
         hdrs = {'Access-Control-Allow-Origin': 'http://www.w3af.org/'}.items()
@@ -71,7 +71,7 @@ class TestUtils(unittest.TestCase):
         self.assertTrue( cors ) 
 
     def test_retrieve_cors_header_true(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         
         w3af_url = 'http://www.w3af.org/'
         hrds = {'Access-Control-Allow-Origin': w3af_url}.items()
@@ -83,7 +83,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual( value, w3af_url )
 
     def test_retrieve_cors_header_false(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         
         cors_headers = Headers({'Access-Control': 'Allow-Origin'}.items())
         http_response = HTTPResponse(200, '', cors_headers, url, url)
@@ -93,7 +93,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual( value, None )
 
     def test_build_cors_request_true(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         
         fr = build_cors_request(url, 'http://foo.com/')
         
@@ -102,7 +102,7 @@ class TestUtils(unittest.TestCase):
         self.assertEquals(fr.getHeaders(), {'Origin': 'http://foo.com/'})
 
     def test_build_cors_request_false(self):
-        url = url_object('http://moth/')
+        url = URL('http://moth/')
         
         fr = build_cors_request(url, None)
         

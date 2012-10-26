@@ -32,7 +32,7 @@ from core.data.dc.cookie import Cookie
 from core.data.dc.headers import Headers
 from core.data.dc.dataContainer import DataContainer
 from core.data.db.disk_item import disk_item
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 #CR = '\r'
@@ -75,7 +75,7 @@ class FuzzableRequest(disk_item):
         '''
         @return: a DETAILED str representation of this fuzzable request.
 
-        >>> fr = FuzzableRequest(url_object("http://www.w3af.com/"),\
+        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"),\
                                  headers=Headers([('Host','www.w3af.com'),]))
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
@@ -117,7 +117,7 @@ class FuzzableRequest(disk_item):
         @return: a csv str representation of the request
 
         >>> from core.data.dc.dataContainer import DataContainer
-        >>> fr = FuzzableRequest(url_object("http://www.w3af.com/"))
+        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
         >>> fr.export()
         'GET,http://www.w3af.com/,'
         >>> d = DataContainer()
@@ -160,7 +160,7 @@ class FuzzableRequest(disk_item):
         TODO: This function is called MANY times, and under some circumstances it's
         performance REALLY matters. We need to review this function.
         
-        >>> f = FuzzableRequest(url_object("""http://example.com/a?p=d'z"0&paged=2"""))
+        >>> f = FuzzableRequest(URL("""http://example.com/a?p=d'z"0&paged=2"""))
         >>> f.sent('d%5C%27z%5C%220')
         True
         
@@ -168,7 +168,7 @@ class FuzzableRequest(disk_item):
         >>> f.sent('<SCrIPT>alert(\"bsMs\")</SCrIPT>')
         True
         
-        >>> f = FuzzableRequest(url_object('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
+        >>> f = FuzzableRequest(URL('http://example.com/?p=<ScRIPT>a=/PlaO/%0Afake_alert(a.source)</SCRiPT>'))
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
@@ -224,7 +224,7 @@ class FuzzableRequest(disk_item):
         '''
         @return: A string representation of this fuzzable request.
 
-        >>> fr = FuzzableRequest(url_object("http://www.w3af.com/"))
+        >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
         >>> str(fr)
         'http://www.w3af.com/ | Method: GET'
 
@@ -272,13 +272,13 @@ class FuzzableRequest(disk_item):
         @return: True if the requests are equal.
 
 
-        >>> u = url_object("""http://www.w3af.com/""")
+        >>> u = URL("""http://www.w3af.com/""")
         >>> fr1 = FuzzableRequest(u)
         >>> fr2 = FuzzableRequest(u)
         >>> fr1 == fr2
         True
-        >>> fr1 = FuzzableRequest(url_object("http://www.w3af.com/a"))
-        >>> fr2 = FuzzableRequest(url_object("http://www.w3af.com/b"))
+        >>> fr1 = FuzzableRequest(URL("http://www.w3af.com/a"))
+        >>> fr2 = FuzzableRequest(URL("http://www.w3af.com/b"))
         >>> fr1 == fr2
         False
         >>> fr1 = FuzzableRequest(u)
@@ -332,23 +332,23 @@ class FuzzableRequest(disk_item):
         >>> r = FuzzableRequest('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
-        TypeError: The "uri" parameter of a FuzzableRequest must be of urlParser.url_object type.
-        >>> url = url_object('http://www.google.com/')
+        TypeError: The "uri" parameter of a FuzzableRequest must be of url.URL type.
+        >>> url = URL('http://www.google.com/')
         >>> r = FuzzableRequest(url)
         >>> r.getURL() == url
         True
         '''        
-        if not isinstance(url, url_object):
+        if not isinstance(url, URL):
             raise TypeError('The "url" parameter of a %s must be of '
-                         'urlParser.url_object type.' % type(self).__name__)
+                         'url.URL type.' % type(self).__name__)
 
-        self._url = url_object(url.url_string.replace(' ', '%20'))
+        self._url = URL(url.url_string.replace(' ', '%20'))
         self._uri = self._url
     
     def setURI(self, uri):
-        if not isinstance(uri, url_object):
+        if not isinstance(uri, URL):
             raise TypeError('The "uri" parameter of a %s must be of '
-                         'urlParser.url_object type.' % type(self).__name__)
+                         'url.URL type.' % type(self).__name__)
         self._uri = uri
         self._url = uri.uri2url()
         

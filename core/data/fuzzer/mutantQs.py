@@ -35,9 +35,9 @@ class mutantQs(mutant):
     
     def printModValue( self ):
         '''
-        >>> from core.data.parsers.urlParser import url_object
+        >>> from core.data.parsers.url import URL
         >>> from core.data.request.fuzzable_request import FuzzableRequest
-        >>> freq = FuzzableRequest(url_object('http://www.w3af.com/'))
+        >>> freq = FuzzableRequest(URL('http://www.w3af.com/'))
         >>> m = mutantQs( freq )
         >>> m.printModValue()
         u'The sent URI was http://www.w3af.com/ .'

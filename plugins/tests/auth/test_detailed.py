@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from ..helper import PluginTest, PluginConfig
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class TestDetailed(PluginTest):
@@ -44,9 +44,9 @@ class TestDetailed(PluginTest):
                                  ('password_field', 'password', PluginConfig.STR),
                                  ('data_format','%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85',
                                                 PluginConfig.STR),
-                                 ('auth_url', url_object(base_url + 'auth.php') , PluginConfig.URL),
+                                 ('auth_url', URL(base_url + 'auth.php') , PluginConfig.URL),
                                  ('method', 'POST' , PluginConfig.STR),
-                                 ('check_url', url_object(base_url + 'home.php') , PluginConfig.URL),
+                                 ('check_url', URL(base_url + 'home.php') , PluginConfig.URL),
                                  ('check_string', '<title>Home page</title>', PluginConfig.STR),
                             ),
                          ),

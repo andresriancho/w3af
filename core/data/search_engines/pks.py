@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.w3afException import w3afException
 from core.data.search_engines.search_engine import SearchEngine
-from core.data.parsers.urlParser import url_object
+from core.data.parsers.url import URL
 
 
 class pks(SearchEngine):
@@ -47,7 +47,7 @@ class pks(SearchEngine):
         '''
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'
-            msg += ' name (as returned by url_object.getRootDomain).'
+            msg += ' name (as returned by URL.getRootDomain).'
             raise w3afException( msg )
     
         res = self.met_search( hostname )
@@ -64,7 +64,7 @@ class pks(SearchEngine):
         This method is based from the pks.py file from the massive enumeration toolset, 
         coded by pdp and released under GPL v2.     
         """
-        url = url_object(u'http://pgp.mit.edu:11371/pks/lookup')
+        url = URL(u'http://pgp.mit.edu:11371/pks/lookup')
         url.querystring = {u'op': u'index', u'search': query}
 
         response = self._uri_opener.GET( url, headers=self._headers, 
