@@ -525,7 +525,8 @@ class xUrllib(object):
         #        tests, it fails if it finds javascript: in some part of the URL    
         if req.get_full_url().startswith( 'http' ):
             return True
-        elif req.get_full_url().startswith( 'javascript:' ) or req.get_full_url().startswith( 'mailto:' ):
+        elif req.get_full_url().startswith( 'javascript:' ) or \
+        req.get_full_url().startswith( 'mailto:' ):
             raise w3afException('Unsupported URL: ' +  req.get_full_url() )
         else:
             return False
