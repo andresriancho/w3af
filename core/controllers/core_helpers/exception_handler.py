@@ -29,6 +29,7 @@ import core.controllers.outputManager as om
 
 from os.path import basename
 
+from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
 from core.controllers.w3afException import (w3afMustStopException,
                                             w3afMustStopByUserRequest,
@@ -54,6 +55,13 @@ class ExceptionHandler(object):
         self._lock = threading.RLock()
         
         self._scan_id = None
+
+    def handle_exception_data(self, exception_data):
+        
+        self.handle(exception_data.status,
+                    exception_data.exception,
+                    (_, _, exception_data.traceback),
+                    exception_data.enabled_plugins)
 
     def handle( self, current_status, exception, exec_info, enabled_plugins ):
         '''
@@ -205,6 +213,9 @@ class ExceptionHandler(object):
         
 class ExceptionData(object):
     def __init__(self, current_status, e, tb, enabled_plugins):
+        assert isinstance(e, Exception)
+        assert isinstance(current_status, w3af_core_status)
+        
         self.exception = e
         self.traceback = tb
        
@@ -218,6 +229,7 @@ class ExceptionData(object):
         
         self.plugin = current_status.get_running_plugin()
         self.phase = current_status.get_phase()
+        self.status = current_status
         self.enabled_plugins = enabled_plugins
         
         self.fuzzable_request = current_status.get_current_fuzzable_request()

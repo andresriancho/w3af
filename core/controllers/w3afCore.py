@@ -138,6 +138,12 @@ class w3afCore(object):
             msg += ' to stop.'
             om.out.error( msg )
             raise
+        except w3afMustStopByUserRequest:
+            # I don't have to do anything here, since the user is the one that
+            # requested the scanner to stop. From here the code continues at the
+            # "finally" clause, which simply shows a message saying that the
+            # scan finished.
+            pass
         except w3afMustStopByUnknownReasonExc:
             #
             # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
@@ -145,12 +151,6 @@ class w3afCore(object):
             # conditions.
             #
             raise
-        except w3afMustStopByUserRequest:
-            # I don't have to do anything here, since the user is the one that
-            # requested the scanner to stop. From here the code continues at the
-            # "finally" clause, which simply shows a message saying that the
-            # scan finished.
-            pass
         except w3afMustStopException, wmse:
             self._end(wmse, ignore_err=True)
             om.out.error('\n**IMPORTANT** The following error was '

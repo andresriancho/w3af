@@ -19,11 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
-
 from .constants import POISON_PILL
 
-from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
@@ -66,23 +63,6 @@ class grep(BaseConsumer):
                     try:
                         grep_plugin.grep_wrapper( request, response )
                     except Exception, e:
-                        # Smart error handling, much better than just crashing.
-                        # Doing this here and not with something similar to:
-                        # sys.excepthook = handle_crash because we want to handle
-                        # plugin exceptions in this way, and not framework 
-                        # exceptions
-                        class fake_status(w3af_core_status):
-                            pass
-            
-                        status = fake_status()
-                        status.set_running_plugin( grep_plugin.getName() )
-                        status.set_phase( 'grep' )
-                        status.set_current_fuzzable_request( request )
-                        
-                        exec_info = sys.exc_info()
-                        enabled_plugins = pprint_plugins(self._w3af_core)
-                        self._w3af_core.exception_handler.handle( status, e , 
-                                                                  exec_info, 
-                                                                  enabled_plugins )
+                        self.handle_exception('grep', plugin.getName(), request, e)
                 
                 self.in_queue.task_done()

@@ -20,9 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import Queue
+import sys
 
 from multiprocessing.dummy import Process
 
+from core.controllers.exception_handling.helpers import pprint_plugins
+from core.controllers.core_helpers.exception_handler import ExceptionData
+from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.threads.threadpool import Pool
 
@@ -180,3 +184,27 @@ class BaseConsumer(Process):
         @return: The first result from the output Queue.
         '''
         return self._out_queue.get(timeout=timeout)
+
+    def handle_exception(self, phase, plugin_name, fuzzable_request, _exception):
+        '''
+        Get the exception information, and put it into the output queue
+        then, the strategy will get the items from the output queue and
+        handle the exceptions.
+        
+        @param plugin_name: The plugin that generated the exception
+        @param fuzzable_request: The fuzzable request that was sent as input to
+                                 the plugin when the exception was raised
+        @param _exception: The exception object
+        '''                    
+        except_type, except_class, tb = sys.exc_info()
+        enabled_plugins = pprint_plugins(self._w3af_core)
+        
+        status = w3af_core_status()
+        status.set_running_plugin( plugin_name, log=False )
+        status.set_phase( phase )
+        status.set_current_fuzzable_request( fuzzable_request )
+        
+        exception_data = ExceptionData( status, _exception , tb,
+                                        enabled_plugins )
+        self._out_queue.put(exception_data)
+        

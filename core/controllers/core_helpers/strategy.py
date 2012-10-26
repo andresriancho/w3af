@@ -36,6 +36,8 @@ from core.controllers.core_helpers.consumers.bruteforce import bruteforce
 from core.controllers.core_helpers.consumers.seed import seed
 from core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_infrastructure 
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
+from core.controllers.core_helpers.exception_handler import ExceptionData
+
 from core.controllers.w3afException import w3afMustStopException
 
 
@@ -101,12 +103,12 @@ class w3af_core_strategy(object):
             self._seed_discovery()
             
             self._fuzzable_request_router()
-
+            
+            self.join_all_consumers()
+            
         except Exception:
             self.terminate()
             raise
-        finally:
-            self.join_all_consumers()
 
     def stop(self):
         self.terminate()
@@ -153,65 +155,121 @@ class w3af_core_strategy(object):
         Also keep in mind that is one of the only methods that will be run in
         the "main thread" and lives during the whole scan process.
         '''
+        not_none = lambda x: x is not None
+        
         _input = [self._seed_producer, self._discovery_consumer, 
                   self._bruteforce_consumer]
-        _input = [prod for prod in _input if prod is not None]
+        _input = filter(not_none, _input)
        
         output = [self._audit_consumer, self._discovery_consumer,
                   self._bruteforce_consumer]
-        output = [cons for cons in output if cons is not None]
+        output = filter(not_none, output)
+        
+        # Only check if these have exceptions and bring them to the main
+        # thread in order to be handled by the ExceptionHandler and the
+        # w3afCore
+        _other = [self._auth_consumer, self._grep_consumer]
+        _other = filter(not_none, _other)
         
         finished = set()
         consumer_forced_end = set()
         
         
         while True:
-            for url_producer in _input:
-                
-                if len(_input) == len(finished | consumer_forced_end):
-                    return
-                
-                if url_producer in finished:
-                    continue
-                
-                try:
-                    result_item = url_producer.get_result(timeout=0.2)
-                except TimeoutError:
-                    pass
-                
-                except Queue.Empty:
-                    if not url_producer.has_pending_work():
-                        # This consumer is saying that it doesn't have any
-                        # pending or in progress work
-                        finished.add( url_producer )
+            # Get results and handle exceptions
+            self._handle_all_consumer_exceptions(_other)
+
+            # Route fuzzable requests
+            finished, consumer_forced_end = \
+            self._route_one_fuzzable_request_batch(_input, output,
+                                                   finished, consumer_forced_end)
+                                      
+    def _route_one_fuzzable_request_batch(self, _input, output, finished,
+                                          consumer_forced_end):
+        '''
+        Loop once through all input consumers and route their results.
+        
+        @return: (finished, consumer_forced_end)
+        '''
+        for url_producer in _input:
+            
+            if len(_input) == len(finished | consumer_forced_end):
+                return
+            
+            if url_producer in finished:
+                continue
+            
+            try:
+                result_item = url_producer.get_result(timeout=0.2)
+            except TimeoutError:
+                pass
+            
+            except Queue.Empty:
+                if not url_producer.has_pending_work():
+                    # This consumer is saying that it doesn't have any
+                    # pending or in progress work
+                    finished.add( url_producer )
+            else:
+                if result_item == POISON_PILL:
+                    # This consumer is saying that it has finished, so we
+                    # remove it from the list.
+                    consumer_forced_end.add(url_producer)
+                elif isinstance(result_item, ExceptionData):
+                    self._handle_consumer_exception(result_item)
                 else:
-                    if result_item == POISON_PILL:
-                        # This consumer is saying that it has finished, so we
-                        # remove it from the list.
-                        consumer_forced_end.add(url_producer)
-                    else:
-                        _, _, fuzzable_request_inst = result_item
-                        
-                        # Safety check, I need these to be FuzzableRequest objects
-                        # if not, the url_producer is doing something wrong and I
-                        # don't want to do anything with this data
-                        fmt = '%s is returning objects of class %s instead of FuzzableRequest.'
-                        msg = fmt % (url_producer, type(fuzzable_request_inst))
-                        assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
-                        
-                        for url_consumer in output:
-                            url_consumer.in_queue_put( fuzzable_request_inst )
-                        
-                        # This is rather complex to digest... so pay attention :)
-                        # A consumer might be 100% idle (no tasks in input or 
-                        # output queues, no in progress work) and we still need
-                        # to keep it alive, because output from another producer
-                        # will be sent to that consumer and make it work again
-                        #
-                        # So, when one producer returns something, we set the
-                        # finished list to empty and start over.
-                        finished = set()
+                    _, _, fuzzable_request_inst = result_item
+                    
+                    # Safety check, I need these to be FuzzableRequest objects
+                    # if not, the url_producer is doing something wrong and I
+                    # don't want to do anything with this data
+                    fmt = '%s is returning objects of class %s instead of FuzzableRequest.'
+                    msg = fmt % (url_producer, type(fuzzable_request_inst))
+                    assert isinstance(fuzzable_request_inst, FuzzableRequest), msg
+                    
+                    for url_consumer in output:
+                        url_consumer.in_queue_put( fuzzable_request_inst )
+                    
+                    # This is rather complex to digest... so pay attention :)
+                    # A consumer might be 100% idle (no tasks in input or 
+                    # output queues, no in progress work) and we still need
+                    # to keep it alive, because output from another producer
+                    # will be sent to that consumer and make it work again
+                    #
+                    # So, when one producer returns something, we set the
+                    # finished list to empty in order to make them work again
+                    finished = set()
+        
+        return finished, consumer_forced_end
+
+    def _handle_all_consumer_exceptions(self, _other):
+        '''
+        Get the exceptions raised by the consumers that do not return any
+        data under normal circumstances, for example: grep and auth and handle
+        them properly.
+        '''
+        for other_consumer in _other:
+            try:
+                result_item = other_consumer.get_result(timeout=0.2)
+            except TimeoutError:
+                pass
+            except Queue.Empty:
+                pass
+            else:
+                if isinstance(result_item, ExceptionData):
+                    self._handle_consumer_exception(result_item)
     
+    def _handle_consumer_exception(self, exception_data):
+        '''
+        Give proper handling to an exception that was raised by one of the
+        consumers. Usually this means calling the ExceptionHandler which
+        will decide what to do with it.
+        
+        Please note that xUrllib can raise a w3afMustStopByUserRequest which
+        should get through this piece of code and be re-raised in order to
+        reach the try/except clause in w3afCore's start.
+        '''
+        self._w3af_core.exception_handler.handle_exception_data(exception_data)
+        
     def _setup_404_detection(self):
         #
         #    NOTE: I need to perform this test here in order to avoid some weird
@@ -271,8 +329,6 @@ class w3af_core_strategy(object):
         if self._audit_consumer is not None:
             # Wait for all the in_queue items to get() from the queue
             self._audit_consumer.join()
-            # get() all results from the output queue and handle them 
-            self._audit_consumer.handle_audit_results()
             self._audit_consumer = None
         
     def _teardown_auth(self):

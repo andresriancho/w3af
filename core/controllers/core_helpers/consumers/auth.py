@@ -19,12 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
 import Queue
 
 from .constants import POISON_PILL, FORCE_LOGIN
 
-from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
@@ -85,21 +83,13 @@ class auth(BaseConsumer):
 
         for plugin in self._consumer_plugins:
             try:
-                try:
-                    if not plugin.is_logged():
-                        plugin.login()
-                finally:
-                    tm.join(plugin)
+                if not plugin.is_logged():
+                    plugin.login()
             except Exception, e:
-                # Smart error handling, much better than just crashing.
-                # Doing this here and not with something similar to:
-                # sys.excepthook = handle_crash because we want to handle
-                # plugin exceptions in this way, and not framework 
-                # exceptions                        
-                exec_info = sys.exc_info()
-                enabled_plugins = pprint_plugins(self._w3af_core)
-                self._w3af_core.exception_handler.handle( self._w3af_core.status, e , 
-                                                          exec_info, enabled_plugins )
+                self.handle_exception('auth', plugin.getName(), None, e)
+                                
+            finally:
+                tm.join(plugin)
         
         # See comment above in _add_task
         self._task_done(None)

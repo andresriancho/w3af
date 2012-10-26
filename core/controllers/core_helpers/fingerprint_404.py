@@ -150,26 +150,17 @@ class fingerprint_404:
         Sends a GET request to url404 and saves the response in self._response_body_list .
         @return: The HTTP response body.
         '''
-        try:
-            # I don't use the cache, because the URLs are random and the only thing that
-            # cache does is to fill up disk space
-            response = self._uri_opener.GET(url404, cache=False, grep=False)
-        except w3afException, e:
-            raise
-        except Exception, e:
-            msg = 'Unhandled exception while fetching "%s" (404 page),' \
-                  ' exception: "%s".'
-            om.out.error(msg % (url404, e))
-            raise
-
-        else:
-            if store:
-                # I don't want the random file name to affect the 404, so I replace
-                # it with a blank space,
-                response_body = get_clean_body(response)
-                self._response_body_list.append(response_body)
-            
-            return response
+        # I don't use the cache, because the URLs are random and the only thing that
+        # cache does is to fill up disk space
+        response = self._uri_opener.GET(url404, cache=False, grep=False)
+        
+        if store:
+            # I don't want the random file name to affect the 404, so I replace
+            # it with a blank space,
+            response_body = get_clean_body(response)
+            self._response_body_list.append(response_body)
+        
+        return response
 
     def is_404(self, http_response):
         '''

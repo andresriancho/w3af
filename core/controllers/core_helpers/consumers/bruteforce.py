@@ -19,13 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
-
 import core.controllers.outputManager as om
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.w3afException import w3afException
-from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.threads.threadpool import return_args
 
 
@@ -90,20 +87,8 @@ class bruteforce(BaseConsumer):
 
         try:
             new_frs = plugin.bruteforce_wrapper( fuzzable_request )
-        except w3afException, e:
-            om.out.error( str(e) )
-        
         except Exception, e:
-            # Smart error handling, much better than just crashing.
-            # Doing this here and not with something similar to:
-            # sys.excepthook = handle_crash because we want to handle
-            # plugin exceptions in this way, and not framework 
-            # exceptions                    
-            exec_info = sys.exc_info()
-            enabled_plugins = pprint_plugins(self._w3af_core)
-            self._w3af_core.exception_handler.handle( self._w3af_core.status, e , 
-                                                      exec_info, enabled_plugins )
-        
+            self.handle_exception('bruteforce', plugin.getName(), fuzzable_request, e)        
         else:
             res.update( new_frs )
         

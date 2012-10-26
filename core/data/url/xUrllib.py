@@ -121,12 +121,10 @@ class xUrllib(object):
         def analyze_state():
             # There might be errors that make us stop the process
             if self._error_stopped:
-                self._error_stopped = False
                 msg = 'Exceptions found while sending HTTP requests.'
                 raise w3afMustStopException(msg)
             
             if self._user_stopped:
-                self._user_stopped = False
                 msg = 'The user stopped the scan.'
                 raise w3afMustStopByUserRequest(msg)
             
@@ -136,10 +134,18 @@ class xUrllib(object):
         
         analyze_state()
     
+    def clear(self):
+        '''Clear all status set during the scanner run'''
+        self._user_stopped = False
+        self._user_paused = False
+        self._error_stopped = False
+    
     def end(self):
         '''
         This method is called when the xUrllib is not going to be used anymore.
         '''
+        self.clear()
+                
         path_join = os.path.join
         try:
             cacheLocation = path_join(get_home_dir(), 'urllib2cache',

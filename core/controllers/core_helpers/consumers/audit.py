@@ -19,14 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
-
 import core.controllers.outputManager as om
 
-from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
-from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.w3afException import w3afException
 
 
@@ -57,64 +53,23 @@ class audit(BaseConsumer):
         for plugin in self._consumer_plugins:
             om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), fuzzable_request ) )
             
+            # Please note that this is not perfect, it is showing which
+            # plugin result was JUST taken from the Queue. The good thing is
+            # that the "client" reads the status once every 500ms so the user
+            # will see things "moving" and will be happy
+            self._w3af_core.status.set_phase('audit')
+            self._w3af_core.status.set_running_plugin( plugin.getName() )
+            self._w3af_core.status.set_current_fuzzable_request( fuzzable_request )
+            
             self._add_task()
             
-            apply_result = self._threadpool.apply_async( plugin.audit_with_copy,
-                                                         (fuzzable_request,),
-                                                         callback=self._task_done)
-            self._out_queue.put( (plugin.getName(), fuzzable_request, apply_result) )
+            self._threadpool.apply_async( self._audit,
+                                          (plugin, fuzzable_request,),
+                                          callback=self._task_done)
     
-    def handle_audit_results(self):
-        '''
-        This method handles the results of running audit plugins. The results
-        are put() into self._audit_consumer.out_queue by the consumer and they
-        are basically the ApplyResult objects from the threadpool.
-        
-        Since audit plugins don't really return stuff that we're interested in,
-        these results are mostly interesting to us because of the exceptions
-        that might appear in the plugins. Because of that, the method should be
-        called in the main thread and be seen as a way to "bring thread exceptions
-        to main thread".
-        
-        Each time this method is called it will consume all items in the output
-        queue. Note that you might have to call this more than once during the
-        strategy execution.
-        '''
-        while True:
-            queue_item = self._out_queue.get()
-
-            if queue_item == POISON_PILL:
-                break
-            else:
-                plugin_name, request, apply_result = queue_item
-                try:
-                    apply_result.get()
-                except Exception, e:
-                    # Smart error handling, much better than just crashing.
-                    # Doing this here and not with something similar to:
-                    # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework 
-                    # exceptions
-                    class fake_status(w3af_core_status):
-                        pass
-        
-                    status = fake_status()
-                    status.set_running_plugin( plugin_name, log=False )
-                    status.set_phase( 'audit' )
-                    status.set_current_fuzzable_request( request )
-                    
-                    exec_info = sys.exc_info()
-                    enabled_plugins = pprint_plugins(self._w3af_core)
-                    self._w3af_core.exception_handler.handle( status, e , 
-                                                              exec_info,
-                                                              enabled_plugins )
-                else:
-                    # Please note that this is not perfect, it is showing which
-                    # plugin result was JUST taken from the Queue. The good thing is
-                    # that the "client" reads the status once every 500ms so the user
-                    # will see things "moving" and will be happy
-                    self._w3af_core.status.set_phase('audit')
-                    self._w3af_core.status.set_running_plugin( plugin_name )
-                    self._w3af_core.status.set_current_fuzzable_request( request )
-        
-        om.out.debug('Finished handle_audit_results().')
+    def _audit(self, plugin, fuzzable_request):
+        try:
+            plugin.audit_with_copy(fuzzable_request)
+        except Exception, e:
+            self.handle_exception('audit', plugin.getName(), fuzzable_request, e)
+                
