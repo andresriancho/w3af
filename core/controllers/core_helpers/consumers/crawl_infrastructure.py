@@ -329,6 +329,14 @@ class crawl_infrastructure(BaseConsumer):
         '''
         This method runs @plugin with FuzzableRequest as parameter and returns
         new fuzzable requests and/or stores vulnerabilities in the knowledge base.
+
+        Since threadpool's apply_async runs the callback only when the call to
+        this method ends without any exceptions, it is *very important* to handle
+        exceptions correctly here. Failure to do so will end up in _task_done not
+        called, which will make has_pending_work always return True.
+        
+        Python 3 has an error_callback in the apply_async method, which we could
+        use in the future. 
         
         TODO: unit-test this method
         

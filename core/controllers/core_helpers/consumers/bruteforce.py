@@ -38,7 +38,8 @@ class bruteforce(BaseConsumer):
         @param bruteforce_plugins: Instances of bruteforce plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(bruteforce, self).__init__(bruteforce_plugins, w3af_core, thread_name='Bruteforcer')
+        super(bruteforce, self).__init__(bruteforce_plugins, w3af_core,
+                                         thread_name='Bruteforcer')
 
     def _teardown(self):
         # End plugins
@@ -71,6 +72,14 @@ class bruteforce(BaseConsumer):
             
     def _bruteforce(self, plugin, fuzzable_request):
         '''
+        Since threadpool's apply_async runs the callback only when the call to
+        this method ends without any exceptions, it is *very important* to handle
+        exceptions correctly here. Failure to do so will end up in _task_done not
+        called, which will make has_pending_work always return True.
+        
+        Python 3 has an error_callback in the apply_async method, which we could
+        use in the future. 
+
         @param fuzzable_request: The fuzzable request that (if suitable) will be
                                  bruteforced by @plugin.
         @return: A list of the URL's that have been successfully bruteforced

@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.outputManager as om
 
-from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.w3afException import w3afException
 
@@ -68,6 +67,15 @@ class audit(BaseConsumer):
                                           callback=self._task_done)
     
     def _audit(self, plugin, fuzzable_request):
+        '''
+        Since threadpool's apply_async runs the callback only when the call to
+        this method ends without any exceptions, it is *very important* to handle
+        exceptions correctly here. Failure to do so will end up in _task_done not
+        called, which will make has_pending_work always return True.
+        
+        Python 3 has an error_callback in the apply_async method, which we could
+        use in the future. 
+        '''
         try:
             plugin.audit_with_copy(fuzzable_request)
         except Exception, e:
