@@ -125,7 +125,7 @@ BODY_FRAGMENT_WITH_EMAILS = u'''===>jandalia@bing.com%^&1!
 תגובות_לאתר
 '''
 
-URL = URL('http://w3af.com')
+URL_INST = URL('http://w3af.com')
 
 def _build_http_response(url, body_content, headers=Headers()):
     if 'content-type' not in headers:
@@ -151,7 +151,7 @@ class TestSGMLParser(unittest.TestCase):
 
     def test_parser_attrs(self):
         body_content = HTML_DOC % {'head':'', 'body':''}
-        p = _SGMLParser(_build_http_response(URL, body_content))
+        p = _SGMLParser(_build_http_response(URL_INST, body_content))
         
         # Assert parser has these attrs correctly initialized
         self.assertFalse(getattr(p, '_inside_form'))
@@ -169,7 +169,7 @@ class TestSGMLParser(unittest.TestCase):
 
     def test_baseurl(self):
         body = HTML_DOC % {'head': BASE_TAG, 'body': ''}
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         p._parse(resp)
         self.assertEquals(URL('http://www.w3afbase.com/'), p._baseUrl)
@@ -185,7 +185,7 @@ class TestSGMLParser(unittest.TestCase):
             y las relativas son<br>
                 /gold.py?t%C3%ADpo=silv%C3%ABr
         '''
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         urls = tuple(u.url_string for u in p._re_urls)
         self.assertTrue(u1 in urls)
@@ -196,7 +196,7 @@ class TestSGMLParser(unittest.TestCase):
         body = HTML_DOC % \
             {'head': META_REFRESH + META_REFRESH_WITH_URL,
             'body': ''}
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         p._parse(resp)
         self.assertTrue(2, len(p.meta_redirs))
@@ -238,7 +238,7 @@ class TestSGMLParser(unittest.TestCase):
                 body_elems.append(ele)
             
             body = HTML_DOC % {'head': '', 'body': ''.join(body_elems)}
-            resp = _build_http_response(URL, body)
+            resp = _build_http_response(URL_INST, body)
             p = _SGMLParser(resp)
             orig_start = p.start
             wrapped_start = partial(start_wrapper, orig_start)
@@ -247,7 +247,7 @@ class TestSGMLParser(unittest.TestCase):
     
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
-        p = _SGMLParser(_build_http_response(URL, body))
+        p = _SGMLParser(_build_http_response(URL_INST, body))
         emails = ['jandalia@bing.com', 'ariancho@gmail.com',
                   u'name_with_ñ@w3af.it']
         self.assertEquals(emails, p.getEmails())
@@ -262,7 +262,7 @@ class TestSGMLParser(unittest.TestCase):
                 <tagX href="/py.py"/>
             </form>
         </html>'''
-        r = _build_http_response(URL, body)
+        r = _build_http_response(URL_INST, body)
         p = _SGMLParser(r)
         p._parse(r)
         parsed_refs = p.references[0]
@@ -274,7 +274,7 @@ class TestSGMLParser(unittest.TestCase):
         <html>
             <a href="d:url.html?id=13&subid=3">foo</a>
         </html>'''
-        r = _build_http_response(URL, body)
+        r = _build_http_response(URL_INST, body)
         p = _SGMLParser(r)
         p._parse(r)
         parsed_refs = p.references[0]
@@ -308,7 +308,7 @@ class TestHTMLParser(unittest.TestCase):
              'body': FORM_METHOD_GET % {'form_content': ''} +
                      FORM_WITHOUT_ACTION % {'form_content': ''}
             }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals(2, len(p.forms))
@@ -320,7 +320,7 @@ class TestHTMLParser(unittest.TestCase):
              'body': (INPUT_TEXT_WITH_NAME + INPUT_HIDDEN + SELECT_WITH_ID +
                       TEXTAREA_WITH_ID_AND_DATA + INPUT_FILE_WITH_NAME)
              }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals(0, len(p.forms))
@@ -333,7 +333,7 @@ class TestHTMLParser(unittest.TestCase):
                     {'head': '',
                      'body': FORM_WITHOUT_METHOD % {'form_content': ''}
                     }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals('GET', p.forms[0].get_method())
@@ -346,10 +346,10 @@ class TestHTMLParser(unittest.TestCase):
                     {'head': '',
                      'body': FORM_WITHOUT_ACTION % {'form_content': ''}
                     }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        self.assertEquals(URL, p.forms[0].getAction())
+        self.assertEquals(URL_INST, p.forms[0].getAction())
     
     def test_form_with_invalid_url_in_action(self):
         '''
@@ -360,10 +360,10 @@ class TestHTMLParser(unittest.TestCase):
             <form action="javascript:history.back(1)">
             </form>
         </html>'''
-        r = _build_http_response(URL, body)
+        r = _build_http_response(URL_INST, body)
         p = _HTMLParser(r)
         p._parse(r)
-        self.assertEquals(URL, p.forms[0].getAction())
+        self.assertEquals(URL_INST, p.forms[0].getAction())
     
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared
@@ -379,7 +379,7 @@ class TestHTMLParser(unittest.TestCase):
                   INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
                   INPUT_HIDDEN)
             }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         
@@ -394,7 +394,7 @@ class TestHTMLParser(unittest.TestCase):
                         INPUT_HIDDEN
                       }
             }
-        resp2 = _build_http_response(URL, body2)
+        resp2 = _build_http_response(URL_INST, body2)
         p2 = _HTMLParser(resp2)
         p2._parse(resp2)
         
@@ -423,7 +423,7 @@ class TestHTMLParser(unittest.TestCase):
                     {'form_content': TEXTAREA_WITH_NAME_AND_DATA} +
                   TEXTAREA_WITH_NAME_EMPTY)
             }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         
@@ -445,7 +445,7 @@ class TestHTMLParser(unittest.TestCase):
                   FORM_WITHOUT_METHOD % {'form_content': SELECT_WITH_ID} +
                   '<select><option value="xxx"/><option value="yyy"/></select>')
             }
-        resp = _build_http_response(URL, body)
+        resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         
