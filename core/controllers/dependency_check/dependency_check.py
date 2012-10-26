@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import platform
 import warnings
-import logging
 
 import core.controllers.outputManager as om
 
