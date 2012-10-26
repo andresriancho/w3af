@@ -56,7 +56,15 @@ class TestProxy(unittest.TestCase):
         
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
-        self.assertEqual(dict(direct_resp.info()), dict(proxy_resp.info()))
+        
+        # Have to remove the Date header because in some cases they differ because
+        # one request was sent in second X and the other in X+1, which makes the
+        # test fail
+        direct_resp_headers = dict(direct_resp.info())
+        proxy_resp_headers = dict(proxy_resp.info())
+        del direct_resp_headers['date']
+        del proxy_resp_headers['date']
+        self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
     def test_do_SSL_req_through_proxy(self):
         resp_body = self.proxy_opener.open('https://moth').read()
@@ -71,7 +79,16 @@ class TestProxy(unittest.TestCase):
         
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
-        self.assertEqual(dict(direct_resp.info()), dict(proxy_resp.info()))
+
+        # Have to remove the Date header because in some cases they differ because
+        # one request was sent in second X and the other in X+1, which makes the
+        # test fail
+        direct_resp_headers = dict(direct_resp.info())
+        proxy_resp_headers = dict(proxy_resp.info())
+        del direct_resp_headers['date']
+        del proxy_resp_headers['date']
+        self.assertEqual(direct_resp_headers, proxy_resp_headers)
+
     
     def test_prox_req_ok(self):
         '''Test if self._proxy.stop() works as expected. Note that the check 
