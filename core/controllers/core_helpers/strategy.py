@@ -180,16 +180,22 @@ class w3af_core_strategy(object):
             self._handle_all_consumer_exceptions(_other)
 
             # Route fuzzable requests
-            finished, consumer_forced_end = \
-            self._route_one_fuzzable_request_batch(_input, output,
-                                                   finished, consumer_forced_end)
+            route_result = self._route_one_fuzzable_request_batch(_input, output,
+                                                                  finished,
+                                                                  consumer_forced_end)
+            
+            if route_result is None:
+                break
+            
+            finished, consumer_forced_end = route_result
                                       
     def _route_one_fuzzable_request_batch(self, _input, output, finished,
                                           consumer_forced_end):
         '''
         Loop once through all input consumers and route their results.
         
-        @return: (finished, consumer_forced_end)
+        @return: (finished, consumer_forced_end) or None if we shouldn't call
+                 this method anymore.
         '''
         for url_producer in _input:
             
