@@ -31,7 +31,7 @@ from core.controllers.plugins.attack_plugin import AttackPlugin
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.exec_shell import exec_shell as exec_shell
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 
 from core.controllers.w3afException import w3afException
 import plugins.attack.payloads.shell_handler as shell_handler

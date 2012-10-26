@@ -24,7 +24,7 @@ from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 
 from core.data.fuzzer.fuzzer import rand_alnum
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options

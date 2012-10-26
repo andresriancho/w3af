@@ -39,7 +39,7 @@ from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest
 
 

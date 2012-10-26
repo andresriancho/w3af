@@ -30,7 +30,7 @@ from core.data.options.option_list import OptionList
 from core.controllers.plugins.attack_plugin import AttackPlugin
 import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 
 # Advanced shell stuff
 from core.data.kb.exec_shell import exec_shell as exec_shell

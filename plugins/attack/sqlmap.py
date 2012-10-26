@@ -26,7 +26,7 @@ from core.data.kb.shell import shell as shell
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.fuzzer.fuzzer import create_mutants
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 

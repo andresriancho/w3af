@@ -31,7 +31,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
 from core.data.kb.shell import shell as shell
 from core.data.options.option import option

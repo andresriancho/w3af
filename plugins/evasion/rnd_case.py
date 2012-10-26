@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.plugins.evasion_plugin import EvasionPlugin
 from core.controllers.w3afException import w3afException
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 
 # options
 from core.data.options.option import option

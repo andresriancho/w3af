@@ -28,7 +28,7 @@ import core.data.kb.vuln as vuln
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.data.kb.read_shell import read_shell as read_shell
-from core.data.parsers.urlParser import parse_qs
+from core.data.parsers.url import parse_qs
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
