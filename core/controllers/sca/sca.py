@@ -18,15 +18,26 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import itertools
 import sys
 import threading
 
 from phply import phplex
-from phply.phpparse import parser 
+from phply import phpparse
+
+import ply.yacc as yacc
 import phply.phpast as phpast
 
+# TODO:
+#
+# This line would allow us to avoid the creation of these files in w3af's root:
+# parser.out  parsetab.py  parsetab.pyc
+#
+# The only issue is that the yacc parser, with the default parameters, is
+# generated during the  "from phply import phpparse" import, which is required
+# for this line and also generates the files I want to avoid.
+#
+parser = yacc.yacc(module=phpparse, write_tables=0, debug=0)
 
 # We prefer our way. Slight modification to original 'accept' method.
 # Now we can now know which is the parent of the current node while
