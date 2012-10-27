@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import tempfile
 
-from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer 
+from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer, DISPLAY 
 
 
 class Gnome(XVFBServer):
@@ -46,7 +46,7 @@ class Gnome(XVFBServer):
                             'dogtail_wrapper', 'dogtail.xinitrc')
     
     START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
-    START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, XVFBServer.DISPLAY,
+    START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,
                              XVFBServer.WIDTH, XVFBServer.HEIGTH,
                              tempfile.gettempdir())
     

@@ -27,6 +27,11 @@ import time
 import shlex
 import os
 
+DISPLAY = ':9'
+
+from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
+                                                     restore_original_display)
+
 
 class XVFBServer(threading.Thread):
     '''
@@ -40,7 +45,6 @@ class XVFBServer(threading.Thread):
     WIDTH = 1024
     HEIGTH = 768
     
-    DISPLAY = ':9'
     XVFB_BIN = '/usr/bin/Xvfb'
     START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s'  % (XVFB_BIN, DISPLAY, WIDTH,
                                                           HEIGTH, tempfile.gettempdir())
@@ -55,7 +59,7 @@ class XVFBServer(threading.Thread):
         
         self.xvfb_process = None
         self.xvfb_start_result = None
-        self.original_display = os.environ['DISPLAY']
+        self.vnc_server_running = False
         
     def is_installed(self):
         status, output = commands.getstatusoutput('%s --fake' % self.XVFB_BIN)
@@ -110,17 +114,15 @@ class XVFBServer(threading.Thread):
         
         return False
     
-    def set_display_to_self(self):
-        os.environ['DISPLAY'] = self.DISPLAY
-    
-    def restore_old_display(self):
-        os.environ['DISPLAY'] = self.original_display
-    
     def __del__(self):
         '''Just in case, restore the DISPLAY to the original value again'''
-        os.environ['DISPLAY'] = self.original_display
+        try:
+            self.stop()
+            restore_original_display()
+        except:
+            pass
     
-    def run_x_process(self, cmd, block=False):
+    def run_x_process(self, cmd, block=False, display=DISPLAY):
         '''
         Run a new process (in most cases one that will open an X window) within
         the xvfb instance.
@@ -136,17 +138,13 @@ class XVFBServer(threading.Thread):
         if not self.is_running():
             return False
         
-        self.set_display_to_self()
-        
-        def run_cmd_reset_display(cmd):
-            commands.getoutput(cmd)
-            self.restore_old_display()
-            
+        display_cmd = 'DISPLAY=%s %s' % (display, cmd)
+                    
         if block:
-            run_cmd_reset_display(cmd)
+            commands.getoutput(display_cmd)
         else:
-            args = (cmd,)
-            th = threading.Thread(target=run_cmd_reset_display, args=args)
+            args = (display_cmd,)
+            th = threading.Thread(target=commands.getoutput, args=args)
             th.daemon = True
             th.name = 'XvfbProcess'
             th.start()
@@ -184,10 +182,25 @@ class XVFBServer(threading.Thread):
         (magic++).
         '''
         if self.is_running():
-            args = ('x11vnc -display %s -shared -forever' % self.DISPLAY,)
+            args = ('x11vnc -display %s -shared -forever' % DISPLAY,)
             th = threading.Thread(target=commands.getoutput, args=args)
             th.daemon = True
             th.name = 'VNCServer'
             th.start()
+            self.vnc_server_running = True
             return True
-        
+    
+    def start_vnc_client(self):
+        '''
+        Requires "sudo apt-get install xvnc4viewer"
+        '''
+        if not self.vnc_server_running:
+            self.start_vnc_server()
+            time.sleep(3)
+            
+        args = ('DISPLAY=:0 xvnc4viewer localhost',)
+        th = threading.Thread(target=commands.getoutput, args=args)
+        th.daemon = True
+        th.name = 'VNCClient'
+        th.start()
+            
