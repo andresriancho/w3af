@@ -83,7 +83,11 @@ class DogtailUnittest(unittest.TestCase):
          
         '''
         unittest.TestCase.__init__(self, methodName=methodName)
-        
+    
+    def _setup_env(self):
+        '''
+        @see: __init__ documentation.
+        '''
         self.gnome = Gnome()
         self.gnome.start_sync()
         set_display_to_self()
@@ -103,16 +107,8 @@ class DogtailUnittest(unittest.TestCase):
         self.dogtail.predicate.GenericPredicate = GenericPredicate
         self.dogtail.rawinput.pressKey = pressKey
         
-        # I don't care about Gnome anymore, I just started it for giving dogtail
-        # a suitable environment to run. I'll start and stop new Gnome instances
-        # in setUp and tearDown
-        self.gnome.stop()
-
     def setUp(self):
-        time.sleep(5)
-        set_display_to_self()
-        self.gnome = Gnome()
-        self.gnome.start_sync()
+        self._setup_env()
     
     def tearDown(self):
         self.gnome.stop()

@@ -37,7 +37,7 @@ class TestGnome(DogtailUnittest):
     def __init__(self, methodName='runTest'):
         DogtailUnittest.__init__(self, methodName=methodName)
 
-    def test_get_screenshot(self):
+    def get_screenshot(self):
         raise SkipTest('Remove me later.')
         
         self.assertTrue(self.gnome.is_running())
@@ -64,7 +64,6 @@ class TestGnome(DogtailUnittest):
         #self.assertTrue(run_result)
         
         # Let the window appear in the xvfb, note that block is False above
-        time.sleep(1)
         self.gnome.start_vnc_client()
         
         try:
@@ -132,7 +131,7 @@ class TestGnome(DogtailUnittest):
         finally:
             self.assertTrue(os.path.exists('/tmp/demo-output.txt'))
     
-    def test_logout(self):
+    def logout(self):
         raise SkipTest('Remove me later.')
         
         self.assertTrue(self.gnome.is_running())
