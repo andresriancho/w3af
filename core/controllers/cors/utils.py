@@ -26,7 +26,7 @@ ACCESS_CONTROL_ALLOW_ORIGIN = "ACCESS-CONTROL-ALLOW-ORIGIN"
 ACCESS_CONTROL_ALLOW_METHODS = "ACCESS-CONTROL-ALLOW-METHODS"
 ACCESS_CONTROL_ALLOW_HEADERS = "ACCESS-CONTROL-ALLOW-HEADERS"
 ACCESS_CONTROL_ALLOW_MAX_AGE = "ACCESS-CONTROL-ALLOW-MAX-AGE"
-ACCESS_CONTROL_ALLOW_CREDENTIALS = "ACCESS-CONTROL-ALLOW-MAX-CREDENTIALS"        
+ACCESS_CONTROL_ALLOW_CREDENTIALS = "ACCESS-CONTROL-ALLOW-CREDENTIALS"        
 
 
 def provides_cors_features(freq, url_opener):
@@ -65,7 +65,7 @@ def retrieve_cors_header(response, key):
     
     for header_name in headers:
         if header_name.upper().strip() == key.upper():                
-            return headers[header_name]
+            return headers[header_name].strip()
     
     return None
 
