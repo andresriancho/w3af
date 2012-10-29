@@ -37,11 +37,6 @@ class Gnome(XVFBServer):
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
-
-    TRUE='true'
-    FALSE='false'
-    A11Y_GCONF_KEY = '/desktop/gnome/interface/accessibility'
-    
     XINITRC = os.path.join( os.getcwd(), 'core', 'ui', 'gui', 'tests',
                             'dogtail_wrapper', 'dogtail.xinitrc')
     
@@ -49,19 +44,6 @@ class Gnome(XVFBServer):
     START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,
                              XVFBServer.WIDTH, XVFBServer.HEIGTH,
                              tempfile.gettempdir())
-    
-    def get_gconf_value(self, key):
-        cmd = 'gconftool-2 --get ' + key
-        answer = os.popen(cmd).readlines()[0].strip()
-        if answer == self.TRUE: return True
-        elif answer == self.FALSE: return False
-        else: raise RuntimeError, answer
-    
-    def set_gconf_value(self, key, value):
-        if value == True: value = self.TRUE
-        elif value == False: value = self.FALSE
-        else: raise TypeError, value
-        cmd = 'gconftool-2 --type bool --set %s %s' % (key, value)
-        os.popen(cmd)
+
     
     

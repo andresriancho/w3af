@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import getpass
+import time
 
 from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
                                                      restore_original_display)
@@ -49,11 +51,20 @@ class DogtailUnittest(unittest.TestCase):
             tree()
             ...
         
-        And this is NOT going to work as expected:
+        This is NOT going to work as expected:
         
             from dogtail import tree
             ...
             os.environ['DISPLAY'] = ':9'
+            tree()
+            ...
+        
+        And this is not working either:
+        
+            os.environ['DISPLAY'] = ':9'
+            from dogtail import tree
+            ...
+            os.environ['DISPLAY'] = ':0'
             tree()
             ...
         
@@ -79,13 +90,54 @@ class DogtailUnittest(unittest.TestCase):
         
         from dogtail import tree
         from dogtail.utils import run
+        from dogtail.rawinput import pressKey
         from dogtail.predicate import GenericPredicate
         
         self.dogtail = dummy()
         self.dogtail.utils = dummy()
         self.dogtail.predicate = dummy()
+        self.dogtail.rawinput = dummy()
         
         self.dogtail.tree = tree
         self.dogtail.utils.run = run
         self.dogtail.predicate.GenericPredicate = GenericPredicate
+        self.dogtail.rawinput.pressKey = pressKey
+        
+        # I don't care about Gnome anymore, I just started it for giving dogtail
+        # a suitable environment to run. I'll start and stop new Gnome instances
+        # in setUp and tearDown
+        self.gnome.stop()
 
+    def setUp(self):
+        time.sleep(5)
+        set_display_to_self()
+        self.gnome = Gnome()
+        self.gnome.start_sync()
+    
+    def tearDown(self):
+        self.gnome.stop()
+        restore_original_display()
+
+    def logout(self):
+        '''
+        Logs out the full gnome session. Be sure to have your documents saved,
+        as running may cause loosing the changes, or it may halt the logout
+        process.
+        ''' 
+        # A gnome-shell object
+        shell = self.dogtail.tree.root.application('gnome-shell')
+        # Click onto a super menu label that we find under the g-s top panel object.
+        # We need these indexes as g-s a11y support is a wee bit messy.
+        shell[0][1][2].child(getpass.getuser(), roleName='label').click()
+        # We can child this all the way down from the app as there's no other Log Out... label
+        shell.child('Log Out...', roleName='label').click()
+        # This takes care of the 60 second dialog.
+        # Sometimes a dialog warning about unsaved work in gedit etc. pops out, but that has the same
+        # push button in which case this will take care of that dialog. If another dialog pops-out
+        # in the affected application however, that might put the logout process on hold again. Unfortunatelly
+        # we cannot do anything about that with dotail at that point as a11y registry got disabled already
+        # by the logout process.
+        shell[0][1].child(roleName='dialog', recursive=False).child('Log Out', roleName='push button').click()
+        
+        # Give the session some time to end before we kill it.
+        time.sleep(10)
