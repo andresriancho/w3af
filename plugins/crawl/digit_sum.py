@@ -30,11 +30,14 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
+from core.data.dc.headers import Headers
 
 
 class digit_sum(CrawlPlugin):
     '''
-    Take an URL with a number (index2.asp) and try to find related files (index1.asp, index3.asp).
+    Take an URL with a number (index2.asp) and try to find related files
+    (index1.asp, index3.asp).
+    
     @author: Andres Riancho (andres.riancho@gmail.com)  
     '''
 
@@ -55,7 +58,7 @@ class digit_sum(CrawlPlugin):
                                      (among other things) the URL to test.
         '''
         url = fuzzable_request.getURL()
-        headers = {'Referer': url.url_string }
+        headers = Headers([('Referer', url.url_string)])
                 
         original_response = self._uri_opener.GET( fuzzable_request.getURI(),
                                                   cache=True, headers=headers )
