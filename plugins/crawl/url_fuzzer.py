@@ -28,6 +28,8 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.w3afException import w3afException
+
+from core.data.dc.headers import Headers
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.options.option import option
@@ -59,7 +61,6 @@ class url_fuzzer(CrawlPlugin):
         
         self._first_time = True
         self._fuzz_images = False
-        self._headers = {}
         self._seen = scalable_bloomfilter()
         
     def crawl(self, fuzzable_request):
@@ -70,7 +71,7 @@ class url_fuzzer(CrawlPlugin):
                                     (among other things) the URL to test.
         '''
         url = fuzzable_request.getURL()
-        self._headers = {'Referer': url}
+        self._headers = Headers([('Referer', url.url_string)])
         
         if self._first_time:
             self._verify_head_enabled(url)
@@ -138,8 +139,8 @@ class url_fuzzer(CrawlPlugin):
         uri.setFileName(uri.getFileName() + rand_alnum(7))
             
         try:
-            response = self._uri_opener.GET(
-                                   uri, cache=True, headers=self._headers)
+            response = self._uri_opener.GET(uri, cache=True,
+                                            headers=self._headers)
         except w3afException, e:
             msg = 'An exception was raised while requesting "%s", the error' 
             msg += 'message is: "%s"'

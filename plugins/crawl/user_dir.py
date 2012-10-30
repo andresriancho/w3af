@@ -25,6 +25,7 @@ import core.data.kb.info as info
 
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
+from core.data.dc.headers import Headers
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
@@ -58,18 +59,18 @@ class user_dir(CrawlPlugin):
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
-        self._headers = {'Referer': base_url.url_string }
+        self._headers = Headers([('Referer', base_url.url_string)])
         
         # Create a response body to compare with the others
         non_existent_user = '~_w_3_a_f_/'
         test_URL = base_url.urlJoin( non_existent_user )
         try:
-            response = self._uri_opener.GET( test_URL, cache=True, \
-                                                                headers=self._headers )
-            response_body = response.getBody()                
+            response = self._uri_opener.GET( test_URL, cache=True,
+                                             headers=self._headers )
         except:
             raise w3afException('user_dir failed to create a non existent signature.')
-            
+
+        response_body = response.getBody()
         self._non_existent = response_body.replace( non_existent_user, '')
         
         # Check the users to see if they exist
