@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
-from core.ui.gui.exception_handling.common_windows import (simple_base_window, trac_bug_report)
-
+from core.ui.gui.exception_handling.common_windows import (simple_base_window,
+                                                           trac_bug_report)
     
 
 class bug_report_window(simple_base_window, trac_bug_report):
@@ -39,7 +38,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
     
     MANUAL_BUG_REPORT = 'https://sourceforge.net/apps/trac/w3af/newticket'
     
-    def __init__(self, title, tback, fname, plugins):
+    def __init__(self, w3af_core, title, tback, fname, plugins):
         # Before doing anything else, cleanup the report to remove any
         # user information that might be present.
         tback = cleanup_bug_report(tback)
