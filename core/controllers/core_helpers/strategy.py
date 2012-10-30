@@ -98,8 +98,6 @@ class w3af_core_strategy(object):
             self._setup_bruteforce()
             self._setup_404_detection()
             
-            self.force_auth_login()
-            
             self._seed_discovery()
             
             self._fuzzable_request_router()
@@ -120,13 +118,6 @@ class w3af_core_strategy(object):
         # another constant similar to the poison pill
         pass
 
-    def force_auth_login(self):
-        '''
-        Make login to the web application when it is needed.
-        '''
-        if self._auth_consumer is not None:
-            self._auth_consumer.force_login()
-    
     def terminate(self):
         '''
         Consume (without processing) all queues with data which are in
@@ -382,22 +373,29 @@ class w3af_core_strategy(object):
                                                    self._w3af_core)
             self._bruteforce_consumer.start()
     
+    def force_auth_login(self):
+        '''Force a login in a sync way
+        @return: None.
+        '''
+        if self._auth_consumer is not None:
+            self._auth_consumer.force_login()
+    
     def _setup_auth(self, timeout=5):
         '''
         Start the thread that will make sure the xurllib always has a "fresh"
-        session. The thread will call _force_auth_login every "timeout" seconds.
+        session. The thread will call is_logged() and login() for each enabled
+        auth plugin every "timeout" seconds.
         
         If there is a specific need to make sure that the session is fresh before
-        performing any step, the developer needs to run the _force_auth_login()
+        performing any step, the developer needs to run the force_auth_login()
         method.
         '''
         auth_plugins = self._w3af_core.plugins.plugins['auth']
         
         if auth_plugins:
-            self._auth_consumer = auth(auth_plugins,
-                                       self._w3af_core, timeout)
+            self._auth_consumer = auth(auth_plugins, self._w3af_core, timeout)
             self._auth_consumer.start()
-            self._auth_consumer.async_force_login()
+            self._auth_consumer.force_login()
                                 
     def _setup_audit(self):
         '''
