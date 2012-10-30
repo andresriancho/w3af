@@ -126,7 +126,7 @@ import core.data.kb.config as cf
 from core.data.constants.response_codes import NO_CONTENT
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
-DEBUG = None
+DEBUG = False
 
 # Global connection timeout. In seconds.
 TIMEOUT = 25
@@ -394,9 +394,10 @@ class ConnectionManager:
                 conn
 
             conn_total = self.get_connections_total(host)
-            msg = 'keepalive: removed one connection, len(self._hostmap' \
-            '["%s"]): %s' % (host, conn_total)
-            om.out.debug(msg)
+            if DEBUG:
+                msg = 'keepalive: removed one connection, len(self._hostmap' \
+                      '["%s"]): %s' % (host, conn_total)
+                om.out.debug(msg)
 
             # No more conns for 'host', remove it from mapping
             if host and not conn_total:
@@ -420,8 +421,9 @@ class ConnectionManager:
         '''
         with self._lock:
             self.remove_connection(bad_conn, host)
-            msg = 'keepalive: replacing bad connection with a new one'
-            om.out.debug(msg)
+            if DEBUG:
+                msg = 'keepalive: replacing bad connection with a new one'
+                om.out.debug(msg)
             new_conn = conn_factory(host)
             conns = self._hostmap.setdefault(host, [])
             conns.append(new_conn)
@@ -456,9 +458,10 @@ class ConnectionManager:
                 # No?... well, let's try to create a new one.
                 conn_total = self.get_connections_total(host)
                 if not ret_conn and conn_total < self._host_pool_size:
-                    msg = 'keepalive: added one connection, len(self._hostmap'\
-                    '["%s"]): %s' % (host, conn_total + 1)
-                    om.out.debug(msg)
+                    if DEBUG:
+                        msg = 'keepalive: added one connection, len(self._hostmap'\
+                              '["%s"]): %s' % (host, conn_total + 1)
+                        om.out.debug(msg)
                     ret_conn = conn_factory(host)
                     self._used_cons.append(ret_conn)
                     self._hostmap[host].append(ret_conn)
@@ -469,9 +472,10 @@ class ConnectionManager:
                     retry_count -= 1
                     time.sleep(0.3)
 
-            msg = 'keepalive: been waiting too long for a pool connection.' \
-            ' I\'m giving up. Seems like the pool is full.'
-            om.out.debug(msg)
+            if DEBUG:
+                msg = 'keepalive: been waiting too long for a pool connection.' \
+                      ' I\'m giving up. Seems like the pool is full.'
+                om.out.debug(msg)
             raise w3afException(msg)
 
     def resize_pool(self, new_size):
@@ -635,7 +639,7 @@ class KeepAliveHandler:
             self._cm.remove_connection(conn, host)
 
         if DEBUG:
-            DEBUG.info("STATUS: %s, %s", resp.status, resp.reason)
+            om.out.debug("STATUS: %s, %s", resp.status, resp.reason)
         resp._handler = self
         resp._host = host
         resp._url = req.get_full_url()
@@ -670,8 +674,8 @@ class KeepAliveHandler:
             # is that it's now possible this call will raise a DIFFERENT
             # exception
             if DEBUG:
-                DEBUG.error("unexpected exception - closing connection to %s" \
-                            " (%d)", host, id(conn))
+                om.out.error("unexpected exception - closing connection to %s" \
+                             " (%d)", host, id(conn))
             self._cm.remove_connection(conn, host)
             conn.close()
             raise
@@ -682,12 +686,12 @@ class KeepAliveHandler:
             # the socket has been closed by the server since we
             # last used the connection.
             if DEBUG:
-                DEBUG.info("failed to re-use connection to %s (%d)", host,
-                           id(conn))
+                om.out.debug("failed to re-use connection to %s (%d)", host,
+                             id(conn))
             r = None
         else:
             if DEBUG:
-                DEBUG.info("re-using connection to %s (%d)", host, id(conn))
+                om.out.debug("re-using connection to %s (%d)", host, id(conn))
             r._multiread = None
 
         return r
@@ -718,7 +722,6 @@ class KeepAliveHandler:
             raise urllib2.URLError(err)
         else:
             # Add headers
-            # BUGBUG: This does NOT support multiple headers with the same name
             header_dict = dict(self.parent.addheaders)
             header_dict.update(req.headers)
             header_dict.update(req.unredirected_hdrs)
