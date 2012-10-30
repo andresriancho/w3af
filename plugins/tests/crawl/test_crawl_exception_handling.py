@@ -24,7 +24,7 @@ import shutil
 
 from nose.plugins.attrib import attr
 
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')

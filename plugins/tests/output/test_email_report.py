@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import poplib
 
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestEmailReport(PluginTest):

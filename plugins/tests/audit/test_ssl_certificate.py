@@ -24,7 +24,7 @@ import socket, ssl
 import threading
 import random
 
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 PORT = random.randint(4443,4599)
 

@@ -25,7 +25,7 @@ import json
 import core.data.kb.vuln as vuln
 
 from core.data.parsers.url import URL
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestCSVFile(PluginTest):

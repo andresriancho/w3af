@@ -26,7 +26,7 @@ from nose.plugins.attrib import attr
 import core.data.kb.vuln as vuln
 
 from core.data.parsers.url import URL
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 @attr('smoke')

@@ -24,7 +24,7 @@ import urllib2
 
 from nose.plugins.skip import SkipTest
 
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 BROWSE_URLS = (
                ('GET', 'http://moth/w3af/crawl/spider_man/javascriptredirect.html', None),

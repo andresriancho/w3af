@@ -25,7 +25,7 @@ import re
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestWebSpider(PluginTest):

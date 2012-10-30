@@ -26,7 +26,7 @@ import core.controllers.daemons.webserver as webserver
 
 from plugins.audit.rfi import RFIWebHandler
 from core.data.constants.ports import REMOTEFILEINCLUDE
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestRFI(PluginTest):
