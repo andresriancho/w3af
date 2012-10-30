@@ -46,7 +46,7 @@ class PluginTest(unittest.TestCase):
         self.kb.cleanup()        
         self.w3afcore = w3afCore()
     
-    def _scan(self, target, plugins):
+    def _scan(self, target, plugins, debug=False):
         '''
         Setup env and start scan. Typically called from children's
         test methods.
@@ -77,9 +77,11 @@ class PluginTest(unittest.TestCase):
         if isinstance(target, basestring):
             target = (target,)
         self.w3afcore.target.set_options(_targetoptions(*target))
+        
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
             self.w3afcore.plugins.set_plugins([p.name for p in plugincfgs], ptype)
+            
             for pcfg in plugincfgs:
                 plugin_instance = self.w3afcore.plugins.get_plugin_inst(ptype, pcfg.name)
                 default_option_list = plugin_instance.get_options()
@@ -89,7 +91,11 @@ class PluginTest(unittest.TestCase):
                         unit_test_options.add(option) 
                     
                 self.w3afcore.plugins.set_plugin_options(ptype, pcfg.name, unit_test_options)
-                
+        
+        # Enable text output plugin for debugging
+        if debug:
+            self.w3afcore.plugins.set_plugins(['text_file',], 'output')
+        
         # Verify env and start the scan
         self.w3afcore.plugins.init_plugins()
         self.w3afcore.verify_environment()
