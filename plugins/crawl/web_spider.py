@@ -68,7 +68,7 @@ class web_spider(CrawlPlugin):
         self._ignore_regex = ''
         self._follow_regex = '.*'
         self._only_forward = False
-        self._compileRE()
+        self._compile_re()
 
     def crawl(self, fuzzable_req):
         '''
@@ -274,7 +274,7 @@ class web_spider(CrawlPlugin):
         # But this does not, and it is friendlier that simply ignoring the
         # referer
         #
-        referer = originalURL.baseUrl()
+        referer = originalURL.baseUrl().url_string
         headers = Headers([('Referer', referer)])
         
         try:
@@ -371,9 +371,9 @@ class web_spider(CrawlPlugin):
         self._only_forward = options_list['onlyForward'].getValue()
         self._ignore_regex = options_list['ignoreRegex'].getValue()
         self._follow_regex = options_list['followRegex'].getValue()
-        self._compileRE()
+        self._compile_re()
     
-    def _compileRE(self):
+    def _compile_re(self):
         '''
         Compile the regular expressions that are going to be used to ignore
         or follow links.

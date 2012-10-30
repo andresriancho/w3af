@@ -365,7 +365,7 @@ class FuzzableRequest(disk_item):
         self._headers = Headers(headers)
     
     def setReferer(self, referer):
-        self._headers['Referer'] = referer
+        self._headers['Referer'] = str(referer)
     
     def setCookie(self, c):
         '''
@@ -417,7 +417,7 @@ class FuzzableRequest(disk_item):
         if 'Referer' in self._headers:
             return self._headers['Referer']
         else:
-            return ''
+            return None
     
     def getCookie(self):
         if self._cookie:
