@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
-from ..helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.crawl.find_dvcs import find_dvcs
 
 
 class TestFindDVCS(PluginTest):
@@ -51,3 +51,34 @@ class TestFindDVCS(PluginTest):
         self.assertEquals( vulns_bzr[0].getName(), 'Possible bzr repository found' )
         self.assertEquals( vulns_hg[0].getName(), 'Possible hg repository found' )
 
+
+    def test_ignore_file_blank(self):
+        fdvcs = find_dvcs()
+        files = fdvcs.ignore_file('')
+        
+        self.assertEqual(files, set())
+
+    def test_ignore_file_two_files_comment(self):
+        fdvcs = find_dvcs()
+        content = '''# Ignore these files
+        foo.txt
+        bar*
+        spam.eggs
+        '''
+        files = fdvcs.ignore_file(content)
+        
+        self.assertEqual(files, set(['foo.txt', 'spam.eggs']))
+    
+    def test_svn_entries(self):
+        '''
+        Is the svn_entries function returning garbage? In my workstation the
+        function returns '12' which is the content in the file; but no file
+        named '12' really exists, so it makes no sense for the parsing function
+        to return it.
+        '''
+        fdvcs = find_dvcs()
+        svn_entries = file('.svn/entries').read()
+        files = fdvcs.ignore_file(svn_entries)
+        self.assertEqual(files, set())
+    
+    
