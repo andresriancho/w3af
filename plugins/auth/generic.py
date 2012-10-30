@@ -75,7 +75,9 @@ class generic(AuthPlugin):
     def is_logged(self):
         '''Check user session.'''
         try:
-            body = self._uri_opener.GET(self.check_url, grep=False).body
+            http_response = self._uri_opener.GET(self.check_url, grep=False,
+                                                 cache=False)
+            body = http_response.getBody()
             logged_in = self.check_string in body
 
             msg_yes = 'User "%s" is currently logged into the application'
@@ -131,13 +133,6 @@ class generic(AuthPlugin):
                 raise w3afException(
                         "All parameters are required and can't be empty."
                         )
-
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be run 
-        before the current one.
-        '''
-        return []
 
     def get_long_desc(self):
         '''
