@@ -67,8 +67,7 @@ class urlOpenerSettings( configurable ):
         self._cookieHandler = CookieHandler(cj)
         
         # Openers
-        self._nonCacheOpener = None
-        self._cacheOpener = None
+        self._uri_opener = None
 
         # Some internal variables
         self.need_update = True
@@ -328,13 +327,13 @@ class urlOpenerSettings( configurable ):
         if cfg.get('ignoreSessCookies'):
             handlers.remove(self._cookieHandler)
         
-        self._nonCacheOpener = urllib2.build_opener(*handlers)
+        self._uri_opener = urllib2.build_opener(*handlers)
         
         # Prevent the urllib from putting his user-agent header
-        self._nonCacheOpener.addheaders = [ ('Accept', '*/*') ]
+        self._uri_opener.addheaders = [ ('Accept', '*/*') ]
         
     def get_custom_opener(self):
-        return self._nonCacheOpener
+        return self._uri_opener
 
     def setManglePlugins( self, mp ):
         '''
