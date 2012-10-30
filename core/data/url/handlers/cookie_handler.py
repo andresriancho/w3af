@@ -27,8 +27,8 @@ class CookieHandler(urllib2.HTTPCookieProcessor):
     def http_request(self, request):
         '''
         I had to subclass the urllib2.HTTPCookieProcessor in order to add the
-        "if request.cookies" in order to provide the plugins with a feature
-        to send HTTP requests without any cookies.
+        "if request.cookies" to provide the plugins with a feature to send HTTP
+        requests without any cookies.
         '''
         if request.cookies:
             self.cookiejar.add_cookie_header(request)
