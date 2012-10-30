@@ -342,11 +342,12 @@ class xUrllib(object):
             uri = uri.copy()
             uri.querystring = data
             
-        req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies)
+        req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies,
+                          cache=cache)
         req = self._add_headers(req, headers)
 
         try:
-            http_response = self._send(req, cache=cache, grep=grep)
+            http_response = self._send(req, grep=grep)
         except:
             self.lower_size_limit(respect_size_limit, original_max)
             raise
@@ -416,9 +417,14 @@ class xUrllib(object):
         #
         #    Create and send the request
         #
-        req = HTTPRequest(uri, data=data, follow_redir=follow_redir, cookies=cookies)
+        #    Please note that the cache=False overrides the user setting
+        #    since we *never* want to return cached responses for POST
+        #    requests.
+        #
+        req = HTTPRequest(uri, data=data, follow_redir=follow_redir,
+                          cookies=cookies, cache=False)
         req = self._add_headers( req, headers )
-        return self._send( req , grep=grep, cache=cache)
+        return self._send(req , grep=grep)
     
     def getRemoteFileSize(self, req, cache=True):
         '''
@@ -497,11 +503,10 @@ class xUrllib(object):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
             
                 req = self.MethodRequest(uri, data, follow_redir=follow_redir,
-                                         cookies=cookies)
+                                         cookies=cookies, cache=cache)
                 req.set_method(self._method)
                 req = self._xurllib._add_headers(req, headers or {})
-                return self._xurllib._send(req, cache=cache,
-                                           grep=grep)
+                return self._xurllib._send(req, grep=grep)
         
         return AnyMethod(self, method_name)
 
@@ -531,7 +536,7 @@ class xUrllib(object):
         else:
             return False
             
-    def _send(self, req, cache=False, useMultipart=False, grep=True):
+    def _send(self, req, useMultipart=False, grep=True):
         '''
         Actually send the request object.
         
@@ -552,8 +557,6 @@ class xUrllib(object):
         
         start_time = time.time()
         res = None
-
-        req.get_from_cache = cache
 
         try:
             res = self._opener.open(req)
@@ -614,7 +617,7 @@ class xUrllib(object):
                          traceback.format_exc())
             req._Request__original = original_url
             # Then retry!
-            return self._retry(req, e, cache)
+            return self._retry(req, grep, e)
         except sqlite3.Error, e:
             msg = 'A sqlite3 error was raised: "%s".' % e
             if 'disk' in str(e).lower():
@@ -696,7 +699,7 @@ class xUrllib(object):
             om.out.error(str(e))
         return read
         
-    def _retry(self, req, urlerr, cache):
+    def _retry(self, req, grep, urlerr):
         '''
         Try to send the request again while doing some error handling.
         '''
@@ -706,7 +709,7 @@ class xUrllib(object):
             # Increment the error count of this particular request.
             self._error_count[req_id] += 1            
             om.out.debug('Re-sending request...')
-            return self._send(req, cache)
+            return self._send(req, grep=grep)
         else:
             # Clear the log of failed requests; this one definitely failed.
             # Let the caller decide what to do

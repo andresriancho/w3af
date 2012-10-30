@@ -39,6 +39,7 @@ from core.data.dc.headers import Headers
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
+# @see: https://bitbucket.org/jaraco/jaraco.net/src/65af6e442d21/jaraco/net/http/caching.py
 CACHE_METHODS = ('GET', 'HEAD')
 
 # Global cache location
@@ -53,6 +54,9 @@ def gen_hash(request):
     thestr = '%s%s%s%s' % (
                 req.get_method(),
                 req.get_full_url(),
+                # The next line is buggy since (unless the CacheHandler is the
+                # last handler in the list) other handlers might add new header
+                # (like cookies) and odd issues might appear. 
                 ''.join('%s%s' % (h, v) for h, v in req.headers.iteritems()),
                 req.get_data() or '')
     return hashlib.md5(thestr).hexdigest()
@@ -77,8 +81,8 @@ class CacheHandler(urllib2.BaseHandler):
         method = request.get_method().upper()
         
         if method in CACHE_METHODS and \
-        	getattr(request, 'get_from_cache', False) and \
-            CacheClass.exists_in_cache(request):
+        request.get_from_cache and \
+        CacheClass.exists_in_cache(request):
             try:
                 cache_response_obj = CacheClass(request)
             except Exception:
