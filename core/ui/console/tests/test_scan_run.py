@@ -36,7 +36,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         commands_to_run = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                                'set fileName output-w3af.txt',
+                                'set fileName %s' % self.OUTPUT_FILE,
+                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
                                 'set verbose True', 'back',
                            'output config console',
                                 'set verbose False', 'back', 
@@ -61,3 +62,72 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
         
+        found_errors = self.error_in_output(['No such file or directory',
+                                             'Exception'])
+        
+        self.assertFalse(found_errors)
+        
+    def test_two_scans(self):
+        target_1 = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
+        qs_1 = '?name=andres'
+        scan_commands_1 = ['plugins',
+                           'output console,text_file',
+                           'output config text_file',
+                                'set fileName %s' % self.OUTPUT_FILE,
+                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                                'set verbose True', 'back',
+                           'output config console',
+                                'set verbose False', 'back', 
+                           'audit sqli',
+                           'crawl web_spider',
+                           'crawl config web_spider', 
+                                'set onlyForward True', 'back',
+                            'grep path_disclosure',
+                            'back', 
+                            'target',
+                                'set target %s%s' % (target_1, qs_1), 'back',
+                            'start']
+        
+        expected_1 = ('SQL injection in ',
+                      'A SQL error was found in the response supplied by ',
+                      'New URL found by web_spider plugin: "%s"' % target_1)
+
+        target_2 = 'http://moth/w3af/audit/xss/simple_xss.php'
+        qs_2 = '?text=1'
+        scan_commands_2 = ['plugins',
+                           'output console,text_file',
+                           'output config text_file',
+                                'set fileName %s' % self.OUTPUT_FILE,
+                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                                'set verbose True', 'back',
+                           'output config console',
+                                'set verbose False', 'back', 
+                           'audit xss',
+                           'crawl web_spider',
+                           'crawl config web_spider', 
+                                'set onlyForward True', 'back',
+                            'grep path_disclosure',
+                            'back', 
+                            'target',
+                                'set target %s%s' % (target_2, qs_2), 'back',
+                            'start',
+                            'exit']
+        
+        expected_2 = ('Cross Site Scripting was found at',
+                      'New URL found by web_spider plugin: "%s"' % target_2)
+        
+        scan_commands = scan_commands_1 + scan_commands_2
+        
+        console = ConsoleUI(commands=scan_commands, do_upd=False)
+        console.sh()
+        
+        self.assertTrue( self.startswith_expected_in_output(expected_1), 
+                         self._mock_stdout.messages )
+        
+        self.assertTrue( self.startswith_expected_in_output(expected_2), 
+                         self._mock_stdout.messages )
+
+        found_errors = self.error_in_output(['No such file or directory',
+                                             'Exception'])
+        
+        self.assertFalse(found_errors)        
