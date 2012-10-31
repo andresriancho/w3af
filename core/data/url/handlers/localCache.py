@@ -51,13 +51,11 @@ def gen_hash(request):
     Generate an unique ID for a request
     '''
     req = request
-    thestr = '%s%s%s%s' % (
+    thestr = '%s%s%s%s%s' % (
                 req.get_method(),
                 req.get_full_url(),
-                # The next line is buggy since (unless the CacheHandler is the
-                # last handler in the list) other handlers might add new header
-                # (like cookies) and odd issues might appear. 
                 ''.join('%s%s' % (h, v) for h, v in req.headers.iteritems()),
+                ''.join('%s%s' % (h, v) for h, v in req.unredirected_hdrs.iteritems()),
                 req.get_data() or '')
     return hashlib.md5(thestr).hexdigest()
 
@@ -383,10 +381,10 @@ class SQLCachedResponse(CachedResponse):
         except KeyboardInterrupt, k:
             raise k
         except Exception, ex:
-            msg = ('Exception while inserting request/response to the '
-               'database: %s\nThe request/response that generated the error is:'
-               ' %s %s %s' % 
-               (ex, resp.getId(), req.getURI(), resp.getCode()))
+            msg = ('Exception while inserting request/response to the'
+                   ' database: %s\nThe request/response that generated'
+                   ' the error is: %s %s %s' % 
+                   (ex, resp.getId(), req.getURI(), resp.getCode()))
             om.out.error(msg)
             raise
     
