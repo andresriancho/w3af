@@ -161,12 +161,12 @@ def main():
     if not console.accept_disclaimer():
         return -4
     
-    console.sh()
+    return console.sh()
 
 
 if __name__ == "__main__":
-    err_code = main()
+    exit_code = main()
     back_to_current_dir()
     dump_cpu_usage()
-    sys.exit(err_code)
+    sys.exit(exit_code)
     

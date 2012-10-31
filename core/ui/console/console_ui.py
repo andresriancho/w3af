@@ -188,6 +188,7 @@ class ConsoleUI(object):
             self._context.join()
             om.out.console(self._random_message())
             om.out.process_all_messages()
+            return 0
 
     def _executePending(self):
         while (self._commands):
@@ -515,7 +516,7 @@ class ConsoleUI(object):
 
 
     def _random_message(self):
-        messages_file = os.path.join('core','ui','console','exitMessages.txt')
+        messages_file = os.path.join('core','ui','console','exitmessages.txt')
         f = file( messages_file, 'r')
         lines = f.readlines()
         idx = random.randrange(len(lines))
