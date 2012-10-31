@@ -79,7 +79,7 @@ class w3afCore(object):
         self.progress = progress()
         
         # Init some internal variables
-        self._initializeInternalVariables()
+        self._init_internal_vars()
         self.plugins.zero_enabled_plugins()
         
         # Init the 404 detection for the whole framework
@@ -197,7 +197,7 @@ class w3afCore(object):
         kb.cleanup()
 
         # Zero internal variables from the core
-        self._initializeInternalVariables()
+        self._init_internal_vars()
         
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
@@ -240,6 +240,7 @@ class w3afCore(object):
         '''
         The user is in a hurry, he wants to exit w3af ASAP.
         '''
+        self.cleanup()
         self.strategy.quit()
         self.uri_opener.stop()
         thread_manager.terminate()
@@ -330,7 +331,7 @@ class w3afCore(object):
             print msg
             sys.exit(-3)            
             
-    def _initializeInternalVariables(self):
+    def _init_internal_vars(self):
         '''
         Init some internal variables; this method is called when the whole 
         process starts, and when the user performs a clear() in the gtk user
