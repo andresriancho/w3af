@@ -23,7 +23,7 @@ import gtk, gobject
 import core.data.kb.knowledgeBase as kb
 import core.data.kb
 
-from . import helpers
+from core.ui.gui import helpers
 
 from core.ui.gui.exception_handling import handled
         

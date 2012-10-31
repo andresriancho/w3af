@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk
-from . import helpers, entries
+from core.ui.gui import helpers, entries
 from core.controllers.w3afException import w3afException
 
 # Profile objects

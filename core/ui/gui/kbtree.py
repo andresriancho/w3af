@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 
 import core.data.kb.knowledgeBase as kb
-from . import helpers, exploittab
+from core.ui.gui import helpers, exploittab
 import core.data.kb
 
 TYPES_OBJ = {

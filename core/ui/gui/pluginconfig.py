@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk, gobject
 import os
 
-from . import confpanel, entries, helpers
+from core.ui.gui import confpanel, entries, helpers
 from core.ui.gui.pluginEditor import pluginEditor
 
 from core.controllers.misc.homeDir import get_home_dir

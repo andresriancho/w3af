@@ -23,8 +23,9 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from ..fuzzable_request import FuzzableRequest
+from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
+
 
 @attr('smoke')
 class TestFuzzableRequest(unittest.TestCase):

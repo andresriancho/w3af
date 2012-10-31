@@ -19,17 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from subprocess import Popen, PIPE, STDOUT
 import os
 import shlex
 import time
 
-from .xunit import XunitGen
+from subprocess import Popen, PIPE, STDOUT
 
 import core.controllers.outputManager as om
 
+from core.controllers.misc.xunit import XunitGen
+
 SCRIPT_DIR = 'scripts/'
 ERROR, SKIP, SUCC, FAIL = 'ERROR SKIP OK FAIL'.split()
+
 
 def getScripts():
     res = []

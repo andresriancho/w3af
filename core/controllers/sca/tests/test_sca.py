@@ -22,7 +22,7 @@ import unittest
 
 from nose.plugins.skip import SkipTest
 
-from ..sca import PhpSCA, Scope, CodeSyntaxError
+from core.controllers.sca.sca import PhpSCA, Scope, CodeSyntaxError
 
 
 class TestPHPSCA(unittest.TestCase):

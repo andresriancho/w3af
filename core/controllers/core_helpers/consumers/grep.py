@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from .constants import POISON_PILL
+from core.controllers.core_helpers.consumers.constants import POISON_PILL
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 

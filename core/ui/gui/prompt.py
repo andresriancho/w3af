@@ -24,7 +24,7 @@ import pango
 import time
 
 # For write_console_messages
-from . import helpers
+from core.ui.gui import helpers
 
 
 class PromptView(gtk.TextView):

@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import gtk, gobject
-from . import helpers, entries
+from core.ui.gui import helpers, entries
 import core.data.kb.knowledgeBase as kb
 from core.ui.gui.common.searchable import Searchable
 from core.data.db.disk_list import disk_list

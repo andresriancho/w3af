@@ -25,7 +25,7 @@ import gobject
 import os
 import webbrowser
 
-from . import reqResViewer, helpers, entries, httpLogTab
+from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.w3afException import w3afException, w3afProxyException
 from core.data.options.option import option as Option
 from core.data.options.comboOption import comboOption

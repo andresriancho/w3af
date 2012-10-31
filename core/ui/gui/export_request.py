@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import gtk
-from . import entries
 
-from .encdec import SimpleTextView
+from core.ui.gui import entries
+from core.ui.gui.encdec import SimpleTextView
 
 from core.data.export.ajax_export import ajax_export
 from core.data.export.html_export import html_export
@@ -38,6 +38,7 @@ User-Agent: w3af.sf.net
 Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
+
 
 class export_request(entries.RememberingWindow):
     '''Infrastructure to export HTTP requests.

@@ -22,7 +22,7 @@ import gtk
 import gobject
 import threading
 
-from . import helpers, entries
+from core.ui.gui import helpers, entries
 
 # The clustering stuff
 try:

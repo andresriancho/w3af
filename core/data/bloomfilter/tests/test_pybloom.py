@@ -25,7 +25,7 @@ import string
 
 from nose.plugins.attrib import attr
 
-from ..pybloom import BloomFilter
+from core.data.bloomfilter.pybloom import BloomFilter
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 

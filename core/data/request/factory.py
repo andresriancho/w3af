@@ -29,13 +29,14 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
 
-from .HTTPPostDataRequest import HTTPPostDataRequest
-from .HTTPQsRequest import HTTPQSRequest
-from .JSONRequest import JSONPostDataRequest
-from .WebServiceRequest import WebServiceRequest
-from .XMLRPCRequest import XMLRPCRequest
 from core.controllers.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
+
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
+from core.data.request.JSONRequest import JSONPostDataRequest
+from core.data.request.WebServiceRequest import WebServiceRequest
+from core.data.request.XMLRPCRequest import XMLRPCRequest
 from core.data.dc.cookie import Cookie
 from core.data.dc.queryString import QueryString
 from core.data.dc.headers import Headers

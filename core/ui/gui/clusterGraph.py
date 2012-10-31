@@ -32,7 +32,7 @@ from core.ui.gui.reqResViewer import reqResWindow
 from core.controllers.w3afException import w3afException
 
 import gobject
-from . import helpers, entries
+from core.ui.gui import helpers, entries
 
 
 # Constants that define the distance available distance functions

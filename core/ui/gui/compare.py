@@ -18,16 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
+import gtk
+import webbrowser
 
-
-import gtk, webbrowser
-from . import entries, craftedRequests
-from .comparator import comparator
+from core.ui.gui import entries, craftedRequests
+from core.ui.gui.comparator import comparator
 
 # Alternative ways of seeing the data
-from .clusterGraph import distance_function_selector
+from core.ui.gui.clusterGraph import distance_function_selector
 
-import os
 
 ui_menu = """
 <ui>
@@ -264,7 +264,8 @@ class Compare(entries.RememberingWindow):
         self.comp.setRightPane(*self._getElementText())
 
     def _help(self, action):
-        helpfile = os.path.join(os.getcwd(), "readme/EN/guiHTML/guiUsersGuide.html#Comparing_HTTP_traffic")
+        html_file = "readme/EN/guiHTML/guiUsersGuide.html#Comparing_HTTP_traffic"
+        helpfile = os.path.join(os.getcwd(),html_file)
         webbrowser.open("file://" + helpfile)
 
     def _clearAll(self, action):
@@ -280,7 +281,8 @@ class Compare(entries.RememberingWindow):
 
     def _sendRequests(self, widg, edittype, paneside):
         '''Send the request to the manual or fuzzy request window.'''
-        func = dict(manual=craftedRequests.ManualRequests, fuzzy=craftedRequests.FuzzyRequests)[edittype]
+        func = dict(manual=craftedRequests.ManualRequests,
+                    fuzzy=craftedRequests.FuzzyRequests)[edittype]
         if paneside == "left":
             element = self.leftElement
         else:
@@ -297,6 +299,7 @@ class Compare(entries.RememberingWindow):
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                    gtk.BUTTONS_OK, msg)
             opt = dlg.run()
             dlg.destroy()        

@@ -23,7 +23,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from ..HTTPResponse import HTTPResponse, DEFAULT_CHARSET
+from core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers

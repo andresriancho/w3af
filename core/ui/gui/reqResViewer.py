@@ -42,8 +42,9 @@ from core.ui.gui.rrviews.raw import HttpRawView
 from core.ui.gui.rrviews.headers import HttpHeadersView
 from core.ui.gui.rrviews.rendering import getRenderingView
 
-from .export_request import export_request
-from . import helpers
+from core.ui.gui.craftedRequests import ManualRequests, FuzzyRequests
+from core.ui.gui.export_request import export_request
+from core.ui.gui import helpers
 
 
 def sigsegv_handler(signum, frame):
@@ -117,7 +118,6 @@ class reqResViewer(gtk.VBox):
         # Buttons
         hbox = gtk.HBox()
         if withManual or withFuzzy or withCompare:
-            from .craftedRequests import ManualRequests, FuzzyRequests
             
             if withManual:
                 b = SemiStockButton("", gtk.STOCK_INDEX, _("Send Request to Manual Editor"))

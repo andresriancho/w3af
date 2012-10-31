@@ -26,13 +26,16 @@ import threading
 import functools
 import os
 
-from . import reqResViewer, helpers, entries, fuzzygen
+from core.ui.gui import reqResViewer, helpers, entries, fuzzygen
 # Alternative ways of seeing the data
-from .clusterGraph import distance_function_selector
+from core.ui.gui.clusterGraph import distance_function_selector
 # Generators
-from .payload_generators import create_generator_menu
+from core.ui.gui.payload_generators import create_generator_menu
 from core.data.db.history import HistoryItem
-from core.controllers.w3afException import *
+from core.controllers.w3afException import (w3afException, w3afMustStopException,
+                                            w3afMustStopOnUrlError,
+                                            w3afMustStopByKnownReasonExc,
+                                            w3afProxyException)
 
 ui_proxy_menu = """
 <ui>
@@ -158,8 +161,10 @@ class ManualRequests(entries.RememberingWindow):
                 self.reqresp.nb.next_page()
             elif hasattr(impact, 'exception'):
                 e_kls = impact.exception.__class__
-                if e_kls in (w3afException, w3afMustStopException, w3afMustStopOnUrlError,
-                             w3afMustStopByKnownReasonExc, w3afProxyException ):
+                if e_kls in (w3afException, w3afMustStopException,
+                             w3afMustStopOnUrlError,
+                             w3afMustStopByKnownReasonExc,
+                             w3afProxyException):
                     msg = "Stopped sending requests because '%s'" % str(impact.exception)
                 else:
                     raise impact.exception

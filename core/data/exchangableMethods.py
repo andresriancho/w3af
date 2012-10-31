@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from .request.HTTPPostDataRequest import HTTPPostDataRequest
-from .request.HTTPQsRequest import HTTPQSRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 
 
 def isExchangable(uri_opener, freq):

@@ -429,7 +429,7 @@ def write_console_messages( dlg ):
     @parameter dlg: The TextDialog.
     '''
     import core.data.kb.knowledgeBase as kb
-    from . import messages
+    from core.ui.gui import messages
     
     msg_queue = messages.getQueueDiverter()
     get_message_index = kb.kb.get('get_message_index', 'get_message_index')

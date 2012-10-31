@@ -25,7 +25,7 @@ import gobject
 import pango
 
 # The elements to create the req/res viewer
-from . import reqResViewer, entries
+from core.ui.gui import reqResViewer, entries
 from core.ui.gui.entries import EasyTable
 from core.ui.gui.entries import wrapperWidgets
 from core.data.db.history import HistoryItem

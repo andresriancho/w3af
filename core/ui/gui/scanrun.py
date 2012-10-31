@@ -27,7 +27,7 @@ import webbrowser
 
 from multiprocessing.dummy import Process, Event
 
-from . import kbtree, httpLogTab, reqResViewer, craftedRequests, entries
+from core.ui.gui import kbtree, httpLogTab, reqResViewer, craftedRequests, entries
 from extlib.xdot import xdot
 from core.data.db.history import HistoryItem
 

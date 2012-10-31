@@ -19,17 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
 import itertools
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from plugins.grep.ssndata.ssnAreasGroups import areas_groups_map
 
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-from .ssndata.ssnAreasGroups import areas_groups_map
 
 
 class ssn(GrepPlugin):

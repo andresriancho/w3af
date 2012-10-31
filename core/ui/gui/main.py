@@ -26,7 +26,7 @@ from __future__ import absolute_import
 # presence of different libraries.
 # This task is done in different places because the ConsoleUI has different requirements
 # than the GTK UI.
-from . import dependency_check
+from core.ui.gui import dependency_check
 dependency_check.gtkui_dependency_check()
 
 # Now that I know that I have them, import them!
@@ -55,10 +55,10 @@ from core.ui.gui.exception_handling import unhandled
 from core.ui.gui.exception_handling import user_reports_bug
 from core.ui.gui.constants import W3AF_ICON, MAIN_TITLE, UI_MENU
 
-from . import scanrun, exploittab, helpers, profiles, craftedRequests, compare
-from . import export_request
-from . import entries, encdec, messages, logtab, pluginconfig, confpanel
-from . import wizard, guardian, proxywin
+from core.ui.gui import scanrun, exploittab, helpers, profiles, craftedRequests, compare
+from core.ui.gui import export_request
+from core.ui.gui import entries, encdec, messages, logtab, pluginconfig, confpanel
+from core.ui.gui import wizard, guardian, proxywin
 
 # This is just general info, to help people knowing their system
 print "Starting w3af, running on:"
