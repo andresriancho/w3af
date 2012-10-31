@@ -108,10 +108,10 @@ class Compare(entries.RememberingWindow):
         # the line with the "send to" buttons
         self.sendto_box = hbox = gtk.HBox()
         b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Left to Manual Editor")
-        b.connect("clicked", self._sendRequests, "manual", "left")
+        b.connect("clicked", self._send_requests, "manual", "left")
         hbox.pack_start(b, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Left to Fuzzy Editor")
-        b.connect("clicked", self._sendRequests, "fuzzy", "left")
+        b.connect("clicked", self._send_requests, "fuzzy", "left")
         hbox.pack_start(b, False, False, padding=2)
 
         image = gtk.Image()
@@ -124,10 +124,10 @@ class Compare(entries.RememberingWindow):
         self.clusterbut.set_sensitive(False)
         hbox.pack_end(self.clusterbut, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_PROPERTIES, "Send the Request of the Right to Fuzzy Editor")
-        b.connect("clicked", self._sendRequests, "fuzzy", "right")
+        b.connect("clicked", self._send_requests, "fuzzy", "right")
         hbox.pack_end(b, False, False, padding=2)
         b = entries.SemiStockButton("", gtk.STOCK_INDEX, "Send the Request of the Right to Manual Editor")
-        b.connect("clicked", self._sendRequests, "manual", "right")
+        b.connect("clicked", self._send_requests, "manual", "right")
         hbox.pack_end(b, False, False, padding=2)
         self.vbox.pack_start(hbox, False, False, padding=10)
 
@@ -279,7 +279,7 @@ class Compare(entries.RememberingWindow):
         self.delbut.set_sensitive(False)
         self.clusterbut.set_sensitive(False)
 
-    def _sendRequests(self, widg, edittype, paneside):
+    def _send_requests(self, widg, edittype, paneside):
         '''Send the request to the manual or fuzzy request window.'''
         func = dict(manual=craftedRequests.ManualRequests,
                     fuzzy=craftedRequests.FuzzyRequests)[edittype]

@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 import gobject
 import threading
@@ -27,10 +26,9 @@ import functools
 import os
 
 from core.ui.gui import reqResViewer, helpers, entries, fuzzygen
-# Alternative ways of seeing the data
 from core.ui.gui.clusterGraph import distance_function_selector
-# Generators
 from core.ui.gui.payload_generators import create_generator_menu
+
 from core.data.db.history import HistoryItem
 from core.controllers.w3afException import (w3afException, w3afMustStopException,
                                             w3afMustStopOnUrlError,

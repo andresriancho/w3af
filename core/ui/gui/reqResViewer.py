@@ -41,8 +41,6 @@ from core.ui.gui.httpeditor import HttpEditor
 from core.ui.gui.rrviews.raw import HttpRawView
 from core.ui.gui.rrviews.headers import HttpHeadersView
 from core.ui.gui.rrviews.rendering import getRenderingView
-
-from core.ui.gui.craftedRequests import ManualRequests, FuzzyRequests
 from core.ui.gui.export_request import export_request
 from core.ui.gui import helpers
 
@@ -116,18 +114,22 @@ class reqResViewer(gtk.VBox):
 
     def _initToolBox(self, withManual, withFuzzy, withCompare, withAudit):
         # Buttons
+        
+        # This import needs to be here in order to avoid an import loop
+        from core.ui.gui.craftedRequests import ManualRequests, FuzzyRequests
+        
         hbox = gtk.HBox()
         if withManual or withFuzzy or withCompare:
             
             if withManual:
                 b = SemiStockButton("", gtk.STOCK_INDEX, _("Send Request to Manual Editor"))
-                b.connect("clicked", self._sendRequest, ManualRequests)
+                b.connect("clicked", self._send_request, ManualRequests)
                 self.request.childButtons.append(b)
                 b.show()
                 hbox.pack_start(b, False, False, padding=2)
             if withFuzzy:
                 b = SemiStockButton("", gtk.STOCK_PROPERTIES, _("Send Request to Fuzzy Editor"))
-                b.connect("clicked", self._sendRequest, FuzzyRequests)
+                b.connect("clicked", self._send_request, FuzzyRequests)
                 self.request.childButtons.append(b)
                 b.show()
                 hbox.pack_start(b, False, False, padding=2)
@@ -139,7 +141,7 @@ class reqResViewer(gtk.VBox):
                 hbox.pack_start(b, False, False, padding=2)
         # I always can export requests
         b = SemiStockButton("", gtk.STOCK_COPY, _("Export Request"))
-        b.connect("clicked", self._sendRequest, export_request)
+        b.connect("clicked", self._send_request, export_request)
         self.request.childButtons.append(b)
         b.show()
         hbox.pack_start(b, False, False, padding=2)
@@ -249,7 +251,7 @@ class reqResViewer(gtk.VBox):
             gtk.gdk.threads_leave()
         return False
 
-    def _sendRequest(self, widg, func):
+    def _send_request(self, widg, func):
         """Sends the texts to the manual or fuzzy request.
 
         @param func: where to send the request.

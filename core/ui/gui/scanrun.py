@@ -517,14 +517,14 @@ class URLsTree(gtk.TreeView):
         image = gtk.Image()
         image.set_from_stock(gtk.STOCK_INDEX,  gtk.ICON_SIZE_MENU)
         e.set_image(image)
-        e.connect('activate', self._sendRequest, sendtext, craftedRequests.ManualRequests)
+        e.connect('activate', self._send_request, sendtext, craftedRequests.ManualRequests)
         gm.append( e )
 
         image = gtk.Image()
         image.set_from_stock(gtk.STOCK_PROPERTIES,  gtk.ICON_SIZE_MENU)
         e = gtk.ImageMenuItem(_("Open with Fuzzy Request Editor..."))
         e.set_image(image)
-        e.connect('activate', self._sendRequest, sendtext, craftedRequests.FuzzyRequests)
+        e.connect('activate', self._send_request, sendtext, craftedRequests.FuzzyRequests)
         gm.append( e )
 
         e = gtk.ImageMenuItem(_("Open with default browser..."))
@@ -538,7 +538,7 @@ class URLsTree(gtk.TreeView):
         '''Opens the text with an external browser.'''
         webbrowser.open_new_tab(text)
 
-    def _sendRequest(self, widg, text, func):
+    def _send_request(self, widg, text, func):
         func(self.w3af, (text,""))
 
 class ScanRunBody(gtk.Notebook):
