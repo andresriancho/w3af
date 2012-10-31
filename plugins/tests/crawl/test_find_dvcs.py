@@ -50,6 +50,7 @@ class TestFindDVCS(PluginTest):
         self.assertEqual( len(vulns_git), 1, vulns_git )
         self.assertEqual( len(vulns_bzr), 1, vulns_bzr )
         self.assertEqual( len(vulns_hg), 1, vulns_hg )
+        #FIXME: What to do about dups?
         self.assertTrue( len(vulns_svn) > 0, vulns_svn )
         self.assertTrue( len(vulns_cvs) > 0, vulns_cvs )
         
