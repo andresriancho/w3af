@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import urllib2
+
 from core.data.parsers.url import URL
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
@@ -45,7 +45,7 @@ class URLParameterHandler(urllib2.BaseHandler):
         url_instance.setParam( self._url_parameter )
         
         new_request = HTTPRequest(url_instance, headers=req.headers,
-            origin_req_host=req.get_origin_req_host(),
-            unverifiable=req.is_unverifiable())
+                                  origin_req_host=req.get_origin_req_host(),
+                                  unverifiable=req.is_unverifiable())
         return new_request
 
