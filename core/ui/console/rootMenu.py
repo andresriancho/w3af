@@ -73,10 +73,11 @@ class rootMenu(menu):
         # Check if the console output plugin is enabled or not, and warn.
         output_plugins = self._w3af.plugins.get_enabled_plugins('output')
         if 'console' not in output_plugins:
-            msg = "Warning: You disabled the console output plugin. The scan information, such as"
-            msg += ' discovered vulnerabilities won\'t be printed to the console, we advise you'
-            msg += ' to enable this output plugin in order to be able to actually see'
-            msg += ' the scan output in the console.'
+            msg = "Warning: You disabled the console output plugin. If you"\
+                  " start a new scan, the discovered vulnerabilities won\'t be"\
+                  " printed to the console, we advise you to enable at least"\
+                  " one output plugin in order to be able to actually see the"\
+                  " the scan output."
             print msg
         
         # Note that I'm NOT starting this in a new multiprocess Process
@@ -84,6 +85,8 @@ class rootMenu(menu):
         # I want to start new threads inside this thread and there is a bug
         # with that http://bugs.python.org/issue10015
         self._scan_thread = Process(target=self._real_start)
+        self._scan_thread.name = 'ConsoleScanThread'
+        self._scan_thread.daemon = True
         self._scan_thread.start()
         try:
             # let the core start
@@ -97,8 +100,8 @@ class rootMenu(menu):
             
     def _cmd_cleanup(self, params):
         '''
-        The user runs this command, when he has finished a scan, and wants to cleanup everything to
-        start a new scan to another target.
+        The user runs this command, when he has finished a scan, and wants to
+        cleanup everything to start a new scan to another target.
         
         @return: None
         '''
