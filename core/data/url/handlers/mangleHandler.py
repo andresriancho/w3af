@@ -37,8 +37,8 @@ class mangleHandler(urllib2.BaseHandler):
     
     handler_order = LogHandler.handler_order - 2
     
-    def __init__(self, pluginList):
-        self._pluginList = pluginList
+    def __init__(self, plugin_list):
+        self._plugin_list = plugin_list
 
         
     def _urllibReq2fr( self, request ):
@@ -81,18 +81,18 @@ class mangleHandler(urllib2.BaseHandler):
         return req
 
     def http_request(self, request):
-        if self._pluginList:
+        if self._plugin_list:
             fr = self._urllibReq2fr(request)
             
-            for plugin in self._pluginList:
-                fr = plugin.mangleRequest(fr)
+            for plugin in self._plugin_list:
+                fr = plugin.mangle_request(fr)
             
             request = self._fr2urllibReq(fr, request)
         return request
 
     def http_response(self, request, response):
 
-        if len( self._pluginList ) and response._connection.sock is not None:
+        if len( self._plugin_list ) and response._connection.sock is not None:
             # Create the HTTPResponse object
             code, msg, hdrs = response.code, response.msg, response.info()
             url_instance = URL( response.geturl() )
@@ -103,8 +103,8 @@ class mangleHandler(urllib2.BaseHandler):
             httpRes = HTTPResponse.HTTPResponse(code, body, hdrs, url_instance,
                                                 request.url_object, msg=msg)
             
-            for plugin in self._pluginList:
-                plugin.mangleResponse( httpRes )
+            for plugin in self._plugin_list:
+                plugin.mangle_response( httpRes )
             
             response = self._HTTPResponse2httplib( response, httpRes )
 
@@ -112,12 +112,14 @@ class mangleHandler(urllib2.BaseHandler):
 
     def _HTTPResponse2httplib( self, originalResponse, mangledResponse ):
         '''
-        Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse subclass that I created in keepalive.
+        Convert an HTTPResponse.HTTPResponse object to a httplib.httpresponse
+        subclass that I created in keepalive.
         
         @parameter HTTPResponse: HTTPResponse.HTTPResponse object
         @return: httplib.httpresponse subclass 
         '''
-        kaRes = kaHTTPResponse( originalResponse._connection.sock, debuglevel=0, strict=0, method=None )
+        kaRes = kaHTTPResponse( originalResponse._connection.sock, debuglevel=0,
+                                strict=0, method=None )
         kaRes.setBody( mangledResponse.getBody() )
         kaRes.headers = mangledResponse.getHeaders()
         kaRes.code = mangledResponse.getCode()

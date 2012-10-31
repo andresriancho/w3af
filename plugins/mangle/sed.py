@@ -49,7 +49,7 @@ class sed(ManglePlugin):
         self._priority = 20
         self._expressions = ''
         
-    def mangleRequest(self, request):
+    def mangle_request(self, request):
         '''
         This method mangles the request.
         
@@ -71,7 +71,7 @@ class sed(ManglePlugin):
                                  data, header_dict
                                  )
     
-    def mangleResponse(self, response):
+    def mangle_response(self, response):
         '''
         This method mangles the response.
         

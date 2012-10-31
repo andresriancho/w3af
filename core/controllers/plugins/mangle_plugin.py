@@ -28,8 +28,8 @@ class ManglePlugin(Plugin):
     '''
     This is the base class for mangle plugins, all mangle plugins should inherit from it 
     and implement the following methods :
-        1. mangleRequest( request )
-        2. mangleResponse( request )
+        1. mangle_request( request )
+        2. mangle_response( request )
         3. set_options( OptionList )
         4. get_options()
 
@@ -41,7 +41,7 @@ class ManglePlugin(Plugin):
     def __init__(self):
         pass
 
-    def mangleRequest(self, request ):
+    def mangle_request(self, request ):
         '''
         This method mangles the request.
         
@@ -50,9 +50,9 @@ class ManglePlugin(Plugin):
         @param request: This is the request to mangle.
         @return: A mangled version of the request.
         '''
-        raise w3afException('Plugin is not implementing required method mangleRequest' )
+        raise w3afException('Plugin is not implementing required method mangle_request' )
     
-    def mangleResponse(self, response ):
+    def mangle_response(self, response ):
         '''
         This method mangles the response.
         
@@ -61,7 +61,7 @@ class ManglePlugin(Plugin):
         @param response: This is the response to mangle.
         @return: A mangled version of the response.
         '''
-        raise w3afException('Plugin is not implementing required method mangleResponse' )
+        raise w3afException('Plugin is not implementing required method mangle_response' )
         
     def set_url_opener(self, foo):
         pass
