@@ -40,8 +40,7 @@ from core.data.dc.headers import Headers
 from core.data.fuzzer.formFiller import smartFill
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest as \
-                                                  HttpPostDataRequest
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
 
 class web_spider(CrawlPlugin):
@@ -97,7 +96,7 @@ class web_spider(CrawlPlugin):
         # If it is a form, then smartFill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
-        if isinstance(fuzzable_req, HttpPostDataRequest):
+        if isinstance(fuzzable_req, HTTPPostDataRequest):
             
             if fuzzable_req.getURL() in self._already_filled_form:
                 return []
@@ -106,7 +105,7 @@ class web_spider(CrawlPlugin):
 
         # Send the HTTP request,
         resp = self._uri_opener.send_mutant(fuzzable_req,
-                                             follow_redir=False)
+                                            follow_redir=False)
         
         # Nothing to do here...        
         if resp.getCode() == 401:
@@ -136,7 +135,7 @@ class web_spider(CrawlPlugin):
         # the SGML parser to analyze a image file, its useless and
         # consumes CPU power.
         if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
-            originalURL = resp.getRedirURI()
+            original_url = resp.getRedirURI()
             try:
                 doc_parser = dpCache.dpc.getDocumentParserFor(resp)
             except w3afException, w3:
@@ -187,7 +186,7 @@ class web_spider(CrawlPlugin):
                     if self._need_more_variants(ref):
                         self._known_variants.append(ref)
                         possibly_broken = ref in only_re_refs
-                        yield ref, fuzzable_req, originalURL, possibly_broken
+                        yield ref, fuzzable_req, original_url, possibly_broken
                         
     def _extract_links_and_verify(self, resp, fuzzable_req):
         '''
@@ -262,19 +261,19 @@ class web_spider(CrawlPlugin):
             return False
     
     def _verify_reference(self, reference, original_request,
-                          originalURL, possibly_broken):
+                          original_url, possibly_broken):
         '''
         This method GET's every new link and parses it in order to get
         new links and forms.
         '''
         #
         # Remember that this "breaks" the cache=True in most cases!
-        #     headers = { 'Referer': originalURL }
+        #     headers = { 'Referer': original_url }
         #
         # But this does not, and it is friendlier that simply ignoring the
         # referer
         #
-        referer = originalURL.baseUrl().url_string
+        referer = original_url.baseUrl().url_string
         headers = Headers([('Referer', referer)])
         
         try:
