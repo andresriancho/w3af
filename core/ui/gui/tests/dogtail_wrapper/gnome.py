@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 import tempfile
+import commands
 
 from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer, DISPLAY 
 
@@ -45,5 +46,11 @@ class Gnome(XVFBServer):
                              XVFBServer.WIDTH, XVFBServer.HEIGTH,
                              tempfile.gettempdir())
 
-    
+    def start_sync(self):
+        # Kill all previously running instances of "gnome" 
+        # TODO: This is a little bit rough, huh?        
+        commands.getoutput("pkill -f %s" % self.XINITRC)
+        
+        super(Gnome, self).start_sync()
+
     
