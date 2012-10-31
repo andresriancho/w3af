@@ -113,7 +113,7 @@ class w3afCore(object):
         self._start_time_epoch = time.time()
         
         try:
-            # Just in case the gui / ConsoleUI forgot to do this...
+            # Just in case the GUI / Console forgot to do this...
             self.verify_environment()
         except Exception, e:
             error = ('verify_environment() raised an exception: "%s". This'
@@ -254,7 +254,8 @@ class w3afCore(object):
         (human) user.
         '''
         if not self.plugins.initialized:
-            msg = 'You must call the plugins.init_plugins() method before calling start()'
+            msg = 'You must call the plugins.init_plugins() method before'\
+                  ' calling start().'
             raise w3afException( msg )
         
         if not cf.cf.get('targets'):
@@ -341,5 +342,3 @@ class w3afCore(object):
         # Reset global sequence number generator
         consecutive_number_generator.reset()
         
-# Singleton
-w3af_core = w3afCore()

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
-from core.controllers.w3afCore import w3af_core
+from core.controllers.w3afCore import w3afCore
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
 
@@ -29,7 +29,7 @@ from core.data.parsers.url import URL
 class TestBaseConsumer(unittest.TestCase):
     
     def setUp(self):
-        self.bc = BaseConsumer([], w3af_core)
+        self.bc = BaseConsumer([], w3afCore())
         
     def test_handle_exception(self):
         url = URL('http://moth/')

@@ -27,7 +27,7 @@ import random
 from mock import patch
 from itertools import repeat
 
-from core.controllers.w3afCore import w3af_core
+from core.controllers.w3afCore import w3afCore
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
@@ -44,7 +44,7 @@ class test_all(unittest.TestCase):
         
         self._is_404_patcher = patch
         
-        self._w3af = w3af_core
+        self._w3af = w3afCore()
         self._plugins = []
         for pname in self._w3af.plugins.get_plugin_list('grep'):
             self._plugins.append( self._w3af.plugins.get_plugin_inst('grep', pname) )

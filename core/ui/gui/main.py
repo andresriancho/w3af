@@ -44,7 +44,7 @@ import core.controllers.outputManager as om
 import core.controllers.miscSettings
 import core.data.kb.config as cf
 
-from core.controllers.w3afCore import w3af_core
+from core.controllers.w3afCore import w3afCore
 from core.controllers.auto_update import VersionMgr, UIUpdater
 from core.controllers.w3afException import w3afException, w3afMustStopByUserRequest
 from core.controllers.exception_handling.helpers import pprint_plugins
@@ -239,6 +239,8 @@ class MainApp(object):
         self.window.connect('key_press_event', self.helpF1)
         splash.push(_("Loading..."))
         
+        self.w3af = w3af_core = w3afCore()
+        
         # Now we start the error handling
         unhandled.set_except_hook(w3af_core)
         
@@ -264,7 +266,6 @@ class MainApp(object):
         mainvbox.show()
 
         splash.push(_("Initializing core..."))
-        self.w3af = w3af_core
         
         # This is inited before all, to have a full logging facility.
         om.out.set_output_plugins( ['gtk_output'] )

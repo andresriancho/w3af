@@ -19,16 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
-# options
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
-# Import the core singleton
-from core.controllers.w3afCore import w3af_core
 import core.data.kb.config as cf
 
 
@@ -63,7 +57,7 @@ class question_infrastructure_4(question):
     def getNextQuestionId(self,  options_list ):
         cf.cf.save('reachable_from_internet', options_list[self._d1].getValue())
        
-       # The next question
+        # The next question
         if cf.cf.get('reachable_from_internet'):
             return 'infrastructure_internet_1'
         else:
