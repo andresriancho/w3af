@@ -22,7 +22,8 @@ import os
 import tempfile
 import commands
 
-from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer, DISPLAY 
+from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer
+from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY 
 
 
 class Gnome(XVFBServer):

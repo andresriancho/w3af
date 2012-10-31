@@ -27,8 +27,7 @@ import time
 import shlex
 import os
 
-DISPLAY = ':9'
-
+from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
 from core.ui.gui.tests.dogtail_wrapper.utils import (set_display_to_self,
                                                      restore_original_display)
 
