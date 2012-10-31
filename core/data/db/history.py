@@ -59,6 +59,8 @@ class HistoryItem(object):
     _PRIMARY_KEY_COLUMNS = ('id',)
     _INDEX_COLUMNS = ('alias',)
     
+    _EXTENSION = '.trace'
+    
     id = None
     _request = None
     _response = None
@@ -74,13 +76,13 @@ class HistoryItem(object):
 
     def __init__(self):
         '''Construct object.'''
-        self._border = '-#=' * 20
-        self._ext = '.trace'
-        if not kb.kb.get('history', 'db') == []:
+        if kb.kb.get('history', 'db') == []:
+            # This means that it is the first time that w3af creates a
+            # HistoryItem and we need to create some dirs and DBs
+            self.init_structure()
+        else:
             self._db = kb.kb.get('history', 'db')
             self._session_dir = kb.kb.get('history', 'session_dir')
-        else:
-            self.init_structure()
 
     @property
     def response(self):
@@ -108,10 +110,6 @@ class HistoryItem(object):
     
     def init_structure(self):
         '''Init history structure.'''
-        # FIXME: The error is here! When running a test twice the cf is NOT automatically cleared
-        # and thus the directory is not created again. Reproduce with:
-        # nosetests -v -s --rednose --with-doctest --doctest-tests core/data/url/handlers/tests/test_cookie_handler.py
-        #                                                          core/data/url/handlers/tests/test_cookie_handler.py 
         session_name = cf.cf.get('session_name')
         if session_name is None:
             # This is the case of unittests where we "forget" to set the proper
@@ -119,25 +117,24 @@ class HistoryItem(object):
             # unittests, I do it here.
             session_name = 'unittest-'
             
-        dbName = os.path.join(get_temp_dir(), 'db_' + session_name)
+        db_name = os.path.join(get_temp_dir(), 'db_' + session_name)
         
         # Find one database file that does NOT exist
         for i in xrange(100):
-            newDbName = dbName + '-' + str(i)
-            if not os.path.exists(newDbName):
-                dbName = newDbName
+            newdb_name = db_name + '-' + str(i)
+            if not os.path.exists(newdb_name):
+                db_name = newdb_name
                 break
                 
-        self._db = DB(dbName)
+        self._db = DB(db_name)
 
         self._session_dir = os.path.join(get_temp_dir(),
                                          self._db.getFileName() + '_traces')
         tablename = self.getTableName()
         # Init tables
-        self._db.createTable(
-                tablename,
-                self.getColumns(),
-                self.getPrimaryKeyColumns())
+        self._db.createTable(tablename,
+                             self.getColumns(),
+                             self.getPrimaryKeyColumns())
         self._db.createIndex(tablename, self.getIndexColumns())
         # Init dirs
         try:
@@ -199,7 +196,7 @@ class HistoryItem(object):
 
     def _loadFromFile(self, id):
         
-        fname = os.path.join(self._session_dir, str(id) + self._ext)
+        fname = os.path.join(self._session_dir, str(id) + self._EXTENSION)
         #
         #    Due to some concurrency issues, we need to perform this check
         #    before we try to read the .trace file.
@@ -259,12 +256,11 @@ class HistoryItem(object):
                 
                 if retry:
                     #    TODO:
-                    #    According to sqlite3 documentation this db.commit() might fix errors like
-                    #    "https://sourceforge.net/apps/trac/w3af/ticket/164352" , but it can degrade
-                    #    performance due to disk IO
+                    #    According to sqlite3 documentation this db.commit()
+                    #    might fix errors like
+                    #    https://sourceforge.net/apps/trac/w3af/ticket/164352 , 
+                    #    but it can degrade performance due to disk IO
                     #
-                    self._db.commit()
-                    time.sleep(0.1)
                     self._db.commit()
                     self.load(id=id, full=full, retry=False)
                 else:
@@ -325,7 +321,8 @@ class HistoryItem(object):
         # 
         # Save raw data to file
         #
-        fname = os.path.join(self._session_dir, str(self.response.id) + self._ext)
+        fname = os.path.join(self._session_dir,
+                             str(self.response.id) + self._EXTENSION)
 
         with FileLock(fname, timeout=1):
         

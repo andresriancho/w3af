@@ -416,7 +416,7 @@ class httpLogTab(entries.RememberingHPaned):
             self._lstore.clear()
         for item in results:
             self._lstore.append([item.id, item.mark, item.method, item.url,
-                item.tag, item.code, item.msg, item.responseSize,item.contentType,
+                item.tag, item.code, item.msg, item.response_size,item.content_type,
                 item.time])
         # Size search results
         if len(results) < 10:
