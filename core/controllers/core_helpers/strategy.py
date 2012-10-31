@@ -146,21 +146,19 @@ class w3af_core_strategy(object):
         Also keep in mind that is one of the only methods that will be run in
         the "main thread" and lives during the whole scan process.
         '''
-        not_none = lambda x: x is not None
-        
         _input = [self._seed_producer, self._discovery_consumer, 
                   self._bruteforce_consumer]
-        _input = filter(not_none, _input)
+        _input = filter(None, _input)
        
         output = [self._audit_consumer, self._discovery_consumer,
                   self._bruteforce_consumer]
-        output = filter(not_none, output)
+        output = filter(None, output)
         
         # Only check if these have exceptions and bring them to the main
         # thread in order to be handled by the ExceptionHandler and the
         # w3afCore
         _other = [self._auth_consumer, self._grep_consumer]
-        _other = filter(not_none, _other)
+        _other = filter(None, _other)
         
         finished = set()
         consumer_forced_end = set()
