@@ -42,7 +42,7 @@ class ConsoleTestHelper(unittest.TestCase):
     '''
     Helper class to build console UI tests.
     '''
-    
+    console = None
     OUTPUT_FILE = 'output-w3af-unittest.txt'
     OUTPUT_HTTP_FILE = 'output-w3af-unittest-http.txt'
     
@@ -54,6 +54,16 @@ class ConsoleTestHelper(unittest.TestCase):
         self.restore_sys()
         self._mock_stdout.clear()
         
+        #
+        # I want to make sure that we don't have *any hidden* exceptions
+        # in our tests.
+        #
+        if self.console is not None:
+            caught_exceptions = self.console._w3af.exception_handler.get_all_exceptions()
+            msg = [e.get_summary() for e in caught_exceptions]
+            self.assertEqual(len(caught_exceptions), 0, msg)
+        
+        # Remove all temp files
         for fname in (self.OUTPUT_FILE, self.OUTPUT_HTTP_FILE):
             if os.path.exists(fname):
                 os.remove(fname)

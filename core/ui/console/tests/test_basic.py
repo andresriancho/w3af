@@ -32,8 +32,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_misc(self):
         commands_to_run = ['misc-settings', 'back', 'exit']
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         expected = ('w3af>>> ','w3af/config:misc-settings>>> ')
         self.assertTrue( self.all_expected_in_output(expected), 
@@ -42,8 +42,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_http(self):
         commands_to_run = ['http-settings', 'back', 'exit']
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         expected = ('w3af>>> ','w3af/config:http-settings>>> ')
         self.assertTrue( self.all_expected_in_output(expected), 
@@ -52,8 +52,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     def test_menu_browse_target(self):
         commands_to_run = ['target', 'back', 'exit']
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         expected = ('w3af>>> ','w3af/config:target>>> ')
         self.assertTrue( self.all_expected_in_output(expected), 
@@ -69,8 +69,8 @@ class TestBasicConsoleUI(ConsoleTestHelper):
                     'result. The information stored in',
                     'previous defacements to the target website.')
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )

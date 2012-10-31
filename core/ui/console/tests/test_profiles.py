@@ -40,8 +40,8 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
                     'Please set the target URL',
                     '| use                            | Use a profile.')
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
@@ -54,8 +54,8 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
         
         expected = ('Unknown profile name: "do_not_exist"',)
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )

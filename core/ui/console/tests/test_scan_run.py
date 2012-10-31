@@ -24,7 +24,6 @@ from core.ui.console.console_ui import ConsoleUI
 from core.ui.console.tests.helper import ConsoleTestHelper
 
 
-@attr('smoke')
 class TestScanRunConsoleUI(ConsoleTestHelper):
     '''
     Run scans from the console UI.
@@ -56,8 +55,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                     'A SQL error was found in the response supplied by ',
                     'New URL found by web_spider plugin: "%s"' % target)
         
-        console = ConsoleUI(commands=commands_to_run, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
+        self.console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected), 
                          self._mock_stdout.messages )
@@ -66,7 +65,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
                                              'Exception'])
         
         self.assertFalse(found_errors)
-        
+    
+    @attr('smoke')
     def test_two_scans(self):
         target_1 = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
         qs_1 = '?name=andres'
@@ -118,8 +118,8 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         
         scan_commands = scan_commands_1 + scan_commands_2
         
-        console = ConsoleUI(commands=scan_commands, do_upd=False)
-        console.sh()
+        self.console = ConsoleUI(commands=scan_commands, do_upd=False)
+        self.console.sh()
         
         self.assertTrue( self.startswith_expected_in_output(expected_1), 
                          self._mock_stdout.messages )
