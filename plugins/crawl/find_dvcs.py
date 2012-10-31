@@ -98,14 +98,14 @@ class find_dvcs(CrawlPlugin):
         @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        for domain_path in fuzzable_request.getURL().getDirectories():
+        domain_path = fuzzable_request.getURL().getDomainPath()
             
-            if domain_path not in self._analyzed_dirs:
-                self._analyzed_dirs.add( domain_path )
-                
-                test_generator = self._url_generator( domain_path )
-                self._tm.threadpool.map_multi_args(self._send_and_check,
-                                                   test_generator)
+        if domain_path not in self._analyzed_dirs:
+            self._analyzed_dirs.add( domain_path )
+            
+            test_generator = self._url_generator( domain_path )
+            self._tm.threadpool.map_multi_args(self._send_and_check,
+                                               test_generator)
     
     def _url_generator(self, domain_path):
         '''
@@ -126,9 +126,8 @@ class find_dvcs(CrawlPlugin):
         @return: A clear list of filenames.
         '''
         resources = set()
-        _filenames = filter(lambda x:x not in self._analyzed_filenames, filenames)
 
-        for line in _filenames:
+        for line in filenames:
             if line.startswith('/'):
                 line = line[1:]
             if line.startswith('./'):
@@ -155,8 +154,10 @@ class find_dvcs(CrawlPlugin):
             parsed_url_set = set()
 
             for filename in self._clean_filenames(filenames):
-                parsed_url_set.add( domain_path.urlJoin( filename ) )
-                self._analyzed_filenames.add(filename)
+                test_url = domain_path.urlJoin(filename)
+                if test_url not in self._analyzed_filenames:
+                    parsed_url_set.add(test_url)
+                    self._analyzed_filenames.add(filename)
 
             self._tm.threadpool.map(self._get_and_parse, parsed_url_set)
 
@@ -165,13 +166,13 @@ class find_dvcs(CrawlPlugin):
                 v.setPluginName(self.getName())
                 v.set_id( http_response.id )
                 v.setName( repo+' found' )
-                v.setSeverity(severity.LOW)
+                v.setSeverity(severity.MEDIUM)
                 v.setURL( http_response.getURL() )
                 msg = ('A %s was found at: "%s"; this could'
                        ' indicate that a %s is accessible. You might'
                        ' be able to download the Web application source code.')
                 v.setDesc( msg % (repo, v.getURL(), repo) )
-                kb.kb.append( self, repo.upper(), v )
+                kb.kb.append( self, repo, v )
                 om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
 
     def _get_and_parse(self, url):
@@ -216,7 +217,7 @@ class find_dvcs(CrawlPlugin):
         elif version == 3: filename_offset = 63
         else: return filenames
 
-        for i in range(0, index_entries):
+        for _ in range(0, index_entries):
             offset += filename_offset - 1
             length, = struct.unpack('>B', body[offset:offset+1])
             if length > (len(body) - offset):
@@ -297,8 +298,6 @@ class find_dvcs(CrawlPlugin):
             elif line == 'dir':
                 filenames.add(filename)
                 offset += 3
-            else:
-                return set()
 
         return filenames
 
@@ -315,10 +314,8 @@ class find_dvcs(CrawlPlugin):
             if '/' in line:
                 slashes = line.split('/')
                 if len(slashes) != 6:
-                    return set()
+                    continue
                 filenames.add(slashes[1])
-            else:
-                return set()
 
         return filenames
 
@@ -404,4 +401,3 @@ class find_dvcs(CrawlPlugin):
             - http://host.tld/CVS/Entries
             - http://host.tld/.cvsignore
         '''
-

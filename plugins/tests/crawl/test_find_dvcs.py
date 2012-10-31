@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import core.data.constants.severity as severity
+
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.find_dvcs import find_dvcs
 
@@ -39,17 +41,31 @@ class TestFindDVCS(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
-        vulns_git = self.kb.get('find_dvcs', 'GIT')
-        vulns_bzr = self.kb.get('find_dvcs', 'BZR')
-        vulns_hg = self.kb.get('find_dvcs', 'HG')
+        vulns_git = self.kb.get('find_dvcs', 'git repository')
+        vulns_bzr = self.kb.get('find_dvcs', 'bzr repository')
+        vulns_hg = self.kb.get('find_dvcs', 'hg repository')
+        vulns_svn = self.kb.get('find_dvcs', 'svn repository')
+        vulns_cvs = self.kb.get('find_dvcs', 'cvs repository')
         
         self.assertEqual( len(vulns_git), 1, vulns_git )
         self.assertEqual( len(vulns_bzr), 1, vulns_bzr )
         self.assertEqual( len(vulns_hg), 1, vulns_hg )
+        self.assertTrue( len(vulns_svn) > 0, vulns_svn )
+        self.assertTrue( len(vulns_cvs) > 0, vulns_cvs )
         
-        self.assertEquals( vulns_git[0].getName(), 'Possible git repository found' )
-        self.assertEquals( vulns_bzr[0].getName(), 'Possible bzr repository found' )
-        self.assertEquals( vulns_hg[0].getName(), 'Possible hg repository found' )
+        for repo in ('git', 'bzr', 'hg', 'svn', 'cvs'):
+            
+            vuln_repo = self.kb.get('find_dvcs', repo + ' repository')[0]
+            
+            expected_url_1 = self.base_url + repo
+            expected_url_2 = self.base_url + '.' + repo
+            url_start = vuln_repo.getURL().url_string.startswith(expected_url_1) or \
+                        vuln_repo.getURL().url_string.startswith(expected_url_2)
+            
+            self.assertTrue(url_start, vuln_repo.getURL().url_string)
+            
+            self.assertEqual(vuln_repo.getSeverity(), severity.MEDIUM)
+            self.assertEqual(vuln_repo.getName(), repo + ' repository found' )
 
 
     def test_ignore_file_blank(self):
@@ -68,17 +84,6 @@ class TestFindDVCS(PluginTest):
         files = fdvcs.ignore_file(content)
         
         self.assertEqual(files, set(['foo.txt', 'spam.eggs']))
-    
-    def test_svn_entries(self):
-        '''
-        Is the svn_entries function returning garbage? In my workstation the
-        function returns '12' which is the content in the file; but no file
-        named '12' really exists, so it makes no sense for the parsing function
-        to return it.
-        '''
-        fdvcs = find_dvcs()
-        svn_entries = file('.svn/entries').read()
-        files = fdvcs.ignore_file(svn_entries)
-        self.assertEqual(files, set())
+
     
     
