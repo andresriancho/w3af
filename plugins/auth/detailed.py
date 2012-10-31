@@ -153,13 +153,6 @@ class detailed(AuthPlugin):
                 msg = "All parameters are required and can't be empty."
                 raise w3afException( msg )
 
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be runned 
-        before the current one.
-        '''
-        return []
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
