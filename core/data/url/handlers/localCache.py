@@ -31,11 +31,11 @@ import core.data.url.HTTPResponse as HTTPResponse
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.number_generator import (consecutive_number_generator
-                                            as core_num_gen)
+                                                    as core_num_gen)
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
-from core.data.request.factory import create_fuzzable_request
 from core.data.dc.headers import Headers
+from core.data.request.factory import create_fuzzable_request
 
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
