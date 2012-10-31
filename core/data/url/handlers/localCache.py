@@ -103,7 +103,7 @@ class CacheHandler(urllib2.BaseHandler):
         request.id = response.id = core_num_gen.inc()
         try:
             CacheClass.store_in_cache(request, response)
-        except w3afException,  w3:
+        except w3afException, w3:
             om.out.debug(str(w3))
         
         return response
