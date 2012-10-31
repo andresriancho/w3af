@@ -18,13 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 import sys
 import unittest
 
+from mock import MagicMock
 
-def do_nothing(self, *args, **kwds):
-    pass
-    
+
 class mock_stdout(object):
     def __init__(self):
         self.messages = []
@@ -32,7 +32,7 @@ class mock_stdout(object):
     def write(self, msg):
         self.messages.extend( msg.split('\n\r') )
     
-    flush = do_nothing
+    flush = MagicMock()
     
     def clear(self):
         self.messages = []
@@ -42,12 +42,21 @@ class ConsoleTestHelper(unittest.TestCase):
     '''
     Helper class to build console UI tests.
     '''
+    
+    OUTPUT_FILE = 'output-w3af-unittest.txt'
+    OUTPUT_HTTP_FILE = 'output-w3af-unittest-http.txt'
+    
     def setUp(self):
         self.mock_sys()
         
     def tearDown(self):
+        #sys.exit.assert_called_once_with(0)        
         self.restore_sys()
         self._mock_stdout.clear()
+        
+        for fname in (self.OUTPUT_FILE, self.OUTPUT_HTTP_FILE):
+            if os.path.exists(fname):
+                os.remove(fname)
 
     def mock_sys(self):
         # backup
@@ -57,7 +66,7 @@ class ConsoleTestHelper(unittest.TestCase):
         # assign new
         self._mock_stdout = mock_stdout()
         sys.stdout = self._mock_stdout
-        sys.exit = do_nothing
+        sys.exit = MagicMock()
 
     def restore_sys(self):
         sys.stdout = self.old_stdout
@@ -79,4 +88,12 @@ class ConsoleTestHelper(unittest.TestCase):
                 return False
         else:
             return True
+    
+    def error_in_output(self, errors):
+        for line in self._mock_stdout.messages:
+            for error_str in errors:
+                if error_str in line:
+                    return True
+        
+        return False
         
