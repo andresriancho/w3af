@@ -120,10 +120,12 @@ import sys
 import time
 
 import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException, \
-    w3afMustStopByKnownReasonExc
 import core.data.kb.config as cf
+
 from core.data.constants.response_codes import NO_CONTENT
+from core.controllers.w3afException import (w3afException,
+                                            w3afMustStopByKnownReasonExc)
+
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
 DEBUG = False
@@ -340,7 +342,7 @@ class HTTPResponse(httplib.HTTPResponse):
         self._multiread = data
 
 
-class ConnectionManager:
+class ConnectionManager(object):
     '''
     The connection manager must be able to:
         * keep track of all existing HTTPConnections
@@ -472,10 +474,12 @@ class ConnectionManager:
                     retry_count -= 1
                     time.sleep(0.3)
 
+            msg = 'keepalive: been waiting too long for a pool connection.' \
+                  ' I\'m giving up. Seems like the pool is full.'
+            
             if DEBUG:
-                msg = 'keepalive: been waiting too long for a pool connection.' \
-                      ' I\'m giving up. Seems like the pool is full.'
                 om.out.debug(msg)
+            
             raise w3afException(msg)
 
     def resize_pool(self, new_size):
@@ -512,7 +516,7 @@ class ConnectionManager:
 connMgr = ConnectionManager()
 
 
-class KeepAliveHandler:
+class KeepAliveHandler(object):
 
     _cm = connMgr
 
@@ -639,7 +643,7 @@ class KeepAliveHandler:
             self._cm.remove_connection(conn, host)
 
         if DEBUG:
-            om.out.debug("STATUS: %s, %s", resp.status, resp.reason)
+            om.out.debug("STATUS: %s, %s" % (resp.status, resp.reason))
         resp._handler = self
         resp._host = host
         resp._url = req.get_full_url()
@@ -674,8 +678,8 @@ class KeepAliveHandler:
             # is that it's now possible this call will raise a DIFFERENT
             # exception
             if DEBUG:
-                om.out.error("unexpected exception - closing connection to %s" \
-                             " (%d)", host, id(conn))
+                om.out.error("unexpected exception - closing connection to %s"
+                             " (%d)" % (host, id(conn)))
             self._cm.remove_connection(conn, host)
             conn.close()
             raise
@@ -686,12 +690,12 @@ class KeepAliveHandler:
             # the socket has been closed by the server since we
             # last used the connection.
             if DEBUG:
-                om.out.debug("failed to re-use connection to %s (%d)", host,
-                             id(conn))
+                om.out.debug("failed to re-use connection to %s (%d)" % (host,
+                             id(conn)))
             r = None
         else:
             if DEBUG:
-                om.out.debug("re-using connection to %s (%d)", host, id(conn))
+                om.out.debug("re-using connection to %s (%d)" % (host, id(conn)))
             r._multiread = None
 
         return r
