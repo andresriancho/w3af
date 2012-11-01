@@ -62,45 +62,52 @@ class user_defined_regex(GrepPlugin):
         if self._all_in_one is None:
             return
         
-        if response.is_text_or_html():
-            html_string = response.getBody()
-            #Try to find one of them
-            if self._all_in_one.search(html_string):
-                #One of them is in there, now we need to find out which one
-                for index, regex_tuple in enumerate(self._regexlist_compiled):
-                    regex, info_object = regex_tuple
-                    match_object = regex.search( html_string )
-                    if match_object:
-                        with self._plugin_lock:
-                            #Don't change the next line to "if info_object:",
-                            #because the info_object is an empty dict {}
-                            #which evaluates to false
-                            #but an info object is not the same as None
-                            if not info_object is None:
-                                ids = info_object.getId()
-                                ids.append(response.id)
-                                info_object.set_id(ids)
-                            else:
-                                info_object = info.info()
-                                info_object.setPluginName(self.getName())
-                                
-                                msg = 'User defined regular expression "%s" matched a response!' % regex.pattern
-                                str_match = match_object.group(0)
-                                if len(str_match) > 20:
-                                    str_match = str_match[:20] + '...'
-                                msg += 'Matched string is: "%s".' % str_match
-                                
-                                om.out.information( msg )
-                                info_object.setURL( response.getURL() )
-                                msg = 'The response matches the user defined regular expression "'+str(regex.pattern)+'":\n'
-                                msg += str(match_object.group(0))
-                                msg += '\n'
-                                info_object.setDesc( msg )
-                                info_object.set_id( response.id )
-                                info_object.setName( 'User defined regex - ' + str(regex.pattern) )
-                                kb.kb.append( self , 'user_defined_regex' , info_object )
-                            #set the info_object
-                            self._regexlist_compiled[index] = (regex, info_object)
+        if not response.is_text_or_html():
+            return
+
+        # TODO: Verify this this is really a performance improvement
+        html_string = response.getBody()
+        if not self._all_in_one.search(html_string):
+            return
+        
+        #One of them is in there, now we need to find out which one
+        for index, regex_tuple in enumerate(self._regexlist_compiled):
+            
+            regex, info_inst = regex_tuple
+            match_object = regex.search( html_string )
+            
+            if match_object:
+                with self._plugin_lock:
+                    #Don't change the next line to "if info_inst:",
+                    #because the info_inst is an empty dict {}
+                    #which evaluates to false
+                    #but an info object is not the same as None
+                    if not info_inst is None:
+                        ids = info_inst.getId()
+                        ids.append(response.id)
+                        info_inst.set_id(ids)
+                    else:
+                        info_inst = info.info()
+                        info_inst.setPluginName(self.getName())
+                        
+                        msg = 'User defined regular expression "%s" matched a' \
+                              ' response. Matched string is: "%s".' 
+                        
+                        str_match = match_object.group(0)
+                        if len(str_match) > 20:
+                            str_match = str_match[:20] + '...'
+                        
+                        om.out.information(msg % (regex.pattern, str_match))
+                        info_inst.setDesc(msg % (regex.pattern, str_match))
+                        
+                        info_inst.setURL( response.getURL() )
+                        info_inst.set_id( response.id )
+                        info_inst.setName( 'User defined regex - %s' % regex.pattern )
+                        
+                        kb.kb.append( self , 'user_defined_regex' , info_inst )
+                        
+                    # Save the info_inst
+                    self._regexlist_compiled[index] = (regex, info_inst)
                   
     
     def set_options( self, options_list ):
@@ -117,22 +124,23 @@ class user_defined_regex(GrepPlugin):
         regex_file_path = options_list['regex_file_path'].getValue()
         if regex_file_path and not regex_file_path == 'None':
             self._regex_file_path = regex_file_path
-            current_regex = ''
+            
             try:
-                f = file( self._regex_file_path)
-            except:
-                raise w3afException('File not found')
+                f = file(self._regex_file_path)
+            except Exception, e:
+                msg = 'Unable to open file "%s", error: "%s".'
+                raise w3afException(msg % (self._regex_file_path, e))
             else:
                 for regex in f:
                     current_regex = regex.strip()
                     try:
-                        self._regexlist_compiled.append((re.compile(current_regex, 
-                                                                   re.IGNORECASE | re.DOTALL), None))
-                        tmp_not_compiled_all.append(current_regex)
+                        re_inst = re.compile(current_regex, re.I | re.DOTALL)
                     except:
-                        f.close()
-                        raise w3afException('Invalid regex in regex file: '+current_regex)
-                f.close()
+                        msg = 'Invalid regex in input file: "%s"'
+                        raise w3afException(msg % current_regex)
+                    else:
+                        self._regexlist_compiled.append((re_inst, None))
+                        tmp_not_compiled_all.append(current_regex)
 
         #
         #   Add the single regex
@@ -140,18 +148,21 @@ class user_defined_regex(GrepPlugin):
         self._single_regex = options_list['single_regex'].getValue()
         if self._single_regex and not self._single_regex == 'None':
             try:
-                self._regexlist_compiled.append((re.compile(self._single_regex, 
-                                                           re.IGNORECASE | re.DOTALL), None))
-                tmp_not_compiled_all.append(self._single_regex)
+                re_inst = re.compile(self._single_regex, re.I | re.DOTALL)
             except:
                 raise w3afException('Invalid regex in the single_regex field!')
+            else:
+                self._regexlist_compiled.append((re_inst, None))
+                tmp_not_compiled_all.append(self._single_regex)
+
         #
         #   Compile all in one regex
         #
         if tmp_not_compiled_all:
             # get a string like (regexA)|(regexB)|(regexC)
             all_in_one_uncompiled = '('+')|('.join(tmp_not_compiled_all)+')'
-            self._all_in_one = re.compile(all_in_one_uncompiled, re.IGNORECASE | re.DOTALL)
+            self._all_in_one = re.compile(all_in_one_uncompiled,
+                                          re.IGNORECASE | re.DOTALL)
     
     def get_options( self ):
         '''

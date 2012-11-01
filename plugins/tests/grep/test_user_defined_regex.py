@@ -50,7 +50,8 @@ class test_user_defined_regex(unittest.TestCase):
         self.assertEquals( len(kb.kb.get('user_defined_regex', 'user_defined_regex')) , 1 )
         
         info_obj = kb.kb.get('user_defined_regex', 'user_defined_regex')[0]
-        self.assertTrue( info_obj.getDesc().startswith('The response matches the user defined regular expression') )
+        self.assertTrue( info_obj.getDesc().startswith('User defined regular expression "') )
+        self.assertIn( 'data.txt', info_obj.getDesc() )
         
     def tearDown(self):
         self.plugin.end()        
