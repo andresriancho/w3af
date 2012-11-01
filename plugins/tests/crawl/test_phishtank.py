@@ -41,7 +41,6 @@ class TestPhishtank(PluginTest):
         }
     
     def test_phishtank_no_match(self):
-        return
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])
         
@@ -64,7 +63,6 @@ class TestPhishtank(PluginTest):
                         vuln.getURL())
     
     def test_xml_parsing_1(self):
-        return
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
         
@@ -76,7 +74,6 @@ class TestPhishtank(PluginTest):
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
 
     def test_xml_parsing_2(self):
-        return
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
         
@@ -88,7 +85,6 @@ class TestPhishtank(PluginTest):
         self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
         
     def test_too_old_xml(self):
-        return
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
 
