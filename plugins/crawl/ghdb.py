@@ -20,21 +20,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os.path
+import random
 import xml.dom.minidom
+
+import core.controllers.outputManager as om
+import core.data.constants.severity as severity
+import core.data.kb.knowledgeBase as kb
+import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afException, w3afRunOnce
+
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.data.search_engines.google import \
-    google as google
-import core.controllers.outputManager as om
-import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
-import core.data.kb.vuln as vuln
+from core.data.search_engines.google import google as google
 
 
 class ghdb(CrawlPlugin):
@@ -57,14 +59,14 @@ class ghdb(CrawlPlugin):
     def crawl(self, fuzzable_request ):
         '''
         @param fuzzable_request: A fuzzable_request instance that contains
-            (among other things) the URL to test.
+                                (among other things) the URL to test.
         '''
         # Get the domain and set some parameters
         domain = fuzzable_request.getURL().getDomain()
         if is_private_site(domain):
-            msg = 'There is no point in searching google for "site:'+ domain
-            msg += '" . Google doesn\'t index private pages.'
-            raise w3afException(msg)
+            msg = 'There is no point in searching google for "site:%s".' \
+                  ' Google doesn\'t index private pages.'
+            om.out.information(msg % domain)
         else:
             self._do_clasic_GHDB(domain)
         
@@ -72,28 +74,28 @@ class ghdb(CrawlPlugin):
         '''
         In classic GHDB, i search google for every term in the ghdb.
         '''
-        import random
-        google_hack_list = self._read_ghdb() 
-        # dont get discovered by google [at least try...]
-        random.shuffle( google_hack_list )
+        self._google_se = google(self._uri_opener)
         
-        for gh in google_hack_list:
+        google_hack_list = self._read_ghdb() 
+        # Don't get discovered by google [at least try...] and avoid dups
+        random.shuffle( google_hack_list )
+        google_hack_set = set(google_hack_list)
+        
+        for gh in google_hack_set:
+            search_term = 'site:%s %s' % (domain, gh.search)
             try:
-                self._classic_worker(gh, 'site:'+ domain + ' ' + gh.search)
+                self._classic_worker(gh, search_term)
             except w3afException, w3:
                 # Google is saying: "no more automated tests".
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break
-        
-        self._join()
     
-    def _classic_worker(self, gh, search):
-        
-        # Init some variables
-        google_se = google(self._uri_opener)
-        
-        google_list = google_se.getNResults( search, 9 )
-        
+    def _classic_worker(self, gh, search_term):
+        '''
+        Perform the searches and store the results in the kb.
+        '''
+        google_list = self._google_se.getNResults(search_term, 9)
+
         for result in google_list:
             # I found a vuln in the site!
             response = self._uri_opener.GET(result.URL, cache=True )
@@ -104,64 +106,59 @@ class ghdb(CrawlPlugin):
                 v.setMethod( 'GET' )
                 v.setName( 'Google hack database vulnerability' )
                 v.setSeverity(severity.MEDIUM)
-                msg = 'ghdb plugin found a vulnerability at URL: "' + result.URL
-                msg += '" . Vulnerability description: ' + gh.desc
-                v.setDesc( msg  )
+                msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
+                      ' According to GHDB the vulnerability description is "%s".'
+                v.setDesc(msg % (response.getURL(), gh.desc))
                 v.set_id( response.id )
                 kb.kb.append( self, 'vuln', v )
-                om.out.vulnerability( v.getDesc(), severity=severity.MEDIUM )
+                om.out.vulnerability( v.getDesc(), severity=severity.LOW )
                         
                 # Create the fuzzable requests
                 for fr in self._create_fuzzable_requests( response ):
                     self.output_queue.put(fr)
     
-    def _read_ghdb( self ):
+    def _read_ghdb(self):
         '''
-        Reads the ghdb.xml file and returns a list of google_hack objects.
-        
-        '''
-        class google_hack:
-            def __init__( self, search, desc ):
-                self.search = search
-                self.desc = desc
-        
-        fd = None
+        @return: Reads the ghdb.xml file and returns a list of GoogleHack
+                 objects.
+        '''        
         try:
-            fd = file( self._ghdb_file )
-        except:
-            raise w3afException('Failed to open ghdb file: ' + self._ghdb_file )
+            ghdb_fd = file( self._ghdb_file )
+        except Exception, e:
+            msg = 'Failed to open ghdb file: "%s", error: "%s".'
+            raise w3afException( msg % (self._ghdb_file, e))
         
-        dom = None
         try:
-            dom = xml.dom.minidom.parseString( fd.read() )
-        except:
-            raise w3afException('ghdb file is not a valid XML file.' )
+            dom = xml.dom.minidom.parseString( ghdb_fd.read() )
+        except Exception, e:
+            msg = 'Failed to parse XML file: "%s", error: "%s".'
+            raise w3afException( msg % (self._ghdb_file, e))
             
-        signatures = dom.getElementsByTagName("signature")
         res = []
         
-        
-        for signature in signatures:
+        for signature in dom.getElementsByTagName("signature"):
             if len(signature.childNodes) != 6:
-                msg = 'GHDB is corrupt. The corrupt signature is: ' + signature.toxml()
-                raise w3afException( msg )
-            else:
-                try:
-                    query_string = signature.childNodes[4].childNodes[0].data
-                    
-                except Exception, e:
-                    msg = 'GHDB has a corrupt signature, ( it doesn\'t have a query string ).'
-                    msg += ' Error while parsing: "' + signature.toxml() + '". Exception: "'
-                    msg += str(e) + '".'
-                    om.out.debug( msg )
-                else:
-                    try:
-                        desc = signature.childNodes[5].childNodes[0].data
-                    except:
-                        desc = 'Blank description.'
-                    else:
-                        gh = google_hack( query_string, desc )
-                        res.append( gh )
+                msg = 'There is a corrupt signature in the GHDB. The error was'\
+                      ' found in the following XML code: "%s".' % signature.toxml()
+                om.out.debug(msg)
+                continue
+            
+            try:
+                query_string = signature.childNodes[4].childNodes[0].data
+                
+            except Exception, e:
+                msg = 'There is a corrupt signature in the GHDB. No query '\
+                      ' string was found in the following XML code: "%s".'
+                om.out.debug(msg % signature.toxml())
+                continue
+                
+            try:
+                desc = signature.childNodes[5].childNodes[0].data
+            except:
+                desc = 'No description provided by GHDB.'
+
+            gh = GoogleHack(query_string, desc)
+            res.append( gh )
           
         return res
         
@@ -169,30 +166,24 @@ class ghdb(CrawlPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''        
-        d2 = 'Fetch the first "resultLimit" results from the Google search'
-        o2 = option('resultLimit', self._result_limit, d2, 'integer')
-
         ol = OptionList()
-        ol.add(o2)
+        
+        d = 'Fetch the first "result_limit" results from the Google search'
+        o = option('result_limit', self._result_limit, d, 'integer')
+        ol.add(o)
+        
         return ol
 
     def set_options( self, options_list ):
         '''
-        This method sets all the options that are configured using the user interface 
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
         
-        @parameter OptionList: A dictionary with the options for the plugin.
+        @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].getValue()
+        self._result_limit = options_list['result_limit'].getValue()
             
-    def get_plugin_deps( self ):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-    
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -201,9 +192,17 @@ class ghdb(CrawlPlugin):
         This plugin finds possible vulnerabilities using google.
         
         One configurable parameter exist:
-            - resultLimit
+            - result_limit
         
         Using the google hack database released by Offensive Security, this 
-	plugin searches google for possible vulnerabilities in the domain
-	being tested.
+	    plugin searches google for possible vulnerabilities in the domain
+	    being tested.
         '''
+
+class GoogleHack(object):
+    def __init__(self, search, desc):
+        self.search = search
+        self.desc = desc
+    
+    def __eq__(self, other):
+        return self.search == other.search
