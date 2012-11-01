@@ -24,15 +24,12 @@ import socket
 import tempfile
 import unittest
 
-from nose.plugins.skip import SkipTest
-from nose.plugins.attrib import attr
-
 import core.data.kb.config as cf
 
 from core.controllers.payload_transfer.clientless_reverse_http import ClientlessReverseHTTP
 from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.w3afException import w3afException
+from plugins.tests.helper import onlyroot
 
 
 class TestClientlessReverseHTTP(unittest.TestCase):
@@ -74,7 +71,7 @@ class TestClientlessReverseHTTP(unittest.TestCase):
 
         self.assertTrue( upload_success )
     
-    @attr('root')
+    @onlyroot
     def test_upload_file_root(self):
         exec_method = commands.getoutput
         os = 'linux'
@@ -83,23 +80,20 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         cf.cf.save( 'interface', 'lo' )
         cf.cf.save( 'localAddress', '127.0.0.1' )
         es = extrusionScanner( exec_method )
-        try:
-            inbound_port = es.get_inbound_port()
-        except w3afException:
-            raise SkipTest('You need to be root to run test_upload_file_root().')
-        else:
-            echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
-            
-            self.assertTrue( echo_linux.can_transfer() )
-            
-            file_len = 8195 
-            file_content = 'A' * file_len
-            echo_linux.estimate_transfer_time(file_len)
-            
-            temp_file_inst = tempfile.NamedTemporaryFile()
-            temp_fname = temp_file_inst.name
-            upload_success = echo_linux.transfer( file_content, temp_fname)
-    
-            self.assertTrue( upload_success )
-    
+        
+        inbound_port = es.get_inbound_port()
+        echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
+        
+        self.assertTrue( echo_linux.can_transfer() )
+        
+        file_len = 8195 
+        file_content = 'A' * file_len
+        echo_linux.estimate_transfer_time(file_len)
+        
+        temp_file_inst = tempfile.NamedTemporaryFile()
+        temp_fname = temp_file_inst.name
+        upload_success = echo_linux.transfer( file_content, temp_fname)
+
+        self.assertTrue( upload_success )
+
         

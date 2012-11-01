@@ -18,17 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-from nose.plugins.attrib import attr
-
 from core.controllers.misc.get_local_ip import get_local_ip
 
 from plugins.attack.payloads.tests.payload_test_helper_exec import PayloadTestHelperExec
 from plugins.attack.payloads.payload_handler import exec_payload
+from plugins.tests.helper import onlyroot
 
 
-@attr('root')
 class test_w3af_agent(PayloadTestHelperExec):
     
+    @onlyroot
     def test_w3af_agent(self):
         result = exec_payload(self.shell, 'w3af_agent', args=(get_local_ip(),),
                               use_api=True)

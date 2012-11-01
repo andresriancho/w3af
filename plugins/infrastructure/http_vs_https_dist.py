@@ -31,7 +31,7 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.data.options.option import option
 from core.data.options.option_list import OptionList
-from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.w3afException import w3afRunOnce
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
                  " It seems that the user running the w3af process has not"\
@@ -58,7 +58,8 @@ class http_vs_https_dist(InfrastructurePlugin):
         Intended to be executed once during the infrastructure process.
         '''
         if not self._has_permission():
-            raise w3afException(PERM_ERROR_MSG) 
+            om.out.error(PERM_ERROR_MSG)
+            return
         
         def set_info(name, desc):
             inf = info.info()

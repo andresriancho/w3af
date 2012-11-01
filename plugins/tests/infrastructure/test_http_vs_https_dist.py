@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 import unittest
 
-from nose.plugins.attrib import attr
 from mock import MagicMock, Mock, create_autospec
+from mock import patch, call
 
 import plugins.infrastructure.http_vs_https_dist as hvshsdist
 import core.controllers.outputManager as om
@@ -31,7 +31,8 @@ import core.data.kb.knowledgeBase as kb
 from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.w3afException import w3afRunOnce
+from plugins.tests.helper import onlyroot
 
 
 class test_http_vs_https_dist(unittest.TestCase):
@@ -128,8 +129,13 @@ class test_http_vs_https_dist(unittest.TestCase):
     
     def test_not_root_user(self):
         plugininst = hvshsdist.http_vs_https_dist()
-        plugininst._has_permission = MagicMock(return_value=False)
-        self.assertRaises(w3afException, plugininst.discover, None)
+        
+        plugininst._has_permission = MagicMock(return_value=False)        
+        
+        with patch('plugins.infrastructure.http_vs_https_dist.om.out') as om_mock:
+            plugininst.discover(None)
+            ecall = call.error(hvshsdist.PERM_ERROR_MSG)
+            self.assertIn(ecall, om_mock.mock_calls)
         
     def _mock_traceroute(self, trace_resp_1, trace_resp_2):
         '''
@@ -147,7 +153,6 @@ class test_http_vs_https_dist(unittest.TestCase):
                                                side_effect=[resp_tuple_1, resp_tuple_2])
 
 
-@attr('root')
 class TestHTTPvsHTTPS(PluginTest):
     
     base_url = 'http://moth/'
@@ -159,13 +164,14 @@ class TestHTTPvsHTTPS(PluginTest):
                 }
         }
     
+    @onlyroot
     def test_trace(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         
         infos = self.kb.get('http_vs_https_dist', 'http_vs_https_dist')
         
-        self.assertEqual( len(infos), 1, 'You need to be root in order to pass this test.')
+        self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
         self.assertEqual( 'HTTP traceroute', info.getName() )

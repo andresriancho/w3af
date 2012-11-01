@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import unittest
 
+from nose.plugins.skip import SkipTest
+from nose.plugins.attrib import attr
+
 import core.data.kb.knowledgeBase as kb
 
 from core.controllers.w3afCore import w3afCore
@@ -134,3 +137,20 @@ class PluginConfig(object):
     @property
     def options(self):
         return self._options
+
+@attr('root')
+def onlyroot(meth):
+    '''
+    Function to decorate tests that should be called as root.
+    
+    Raises a nose SkipTest exception if the user doesn't have root permissions.
+    '''
+    def test_inner_onlyroot(self, *args, **kwds):
+        '''Note that this method needs to start with test_ in order for nose
+        to run it!'''
+        if os.geteuid() == 0 or os.getuid() == 0:
+            return meth(self, *args, **kwds)
+        else:
+            raise SkipTest('This test requires root privileges.')
+    test_inner_onlyroot.root = True
+    return test_inner_onlyroot

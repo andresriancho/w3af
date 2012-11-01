@@ -78,12 +78,13 @@ class afd(InfrastructurePlugin):
         original_url = URL(original_url_str)
         
         try:
-            original_response_body = self._uri_opener.GET( original_url , cache=True ).getBody()
-        except Exception:
-            msg = 'Active filter detection plugin failed to receive a '
-            msg += 'response for the first request. Can not perform analysis.'
-            raise w3afException( msg )
+            http_resp = self._uri_opener.GET(original_url, cache=True)
+        except w3afException:
+            msg = 'Active filter detection plugin failed to receive a'\
+                  ' response for the first request. Can not perform analysis.'
+            om.out.error(msg)
         else:
+            original_response_body = http_resp.getBody()
             original_response_body = original_response_body.replace( rnd_param, '' )
             original_response_body = original_response_body.replace( rnd_value, '' )
             
@@ -111,7 +112,7 @@ class afd(InfrastructurePlugin):
         '''
         try:
             resp_body = self._uri_opener.GET(offending_URL, cache=False).getBody()
-        except Exception, e:
+        except w3afException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
         else:
