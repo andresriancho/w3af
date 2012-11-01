@@ -76,6 +76,7 @@ class sqli(AuditPlugin):
         (r'\[Microsoft\]\[ODBC Microsoft Access Driver\]', dbms.ACCESS),
         # ORACLE
         (r'(PLS|ORA)-[0-9][0-9][0-9][0-9]', dbms.ORACLE),
+        (r'Microsoft OLE DB Provider for Oracle', dbms.ORACLE),
         # POSTGRE
         (r'PostgreSQL query failed:', dbms.POSTGRE),
         (r'supplied argument is not a valid PostgreSQL result', dbms.POSTGRE),
@@ -90,6 +91,8 @@ class sqli(AuditPlugin):
         (r'You have an error in your SQL syntax;', dbms.MYSQL),
         (r'You have an error in your SQL syntax near', dbms.MYSQL),
         (r'MySQL server version for the right syntax to use', dbms.MYSQL),
+        (r'Division by zero in', dbms.MYSQL),
+        (r'not a valid MySQL result', dbms.MYSQL),
         (r'\[MySQL\]\[ODBC', dbms.MYSQL),
         (r"Column count doesn't match", dbms.MYSQL),
         (r"the used select statements have different number of columns",
