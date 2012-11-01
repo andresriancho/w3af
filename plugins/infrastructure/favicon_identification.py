@@ -24,7 +24,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import re
 import hashlib
 import os.path
 
@@ -35,7 +34,7 @@ import core.data.kb.info as info
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.w3afException import w3afRunOnce
 
 
 class favicon_identification(InfrastructurePlugin):
@@ -96,12 +95,13 @@ class favicon_identification(InfrastructurePlugin):
                 i.setName('Favicon identification failed')
                 i.setURL( favicon_url )
                 i.set_id( response.id )
-                desc = 'Favicon identification failed. If the remote site is using'
-                desc += ' framework that is being exposed by its favicon, please send'
-                desc += ' an email to w3af-develop@lists.sourceforge.net including'
-                desc += ' this md5 hash "'+remote_fav_md5+'"'
-                desc += ' and what server or Web application it represents. New fingerprints'
-                desc += ' make this plugin more powerful and accurate.'
+                desc = 'Favicon identification failed. If the remote site is'  \
+                       ' using framework that is being exposed by its favicon,'\
+                       ' please send an email to w3af-develop@lists.sourceforge.net'\
+                       ' including this md5 hash "'+remote_fav_md5+'" and the' \
+                       ' name of the server or Web application it represents.' \
+                       ' New fingerprints make this plugin more powerful and ' \
+                       ' accurate.'
                 i.setDesc( desc )
                 kb.kb.append( self, 'info', i )
                 om.out.information( i.getDesc() )
@@ -111,7 +111,8 @@ class favicon_identification(InfrastructurePlugin):
             # read MD5 database.
             db_file = open(self._db_file, "r")
         except Exception, e:
-            raise w3afException('Failed to open the MD5 database. Exception: "' + str(e) + '".')
+            msg = 'Failed to open the MD5 database at %s. Exception: "%s".'
+            om.out.error(msg % (self._db_file, e))
         else:
             for line in db_file:
                 line = line.strip()
