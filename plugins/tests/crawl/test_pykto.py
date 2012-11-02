@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from plugins.tests.helper import PluginTest, PluginConfig
+from core.data.misc.file_utils import days_since_file_update
 
 
 class TestPykto(PluginTest):
@@ -53,3 +53,17 @@ class TestPykto(PluginTest):
                 break
         else:
             self.assertTrue( False )
+
+    def test_updated_scan_db(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+
+        scan_db_file = pykto_inst._db_file
+        is_older = days_since_file_update(scan_db_file, 30)
+        
+        msg = 'The scan database file is too old. The following commands need'\
+              ' to be run in order to update it:\n'\
+              'cd plugins/crawl/pykto/\n'\
+              'python update_scan_db.py\n'\
+              'svn commit -m "Updating scan_database.db file." scan_database.db\n'\
+              'cd -'
+        self.assertFalse(is_older, msg)
