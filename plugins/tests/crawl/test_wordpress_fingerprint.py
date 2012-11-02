@@ -85,11 +85,7 @@ class Testwordpress_fingerprint(PluginTest):
         self.assertTrue(False)
     
     def test_updated_release_db(self):
-        '''
-        This about some way to keep the release.db updated. Maybe it could be
-        done by generating it in a unittest, so that it gets updated every time
-        I run it?
-        '''
+
         wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                           'wordpress_fingerprint')
 
