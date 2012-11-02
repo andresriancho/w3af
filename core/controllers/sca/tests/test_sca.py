@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 import unittest
 
 from nose.plugins.skip import SkipTest
@@ -29,6 +30,12 @@ class TestPHPSCA(unittest.TestCase):
     '''
     Test unit for PHP Static Code Analyzer
     '''
+    def tearDown(self):
+        for temp_file in ('parser.out', 'parsetab.py', 'parsetab.pyc'):
+            try:
+                os.remove(temp_file)
+            except:
+                pass
     
     def test_vars(self):
         code = '''
