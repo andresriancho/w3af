@@ -46,64 +46,95 @@ class wordpress_enumerate_users(CrawlPlugin):
         '''
         Find users in a WordPress installation
         @parameter fuzzable_request: A fuzzable_request instance that contains
-        (among other things) the URL to test.
+                                    (among other things) the URL to test.
         '''
-        uid = 1           # First user ID, will be incremented until 404
-        redirect = False  # Store if redirection was success
-        title_cache = ""  # Save the last title for non-redirection scenario
-        gap_tolerance = 10 # Tolerance for user ID gaps in the sequence (this gaps are present when users are deleted and new users created)
-        gap = 0
-
         if not self._exec :
-            # Remove the plugin from the crawl plugins to be run.
             raise w3afRunOnce()
         else:
-            # Check if the server is running WordPress
+            # Check if there is a wordpress installation in this directory
             domain_path = fuzzable_request.getURL().getDomainPath()
             wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
-            response = self._uri_opener.GET( wp_unique_url, cache=True )
+            response = self._uri_opener.GET(wp_unique_url, cache=True)
 
             # If wp_unique_url is not 404, wordpress = true
             if not is_404( response ):
-                # Loop into authors and increment user ID
-                while (gap <= gap_tolerance):
-                    domain_path.querystring = {u'author': u'%s' % uid}
-                    wp_author_url = domain_path
-                    response_author = self._uri_opener.GET(wp_author_url, cache=True)
-                    if not is_404( response_author ):
-                        path = response_author.getRedirURI().getPath()
-                        if 'author' in path:
-                            # A redirect to /author/<username> was made, username probably found
-                            username = path.split("/")[-2]
-                            redirect = True
-                            self._kb_info_user(self.get_name(), wp_author_url, response_author.id, username)
-                            gap = 0
-                        elif response_author.getURI() == wp_author_url and redirect is False:
-                            # No redirect was made, try to fetch username from
-                            # title of the author's archive page
-                            title_search = re.search('<title>(.*)</title>', response_author.getBody(), re.IGNORECASE)
-                            if title_search:
-                                title =  title_search.group(1)
-                                # If the title is the same than the last user
-                                # ID requested, there are no new users
-                                if title == title_cache:
-                                    gap += 1
-                                else:
-                                    # The title changed, username probably found
-                                    title_cache = title
-                                    username = title.split()[0]
-                                    self._kb_info_user(self.get_name(), wp_author_url, response_author.id, username)
-                                    gap = 0
-
-                        gap += 1
-                    else:
-                        # 404 error
-                        gap += 1
-
-                    uid = uid + 1
-
+                self._enum_users(fuzzable_request)
+    
+    def _enum_users(self, fuzzable_request):
         # Only run once
         self._exec = False
+        
+        # First user ID, will be incremented until 404
+        uid = 0
+        # Save the last title for non-redirection scenario
+        self._title_cache = ''
+        # Tolerance for user ID gaps in the sequence (this gaps are present
+        # when users are deleted and new users created)
+        gap_tolerance = 10
+        gap = 0
+        
+        domain_path = fuzzable_request.getURL().getDomainPath()
+        
+        # Loop into authors and increment user ID
+        while (gap <= gap_tolerance):
+            
+            uid += 1
+            gap += 1
+            
+            domain_path.querystring = {u'author': u'%s' % uid}
+            wp_author_url = domain_path
+            response_author = self._uri_opener.GET(wp_author_url, cache=True)
+            
+            if is_404( response_author ):
+                continue
+                
+            if response_author.was_redirected():
+                extracted_from_redir = self._extract_from_redir(response_author)
+                
+                if extracted_from_redir:
+                    gap = 0
+                    continue
+                
+            extracted_from_body = self._extract_from_body(response_author)
+            if extracted_from_body:
+                gap = 0
+                continue
+            
+    def _extract_from_body(self, response_author):
+        '''No redirect was made, try to fetch username from
+        title of the author's archive page'''
+        # Example strings:
+        #    <title>admin | moth</title>
+        #    <title>admin | Bonsai - Information Security Blog</title>
+        title_search = re.search('<title>(.*?)</title>', 
+                                 response_author.getBody(), re.I)
+        if title_search:
+            title =  title_search.group(1)
+            # If the title is the same than the last user
+            # ID requested, there are no new users
+            if title == self._title_cache:
+                return False
+            else:
+                # The title changed, username probably found
+                self._title_cache = title
+                username = title.split(' ')[0]
+                self._kb_info_user(self.get_name(), response_author.getURL(),
+                                   response_author.id, username)
+                return True
+        
+        return False
+        
+    def _extract_from_redir(self, response_author):
+        path = response_author.getRedirURI().getPath()
+        if 'author' in path:
+            # A redirect to /author/<username> was made, username probably found
+            username = path.split("/")[-2]
+            self._kb_info_user(self.get_name(), response_author.getURI(),
+                               response_author.id, username)
+            
+            return True
+        
+        return False
 
     def _kb_info_user(self, p_name, url, response_id, username):
         '''
@@ -112,11 +143,12 @@ class wordpress_enumerate_users(CrawlPlugin):
         '''
         i = info.info()
         i.setPluginName(p_name)
-        i.set_name('WordPress user "'+ username +'" found')
+        i.set_name('WordPress user "%s" found' % username)
         i.setURL( url )
         i.set_id( response_id )
-        i.set_desc( 'WordPress user "'+ username +'" found from enumeration.' )
-        kb.kb.append( self, 'info', i )
+        msg = 'WordPress user "%s" found during username enumeration.'
+        i.set_desc(msg % username)
+        kb.kb.append( self, 'users', i )
         om.out.information( i.get_desc() )
 
     def get_long_desc( self ):
@@ -124,12 +156,11 @@ class wordpress_enumerate_users(CrawlPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin finds usernames in a WordPress installation using "?author=ID" query.
-
-        The author's archive page is tried using "?author=ID" query and incrementing the
-        ID for each request until 404. If the response is a redirect, the blog is affected
-        by TALSOFT-2011-0526 (http://seclists.org/fulldisclosure/2011/May/493) advisory. If
-        no redirect is done, the plugin will try to fetch the username from title.
-
-        The plugin will not be aware of gaps between two user IDs, this is a known issue.
+        This plugin finds usernames in WordPress installations.
+        
+        The author's archive page is tried using "?author=ID" query and
+        incrementing the ID for each request until 404. If the response is a
+        redirect, the blog is affected by TALSOFT-2011-0526
+        (http://seclists.org/fulldisclosure/2011/May/493) advisory. If no
+        redirect is done, the plugin will try to fetch the username from title.
         '''
