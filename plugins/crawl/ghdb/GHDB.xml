@@ -510,4 +510,240 @@ Author: GhOsT-PR
 </textualDescription></signature><signature><signatureReferenceNumber>3772</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3772/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:cgi-bin/cosmobdf.cgi?</querystring><shortDescription>inurl:cgi-bin/cosmobdf.cgi?</shortDescription><textualDescription>COSMOView for building management. Author: GhOsT-PR
 </textualDescription></signature><signature><signatureReferenceNumber>3773</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3773/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:&quot;mod.php?mod=blog&quot; intext:&quot;powered by DIY-CMS&quot; </querystring><shortDescription>inurl:&quot;mod.php?mod=blog&quot; intext:&quot;powered by DIY-CMS&quot; </shortDescription><textualDescription>DIY-CMS blog mod SQL Injection. Author: snup</textualDescription></signature><signature><signatureReferenceNumber>3774</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3774/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:&quot;/showPlayer.php?id=&quot; intext:&quot;powered by ellistonSPORT&quot;</querystring><shortDescription>inurl:&quot;/showPlayer.php?id=&quot; intext:&quot;powered by ellistonSPORT&quot;</shortDescription><textualDescription>ellistonSPORT Remote SQL Injection Vulnerability. Author: ITTIHACK
 </textualDescription></signature><signature><signatureReferenceNumber>3775</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3775/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:wp-content/plugins/age-verification/age-verification.php</querystring><shortDescription>inurl:wp-content/plugins/age-verification/age-verification.php</shortDescription><textualDescription>Wordpress Age Verification Plugin 
-http://www.exploit-db.com/exploits/18350</textualDescription></signature></searchEngineSignature>
+http://www.exploit-db.com/exploits/18350</textualDescription></signature><signature><signatureReferenceNumber>3776</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3776/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;HtmlAnvView:D7B039C1&quot;</querystring><shortDescription>intitle:&quot;HtmlAnvView:D7B039C1&quot;</shortDescription><textualDescription>This dork finds Wireless Security/Webcams that are accessible from the 
+web. The interesting part is that for some reason these cameras do not 
+generally allow users to remove/change the default administrative 
+username and pass. So in most cases you can view any camera that shows 
+up in the google search.
+
+Default Username: admin01
+Default Password:  000000
+                                   111111
+                                   999999
+
+Author: Paul White
+</textualDescription></signature><signature><signatureReferenceNumber>3777</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3777/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:&quot;~~Joomla1.txt&quot; title:&quot;Index of /&quot;</querystring><shortDescription>intext:&quot;~~Joomla1.txt&quot; title:&quot;Index of /&quot;</shortDescription><textualDescription>intext:&quot;~~Joomla1.txt&quot; title:&quot;Index of /&quot;
+
+
+Get all server configs files
+
+Discovered by alsa7r
+</textualDescription></signature><signature><signatureReferenceNumber>3778</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3778/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=&quot;Welcome to Sitecore&quot; + &quot;License Holder&quot;</querystring><shortDescription>&quot;Welcome to Sitecore&quot; + &quot;License Holder&quot;</shortDescription><textualDescription>Sitecore CMS detection.
+</textualDescription></signature><signature><signatureReferenceNumber>3779</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3779/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=intitle:&quot;-N3t&quot; filetype:php undetectable</querystring><shortDescription>intitle:&quot;-N3t&quot; filetype:php undetectable</shortDescription><textualDescription>intitle:&quot;-N3t&quot; filetype:php undetectable
+Search WebShell indexed on a page.
+
+-- 
+Joel Campusano Rojas.
+632 161 62
+@joelcampusano
+Ingeniero Civil en Inform�tica.
+</textualDescription></signature><signature><signatureReferenceNumber>3780</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3780/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=?intitle:index.of?&quot;.mysql_history&quot;</querystring><shortDescription>?intitle:index.of?&quot;.mysql_history&quot;</shortDescription><textualDescription>Find some juicy info in .mysql_history files
+
+enjoy
+bastich
+</textualDescription></signature><signature><signatureReferenceNumber>3781</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3781/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=intitle:awen+intitle:asp.net</querystring><shortDescription>intitle:awen+intitle:asp.net</shortDescription><textualDescription>Hi,
+
+This google dork exposes any already uploaded asp.net shells which are
+available in BackTrack.
+http://www.google.com/search?q=intitle:awen+intitle:asp.net
+
+Thanks,
+Sagar Belure
+</textualDescription></signature><signature><signatureReferenceNumber>3782</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3782/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=&quot;mailing list memberships reminder&quot;</querystring><shortDescription>&quot;mailing list memberships reminder&quot;</shortDescription><textualDescription>Hi,
+
+By default, while subscribing to a mailing list on a website, running
+Mailman (GNU) for mailing list management, the user has got options to
+manage his/her subscription options.
+There is an option of getting password reminder email for this list
+once in a month.
+And, by default, this option is set to Yes.
+Along with sending the password reminder mail in *plain text* to the
+users, it gets archived on the sites too.
+
+Thanks,
+Sagar Belure
+</textualDescription></signature><signature><signatureReferenceNumber>3783</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3783/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=intext:&quot;Thank you for your purchase/trial of ALWIL Software products.:&quot;</querystring><shortDescription>intext:&quot;Thank you for your purchase/trial of ALWIL Software products.:&quot;</shortDescription><textualDescription>This dork can fetch you Avast product licenses especially Avast Antiviruses
+, including Professional editions  ;)
+Author: gr00ve_hack3r
+www.gr00ve-hack3r.com
+</textualDescription></signature><signature><signatureReferenceNumber>3784</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3784/</link><category>Advisories and Vulnerabilities</category><querystring>http://www.google.com/search?q=inurl:&quot;tiki-index.php&quot; filetype:php &quot;This is TikiWiki 1.9&quot;</querystring><shortDescription>inurl:&quot;tiki-index.php&quot; filetype:php &quot;This is TikiWiki 1.9&quot;</shortDescription><textualDescription>The server vulnerable to =&gt; CVE 2006-4602
+</textualDescription></signature><signature><signatureReferenceNumber>3785</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3785/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=inurl:&quot;*.php?*=*.php&quot; intext:&quot;Warning: include&quot; -inurl:.html -site:&quot;php.net&quot; -site:&quot;stackoverflow.com&quot; -inurl:&quot;*forums*&quot;</querystring><shortDescription>inurl:&quot;*.php?*=*.php&quot; intext:&quot;Warning: include&quot; -inurl:.html -site:&quot;php.net&quot; -site:&quot;stackoverflow.com&quot; -inurl:&quot;*forums*&quot;</shortDescription><textualDescription>PHP Error Messages</textualDescription></signature><signature><signatureReferenceNumber>3786</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3786/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:cfg &quot;radius&quot; (pass|passwd|password)</querystring><shortDescription>filetype:cfg &quot;radius&quot; (pass|passwd|password)</shortDescription><textualDescription>Find config files with radius configs and passwords and secrets...
+
+Love
+Bastich
+</textualDescription></signature><signature><signatureReferenceNumber>3787</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3787/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:Settings.aspx intitle:Beyond TV</querystring><shortDescription>inurl:Settings.aspx intitle:Beyond TV</shortDescription><textualDescription>Beyond TV gives you the capability to turn your PC into a high quality,
+digital video recorder (DVR). Most people use it for cable TV so that
+they don't have to spend rent money on a low end quality hardware DVR
+from their cable company. It's default config has no password or
+username enabled. Very bad for people who connect their PCs directly to
+their modems. I have Beyond TV and I was curious on how secure it is.
+</textualDescription></signature><signature><signatureReferenceNumber>3788</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3788/</link><category>Pages containing login portals</category><querystring>https://www.google.com/#hl=en&amp;output=search&amp;sclient=psy-ab&amp;q=inurl:%22cgi-bin%2Fwebcgi%2Fmain%22</querystring><shortDescription>inurl:&quot;cgi-bin/webcgi/main&quot;</shortDescription><textualDescription>inurl:&quot;cgi-bin/webcgi/main&quot;
+
+This dork finds indexed public facing Dell Remote Access Card.
+
+-n17r0u6</textualDescription></signature><signature><signatureReferenceNumber>3789</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3789/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:&quot;phpmyadmin/index.php&quot; intext:&quot;[ Edit ] [ Create PHP Code ] [ Refresh ]&quot;</querystring><shortDescription>inurl:&quot;phpmyadmin/index.php&quot; intext:&quot;[ Edit ] [ Create PHP Code ] [ Refresh ]&quot;</shortDescription><textualDescription>This dork finds unsecured databases
+</textualDescription></signature><signature><signatureReferenceNumber>3790</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3790/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=inurl:&quot;passes&quot; OR inurl:&quot;passwords&quot; OR inurl:&quot;credentials&quot; -search -download -techsupt -git -games -gz -bypass -exe filetype:txt @yahoo.com OR @gmail OR @hotmail OR @rediff</querystring><shortDescription>inurl:&quot;passes&quot; OR inurl:&quot;passwords&quot; OR inurl:&quot;credentials&quot; -search -download -techsupt -git -games -gz -bypass -exe filetype:txt @yahoo.com OR @gmail OR @hotmail OR @rediff</shortDescription><textualDescription>Hack the $cr1pt kiddies.
+
+There are a lot of Phishing pages hosted on internet , this dork will
+provide you with their password files. Clean and Simple
+
+gr00ve_hack3r
+www.gr00vehack3r.wordpress.com
+</textualDescription></signature><signature><signatureReferenceNumber>3791</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3791/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:docx Domain Registrar $user $pass</querystring><shortDescription>filetype:docx Domain Registrar $user $pass</shortDescription><textualDescription>Dork :-  *filetype:docx Domain Registrar $user $pass*
+Use :- *To find domain login password for Registrar (can Hijack Domain)
+
+Submitted by : G00g!3 W@rr!0r
+*
+</textualDescription></signature><signature><signatureReferenceNumber>3792</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3792/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:/app_dev.php/login &quot;Environment&quot;</querystring><shortDescription>inurl:/app_dev.php/login &quot;Environment&quot;</shortDescription><textualDescription>Search for login screen in web aplications developed with Symfony2 in a development environment
+
+Daniel Maldonado
+http://caceriadespammers.com.ar</textualDescription></signature><signature><signatureReferenceNumber>3793</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3793/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;hp laserjet&quot; inurl:info_configuration.htm</querystring><shortDescription>intitle:&quot;hp laserjet&quot; inurl:info_configuration.htm</shortDescription><textualDescription>HP LaserJet printers
+</textualDescription></signature><signature><signatureReferenceNumber>3794</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3794/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=filetype:avastlic</querystring><shortDescription>filetype:avastlic</shortDescription><textualDescription>Lots of Avast Licenses .
+Author : gr00ve_hack3r
+www.gr00vehack3r.wordpress.com
+</textualDescription></signature><signature><signatureReferenceNumber>3795</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3795/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;Log In&quot; &quot;Access unsecured content without logging in&quot;</querystring><shortDescription>intitle:&quot;Log In&quot; &quot;Access unsecured content without logging in&quot;</shortDescription><textualDescription>iOmega Storcenter login page:
+
+intitle:&quot;Log In&quot; &quot;Access unsecured content without logging in&quot;
+
+Greetings,
+Alrik
+</textualDescription></signature><signature><signatureReferenceNumber>3796</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3796/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=Please-logon &quot;intitle:zarafa webaccess &quot;</querystring><shortDescription>Please-logon &quot;intitle:zarafa webaccess &quot;</shortDescription><textualDescription>Zarafa Webaccess logon pages.
+
+Greetings,
+Alrik.
+</textualDescription></signature><signature><signatureReferenceNumber>3797</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3797/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=&quot;CHARACTER_SETS&quot; &quot;COLLATION_CHARACTER_SET_APPLICABILITY&quot;</querystring><shortDescription>&quot;CHARACTER_SETS&quot; &quot;COLLATION_CHARACTER_SET_APPLICABILITY&quot;</shortDescription><textualDescription>&quot;CHARACTER_SETS&quot;+&quot;COLLATION_CHARACTER_SET_APPLICABILITY&quot;
+find sql injectable site
+
+discoverd by shinrisama
+</textualDescription></signature><signature><signatureReferenceNumber>3798</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3798/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=intitle:&quot;DVR+Web+Client&quot;</querystring><shortDescription>intitle:&quot;DVR+Web+Client&quot;</shortDescription><textualDescription>This dork will find most Linux-based DVR web clients that are accessible to
+the web and through SSH. Linux-based DVR web clients are login portals for
+surveillance web cameras wherein you can spy in other peoples cameras.
+
+*Default Usernames:* admin, guest, root
+*Default Passwords:* admin, guest, root
+
+*Author:* shipcode
+</textualDescription></signature><signature><signatureReferenceNumber>3799</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3799/</link><category>Network or vulnerability data</category><querystring>http://www.google.com/search?q=site*.*.*/webalizer intitle:&quot;Usage Statistics&quot;</querystring><shortDescription>site*.*.*/webalizer intitle:&quot;Usage Statistics&quot;</shortDescription><textualDescription>Shows usage statistics of sites. Includes monthy reports on the IP addresses, user agents, and more, of the viewers of the sites, the most active first.</textualDescription></signature><signature><signatureReferenceNumber>3800</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3800/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intext:&quot;You may also donate through the Moneybookers account mb@dd-wrt&quot;</querystring><shortDescription>intext:&quot;You may also donate through the Moneybookers account mb@dd-wrt&quot;</shortDescription><textualDescription>Still find alot of equipment running v24 sp1 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3801</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3801/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=intext:charset_test= email= default_persistent=</querystring><shortDescription>intext:charset_test= email= default_persistent=</shortDescription><textualDescription>find facebook email and password  ;)
+</textualDescription></signature><signature><signatureReferenceNumber>3802</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3802/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q='apc info' 'apc.php?SCOPE='</querystring><shortDescription>'apc info' 'apc.php?SCOPE='</shortDescription><textualDescription>This dork will locate Unsecured PHP APC Installations.
+
+With regards,
+Shubham Mittal
+(Hack Planet Technologies)
+http://hackplanet.in
+</textualDescription></signature><signature><signatureReferenceNumber>3803</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3803/</link><category>Vulnerable Servers</category><querystring>http://www.google.com/search?q=intext: intext: intext: intext: intext:</querystring><shortDescription>intext: intext: intext: intext: intext:</shortDescription><textualDescription>More than 100k sites affected
+
+It will show asp sites that are vulnerable to sql injection
+(These links actually show pages which are attacked by mass Sql
+Injection...which means they are vulnerable to sql Injection)
+                               #Author
+                         -----  pgolecha
+                                Palash Golecha
+                                twitter- @pgolecha12
+</textualDescription></signature><signature><signatureReferenceNumber>3804</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3804/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=ext:xml (&quot;mode_passive&quot;|&quot;mode_default&quot;)</querystring><shortDescription>ext:xml (&quot;mode_passive&quot;|&quot;mode_default&quot;)</shortDescription><textualDescription>OffSec:
+
+So the dork is:
+
+ext:xml (&quot;mode_passive&quot;|&quot;mode_default&quot;)
+
+This dork finds Filezilla XML files.� To be more specific;
+
+��� recentservers.xml
+��� sitemanager.xml
+��� filezilla.xml
+
+These files contain clear text usernames and passwords.� They also contain the hostname or IP to connect to as well as the port.� Most of these results will be for FTP however, you can also get port 22 to SSH in.� This dork of course can be modified to target a specific website by appending site:whateversite.com.� You can also look for a specific username like root by appending &quot;root&quot; to the dork.��
+
+Regards,
+
+necrodamus
+
+http://www.twitter.com/necrodamus2600
+http://www.photobucket.com/profile/necrodamus2600
+</textualDescription></signature><signature><signatureReferenceNumber>3805</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3805/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=filetype:xls &quot;username | password&quot;</querystring><shortDescription>filetype:xls &quot;username | password&quot;</shortDescription><textualDescription>filetype:xls &quot;username | password&quot; This search reveals usernames and/or passwords of the xls documents.
+
+
+by Stakewinner00
+ 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3806</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3806/</link><category>Sensitive Directories</category><querystring>http://www.google.com/search?q=inurl:ckfinder intext:&quot;ckfinder.html&quot; intitle:&quot;Index of /ckfinder&quot;</querystring><shortDescription>inurl:ckfinder intext:&quot;ckfinder.html&quot; intitle:&quot;Index of /ckfinder&quot;</shortDescription><textualDescription>Dork: inurl:ckfinder intext:&quot;ckfinder.html&quot; intitle:&quot;Index of /ckfinder&quot;
+
+Use this dork to find root directory of CKFinder (all versions) with
+ckfinder.html file (used to upload, modify and delete files on the server)
+
+Submitted by: CodiObert
+</textualDescription></signature><signature><signatureReferenceNumber>3807</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3807/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:Priv8 SCR</querystring><shortDescription>intitle:Priv8 SCR</shortDescription><textualDescription>I am Un0wn_X
+
+Symlink User configs
+
+intitle:Priv8 SCR
+
+</textualDescription></signature><signature><signatureReferenceNumber>3808</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3808/</link><category>Footholds</category><querystring>http://www.google.com/search?q=intitle:C0ded By web.sniper</querystring><shortDescription>intitle:C0ded By web.sniper</shortDescription><textualDescription>User &amp; Domain || Symlink
+Using this dork you can find the User and the Domains of the Server...
+
+intitle:C0ded By web.sniper
+
+Author: Un0wn_X
+</textualDescription></signature><signature><signatureReferenceNumber>3809</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3809/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=inurl:.com/configuration.php-dist</querystring><shortDescription>inurl:.com/configuration.php-dist</shortDescription><textualDescription>Finds the configuration files of the PHP Database on the server.
+By
+Chintan GurjarRahul Tygi</textualDescription></signature><signature><signatureReferenceNumber>3810</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3810/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=Pyxis Mobile Test Page</querystring><shortDescription>intitle:&quot;Pyxis Mobile Test Page&quot; inurl:&quot;mpTest.aspx&quot;</shortDescription><textualDescription>Pyxis Mobile Test Page
+
+intitle:&quot;Pyxis Mobile Test Page&quot; inurl:&quot;mpTest.aspx&quot;
+</textualDescription></signature><signature><signatureReferenceNumber>3811</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3811/</link><category>Network or vulnerability data</category><querystring>http://www.google.com/search?q=inurl:finger.cgi</querystring><shortDescription>inurl:finger.cgi</shortDescription><textualDescription>Finger</textualDescription></signature><signature><signatureReferenceNumber>3812</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3812/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:32400/web/index.html</querystring><shortDescription>inurl:32400/web/index.html</shortDescription><textualDescription>Submitting this for the GHDB.  These are web accessible Plex Media Servers
+where you can watch/listen to other people's media collections.
+
+FYI
+</textualDescription></signature><signature><signatureReferenceNumber>3813</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3813/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=&quot;parent directory&quot; proftpdpasswd intitle:&quot;index of&quot; -google</querystring><shortDescription>&quot;parent directory&quot; proftpdpasswd intitle:&quot;index of&quot; -google</shortDescription><textualDescription>This dork is based on this: http://www.exploit-db.com/ghdb/1212/
+ but improved cause that is useless, instead of this:
+ &quot;parent directory&quot; proftpdpasswd intitle:&quot;index of&quot; -google
+
+ Best regards,
+
+ Nemesis
+</textualDescription></signature><signature><signatureReferenceNumber>3814</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3814/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=intitle:&quot;dd-wrt info&quot; intext:&quot;Firmware: DD-WRT&quot;</querystring><shortDescription>intitle:&quot;dd-wrt info&quot; intext:&quot;Firmware: DD-WRT&quot;</shortDescription><textualDescription>This dork finds web interfaces of various routers using custom firmware DD-WRT.
+ Default login: root
+ Default password: admin
+
+ greetings, uA
+</textualDescription></signature><signature><signatureReferenceNumber>3815</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3815/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;/level/13|14|15/exec/&quot;</querystring><shortDescription>inurl:&quot;/level/13|14|15/exec/&quot;</shortDescription><textualDescription>inurl:&quot;/level/13|14|15/exec/&quot;
+
+Cisco IOS HTTP Auth Vulnerability .. Command before exec/ . Example
+exec/-/? 
+
+</textualDescription></signature><signature><signatureReferenceNumber>3816</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3816/</link><category>Footholds</category><querystring>http://www.google.com/search?q=inurl:&quot;r00t.php&quot;</querystring><shortDescription>inurl:&quot;r00t.php&quot;</shortDescription><textualDescription>This dork finds websites that were hacked, backdoored and contains their 
+system information e.g: Linux web.air51.ru 2.6.32-41-server #89-Ubuntu
+SMP Fri Apr 27 22:33:31 UTC 2012 x86_64.
+
+
+Jay Turla a.k.a shipcode
+
+</textualDescription></signature><signature><signatureReferenceNumber>3817</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3817/</link><category>Files containing passwords</category><querystring>http://www.google.com/search?q=inurl:&quot;/dbman/default.pass&quot;</querystring><shortDescription>inurl:&quot;/dbman/default.pass&quot;</shortDescription><textualDescription>A path to a DES encrypted password for DBMan (
+http://www.gossamer-threads.com/products/archive.html)  ranging from Guest
+to Admin account, this is often found coupled with cgi-telnet.pl (
+http://www.rohitab.com/cgi-telnet) which provides an admin login, by
+default and the password provided by DBMan's path /dbman/default.pass
+
+
+I have already posted this to packetstorm on June 7th 2004, called
+cgitelnetdbman (
+http://packetstormsecurity.org/files/29530/cgitelnetdbman.pdf.html)
+
+The 'Dork' is *inurl:&quot;/dbman/default.pass&quot; *
+
+
+
+Lawrence Lavigne (ratdance)
+-suidrewt
+</textualDescription></signature><signature><signatureReferenceNumber>3818</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3818/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:&quot;InfoViewApp/logon.jsp&quot;</querystring><shortDescription>inurl:&quot;InfoViewApp/logon.jsp&quot;</shortDescription><textualDescription>Google Hacking
+
+*SAP Business Object 3.1 XI*
+
+inurl:&quot;InfoViewApp/logon.jsp&quot;
+
+twitter
+@firebitsbr
+</textualDescription></signature><signature><signatureReferenceNumber>3819</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3819/</link><category>Pages containing login portals</category><querystring>http://www.google.com/search?q=inurl:phpliteadmin.php</querystring><shortDescription>inurl:phpliteadmin.php</shortDescription><textualDescription>The default password is 'admin'
+</textualDescription></signature><signature><signatureReferenceNumber>3820</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3820/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:&quot;Orion/SummaryView.aspx&quot; intext:&quot;Orion Core&quot;</querystring><shortDescription>inurl:&quot;Orion/SummaryView.aspx&quot; intext:&quot;Orion Core&quot;</shortDescription><textualDescription>Hello,
+
+Enumerate Solarwinds Orion network monitoring portals.  In some cases, the
+portal can be accessed without authenticating.
+
+-Sean
+</textualDescription></signature></searchEngineSignature>
