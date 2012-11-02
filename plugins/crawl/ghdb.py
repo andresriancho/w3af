@@ -34,7 +34,7 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.search_engines.google import google as google
 
@@ -101,17 +101,17 @@ class ghdb(CrawlPlugin):
             response = self._uri_opener.GET(result.URL, cache=True )
             if not is_404( response ):
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL( response.getURL() )
                 v.setMethod( 'GET' )
-                v.setName( 'Google hack database vulnerability' )
+                v.set_name( 'Google hack database vulnerability' )
                 v.setSeverity(severity.MEDIUM)
                 msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
                       ' According to GHDB the vulnerability description is "%s".'
-                v.setDesc(msg % (response.getURL(), gh.desc))
+                v.set_desc(msg % (response.getURL(), gh.desc))
                 v.set_id( response.id )
                 kb.kb.append( self, 'vuln', v )
-                om.out.vulnerability( v.getDesc(), severity=severity.LOW )
+                om.out.vulnerability( v.get_desc(), severity=severity.LOW )
                         
                 # Create the fuzzable requests
                 for fr in self._create_fuzzable_requests( response ):
@@ -169,7 +169,7 @@ class ghdb(CrawlPlugin):
         ol = OptionList()
         
         d = 'Fetch the first "result_limit" results from the Google search'
-        o = option('result_limit', self._result_limit, d, 'integer')
+        o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         
         return ol
@@ -182,7 +182,7 @@ class ghdb(CrawlPlugin):
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['result_limit'].getValue()
+        self._result_limit = options_list['result_limit'].get_value()
             
     def get_long_desc( self ):
         '''

@@ -95,11 +95,11 @@ class phishing_vector(AuditPlugin):
                     if src_attr.startswith( url ):
                         # Vuln vuln!
                         v = vuln.vuln( mutant )
-                        v.setPluginName(self.getName())
+                        v.setPluginName(self.get_name())
                         v.set_id( response.id )
                         v.setSeverity(severity.LOW)
-                        v.setName( 'Phishing vector' )
-                        v.setDesc( 'A phishing vector was found at: ' + mutant.foundAt() )
+                        v.set_name( 'Phishing vector' )
+                        v.set_desc( 'A phishing vector was found at: ' + mutant.foundAt() )
                         v.addToHighlight( src_attr )
                         res.append( v )
                         

@@ -47,11 +47,11 @@ class info(dict):
         # Clone the info object!
         if isinstance( data_obj, info ):
             self.setURI( data_obj.getURI() )
-            self.setDesc( data_obj.getDesc() )
+            self.set_desc( data_obj.get_desc() )
             self.setMethod( data_obj.get_method() )
             self.setVar( data_obj.getVar() )
             self.set_id( data_obj.getId() )
-            self.setName( data_obj.getName() )
+            self.set_name( data_obj.get_name() )
             self.setDc( data_obj.getDc() )
             for k in data_obj.keys():
                 self[ k ] = data_obj[ k ]
@@ -62,10 +62,10 @@ class info(dict):
         '''
         return severity.INFORMATION
     
-    def setName( self, name ):
+    def set_name( self, name ):
         self._name = name
         
-    def getName( self ):
+    def get_name( self ):
         return self._name
     
     def setURL( self, url ):
@@ -117,10 +117,10 @@ class info(dict):
     def get_method( self ):
         return self._method
         
-    def setDesc( self, desc ):
+    def set_desc( self, desc ):
         self._desc = desc
         
-    def getDesc( self, with_id=True ):
+    def get_desc( self, with_id=True ):
         #
         #    TODO: Who's creating a info() object and not setting a description?!
         #

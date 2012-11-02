@@ -72,12 +72,12 @@ class csrf(AuditPlugin):
         
         # Ok, we have found vulnerable to CSRF attack request
         v = vuln.vuln(freq)
-        v.setPluginName(self.getName())
+        v.setPluginName(self.get_name())
         v.set_id(orig_response.id)
-        v.setName('CSRF vulnerability')
+        v.set_name('CSRF vulnerability')
         v.setSeverity(severity.HIGH)
         msg = 'Cross Site Request Forgery has been found at: ' + freq.getURL()
-        v.setDesc(msg)
+        v.set_desc(msg)
         kb.kb.append(self, 'csrf', v)
 
     def _is_resp_equal(self, res1, res2):

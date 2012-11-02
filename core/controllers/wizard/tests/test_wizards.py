@@ -27,6 +27,8 @@ from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
 from core.controllers.w3afException import w3afException
 
+from core.data.options.bool_option import BoolOption
+
 
 class test_wizards(object):
 
@@ -57,7 +59,7 @@ class test_wizards(object):
         @see test_questions.py for a complete test of questions.py and all the
              instances of that class that live in the questions directory.
         '''
-        wid = wizard_inst.getName()
+        wid = wizard_inst.get_name()
         assert wid != ''
         assert wid not in self.unique_wizard_ids
         self.unique_wizard_ids.append( wid )
@@ -113,8 +115,11 @@ class test_wizards(object):
                  }
         
         for option in option_list:
-            value = values.get( option.getName(), 'abc' )
-            option.setValue(value)
+            if isinstance(option, BoolOption):
+                value = 'true'
+            else:
+                value = values.get( option.get_name(), 'abc' )
+            option.set_value(value)
         
         return option_list
     
@@ -131,8 +136,11 @@ class test_wizards(object):
                  }
         
         for option in option_list:
-            value = values.get( option.getName(), '#FAIL' )
-            option.setValue(value)
+            if isinstance(option, BoolOption):
+                value = 'true'
+            else:
+                value = values.get( option.get_name(), '#FAIL' )
+            option.set_value(value)
         
         return option_list        
             

@@ -78,10 +78,10 @@ class ajax(GrepPlugin):
                         res = self._ajax_regex_re.search(script_content)
                         if res:
                             i = info.info()
-                            i.setPluginName(self.getName())
-                            i.setName('AJAX code')
+                            i.setPluginName(self.get_name())
+                            i.set_name('AJAX code')
                             i.setURL(url)
-                            i.setDesc('The URL: "%s" has an AJAX code.' % url)
+                            i.set_desc('The URL: "%s" has an AJAX code.' % url)
                             i.set_id(response.id)
                             i.addToHighlight(res.group(0))
                             kb.kb.append(self, 'ajax', i)

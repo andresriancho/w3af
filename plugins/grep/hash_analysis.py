@@ -71,15 +71,15 @@ class hash_analysis(GrepPlugin):
                         if self._has_hash_distribution( possible_hash ):
                             if (possible_hash, response.getURL()) not in self._already_reported:
                                 i = info.info()
-                                i.setPluginName(self.getName())
-                                i.setName( hash_type + 'hash in HTML content')
+                                i.setPluginName(self.get_name())
+                                i.set_name( hash_type + 'hash in HTML content')
                                 i.setURL( response.getURL() )
                                 i.addToHighlight(possible_hash)
                                 i.set_id( response.id )
                                 msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
                                 msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
                                 msg += '". This is uncommon and requires human verification.'
-                                i.setDesc( msg )
+                                i.set_desc( msg )
                                 kb.kb.append( self, 'hash_analysis', i )
                                 
                                 self._already_reported.add( (possible_hash, response.getURL()) )

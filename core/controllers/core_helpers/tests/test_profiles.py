@@ -113,7 +113,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertEqual( len(invalid) , 0 )
         
         for profile_inst in valid:
-            profile_name = profile_inst.getName()
+            profile_name = profile_inst.get_name()
             
             w3af_core.profiles.useProfile(profile_name, workdir='.')
             

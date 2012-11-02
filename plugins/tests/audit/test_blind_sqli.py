@@ -43,8 +43,8 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( "Blind SQL injection vulnerability", vuln.getName() )
-        self.assertFalse( 'time delays' in vuln.getDesc() )
+        self.assertEquals( "Blind SQL injection vulnerability", vuln.get_name() )
+        self.assertFalse( 'time delays' in vuln.get_desc() )
         self.assertEquals( "numeric", vuln['type'])
         self.assertEquals( target_url, str(vuln.getURL()))
 
@@ -58,8 +58,8 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( "Blind SQL injection vulnerability", vuln.getName() )
-        self.assertFalse( 'time delays' in vuln.getDesc() )
+        self.assertEquals( "Blind SQL injection vulnerability", vuln.get_name() )
+        self.assertFalse( 'time delays' in vuln.get_desc() )
         self.assertEquals( "stringsingle", vuln['type'])
         self.assertEquals( target_url, str(vuln.getURL()))
 
@@ -73,7 +73,7 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( vuln.getName(), 'Blind SQL injection vulnerability' )
+        self.assertEquals( vuln.get_name(), 'Blind SQL injection vulnerability' )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_delay_integer(self):
@@ -86,8 +86,8 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
-        self.assertTrue( 'time delays' in vuln.getDesc() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.get_name() )
+        self.assertTrue( 'time delays' in vuln.get_desc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_delay_string_single(self):
@@ -100,8 +100,8 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
-        self.assertTrue( 'time delays' in vuln.getDesc() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.get_name() )
+        self.assertTrue( 'time delays' in vuln.get_desc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_delay_string_double(self):
@@ -114,8 +114,8 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
-        self.assertTrue( 'time delays' in vuln.getDesc() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.get_name() )
+        self.assertTrue( 'time delays' in vuln.get_desc() )
         self.assertEquals( target_url, str(vuln.getURL()))
 
     def test_single_quote_form(self):
@@ -128,9 +128,9 @@ class TestBlindSQLI(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( 'Blind SQL injection vulnerability', vuln.getName() )
+        self.assertEquals( 'Blind SQL injection vulnerability', vuln.get_name() )
         self.assertEquals( "stringsingle", vuln['type'])
-        self.assertFalse( 'time delays' in vuln.getDesc() )
+        self.assertFalse( 'time delays' in vuln.get_desc() )
         self.assertEquals( action_url, str(vuln.getURL()))
     
     def test_false_positives(self):

@@ -67,14 +67,14 @@ class ssn(GrepPlugin):
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURI( uri )
                 v.set_id( response.id )
                 v.setSeverity(severity.LOW)
-                v.setName( 'US Social Security Number disclosure' )
+                v.set_name( 'US Social Security Number disclosure' )
                 msg = 'The URL: "' + uri + '" possibly discloses a US '
                 msg += 'Social Security Number: "'+ validated_ssn +'"'
-                v.setDesc( msg )
+                v.set_desc( msg )
                 v.addToHighlight( found_ssn )
                 kb.kb.append( self, 'ssn', v )
      

@@ -41,5 +41,5 @@ class TestFindJBoss(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertEqual('JMX Invoker enabled without Auth', info.getName())
+        self.assertEqual('JMX Invoker enabled without Auth', info.get_name())
         

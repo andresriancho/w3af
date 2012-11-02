@@ -136,18 +136,18 @@ class htaccess_methods(AuditPlugin):
         
         if len(allowed_methods)>0:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( url )
             v.set_id([i for m, i in allowed_methods])
-            v.setName( 'Misconfigured access control' )
+            v.set_name( 'Misconfigured access control' )
             v.setSeverity(severity.MEDIUM)
             msg = 'The resource: "'+ url + '" requires authentication but the access'
             msg += ' is misconfigured and can be bypassed using these methods: ' 
             msg += ', '.join([m for m, i in allowed_methods]) + '.'
-            v.setDesc( msg )
+            v.set_desc( msg )
             v['methods'] = allowed_methods
             kb.kb.append( self , 'auth' , v )
-            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )             
+            om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )             
                 
     def get_long_desc( self ):
         '''

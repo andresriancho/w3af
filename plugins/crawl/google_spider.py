@@ -23,7 +23,7 @@ from urllib2 import URLError
 
 import core.controllers.outputManager as om
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.search_engines.google import google as google
 
@@ -94,7 +94,7 @@ class google_spider(CrawlPlugin):
         ol = OptionList()
         
         d = 'Fetch the first "resultLimit" results from the Google search'
-        o = option('resultLimit', self._result_limit, d, 'integer')
+        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
         ol.add(o)
         
         return ol
@@ -107,7 +107,7 @@ class google_spider(CrawlPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].getValue()
+        self._result_limit = options_list['resultLimit'].get_value()
 
     def get_long_desc( self ):
         '''

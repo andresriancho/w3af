@@ -57,13 +57,13 @@ class robots_txt(CrawlPlugin):
         if not is_404( http_response ):
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('robots.txt file')
+            i.setPluginName(self.get_name())
+            i.set_name('robots.txt file')
             i.setURL( robots_url )
             i.set_id( http_response.id )
-            i.setDesc( 'A robots.txt file was found at: "'+ robots_url +'".' )
+            i.set_desc( 'A robots.txt file was found at: "'+ robots_url +'".' )
             kb.kb.append( self, 'robots.txt', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
 
 
             # Work with it...

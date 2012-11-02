@@ -38,7 +38,8 @@ from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afException
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import STRING, PORT, BOOL
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
 from core.data.parsers.url import URL
@@ -242,13 +243,13 @@ class rfi(AuditPlugin):
         '''
         if rfi_data.rfi_result in response:
             v = vuln.vuln(mutant)
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.set_id(response.id)
             v.setSeverity(severity.HIGH)
-            v.setName('Remote code execution')
+            v.set_name('Remote code execution')
             msg = 'A remote file inclusion vulnerability that allows remote' \
                   ' code execution was found at: ' + mutant.foundAt()
-            v.setDesc( msg )
+            v.set_desc( msg )
             kb.kb.append_uniq(self, 'rfi', v)
         
         elif rfi_data.rfi_result_part_1 in response \
@@ -257,13 +258,13 @@ class rfi(AuditPlugin):
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
             v = vuln.vuln(mutant)
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.set_id(response.id)
             v.setSeverity(severity.MEDIUM)
-            v.setName('Remote file inclusion')
+            v.set_name('Remote file inclusion')
             msg = 'A remote file inclusion vulnerability without code' \
                   ' execution was found at: ' + mutant.foundAt()
-            v.setDesc( msg )
+            v.set_desc( msg )
             kb.kb.append_uniq(self, 'rfi', v)
         
         else:
@@ -274,15 +275,15 @@ class rfi(AuditPlugin):
             for error in self.RFI_ERRORS:
                 if error in response and not error in mutant.getOriginalResponseBody():
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     v.addToHighlight(error)
-                    v.setName('Potential remote file inclusion')
+                    v.set_name('Potential remote file inclusion')
                     msg = 'A potential remote file inclusion vulnerability' \
                           ' was identified by the means of application error' \
                           '  messages at: ' + mutant.foundAt()
-                    v.setDesc( msg )
+                    v.set_desc( msg )
                     kb.kb.append_uniq(self, 'rfi', v)
                     break
 
@@ -340,17 +341,17 @@ class rfi(AuditPlugin):
         h = 'w3af runs a webserver to serve the files to the target web application \
         when doing remote file inclusions. This setting configures where the webserver\
         is going to listen for requests.'
-        o = option('listenAddress', self._listen_address, d, 'string', help=h)
+        o = opt_factory('listen_address', self._listen_address, d, STRING, help=h)
         ol.add(o)
         
         d = 'TCP port that the webserver will use to receive requests'
-        o = option('listenPort', self._listen_port, d, 'integer')
+        o = opt_factory('listen_port', self._listen_port, d, PORT)
         ol.add(o)
         
         d = 'Use w3af site to test for remote file inclusion'
         h =  'The plugin can use the w3af site to test for remote file inclusions, which is\
         convenient when you are performing a test behind a NAT firewall.'
-        o = option('usew3afSite', self._use_w3af_site, d, 'boolean',  help=h)
+        o = opt_factory('use_w3af_site', self._use_w3af_site, d, BOOL,  help=h)
         ol.add(o)
         
         return ol
@@ -363,9 +364,9 @@ class rfi(AuditPlugin):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listen_address = options_list['listenAddress'].getValue()
-        self._listen_port = options_list['listenPort'].getValue()
-        self._use_w3af_site = options_list['usew3afSite'].getValue()
+        self._listen_address = options_list['listen_address'].get_value()
+        self._listen_port = options_list['listen_port'].get_value()
+        self._use_w3af_site = options_list['use_w3af_site'].get_value()
         
         if not self._correctly_configured() and not self._use_w3af_site:
             raise w3afException(self.CONFIG_ERROR_MSG)
@@ -378,9 +379,9 @@ class rfi(AuditPlugin):
         This plugin finds remote file inclusion vulnerabilities.
         
         Three configurable parameters exist:
-            - listenAddress
-            - listenPort
-            - usew3afSite
+            - listen_address
+            - listen_port
+            - use_w3af_site
         
         There are two ways of running this plugin, the most common one is to use
         w3af's site (w3af.sf.net) as the URL to include. This is convenient and
@@ -388,8 +389,8 @@ class rfi(AuditPlugin):
         to w3af.sf.net staff.
         
         The second way to configure this plugin runs a webserver on the box
-        running w3af on the IP address and port specified by "listenAddress"
-        and "listenPort". This method requires the target web application to be
+        running w3af on the IP address and port specified by "listen_address"
+        and "listen_port". This method requires the target web application to be
         able to contact the newly created server and will not work unless
         you also configure your NAT router and firewalls (if any exist).
         '''

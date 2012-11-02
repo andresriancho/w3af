@@ -28,7 +28,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
@@ -110,11 +110,11 @@ class spider_man(CrawlPlugin):
         ol = OptionList()
         
         d = 'IP address that the spider_man proxy will use to receive requests'
-        o = option('listenAddress', self._listen_address, d, 'string')
+        o = opt_factory('listen_address', self._listen_address, d, 'string')
         ol.add(o)
         
         d = 'Port that the spider_man HTTP proxy server will use to receive requests'
-        o = option('listenPort', self._listen_port, d, 'integer')
+        o = opt_factory('listen_port', self._listen_port, d, 'integer')
         ol.add(o)
         
         return ol
@@ -128,8 +128,8 @@ class spider_man(CrawlPlugin):
         @return: No value is returned.
         '''
 
-        self._listen_address = options_list['listenAddress'].getValue()
-        self._listen_port  = options_list['listenPort'].getValue()
+        self._listen_address = options_list['listen_address'].get_value()
+        self._listen_port  = options_list['listen_port'].get_value()
         
     def get_long_desc( self ):
         '''
@@ -154,8 +154,8 @@ class spider_man(CrawlPlugin):
         link.
         
         Two configurable parameters exist:
-            - listenAddress
-            - listenPort
+            - listen_address
+            - listen_port
         '''
 
 

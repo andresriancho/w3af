@@ -35,7 +35,8 @@ from core.controllers.misc import get_w3af_version
 from core.controllers.misc.encoding import smart_str
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
 from core.data.request.fuzzable_request import FuzzableRequest
 
@@ -89,32 +90,34 @@ class xml_file(OutputPlugin):
         try:
             self._file = open(self._file_name, "w")
         except IOError, io:
-            msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
-            msg += ': "' + io.strerror + '".'
-            raise w3afException( msg )
+            msg = 'Can\'t open report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._file_name),
+                                        io.strerror))
         except Exception, e:
-            msg = 'Cant open report file ' + self._file_name + ' for output.'
-            msg += ' Exception: "' + str(e) + '".'
-            raise w3afException( msg )
+            msg = 'Can\'t open report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._file_name), e))
 
     def debug(self, message, newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for debug messages.
+        This method is called from the output object. The output object was called
+        from a plugin or from the framework. This method should take an action
+        for debug messages.
         '''
         pass
         
     def information(self, message , newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for informational messages.
+        This method is called from the output object. The output object was called
+        from a plugin or from the framework. This method should take an action
+        for informational messages.
         '''
         pass 
     
     def error(self, message , newLine = True ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action for error messages.
+        This method is called from the output object. The output object was called
+        from a plugin or from the framework. This method should take an action
+        for error messages.
         '''     
         messageNode = self._xmldoc.createElement("error")
         messageNode.setAttribute("caller", str(self.getCaller()))
@@ -125,8 +128,9 @@ class xml_file(OutputPlugin):
 
     def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
         '''
-        This method is called from the output object. The output object was called from a plugin
-        or from the framework. This method should take an action when a vulnerability is found.
+        This method is called from the output object. The output object was called
+        from a plugin or from the framework. This method should take an action
+        when a vulnerability is found.
         '''     
         pass 
     
@@ -138,29 +142,30 @@ class xml_file(OutputPlugin):
         
     def set_options( self, option_list ):
         '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using get_options()
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed
+        using the XML Options that was retrieved from the plugin using
+        get_options()
         
         This method MUST be implemented on every plugin. 
         
         @return: No value is returned.
         ''' 
-        self._file_name = option_list['fileName'].getValue()
+        self._file_name = option_list['output_file'].get_value()
         
     def get_options( self ):
         '''
         @return: A list of option objects for this plugin.
         '''
         d1 = 'File name where this plugin will write to'
-        o1 = option('fileName', self._file_name, d1, 'string')
+        o1 = opt_factory('output_file', self._file_name, d1, OUTPUT_FILE)
 
         ol = OptionList()
         ol.add(o1)
 
         return ol
 
-    def logHttp( self, request, response):
+    def log_http( self, request, response):
         '''
         log the http req / res to file.
         @parameter request: A fuzzable request object
@@ -181,8 +186,8 @@ class xml_file(OutputPlugin):
             if optionsDict.has_key(plugin_name):
                 for plugin_option in optionsDict[plugin_name]:
                     configNode = self._xmldoc.createElement("config")
-                    configNode.setAttribute("parameter", str(plugin_option.getName()))
-                    configNode.setAttribute("value", str(plugin_option.getValue()))
+                    configNode.setAttribute("parameter", str(plugin_option.get_name()))
+                    configNode.setAttribute("value", str(plugin_option.get_value()))
                     pluginNode.appendChild(configNode)
             node.appendChild(pluginNode)  
         self._scanInfo.appendChild(node)
@@ -299,11 +304,11 @@ class xml_file(OutputPlugin):
             messageNode.setAttribute("method", str(i.get_method()))
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("var", str(i.getVar()))
-            messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             # Wrap description in a <description> element and put it above the request/response elements
             descriptionNode = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.getDesc())
+            description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
             messageNode.appendChild(descriptionNode)
             if i.getId():
@@ -334,11 +339,11 @@ class xml_file(OutputPlugin):
         for i in infos:
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.getURL()))
-            messageNode.setAttribute("name", str(i.getName()))
+            messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             # Wrap the description in a description element and put it above the request/response details
             descriptionNode = self._xmldoc.createElement('description')
-            description = self._xmldoc.createTextNode(i.getDesc())
+            description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
             messageNode.appendChild(descriptionNode)
             if i.getId():
@@ -388,5 +393,5 @@ class xml_file(OutputPlugin):
         This plugin writes the framework messages to an XML report file.
         
         One configurable parameter exists:
-            - fileName
+            - output_file
         '''

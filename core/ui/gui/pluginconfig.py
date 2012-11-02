@@ -127,7 +127,7 @@ class ConfigPanel(gtk.VBox):
         @param longdesc: the long description of the plugin
         '''
         # A title with the name of the plugin in bold and with a bigger font
-        title = "<b><big>"+plugin.getName()+"</big></b>\n\n"
+        title = "<b><big>"+plugin.get_name()+"</big></b>\n\n"
         
         idplugin = id(plugin)
         try:
@@ -675,7 +675,7 @@ class PluginConfigBody(gtk.VBox):
 
         # update the Entry with plugin info
         options = configurableTarget.get_options()
-        self.target.set_text(options['target'].getValueStr())
+        self.target.set_text(options['target'].get_value_str())
 
     def getActivatedPlugins(self):
         '''Return the activated plugins.
@@ -709,7 +709,7 @@ class PluginConfigBody(gtk.VBox):
         # target url
         configurable_obj = self.w3af.target
         options = configurable_obj.get_options()
-        newurl = options['target'].getDefaultValueStr()
+        newurl = options['target'].get_default_value_str()
         if newurl:
             self.target.setText(newurl)
             self.w3af.mainwin.scanok.change(self.target, True)

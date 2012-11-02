@@ -48,7 +48,7 @@ class TestErrorPages(PluginTest):
         self.assertEquals(1, len(infos))
         self.assertEquals(self.target_url, str(info.getURL()))
         self.assertEquals(severity.INFORMATION, info.getSeverity())
-        self.assertTrue(info.getName().startswith('Descriptive error page'))
+        self.assertTrue(info.get_name().startswith('Descriptive error page'))
 
         '''
         infos = self.kb.get('error_pages', 'server')
@@ -57,5 +57,5 @@ class TestErrorPages(PluginTest):
         self.assertEquals(1, len(infos))
         self.assertEquals(self.target_url, str(info.getURL()))
         self.assertEquals(severity.INFORMATION, info.getSeverity())
-        self.assertTrue(info.getName().startswith('Error page with information disclosure'))
+        self.assertTrue(info.get_name().startswith('Error page with information disclosure'))
         '''

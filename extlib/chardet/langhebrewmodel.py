@@ -197,5 +197,5 @@ Win1255HebrewModel = { \
   'precedenceMatrix': HebrewLangModel,
   'mTypicalPositiveRatio': 0.984004,
   'keepEnglishLetter': constants.False,
-  'charsetName': "windows-1255"
+  'charset_name': "windows-1255"
 }

@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -87,15 +87,15 @@ class directory_indexing(GrepPlugin):
                 html_string = response.getBody()
                 for dir_indexing_match in self._multi_in.query( html_string ):
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     msg = 'The URL: "' + response.getURL() + '" has a directory '
                     msg += 'indexing vulnerability.'
-                    v.setDesc( msg )
+                    v.set_desc( msg )
                     v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     path = response.getURL().getPath()
-                    v.setName( 'Directory indexing - ' + path )
+                    v.set_name( 'Directory indexing - ' + path )
                     kb.kb.append( self , 'directory' , v )
                     break
     

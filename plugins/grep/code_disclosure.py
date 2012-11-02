@@ -61,29 +61,29 @@ class code_disclosure(GrepPlugin):
                 # Check also for 404
                 if not is_404( response ):
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
                     v.setSeverity(severity.LOW)
-                    v.setName( lang + ' code disclosure vulnerability' )
+                    v.set_name( lang + ' code disclosure vulnerability' )
                     v.addToHighlight(match.group())
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
-                    v.setDesc( fmt % (v.getURL(), lang) )
+                    v.set_desc( fmt % (v.getURL(), lang) )
                     kb.kb.append( self, 'code_disclosure', v )
                     self._already_added.add( response.getURL() )
                 
                 else:
                     self._first_404 = False
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
                     v.setSeverity(severity.LOW)
                     v.addToHighlight(match.group())
-                    v.setName( lang + ' code disclosure vulnerability in 404 page' )
+                    v.set_name( lang + ' code disclosure vulnerability in 404 page' )
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability'\
                           ' in the customized 404 script.'
-                    v.setDesc( fmt % (v.getURL(), lang) )
+                    v.set_desc( fmt % (v.getURL(), lang) )
                     kb.kb.append( self, 'code_disclosure', v )
     
     def end(self):

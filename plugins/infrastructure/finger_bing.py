@@ -32,7 +32,7 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
 
 from core.data.search_engines.bing import bing as bing
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -104,11 +104,11 @@ class finger_bing(InfrastructurePlugin):
                         self._accounts.append( mail )
 
                         i = info.info()
-                        i.setPluginName(self.getName())
+                        i.setPluginName(self.get_name())
                         i.setURL(page.URL)
-                        i.setName(mail)
+                        i.set_name(mail)
                         msg = 'The mail account: "'+ mail + '" was found in: "' + page.URL + '"'
-                        i.setDesc( msg )
+                        i.set_desc( msg )
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
                         i['url_list'] = [page.URL, ]
@@ -122,7 +122,7 @@ class finger_bing(InfrastructurePlugin):
         ol = OptionList()
         
         d1 = 'Fetch the first "resultLimit" results from the Bing search'
-        o = option('resultLimit', self._result_limit, d1, 'integer')
+        o = opt_factory('resultLimit', self._result_limit, d1, 'integer')
         ol.add(o)
         
         return ol
@@ -135,7 +135,7 @@ class finger_bing(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._result_limit = options_list['resultLimit'].getValue()
+        self._result_limit = options_list['resultLimit'].get_value()
 
     def get_long_desc( self ):
         '''

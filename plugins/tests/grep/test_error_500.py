@@ -45,7 +45,7 @@ class TestError500(PluginTest):
         
         vuln = vulns[0]
         
-        self.assertEquals( vuln.getName(), 'Unhandled error in web application')
+        self.assertEquals( vuln.get_name(), 'Unhandled error in web application')
         self.assertEquals( vuln.getURL().getFileName(), '500.php')
 
         

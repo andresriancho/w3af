@@ -52,9 +52,9 @@ class TestMetaTags(PluginTest):
                            set([v.getSeverity() for v in vulns]))
         
         self.assertEquals( set(['Interesting META tag'] * 2),
-                           set([v.getName() for v in vulns]))
+                           set([v.get_name() for v in vulns]))
         
-        joined_desc = ''.join([v.getDesc() for v in vulns])
+        joined_desc = ''.join([v.get_desc() for v in vulns])
         
         self.assertTrue( 'linux' in joined_desc)
         self.assertTrue( 'Google Sitemap' in joined_desc)

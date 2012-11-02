@@ -26,7 +26,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants, rand_number, rand_alnum
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -130,22 +130,22 @@ class generic(AuditPlugin):
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id( id_list )
                 v.setSeverity(severity.MEDIUM)
-                v.setName( 'Unidentified vulnerability' )
-                v.setDesc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
+                v.set_name( 'Unidentified vulnerability' )
+                v.set_desc( 'An unidentified vulnerability was found at: ' + mutant.foundAt() )
                 kb.kb.append( self, 'generic', v )
                 self._already_reported.append( (mutant.getURL(), mutant.getVar()) )
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
-                i.setPluginName(self.getName())
+                i.setPluginName(self.get_name())
                 i.set_id( id_list )
-                i.setName( 'Possible unidentified vulnerability' )
+                i.set_name( 'Possible unidentified vulnerability' )
                 msg = '[Manual verification required] A possible vulnerability was found at: '
                 msg += mutant.foundAt()
-                i.setDesc( msg )
+                i.set_desc( msg )
                 kb.kb.append( self, 'generic', i )
                 self._already_reported.append( (mutant.getURL(), mutant.getVar()) )
     
@@ -188,7 +188,7 @@ class generic(AuditPlugin):
         
         d = 'If two strings have a diff ratio less than diffRatio, then they are '
         d += '*really* different'
-        o = option('diffRatio', self._diff_ratio, d, 'float')
+        o = opt_factory('diffRatio', self._diff_ratio, d, 'float')
         ol.add(o)
         
         return ol
@@ -201,7 +201,7 @@ class generic(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._diff_ratio = options_list['diffRatio'].getValue()
+        self._diff_ratio = options_list['diffRatio'].get_value()
     
     def get_long_desc( self ):
         '''

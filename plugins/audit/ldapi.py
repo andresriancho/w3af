@@ -114,11 +114,11 @@ class ldapi(AuditPlugin):
             for ldap_error_string in ldap_error_list:
                 if ldap_error_string not in mutant.getOriginalResponseBody():
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id( response.id )
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'LDAP injection vulnerability' )
-                    v.setDesc( 'LDAP injection was found at: ' + mutant.foundAt() )
+                    v.set_name( 'LDAP injection vulnerability' )
+                    v.set_desc( 'LDAP injection was found at: ' + mutant.foundAt() )
                     v.addToHighlight( ldap_error_string )
                     kb.kb.append_uniq( self, 'ldapi', v )
                     break

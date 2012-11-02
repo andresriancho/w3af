@@ -73,12 +73,12 @@ class feeds(GrepPlugin):
                 version = element.attrib.get('version', 'unknown')
                 
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName(feed_type +' feed')
+                i.setPluginName(self.get_name())
+                i.set_name(feed_type +' feed')
                 i.setURI(uri)
                 fmt = 'The URL "%s" is a %s version %s feed.'
                 msg = fmt % (uri, feed_type, version) 
-                i.setDesc( msg )
+                i.set_desc( msg )
                 i.set_id( response.id )
                 i.addToHighlight( feed_type )
                 kb.kb.append( self, 'feeds', i )

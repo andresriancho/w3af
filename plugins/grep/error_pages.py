@@ -155,7 +155,7 @@ class error_pages(GrepPlugin):
             
             for msg in self._multi_in.query( response.body ):
                 i = info.info()
-                i.setPluginName(self.getName())
+                i.setPluginName(self.get_name())
                 
                 # Set a nicer name for the vulnerability
                 name = 'Descriptive error page - "'
@@ -163,11 +163,11 @@ class error_pages(GrepPlugin):
                     name += msg[:12] + '..."'
                 else:
                     name += msg + '"'
-                i.setName( name )
+                i.set_name( name )
                 
                 i.setURL( response.getURL() )
                 i.set_id( response.id )
-                i.setDesc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
+                i.set_desc( 'The URL: "' + response.getURL() + '" contains the descriptive error: "' + msg + '"' )
                 i.addToHighlight( msg ) 
                 kb.kb.append( self , 'errorPage' , i )
                 
@@ -185,12 +185,12 @@ class error_pages(GrepPlugin):
                     if match_string not in self._already_reported_versions:
                         # Save the info obj
                         i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Error page with information disclosure')
+                        i.setPluginName(self.get_name())
+                        i.set_name('Error page with information disclosure')
                         i.setURL( response.getURL() )
                         i.set_id( response.id )
-                        i.setName( 'Error page with information disclosure' )
-                        i.setDesc( 'An error page sent this ' + server +' version: "' + match_string + '".'  )
+                        i.set_name( 'Error page with information disclosure' )
+                        i.set_desc( 'An error page sent this ' + server +' version: "' + match_string + '".'  )
                         i.addToHighlight( server )
                         i.addToHighlight( match_string )
                         kb.kb.append( self , 'server' , i )

@@ -83,15 +83,15 @@ class private_ip(GrepPlugin):
                     # alerted about it
                     if match not in self._ignore_if_match:
                         v = vuln.vuln()
-                        v.setPluginName(self.getName())
+                        v.setPluginName(self.get_name())
                         v.setURL( response.getURL() )
                         v.set_id( response.id )
                         v.setSeverity(severity.LOW)
-                        v.setName( 'Private IP disclosure vulnerability' )
+                        v.set_name( 'Private IP disclosure vulnerability' )
                         
                         msg = 'The URL: "' + v.getURL() + '" returned an HTTP header '
                         msg += 'with an IP address: "' +  match + '".'
-                        v.setDesc( msg )
+                        v.set_desc( msg )
                         v['IP'] = match                            
                         v.addToHighlight( match )
                         kb.kb.append( self, 'header', v )       
@@ -119,15 +119,15 @@ class private_ip(GrepPlugin):
                         if match not in self._ignore_if_match and \
                         not request.sent( match ):
                             v = vuln.vuln()
-                            v.setPluginName(self.getName())
+                            v.setPluginName(self.get_name())
                             v.setURL( response.getURL() )
                             v.set_id( response.id )
                             v.setSeverity(severity.LOW)
-                            v.setName( 'Private IP disclosure vulnerability' )
+                            v.set_name( 'Private IP disclosure vulnerability' )
                             
                             msg = 'The URL: "' + v.getURL() + '" returned an HTML document '
                             msg += 'with an IP address: "' +  match + '".'
-                            v.setDesc( msg )
+                            v.set_desc( msg )
                             v['IP'] = match
                             v.addToHighlight( match )
                             kb.kb.append( self, 'HTML', v )     

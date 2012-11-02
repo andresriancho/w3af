@@ -44,8 +44,8 @@ class TestNetcraft(PluginTest):
 
             self.assertEquals( len(items), 1)
 
-            iname = items[0].getName()
-            idesc = items[0].getDesc()
+            iname = items[0].get_name()
+            idesc = items[0].get_desc()
 
             self.assertEquals( iname, ename )
             self.assertTrue( idesc.startswith(edesc) )

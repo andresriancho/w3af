@@ -45,7 +45,7 @@ class TestFrontpage(PluginTest):
         EXPECTED = set()
         
         self.assertEquals( EXPECTED,
-                           set([v.getName() for v in vulns])
+                           set([v.get_name() for v in vulns])
                           )
     
     raise SkipTest('FIXME: Need to setup a working frontpage environment and have a positive test also!')

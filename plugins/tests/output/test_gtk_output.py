@@ -54,7 +54,7 @@ class TestGTKOutput(unittest.TestCase):
         
         while gtk_output_queue.qsize() > 0:
             msg = gtk_output_queue.get()
-            from_queue.add( (msg.getType(), msg.getMsg() ) )
+            from_queue.add( (msg.get_type(), msg.getMsg() ) )
             
         self.assertEquals( from_queue, EXPECTED )
         

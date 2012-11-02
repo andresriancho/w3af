@@ -35,7 +35,8 @@ from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.fuzzer.fuzzer import rand_alnum
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -453,25 +454,25 @@ class pykto(CrawlPlugin):
             kb.kb.append( self, 'url', response.getURL() )
             
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURI( response.getURI() )
             v.setMethod( method )
             vuln_desc = 'pykto plugin found a vulnerability at URL: "' + v.getURL() + '". '
             vuln_desc += 'Vulnerability description: "' + desc.strip() + '"'
             if not vuln_desc.endswith('.'):
                 vuln_desc += '.'
-            v.setDesc( vuln_desc )
+            v.set_desc( vuln_desc )
             v.set_id( response.id )
 
             if not response.getURL().getPath().endswith('/'):
                 msg = 'Insecure file - ' + response.getURL().getPath()
             else:
                 msg = 'Insecure directory - ' + response.getURL().getPath()
-            v.setName( msg )
+            v.set_name( msg )
             v.setSeverity(severity.LOW)
 
             kb.kb.append( self, 'vuln', v )
-            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+            om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
             
             fr_list = self._create_fuzzable_requests( response )
             [ fr.getURI().normalizeURL() for fr in fr_list ]
@@ -508,7 +509,7 @@ class pykto(CrawlPlugin):
         h += ' to install, so its a good idea to make this a user setting. The directories should'
         h += ' be supplied comma separated and with a / at the beggining and one at the end.'
         h += ' Example: "/cgi/,/cgibin/,/bin/"'
-        o = option('cgiDirs', self._cgi_dirs , d, 'list', help=h)
+        o = opt_factory('cgiDirs', self._cgi_dirs , d, LIST, help=h)
         ol.add(o)
                 
         d = 'Admin directories where to search for vulnerable scripts.'
@@ -517,33 +518,33 @@ class pykto(CrawlPlugin):
         h += ' from install to install, so its a good idea to make this a user setting. The'
         h += ' directories should be supplied comma separated and with a / at the beggining and'
         h += ' one at the end. Example: "/admin/,/adm/"'
-        o = option('adminDirs', self._admin_dirs, d, 'list', help=h)
+        o = opt_factory('adminDirs', self._admin_dirs, d, LIST, help=h)
         ol.add(o)
                 
         d = 'PostNuke directories where to search for vulnerable scripts.'
         h = 'The directories should be supplied comma separated and with a / at the'
         h += ' beggining and one at the end. Example: "/forum/,/nuke/"'
-        o = option('nukeDirs', self._nuke, d, 'list', help=h)
+        o = opt_factory('nukeDirs', self._nuke, d, LIST, help=h)
         ol.add(o)
         
         d = 'The path to the nikto scan_databse.db file.'
         h = 'The default scan database file is ok in most cases.'
-        o = option('dbFile', self._db_file, d, 'string', help=h)
+        o = opt_factory('dbFile', self._db_file, d, INPUT_FILE, help=h)
         ol.add(o)
         
         d = 'The path to the w3af_scan_databse.db file.'
         h = 'This is a file which has some extra checks for files that are not present in the'
         h += ' nikto database.'
-        o = option('extra_db_file', self._extra_db_file, d, 'string', help=h)
+        o = opt_factory('extra_db_file', self._extra_db_file, d, INPUT_FILE, help=h)
         ol.add(o)
         
         d = 'Test all files with all root directories'
         h = 'Define if we will test all files with all root directories.'
-        o = option('mutateTests', self._mutate_tests, d, 'boolean', help=h)        
+        o = opt_factory('mutateTests', self._mutate_tests, d, BOOL, help=h)        
         ol.add(o)
         
         d = 'Verify that pykto is using the latest scan_database from cirt.net.'
-        o = option('updateScandb', self._update_scandb, d, 'boolean')
+        o = opt_factory('updateScandb', self._update_scandb, d, BOOL)
         ol.add(o)
         
         d = 'If generic scan is enabled all tests are sent to the remote server without'
@@ -551,7 +552,7 @@ class pykto(CrawlPlugin):
         h = 'Pykto will send all tests to the server if generic Scan is enabled. For example,'
         h += ' if a test in the database is marked as "apache" and the remote server reported'
         h += ' "iis" then the test is sent anyway.'
-        o = option('genericScan', self._generic_scan, d, 'boolean', help=h)        
+        o = opt_factory('genericScan', self._generic_scan, d, BOOL, help=h)        
         ol.add(o)
         
         return ol
@@ -564,14 +565,14 @@ class pykto(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._update_scandb = options_list['updateScandb'].getValue()
-        self._cgi_dirs = options_list['cgiDirs'].getValue()
-        self._admin_dirs = options_list['adminDirs'].getValue()
-        self._nuke = options_list['nukeDirs'].getValue()
-        self._extra_db_file = options_list['extra_db_file'].getValue()
-        self._db_file = options_list['dbFile'].getValue()
-        self._mutate_tests = options_list['mutateTests'].getValue()
-        self._generic_scan = options_list['genericScan'].getValue()
+        self._update_scandb = options_list['updateScandb'].get_value()
+        self._cgi_dirs = options_list['cgiDirs'].get_value()
+        self._admin_dirs = options_list['adminDirs'].get_value()
+        self._nuke = options_list['nukeDirs'].get_value()
+        self._extra_db_file = options_list['extra_db_file'].get_value()
+        self._db_file = options_list['dbFile'].get_value()
+        self._mutate_tests = options_list['mutateTests'].get_value()
+        self._generic_scan = options_list['genericScan'].get_value()
         
     def get_plugin_deps( self ):
         '''

@@ -55,7 +55,7 @@ class test_objects(unittest.TestCase):
         
         self.assertEquals( len(kb.kb.get('objects', 'object')), 1 )
         i = kb.kb.get('objects', 'object')[0]
-        self.assertTrue( '"object"' in i.getDesc() )
+        self.assertTrue( '"object"' in i.get_desc() )
             
     def test_applet(self):
         body = '''header
@@ -73,7 +73,7 @@ class test_objects(unittest.TestCase):
         
         self.assertEquals( len(kb.kb.get('objects', 'applet')), 1 )
         i = kb.kb.get('objects', 'applet')[0]
-        self.assertTrue( '"applet"' in i.getDesc() )
+        self.assertTrue( '"applet"' in i.get_desc() )
 
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'

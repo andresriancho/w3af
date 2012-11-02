@@ -24,11 +24,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
-import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afException import w3afException
 from core.data.parsers.url import parse_qs
 
@@ -54,7 +53,7 @@ class eval(AttackPlugin):
         
         # User configured variables
         self._changeToPost = True
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._method = 'GET'
         self._data = ''
         self._inj_var = ''
@@ -144,22 +143,22 @@ class eval(AttackPlugin):
         d0 += ' during exploitation.'
         h0 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         h0 += ' during exploitation; this is usefull for not being logged in the webserver logs.'
-        o0 = option('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
+        o0 = opt_factory('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
         
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
+        o1 = opt_factory('url', self._url, d1, 'url')
         
         d2 = 'Method to use with fastExploit()'
-        o2 = option('method', self._method, d2, 'string')
+        o2 = opt_factory('method', self._method, d2, 'string')
 
         d3 = 'Data to send with fastExploit()'
-        o3 = option('data', self._data, d3, 'string')
+        o3 = opt_factory('data', self._data, d3, 'string')
 
         d4 = 'Variable where to inject with fastExploit()'
-        o4 = option('injvar', self._inj_var, d4, 'string')
+        o4 = opt_factory('injvar', self._inj_var, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
-        o5 = option('generateOnlyOne', self._generate_only_one, d5, 'boolean')
+        o5 = opt_factory('generateOnlyOne', self._generate_only_one, d5, 'boolean')
         
         ol = OptionList()
         ol.add(o0)
@@ -178,12 +177,12 @@ class eval(AttackPlugin):
         @parameter options_list: A dict with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._changeToPost = options_list['changeToPost'].getValue()
-        self._url = options_list['url'].getValue()
-        self._method = options_list['method'].getValue()
-        self._data = parse_qs( options_list['data'].getValue() )
-        self._inj_var = options_list['injvar'].getValue()
-        self._generate_only_one = options_list['generateOnlyOne'].getValue()
+        self._changeToPost = options_list['changeToPost'].get_value()
+        self._url = options_list['url'].get_value()
+        self._method = options_list['method'].get_value()
+        self._data = parse_qs( options_list['data'].get_value() )
+        self._inj_var = options_list['injvar'].get_value()
+        self._generate_only_one = options_list['generateOnlyOne'].get_value()
                 
     def getRootProbability( self ):
         '''
@@ -244,5 +243,5 @@ class eval_shell(exec_shell):
         '''
         om.out.debug('eval() shell is cleaning up.')
     
-    def getName( self ):
+    def get_name( self ):
         return 'eval_shell'

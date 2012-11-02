@@ -42,7 +42,7 @@ class dbDriverBuilder:
         self._uri_opener = urlOpener
         self._cmpFunction = cmpFunction
     
-    def _getType( self, vuln ):
+    def _get_type( self, vuln ):
         '''
         Determine how to escape the sql injection
         '''
@@ -67,7 +67,7 @@ class dbDriverBuilder:
         @return: A database driver for the vuln passed as parameter.
         '''
         if 'type' not in vuln:
-            vuln = self._getType( vuln )
+            vuln = self._get_type( vuln )
             if vuln is None:
                 return None
         

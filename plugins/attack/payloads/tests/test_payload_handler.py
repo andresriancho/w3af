@@ -121,7 +121,7 @@ class FakeExecShell(exec_shell):
     def end( self ):
         pass
         
-    def getName( self ):
+    def get_name( self ):
         return 'FakeExecShell'
     
 class FakeReadShell(read_shell):
@@ -132,5 +132,5 @@ class FakeReadShell(read_shell):
     def end( self ):
         pass
         
-    def getName( self ):
+    def get_name( self ):
         return 'FakeReadShell'   

@@ -19,14 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import urllib
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import plugins.attack.payloads.shell_handler as shell_handler
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import rand_alpha
 from core.data.kb.exec_shell import exec_shell as exec_shell
@@ -48,7 +46,7 @@ class dav(AttackPlugin):
         self._exploit_url = None
         
         # User configured variables
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._generate_only_one = True
         
     def fastExploit( self ):
@@ -59,7 +57,7 @@ class dav(AttackPlugin):
             om.out.error('You have to configure the "url" parameter.')
         else:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( self._url )
             kb.kb.append( 'dav', 'dav', v )
     
@@ -144,10 +142,10 @@ class dav(AttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
+        o1 = opt_factory('url', self._url, d1, 'url')
         
         d2 = 'Exploit only one vulnerability.'
-        o2 = option('generateOnlyOne', self._generate_only_one, d2, 'boolean')
+        o2 = opt_factory('generateOnlyOne', self._generate_only_one, d2, 'boolean')
         
         ol = OptionList()
         ol.add(o1)
@@ -162,8 +160,8 @@ class dav(AttackPlugin):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._url = options_list['url'].getValue()
-        self._generate_only_one = options_list['generateOnlyOne'].getValue()
+        self._url = options_list['url'].get_value()
+        self._generate_only_one = options_list['generateOnlyOne'].get_value()
 
     def getRootProbability( self ):
         '''
@@ -221,5 +219,5 @@ class DAVShell(exec_shell):
         else:
             om.out.debug('DAVShell cleanup complete.')
         
-    def getName( self ):
+    def get_name( self ):
         return 'dav'

@@ -71,7 +71,7 @@ class Plugin(configurable):
         '''
         self._uri_opener = UrlOpenerProxy(urlOpener, self)
 
-    def set_options( self, optionsList ):
+    def set_options( self, options_list ):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
@@ -99,17 +99,17 @@ class Plugin(configurable):
         '''
         return []
 
-    def getDesc( self ):
+    def get_desc( self ):
         '''
         @return: A description of the plugin.
         
         >>> b = Plugin()
         >>> b.__doc__ = 'abc'
-        >>> b.getDesc()
+        >>> b.get_desc()
         'abc'
         >>> b = Plugin()
         >>> b.__doc__ = '    abc\t'
-        >>> b.getDesc()
+        >>> b.get_desc()
         'abc'
         '''
         if self.__doc__ is not None:
@@ -138,9 +138,9 @@ class Plugin(configurable):
             
         >>> b = Plugin()
         >>> v1 = vuln.vuln()
-        >>> v1.setDesc('hello')
+        >>> v1.set_desc('hello')
         >>> v2 = vuln.vuln()
-        >>> v2.setDesc('world')
+        >>> v2.set_desc('world')
         >>> info_obj = [ v1, v2 ]
         >>> b.print_uniq(info_obj, None) is None
         True
@@ -171,9 +171,9 @@ class Plugin(configurable):
         # Print the list            
         for i in inform:
             if isinstance(i, vuln.vuln):
-                om.out.vulnerability( i.getDesc(), severity=i.getSeverity() )
+                om.out.vulnerability( i.get_desc(), severity=i.getSeverity() )
             else:
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
             
     def __eq__( self, other ):
         '''
@@ -188,10 +188,10 @@ class Plugin(configurable):
         '''
         pass
         
-    def getType( self ):
+    def get_type( self ):
         return 'plugin'
 
-    def getName( self ):
+    def get_name( self ):
         return self.__class__.__name__
 
     def handleUrlError(self, url_error):

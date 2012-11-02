@@ -44,6 +44,6 @@ class TestSharedHosting(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertEqual('Shared hosting', info.getName() )
+        self.assertEqual('Shared hosting', info.get_name() )
         
         

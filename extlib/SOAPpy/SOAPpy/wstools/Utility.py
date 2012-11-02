@@ -542,14 +542,14 @@ class DOM:
             if node.nodeType != ELEMENT_NODE:
                 node = node.parentNode
                 continue
-            result = attrget(node, 'targetNamespace', default=None)
+            result = attrget(node, 'target_namespace', default=None)
             if result is not None:
                 return result
             node = node.parentNode
             if node.nodeType == DOCUMENT_NODE:
                 raise DOMException('Cannot determine target namespace.')
 
-    def getTypeRef(self, element):
+    def get_typeRef(self, element):
         """Return (namespaceURI, name) for a type attribue of the given
            element, or None if the element does not have a type attribute."""
         typeattr = self.getAttr(element, 'type', default=None)
@@ -675,7 +675,7 @@ class MessageInterface:
         '''
         raise NotImplementedError, ''
 
-    def setNamespaceAttribute(self, namespaceURI, prefix):
+    def set_namespaceAttribute(self, namespaceURI, prefix):
         '''set namespace attribute xmlns:prefix=namespaceURI 
         '''
         raise NotImplementedError, ''
@@ -869,7 +869,7 @@ class ElementProxy(Base, MessageInterface):
             prefix = self._getPrefix(node=self.node, nsuri=namespaceURI)
         except NamespaceError, ex:
             prefix = self._getUniquePrefix() 
-            self.setNamespaceAttribute(prefix, namespaceURI)
+            self.set_namespaceAttribute(prefix, namespaceURI)
         return prefix
 
     def getDocument(self):
@@ -959,13 +959,13 @@ class ElementProxy(Base, MessageInterface):
                 prefix = self.getPrefix(namespaceURI)
             except KeyError, ex:
                 prefix = 'ns2'
-                self.setNamespaceAttribute(prefix, namespaceURI)
+                self.set_namespaceAttribute(prefix, namespaceURI)
         qualifiedName = localName
         if prefix:
             qualifiedName = '%s:%s' %(prefix, localName)
         self._setAttributeNS(namespaceURI, qualifiedName, value)
 
-    def setNamespaceAttribute(self, prefix, namespaceURI):
+    def set_namespaceAttribute(self, prefix, namespaceURI):
         '''
         Keyword arguments:
             prefix -- xmlns prefix
@@ -1055,7 +1055,7 @@ class ElementProxy(Base, MessageInterface):
             return attr.value
         return None
 
-    def getValue(self):
+    def get_value(self):
         return self._dom.getElementText(self.node, preserve_ws=True)    
 
     #############################################
@@ -1128,26 +1128,26 @@ class CollectionNS(UserDict):
     def __init__(self, parent, key=None):
         UserDict.__init__(self)
         self.parent = weakref.ref(parent)
-        self.targetNamespace = None
+        self.target_namespace = None
         self.list = []
         self._func = key or self.default
 
     def __getitem__(self, key):
-        self.targetNamespace = self.parent().targetNamespace
+        self.target_namespace = self.parent().target_namespace
         if type(key) is types.IntType:
             return self.list[key]
         elif self.__isSequence(key):
             nsuri,name = key
             return self.data[nsuri][name]
-        return self.data[self.parent().targetNamespace][key]
+        return self.data[self.parent().target_namespace][key]
 
     def __setitem__(self, key, item):
         item.parent = weakref.ref(self)
         self.list.append(item)
-        targetNamespace = getattr(item, 'targetNamespace', self.parent().targetNamespace)
-        if not self.data.has_key(targetNamespace):
-            self.data[targetNamespace] = {}
-        self.data[targetNamespace][key] = item
+        target_namespace = getattr(item, 'target_namespace', self.parent().target_namespace)
+        if not self.data.has_key(target_namespace):
+            self.data[target_namespace] = {}
+        self.data[target_namespace][key] = item
 
     def __isSequence(self, key):
         return (type(key) in (types.TupleType,types.ListType) and len(key) == 2)

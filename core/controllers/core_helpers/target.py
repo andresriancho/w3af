@@ -28,8 +28,7 @@ from core.controllers.configurable import configurable
 from core.controllers.w3afException import w3afException
 
 from core.data.parsers.url import URL
-from core.data.options.option import option
-from core.data.options.comboOption import comboOption
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 cf.cf.save('targets', [] )
@@ -64,32 +63,34 @@ class w3af_core_target(configurable):
         '''
         @return: A list of option objects for this plugin.
         '''        
-        d1 = 'A comma separated list of URLs'
-        o1 = option('target', ','.join(str(tar) for tar in 
-                                       cf.cf.get('targets')), d1, 'list')
-        
-        d2 = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
-        h2 = 'This setting is here to enhance w3af performance.'
-        # This list "hack" has to be done becase the default value is the one
-        # in the first position on the list
-        tmpList = self._operatingSystems[:]
-        tmpList.remove( cf.cf.get('targetOS') )
-        tmpList.insert(0, cf.cf.get('targetOS') )
-        o2 = comboOption('targetOS', tmpList, d2, 'combo', help=h2)
-
-        d3 = 'Target programming framework ('+ '/'.join(self._programmingFrameworks) +')'
-        h3 = 'This setting is here to enhance w3af performance.'
-        # This list "hack" has to be done becase the default value is the one
-        # in the first position on the list
-        tmpList = self._programmingFrameworks[:]
-        tmpList.remove( cf.cf.get('targetFramework') )
-        tmpList.insert(0, cf.cf.get('targetFramework') )
-        o3 = comboOption('targetFramework', tmpList, d3, 'combo', help=h3)
-        
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
+        
+        d = 'A comma separated list of URLs'
+        o = opt_factory('target', ','.join(str(tar) for tar in 
+                                       cf.cf.get('targets')), d, 'list')
+        ol.add(o)
+        
+        d = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
+        h = 'This setting is here to enhance w3af performance.'
+        
+        # This list "hack" has to be done becase the default value is the one
+        # in the first position on the list
+        tmp_list = self._operatingSystems[:]
+        tmp_list.remove( cf.cf.get('targetOS') )
+        tmp_list.insert(0, cf.cf.get('targetOS') )
+        o = opt_factory('targetOS', tmp_list, d, 'combo', help=h)
+        ol.add(o)
+        
+        d = 'Target programming framework ('+ '/'.join(self._programmingFrameworks) +')'
+        h = 'This setting is here to enhance w3af performance.'
+        # This list "hack" has to be done because the default value is the one
+        # in the first position on the list
+        tmp_list = self._programmingFrameworks[:]
+        tmp_list.remove( cf.cf.get('targetFramework') )
+        tmp_list.insert(0, cf.cf.get('targetFramework') )
+        o = opt_factory('targetFramework', tmp_list, d, 'combo', help=h)
+        ol.add(o)
+        
         return ol
     
     def _verifyURL(self, target_url, fileTarget=True):
@@ -135,7 +136,7 @@ class w3af_core_target(configurable):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        target_urls_strings = options_list['target'].getValue() or []
+        target_urls_strings = options_list['target'].get_value() or []
 
         for target_url_string in target_urls_strings:
             
@@ -181,20 +182,20 @@ class w3af_core_target(configurable):
         cf.cf.save('session_name', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
         
         # Advanced target selection
-        os = options_list['targetOS'].getValueStr()
+        os = options_list['targetOS'].get_value_str()
         if os.lower() in self._operatingSystems:
             cf.cf.save('targetOS', os.lower() )
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
-        pf = options_list['targetFramework'].getValueStr()
+        pf = options_list['targetFramework'].get_value_str()
         if pf.lower() in self._programmingFrameworks:
             cf.cf.save('targetFramework', pf.lower() )
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
 
-    def getName( self ):
+    def get_name( self ):
         return 'targetSettings'
         
-    def getDesc( self ):
+    def get_desc( self ):
         return 'Configure target URLs'

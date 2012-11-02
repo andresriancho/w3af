@@ -49,7 +49,7 @@ class TestFaviconIdentification(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertEqual( info.getName(), 'Favicon identification')
-        self.assertTrue('tomcat' in info.getDesc().lower(), info.getDesc())
+        self.assertEqual( info.get_name(), 'Favicon identification')
+        self.assertTrue('tomcat' in info.get_desc().lower(), info.get_desc())
         
         

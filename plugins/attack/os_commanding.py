@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.data.kb.exec_shell import exec_shell as exec_shell
@@ -46,7 +46,7 @@ class os_commanding(AttackPlugin):
         
         # User configured parameter
         self._change_to_post = True
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._separator = ';'
         self._data = ''
         self._inj_var = ''
@@ -140,28 +140,28 @@ class os_commanding(AttackPlugin):
         @return: A list of option objects for this plugin.
         '''        
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
+        o1 = opt_factory('url', self._url, d1, 'url')
         
         d2 = 'HTTP method to use with fastExploit()'
-        o2 = option('method', self._method, d2, 'string')
+        o2 = opt_factory('method', self._method, d2, 'string')
 
         d3 = 'Data to send with fastExploit()'
-        o3 = option('data', self._data, d3, 'string')
+        o3 = opt_factory('data', self._data, d3, 'string')
 
         d4 = 'Variable where to inject with fastExploit()'
-        o4 = option('injvar', self._inj_var, d4, 'string')
+        o4 = opt_factory('injvar', self._inj_var, d4, 'string')
 
         d5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         d5 += ' during exploitation.'
         h5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         h5 += 'during exploitation; this is usefull for not being logged in the webserver logs.'
-        o5 = option('changeToPost', self._change_to_post, d5, 'boolean', help=h5)
+        o5 = opt_factory('changeToPost', self._change_to_post, d5, 'boolean', help=h5)
         
         d6 = 'The command separator to be used.'
         h6 = 'In an OS commanding vulnerability, a command separator is used to separate the'
         h6 += ' original command from the customized command that the attacker want\'s to execute.'
         h6 += ' Common command separators are ;, & and |.'
-        o6 = option('separator', self._separator, d6, 'string', help=h6)
+        o6 = opt_factory('separator', self._separator, d6, 'string', help=h6)
         
         ol = OptionList()
         ol.add(o1)
@@ -180,16 +180,16 @@ class os_commanding(AttackPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        if options_list['method'].getValue() not in ['GET', 'POST']:
+        if options_list['method'].get_value() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')
         else:
-            self._method = options_list['method'].getValue()
+            self._method = options_list['method'].get_value()
 
-        self._data = options_list['data'].getValue()
-        self._inj_var = options_list['injvar'].getValue()
-        self._separator = options_list['separator'].getValue()
-        self._url = options_list['url'].getValue()
-        self._change_to_post = options_list['changeToPost'].getValue()
+        self._data = options_list['data'].get_value()
+        self._inj_var = options_list['injvar'].get_value()
+        self._separator = options_list['separator'].get_value()
+        self._url = options_list['url'].get_value()
+        self._change_to_post = options_list['changeToPost'].get_value()
 
     def getRootProbability( self ):
         '''
@@ -243,6 +243,6 @@ class OSCommandingShell(exec_shell):
     def end( self ):
         om.out.debug('OSCommandingShell cleanup complete.')
         
-    def getName( self ):
+    def get_name( self ):
         return 'os_commanding'
         

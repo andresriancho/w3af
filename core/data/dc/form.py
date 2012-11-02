@@ -214,7 +214,7 @@ class Form(DataContainer):
         #
         return (name, value)
 
-    def getType( self, name ):
+    def get_type( self, name ):
         return self._types[name]
 
     def addCheckBox(self, attrs):

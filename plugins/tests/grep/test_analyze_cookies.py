@@ -135,7 +135,7 @@ class test_analyze_cookies(unittest.TestCase):
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1 )
         self.assertEqual( len(security), 2 )
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
-        self.assertTrue( any([True for i in security if 'The remote platform is: "PHP"' in i.getDesc()]) )
+        self.assertTrue( any([True for i in security if 'The remote platform is: "PHP"' in i.get_desc()]) )
 
     def test_analyze_cookies_secure_over_http(self):
         body = ''
@@ -152,7 +152,7 @@ class test_analyze_cookies(unittest.TestCase):
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual( len(security), 2)
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
-        self.assertTrue( any([True for i in security if 'A cookie marked with the secure flag' in i.getDesc()]) )
+        self.assertTrue( any([True for i in security if 'A cookie marked with the secure flag' in i.get_desc()]) )
 
     def test_analyze_cookies_no_httponly(self):
         body = ''
@@ -169,7 +169,7 @@ class test_analyze_cookies(unittest.TestCase):
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual( len(security), 1)
         self.assertEqual( len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0 )
-        self.assertTrue( any([True for i in security if 'A cookie without the HttpOnly flag' in i.getDesc()]) )
+        self.assertTrue( any([True for i in security if 'A cookie without the HttpOnly flag' in i.get_desc()]) )
 
     def test_analyze_cookies_with_httponly(self):
         body = ''

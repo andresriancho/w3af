@@ -86,7 +86,7 @@ class auth(BaseConsumer):
                 if not plugin.is_logged():
                     plugin.login()
             except Exception, e:
-                self.handle_exception('auth', plugin.getName(), None, e)
+                self.handle_exception('auth', plugin.get_name(), None, e)
                                 
             finally:
                 tm.join(plugin)

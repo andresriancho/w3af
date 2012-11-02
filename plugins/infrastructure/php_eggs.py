@@ -306,15 +306,15 @@ class php_eggs(InfrastructurePlugin):
             #
             for response, egg_desc, egg_URL in GET_results:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('PHP Egg - ' + egg_desc)
+                i.setPluginName(self.get_name())
+                i.set_name('PHP Egg - ' + egg_desc)
                 i.setURL( egg_URL )
                 desc = 'The PHP framework running on the remote server has a "'
                 desc += egg_desc +'" easter egg, access to the PHP egg is possible'
                 desc += ' through the URL: "'+  egg_URL + '".'
-                i.setDesc( desc )
+                i.set_desc( desc )
                 kb.kb.append( self, 'eggs', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
             
             return True
         
@@ -346,15 +346,15 @@ class php_eggs(InfrastructurePlugin):
             
             if matching_versions:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('PHP Egg')
+                i.setPluginName(self.get_name())
+                i.set_name('PHP Egg')
                 msg = 'The PHP framework version running on the remote server was identified as:'
                 for m_ver in matching_versions:
                     msg += '\n- ' + m_ver
-                i.setDesc( msg )
+                i.set_desc( msg )
                 i['version'] = matching_versions
                 kb.kb.append( self, 'version', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
 
             if not found:
                 version = 'unknown'

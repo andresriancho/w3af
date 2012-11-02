@@ -73,11 +73,11 @@ class preg_replace(AuditPlugin):
             for preg_error_string in self._find_preg_error( response ):
                 if preg_error_string not in mutant.getOriginalResponseBody():
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id( response.id )
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Unsafe usage of preg_replace' )
-                    v.setDesc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
+                    v.set_name( 'Unsafe usage of preg_replace' )
+                    v.set_desc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
                     v.addToHighlight( preg_error_string )
                     kb.kb.append_uniq( self, 'preg_replace', v )
                     break

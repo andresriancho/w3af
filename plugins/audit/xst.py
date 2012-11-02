@@ -73,14 +73,14 @@ class xst(AuditPlugin):
             if re.search(regex, response.getBody()):
                 # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln( freq )
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id( response.id )
                 v.setSeverity(severity.LOW)
-                v.setName( 'Cross site tracing vulnerability' )
+                v.set_name( 'Cross site tracing vulnerability' )
                 msg = 'The web server at "'+ response.getURL() +'" is vulnerable to'
                 msg += ' Cross Site Tracing.'
-                v.setDesc( msg )
-                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                v.set_desc( msg )
+                om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
                 kb.kb.append( self, 'xst', v )
             
     def get_long_desc( self ):

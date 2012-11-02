@@ -35,7 +35,7 @@ import core.data.constants.ports as ports
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.threads.threadManager import thread_manager as tm
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.kb.shell import shell as shell
@@ -66,7 +66,7 @@ class rfi_proxy(AttackPlugin, Process):
         self._shell = None
         self._proxyAddress = '127.0.0.1'
         self._proxyPort = ports.RFIPROXY
-        self._rfiConnGenerator = ''
+        self._rfiConnGenerator = 'http://host.tld/'
         self._httpdPort = ports.RFIPROXY2
         
         self._proxy = None
@@ -219,29 +219,29 @@ class rfi_proxy(AttackPlugin, Process):
         @return: A list of option objects for this plugin.
         '''
         desc_1 = 'IP address that the proxy will use to receive requests'
-        option_1 = option('proxyAddress', self._proxyAddress, desc_1, 'string')
+        option_1 = opt_factory('proxyAddress', self._proxyAddress, desc_1, 'string')
         
         desc_2 = 'Port that the proxy will use to receive requests'
-        option_2 = option('proxyPort', self._proxyPort, desc_2, 'integer')
+        option_2 = opt_factory('proxyPort', self._proxyPort, desc_2, 'integer')
         
         desc_3 = 'Port that the local httpd will listen on.'
         help_3 = 'When exploiting a remote file include for generating a proxy, w3af can'
         help_3 += ' use a local web server to serve the included file. This setting will'
         help_3 += ' configure the TCP port where this webserver listens.'
-        option_3 = option('httpdPort', self._httpdPort, desc_3, 'integer', help=help_3)
+        option_3 = opt_factory('httpdPort', self._httpdPort, desc_3, 'integer', help=help_3)
 
         desc_4 = 'This is the ip that the remote server will connect to in order to'
         desc_4 += ' retrieve the file inclusion payload "rfip.txt".'
         help_4 = 'When exploiting a remote file include for generating a proxy, w3af can use'
         help_4 += ' a local web server to serve the included file. This setting will configure'
         help_4 += ' the IP address where this webserver listens.'
-        option_4 = option('proxyPublicIP', self._proxyPublicIP, desc_4, 'string',  help=help_4)
+        option_4 = opt_factory('proxyPublicIP', self._proxyPublicIP, desc_4, 'string',  help=help_4)
 
         desc_5 = 'URL for the remote file inclusion connection generator.'
         help_5 = 'If left blank, a local webserver will be run at proxyPublicIP:httpdPort'
         help_5 += ' and the connection generator will be served to the remote web application'
         help_5 +=' this way.'
-        option_5 = option('rfiConnGenerator', self._rfiConnGenerator, desc_5, 'integer', help=help_5)
+        option_5 = opt_factory('rfiConnGenerator', self._rfiConnGenerator, desc_5, 'url', help=help_5)
 
         options = OptionList()
         options.add(option_1)
@@ -271,11 +271,11 @@ class rfi_proxy(AttackPlugin, Process):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._proxyAddress = options_list['proxyAddress'].getValue()
-        self._proxyPort = options_list['proxyPort'].getValue()
-        self._httpdPort = options_list['httpdPort'].getValue()
-        self._proxyPublicIP = options_list['proxyPublicIP'].getValue()
-        self._rfiConnGenerator = options_list['rfiConnGenerator'].getValue()
+        self._proxyAddress = options_list['proxyAddress'].get_value()
+        self._proxyPort = options_list['proxyPort'].get_value()
+        self._httpdPort = options_list['httpdPort'].get_value()
+        self._proxyPublicIP = options_list['proxyPublicIP'].get_value()
+        self._rfiConnGenerator = options_list['rfiConnGenerator'].get_value()
     
     def set_url_opener( self, urlOpener):
         '''
@@ -328,14 +328,14 @@ class RFIProxyShell(shell):
     def end( self ):
         om.out.debug('RFIProxyShell cleanup complete.')
         
-    def getName( self ):
+    def get_name( self ):
         return 'RFIProxyShell'
     
     def _identifyOs(self):
         return 'remote_file_inclusion_proxy'
         
     def __repr__( self ):
-        return '<'+self.getName()+' object (Use proxy: "'+self._proxy_url+'")>'
+        return '<'+self.get_name()+' object (Use proxy: "'+self._proxy_url+'")>'
         
     def getRemoteSystem( self ):
         return 'browser'

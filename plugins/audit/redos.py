@@ -111,10 +111,10 @@ class redos(AuditPlugin):
                 if response.getWaitTime() > (first_wait_time * 1.5):
                     # Now I can be sure that I found a vuln, I control the time of the response.
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setName( 'ReDoS vulnerability' )
+                    v.setPluginName(self.get_name())
+                    v.set_name( 'ReDoS vulnerability' )
                     v.setSeverity(severity.MEDIUM)
-                    v.setDesc( 'ReDoS was found at: ' + mutant.foundAt() )
+                    v.set_desc( 'ReDoS was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
@@ -123,14 +123,14 @@ class redos(AuditPlugin):
                 else:
                     # The first delay existed... I must report something...
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Possible ReDoS vulnerability')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Possible ReDoS vulnerability')
                     i.set_id( response.id )
                     i.setDc( mutant.getDc() )
                     i.setMethod( mutant.get_method() )
                     msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
                     msg += ' . Please review manually.'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     
                     # Just printing to the debug log, we're not sure about this
                     # finding and we don't want to clog the report with false

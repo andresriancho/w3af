@@ -29,7 +29,8 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE, BOOL
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.db.disk_set import disk_set
@@ -152,13 +153,13 @@ class dir_bruter(CrawlPlugin):
         ol = OptionList()
             
         d = 'Wordlist to use in directory bruteforcing process.'
-        o = option('wordlist', self._dir_list , d, 'string')
+        o = opt_factory('wordlist', self._dir_list , d, INPUT_FILE)
         ol.add(o)
         
         d = 'If set to True, this plugin will bruteforce all directories, not only the root'
         d += ' directory.'
         h = 'WARNING: Enabling this will make the plugin send LOTS of requests.'
-        o = option('be_recursive', self._be_recursive , d, 'boolean', help=h)
+        o = opt_factory('be_recursive', self._be_recursive , d, BOOL, help=h)
         ol.add(o)
         
         return ol
@@ -172,11 +173,8 @@ class dir_bruter(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        dir_list = option_list['wordlist'].getValue()
-        if os.path.exists( dir_list ):
-            self._dir_list = dir_list
-            
-        self._be_recursive = option_list['be_recursive'].getValue()
+        self._dir_list = option_list['wordlist'].get_value()
+        self._be_recursive = option_list['be_recursive'].get_value()
 
     def get_long_desc( self ):
         '''

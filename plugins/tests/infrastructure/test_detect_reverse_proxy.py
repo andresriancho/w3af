@@ -42,7 +42,7 @@ class TestDetectReverseProxy(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertEqual('Found reverse proxy', info.getName() )
+        self.assertEqual('Found reverse proxy', info.get_name() )
         
     def test_not_detect_reverse_proxy(self):
         cfg = self._run_configs['cfg']

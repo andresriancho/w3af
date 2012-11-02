@@ -122,7 +122,7 @@ class wsdlParser:
         for methodName in self._proxy.methods.keys():
             remoteMethodObject = remoteMethod()
             remoteMethodObject.setMethodName( str( methodName ) )
-            remoteMethodObject.setNamespace( self.getNS( methodName ) )
+            remoteMethodObject.set_namespace( self.getNS( methodName ) )
             remoteMethodObject.setAction( self.getAction( methodName ) )
             remoteMethodObject.setLocation( self.getLocation( methodName ) )
             remoteMethodObject.setParameters(
@@ -143,8 +143,8 @@ class wsdlParser:
             for param in range(len(inps)):
                 details = inps[param]
                 parameterObject = parameter()
-                parameterObject.setName( str(details.name) )
-                parameterObject.setType( str(details.type[1]) )
+                parameterObject.set_name( str(details.name) )
+                parameterObject.set_type( str(details.type[1]) )
                 parameterObject.setNs( str(details.type[0]) )
                 res.append( parameterObject )
             return res
@@ -159,10 +159,10 @@ class parameter:
         self._name = ''
         self._ns = ''
 
-    def getName( self ):
+    def get_name( self ):
         return self._name
     
-    def setName( self, name ):
+    def set_name( self, name ):
         self._name = name
     
     def getNs( self ):
@@ -171,10 +171,10 @@ class parameter:
     def setNs( self, namespace ):
         self._ns = namespace
 
-    def getType( self ):
+    def get_type( self ):
         return self._type
     
-    def setType( self, paramType ):
+    def set_type( self, paramType ):
         self._type = paramType
 
 class remoteMethod:
@@ -206,10 +206,10 @@ class remoteMethod:
     def setLocation( self, location ):
         self._location = location
     
-    def getNamespace( self ):
+    def get_namespace( self ):
         return self._namespace
         
-    def setNamespace( self, namespace ):
+    def set_namespace( self, namespace ):
         self._namespace = namespace
         
     def getParameters( self ):

@@ -196,5 +196,5 @@ TIS620ThaiModel = { \
   'precedenceMatrix': ThaiLangModel,
   'mTypicalPositiveRatio': 0.926386,
   'keepEnglishLetter': constants.False,
-  'charsetName': "TIS-620"
+  'charset_name': "TIS-620"
 }

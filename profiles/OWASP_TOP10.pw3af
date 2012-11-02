@@ -151,9 +151,9 @@ identifyApplications = True
 target = 
 
 [audit.rfi]
-usew3afSite = True
-listenAddress = 
-listenPort = 44449
+use_w3af_site = True
+listen_address = 
+listen_port = 44449
 
 [grep.wsdl_greper]
 
@@ -207,8 +207,8 @@ name = OWASP_TOP10
 [grep.private_ip]
 
 [crawl.phishtank]
-dbFile = plugins/discovery/phishtank/index.xml
-updateDB = False
+db_file = plugins/crawl/phishtank/index.xml
+update_db = False
 
 [http-settings]
 proxyPort = 8080

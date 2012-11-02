@@ -50,14 +50,14 @@ class audit(BaseConsumer):
 
     def _consume(self, fuzzable_request):
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), fuzzable_request ) )
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(), fuzzable_request ) )
             
             # Please note that this is not perfect, it is showing which
             # plugin result was JUST taken from the Queue. The good thing is
             # that the "client" reads the status once every 500ms so the user
             # will see things "moving" and will be happy
             self._w3af_core.status.set_phase('audit')
-            self._w3af_core.status.set_running_plugin( plugin.getName() )
+            self._w3af_core.status.set_running_plugin( plugin.get_name() )
             self._w3af_core.status.set_current_fuzzable_request( fuzzable_request )
             
             self._add_task()
@@ -79,5 +79,5 @@ class audit(BaseConsumer):
         try:
             plugin.audit_with_copy(fuzzable_request)
         except Exception, e:
-            self.handle_exception('audit', plugin.getName(), fuzzable_request, e)
+            self.handle_exception('audit', plugin.get_name(), fuzzable_request, e)
                 

@@ -68,5 +68,5 @@ class GrepPlugin(Plugin):
     def set_url_opener(self, foo):
         pass
         
-    def getType(self):
+    def get_type(self):
         return 'grep'

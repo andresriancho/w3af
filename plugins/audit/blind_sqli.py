@@ -26,7 +26,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.sql_tools.blind_sqli_time_delay import blind_sqli_time_delay
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
 
@@ -80,7 +80,7 @@ class blind_sqli(AuditPlugin):
                 found_vuln = method.is_injectable( mutant )
 
                 if found_vuln is not None:
-                    om.out.vulnerability(found_vuln.getDesc())
+                    om.out.vulnerability(found_vuln.get_desc())
                     kb.kb.append_uniq(self, 'blind_sqli', found_vuln)
                     break
     
@@ -105,7 +105,7 @@ class blind_sqli(AuditPlugin):
         
         d = 'String equal ratio (0.0 to 1.0)'
         h = 'Two pages are considered equal if they match in more than eq_limit.'
-        o = option('eq_limit', self._eq_limit, d, 'float', help=h)
+        o = opt_factory('eq_limit', self._eq_limit, d, 'float', help=h)
         
         ol.add(o)
         
@@ -119,7 +119,7 @@ class blind_sqli(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._eq_limit = options_list['eq_limit'].getValue()
+        self._eq_limit = options_list['eq_limit'].get_value()
 
     def get_long_desc( self ):
         '''

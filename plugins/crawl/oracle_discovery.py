@@ -81,16 +81,16 @@ class oracle_discovery(CrawlPlugin):
                 
                 if mo:
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Oracle application')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Oracle application')
                     i.setURL( response.getURL() )
                     desc = '"%s" version "%s" was detected at "%s".'
                     desc = desc % (mo.group(1).title(), mo.group(2).title(),
                                    response.getURL())
-                    i.setDesc(desc)
+                    i.set_desc(desc)
                     i.set_id( response.id )
                     kb.kb.append( self, 'oracle_discovery', i )
-                    om.out.information( i.getDesc() )
+                    om.out.information( i.get_desc() )
                 else:
                     msg = 'oracle_discovery found the URL: "%s" but failed to'\
                           ' parse it as an Oracle page. The first 50 bytes of'\

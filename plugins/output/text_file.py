@@ -28,7 +28,8 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
 
 
@@ -43,7 +44,7 @@ class text_file(OutputPlugin):
         OutputPlugin.__init__(self)
         
         # User configured parameters
-        self._file_name = 'output.txt'
+        self._output_file_name = 'output.txt'
         self._http_file_name = 'output-http.txt'
         self.verbose = True
         
@@ -62,33 +63,26 @@ class text_file(OutputPlugin):
     def _init( self ):
         self._initialized = True
         try:
-            #self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )
-            self._file = open( self._file_name, "w")
+            self._file = open( self._output_file_name, "w")
         except IOError, io:
-            msg = 'Can\'t open report file "' + os.path.abspath(self._file_name) + '" for writing'
-            msg += ': "' + io.strerror + '".'
-            raise w3afException( msg )
+            msg = 'Can\'t open report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._output_file_name),
+                                        io.strerror))
         except Exception, e:
-            msg = 'Can\'t open report file "' + self._file_name + '" for writing. Exception: "'
-            msg += str(e) + '".'
-            raise w3afException( msg )
+            msg = 'Can\'t open report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._output_file_name), e))
             
         try:
-            # Images aren't ascii, so this file that logs every request/response, will be binary
-            #self._http = codecs.open( self._http_file_name, "wb", "utf-8", 'replace' )
+            # Images aren't ascii, so this file that logs every request/response,
+            # will be binary.
             self._http = open( self._http_file_name, "wb" )
         except IOError, io:
-            msg = 'Can\'t open report file "' + os.path.abspath(self._http_file_name) + '" for writing'
-            msg += ': "' + io.strerror + '".'
-            raise w3afException( msg )
+            msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._http_file_name),
+                                        io.strerror))
         except Exception, e:
-            msg = 'Can\'t open report file "' + self._http_file_name + '" for writing. Exception: "'
-            msg += str(e) + '".'
-            raise w3afException( msg )
-        
-    def __del__(self):
-        if self._file is not None:
-            self._file.close()
+            msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
+            raise w3afException( msg % (os.path.abspath(self._http_file_name), e))
     
     def _write_to_file( self, msg ):
         '''
@@ -99,7 +93,8 @@ class text_file(OutputPlugin):
         try:
             self._file.write( self._clean_string(msg) )
         except Exception, e:
-            print 'An exception was raised while trying to write to the output file:', e
+            msg = 'An exception was raised while trying to write to the output'\
+                  ' file "%s", error: "%s".' % (self._output_file_name, e)
             sys.exit(1)
         
     def _write_to_HTTP_log( self, msg ):
@@ -112,8 +107,8 @@ class text_file(OutputPlugin):
         try:
             self._http.write(msg)
         except Exception, e:
-            print 'An exception was raised while trying to write to the HTTP'
-            ' log output file:', e
+            msg = 'An exception was raised while trying to write to the output'\
+                  ' file "%s", error: "%s".' % (self._http_file_name, e)
             sys.exit(1)
             
     def write(self, message, log_type, newLine = True ):
@@ -238,9 +233,9 @@ class text_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = option_list['verbose'].getValue()
-        self._file_name = option_list['fileName'].getValue()
-        self._http_file_name = option_list['httpFileName'].getValue()
+        self.verbose = option_list['verbose'].get_value()
+        self._output_file_name = option_list['output_file'].get_value()
+        self._http_file_name = option_list['http_output_file'].get_value()
         
         self._init()
     
@@ -251,20 +246,20 @@ class text_file(OutputPlugin):
         ol = OptionList()
         
         d = 'Enable if verbose output is needed'
-        o = option('verbose', self.verbose, d, 'boolean')
+        o = opt_factory('verbose', self.verbose, d, 'boolean')
         ol.add(o)
         
         d = 'File name where this plugin will write to'
-        o = option('fileName', self._file_name, d, 'string')
+        o = opt_factory('output_file', self._output_file_name, d, OUTPUT_FILE)
         ol.add(o)
         
         d = 'File name where this plugin will write HTTP requests and responses'
-        o = option('httpFileName', self._http_file_name, d, 'string')
+        o = opt_factory('http_output_file', self._http_file_name, d, OUTPUT_FILE)
         ol.add(o)
         
         return ol
 
-    def logHttp(self, request, response):
+    def log_http(self, request, response):
         '''
         log the http req / res to file.
         @parameter request: A fuzzable request object
@@ -291,7 +286,7 @@ class text_file(OutputPlugin):
         This plugin writes the framework messages to a text file.
         
         Four configurable parameters exist:
-            - fileName
-            - httpFileName
+            - output_file
+            - http_output_file
             - verbose
         '''

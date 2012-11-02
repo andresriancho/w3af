@@ -101,17 +101,17 @@ class html_comments(GrepPlugin):
         for word in self._multi_in.query( response.body ):                    
             if (word, response.getURL()) not in self._already_reported_interesting:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('HTML comment with "' + word + '" inside')
+                i.setPluginName(self.get_name())
+                i.set_name('HTML comment with "' + word + '" inside')
                 msg = 'A comment with the string "' + word + '" was found in: "'
                 msg += response.getURL() + '". This could be interesting.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 i.set_id( response.id )
                 i.setDc( request.getDc )
                 i.setURI( response.getURI() )
                 i.addToHighlight( word )
                 kb.kb.append( self, 'interesting_comments', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
                 self._already_reported_interesting.add( ( word, response.getURL() ) )
 
     def _html_in_comment(self, comment, request, response):                    
@@ -123,19 +123,19 @@ class html_comments(GrepPlugin):
         ( comment, response.getURL() ) not in self._already_reported_interesting:
             # There is HTML code in the comment.
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('HTML comment contains HTML code')
+            i.setPluginName(self.get_name())
+            i.set_name('HTML comment contains HTML code')
             comment = comment.replace('\n','')
             comment = comment.replace('\r','')
             desc = 'A comment with the string "' +comment + '" was found in: "'
             desc += response.getURL() + '" . This could be interesting.'
-            i.setDesc( desc )
+            i.set_desc( desc )
             i.set_id( response.id )
             i.setDc( request.getDc )
             i.setURI( response.getURI() )
             i.addToHighlight( html_in_comment.group(0) )
             kb.kb.append( self, 'html_comment_hides_html', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
             self._already_reported_interesting.add( ( comment, response.getURL() ) )
                             
     def _is_new(self, comment, response):

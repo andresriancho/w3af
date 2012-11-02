@@ -65,15 +65,15 @@ class svn_users(GrepPlugin):
             for regex in self._regex_list:
                 for m in regex.findall(response.getBody()):
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURI(uri)
                     v.set_id(response.id)
                     msg = 'The URL: "' + uri + '" contains a SVN versioning '
                     msg += 'signature with the username: "' + m[0] + '" .'
-                    v.setDesc(msg)
+                    v.set_desc(msg)
                     v['user'] = m[0]
                     v.setSeverity(severity.LOW)
-                    v.setName('SVN user disclosure vulnerability')
+                    v.set_name('SVN user disclosure vulnerability')
                     v.addToHighlight(m[0])
                     kb.kb.append(self, 'users', v)
 

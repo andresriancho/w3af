@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.wizard.question import question
@@ -46,10 +46,10 @@ class question_target_1(question):
         '''
 
         d1 = 'Target URL'
-        o1 = option('target','', d1, 'list')
+        o1 = opt_factory('target','', d1, 'list')
         
-        o2 = option('targetOS','unknown', d1, 'string')
-        o3 = option('targetFramework','unknown', d1, 'string')
+        o2 = opt_factory('targetOS','unknown', d1, 'string')
+        o3 = opt_factory('targetFramework','unknown', d1, 'string')
 
         ol = OptionList()
         ol.add(o1)

@@ -87,7 +87,7 @@ class PostgreSQLMap(Common):
         self.log(logMsg)
 
         if not self.__banner:
-            self.__banner = self.getValue("VERSION()")
+            self.__banner = self.get_value("VERSION()")
 
         return self.__banner
 
@@ -96,7 +96,7 @@ class PostgreSQLMap(Common):
         logMsg = "fetching current user"
         self.log(logMsg)
 
-        return self.getValue("CURRENT_USER")
+        return self.get_value("CURRENT_USER")
 
 
     def getCurrentDb(self):
@@ -106,7 +106,7 @@ class PostgreSQLMap(Common):
         if self.__currentDb:
             return self.__currentDb
         else:
-            return self.getValue("CURRENT_DATABASE()")
+            return self.get_value("CURRENT_DATABASE()")
 
 
     def getUsers(self):
@@ -115,7 +115,7 @@ class PostgreSQLMap(Common):
 
         stm  = "SELECT COUNT(DISTINCT(usename)) FROM pg_user"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
@@ -130,7 +130,7 @@ class PostgreSQLMap(Common):
             stm  = "SELECT DISTINCT(usename) "
             stm += "FROM pg_user OFFSET %d LIMIT 1" % index
 
-            user = self.getValue(stm)
+            user = self.get_value(stm)
             users.append(user)
 
         if not users:
@@ -145,7 +145,7 @@ class PostgreSQLMap(Common):
 
         stm = "SELECT COUNT(DISTINCT(datname)) FROM pg_database"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
@@ -160,7 +160,7 @@ class PostgreSQLMap(Common):
             stm  = "SELECT DISTINCT(datname) "
             stm += "FROM pg_database OFFSET %d LIMIT 1" % index
 
-            db = self.getValue(stm)
+            db = self.get_value(stm)
             dbs.append(db)
 
         if dbs:
@@ -189,7 +189,7 @@ class PostgreSQLMap(Common):
         stm  = "SELECT COUNT(DISTINCT(tablename)) FROM pg_tables "
         stm += "WHERE schemaname = '%s'" % self.args.db
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of "
@@ -207,7 +207,7 @@ class PostgreSQLMap(Common):
             stm += "WHERE schemaname = '%s' " % self.args.db
             stm += "OFFSET %d LIMIT 1" % index
 
-            table = self.getValue(stm)
+            table = self.get_value(stm)
             tables.append(table)
 
         if tables:
@@ -250,7 +250,7 @@ class PostgreSQLMap(Common):
         stm += "WHERE relname = '%s' " % self.args.tbl
         stm += "AND attnum > 0"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of columns "
@@ -273,7 +273,7 @@ class PostgreSQLMap(Common):
             stm += "WHERE relname = '%s' " % self.args.tbl
             stm += "AND attnum > 0 OFFSET %d LIMIT 1" % index
 
-            column = self.getValue(stm)
+            column = self.get_value(stm)
 
             stm  = "SELECT atttypid "
             stm += "FROM pg_attribute JOIN pg_class ON "
@@ -281,7 +281,7 @@ class PostgreSQLMap(Common):
             stm += "WHERE relname = '%s' " % self.args.tbl
             stm += "AND attname = '%s'" % column
 
-            coltype = self.getValue(stm)
+            coltype = self.get_value(stm)
             columns[column] = coltype
 
         if columns:
@@ -321,7 +321,7 @@ class PostgreSQLMap(Common):
         columnValues = {}
         stm = "SELECT COUNT(*) FROM %s" % fromExpr
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of entries "
@@ -350,7 +350,7 @@ class PostgreSQLMap(Common):
             for index in range(int(count)):
                 stm  = "SELECT %s FROM %s " % (column, fromExpr)
                 stm += "OFFSET %d LIMIT 1" % index
-                value = self.getValue(stm)
+                value = self.get_value(stm)
 
                 length = max(length, len(str(value)))
                 values.append(value)
@@ -393,7 +393,7 @@ class PostgreSQLMap(Common):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
-            return self.getValue(expression)
+            return self.get_value(expression)
 
 
     def checkDbms(self):
@@ -403,13 +403,13 @@ class PostgreSQLMap(Common):
         randInt = str(random.randint(1, 9))
         stm = "COALESCE(%s, NULL)" % randInt
 
-        if self.getValue(stm) == randInt:
+        if self.get_value(stm) == randInt:
             logMsg = "confirming PostgreSQL"
             self.log(logMsg)
 
             stm = "LENGTH('%s')" % randInt
 
-            if not self.getValue(stm) == "1":
+            if not self.get_value(stm) == "1":
                 warnMsg = "remote database is not PostgreSQL"
                 self.warn(warnMsg)
 
@@ -418,35 +418,35 @@ class PostgreSQLMap(Common):
             if not self.args.exaustiveFp:
                 return True
 
-            if self.getValue("SUBSTR(TRANSACTION_TIMESTAMP(), 1, 1)") == "2":
+            if self.get_value("SUBSTR(TRANSACTION_TIMESTAMP(), 1, 1)") == "2":
                 self.__fingerprint = [">= 8.2.0"]
-            elif self.getValue("GREATEST(5, 9, 1)") == "9":
+            elif self.get_value("GREATEST(5, 9, 1)") == "9":
                 self.__fingerprint = [">= 8.1.0", "< 8.2.0"]
-            elif self.getValue("WIDTH_BUCKET(5.35, 0.024, 10.06, 5)") == "3":
+            elif self.get_value("WIDTH_BUCKET(5.35, 0.024, 10.06, 5)") == "3":
                 self.__fingerprint = [">= 8.0.0", "< 8.1.0"]
-            elif self.getValue("SUBSTR(MD5('sqlmap'), 1, 1)"):
+            elif self.get_value("SUBSTR(MD5('sqlmap'), 1, 1)"):
                 self.__fingerprint = [">= 7.4.0", "< 8.0.0"]
-            elif self.getValue("SUBSTR(CURRENT_SCHEMA(), 1, 1)") == "p":
+            elif self.get_value("SUBSTR(CURRENT_SCHEMA(), 1, 1)") == "p":
                 self.__fingerprint = [">= 7.3.0", "< 7.4.0"]
-            elif self.getValue("BIT_LENGTH(1)") == "8":
+            elif self.get_value("BIT_LENGTH(1)") == "8":
                 self.__fingerprint = [">= 7.2.0", "< 7.3.0"]
-            elif self.getValue("SUBSTR(QUOTE_LITERAL('a'), 2, 1)") == "a":
+            elif self.get_value("SUBSTR(QUOTE_LITERAL('a'), 2, 1)") == "a":
                 self.__fingerprint = [">= 7.1.0", "< 7.2.0"]
-            elif self.getValue("POW(2, 3)") == "8":
+            elif self.get_value("POW(2, 3)") == "8":
                 self.__fingerprint = [">= 7.0.0", "< 7.1.0"]
-            elif self.getValue("MAX('a')") == "a":
+            elif self.get_value("MAX('a')") == "a":
                 self.__fingerprint = [">= 6.5.0", "< 6.5.3"]
-            elif re.search("([\d\.]+)", self.getValue("SUBSTR(VERSION(), 12, 5)")):
+            elif re.search("([\d\.]+)", self.get_value("SUBSTR(VERSION(), 12, 5)")):
                 self.__fingerprint = [">= 6.4.0", "< 6.5.0"]
-            elif self.getValue("SUBSTR(CURRENT_DATE, 1, 1)") == "2":
+            elif self.get_value("SUBSTR(CURRENT_DATE, 1, 1)") == "2":
                 self.__fingerprint = [">= 6.3.0", "< 6.4.0"]
-            elif self.getValue("SUBSTRING('sqlmap', 1, 1)") == "s":
+            elif self.get_value("SUBSTRING('sqlmap', 1, 1)") == "s":
                 self.__fingerprint = [">= 6.2.0", "< 6.3.0"]
             else:
                 self.__fingerprint = ["< 6.2.0"]
 
             if self.args.getBanner:
-                self.__banner = self.getValue("VERSION()")
+                self.__banner = self.get_value("VERSION()")
 
             return True
         else:

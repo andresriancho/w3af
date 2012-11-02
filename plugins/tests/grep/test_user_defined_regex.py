@@ -43,15 +43,15 @@ class test_user_defined_regex(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         
         options = self.plugin.get_options()
-        options['single_regex'].setValue('".*?"')
+        options['single_regex'].set_value('".*?"')
         self.plugin.set_options( options )
         
         self.plugin.grep(request, response)
         self.assertEquals( len(kb.kb.get('user_defined_regex', 'user_defined_regex')) , 1 )
         
         info_obj = kb.kb.get('user_defined_regex', 'user_defined_regex')[0]
-        self.assertTrue( info_obj.getDesc().startswith('User defined regular expression "') )
-        self.assertIn( 'data.txt', info_obj.getDesc() )
+        self.assertTrue( info_obj.get_desc().startswith('User defined regular expression "') )
+        self.assertIn( 'data.txt', info_obj.get_desc() )
         
     def tearDown(self):
         self.plugin.end()        

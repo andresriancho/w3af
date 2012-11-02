@@ -22,7 +22,7 @@ class IntegerArithmenticTestCase(unittest.TestCase):
 
     def setUp(self):
         self.wsdlstr1 = '''<?xml version="1.0"?>
-        <definitions name="TemperatureService" targetNamespace="http://www.xmethods.net/sd/TemperatureService.wsdl"  xmlns:tns="http://www.xmethods.net/sd/TemperatureService.wsdl"   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
+        <definitions name="TemperatureService" target_namespace="http://www.xmethods.net/sd/TemperatureService.wsdl"  xmlns:tns="http://www.xmethods.net/sd/TemperatureService.wsdl"   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns="http://schemas.xmlsoap.org/wsdl/">
                 <message name="getTempRequest">
                         <part name="zipcode" type="xsd:string"/>
                 </message>

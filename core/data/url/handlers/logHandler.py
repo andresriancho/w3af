@@ -72,4 +72,4 @@ class LogHandler(urllib2.BaseHandler):
                                   response, original_url=request.url_object)
             resp.set_id(response.id)
         
-        om.out.logHttp(fr, resp)
+        om.out.log_http(fr, resp)

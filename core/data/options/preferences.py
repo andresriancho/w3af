@@ -61,22 +61,22 @@ class Preferences(object):
         if self.hasOption(section, option):
             return self.options[section][option]
 
-    def getValue(self, section, option):
+    def get_value(self, section, option):
         '''Get an option value for the named section.'''
         if self.hasOption(section, option):
-            return self.options[section][option].getValue()
+            return self.options[section][option].get_value()
 
     def set(self, section, option):
         '''If the given section exists, set the given option to the specified value; 
         otherwise raise NoSectionError.'''
         if self.hasSection(section):
-            self.options[section][option.getName()] = option
+            self.options[section][option.get_name()] = option
 
-    def setValue(self, section, option, value):
+    def set_value(self, section, option, value):
         '''If the given section exists, set the given option to the specified value; 
         otherwise raise NoSectionError.'''
         if self.hasSection(section):
-            self.options[section][option].setValue(value)
+            self.options[section][option].set_value(value)
 
     def removeOption(self, section, option):
         '''Remove the specified option from the specified section.
@@ -104,7 +104,7 @@ class Preferences(object):
                 options = config.options(section)
                 for option in options:
                     if self.hasOption(section, option):
-                        self.setValue(section, option, config.get(section, option))
+                        self.set_value(section, option, config.get(section, option))
 
     def save(self):
         '''Save values of options to file.'''
@@ -112,7 +112,7 @@ class Preferences(object):
         for section in self.sections:
             config.add_section(section)
             for option in self.options[section]:
-                config.set(section, option.getName(), option.getValueStr())
+                config.set(section, option.get_name(), option.get_value_str())
 
         with open(self.filename, 'w') as configfile:
             config.write(configfile)

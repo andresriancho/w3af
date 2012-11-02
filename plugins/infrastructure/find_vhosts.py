@@ -84,10 +84,10 @@ class find_vhosts(InfrastructurePlugin):
             if vhost not in reported:
                 reported.add(vhost)
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL( fuzzable_request.getURL() )
                 v.setMethod( 'GET' )
-                v.setName( 'Shared hosting' )
+                v.set_name( 'Shared hosting' )
                 v.setSeverity(severity.LOW)
                 
                 domain = fuzzable_request.getURL().getDomain()
@@ -97,10 +97,10 @@ class find_vhosts(InfrastructurePlugin):
                       ' you might need to change your DNS resolution settings in' \
                       ' order to point "' + vhost + '" to the IP address of "' \
                       + domain + '".'
-                v.setDesc( msg )
+                v.set_desc( msg )
                 v.set_id( request_id )
                 kb.kb.append( self, 'find_vhosts', v )
-                om.out.information( v.getDesc() )       
+                om.out.information( v.get_desc() )       
         
     def _get_dead_links(self, fuzzable_request):
         '''
@@ -151,17 +151,17 @@ class find_vhosts(InfrastructurePlugin):
                 res.append( (domain, vhost_response.id) )
             else:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Internal hostname in HTML link')
+                i.setPluginName(self.get_name())
+                i.set_name('Internal hostname in HTML link')
                 i.setURL( fuzzable_request.getURL() )
                 i.setMethod( 'GET' )
                 i.set_id( original_response.id )
                 msg = 'The content of "'+ fuzzable_request.getURL() +'" references a non '
                 msg += 'existant domain: "' + domain + '". This may be a broken link, or an'
                 msg += ' internal domain name.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 kb.kb.append( self, 'find_vhosts', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
                 
         
         return res

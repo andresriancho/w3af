@@ -230,14 +230,14 @@ class shell(vuln, exploitResult):
         msg += ' "shell"'
         raise NotImplementedError( msg )
 
-    def getName( self ):
+    def get_name( self ):
         '''
         This method is called when the shell is used, in order to create a prompt
         for the user.
         
         @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
-        msg = 'You should implement the getName method for classes that inherit'
+        msg = 'You should implement the get_name method for classes that inherit'
         msg += ' from "shell"'
         raise NotImplementedError( msg )
         
@@ -255,7 +255,7 @@ class shell(vuln, exploitResult):
         if not self._rOS:
             self._identifyOs()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'            
-        return fmt % (self.getName(), self.getRemoteUser(), 
+        return fmt % (self.get_name(), self.getRemoteUser(), 
                       self.getRemoteSystem())
         
     __str__ = __repr__

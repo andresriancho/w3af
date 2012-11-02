@@ -73,7 +73,7 @@ class TestCORSOrigin(PluginTest):
         EXPECTED_NAMES = ['Insecure Access-Control-Allow-Origin',
                           'Insecure Access-Control-Allow-Origin']
         
-        self.assertEqual( [v.getName() for v in vulns],
+        self.assertEqual( [v.get_name() for v in vulns],
                           EXPECTED_NAMES)
         
         self.assertTrue( all([v.getURL().url_string.startswith(self.target_url)
@@ -103,8 +103,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1)
         vuln = vulns[0]  
 
-        self.assertEqual(vuln.getName(), 'Uncommon CORS methods enabled')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Uncommon CORS methods enabled')
+        self.assertNotEqual(vuln.get_desc(), None)
         
     def test_allow_methods_sensitive(self):
         
@@ -119,8 +119,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1)
         vuln = vulns[0]  
 
-        self.assertEqual(vuln.getName(), 'Sensitive CORS methods enabled')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Sensitive CORS methods enabled')
+        self.assertNotEqual(vuln.get_desc(), None)
         
     def test_allow_methods_sensitive_strange(self):
         
@@ -135,8 +135,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1)
         vuln = vulns[0]  
 
-        self.assertEqual(vuln.getName(), 'Sensitive and strange CORS methods enabled')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Sensitive and strange CORS methods enabled')
+        self.assertNotEqual(vuln.get_desc(), None)
         
     def test_allow_methods_sensitive_strange_analyze_server_response(self):
         
@@ -150,8 +150,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1, vulns)
         vuln = vulns[0]  
 
-        self.assertEqual(vuln.getName(), 'Sensitive and strange CORS methods enabled')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Sensitive and strange CORS methods enabled')
+        self.assertNotEqual(vuln.get_desc(), None)
 
     def test_allow_methods_sensitive_strange_call_max(self):
         
@@ -169,7 +169,7 @@ class TestCORSOrigin(PluginTest):
             v = vulns[0]  
 
             msg = 'Failure on run #%s' % i
-            self.assertEqual(v.getName(), 'Sensitive and strange CORS methods enabled', msg)
+            self.assertEqual(v.get_name(), 'Sensitive and strange CORS methods enabled', msg)
 
         vulns = self.co._allow_methods(self.request, self.url, self.origin, 
                                        self.response, allow_origin, allow_credentials,
@@ -178,8 +178,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1)
         vuln = vulns[0]
 
-        self.assertEqual(vuln.getName(), 'Multiple CORS misconfigurations')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Multiple CORS misconfigurations')
+        self.assertNotEqual(vuln.get_desc(), None)
     
     def test_universal_allow_not(self):
         allow_methods = 'GET, POST, OPTIONS'
@@ -202,8 +202,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1, vulns)
         vuln = vulns[0]
         
-        self.assertEqual(vuln.getName(), 'Access-Control-Allow-Origin set to "*"')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Access-Control-Allow-Origin set to "*"')
+        self.assertNotEqual(vuln.get_desc(), None)
 
     def test_universal_origin_echo_false(self):
         allow_methods = 'GET, POST, OPTIONS'
@@ -226,8 +226,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1, vulns)
         vuln = vulns[0]
         
-        self.assertEqual(vuln.getName(), 'Insecure Access-Control-Allow-Origin')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Insecure Access-Control-Allow-Origin')
+        self.assertNotEqual(vuln.get_desc(), None)
 
     def test_universal_origin_echo_with_credentials(self):
         allow_methods = 'GET, POST, OPTIONS'
@@ -240,8 +240,8 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual(len(vulns), 1, vulns)
         vuln = vulns[0]
         
-        self.assertEqual(vuln.getName(), 'Insecure Access-Control-Allow-Origin with credentials')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Insecure Access-Control-Allow-Origin with credentials')
+        self.assertNotEqual(vuln.get_desc(), None)
     
     def test_universal_origin_allow_creds(self):
         allow_methods = 'GET, POST, OPTIONS'
@@ -253,13 +253,13 @@ class TestCORSOrigin(PluginTest):
         
         self.assertEqual(len(vulns), 2, vulns)
         
-        impl_err_vuln = [v for v in vulns if v.getName() == 'Incorrect withCredentials implementation']
-        acao_all_vuln = [v for v in vulns if v.getName() == 'Access-Control-Allow-Origin set to "*"']
+        impl_err_vuln = [v for v in vulns if v.get_name() == 'Incorrect withCredentials implementation']
+        acao_all_vuln = [v for v in vulns if v.get_name() == 'Access-Control-Allow-Origin set to "*"']
         vuln = impl_err_vuln[0]
         
-        self.assertEqual(vuln.getName(), 'Incorrect withCredentials implementation')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Incorrect withCredentials implementation')
+        self.assertNotEqual(vuln.get_desc(), None)
         
         vuln = acao_all_vuln[0]
-        self.assertEqual(vuln.getName(), 'Access-Control-Allow-Origin set to "*"')
-        self.assertNotEqual(vuln.getDesc(), None)
+        self.assertEqual(vuln.get_name(), 'Access-Control-Allow-Origin set to "*"')
+        self.assertNotEqual(vuln.get_desc(), None)

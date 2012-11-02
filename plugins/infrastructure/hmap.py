@@ -26,7 +26,7 @@ import plugins.infrastructure.oHmap.hmap as originalHmap
 
 from core.controllers.w3afException import w3afRunOnce,  w3afException
 from core.controllers.misc.decorators import runonce
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 
@@ -88,13 +88,13 @@ class hmap(InfrastructurePlugin):
                 server = results[0]
             
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Webserver Fingerprint')
+                i.setPluginName(self.get_name())
+                i.set_name('Webserver Fingerprint')
                 desc = 'The most accurate fingerprint for this HTTP server is: "'
                 desc += str(server) + '".'
-                i.setDesc( desc )
+                i.set_desc( desc )
                 i['server'] = server
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
                 
                 # Save the results in the KB so that other plugins can use this information
                 kb.kb.append( self, 'server', i )
@@ -119,7 +119,7 @@ class hmap(InfrastructurePlugin):
         d = 'Generate a fingerprint file.'
         h = 'Define if we will generate a fingerprint file based on the'
         h += ' findings made during this execution.'
-        o = option('genFpF', self._gen_fp, d, 'boolean', help=h)
+        o = opt_factory('genFpF', self._gen_fp, d, 'boolean', help=h)
         
         ol.add(o)
         return ol
@@ -132,7 +132,7 @@ class hmap(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._gen_fp = options_list['genFpF'].getValue()
+        self._gen_fp = options_list['genFpF'].get_value()
 
     def get_plugin_deps( self ):
         '''

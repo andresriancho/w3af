@@ -180,9 +180,9 @@ class form_auth(BruteforcePlugin):
             
             for parameter_name in data_container:
 
-                if data_container.getType(parameter_name).lower() == 'password':
+                if data_container.get_type(parameter_name).lower() == 'password':
                     passwd += 1
-                elif data_container.getType(parameter_name).lower() == 'text':
+                elif data_container.get_type(parameter_name).lower() == 'text':
                     text += 1
                 else:
                     other += 1
@@ -219,10 +219,10 @@ class form_auth(BruteforcePlugin):
         
         for parameter_name in data_container:
                 
-            if data_container.getType(parameter_name).lower() == 'password':
+            if data_container.get_type(parameter_name).lower() == 'password':
                 passwd_parameter = parameter_name
             
-            elif data_container.getType(parameter_name).lower() == 'text':
+            elif data_container.get_type(parameter_name).lower() == 'text':
                 user_parameter = parameter_name
 
         return user_parameter, passwd_parameter
@@ -292,7 +292,7 @@ class form_auth(BruteforcePlugin):
                         self._found.add(freq_url)
                         v = vuln.vuln()
                         v.set_id(resp.id)
-                        v.setPluginName(self.getName())
+                        v.setPluginName(self.get_name())
                         v.setURL(freq.getURL())
                         if user_field is not None:
                             msg = ('Found authentication credentials to: '
@@ -304,12 +304,12 @@ class form_auth(BruteforcePlugin):
                             '"%s". The correct password is: "%s".'
                             % (freq_url, pwd))
 
-                        v.setDesc(msg)
+                        v.set_desc(msg)
                         v['user'] = user
                         v['pass'] = pwd
                         v['response'] = resp
                         v.setSeverity(severity.HIGH)
-                        v.setName('Guessable credentials')
+                        v.set_name('Guessable credentials')
                         kb.kb.append(self, 'auth', v)
     
                         om.out.vulnerability(msg, severity=severity.HIGH)

@@ -91,7 +91,7 @@ class TestGHDB(PluginTest):
         vuln = vulns[0]
         self.assertEqual(vuln.getURL().url_string, 'http://moth/w3af/crawl/ghdb/')
         self.assertEqual(vuln.getSeverity(), severity.MEDIUM)
-        self.assertEqual(vuln.getName(), 'Google hack database vulnerability')
+        self.assertEqual(vuln.get_name(), 'Google hack database vulnerability')
             
     def test_xml_parsing(self):
         ghdb_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'ghdb')

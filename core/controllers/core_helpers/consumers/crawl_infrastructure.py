@@ -109,14 +109,14 @@ class crawl_infrastructure(BaseConsumer):
                 plugin.end()
             except w3afException, e:
                 om.out.error('The plugin "%s" raised an exception in the '
-                             'end() method: %s' % (plugin.getName(), e))
+                             'end() method: %s' % (plugin.get_name(), e))
                 
     def _consume(self, work_unit):
         for plugin in self._consumer_plugins:
             
             if plugin in self._disabled_plugins: continue
             
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(), work_unit ) )
             
             # Please note that I add a task to self, this task is marked as DONE
             # in _finished_plugin_cb().
@@ -164,7 +164,7 @@ class crawl_infrastructure(BaseConsumer):
                     # Update the list / set that lives in the KB
                     update_kb(fuzzable_request)
                     
-                    self._out_queue.put( (plugin.getName(), None, fuzzable_request) )
+                    self._out_queue.put( (plugin.get_name(), None, fuzzable_request) )
         
     def join(self):
         super(crawl_infrastructure, self).join()
@@ -241,7 +241,7 @@ class crawl_infrastructure(BaseConsumer):
             if plugin_to_remove in self._w3af_core.plugins.plugins[plugin_type]:
                 
                 msg = 'The %s plugin: "%s" wont be run anymore.'
-                om.out.debug( msg % (plugin_type, plugin_to_remove.getName() ) )
+                om.out.debug( msg % (plugin_type, plugin_to_remove.get_name() ) )
 
                 # Add it to the list of disabled plugins, and run the end() method
                 self._disabled_plugins.add(plugin_to_remove)
@@ -318,7 +318,7 @@ class crawl_infrastructure(BaseConsumer):
                 if self._variant_db.need_more_variants(fr_uri):
                     self._variant_db.append(fr_uri)
                     
-                    msg = 'New URL found by %s plugin: "%s"' % (plugin.getName(),
+                    msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
                                                                 fuzzable_request.getURL())
                     om.out.information( msg )
                     return True
@@ -342,7 +342,7 @@ class crawl_infrastructure(BaseConsumer):
         
         @return: A list with the newly found fuzzable requests.
         '''
-        om.out.debug('Called _discover_worker(%s,%s)' % (plugin.getName(),
+        om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
                                                          fuzzable_request.getURI() ) )
         
         # Should I continue with the crawl phase? If not, return an empty result
@@ -351,9 +351,9 @@ class crawl_infrastructure(BaseConsumer):
         # Status reporting
         status = self._w3af_core.status
         status.set_phase('crawl')
-        status.set_running_plugin(plugin.getName())
+        status.set_running_plugin(plugin.get_name())
         status.set_current_fuzzable_request(fuzzable_request)
-        om.out.debug('%s is testing "%s"' % (plugin.getName(), fuzzable_request.getURI() ) )
+        om.out.debug('%s is testing "%s"' % (plugin.get_name(), fuzzable_request.getURI() ) )
         
         try:
             plugin.discover_wrapper(fuzzable_request)
@@ -363,14 +363,14 @@ class crawl_infrastructure(BaseConsumer):
                                'continuing with audit.')
         except w3afException,e:
             msg = 'An exception was found while running "%s" with "%s".'
-            om.out.error( msg % (plugin.getName(), fuzzable_request) )
+            om.out.error( msg % (plugin.get_name(), fuzzable_request) )
         except w3afRunOnce:
             # Some plugins are meant to be run only once
             # that is implemented by raising a w3afRunOnce
             # exception
             self._remove_discovery_plugin( plugin )
         except Exception, e:
-            self.handle_exception(plugin.getType(), plugin.getName(),
+            self.handle_exception(plugin.get_type(), plugin.get_name(),
                                   fuzzable_request, e)
         
         else:

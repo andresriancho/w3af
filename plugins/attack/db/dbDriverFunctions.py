@@ -252,7 +252,7 @@ class dbDriverFunctions:
         return count, value
 
 
-    def getValue(self, expression):
+    def get_value(self, expression):
         logMsg = "query: %s" % expression
         self.log(logMsg)
 
@@ -406,11 +406,11 @@ class dbDriverFunctions:
                     self.args.unionCount = splittedUrl.count("NULL")
                 else:
                     self.warn(warnMsg)
-                    return self.getValue(expression)
+                    return self.get_value(expression)
 
             if not self.args.unionCount:
                 self.warn(warnMsg)
-                return self.getValue(expression)
+                return self.get_value(expression)
 
             for exprPosition in range(self.args.unionCount):
                 randInteger = str(random.randint(10000, 99999))
@@ -468,4 +468,4 @@ class dbDriverFunctions:
                         return str(startPage[:endPosition])
 
             self.warn(warnMsg)
-            return self.getValue(expression)
+            return self.get_value(expression)

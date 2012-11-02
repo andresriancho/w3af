@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.esmre.multi_re import multi_re
 
@@ -78,21 +78,21 @@ class http_in_body (GrepPlugin):
 
                 if reqres == 'REQUEST':            
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('HTTP Request in HTTP body')
+                    i.setPluginName(self.get_name())
+                    i.set_name('HTTP Request in HTTP body')
                     i.setURI(uri)
                     i.set_id(response.id)
-                    i.setDesc('An HTTP request was found in the HTTP body of a response')
+                    i.set_desc('An HTTP request was found in the HTTP body of a response')
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'request', i)
 
                 if reqres == 'RESPONSE':                    
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('HTTP Response in HTTP body')
+                    i.setPluginName(self.get_name())
+                    i.set_name('HTTP Response in HTTP body')
                     i.setURI(uri)
                     i.set_id(response.id)
-                    i.setDesc('An HTTP response was found in the HTTP body of a response')
+                    i.set_desc('An HTTP response was found in the HTTP body of a response')
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 

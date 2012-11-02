@@ -114,7 +114,7 @@ class AuditPlugin(Plugin):
                 else:
                     raise ValueError, "Invalid arg 'varname': %s" % varname
             
-            pname = pname or self.getName()
+            pname = pname or self.get_name()
             kb_varname = kb_varname or pname
             vulns = kb.kb.get(pname, kb_varname)
     
@@ -125,5 +125,5 @@ class AuditPlugin(Plugin):
                     return False
             return True
         
-    def getType( self ):
+    def get_type( self ):
         return 'audit'

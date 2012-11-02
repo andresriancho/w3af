@@ -42,8 +42,8 @@ class configMenu(menu):
         self._memory = {}
         self._plainOptions = {}
         for o in self._options:
-            k = o.getName()
-            v = o.getDefaultValue()
+            k = o.get_name()
+            v = o.get_default_value()
             self._memory[k] = [v]
             self._plainOptions[k] = v
             self._optDict[k] = o
@@ -57,7 +57,7 @@ class configMenu(menu):
         table = [['Setting', 'Value', 'Description']]
         for tabid in self._tabbedOptions.keys():
             tabOpts = self._tabbedOptions[tabid]
-            table += [[o, tabOpts[o].getValueStr(), tabOpts[o].getDesc()] \
+            table += [[o, tabOpts[o].get_value_str(), tabOpts[o].get_desc()] \
                 for o in tabOpts ]           
             table.append([])
         if len(table) > 1:
@@ -67,7 +67,7 @@ class configMenu(menu):
     def _groupOptionsByTabId(self):      
         self._tabbedOptions = {}
         for opt in self._options:
-            tabid = opt.getTabId()
+            tabid = opt.get_tabid()
 
             if tabid not in self._tabbedOptions:
                 target = {}
@@ -75,7 +75,7 @@ class configMenu(menu):
             else:
                 target = self._tabbedOptions[tabid]
             
-            target[opt.getName()] = opt
+            target[opt.get_name()] = opt
 
     def _cmd_set(self, params):
         if len(params) < 2:
@@ -87,12 +87,12 @@ class configMenu(menu):
             name = params[0]
             value = ''.join(params[1:])
 
-            self._options[name].setValue( value )
+            self._options[name].set_value( value )
             self._plainOptions[name] = value
                             
             if isinstance( self._configurable, Plugin ):
-                self._w3af.plugins.set_plugin_options( self._configurable.getType(),
-                                                     self._configurable.getName(),
+                self._w3af.plugins.set_plugin_options( self._configurable.get_type(),
+                                                     self._configurable.get_name(),
                                                      self._options )
                 if value not in self._memory[name]:
                     self._memory[name].append(value)                
@@ -107,7 +107,7 @@ class configMenu(menu):
 
     def _para_set(self, params, part):
         if len(params) == 0:
-            result = suggest( [ i.getName() for i in self._options] , part)
+            result = suggest( [ i.get_name() for i in self._options] , part)
             return result
         elif len(params) == 1:
             paramName = params[0]
@@ -115,9 +115,9 @@ class configMenu(menu):
                 return []
 
             opt = self._options[paramName]
-            paramType = opt.getType()
+            paramType = opt.get_type()
             if paramType == 'boolean':
-                values = [ opt.getDefaultValue() == 'True' and 'False' or 'True']
+                values = [ opt.get_default_value() == 'True' and 'False' or 'True']
             else:
                 values = self._memory[paramName]
 
@@ -132,9 +132,9 @@ class configMenu(menu):
             optName = params[0]
             if optName in self._optDict:
                 opt = self._optDict[optName]
-                om.out.console(opt.getDesc())
-                om.out.console("Type: %s" % opt.getType())
-                om.out.console("Current value is: %s" % opt.getDefaultValue())
+                om.out.console(opt.get_desc())
+                om.out.console("Type: %s" % opt.get_type())
+                om.out.console("Current value is: %s" % opt.get_default_value())
                 return
 
         menu._cmd_help(self, params)

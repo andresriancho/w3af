@@ -76,15 +76,15 @@ class cross_domain_js(GrepPlugin):
                     
                     if script_domain != response.getURL().getDomain():
                         i = info.info()
-                        i.setPluginName(self.getName())
-                        i.setName('Cross-domain javascript source')
+                        i.setPluginName(self.get_name())
+                        i.set_name('Cross-domain javascript source')
                         i.setURL(url)
                         i.set_id(response.id)
                         msg = 'The URL: "%s" has script tag with a source that points' \
                               ' to a third party site ("%s"). This practice is not' \
                               ' recommended as security of the current site is being' \
                               ' delegated to that entity.'
-                        i.setDesc(msg)
+                        i.set_desc(msg)
                         to_highlight = etree.tostring(script_src_tag)
                         i.addToHighlight(to_highlight)
                         kb.kb.append(self, 'cross_domain_js', i)

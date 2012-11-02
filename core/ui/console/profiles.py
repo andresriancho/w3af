@@ -39,7 +39,7 @@ class profilesMenu(menu):
         self._profiles = {}
         instance_list, invalid_profiles = w3af.profiles.getProfileList()
         for profile in instance_list:
-            self._profiles[profile.getName()] = profile
+            self._profiles[profile.get_name()] = profile
         self._loadHelp('profiles')
 
 
@@ -76,7 +76,7 @@ class profilesMenu(menu):
         else:
             table = [['Profile', 'Description'],[]]
             for profileInstance in self._profiles.values():
-                table.append([profileInstance.getName() , profileInstance.getDesc()])
+                table.append([profileInstance.get_name() , profileInstance.get_desc()])
 
             self._console.drawTable(table)
 

@@ -35,13 +35,24 @@ class TestProxy(unittest.TestCase):
     def setUp(self):
         # Start the proxy server
         create_temp_dir()
-        self._proxy = proxy(self.IP, self.PORT, xUrllib(), w3afProxyHandler)
-        self._proxy.start()
         
-        # Build the proxy opener
-        proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s" % (self.IP, self.PORT)})
-        self.proxy_opener = urllib2.build_opener(proxy_handler,
-                                                 urllib2.HTTPHandler)
+        last_exception = None
+        
+        for port in xrange(self.PORT, self.PORT+10):
+            try:
+                self._proxy = proxy(self.IP, port, xUrllib(), w3afProxyHandler)
+                self._proxy.start()
+            except Exception, e:
+                last_exception = e 
+            else:
+                # Build the proxy opener
+                proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s"
+                                                  % (self.IP, port)})
+                self.proxy_opener = urllib2.build_opener(proxy_handler,
+                                                     urllib2.HTTPHandler)
+                break
+        else:
+            raise last_exception
     
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open('http://moth').read()

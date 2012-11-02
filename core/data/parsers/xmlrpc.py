@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import xml.sax
-import copy
 import cgi
 import base64
 
@@ -29,9 +28,11 @@ from xml.sax.handler import ContentHandler
 
 class xmlrpc_read_handler(ContentHandler): 
     '''
-    Parse a XMLRPC request and save the fuzzable parameters in self.fuzzable_parameters.
+    Parse a XMLRPC request and save the fuzzable parameters in
+    self.fuzzable_parameters.
     
-    The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
+    The user should call this function parse_xmlrpc and build_xmlrpc.
+    The rest if for internal use.
     '''
     def __init__ (self):
 

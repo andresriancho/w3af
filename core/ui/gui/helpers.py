@@ -180,6 +180,7 @@ def friendlyException(message):
             
     dlg = w3af_message_dialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
     dlg.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
+    dlg.set_title('Error')
     dlg.dialog_run()
     return
 
@@ -442,7 +443,7 @@ def write_console_messages( dlg ):
         
         inc_message_index()
 
-        if msg.getType() != 'console':
+        if msg.get_type() != 'console':
             continue
 
         # Handling new lines

@@ -33,7 +33,7 @@ class wsdl_greper(GrepPlugin):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    WSDL_STRINGS = ( 'xs:int', 'targetNamespace', 'soap:body',
+    WSDL_STRINGS = ( 'xs:int', 'target_namespace', 'soap:body',
                      '/s:sequence', 'wsdl:', 'soapAction=',
                      # This isn't WSDL... but well...
                      'xmlns="urn:uddi"','<p>Hi there, this is an AXIS service!</p>' )
@@ -60,14 +60,14 @@ class wsdl_greper(GrepPlugin):
             match_list = self._multi_in.query(response.body)
             if len(match_list):
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('WSDL file')
+                i.setPluginName(self.get_name())
+                i.set_name('WSDL file')
                 i.setURL( response.getURL() )
                 i.set_id( response.id )
                 i.addToHighlight( *match_list )
                 msg = 'The URL: "' +  i.getURL() + '" is a Web Services '
                 msg += 'Description Language page.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 kb.kb.append( self , 'wsdl' , i )
             
             is_disco = False
@@ -78,11 +78,11 @@ class wsdl_greper(GrepPlugin):
                 
             if is_disco:
                 i = info.info()
-                i.setPluginName(self.getName())
+                i.setPluginName(self.get_name())
                 i.setURL( response.getURL() )
                 msg = 'The URL: "' +  i.getURL() + '" is a DISCO file that contains'
                 msg += ' references to WSDLs.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 i.addToHighlight( disco_string )
                 kb.kb.append( self , 'disco' , i )
             

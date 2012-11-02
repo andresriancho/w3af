@@ -60,5 +60,5 @@ class EvasionPlugin(Plugin):
         '''
         raise w3afException('Plugin is not implementing required method getPriority' )
     
-    def getType( self ):
+    def get_type( self ):
         return 'evasion'

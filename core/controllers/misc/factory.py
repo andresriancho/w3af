@@ -32,7 +32,7 @@ def factory(module_name, *args):
     
     Example :
     >>> spider = factory( 'plugins.crawl.google_spider' )
-    >>> spider.getName()
+    >>> spider.get_name()
     'google_spider'
     
     

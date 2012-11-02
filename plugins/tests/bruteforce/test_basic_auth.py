@@ -69,7 +69,7 @@ class TestBasicAuth(PluginTest):
         
         vuln = vulns[0]
         
-        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
 
         self.assertEquals(vuln.getURL().url_string, self.target_url_easy)
         self.assertEquals(vuln['user'], 'admin')

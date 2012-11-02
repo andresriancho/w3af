@@ -62,6 +62,6 @@ class grep(BaseConsumer):
                     try:
                         grep_plugin.grep_wrapper( request, response )
                     except Exception, e:
-                        self.handle_exception('grep', plugin.getName(), request, e)
+                        self.handle_exception('grep', plugin.get_name(), request, e)
                 
                 self.in_queue.task_done()

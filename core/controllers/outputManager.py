@@ -60,7 +60,7 @@ class outputManager(Process):
                'error',
                'vulnerability',
                'console',
-               'logHttp',
+               'log_http',
               )
         
     def __init__(self):
@@ -183,7 +183,7 @@ class outputManager(Process):
                         pass
         
                     status = fake_status()
-                    status.set_running_plugin( o_plugin.getName(), log=False )
+                    status.set_running_plugin( o_plugin.get_name(), log=False )
                     status.set_phase( 'output' )
                     status.set_current_fuzzable_request( 'n/a' )
                     

@@ -44,5 +44,5 @@ class TestDNSWildcard(PluginTest):
         expected = set(['Default domain', 'No DNS wildcard'])
         
         self.assertEqual( expected,
-                          set([i.getName() for i in infos]) )
+                          set([i.get_name() for i in infos]) )
         

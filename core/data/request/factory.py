@@ -128,7 +128,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                   rem_meth.getLocation(),
                                   rem_meth.getAction(),
                                   rem_meth.getParameters(),
-                                  rem_meth.getNamespace(),
+                                  rem_meth.get_namespace(),
                                   rem_meth.get_methodName(),
                                   req_headers
                                   )

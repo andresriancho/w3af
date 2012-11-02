@@ -31,7 +31,8 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE, BOOL
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
@@ -77,16 +78,16 @@ class phishtank(CrawlPlugin):
         # Only create the vuln object once
         if phishtank_matches:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( ptm.url )
             v.set_id( response.id )
-            v.setName( 'Phishing scam' )
+            v.set_name( 'Phishing scam' )
             v.setSeverity(severity.MEDIUM)
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
-            v.setDesc(desc % (ptm.url, ptm.more_info_URL))
+            v.set_desc(desc % (ptm.url, ptm.more_info_URL))
             kb.kb.append( self, 'phishtank', v )
-            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+            om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
         
     def _get_to_check( self, target_url ):
         '''
@@ -220,8 +221,8 @@ class phishtank(CrawlPlugin):
         return pt_handler.matches
 
     def set_options( self, option_list ):
-        self._phishtank_DB = option_list['db_file'].getValue()
-        self._update_DB = option_list['update_db'].getValue()
+        self._phishtank_DB = option_list['db_file'].get_value()
+        self._update_DB = option_list['update_db'].get_value()
     
     def get_options( self ):
         '''
@@ -230,13 +231,13 @@ class phishtank(CrawlPlugin):
         ol = OptionList()
         
         d = 'The path to the phishtank database file.'
-        o = option('db_file', self._phishtank_DB, d, 'string')
+        o = opt_factory('db_file', self._phishtank_DB, d, INPUT_FILE)
         ol.add(o)
         
         d = 'Update the local phishtank database.'
         h = 'If True, the plugin will download the phishtank database'\
             ' from http://www.phishtank.com/ .'
-        o = option('update_db', self._update_DB, d, 'boolean', help=h)
+        o = opt_factory('update_db', self._update_DB, d, BOOL, help=h)
         ol.add(o)
         
         return ol

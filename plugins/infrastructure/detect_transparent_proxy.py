@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
@@ -49,14 +49,14 @@ class detect_transparent_proxy(InfrastructurePlugin):
         '''
         if self._is_proxyed_conn( fuzzable_request ):
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName( 'Transparent proxy detected' )
+            i.setPluginName(self.get_name())
+            i.set_name( 'Transparent proxy detected' )
             i.setURL( fuzzable_request.getURL() )
             msg = 'Your ISP seems to have a transparent proxy installed, this can influence'
             msg += ' w3af results.'
-            i.setDesc( msg )
+            i.set_desc( msg )
             kb.kb.append( self, 'detect_transparent_proxy', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
         else:
             om.out.information( 'Your ISP has no transparent proxy.' )
         

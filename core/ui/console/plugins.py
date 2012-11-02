@@ -263,7 +263,7 @@ class pluginsTypeMenu(menu):
             row.append(status)
             optInfo = optCount>0 and 'Yes' or ''
             row.append(optInfo)
-            row.append(str(plugin.getDesc()))
+            row.append(str(plugin.get_desc()))
 
             table.append(row)
         self._console.drawTable(table, True)

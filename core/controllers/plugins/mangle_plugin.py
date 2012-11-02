@@ -35,7 +35,7 @@ class ManglePlugin(Plugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def getType( self ):
+    def get_type( self ):
         return 'mangle'
 
     def __init__(self):

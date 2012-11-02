@@ -189,7 +189,7 @@ class menu(object):
             self._console.drawTable(table)
         else:
             subj = params[0]
-            short, full = self._help.getHelp(subj)
+            short, full = self._help.get_help(subj)
             if short is None:
                 raise w3afException("No help for '%s'" % subj)
 

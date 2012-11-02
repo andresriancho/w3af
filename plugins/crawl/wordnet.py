@@ -27,7 +27,7 @@ from core.controllers.misc.levenshtein import relative_distance_lt
 
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.nltk_wrapper.nltk_wrapper import wn
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -246,7 +246,7 @@ class wordnet(CrawlPlugin):
         ol = OptionList()
         
         d = 'Only use the first wnResults (wordnet results) from each category.'
-        o = option('wn_results', self._wordnet_results, d, 'integer')
+        o = opt_factory('wn_results', self._wordnet_results, d, 'integer')
         ol.add(o)
         
         return ol
@@ -259,7 +259,7 @@ class wordnet(CrawlPlugin):
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._wordnet_results = options_list['wn_results'].getValue()
+        self._wordnet_results = options_list['wn_results'].get_value()
 
     def get_long_desc( self ):
         '''

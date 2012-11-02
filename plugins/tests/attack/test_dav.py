@@ -47,7 +47,7 @@ class TestDAVShell(PluginTest):
         self.assertEquals(len(vulns), 2, vulns)
         
         vuln = vulns[0]
-        self.assertEquals('Insecure DAV configuration', vuln.getName())
+        self.assertEquals('Insecure DAV configuration', vuln.get_name())
 
         vuln_to_exploit_id = vuln.getId()
         

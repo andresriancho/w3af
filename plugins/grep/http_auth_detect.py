@@ -81,18 +81,18 @@ class http_auth_detect(GrepPlugin):
                self._auth_uri_regex.match(response.getURI().url_string)):
             # An authentication URI was found!
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL(response.getURL())
             v.set_id(response.id)
             desc = 'The resource: "%s" has a user and password in ' \
             'the URI.' % response.getURI()
-            v.setDesc(desc)
+            v.set_desc(desc)
             v.setSeverity(severity.HIGH)
-            v.setName('Basic HTTP credentials')
+            v.set_name('Basic HTTP credentials')
             v.addToHighlight( response.getURI().url_string )
             
             kb.kb.append(self, 'userPassUri', v)
-            om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
+            om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
 
 
         #
@@ -115,19 +115,19 @@ class http_auth_detect(GrepPlugin):
             if ('@' in url.url_string and
                     self._auth_uri_regex.match(url.url_string)):
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL(response.getURL())
                 v.set_id( response.id )
                 msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
                 msg += ' body. The offending URL is: "' + url + '".'
-                v.setDesc(msg)
+                v.set_desc(msg)
                 
                 v.setSeverity(severity.HIGH)
-                v.setName('Basic HTTP credentials')
+                v.set_name('Basic HTTP credentials')
                 v.addToHighlight( url.url_string )
                 
                 kb.kb.append(self, 'userPassUri', v)
-                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
+                om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
                     
     def _analyze_401(self, response):
         '''
@@ -145,11 +145,11 @@ class http_auth_detect(GrepPlugin):
         if realm is None:
             # Report this strange case
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Authentication without www-authenticate header')
+            i.setPluginName(self.get_name())
+            i.set_name('Authentication without www-authenticate header')
             i.setURL( response.getURL() )
             i.set_id( response.id )
-            i.setDesc( 'The resource: "'+ response.getURL() + '" requires authentication ' +
+            i.set_desc( 'The resource: "'+ response.getURL() + '" requires authentication ' +
             '(HTTP Code 401) but the www-authenticate header is not present. This requires ' + 
             'human verification.')
             kb.kb.append( self , 'non_rfc_auth' , i )
@@ -157,21 +157,21 @@ class http_auth_detect(GrepPlugin):
         else:
             # Report the common case, were a realm is set.
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             if 'ntlm' in realm.lower():
-                i.setName('NTLM authentication')
+                i.set_name('NTLM authentication')
             else:
-                i.setName('HTTP Basic authentication')
+                i.set_name('HTTP Basic authentication')
             i.setURL( response.getURL() )
             i.set_id( response.id )
-            i.setDesc( 'The resource: "'+ response.getURL() + '" requires authentication.' +
+            i.set_desc( 'The resource: "'+ response.getURL() + '" requires authentication.' +
             ' The realm is: "' + realm + '".')
             i['message'] = realm
             i.addToHighlight( realm )
             
             kb.kb.append( self , 'auth' , i )
             
-        om.out.information( i.getDesc() )
+        om.out.information( i.get_desc() )
         
     def get_long_desc( self ):
         '''

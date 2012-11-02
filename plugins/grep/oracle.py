@@ -49,24 +49,24 @@ class oracle(GrepPlugin):
         if response.is_text_or_html() and url not in self._already_analyzed:
             self._already_analyzed.add(url)
 
-            for msg in self._getDescriptiveMessages():
+            for msg in self._get_descriptiveMessages():
                 # Remember that HTTPResponse objects have a faster "__in__" than
                 # the one in strings; so string in response.getBody() is slower than
                 # string in response
                 if msg in response:
                     
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Oracle application')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Oracle application')
                     i.setURL(url)
                     i.set_id( response.id )
                     i.addToHighlight( msg )
                     msg = 'The URL: "' + url + '" was created using Oracle'
                     msg += ' Application server.'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     kb.kb.append( self , 'oracle' , i )
 
-    def _getDescriptiveMessages( self ):
+    def _get_descriptiveMessages( self ):
         res = []
         res.append('<!-- Created by Oracle ')
         return res

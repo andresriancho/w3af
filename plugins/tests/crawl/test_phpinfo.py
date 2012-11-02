@@ -55,7 +55,7 @@ class TestPHPInfo(PluginTest):
         
         for e_info_name in EXPECTED_INFOS:
             for info in infos:
-                if info.getName() == e_info_name:
+                if info.get_name() == e_info_name:
                     break
             else:
                 self.assertTrue(False, e_info_name)

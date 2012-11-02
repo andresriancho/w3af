@@ -40,7 +40,7 @@ class TestWebDiff(PluginTest):
                              ('content', True, PluginConfig.BOOL),
                              ('local_dir', local_dir, PluginConfig.STR),
                              ('remote_url_path', URL(target_url), PluginConfig.URL),
-                             ('banned_ext', ['php',], PluginConfig.LIST)),
+                             ('banned_ext', 'php,foo,bar', PluginConfig.LIST)),
                 )
              }
          },

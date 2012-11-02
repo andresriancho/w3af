@@ -36,9 +36,9 @@ NTLM_NegotiateOemDomainSupplied      =  0x00001000
 NTLM_NegotiateOemWorkstationSupplied =  0x00002000
 NTLM_Unknown6                        =  0x00004000
 NTLM_NegotiateAlwaysSign             =  0x00008000
-NTLM_TargetTypeDomain                =  0x00010000
-NTLM_TargetTypeServer                =  0x00020000
-NTLM_TargetTypeShare                 =  0x00040000
+NTLM_Target_typeDomain                =  0x00010000
+NTLM_Target_typeServer                =  0x00020000
+NTLM_Target_typeShare                 =  0x00040000
 NTLM_NegotiateExtendedSecurity       =  0x00080000
 NTLM_NegotiateIdentify               =  0x00100000
 NTLM_Unknown5                        =  0x00200000
@@ -138,12 +138,12 @@ def dump_NegotiateFlags(NegotiateFlags):
         print "NTLM_Unknown6 set"                       
     if NegotiateFlags & NTLM_NegotiateAlwaysSign:
         print "NTLM_NegotiateAlwaysSign set"            
-    if NegotiateFlags & NTLM_TargetTypeDomain:
-        print "NTLM_TargetTypeDomain set"               
-    if NegotiateFlags & NTLM_TargetTypeServer:
-        print "NTLM_TargetTypeServer set"               
-    if NegotiateFlags & NTLM_TargetTypeShare:
-        print "NTLM_TargetTypeShare set"                
+    if NegotiateFlags & NTLM_Target_typeDomain:
+        print "NTLM_Target_typeDomain set"               
+    if NegotiateFlags & NTLM_Target_typeServer:
+        print "NTLM_Target_typeServer set"               
+    if NegotiateFlags & NTLM_Target_typeShare:
+        print "NTLM_Target_typeShare set"                
     if NegotiateFlags & NTLM_NegotiateExtendedSecurity:
         print "NTLM_NegotiateExtendedSecurity set"      
     if NegotiateFlags & NTLM_NegotiateIdentify:
@@ -218,10 +218,10 @@ def parse_NTLM_CHALLENGE_MESSAGE(msg2):
     Signature = msg2[0:8]
     msg_type = struct.unpack("<I",msg2[8:12])[0]
     assert(msg_type==2)
-    TargetNameLen = struct.unpack("<H",msg2[12:14])[0]
-    TargetNameMaxLen = struct.unpack("<H",msg2[14:16])[0]
-    TargetNameOffset = struct.unpack("<I",msg2[16:20])[0]
-    TargetName = msg2[TargetNameOffset:TargetNameOffset+TargetNameMaxLen]
+    Target_nameLen = struct.unpack("<H",msg2[12:14])[0]
+    Target_nameMaxLen = struct.unpack("<H",msg2[14:16])[0]
+    Target_nameOffset = struct.unpack("<I",msg2[16:20])[0]
+    Target_name = msg2[Target_nameOffset:Target_nameOffset+Target_nameMaxLen]
     NegotiateFlags = struct.unpack("<I",msg2[20:24])[0]
     ServerChallenge = msg2[24:32]
     Reserved = msg2[32:40]

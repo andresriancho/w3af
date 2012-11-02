@@ -46,7 +46,7 @@ class TestDav(PluginTest):
         EXPECTED_NAMES = set(['Insecure DAV configuration'] * 2)
         
         self.assertEquals( EXPECTED_NAMES,
-                           set([v.getName() for v in vulns])
+                           set([v.get_name() for v in vulns])
                           )
         
         self.assertEquals( set(['PUT', 'PROPFIND']),
@@ -69,7 +69,7 @@ class TestDav(PluginTest):
         vuln = vulns[0]
         
         self.assertEquals( 'DAV insufficient privileges',
-                           vuln.getName() )
+                           vuln.get_name() )
         
         self.assertEquals( self.target_no_privs, 
                            str(vuln.getURL().getDomainPath() ) )

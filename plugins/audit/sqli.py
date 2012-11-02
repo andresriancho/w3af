@@ -157,14 +157,14 @@ class sqli(AuditPlugin):
                 if self._has_no_bug(mutant):
                     # Create the vuln,
                     v = vuln.vuln(mutant)
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id(response.id)
-                    v.setName('SQL injection')
+                    v.set_name('SQL injection')
                     v.setSeverity(severity.HIGH)
                     v.addToHighlight(sql_error_string)
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
-                    v.setDesc('SQL injection in a %s was found at: %s' %
+                    v.set_desc('SQL injection in a %s was found at: %s' %
                               (v['db'], mutant.foundAt()))
                     kb.kb.append_uniq(self, 'sqli', v)
                     break

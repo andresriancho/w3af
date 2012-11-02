@@ -42,7 +42,7 @@ class short_wizard(wizard):
         '''
         return 'This is a small demo wizard to be able to code the GUI'
 
-    def getName(self):
+    def get_name(self):
         '''
         @return: The name of the wizard.
         '''

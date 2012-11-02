@@ -69,8 +69,8 @@ class WebServiceRequest(HTTPPostDataRequest):
         count = 0
         for param in self.getParameters():
             count += 1
-            res += '<v' + str(count) + ' xsi:type="xsd:' + param.getType() + '">' + \
-            cgi.escape(self._dc[param.getName()]) + '</v' + str(count) + '>\n'
+            res += '<v' + str(count) + ' xsi:type="xsd:' + param.get_type() + '">' + \
+            cgi.escape(self._dc[param.get_name()]) + '</v' + str(count) + '>\n'
             
         res += '</ns1:' + self.get_methodName() + '>\n'
         res += '</SOAP-ENV:Body>\n'
@@ -113,7 +113,7 @@ class WebServiceRequest(HTTPPostDataRequest):
         self._parameters = par
         # And now save it so we can fuzz it.
         for param in par:
-            self._dc[ param.getName() ] = ''
+            self._dc[ param.get_name() ] = ''
 
     def __str__(self):
         '''

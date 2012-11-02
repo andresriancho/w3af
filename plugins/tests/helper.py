@@ -29,9 +29,9 @@ import core.data.kb.knowledgeBase as kb
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
 
-from core.data.options.option import option as Option
-from core.data.options.comboOption import comboOption as ComboOption
-from core.data.options.option_list import OptionList as OptionList
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import LIST
+from core.data.options.option_list import OptionList
 
 os.chdir(W3AF_LOCAL_PATH)
 
@@ -61,13 +61,13 @@ class PluginTest(unittest.TestCase):
         def _targetoptions(*target):
             opts = OptionList()
             
-            opt = Option('target', '', '', Option.LIST)
-            opt.setValue(','.join(target))
+            opt = opt_factory('target', '', '', LIST)
+            opt.set_value(','.join(target))
             opts.add(opt)
-            opt = ComboOption(
+            opt = opt_factory(
                       'targetOS', ('unknown','unix','windows'), '', 'combo')
             opts.add(opt)
-            opt = ComboOption(
+            opt = opt_factory(
                       'targetFramework',
                       ('unknown', 'php','asp', 'asp.net',
                        'java','jsp','cfm','ruby','perl'),
@@ -90,7 +90,7 @@ class PluginTest(unittest.TestCase):
                 default_option_list = plugin_instance.get_options()
                 unit_test_options = pcfg.options
                 for option in default_option_list:
-                    if option.getName() not in unit_test_options:
+                    if option.get_name() not in unit_test_options:
                         unit_test_options.add(option) 
                     
                 self.w3afcore.plugins.set_plugin_options(ptype, pcfg.name, unit_test_options)
@@ -128,7 +128,7 @@ class PluginConfig(object):
         self._name = name
         self._options = OptionList()
         for optname, optval, optty in opts:
-            self._options.append( Option(optname, optval, '', optty) )
+            self._options.append( opt_factory(optname, str(optval), '', optty) )
     
     @property
     def name(self):

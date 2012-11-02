@@ -44,7 +44,7 @@ class TestAFD(PluginTest):
         
         info = infos[0]
         
-        self.assertEqual( info.getName(), 'Active filter detected')
+        self.assertEqual( info.get_name(), 'Active filter detected')
         values = [ u.split('=')[1] for u in info['filtered'] ]
 
         expected = [

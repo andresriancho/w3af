@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
@@ -47,16 +47,16 @@ class question_infrastructure_3(question):
         @return: A list of options for this question.
         '''
         self._d1 = 'Identify Operating System'
-        o1 = option( self._d1, True, self._d1, 'boolean')
+        o1 = opt_factory( self._d1, True, self._d1, 'boolean')
         
         self._d2 = 'Fingerprint Web Server vendor and version'
-        o2 = option(self._d2, True, self._d2, 'boolean')
+        o2 = opt_factory(self._d2, True, self._d2, 'boolean')
         
         self._d3 = 'Fingerprint programming framework'
-        o3 = option(self._d3, True, self._d3, 'boolean')
+        o3 = opt_factory(self._d3, True, self._d3, 'boolean')
         
         self._d4 = 'Find virtual hosts'
-        o4 = option(self._d4, True, self._d4, 'boolean')
+        o4 = opt_factory(self._d4, True, self._d4, 'boolean')
     
         ol = OptionList()
         ol.add(o1)
@@ -69,18 +69,18 @@ class question_infrastructure_3(question):
     def getNextQuestionId(self,  options_list ):
         plugin_list = []
         
-        if options_list[self._d1].getValue():
+        if options_list[self._d1].get_value():
             plugin_list.append('fingerprint_os')
             
-        if options_list[self._d2].getValue():
+        if options_list[self._d2].get_value():
             plugin_list.append('hmap')
             plugin_list.append('server_header')
             
-        if options_list[self._d3].getValue():
+        if options_list[self._d3].get_value():
             plugin_list.append('php_eggs')
             plugin_list.append('dot_net_errors')
             
-        if options_list[self._d4].getValue():
+        if options_list[self._d4].get_value():
             plugin_list.append('find_vhosts')
         
         # Set the plugins to be run

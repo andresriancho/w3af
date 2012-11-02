@@ -545,7 +545,7 @@ class MainApp(object):
         
         # unicode str needed. pygtk works with 'utf8'
         url = self.pcbody.target.get_text().decode('utf8')
-        options['target'].setValue( url )
+        options['target'].set_value( url )
         if relaxedTarget:
             try:
                 self.w3af.target.set_options(options)

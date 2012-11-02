@@ -27,7 +27,7 @@ import core.data.constants.response_codes as response_codes
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.group_by_min_key import group_by_min_key
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -131,15 +131,15 @@ class allowed_methods(InfrastructurePlugin):
             if non_exist_response.getCode() not in self.BAD_CODES\
             and get_response.getBody() == non_exist_response.getBody():
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName( 'Non existent methods default to GET' )
+                i.setPluginName(self.get_name())
+                i.set_name( 'Non existent methods default to GET' )
                 i.setURL( url )
                 i.set_id( [non_exist_response.getId(), get_response.getId()] )
                 msg = 'The remote Web server has a custom configuration, in'\
                       ' which any not implemented methods that are invoked are'\
                       ' defaulted to GET instead of returning a "Not Implemented"'\
                       ' response.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 kb.kb.append( self , 'custom-configuration' , i )
                 #
                 #   It makes no sense to continue working, all methods will
@@ -175,27 +175,27 @@ class allowed_methods(InfrastructurePlugin):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Allowed methods for ' + url )
+            i.setPluginName(self.get_name())
+            i.set_name('Allowed methods for ' + url )
             i.setURL( url )
             i.set_id( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods, which'
             msg += ' include DAV methods: ' + ', '.join(allowed_methods)
-            i.setDesc( msg )
+            i.set_desc( msg )
             kb.kb.append( self , 'dav-methods' , i )
         else:
             # Save the results in the KB so that other plugins can use this information
             # Do not remove these information, other plugins REALLY use it !
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Allowed methods for ' + url )
+            i.setPluginName(self.get_name())
+            i.set_name('Allowed methods for ' + url )
             i.setURL( url )
             i.set_id( id_list )
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods:'
             msg += ' ' + ', '.join(allowed_methods)
-            i.setDesc( msg )
+            i.set_desc( msg )
             kb.kb.append( self , 'methods' , i )
             
         return []
@@ -254,11 +254,11 @@ class allowed_methods(InfrastructurePlugin):
         h1 = 'Generally the methods allowed for a URL are \
           configured system wide, so executing this plugin only one \
           time is the faster choice. The safest choice is to run it against every URL.'
-        o = option('execOneTime', self._exec_one_time, d1, 'boolean', help=h1)
+        o = opt_factory('execOneTime', self._exec_one_time, d1, 'boolean', help=h1)
         ol.add(o)
         
         d2 = 'Only report findings if uncommon methods are found'
-        o = option('reportDavOnly', self._report_dav_only, d2, 'boolean')
+        o = opt_factory('reportDavOnly', self._report_dav_only, d2, 'boolean')
         ol.add(o)
         
         return ol
@@ -271,8 +271,8 @@ class allowed_methods(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._exec_one_time = options_list['execOneTime'].getValue()
-        self._report_dav_only = options_list['reportDavOnly'].getValue()
+        self._exec_one_time = options_list['execOneTime'].get_value()
+        self._report_dav_only = options_list['reportDavOnly'].get_value()
 
     def get_long_desc( self ):
         '''

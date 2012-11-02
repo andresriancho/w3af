@@ -103,6 +103,6 @@ class TestCSRF(PluginTest):
 
         self.assertEquals( set(EXPECTED),
                            set([ v.getURL().getFileName() for v in vulns]) )
-        self.assertTrue(all(['CSRF vulnerability' == v.getName() for v in vulns ]) )
+        self.assertTrue(all(['CSRF vulnerability' == v.get_name() for v in vulns ]) )
 
 

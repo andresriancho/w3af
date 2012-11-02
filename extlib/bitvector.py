@@ -60,7 +60,7 @@ __doc__ = '''
            eliminating calls to the padding function.  Another feature of
            this version is the count_bits() method that returns the total
            number of bits set in a BitVector instance.  Yet another feature
-           of this version is the setValue() method that alters the bit
+           of this version is the set_value() method that alters the bit
            pattern associated with a previously constructed BitVector.
        
        Version 1.4.1:
@@ -214,7 +214,7 @@ __doc__ = '''
               write_bits_to_fileobject
               reset
               slice assignment
-              setValue
+              set_value
               count_bits
               count_bit_sparse          
               jaccard_similarity
@@ -529,7 +529,7 @@ __doc__ = '''
 
               bv = BitVector( intVal = 7, size =16 )
               print bv                              # 0000000000000111
-              bv.setValue( intVal = 45 )
+              bv.set_value( intVal = 45 )
               print bv                              # 101101
 
        21) You can count the number of bits set in a BitVector instance by
@@ -777,7 +777,7 @@ __doc__ = '''
         include a method that returns the total number of bits set in a
         BitVector instance.  The new method count_bits() does exactly
         that. Thanks Ryan for all your suggestions.  Version 1.5 also
-        includes the method setValue() that allows the internally stored
+        includes the method set_value() that allows the internally stored
         bit pattern associated with a previously constructed BitVector to
         be changed.  A need for this method was expressed by Aleix
         Conchillo.  Thanks Aleix.
@@ -1576,7 +1576,7 @@ class BitVector( object ):                                           #(A1)
         '''
         return reduce( lambda x, y: int(x)+int(y), self )            #(k2)
 
-    def setValue(self, *args, **kwargs ):                            #(m1)
+    def set_value(self, *args, **kwargs ):                            #(m1)
         '''
         Changes the bit pattern associated with a previously constructed
         BitVector instance.  The allowable modes for chaning the internally
@@ -2051,10 +2051,10 @@ if __name__ == '__main__':
     bv = BitVector( bitstring = '00000000000000' )
     print bv.count_bits()
 
-    print "\nTest setValue idea:"
+    print "\nTest set_value idea:"
     bv = BitVector( intVal = 7, size =16 )
     print bv                              # 0000000000000111
-    bv.setValue( intVal = 45 )
+    bv.set_value( intVal = 45 )
     print bv                              # 101101
 
     print "\nTesting count_bits_sparse():"

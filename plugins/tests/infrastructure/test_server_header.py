@@ -43,6 +43,6 @@ class TestServerHeader(PluginTest):
         self.assertEqual( len(server), 1, server)
         self.assertEqual( len(pow_by), 1, pow_by)
 
-        self.assertEqual( server[0].getName(), 'Server header')
-        self.assertEqual( pow_by[0].getName(), '"X-Powered-By" header')
+        self.assertEqual( server[0].get_name(), 'Server header')
+        self.assertEqual( pow_by[0].get_name(), '"X-Powered-By" header')
         

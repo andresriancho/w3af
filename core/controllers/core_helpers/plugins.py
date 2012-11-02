@@ -84,28 +84,25 @@ class w3af_core_plugins(object):
         #
         self._w3af_core.uri_opener.settings.setManglePlugins( self.plugins['mangle'] )
 
-    def set_plugin_options(self, plugin_type, plugin_name, pluginOptions):
+    def set_plugin_options(self, plugin_type, plugin_name, plugin_options):
         '''
         @parameter plugin_type: The plugin type, like 'audit' or 'crawl'
         @parameter plugin_name: The plugin name, like 'sqli' or 'web_spider'
-        @parameter pluginOptions: An OptionList with the option objects for a plugin.
+        @parameter plugin_options: An OptionList with the option objects for a plugin.
         
         @return: No value is returned.
         '''
         if plugin_type.lower() == 'output':
-            om.out.set_plugin_options(plugin_name, pluginOptions)
+            om.out.set_plugin_options(plugin_name, plugin_options)
             
         # The following lines make sure that the plugin will accept the options
         # that the user is setting to it.
-        pI = self.get_plugin_inst(plugin_type, plugin_name)
-        try:
-            pI.set_options(pluginOptions)
-        except Exception:
-            raise
-        else:
-            # Now that we are sure that these options are valid, lets save them
-            # so we can use them later!
-            self._plugins_options[plugin_type][plugin_name] = pluginOptions
+        plugin_inst = self.get_plugin_inst(plugin_type, plugin_name)
+        plugin_inst.set_options(plugin_options)
+        
+        # Now that we are sure that these options are valid, lets save them
+        # so we can use them later!
+        self._plugins_options[plugin_type][plugin_name] = plugin_options
 
     def get_plugin_options(self, plugin_type, plugin_name):
         '''

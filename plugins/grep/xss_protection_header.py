@@ -46,15 +46,15 @@ class xss_protection_header(GrepPlugin):
         value = response.getLowerCaseHeaders().get('x-xss-protection', None)
         if value == '0':
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Insecure X-XSS-Protection header usage')
+            i.setPluginName(self.get_name())
+            i.set_name('Insecure X-XSS-Protection header usage')
             i.setURL( response.getURL() )
             i.set_id( response.id )
             msg = 'The remote web server sent the HTTP X-XSS-Protection header'\
                   ' with a 0 value, which disables Internet Explorer\'s XSS ' \
                   ' filter. In most cases, this is a bad practice and should' \
                   ' be subject to review.'
-            i.setDesc( msg )
+            i.set_desc( msg )
             i.addToHighlight( 'X-XSS-Protection' )
             kb.kb.append( self , 'xss_protection_header' , i )
 

@@ -67,13 +67,13 @@ class file_upload(GrepPlugin):
                 # Loop through file inputs tags                
                 for input_file in self._file_input_xpath( dom ):
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('File upload form')
+                    i.setPluginName(self.get_name())
+                    i.set_name('File upload form')
                     i.setURL(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has form with file upload ' \
                     'capabilities.' % url
-                    i.setDesc(msg)
+                    i.set_desc(msg)
                     to_highlight = etree.tostring(input_file)
                     i.addToHighlight(to_highlight)
                     kb.kb.append(self, 'file_upload', i)

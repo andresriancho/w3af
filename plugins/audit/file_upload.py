@@ -29,11 +29,10 @@ import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.w3afException import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
 
@@ -109,13 +108,9 @@ class file_upload(AuditPlugin):
             file_handler.close()
             
             # Open the target again, should never fail.
-            try:
-                file_handler = file( file_name, 'r')
-            except:
-                raise w3afException('Failed to open temp file: "%s".' % file_name)
-            else:
-                _, file_name = os.path.split(file_name)
-                result.append( (file_handler, file_name) )
+            file_handler = file( file_name, 'r')
+            _, file_name = os.path.split(file_name)
+            result.append( (file_handler, file_name) )
         
         return result
     
@@ -189,15 +184,15 @@ class file_upload(AuditPlugin):
             # be picked
             mutant.setModValue('<file_object>')
             v = vuln.vuln(mutant)
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.set_id([http_response.id, get_response.id])
             v.setSeverity(severity.HIGH)
-            v.setName('Insecure file upload')
+            v.set_name('Insecure file upload')
             v['fileDest'] = get_response.getURL()
             v['fileVars'] = mutant.get_file_vars()
             msg = ('A file upload to a directory inside the '
                    'webroot was found at: ' + mutant.foundAt())
-            v.setDesc(msg)
+            v.set_desc(msg)
             kb.kb.append(self, 'file_upload', v)
             return
     
@@ -232,7 +227,7 @@ class file_upload(AuditPlugin):
         d = 'Extensions that w3af will try to upload through the form.'
         h = 'When finding a form with a file upload, this plugin will try to'
         h += '  upload a set of files with the extensions specified here.'
-        o = option('extensions', self._extensions, d, 'list', help=h)
+        o = opt_factory('extensions', self._extensions, d, 'list', help=h)
 
         ol.add(o)
         
@@ -246,7 +241,7 @@ class file_upload(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._extensions = options_list['extensions'].getValue()
+        self._extensions = options_list['extensions'].get_value()
     
     def get_long_desc( self ):
         '''

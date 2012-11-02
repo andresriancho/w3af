@@ -82,16 +82,16 @@ class domain_dot(InfrastructurePlugin):
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
             i = info.info(resp)
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.set_id([original_resp.id, resp.id])
-            i.setName('Responses differ')
+            i.set_name('Responses differ')
             msg = '[Manual verification required] The response body for a ' \
                   'request with a trailing dot in the domain, and the response ' \
                   'body without a trailing dot in the domain differ. This could ' \
                   'indicate a misconfiguration in the virtual host settings. In ' \
                   'some cases, this misconfiguration permits the attacker to ' \
                   'read the source code of the web application.'
-            i.setDesc(msg)
+            i.set_desc(msg)
             
             om.out.information(msg)
             

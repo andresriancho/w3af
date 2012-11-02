@@ -103,8 +103,8 @@ class meta_tags(GrepPlugin):
                             if where is not None:
                                 # The atribute is interesting!
                                 i = info.info()
-                                i.setPluginName(self.getName())
-                                i.setName('Interesting META tag')
+                                i.setPluginName(self.get_name())
+                                i.set_name('Interesting META tag')
                                 i.setURI( response.getURI() )
                                 i.set_id( response.id )
                                 msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
@@ -114,7 +114,7 @@ class meta_tags(GrepPlugin):
                                 if self.INTERESTING_WORDS.get(tag_name, None):
                                     msg += ' The tag is used for '
                                     msg += self.INTERESTING_WORDS[tag_name] + '.'
-                                i.setDesc( msg )
+                                i.set_desc( msg )
                                 kb.kb.append( self , 'meta_tags' , i )
 
     

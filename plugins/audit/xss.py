@@ -29,7 +29,7 @@ import core.data.kb.vuln as vuln
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException
 from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
                                           INTERNET_EXPLORER_7, NETSCAPE_IE,
@@ -345,13 +345,13 @@ class xss(AuditPlugin):
                 # Save it to the KB
                 if vulnerable:                
                     v = vuln.vuln(mutant)
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id(response.id)
-                    v.setName('Cross site scripting vulnerability')
+                    v.set_name('Cross site scripting vulnerability')
                     v.setSeverity(severity.MEDIUM)
                     msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
                     msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
-                    v.setDesc(msg)
+                    v.set_desc(msg)
                     v.addToHighlight(mod_value)
                     kb.kb.append_uniq(self, 'xss', v)
     
@@ -417,7 +417,7 @@ class xss(AuditPlugin):
                     if mutant.getModValue() in response:
                         
                         v = vuln.vuln(mutant)
-                        v.setPluginName(self.getName())
+                        v.setPluginName(self.get_name())
                         v.setURL(fuzzable_request.getURL())
                         v.setDc(fuzzable_request.getDc())
                         v.setMethod(fuzzable_request.get_method())
@@ -425,16 +425,16 @@ class xss(AuditPlugin):
                         v['permanent'] = True
                         v['write_payload'] = mutant
                         v['read_payload'] = fuzzable_request
-                        v.setName('Permanent cross site scripting vulnerability')
+                        v.set_name('Permanent cross site scripting vulnerability')
                         v.setSeverity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()
                         msg += ' . Using method: ' + v.get_method() + '. The XSS was sent to the'
                         msg += ' URL: ' + mutant.getURL() + '. ' + mutant.printModValue()
-                        v.setDesc(msg)
+                        v.set_desc(msg)
                         v.set_id([response.id, mutant_response_id])
                         v.addToHighlight(mutant.getModValue())
 
-                        om.out.vulnerability(v.getDesc())
+                        om.out.vulnerability(v.get_desc())
                         kb.kb.append(self, 'xss', v)
                         break
         
@@ -447,7 +447,7 @@ class xss(AuditPlugin):
         d1 = 'Identify stored cross site scripting vulnerabilities'
         h1 = 'If set to True, w3af will navigate all pages of the target one more time,'
         h1 += ' searching for stored cross site scripting vulnerabilities.'
-        o1 = option('checkStored', self._check_stored_xss, d1, 'boolean', help=h1)
+        o1 = opt_factory('checkStored', self._check_stored_xss, d1, 'boolean', help=h1)
         
         d2 = 'Set the amount of checks to perform for each fuzzable parameter.'
         d2 += ' Valid numbers: 1 to ' + str(self._xss_tests_length)
@@ -457,7 +457,7 @@ class xss(AuditPlugin):
         h2 += ' really determined and don\'t want to loose the 1% of the vulnerabilities that is'
         h2 += ' left out by this setting, feel free to set this number to '
         h2 += str(self._xss_tests_length)
-        o2 = option('numberOfChecks', self._number_of_stored_xss_checks, d2, 'integer', help=h2)
+        o2 = opt_factory('numberOfChecks', self._number_of_stored_xss_checks, d2, 'integer', help=h2)
         
         ol = OptionList()
         ol.add(o1)
@@ -472,10 +472,10 @@ class xss(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._check_stored_xss = options_list['checkStored'].getValue()
-        if options_list['numberOfChecks'].getValue() >= 1 and \
-        options_list['numberOfChecks'].getValue() <= self._xss_tests_length:
-            self._number_of_stored_xss_checks = options_list['numberOfChecks'].getValue()
+        self._check_stored_xss = options_list['checkStored'].get_value()
+        if options_list['numberOfChecks'].get_value() >= 1 and \
+        options_list['numberOfChecks'].get_value() <= self._xss_tests_length:
+            self._number_of_stored_xss_checks = options_list['numberOfChecks'].get_value()
         else:
             msg = 'Please enter a valid numberOfChecks value (1-' + str(self._xss_tests_length) + ').'
             raise w3afException(msg)

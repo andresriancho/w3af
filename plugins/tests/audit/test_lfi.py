@@ -56,7 +56,7 @@ class TestLFI(PluginTest):
         # Assert the general results
         vulns = self.kb.get('lfi', 'lfi')
         self.assertEquals(len(EXPECTED), len(vulns))
-        self.assertEquals(all(["Local file inclusion vulnerability" == v.getName() for v in vulns ]),
+        self.assertEquals(all(["Local file inclusion vulnerability" == v.get_name() for v in vulns ]),
                           True)
         
         self.assertEqual( set(EXPECTED), 

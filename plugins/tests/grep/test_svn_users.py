@@ -50,7 +50,7 @@ class TestSVNUsers(PluginTest):
         
         v = vulns[0]
         self.assertEquals(severity.LOW, v.getSeverity())
-        self.assertEquals('SVN user disclosure vulnerability', v.getName() )
+        self.assertEquals('SVN user disclosure vulnerability', v.get_name() )
         self.assertEqual(self.svn_users_url + 'svn_user.html', v.getURL().url_string)
         
         

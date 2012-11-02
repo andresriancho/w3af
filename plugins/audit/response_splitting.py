@@ -84,24 +84,24 @@ class response_splitting(AuditPlugin):
                     msg += ' testing for response splitting: "' + error + '"'
                     
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setDesc( msg )
+                    i.setPluginName(self.get_name())
+                    i.set_desc( msg )
                     i.setVar( mutant.getVar() )
                     i.setURI( mutant.getURI() )
                     i.setDc( mutant.getDc() )
                     i.set_id( response.id )
-                    i.setName( 'Parameter modifies headers' )
+                    i.set_name( 'Parameter modifies headers' )
                     kb.kb.append( self, 'response_splitting', i )
 
                     return
                 
             if self._header_was_injected( response ):
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.getName())
-                v.setDesc( 'Response Splitting was found at: ' + mutant.foundAt() )
+                v.setPluginName(self.get_name())
+                v.set_desc( 'Response Splitting was found at: ' + mutant.foundAt() )
                 v.set_id( response.id )
                 v.setSeverity(severity.MEDIUM)
-                v.setName( 'Response splitting vulnerability' )
+                v.set_name( 'Response splitting vulnerability' )
                 kb.kb.append( self, 'response_splitting', v )
     
     def end(self):
@@ -134,10 +134,10 @@ class response_splitting(AuditPlugin):
                 om.out.information(msg)
 
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setDesc( msg )
+                i.setPluginName(self.get_name())
+                i.set_desc( msg )
                 i.set_id( response.id )
-                i.setName( 'Parameter modifies headers' )
+                i.set_name( 'Parameter modifies headers' )
                 kb.kb.append( self, 'response_splitting', i )
                 return False
                 

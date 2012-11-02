@@ -160,7 +160,7 @@ class mutant(object):
         '''
         Return a string representing WHAT was fuzzed. This string
         is used like this:
-            - v.setDesc('SQL injection in a '+ v['db'] +
+            - v.set_desc('SQL injection in a '+ v['db'] +
                         ' was found at: ' + mutant.foundAt())
         '''
         res = ['"%s", using HTTP method %s. The sent data was: "'

@@ -28,7 +28,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 import core.data.constants.ports as ports
 
 from core.data.fuzzer.fuzzer import rand_alnum
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException
@@ -308,20 +308,20 @@ class rfi(AttackPlugin):
         h1 = 'w3af runs a webserver to serve the files to the target web app'
         h1 += ' when doing remote file inclusions. This setting configures on what IP address the'
         h1 += ' webserver is going to listen.'
-        o1 = option('listenAddress', self._listen_address, d1, 'string', help=h1)
+        o1 = opt_factory('listen_address', self._listen_address, d1, 'string', help=h1)
 
         d2 = 'Port that the webserver will use to receive requests'
         h2 = 'w3af runs a webserver to serve the files to the target web app'
         h2 += ' when doing remote file inclusions. This setting configures on what IP address'
         h2 += ' the webserver is going to listen.'
-        o2 = option('listenPort', self._listen_port, d2, 'integer', help=h2)
+        o2 = opt_factory('listen_port', self._listen_port, d2, 'integer', help=h2)
         
         d3 = 'Instead of including a file in a local webserver; include the result of'
         d3 += ' exploiting a XSS bug.'
-        o3 = option('useXssBug', self._use_XSS_vuln, d3, 'boolean')
+        o3 = opt_factory('useXssBug', self._use_XSS_vuln, d3, 'boolean')
         
         d4 = 'If true, this plugin will try to generate only one shell object.'
-        o4 = option('generateOnlyOne', self._generate_only_one, d4, 'boolean')
+        o4 = opt_factory('generateOnlyOne', self._generate_only_one, d4, 'boolean')
         
         ol = OptionList()
         ol.add(o1)
@@ -338,10 +338,10 @@ class rfi(AttackPlugin):
         @parameter options_list: A map with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._listen_address = options_list['listenAddress'].getValue()
-        self._listen_port = options_list['listenPort'].getValue()
-        self._use_XSS_vuln = options_list['useXssBug'].getValue()
-        self._generate_only_one = options_list['generateOnlyOne'].getValue()
+        self._listen_address = options_list['listen_address'].get_value()
+        self._listen_port = options_list['listen_port'].get_value()
+        self._use_XSS_vuln = options_list['useXssBug'].get_value()
+        self._generate_only_one = options_list['generateOnlyOne'].get_value()
         
         if self._listen_address == '' and not self._use_XSS_vuln:
             om.out.error('rfi plugin has to be correctly configured to use.')
@@ -364,8 +364,8 @@ class rfi(AttackPlugin):
         is configured at the remote site.
         
         Four configurable parameters exist:
-            - listenAddress
-            - listenPort
+            - listen_address
+            - listen_port
             - useXssBug
             - generateOnlyOne
         '''
@@ -408,7 +408,7 @@ class PortScanShell(shell):
             else:
                 return False
 
-    def getName(self):
+    def get_name(self):
         return 'portscan-shell object'
 
 
@@ -480,7 +480,7 @@ class RFIShell(exec_shell, PortScanShell):
         else:
             om.out.debug('Remote file inclusion shell cleanup complete.')
     
-    def getName(self):
+    def get_name(self):
         return 'RFIShell'
 
     def _rm_file(self, url_to_include):

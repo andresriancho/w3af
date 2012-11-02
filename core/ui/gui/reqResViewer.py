@@ -232,7 +232,7 @@ class reqResViewer(gtk.VBox):
                         historyItem = HistoryItem()
                         historyItem.load(itemId)
                         historyItem.updateTag(historyItem.tag + result.plugin_name)
-                        historyItem.info = result.getDesc()
+                        historyItem.info = result.get_desc()
                         historyItem.save()
         else:
             if impact.exception.__class__ == w3afException:

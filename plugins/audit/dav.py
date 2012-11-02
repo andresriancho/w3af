@@ -87,15 +87,15 @@ class dav(AuditPlugin):
         
         if content_matches and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( res.getURL() )
             v.set_id( res.id )
             v.setSeverity(severity.MEDIUM)
-            v.setName( 'Insecure DAV configuration' )
+            v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
             msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
             msg += domain_path + '"'
-            v.setDesc( msg )
+            v.set_desc( msg )
             kb.kb.append( self, 'dav', v )
             
     def _PROPFIND( self, domain_path ):
@@ -114,15 +114,15 @@ class dav(AuditPlugin):
         
         if "D:href" in res and res.getCode() in xrange(200, 300):
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( res.getURL() )
             v.set_id( res.id )
             v.setSeverity(severity.MEDIUM)
-            v.setName( 'Insecure DAV configuration' )
+            v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
             msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
             msg += domain_path + '"'
-            v.setDesc( msg )
+            v.set_desc( msg )
             kb.kb.append( self, 'dav', v )
         
     def _PUT( self, domain_path ):
@@ -138,44 +138,44 @@ class dav(AuditPlugin):
         res = self._uri_opener.GET( url , cache=True )
         if res.getBody() == rndContent:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( url )
             v.set_id( [put_response.id, res.id] )
             v.setSeverity(severity.HIGH)
-            v.setName( 'Insecure DAV configuration' )
+            v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
             msg = 'File upload with HTTP PUT method was found at resource: "%s".'
             msg += ' A test file was uploaded to: "%s".'
-            v.setDesc( msg % (domain_path, res.getURL()) )
+            v.set_desc( msg % (domain_path, res.getURL()) )
             kb.kb.append( self, 'dav', v )
         
         # Report some common errors
         elif put_response.getCode() == 500:
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.setURL( url )
             i.set_id( res.id )
-            i.setName( 'DAV incorrect configuration' )
+            i.set_name( 'DAV incorrect configuration' )
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
             msg += ' error code. In most cases, this means that the DAV extension failed in'
             msg += ' some way. This error was found at: "' + put_response.getURL() + '".'
-            i.setDesc( msg )
+            i.set_desc( msg )
             kb.kb.append( self, 'dav', i )
         
         # Report some common errors
         elif put_response.getCode() == 403:
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.setURL( url )
             i.set_id( [put_response.id, res.id] )
-            i.setName( 'DAV insufficient privileges' )
+            i.set_name( 'DAV insufficient privileges' )
             i.setMethod( 'PUT' )
             msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
             msg +=' but the directory does not have the correct permissions that would allow'
             msg += ' the web server to write to it. This error was found at: "'
             msg += put_response.getURL() + '".'
-            i.setDesc( msg )
+            i.set_desc( msg )
             kb.kb.append( self, 'dav', i )
             
     def end(self):

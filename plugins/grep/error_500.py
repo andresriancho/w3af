@@ -90,16 +90,16 @@ class error_500(GrepPlugin):
             if ( request.getURI() , request.getDc() ) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURI( request.getURI() )
                 v.set_id( error_500_response_id )
                 v.setSeverity(severity.MEDIUM)
-                v.setName( 'Unhandled error in web application' )
+                v.set_name( 'Unhandled error in web application' )
                 msg = 'An unidentified web application error (HTTP response code 500)'
                 msg += ' was found at: "' + v.getURL()+'".'
                 msg += ' Enable all plugins and try again, if the vulnerability still is not'
                 msg += ' identified, please verify manually and report it to the w3af developers.'
-                v.setDesc( msg )
+                v.set_desc( msg )
                 kb.kb.append( self, 'error_500', v )
                 
         self.print_uniq( kb.kb.get( 'error_500', 'error_500' ), 'VAR' )

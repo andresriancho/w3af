@@ -54,7 +54,7 @@ class test_strange_headers(unittest.TestCase):
         self.assertEquals( len(infos), 1)
         
         info = infos[0]
-        self.assertEqual( info.getName(), 'Strange header')
+        self.assertEqual( info.get_name(), 'Strange header')
         self.assertEqual( info.getURL(), url)
     
     def test_strange_headers_negative(self):

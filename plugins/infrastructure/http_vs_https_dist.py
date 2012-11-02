@@ -29,7 +29,8 @@ import core.data.kb.knowledgeBase as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INT
 from core.data.options.option_list import OptionList
 from core.controllers.w3afException import w3afRunOnce
 
@@ -63,9 +64,9 @@ class http_vs_https_dist(InfrastructurePlugin):
         
         def set_info(name, desc):
             inf = info.info()
-            inf.setPluginName(self.getName())
-            inf.setName(name)
-            inf.setDesc(desc)
+            inf.setPluginName(self.get_name())
+            inf.set_name(name)
+            inf.set_desc(desc)
             kb.kb.append(self, 'http_vs_https_dist', inf)
 
         target_url = fuzzable_request.getURL()
@@ -155,11 +156,11 @@ class http_vs_https_dist(InfrastructurePlugin):
         '''
         ol = OptionList()
         d1 = 'Destination http port number to analize'
-        o1 = option('httpPort', self._http_port, d1, option.INT, help=d1)
+        o1 = opt_factory('httpPort', self._http_port, d1, INT, help=d1)
         ol.add(o1)
         
         d2 = 'Destination httpS port number to analize'
-        o2 = option('httpsPort', self._https_port, d2, option.INT, help=d2)
+        o2 = opt_factory('httpsPort', self._https_port, d2, INT, help=d2)
         ol.add(o2)
         
         return ol
@@ -171,8 +172,8 @@ class http_vs_https_dist(InfrastructurePlugin):
         
         @parameter options: A dictionary with the options for the plugin.
         '''
-        self._http_port = options['httpPort'].getValue()            
-        self._https_port = options['httpsPort'].getValue()
+        self._http_port = options['httpPort'].get_value()            
+        self._https_port = options['httpsPort'].get_value()
     
     def get_long_desc(self):
         '''

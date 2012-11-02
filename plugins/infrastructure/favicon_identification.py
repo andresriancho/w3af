@@ -76,14 +76,14 @@ class favicon_identification(InfrastructurePlugin):
                 if md5part == remote_fav_md5:
                     # Save it to the kb!
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Favicon identification')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Favicon identification')
                     i.setURL( favicon_url )
                     i.set_id( response.id )
                     desc = 'Favicon.ico file was identified as "%s".' % favicon_desc
-                    i.setDesc( desc )
+                    i.set_desc( desc )
                     kb.kb.append( self, 'info', i )
-                    om.out.information( i.getDesc() )
+                    om.out.information( i.get_desc() )
                     break
             else:
                 #
@@ -91,8 +91,8 @@ class favicon_identification(InfrastructurePlugin):
                 #   and that the md5 should be sent to the developers.
                 #
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Favicon identification failed')
+                i.setPluginName(self.get_name())
+                i.set_name('Favicon identification failed')
                 i.setURL( favicon_url )
                 i.set_id( response.id )
                 desc = 'Favicon identification failed. If the remote site is'  \
@@ -102,9 +102,9 @@ class favicon_identification(InfrastructurePlugin):
                        ' name of the server or Web application it represents.' \
                        ' New fingerprints make this plugin more powerful and ' \
                        ' accurate.'
-                i.setDesc( desc )
+                i.set_desc( desc )
                 kb.kb.append( self, 'info', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
     
     def _read_favicon_db(self):
         try:

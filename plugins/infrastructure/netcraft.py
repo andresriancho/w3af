@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.misc.decorators import runonce
@@ -96,12 +96,12 @@ class netcraft(InfrastructurePlugin):
             netblock_owner = netblock_owner_match.group(1)
 
     	    i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Netblock owner')
+            i.setPluginName(self.get_name())
+            i.set_name('Netblock owner')
             i.set_id( response.getId() )
     	    msg = 'Netcraft reports that the netblock owner for the target domain'
             msg += ' is %s' % netblock_owner
-            i.setDesc( msg)
+            i.set_desc( msg)
                     
             # Save the results in the KB so the user can look at it
             kb.kb.append( self, 'netblock_owner', i )

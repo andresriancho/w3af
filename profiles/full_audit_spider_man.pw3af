@@ -67,9 +67,9 @@ eq_limit = 0.9
 [audit.response_splitting]
 
 [audit.rfi]
-listenAddress = 
-listenPort = 44449
-usew3afSite = True
+listen_address = 
+listen_port = 44449
+use_w3af_site = True
 
 [audit.frontpage]
 stopOnFirst = True

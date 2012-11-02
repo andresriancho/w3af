@@ -144,7 +144,7 @@ class HelpContainer(object):
             self.addHelpEntry(subj, table[subj], cat)
 
 
-    def getHelp(self, subj):
+    def get_help(self, subj):
         if subj not in self._table:
             return (None, None)
 
@@ -184,5 +184,5 @@ class HelpContainer(object):
         items = cat in self._cat2Subj and self._cat2Subj[cat] or self._table
            
         for subj in items:
-            result.append([subj, self.getHelp(subj)[0]])
+            result.append([subj, self.get_help(subj)[0]])
         

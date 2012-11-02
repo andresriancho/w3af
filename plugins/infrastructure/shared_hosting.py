@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afRunOnce
@@ -103,7 +103,7 @@ class shared_hosting(InfrastructurePlugin):
             
             if is_vulnerable:
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL(fuzzable_request.getURL())
                 v.set_id(1)
                 
@@ -116,8 +116,8 @@ class shared_hosting(InfrastructurePlugin):
                     domain = url.getDomain()
                     msg += '- %s\n' % url
                     kb.kb.append( self, 'domains', domain)
-                v.setDesc( msg )
-                v.setName( 'Shared hosting' )
+                v.set_desc( msg )
+                v.set_name( 'Shared hosting' )
                 v.setSeverity(severity.MEDIUM)
                 om.out.vulnerability( msg, severity=severity.MEDIUM )
                 kb.kb.append( self, 'shared_hosting', v )
@@ -128,7 +128,7 @@ class shared_hosting(InfrastructurePlugin):
         '''
         ol = OptionList()
         d = 'Fetch the first "resultLimit" results from the bing search'
-        o = option('resultLimit', self._result_limit, d, 'integer')
+        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
         ol.add(o)
         return ol
         
@@ -140,7 +140,7 @@ class shared_hosting(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].getValue()
+        self._result_limit = options_list['resultLimit'].get_value()
     
     def get_long_desc( self ):
         '''

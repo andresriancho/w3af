@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.config as cf
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -56,28 +56,28 @@ class email_report(OutputPlugin):
         self.targets = cf.cf.get('targets')
 
     def set_options(self, option_list):
-        self.smtpServer = option_list['smtpServer'].getValue()
-        self.smtpPort = option_list['smtpPort'].getValue()
-        self.fromAddr = option_list['fromAddr'].getValue()
-        self.toAddrs = option_list['toAddrs'].getValue()
+        self.smtpServer = option_list['smtpServer'].get_value()
+        self.smtpPort = option_list['smtpPort'].get_value()
+        self.fromAddr = option_list['fromAddr'].get_value()
+        self.toAddrs = option_list['toAddrs'].get_value()
 
     def get_options(self):
         ol = OptionList()
         
         d = 'SMTP server ADDRESS to send notifications through, e.g. smtp.yourdomain.com'
-        o = option('smtpServer', self.smtpServer, d, 'string')
+        o = opt_factory('smtpServer', self.smtpServer, d, 'string')
         ol.add(o)
         
         d = 'SMTP server PORT'
-        o = option('smtpPort', self.smtpPort, d, 'integer')
+        o = opt_factory('smtpPort', self.smtpPort, d, 'integer')
         ol.add(o)
         
         d = 'Recipient email address'
-        o = option('toAddrs', self.toAddrs, d, 'list')
+        o = opt_factory('toAddrs', self.toAddrs, d, 'list')
         ol.add(o)
         
         d = '"From" email address'
-        o = option('fromAddr', self.fromAddr, d, 'string')
+        o = opt_factory('fromAddr', self.fromAddr, d, 'string')
         ol.add(o)
         
         return ol
@@ -91,7 +91,7 @@ class email_report(OutputPlugin):
         vulns = kb.kb.getAllVulns()
 
         for v in vulns:
-            data += v.getDesc() + '\n'
+            data += v.get_desc() + '\n'
 
         msg = MIMEText(data)
         msg['From'] = self.fromAddr

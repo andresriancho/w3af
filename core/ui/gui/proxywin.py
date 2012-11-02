@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-
 import gtk
 import gobject
 import os
@@ -27,12 +26,10 @@ import webbrowser
 
 from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.w3afException import w3afException, w3afProxyException
-from core.data.options.option import option as Option
-from core.data.options.comboOption import comboOption
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.daemons import localproxy
 from core.ui.gui.entries import ConfigOptions
-import core.controllers.outputManager as om
 
 ui_proxy_menu = """
 <ui>
@@ -96,7 +93,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self._initOptions()
         self._prevIpport = None
         # We need to make widget (split or tabbed) firstly
-        self._layout = self.pref.getValue('proxy', 'trap_view')
+        self._layout = self.pref.get_value('proxy', 'trap_view')
         self.reqresp = reqResViewer.reqResViewer(w3af,
                 [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
                 editableRequest=True, layout=self._layout)
@@ -126,7 +123,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.vbox.pack_start(self.nb, True, True, padding=self.def_padding)
         self.nb.show()
         # Go to Home Tab
-        self.nb.set_current_page(tabs.index(self.pref.getValue('proxy', 'home_tab')))
+        self.nb.set_current_page(tabs.index(self.pref.get_value('proxy', 'home_tab')))
         # Status bar for messages
         self.status_bar = gtk.Statusbar()
         self.vbox.pack_start(self.status_bar, False, False)
@@ -146,21 +143,21 @@ class ProxiedRequests(entries.RememberingWindow):
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
         # Proxy options
         proxyOptions = OptionList()
-        proxyOptions.add(Option('ipport', "localhost:8080", "IP:port","ipport"))
-        proxyOptions.add(Option('trap', ".*", _("URLs to trap"), "regex"))
-        proxyOptions.add(Option('methodtrap', "GET,POST", _("Methods to trap"), "list"))
-        proxyOptions.add(Option("notrap",
+        proxyOptions.add(opt_factory('ipport', "localhost:8080", "IP:port","ipport"))
+        proxyOptions.add(opt_factory('trap', ".*", _("URLs to trap"), "regex"))
+        proxyOptions.add(opt_factory('methodtrap', "GET,POST", _("Methods to trap"), "list"))
+        proxyOptions.add(opt_factory("notrap",
             ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
-        proxyOptions.add(Option("fixlength", True, _("Fix content length"), "boolean"))
-        proxyOptions.add(comboOption("trap_view", ['Splitted', 'Tabbed'], _("View of Intercept tab"), "combo"))
-        proxyOptions.add(comboOption("home_tab", ['Intercept', 'History', 'Options'], _("Home tab"), "combo"))
+        proxyOptions.add(opt_factory("fixlength", True, _("Fix content length"), "boolean"))
+        proxyOptions.add(opt_factory("trap_view", ['Splitted', 'Tabbed'], _("View of Intercept tab"), "combo"))
+        proxyOptions.add(opt_factory("home_tab", ['Intercept', 'History', 'Options'], _("Home tab"), "combo"))
         self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
         editorOptions = OptionList()
-        editorOptions.add(Option("wrap", True, _("Wrap long lines"), "boolean"))
-        editorOptions.add(Option("highlight_current_line", True, _("Highlight current line"), "boolean"))
-        editorOptions.add(Option("highlight_syntax", True, _("Highlight syntax"), "boolean"))
-        editorOptions.add(Option("display_line_num", True, _("Display line numbers"), "boolean"))
+        editorOptions.add(opt_factory("wrap", True, _("Wrap long lines"), "boolean"))
+        editorOptions.add(opt_factory("highlight_current_line", True, _("Highlight current line"), "boolean"))
+        editorOptions.add(opt_factory("highlight_syntax", True, _("Highlight syntax"), "boolean"))
+        editorOptions.add(opt_factory("display_line_num", True, _("Display line numbers"), "boolean"))
         self.pref.addSection('editor', _('HTTP Editor Options'), editorOptions)
         # Load values from configfile
         self.pref.loadValues()
@@ -182,7 +179,7 @@ class ProxiedRequests(entries.RememberingWindow):
         5. Set Trap options
         6. Save options
         """
-        newPort = self.pref.getValue('proxy', 'ipport')
+        newPort = self.pref.get_value('proxy', 'ipport')
         if newPort != self._prevIpport:
             self.w3af.mainwin.sb(_("Stopping local proxy"))
             if self.proxy:
@@ -205,22 +202,22 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.keepChecking = True
         # Test of config
         try:
-            self.proxy.setWhatToTrap(self.pref.getValue('proxy', 'trap'))
-            self.proxy.setWhatNotToTrap(self.pref.getValue('proxy', 'notrap'))
-            self.proxy.setMethodsToTrap(self.pref.getValue('proxy', 'methodtrap'))
-            self.proxy.setFixContentLength(self.pref.getValue('proxy', 'fixlength'))
+            self.proxy.setWhatToTrap(self.pref.get_value('proxy', 'trap'))
+            self.proxy.setWhatNotToTrap(self.pref.get_value('proxy', 'notrap'))
+            self.proxy.setMethodsToTrap(self.pref.get_value('proxy', 'methodtrap'))
+            self.proxy.setFixContentLength(self.pref.get_value('proxy', 'fixlength'))
         except w3afException, w3:
             self.showAlert(_("Invalid configuration!\n" + str(w3)))
 
         self._prevIpport = newPort
         httpeditor = self.reqresp.request.getViewById('HttpRawView')
-        httpeditor.set_show_line_numbers(self.pref.getValue('editor', 'display_line_num'))
-        httpeditor.set_highlight_current_line(self.pref.getValue('editor', 'highlight_current_line'))
-        httpeditor.set_highlight_syntax(self.pref.getValue('editor', 'highlight_syntax'))
-        httpeditor.set_wrap(self.pref.getValue('editor', 'wrap'))
+        httpeditor.set_show_line_numbers(self.pref.get_value('editor', 'display_line_num'))
+        httpeditor.set_highlight_current_line(self.pref.get_value('editor', 'highlight_current_line'))
+        httpeditor.set_highlight_syntax(self.pref.get_value('editor', 'highlight_syntax'))
+        httpeditor.set_wrap(self.pref.get_value('editor', 'wrap'))
         self.pref.save()
 
-        if self._layout != self.pref.getValue('proxy', 'trap_view'):
+        if self._layout != self.pref.get_value('proxy', 'trap_view'):
             self.showAlert(_("Some of options will take effect after you restart proxy tool"))
 
     def showAlert(self, msg):
@@ -231,7 +228,7 @@ class ProxiedRequests(entries.RememberingWindow):
     def _startProxy(self, ip=None, port=None, silent=False):
         """Starts the proxy."""
         if not ip:
-            ipport = self.pref.getValue('proxy', 'ipport')
+            ipport = self.pref.get_value('proxy', 'ipport')
             ip, port = ipport.split(":")
         self.w3af.mainwin.sb(_("Starting local proxy"))
         try:

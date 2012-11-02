@@ -46,7 +46,7 @@ class TestRFI(PluginTest):
         self.assertEquals(1, len(vulns))
         
         vuln = vulns[0]
-        self.assertEquals( vuln.getName(), 'Remote code execution')
+        self.assertEquals( vuln.get_name(), 'Remote code execution')
         self.assertEquals( vuln.getURL().url_string, self.target_url)
 
         vuln_to_exploit_id = vuln.getId()

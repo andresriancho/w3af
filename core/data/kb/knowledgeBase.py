@@ -166,7 +166,7 @@ class KnowledgeBase(object):
         if isinstance( data, basestring ):
             return data
         else:
-            return data.getName()
+            return data.get_name()
 
 kb = KnowledgeBase()
         

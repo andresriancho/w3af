@@ -41,7 +41,7 @@ class OutputPlugin(Plugin):
     def __init__(self):
         Plugin.__init__( self )
 
-    def getType( self ):
+    def get_type( self ):
         return 'output'
         
     def debug(self, message, newLine = True ):
@@ -94,7 +94,7 @@ class OutputPlugin(Plugin):
         '''
         raise w3afException('Plugin is not implementing required method console' )
     
-    def logHttp(self, request, response ):
+    def log_http(self, request, response ):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an 
@@ -195,8 +195,8 @@ class OutputPlugin(Plugin):
                     response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
                     
                     for plugin_option in plugins_options[plugin_name]:
-                        name = str(plugin_option.getName())
-                        value = str(plugin_option.getValue())
+                        name = str(plugin_option.get_name())
+                        value = str(plugin_option.get_value())
                         response += '        set ' + name + ' ' + value + '\n'
                     
                     response += '        back\n'

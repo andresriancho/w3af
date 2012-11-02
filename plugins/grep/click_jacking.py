@@ -66,8 +66,8 @@ class click_jacking(GrepPlugin):
             return
         
         v = vuln.vuln()
-        v.setPluginName(self.getName())
-        v.setName('Potential Click-Jacking vulnerability' )
+        v.setPluginName(self.get_name())
+        v.set_name('Potential Click-Jacking vulnerability' )
         v.setSeverity(severity.MEDIUM)
         v.set_id([_id for _id in self._ids])
         # If none of the URLs implement protection, simply report
@@ -75,7 +75,7 @@ class click_jacking(GrepPlugin):
         if self._total_count == self._vuln_count:
             msg = 'The whole target '
             msg += 'has no protection (X-Frame-Options header) against Click-Jacking attacks'
-            v.setDesc(msg)
+            v.set_desc(msg)
             kb.kb.append(self, 'click_jacking', v)
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected, but x, y are not.
@@ -83,7 +83,7 @@ class click_jacking(GrepPlugin):
             msg = 'Some URLs have no protection (X-Frame-Options header) '
             msg += 'against Click-Jacking attacks. Among them:\n '
             msg += ' '.join([str(url) + '\n' for url in self._vulns])
-            v.setDesc(msg)
+            v.set_desc(msg)
             kb.kb.append(self, 'click_jacking', v)
             
         self.print_uniq(kb.kb.get( 'click_jacking', 'click_jacking' ), 'URL')

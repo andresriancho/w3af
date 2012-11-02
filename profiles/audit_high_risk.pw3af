@@ -9,9 +9,9 @@ useEcho = True
 [audit.dav]
 
 [audit.rfi]
-usew3afSite = True
-listenAddress = 
-listenPort = 44449
+use_w3af_site = True
+listen_address = 
+listen_port = 44449
 
 [output.gtk_output]
 

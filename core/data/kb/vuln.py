@@ -86,7 +86,7 @@ class vuln(info):
     def getSeverity(self):
         return self._severity
         
-    def getDesc(self):
+    def get_desc(self):
         if self._id is not None and self._id != 0:
             if not self._desc.endswith('.'):
                 self._desc += '.'

@@ -51,6 +51,6 @@ class TestMOTW(PluginTest):
         self.assertEquals( set([severity.INFORMATION] * 2), 
                            set([v.getSeverity() for v in infos]))
         
-        self.assertEqual( v.getName(), 'Mark of the web')
+        self.assertEqual( v.get_name(), 'Mark of the web')
         
         

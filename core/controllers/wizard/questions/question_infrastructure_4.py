@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
@@ -47,7 +47,7 @@ class question_infrastructure_4(question):
         '''
 
         self._d1 = 'Is the target web application reachable from the Internet?'
-        o1 = option(self._d1, True, self._d1, 'boolean')
+        o1 = opt_factory(self._d1, True, self._d1, 'boolean')
     
         ol = OptionList()
         ol.add(o1)
@@ -55,7 +55,7 @@ class question_infrastructure_4(question):
         return ol
         
     def getNextQuestionId(self,  options_list ):
-        cf.cf.save('reachable_from_internet', options_list[self._d1].getValue())
+        cf.cf.save('reachable_from_internet', options_list[self._d1].get_value())
        
         # The next question
         if cf.cf.get('reachable_from_internet'):

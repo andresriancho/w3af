@@ -35,7 +35,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -81,13 +81,13 @@ class ssl_certificate(AuditPlugin):
             pass
         else:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL(url)
             v.setSeverity(severity.LOW)
-            v.setName('Insecure SSL version')
+            v.set_name('Insecure SSL version')
             desc = 'The target host "%s" has SSL version 2 enabled which is'
             desc += ' known to be insecure.'
-            v.setDesc(desc % domain)
+            v.set_desc(desc % domain)
             kb.kb.append(self, 'ssl_v2', v)
             om.out.vulnerability(desc % domain)
 
@@ -113,22 +113,22 @@ class ssl_certificate(AuditPlugin):
             if invalid_cert:
                 v = vuln.vuln()
                 v.setSeverity(severity.LOW)
-                v.setName('Invalid SSL certificate')
+                v.set_name('Invalid SSL certificate')
                 desc = '"%s" uses an invalid security certificate. '
                 desc += 'The certificate is not trusted because: "%s".'
                 tag = 'invalid_ssl_cert'
             else:
                 # We use here info() instead of vuln() because it is too common case
                 v = info.info()
-                v.setName('Invalid SSL connection')
+                v.set_name('Invalid SSL connection')
                 desc = '"%s" has an invalid SSL configuration. Technical details: "%s"'
                 tag = 'invalid_ssl_connect'
 
-            v.setDesc(desc % (domain, details))
-            v.setPluginName(self.getName())
+            v.set_desc(desc % (domain, details))
+            v.setPluginName(self.get_name())
             v.setURL(url)
             kb.kb.append(self, tag, v)
-            om.out.vulnerability(v.getName() + ': ' + v.getDesc())
+            om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
             return
 
         except Exception, e:
@@ -145,11 +145,11 @@ class ssl_certificate(AuditPlugin):
         if expire_days < self._min_expire_days:
             i = info.info()
             i.setURL(url)
-            i.setPluginName(self.getName())
-            i.setName('Soon expire SSL certificate')
-            i.setDesc('The certificate for "%s" will expire soon.' % domain)
+            i.setPluginName(self.get_name())
+            i.set_name('Soon expire SSL certificate')
+            i.set_desc('The certificate for "%s" will expire soon.' % domain)
             kb.kb.append(self, 'ssl_soon_expire', i) 
-            om.out.information(i.getDesc())
+            om.out.information(i.get_desc())
 
         # Print the SSL information to the log
         desc = 'This is the information about the SSL certificate used in the target site:\n'
@@ -157,9 +157,9 @@ class ssl_certificate(AuditPlugin):
         om.out.information(desc)
         i = info.info()
         i.setURL(url)
-        i.setPluginName(self.getName())
-        i.setName('SSL Certificate')
-        i.setDesc(desc)
+        i.setPluginName(self.get_name())
+        i.set_name('SSL Certificate')
+        i.set_desc(desc)
         kb.kb.append(self, 'certificate', i)
 
 
@@ -183,12 +183,12 @@ class ssl_certificate(AuditPlugin):
 
         d = 'Set minimal amount of days before expiration of the certificate for alerting'
         h = 'If the certificate will expire in period of minExpireDays w3af will show alert about it'
-        o = option('minExpireDays', self._min_expire_days, d, 'integer', help=h)
+        o = opt_factory('minExpireDays', self._min_expire_days, d, 'integer', help=h)
         ol.add(o)
 
         d = 'Set minimal amount of days before expiration of the certificate for alerting'
         h = 'CA PEM file path'
-        o = option('caFileName', self._ca_file, d, 'string', help=h)
+        o = opt_factory('caFileName', self._ca_file, d, 'string', help=h)
         ol.add(o)
 
         return ol
@@ -201,8 +201,8 @@ class ssl_certificate(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._min_expire_days = options_list['minExpireDays'].getValue()
-        self._ca_file = options_list['caFileName'].getValue()
+        self._min_expire_days = options_list['minExpireDays'].get_value()
+        self._ca_file = options_list['caFileName'].get_value()
 
     def get_long_desc(self):
         '''

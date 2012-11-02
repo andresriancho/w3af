@@ -60,11 +60,11 @@ class php_sca(base_payload):
             for f in funcs:
                 v = vuln.vuln()
                 v.setSeverity(vulndata['severity'])
-                v.setName(vulndata['name'])
+                v.set_name(vulndata['name'])
                 v.setURL(url)
                 v.setURI(url)
                 v.setVar(f.vulnsources[0])
-                v.setDesc(vulndata['name'])
+                v.set_desc(vulndata['name'])
                 args = list(vulndata['kb_key']) + [v]
 
                 # TODO: Extract the method from the PHP code

@@ -98,14 +98,14 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @parameter response: The response that triggered the detection
         '''
         i = info.info()
-        i.setPluginName(self.getName())
-        i.setName('Reverse proxy')
+        i.setPluginName(self.get_name())
+        i.set_name('Reverse proxy')
         i.set_id( response.getId() )
         i.setURL( response.getURL() )
-        i.setDesc( 'The remote web server seems to have a reverse proxy installed.' )
-        i.setName('Found reverse proxy')
+        i.set_desc( 'The remote web server seems to have a reverse proxy installed.' )
+        i.set_name('Found reverse proxy')
         kb.kb.append( self, 'detect_reverse_proxy', i )
-        om.out.information( i.getDesc() )
+        om.out.information( i.get_desc() )
     
     def _has_proxy_headers( self, response ):
         '''

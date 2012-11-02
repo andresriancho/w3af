@@ -354,12 +354,12 @@ class PdfFileReader(object):
 
     ##
     # Read-only property that accesses the 
-    # {@link #PdfFileReader.getNamedDestinations 
-    # getNamedDestinations} function.
+    # {@link #PdfFileReader.get_namedDestinations 
+    # get_namedDestinations} function.
     # <p>
     # Stability: Added in v1.10, will exist for all future v1.x releases.
     namedDestinations = property(lambda self:
-                                  self.getNamedDestinations(), None, None)
+                                  self.get_namedDestinations(), None, None)
 
     ##
     # Retrieves the named destinations present in the document.
@@ -367,7 +367,7 @@ class PdfFileReader(object):
     # Stability: Added in v1.10, will exist for all future v1.x releases.
     # @return Returns a dict which maps names to {@link #Destination
     # destinations}.
-    def getNamedDestinations(self, tree=None, retval=None):
+    def get_namedDestinations(self, tree=None, retval=None):
         if retval == None:
             retval = {}
             catalog = self.trailer["/Root"]
@@ -386,7 +386,7 @@ class PdfFileReader(object):
         if tree.has_key("/Kids"):
             # recurse down the tree
             for kid in tree["/Kids"]:
-                self.getNamedDestinations(kid.getObject(), retval)
+                self.get_namedDestinations(kid.getObject(), retval)
 
         if tree.has_key("/Names"):
             names = tree["/Names"]
@@ -423,7 +423,7 @@ class PdfFileReader(object):
                 lines = catalog["/Outlines"]
                 if lines.has_key("/First"):
                     node = lines["/First"]
-            self._namedDests = self.getNamedDestinations()
+            self._namedDests = self.get_namedDestinations()
             
         if node == None:
           return outlines

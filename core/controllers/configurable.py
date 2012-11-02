@@ -59,8 +59,8 @@ class configurable(object):
         raise NotImplementedError('Configurable object is not implementing '
                                   'required method get_options')
 
-    def getName(self):
+    def get_name(self):
         return type(self).__name__
         
-    def getType(self):
+    def get_type(self):
         return 'configurable'

@@ -45,5 +45,5 @@ class TestDirectoryIndexing(PluginTest):
         self.assertEquals(severity.LOW, v.getSeverity())
         self.assertEquals(
                   'Directory indexing - /w3af/grep/directory_indexing/',
-                  v.getName()
+                  v.get_name()
                   )

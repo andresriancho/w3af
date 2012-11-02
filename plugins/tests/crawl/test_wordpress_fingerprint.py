@@ -54,9 +54,9 @@ class Testwordpress_fingerprint(PluginTest):
         self.assertEqual( len(infos), 4)
         
         for i in infos:
-            self.assertEqual('WordPress version', i.getName())
+            self.assertEqual('WordPress version', i.get_name())
         
-        descriptions = set([i.getDesc(with_id=False) for i in infos])
+        descriptions = set([i.get_desc(with_id=False) for i in infos])
         expected_descriptions = set(['WordPress version "3.4.1" found in the index header.',
                                      
                                      'WordPress version "3.4.1" found in the readme.html file.',

@@ -79,15 +79,15 @@ class server_status(InfrastructurePlugin):
                                   response.getBody()):
             # Save the results in the KB so the user can look at it
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.setURL( response.getURL() )
             i.setId( response.id )
-            i.setName( 'Apache Server version' )
+            i.set_name( 'Apache Server version' )
             msg = 'The web server has the apache server status module enabled, '
             msg += 'which discloses the following remote server version: "%s".'
-            i.setDesc( msg % version )
+            i.set_desc( msg % version )
 
-            om.out.information(i.getDesc())
+            om.out.information(i.get_desc())
             kb.kb.append( self, 'server', i )
     
     def _extract_urls(self, fuzzable_request, response):
@@ -121,17 +121,17 @@ class server_status(InfrastructurePlugin):
         # Now that we are outsite the for loop, we can report the possible vulns
         if len( self._shared_hosting_hosts ):
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( fuzzable_request.getURL() )
             v.setId( response.id )
             self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )
             v['alsoInHosting'] = self._shared_hosting_hosts
-            v.setDesc( 'The web application under test seems to be in a shared hosting.' )
-            v.setName( 'Shared hosting' )
+            v.set_desc( 'The web application under test seems to be in a shared hosting.' )
+            v.set_name( 'Shared hosting' )
             v.setSeverity(severity.MEDIUM)
             
             kb.kb.append( self, 'shared_hosting', v )
-            om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+            om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
         
             msg = 'This list of domains, and the domain of the web application under test,'
             msg += ' all point to the same server:'

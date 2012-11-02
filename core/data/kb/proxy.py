@@ -49,13 +49,13 @@ class proxy(exploitResult, CommonAttackMethods):
         '''
         raise w3afException('You should implement the end method of classes that inherit from "proxy"')
     
-    def getName( self ):
+    def get_name( self ):
         '''
         This method is called when the proxy is used, in order to create a prompt for the user.
         
         @return: The name of the proxy (rfi_proxy, dav_proxy, etc.)
         '''
-        raise w3afException('You should implement the getName method of classes that inherit from "proxy"')
+        raise w3afException('You should implement the get_name method of classes that inherit from "proxy"')
 
     def __repr__( self ):
         return '<proxy server at: '+self._proxyDaemon.getBindIP() + ':'+str(self._proxyDaemon.getBindPort()) + '>'

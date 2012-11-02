@@ -135,8 +135,8 @@ class wordpress_fingerprint(CrawlPlugin):
     
                     # Save it to the kb!
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('WordPress version')
+                    i.setPluginName(self.get_name())
+                    i.set_name('WordPress version')
                     i.setURL( install_url )
                     i.set_id( response.id )
                     msg = 'The sysadmin used WordPress version "%s" during the'
@@ -144,9 +144,9 @@ class wordpress_fingerprint(CrawlPlugin):
                     msg += ' of "%s" with the hashes of known releases. If the'
                     msg += ' sysadmin did not update wordpress, the current version'
                     msg += ' will still be the same.'
-                    i.setDesc( msg % (release_db_name, install_url) )
+                    i.set_desc( msg % (release_db_name, install_url) )
                     kb.kb.append( self, 'info', i )
-                    om.out.information( i.getDesc() )
+                    om.out.information( i.get_desc() )
     
     def _fingerprint_readme(self, domain_path, wp_unique_url, response):
         '''
@@ -165,14 +165,14 @@ class wordpress_fingerprint(CrawlPlugin):
 
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('WordPress version')
+            i.setPluginName(self.get_name())
+            i.set_name('WordPress version')
             i.setURL( wp_readme_url )
             i.set_id( response.id )
             msg = 'WordPress version "%s" found in the readme.html file.'
-            i.setDesc( msg % version )
+            i.set_desc( msg % version )
             kb.kb.append( self, 'info', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
         
     
     def _fingerprint_meta(self, domain_path, wp_unique_url, response):
@@ -193,14 +193,14 @@ class wordpress_fingerprint(CrawlPlugin):
 
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('WordPress version')
+            i.setPluginName(self.get_name())
+            i.set_name('WordPress version')
             i.setURL( wp_index_url )
             i.set_id( response.id )
             msg = 'WordPress version "%s" found in the index header.'
-            i.setDesc( msg % version )
+            i.set_desc( msg % version )
             kb.kb.append( self, 'info', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
 
     def _fingerprint_data(self, domain_path, wp_unique_url, response):
         '''
@@ -221,13 +221,13 @@ class wordpress_fingerprint(CrawlPlugin):
 
         # Save it to the kb!
         i = info.info()
-        i.setPluginName(self.getName())
-        i.setName('WordPress version')
+        i.setPluginName(self.get_name())
+        i.set_name('WordPress version')
         i.setURL( test_url )
         i.set_id( response.id )
-        i.setDesc( 'WordPress version "'+ version +'" found from data.' )
+        i.set_desc( 'WordPress version "'+ version +'" found from data.' )
         kb.kb.append( self, 'info', i )
-        om.out.information( i.getDesc() )
+        om.out.information( i.get_desc() )
   
     def get_long_desc( self ):
         '''

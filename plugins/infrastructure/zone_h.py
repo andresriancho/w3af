@@ -96,26 +96,26 @@ class zone_h(InfrastructurePlugin):
             # Do the if...
             if total_attacks > 1:
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
-                v.setName('Previous defacements')
+                v.setPluginName(self.get_name())
+                v.set_name('Previous defacements')
                 v.setURL( response.getURL() )
                 v.setSeverity( severity.MEDIUM )
                 msg = 'The target site was defaced more than one time in the past. For more'
                 msg += ' information please visit the following URL: "' + response.getURL()
                 msg += '".'
-                v.setDesc( msg )
+                v.set_desc( msg )
                 kb.kb.append( self, 'defacements', v )
-                om.out.information( v.getDesc() )
+                om.out.information( v.get_desc() )
             elif total_attacks == 1:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Previous defacement')
+                i.setPluginName(self.get_name())
+                i.set_name('Previous defacement')
                 i.setURL( response.getURL() )
                 msg = 'The target site was defaced in the past. For more information'
                 msg += ' please visit the following URL: "' + response.getURL() + '".'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 kb.kb.append( self, 'defacements', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
                 
 
     def get_long_desc( self ):

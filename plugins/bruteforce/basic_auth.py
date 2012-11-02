@@ -104,18 +104,18 @@ class basic_auth(BruteforcePlugin):
                     self._found = True
                     v = vuln.vuln()
                     v.set_id(response.id)
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURL( url )
-                    v.setDesc( 'Found authentication credentials to: "'+ url +
+                    v.set_desc( 'Found authentication credentials to: "'+ url +
                     '". A correct user and password combination is: ' + user + '/' + passwd)
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Guessable credentials' )
+                    v.set_name( 'Guessable credentials' )
             
                     kb.kb.append( self , 'auth' , v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
     
     def end( self ):
         '''

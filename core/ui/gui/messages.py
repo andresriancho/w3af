@@ -109,7 +109,7 @@ class _LineScroller(gtk.TextView):
                 yield True
                 continue
             text = "[%s] %s\n" % (mess.getTime(), mess.getMsg())
-            mtype = mess.getType()
+            mtype = mess.get_type()
 
             # only store it if it's of one of the possible filtered
             if mtype not in self.possible:

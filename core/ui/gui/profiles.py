@@ -86,8 +86,8 @@ class ProfileList(gtk.TreeView):
         instance_list, invalid_profiles = self.w3af.profiles.getProfileList()
         tmpprofiles = []
         for profile_obj in instance_list:
-            nom = profile_obj.getName()
-            desc = profile_obj.getDesc()
+            nom = profile_obj.get_name()
+            desc = profile_obj.get_desc()
             tmpprofiles.append((nom, desc, profile_obj))
         
         # Also add to that list the "selected" profile, that was specified by the user with the
@@ -98,8 +98,8 @@ class ProfileList(gtk.TreeView):
             except w3afException:
                 raise ValueError(_("The profile %r does not exists!") % self._parameter_profile)
             else:
-                nom = profile_obj.getName()
-                desc = profile_obj.getDesc()
+                nom = profile_obj.get_name()
+                desc = profile_obj.get_desc()
                 
                 # I don't want to add duplicates, so I perform this test:
                 add_to_list = True
@@ -140,7 +140,7 @@ class ProfileList(gtk.TreeView):
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
                 the_prof = self.profile_instances[prfid]
                 if selected == the_prof.get_profile_file() or \
-                    selected == the_prof.getName():
+                    selected == the_prof.get_name():
                     self.set_cursor(i)
                     self._useProfile()
                     break
@@ -235,7 +235,7 @@ class ProfileList(gtk.TreeView):
         opts = plugin.get_options()
         realopts = {}
         for opt in opts:
-            realopts[opt.getName()] = opt.getDefaultValueStr()
+            realopts[opt.get_name()] = opt.get_default_value_str()
         self.pluginsConfigs[(plugin.ptype,plugin.pname)] = realopts
 
     def _changeAtempt(self, widget, event):
@@ -358,7 +358,7 @@ class ProfileList(gtk.TreeView):
         profile_obj = self._getProfile()
         if profile_obj is None:
             return None
-        return profile_obj.getName()
+        return profile_obj.get_name()
 
     def _useProfile(self, widget=None):
         '''Uses the selected profile.'''
@@ -376,7 +376,7 @@ class ProfileList(gtk.TreeView):
             dlg.destroy()
 
         if profile_obj is not None:
-            profdesc = profile_obj.getDesc()
+            profdesc = profile_obj.get_desc()
         else:
             profdesc = None
         self.w3af.mainwin.pcbody.reload(profdesc)
@@ -420,7 +420,7 @@ class ProfileList(gtk.TreeView):
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
         self.w3af.mainwin.sb(_("New profile created"))
-        self.loadProfiles(selected=profile_obj.getName())
+        self.loadProfiles(selected=profile_obj.get_name())
 
         # get the activated plugins
         self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
@@ -435,8 +435,8 @@ class ProfileList(gtk.TreeView):
         profile_obj = self._getProfile()
         if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
             return
-        self.w3af.profiles.saveCurrentToProfile(profile_obj.getName(), 
-                                       prof_desc=profile_obj.getDesc(),
+        self.w3af.profiles.saveCurrentToProfile(profile_obj.get_name(), 
+                                       prof_desc=profile_obj.get_desc(),
                                        prof_path=profile_obj.get_profile_file())
         self.w3af.mainwin.sb(_("Profile saved"))
         path = self.get_cursor()[0]
@@ -462,7 +462,7 @@ class ProfileList(gtk.TreeView):
                 self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
                 return
             self.w3af.mainwin.sb(_("New profile created"))
-            self.loadProfiles(selected=profile_obj.getName())
+            self.loadProfiles(selected=profile_obj.get_name())
 
     def revertProfile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
@@ -484,7 +484,7 @@ class ProfileList(gtk.TreeView):
         '''Deletes the selected profile.'''
         profile_obj = self._getProfile()
 
-        msg = _("Do you really want to DELETE the profile '%s'?") % profile_obj.getName()
+        msg = _("Do you really want to DELETE the profile '%s'?") % profile_obj.get_name()
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()

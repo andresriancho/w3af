@@ -213,7 +213,7 @@ Latin7GreekModel = { \
   'precedenceMatrix': GreekLangModel,
   'mTypicalPositiveRatio': 0.982851,
   'keepEnglishLetter': constants.False,
-  'charsetName': "ISO-8859-7"
+  'charset_name': "ISO-8859-7"
 }
 
 Win1253GreekModel = { \
@@ -221,5 +221,5 @@ Win1253GreekModel = { \
   'precedenceMatrix': GreekLangModel,
   'mTypicalPositiveRatio': 0.982851,
   'keepEnglishLetter': constants.False,
-  'charsetName': "windows-1253"
+  'charset_name': "windows-1253"
 }

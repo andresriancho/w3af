@@ -78,13 +78,13 @@ class strange_parameters(GrepPlugin):
                             self._already_reported.add( (ref.uri2url(), param_name) )
 
                             i = info.info()
-                            i.setPluginName(self.getName())
-                            i.setName('Strange parameter')
+                            i.setPluginName(self.get_name())
+                            i.set_name('Strange parameter')
                             i.setURI( ref )
                             i.set_id( response.id )
                             msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param_name
                             msg += '" with value: "' + qs[param_name][element_index] + '", which is quite odd.'
-                            i.setDesc( msg )
+                            i.set_desc( msg )
                             i.setVar( param_name )
                             i['parameterValue'] = qs[param_name][element_index]
                             i.addToHighlight(qs[param_name][element_index])
@@ -102,13 +102,13 @@ class strange_parameters(GrepPlugin):
                             self._already_reported.add(ref)
                             
                             v = vuln.vuln()
-                            v.setPluginName(self.getName())
-                            v.setName('Parameter has SQL sentence')
+                            v.setPluginName(self.get_name())
+                            v.set_name('Parameter has SQL sentence')
                             v.setURI( ref )
                             v.set_id( response.id )
                             msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param_name
                             msg +='" with value: "' + qs[param_name][element_index] + '", which is a SQL sentence.'
-                            v.setDesc( msg )
+                            v.set_desc( msg )
                             v.setVar( param_name )
                             v['parameterValue'] = qs[param_name][element_index]
                             v.addToHighlight(qs[param_name][element_index])

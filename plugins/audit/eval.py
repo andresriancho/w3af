@@ -30,7 +30,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants, rand_alpha
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -131,11 +131,11 @@ class eval(AuditPlugin):
 
             if success:
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id( [r.id for r in responses] )
                 v.setSeverity(severity.HIGH)
-                v.setName('eval() input injection vulnerability')
-                v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
+                v.set_name('eval() input injection vulnerability')
+                v.set_desc('eval() input injection was found at: ' + mutant.foundAt())
                 kb.kb.append_uniq(self, 'eval', v)
                 break
                         
@@ -148,11 +148,11 @@ class eval(AuditPlugin):
         for eval_error in eval_error_list:
             if not re.search(eval_error, mutant.getOriginalResponseBody(), re.I):
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id(response.id)
                 v.setSeverity(severity.HIGH)
-                v.setName('eval() input injection vulnerability')
-                v.setDesc('eval() input injection was found at: ' + mutant.foundAt())
+                v.set_name('eval() input injection vulnerability')
+                v.set_desc('eval() input injection was found at: ' + mutant.foundAt())
                 kb.kb.append_uniq(self, 'eval', v)
 
     def end(self):
@@ -188,13 +188,13 @@ class eval(AuditPlugin):
         d = 'Use time delay (sleep() technique)'
         h = 'If set to True, w3af will checks insecure eval() usage by analyzing'
         h += ' of time delay result of script execution.'
-        o = option('useTimeDelay', self._use_time_delay, d, 'boolean', help=h)
+        o = opt_factory('useTimeDelay', self._use_time_delay, d, 'boolean', help=h)
         ol.add(o)
         
         d = 'Use echo technique'
         h = 'If set to True, w3af will checks insecure eval() usage by grepping'
         h += ' result of script execution for test strings.'
-        o = option('useEcho', self._use_echo, d, 'boolean', help=h)
+        o = opt_factory('useEcho', self._use_echo, d, 'boolean', help=h)
         ol.add(o)
         
         return ol
@@ -207,8 +207,8 @@ class eval(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._use_time_delay = options_list['useTimeDelay'].getValue()
-        self._use_echo = options_list['useEcho'].getValue()
+        self._use_time_delay = options_list['useTimeDelay'].get_value()
+        self._use_echo = options_list['useEcho'].get_value()
 
     def get_long_desc(self):
         '''

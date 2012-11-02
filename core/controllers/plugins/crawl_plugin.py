@@ -62,5 +62,5 @@ class CrawlPlugin(Plugin):
     
     discover_wrapper = crawl_wrapper
     
-    def getType( self ):
+    def get_type( self ):
         return 'crawl'

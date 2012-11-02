@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from plugins.tests.helper import PluginTest, PluginConfig
+
 
 class TestFileUpload(PluginTest):
     
@@ -32,7 +32,7 @@ class TestFileUpload(PluginTest):
                 'audit': (
                     PluginConfig(
                         'file_upload', ('extensions',
-                         ['gif', 'html', 'bmp', 'jpg', 'png', 'txt'],
+                         'gif,html,bmp,jpg,png,txt',
                          PluginConfig.LIST)
                      ),)
             },}
@@ -45,5 +45,5 @@ class TestFileUpload(PluginTest):
         self.assertEquals(1, len(fuvulns))
         
         v = fuvulns[0]
-        self.assertEquals(v.getName(), 'Insecure file upload')
+        self.assertEquals(v.get_name(), 'Insecure file upload')
         self.assertEquals(str(v.getURL().getDomainPath()), self.file_upload_url)

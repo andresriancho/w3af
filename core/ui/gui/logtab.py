@@ -88,7 +88,7 @@ class LogGraph(gtk.DrawingArea):
                 continue
 
             mmseg = int(mess.getRealTime() * 1000)
-            mtype = mess.getType()
+            mtype = mess.get_type()
             if mtype == "vulnerability":
                 sever = mess.getSeverity()
             else:

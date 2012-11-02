@@ -92,7 +92,7 @@ class WSDLToolsTestCase(unittest.TestCase):
         try:
             for key in self.wsdl.types.keys(): 
                 schema = self.wsdl.types[key]
-                self.failUnlessEqual(key, schema.getTargetNamespace())
+                self.failUnlessEqual(key, schema.getTarget_namespace())
 
             definition = self.wsdl.document.documentElement
             version = DOM.WSDLUriToVersion(definition.namespaceURI)

@@ -42,7 +42,7 @@ class TestPHPEggs(PluginTest):
         self.assertEqual( len(eggs), 4, eggs )
         
         for egg in eggs:
-            self.assertTrue( egg.getName().startswith('PHP Egg - ') )
+            self.assertTrue( egg.get_name().startswith('PHP Egg - ') )
                     
         php_version = self.kb.get('php_eggs', 'version')
         self.assertEqual( len(php_version), 1, php_version )

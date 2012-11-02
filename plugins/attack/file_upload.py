@@ -24,7 +24,7 @@ from core.data.fuzzer.fuzzer import rand_alnum
 import core.controllers.outputManager as om
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.attack_plugin import AttackPlugin
 
@@ -58,7 +58,7 @@ class file_upload(AttackPlugin):
         self._file_name = ''
         
         # User configured variables ( for fastExploit )
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._method = 'POST'
         self._data = ''
         self._fileVars = ''
@@ -72,7 +72,7 @@ class file_upload(AttackPlugin):
             om.out.error('You have to configure the plugin parameters.')
         else:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( self._url )
             v.setMethod( self._method )
             v.setDc( self._data )
@@ -187,19 +187,19 @@ class file_upload(AttackPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
+        o1 = opt_factory('url', self._url, d1, 'url')
         
         d2 = 'Method to use with fastExploit()'
-        o2 = option('method', self._method, d2, 'string')
+        o2 = opt_factory('method', self._method, d2, 'string')
 
         d3 = 'Data to send with fastExploit()'
-        o3 = option('data', self._data, d3, 'string')
+        o3 = opt_factory('data', self._data, d3, 'string')
 
         d4 = 'The variable in data that holds the file content. Only used in fastExploit()'
-        o4 = option('fileVars', self._fileVars, d4, 'string')
+        o4 = opt_factory('fileVars', self._fileVars, d4, 'string')
 
         d5 = 'The URI of the uploaded file. Only used with fastExploit()'
-        o5 = option('fileDest', self._fileDest, d5, 'string')
+        o5 = opt_factory('fileDest', self._fileDest, d5, 'string')
         
         ol = OptionList()
         ol.add(o1)
@@ -217,11 +217,11 @@ class file_upload(AttackPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._url = options_list['url'].getValue()
-        self._method = options_list['method'].getValue()
-        self._data = parse_qs( options_list['data'].getValue() )
-        self._fileVars = options_list['fileVars'].getValue()
-        self._fileDest = options_list['fileDest'].getValue()
+        self._url = options_list['url'].get_value()
+        self._method = options_list['method'].get_value()
+        self._data = parse_qs( options_list['data'].get_value() )
+        self._fileVars = options_list['fileVars'].get_value()
+        self._fileDest = options_list['fileDest'].get_value()
 
     def getRootProbability( self ):
         '''
@@ -279,5 +279,5 @@ class fuShell(exec_shell):
         else:
             om.out.debug('File upload shell cleanup complete; successfully removed file: "' + file_to_del + '"')
     
-    def getName( self ):
+    def get_name( self ):
         return 'file_upload'

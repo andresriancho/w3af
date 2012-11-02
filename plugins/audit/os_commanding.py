@@ -125,12 +125,12 @@ class os_commanding(AuditPlugin):
 
                     # Create the vuln obj
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setName( 'OS commanding vulnerability' )
+                    v.setPluginName(self.get_name())
+                    v.set_name( 'OS commanding vulnerability' )
                     v.setSeverity(severity.HIGH)
                     v['os'] = sentOs
                     v['separator'] = sentSeparator
-                    v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
+                    v.set_desc( 'OS Commanding was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
@@ -174,12 +174,12 @@ class os_commanding(AuditPlugin):
                 
                 if success:
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.getName())
-                    v.setName( 'OS commanding vulnerability' )
+                    v.setPluginName(self.get_name())
+                    v.set_name( 'OS commanding vulnerability' )
                     v.setSeverity(severity.HIGH)
                     v['os'] = delay_obj.get_OS()
                     v['separator'] = delay_obj.get_separator()
-                    v.setDesc( 'OS Commanding was found at: ' + mutant.foundAt() )
+                    v.set_desc( 'OS Commanding was found at: ' + mutant.foundAt() )
                     v.setDc( mutant.getDc() )
                     v.set_id( [r.id for r in responses] )
                     v.setURI( r.getURI() )

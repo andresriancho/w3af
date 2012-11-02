@@ -132,15 +132,15 @@ class afd(InfrastructurePlugin):
         '''
         if len( filtered ) >= len(self._get_offending_strings()) / 5.0:
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Active filter detected')
+            i.setPluginName(self.get_name())
+            i.set_name('Active filter detected')
             msg = 'The remote network has an active filter. IMPORTANT: The result'
             msg += ' of all the other plugins will be unaccurate, web applications'
             msg += ' could be vulnerable but "protected" by the active filter.'
-            i.setDesc( msg )
+            i.set_desc( msg )
             i['filtered'] = filtered
             kb.kb.append( self, 'afd', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
             
             om.out.information('The following URLs were filtered:')
             for i in filtered:

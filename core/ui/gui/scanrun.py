@@ -65,8 +65,8 @@ class FullKBTree(kbtree.KBTree):
             return
 
         instance = self.getInstance(path)
-        if hasattr(instance, "getDesc"):
-            longdesc = str(instance.getDesc())
+        if hasattr(instance, "get_desc"):
+            longdesc = str(instance.get_desc())
         else:
             longdesc = ""
         self.kbbrowser.explanation.set_text(longdesc)

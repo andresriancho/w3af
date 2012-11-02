@@ -95,14 +95,14 @@ class dot_net_errors(InfrastructurePlugin):
         if viewable_remote_machine not in response.body\
         and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
             v = vuln.vuln( response )
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.set_id( response.id )
             v.setSeverity(severity.LOW)
-            v.setName( 'Information disclosure via .NET errors' )
+            v.set_name( 'Information disclosure via .NET errors' )
             msg = 'Detailed information about ASP.NET error messages can be'
             msg += ' viewed from remote sites. The URL: "%s" discloses detailed'
             msg += ' error messages.'
-            v.setDesc( msg % response.getURL() )
+            v.set_desc( msg % response.getURL() )
             kb.kb.append( self, 'dot_net_errors', v )
                 
     def get_plugin_deps( self ):

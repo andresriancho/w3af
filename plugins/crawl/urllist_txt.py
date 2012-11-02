@@ -54,13 +54,13 @@ class urllist_txt(CrawlPlugin):
             if self._is_urllist_txt(base_url, http_response.getBody() ):
                 # Save it to the kb!
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('urllist.txt file')
+                i.setPluginName(self.get_name())
+                i.set_name('urllist.txt file')
                 i.setURL( urllist_url )
                 i.set_id( http_response.id )
-                i.setDesc( 'A urllist.txt file was found at: "%s".' % urllist_url )
+                i.set_desc( 'A urllist.txt file was found at: "%s".' % urllist_url )
                 kb.kb.append( self, 'urllist.txt', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
             
             # Even in the case where it is NOT a valid urllist.txt it might be
             # the case where some URLs are present, so I'm going to extract them

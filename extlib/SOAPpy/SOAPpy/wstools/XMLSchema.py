@@ -64,9 +64,9 @@ class SchemaReader:
         self._includes[location] = schema
 
     def addSchemaByNamespace(self, schema):
-        """provide reader with schema document for a targetNamespace.
+        """provide reader with schema document for a target_namespace.
         """
-        self._imports[schema.targetNamespace] = schema
+        self._imports[schema.target_namespace] = schema
 
     def loadFromNode(self, parent, element):
         """element -- DOM node or document
@@ -161,7 +161,7 @@ class DOMAdapterInterface:
         """
         raise NotImplementedError, 'adapter method not implemented'
 
-    def getNamespace(self, prefix):
+    def get_namespace(self, prefix):
         """returns namespace referenced by prefix.
         """
         raise NotImplementedError, 'adapter method not implemented'
@@ -240,7 +240,7 @@ class DOMAdapter(DOMAdapterInterface):
             return DOMAdapter(self.__node.parentNode)
         return None
 
-    def getNamespace(self, prefix):
+    def get_namespace(self, prefix):
         """prefix -- deference namespace prefix in node's context.
            Ascends parent nodes until found.
         """
@@ -492,22 +492,22 @@ class XMLSchemaComponent(XMLBase, MarkerInterface):
                 path.append('<%s name="%s">' %(item.tag,attr))
             item = item._parent()
         try:
-            tns = item.getTargetNamespace()
+            tns = item.getTarget_namespace()
         except: 
             tns = ''
-        path.append('<%s targetNamespace="%s">' %(item.tag, tns))
+        path.append('<%s target_namespace="%s">' %(item.tag, tns))
         path.reverse()
         return ''.join(path)
 
-    def getTargetNamespace(self):
-        """return targetNamespace
+    def getTarget_namespace(self):
+        """return target_namespace
         """
         parent = self
-        targetNamespace = 'targetNamespace'
-        tns = self.attributes.get(targetNamespace)
+        target_namespace = 'target_namespace'
+        tns = self.attributes.get(target_namespace)
         while not tns:
             parent = parent._parent()
-            tns = parent.attributes.get(targetNamespace)
+            tns = parent.attributes.get(target_namespace)
         return tns
 
     def getAttributeDeclaration(self, attribute):
@@ -522,7 +522,7 @@ class XMLSchemaComponent(XMLBase, MarkerInterface):
         """
         return self.getQNameAttribute('attr_groups', attribute)
 
-    def getTypeDefinition(self, attribute):
+    def get_typeDefinition(self, attribute):
         """attribute -- attribute with a QName value (eg. type).
            collection -- check types collection in parent Schema instance
         """
@@ -550,22 +550,22 @@ class XMLSchemaComponent(XMLBase, MarkerInterface):
         tdc = self.attributes.get(attribute)
         if tdc:
             parent = GetSchema(self)
-            targetNamespace = tdc.getTargetNamespace()
-            if parent.targetNamespace == targetNamespace:
-                item = tdc.getName()
+            target_namespace = tdc.getTarget_namespace()
+            if parent.target_namespace == target_namespace:
+                item = tdc.get_name()
                 try:
                     obj = getattr(parent, collection)[item]
                 except KeyError, ex:
-                    raise KeyError, "targetNamespace(%s) collection(%s) has no item(%s)"\
-                        %(targetNamespace, collection, item)
-            elif parent.imports.has_key(targetNamespace):
-                schema = parent.imports[targetNamespace].getSchema()
-                item = tdc.getName()
+                    raise KeyError, "target_namespace(%s) collection(%s) has no item(%s)"\
+                        %(target_namespace, collection, item)
+            elif parent.imports.has_key(target_namespace):
+                schema = parent.imports[target_namespace].getSchema()
+                item = tdc.get_name()
                 try:
                     obj = getattr(schema, collection)[item]
                 except KeyError, ex:
-                    raise KeyError, "targetNamespace(%s) collection(%s) has no item(%s)"\
-                        %(targetNamespace, collection, item)
+                    raise KeyError, "target_namespace(%s) collection(%s) has no item(%s)"\
+                        %(target_namespace, collection, item)
         return obj
 
     def getXMLNS(self, prefix=None):
@@ -608,7 +608,7 @@ class XMLSchemaComponent(XMLBase, MarkerInterface):
             if value == XMLSchemaComponent.xmlns:
                 self.attributes[value][prefix or XMLSchemaComponent.xmlns_key] = v
             elif prefix:
-                ns = node.getNamespace(prefix)
+                ns = node.get_namespace(prefix)
                 if not ns: 
                     raise SchemaError, 'no namespace for attribute prefix %s'\
                         %prefix
@@ -684,7 +684,7 @@ class XMLSchemaComponent(XMLBase, MarkerInterface):
 class WSDLToolsAdapter(XMLSchemaComponent):
     """WSDL Adapter to grab the attributes from the wsdl document node.
     """
-    attributes = {'name':None, 'targetNamespace':None}
+    attributes = {'name':None, 'target_namespace':None}
     tag = 'definitions'
 
     def __init__(self, wsdl):
@@ -843,7 +843,7 @@ class Annotation(XMLSchemaComponent):
 class XMLSchemaFake:
     # This is temporary, for the benefit of WSDL until the real thing works.
     def __init__(self, element):
-        self.targetNamespace = DOM.getAttr(element, 'targetNamespace')
+        self.target_namespace = DOM.getAttr(element, 'target_namespace')
         self.element = element
 
 class XMLSchema(XMLSchemaComponent):
@@ -859,7 +859,7 @@ class XMLSchema(XMLSchemaComponent):
            id -- ID
            version -- token
            xml:lang -- language
-           targetNamespace -- anyURI
+           target_namespace -- anyURI
            attributeFormDefault -- 'qualified' | 'unqualified', 'unqualified'
            elementFormDefault -- 'qualified' | 'unqualified', 'unqualified'
            blockDefault -- '#all' | list of 
@@ -887,7 +887,7 @@ class XMLSchema(XMLSchemaComponent):
     attributes = {'id':None, 
         'version':None, 
         'xml:lang':None, 
-        'targetNamespace':None,
+        'target_namespace':None,
         'attributeFormDefault':'unqualified',
         'elementFormDefault':'unqualified',
         'blockDefault':None,
@@ -901,7 +901,7 @@ class XMLSchema(XMLSchemaComponent):
     def __init__(self, parent=None): 
         """parent -- 
            instance variables:
-           targetNamespace -- schema's declared targetNamespace, or empty string.
+           target_namespace -- schema's declared target_namespace, or empty string.
            _imported_schemas -- namespace keyed dict of schema dependencies, if 
               a schema is provided instance will not resolve import statement.
            _included_schemas -- schemaLocation keyed dict of component schemas, 
@@ -918,7 +918,7 @@ class XMLSchema(XMLSchemaComponent):
            notations -- collection of notations
 
         """
-        self.targetNamespace = None
+        self.target_namespace = None
         XMLSchemaComponent.__init__(self, parent)
         f = lambda k: k.attributes['name']
         ns = lambda k: k.attributes['namespace']
@@ -943,10 +943,10 @@ class XMLSchema(XMLSchemaComponent):
         """
         if not isinstance(schema, XMLSchema):
             raise TypeError, 'expecting a Schema instance'
-        if schema.targetNamespace != self.targetNamespace:
-            self._imported_schemas[schema.targetNamespace] = schema
+        if schema.target_namespace != self.target_namespace:
+            self._imported_schemas[schema.target_namespace] = schema
         else:
-            raise SchemaError, 'import schema bad targetNamespace'
+            raise SchemaError, 'import schema bad target_namespace'
 
     def addIncludeSchema(self, schemaLocation, schema):
         """for resolving include statements in Schema instance
@@ -956,11 +956,11 @@ class XMLSchema(XMLSchemaComponent):
         """
         if not isinstance(schema, XMLSchema):
             raise TypeError, 'expecting a Schema instance'
-        if not schema.targetNamespace or\
-             schema.targetNamespace == self.targetNamespace:
+        if not schema.target_namespace or\
+             schema.target_namespace == self.target_namespace:
             self._included_schemas[schemaLocation] = schema
         else:
-            raise SchemaError, 'include schema bad targetNamespace'
+            raise SchemaError, 'include schema bad target_namespace'
         
     def setImportSchemas(self, schema_dict):
         """set the import schema dictionary, which is used to 
@@ -1044,7 +1044,7 @@ class XMLSchema(XMLSchemaComponent):
         else:
             self.setAttributes(node)
 
-        self.targetNamespace = self.getTargetNamespace()
+        self.target_namespace = self.getTarget_namespace()
         contents = self.getContents(node)
 
         indx = 0
@@ -1060,9 +1060,9 @@ class XMLSchema(XMLSchemaComponent):
                     self.includes[tp.attributes['schemaLocation']] = tp
 
                     schema = tp.getSchema()
-                    if schema.targetNamespace and \
-                        schema.targetNamespace != self.targetNamespace:
-                        raise SchemaError, 'included schema bad targetNamespace'
+                    if schema.target_namespace and \
+                        schema.target_namespace != self.target_namespace:
+                        raise SchemaError, 'included schema bad target_namespace'
 
                     for collection in ['imports','elements','types',\
                         'attr_decl','attr_groups','model_groups','notations']:
@@ -1076,9 +1076,9 @@ class XMLSchema(XMLSchemaComponent):
                     tp.fromDom(node)
                     import_ns = tp.getAttribute('namespace')
                     if import_ns:
-                        if import_ns == self.targetNamespace:
+                        if import_ns == self.target_namespace:
                             raise SchemaError,\
-                                'import and schema have same targetNamespace'
+                                'import and schema have same target_namespace'
                         self.imports[import_ns] = tp
                     else:
                         self.imports[self.__class__.empty_namespace] = tp
@@ -1173,7 +1173,7 @@ class XMLSchema(XMLSchemaComponent):
             self.setAttributes(node)
             contents = self.getContents(node)
 
-            if self.attributes['namespace'] == self.getTargetNamespace():
+            if self.attributes['namespace'] == self.getTarget_namespace():
                 raise SchemaError, 'namespace of schema and import match'
 
             for i in contents:
@@ -1364,7 +1364,7 @@ class AttributeWildCard(XMLSchemaComponent,\
        attributes:
            id -- ID
            namespace -- '##any' | '##other' | 
-                        (anyURI* | '##targetNamespace' | '##local'), ##any
+                        (anyURI* | '##target_namespace' | '##local'), ##any
            processContents -- 'lax' | 'skip' | 'strict', strict
        contents:
            annotation?
@@ -1741,15 +1741,15 @@ class ElementDeclaration(XMLSchemaComponent,\
     def getElementDeclaration(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
-    def getTypeDefinition(self, attribute=None):
+    def get_typeDefinition(self, attribute=None):
         '''If attribute is None, "type" is assumed, return the corresponding
         representation of the global type definition (TypeDefinition),
         or the local definition if don't find "type".  To maintain backwards
         compat, if attribute is provided call base class method.
         '''
         if attribute:
-            return XMLSchemaComponent.getTypeDefinition(self, attribute)
-        gt = XMLSchemaComponent.getTypeDefinition(self, 'type')
+            return XMLSchemaComponent.get_typeDefinition(self, attribute)
+        gt = XMLSchemaComponent.get_typeDefinition(self, 'type')
         if gt:
             return gt
         return self.content
@@ -1898,7 +1898,7 @@ class ElementWildCard(LocalElementDeclaration,\
            minOccurs -- Whole Number, 1
            maxOccurs -- (Whole Number | 'unbounded'), 1
            namespace -- '##any' | '##other' | 
-                        (anyURI* | '##targetNamespace' | '##local'), ##any
+                        (anyURI* | '##target_namespace' | '##local'), ##any
            processContents -- 'lax' | 'skip' | 'strict', strict
        contents:
            annotation?
@@ -1922,7 +1922,7 @@ class ElementWildCard(LocalElementDeclaration,\
         '''
         return GetSchema(self).isElementFormDefaultQualified()
 
-    def getTypeDefinition(self, attribute):
+    def get_typeDefinition(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
     def fromDom(self, node):
@@ -2243,7 +2243,7 @@ class ComplexType(XMLSchemaComponent,\
     def getElementDeclaration(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
-    def getTypeDefinition(self, attribute):
+    def get_typeDefinition(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
     def fromDom(self, node):
@@ -2653,7 +2653,7 @@ class SimpleType(XMLSchemaComponent,\
     def getElementDeclaration(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
-    def getTypeDefinition(self, attribute):
+    def get_typeDefinition(self, attribute):
         raise Warning, 'invalid operation for <%s>' %self.tag
 
     def fromDom(self, node):
@@ -2794,12 +2794,12 @@ class SimpleType(XMLSchemaComponent,\
         def getItemType(self):
             return self.attributes.get('itemType')
 
-        def getTypeDefinition(self, attribute='itemType'):
+        def get_typeDefinition(self, attribute='itemType'):
             '''return the type refered to by itemType attribute or
             the simpleType content.  If returns None, then the 
             type refered to by itemType is primitive.
             '''
-            tp = XMLSchemaComponent.getTypeDefinition(self, attribute)
+            tp = XMLSchemaComponent.get_typeDefinition(self, attribute)
             return tp or self.content
 
         def fromDom(self, node):
@@ -2871,9 +2871,9 @@ class TypeDescriptionComponent(tupleClass):
         tuple.__init__(self, args)
         return
 
-    def getTargetNamespace(self):
+    def getTarget_namespace(self):
         return self[0]
 
-    def getName(self):
+    def get_name(self):
         return self[1]
 

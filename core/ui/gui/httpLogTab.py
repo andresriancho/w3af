@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import gtk
 import gobject
 import pango
@@ -28,12 +27,10 @@ import pango
 from core.ui.gui import reqResViewer, entries
 from core.ui.gui.entries import EasyTable
 from core.ui.gui.entries import wrapperWidgets
-from core.data.db.history import HistoryItem
 from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
+from core.data.db.history import HistoryItem
 from core.data.options.preferences import Preferences
-from core.data.options.option import option as Option
-from core.data.options.comboOption import comboOption
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -177,11 +174,11 @@ class httpLogTab(entries.RememberingHPaned):
                 ]
         filterMethods = OptionList()
         for method in self._filterMethods:
-            filterMethods.add(Option(method[0], method[2], method[1], "boolean"))
+            filterMethods.add(opt_factory(method[0], method[2], method[1], "boolean"))
         self.pref.addSection('methods', _('Request Method'), filterMethods)
         filterId = OptionList()
-        filterId.add(Option("min", "0", "Min ID", "string"))
-        filterId.add(Option("max", "0", "Max ID", "string"))
+        filterId.add(opt_factory("min", "0", "Min ID", "string"))
+        filterId.add(opt_factory("max", "0", "Max ID", "string"))
         self.pref.addSection('trans_id', _('Transaction ID'), filterId)
         filterCodes = OptionList()
         codes = [
@@ -192,11 +189,11 @@ class httpLogTab(entries.RememberingHPaned):
                 ("5xx", "5xx", False),
                 ]
         for code in codes:
-            filterCodes.add(Option(code[0], code[2], code[1], "boolean"))
+            filterCodes.add(opt_factory(code[0], code[2], code[1], "boolean"))
         self.pref.addSection('codes', _('Response Code'), filterCodes)
         filterMisc = OptionList()
-        filterMisc.add(Option("tag", False, "Tag", "boolean"))
-        filterMisc.add(Option("has_qs", False, "Request has Query String", "boolean"))
+        filterMisc.add(opt_factory("tag", False, "Tag", "boolean"))
+        filterMisc.add(opt_factory("has_qs", False, "Request has Query String", "boolean"))
         self.pref.addSection('misc', _('Misc'), filterMisc)
         filterTypes = OptionList()
         self._filterTypes = [
@@ -208,10 +205,10 @@ class httpLogTab(entries.RememberingHPaned):
                 ('text', 'Text', False),
                 ]
         for filterType in self._filterTypes:
-            filterTypes.add(Option(filterType[0], filterType[2], filterType[1], "boolean"))
+            filterTypes.add(opt_factory(filterType[0], filterType[2], filterType[1], "boolean"))
         self.pref.addSection('types', _('Response Content Type'), filterTypes)
         filterSize = OptionList()
-        filterSize.add(Option("resp_size", False, "Not Null", "boolean"))
+        filterSize.add(opt_factory("resp_size", False, "Not Null", "boolean"))
         self.pref.addSection('sizes', _('Response Size'), filterSize)
         self.pref.show()
         self._advSearchBox.pack_start(self.pref, False, False)
@@ -329,17 +326,17 @@ class httpLogTab(entries.RememberingHPaned):
         codes = self.pref.get_options('codes')
         filterCodes = []
         for opt in codes:
-            if opt.getValue():
-                codef = opt.getName()
+            if opt.get_value():
+                codef = opt.get_name()
                 filterCodes.append(('codef', int(codef[0]), '='))
         searchData.append((filterCodes, 'OR'))
         # IDs
         try:
-            minId = int(self.pref.getValue('trans_id', 'min'))
+            minId = int(self.pref.get_value('trans_id', 'min'))
         except:
             minId = 0
         try:
-            maxId = int(self.pref.getValue('trans_id', 'max'))
+            maxId = int(self.pref.get_value('trans_id', 'max'))
         except:
             maxId = 0
         if maxId > 0:
@@ -349,24 +346,24 @@ class httpLogTab(entries.RememberingHPaned):
         if refresh:
             searchData.append(('id', self._lastId, ">"))
         # Sizes
-        if self.pref.getValue('sizes', 'resp_size'):
+        if self.pref.get_value('sizes', 'resp_size'):
             searchData.append(('response_size', 0, ">"))
         # Tags
-        if self.pref.getValue('misc', 'tag'):
+        if self.pref.get_value('misc', 'tag'):
             searchData.append(('tag', '', "!="))
         # hasQueryString
-        if self.pref.getValue('misc', 'has_qs'):
+        if self.pref.get_value('misc', 'has_qs'):
             searchData.append(('has_qs', 0, ">"))
         # Content type
         filterTypes = []
         for filterType in self._filterTypes:
-            if self.pref.getValue('types', filterType[0]):
+            if self.pref.get_value('types', filterType[0]):
                 filterTypes.append(('content_type', "%"+filterType[0]+"%", 'like'))
         searchData.append((filterTypes, 'OR'))
         # Method
         filterMethods = []
         for method in self._filterMethods:
-            if self.pref.getValue('methods', method[0]):
+            if self.pref.get_value('methods', method[0]):
                 filterTypes.append(('method', method[0], '='))
         searchData.append((filterMethods, 'OR'))
 
@@ -486,12 +483,12 @@ class FilterOptions(gtk.HBox, Preferences):
             frame.show()
             table = EasyTable(len(optList), 2)
             for i, opt in enumerate(optList):
-                titl = gtk.Label(opt.getDesc())
+                titl = gtk.Label(opt.get_desc())
                 titl.set_alignment(xalign=0.0, yalign=0.5)
-                widg = wrapperWidgets[opt.getType()](self._changedWidget, opt)
+                widg = wrapperWidgets[opt.get_type()](self._changedWidget, opt)
                 titl.set_mnemonic_widget(widg)
                 opt.widg = widg
-                widg.set_tooltip_text( opt.getHelp() )
+                widg.set_tooltip_text( opt.get_help() )
                 table.autoAddRow(titl, widg)
                 table.show()
             frame.add(table)
@@ -504,7 +501,7 @@ class FilterOptions(gtk.HBox, Preferences):
             for opt in optList:
                 if hasattr(opt.widg, "isValid"):
                     if not opt.widg.isValid():
-                        invalid.append(opt.getName())
+                        invalid.append(opt.get_name())
         if invalid:
             msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
             msg += "\n-".join(invalid)
@@ -517,5 +514,5 @@ class FilterOptions(gtk.HBox, Preferences):
         # Get the value from the GTK widget and set it to the option object
         for section, optList in self.options.items():
             for opt in optList:
-                opt.setValue(opt.widg.getValue())
+                opt.set_value(opt.widg.get_value())
         self.parentWidg.findRequestResponse()

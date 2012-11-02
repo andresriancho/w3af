@@ -30,7 +30,7 @@ from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.misc.decorators import runonce
 
 from core.data.search_engines.bing import bing as bing
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -93,7 +93,7 @@ class bing_spider(CrawlPlugin):
         '''
         ol = OptionList()
         d = 'Fetch the first "resultLimit" results from the Google search'
-        o = option('resultLimit', self._result_limit, d, 'integer')
+        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
         ol.add(o)
         
         return ol
@@ -106,7 +106,7 @@ class bing_spider(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._result_limit = options_list['resultLimit'].getValue()
+        self._result_limit = options_list['resultLimit'].get_value()
 
     def get_long_desc( self ):
         '''

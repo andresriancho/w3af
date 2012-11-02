@@ -31,7 +31,8 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
 from core.data.parsers.url import URL
@@ -198,12 +199,12 @@ class import_results(CrawlPlugin):
         d = 'Define the CSV input file from which to create the fuzzable requests'
         h = 'The input file is comma separated and holds the following data:'
         h += ' HTTP-METHOD,URI,POSTDATA'
-        o = option('input_csv', self._input_csv, d, 'string', help=h)
+        o = opt_factory('input_csv', self._input_csv, d, INPUT_FILE, help=h)
         ol.add(o)
         
         d = 'Define the Burp log file from which to create the fuzzable requests'
         h = 'The input file needs to be in Burp format.'
-        o = option('input_burp', self._input_burp, d, 'string', help=h)
+        o = opt_factory('input_burp', self._input_burp, d, INPUT_FILE, help=h)
         ol.add(o)
         
         return ol
@@ -216,8 +217,8 @@ class import_results(CrawlPlugin):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._input_csv = options_list['input_csv'].getValue()
-        self._input_burp = options_list['input_burp'].getValue()
+        self._input_csv = options_list['input_csv'].get_value()
+        self._input_burp = options_list['input_burp'].get_value()
         
     def get_long_desc( self ):
         '''

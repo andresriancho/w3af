@@ -26,7 +26,7 @@ from errno import ENOSPC
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afMustStopByKnownReasonExc
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -112,7 +112,7 @@ class console(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self.verbose = option_list['verbose'].getValue()
+        self.verbose = option_list['verbose'].get_value()
 
     def get_options( self ):
         '''
@@ -120,7 +120,7 @@ class console(OutputPlugin):
         '''
         ol = OptionList()
         d = 'Enables verbose output for the console'
-        o = option('verbose', self.verbose, d, 'boolean')
+        o = opt_factory('verbose', self.verbose, d, 'boolean')
         ol.add(o)
         
         return ol

@@ -62,7 +62,7 @@ class Test_w3afCore_plugins(unittest.TestCase):
         w3af_core = w3afCore()
         plugin_inst = w3af_core.plugins.get_plugin_inst('audit', 'sqli')
 
-        self.assertEquals( plugin_inst.getName(), 'sqli' )
+        self.assertEquals( plugin_inst.get_name(), 'sqli' )
 
     @attr('smoke')
     def test_get_plugin_instAll(self):
@@ -71,7 +71,7 @@ class Test_w3afCore_plugins(unittest.TestCase):
         for plugin_type in itertools.chain( w3af_core.plugins.get_plugin_types() , ['attack'] ):
             for plugin_name in w3af_core.plugins.get_plugin_list(plugin_type):
                 plugin_inst = w3af_core.plugins.get_plugin_inst(plugin_type, plugin_name)
-                self.assertEquals( plugin_inst.getName(), plugin_name )
+                self.assertEquals( plugin_inst.get_name(), plugin_name )
 
     @attr('smoke')
     def test_set_plugins(self):
@@ -121,7 +121,7 @@ class Test_w3afCore_plugins(unittest.TestCase):
                             w3af_core.plugins.plugins['crawl'])
         
         plugin_inst = list(w3af_core.plugins.plugins['crawl'])[0]
-        self.assertEquals( plugin_inst.getName(), 'web_spider' )
+        self.assertEquals( plugin_inst.get_name(), 'web_spider' )
 
     @attr('smoke')
     def test_enable_all(self):
@@ -201,8 +201,8 @@ class Test_w3afCore_plugins(unittest.TestCase):
         self.assertEqual( w3af_core.plugins.get_enabled_plugins('infrastructure').index('server_header'), 0 )  
         self.assertEqual( w3af_core.plugins.get_enabled_plugins('infrastructure').index('php_eggs'), 1 )
         
-        self.assertEqual( w3af_core.plugins.plugins['infrastructure'][0].getName(), 'server_header')
-        self.assertEqual( w3af_core.plugins.plugins['infrastructure'][1].getName(), 'php_eggs')
+        self.assertEqual( w3af_core.plugins.plugins['infrastructure'][0].get_name(), 'server_header')
+        self.assertEqual( w3af_core.plugins.plugins['infrastructure'][1].get_name(), 'php_eggs')
     
     @attr('smoke')
     def test_enable_dependency_different_type(self):

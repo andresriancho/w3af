@@ -158,7 +158,7 @@ class profile(object):
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
             pNew = profile( newProfilePathAndName )
-            pNew.setName( copyProfileName )
+            pNew.set_name( copyProfileName )
             pNew.save( newProfilePathAndName )
             
             return True
@@ -215,7 +215,7 @@ class profile(object):
             self._config.add_section( section )
             
         for option in options:
-            self._config.set( section, option.getName(), option.getValueStr() )
+            self._config.set( section, option.get_name(), option.get_value_str() )
     
     def get_plugin_options( self, plugin_type, plugin_name ):
         '''
@@ -241,7 +241,7 @@ class profile(object):
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
                             raise w3afException( msg % (option, plugin_name) )
                         else:
-                            options_list[option].setValue(value)
+                            options_list[option].set_value(value)
 
         return options_list
         
@@ -273,7 +273,7 @@ class profile(object):
             self._config.add_section( section )
             
         for option in options:
-            self._config.set( section, option.getName(), option.getValueStr() )
+            self._config.set( section, option.get_name(), option.get_value_str() )
 
     def getMiscSettings( self ):
         '''
@@ -308,7 +308,7 @@ class profile(object):
                     msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
                     raise w3afException(msg)
                 else:
-                    options_list[option].setValue(value)
+                    options_list[option].set_value(value)
         except:
             # This is for back compatibility with old profiles
             # that don't have a http-settings nor misc-settings section 
@@ -316,7 +316,7 @@ class profile(object):
 
         return options_list
 
-    def setName( self, name ):
+    def set_name( self, name ):
         '''
         Set the name of the profile.
         @parameter name: The description of the profile
@@ -327,7 +327,7 @@ class profile(object):
             self._config.add_section( section )
         self._config.set( section, 'name', name )
         
-    def getName( self ):
+    def get_name( self ):
         '''
         @return: The profile name; as stated in the [profile] section
         '''
@@ -366,11 +366,11 @@ class profile(object):
             # or [profile] or [target]
             if section == 'target':
                 for option in self._config.options(section):
-                    options[option].setValue( self._config.get(section, option) )
+                    options[option].set_value( self._config.get(section, option) )
         
         return options
     
-    def setDesc( self, desc ):
+    def set_desc( self, desc ):
         '''
         Set the description of the profile.
         @parameter desc: The description of the profile
@@ -381,7 +381,7 @@ class profile(object):
             self._config.add_section( section )
         self._config.set( section, 'description', desc )
             
-    def getDesc( self ):
+    def get_desc( self ):
         '''
         @return: The profile description; as stated in the [profile] section
         '''

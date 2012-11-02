@@ -213,7 +213,7 @@ Latin2HungarianModel = { \
   'precedenceMatrix': HungarianLangModel,
   'mTypicalPositiveRatio': 0.947368,
   'keepEnglishLetter': constants.True,
-  'charsetName': "ISO-8859-2"
+  'charset_name': "ISO-8859-2"
 }
 
 Win1250HungarianModel = { \
@@ -221,5 +221,5 @@ Win1250HungarianModel = { \
   'precedenceMatrix': HungarianLangModel,
   'mTypicalPositiveRatio': 0.947368,
   'keepEnglishLetter': constants.True,
-  'charsetName': "windows-1250"
+  'charset_name': "windows-1250"
 }

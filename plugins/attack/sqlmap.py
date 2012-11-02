@@ -27,7 +27,7 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.parsers.url import parse_qs
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
@@ -60,7 +60,7 @@ class sqlmap(AttackPlugin):
         self._driver = None
         
         # User configured options for fastExploit
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._method = 'GET'
         self._data = ''
         self._injvar = ''
@@ -199,7 +199,7 @@ class sqlmap(AttackPlugin):
                             pass
                 
                 # FIXME: Am I really saving anything here ?!?!
-                return kb.kb.get( self.getName(), 'shell' )
+                return kb.kb.get( self.get_name(), 'shell' )
                 
     def _generate_shell( self, vuln_obj ):
         '''
@@ -227,25 +227,25 @@ class sqlmap(AttackPlugin):
         '''
         ol = OptionList()
         d = 'URL to exploit with fastExploit()'
-        o = option('url', self._url, d, 'url')
+        o = opt_factory('url', self._url, d, 'url')
         ol.add(o)
         
         d = 'Method to use with fastExploit()'
-        o = option('method', self._method, d, 'string')
+        o = opt_factory('method', self._method, d, 'string')
         ol.add(o)
         
         d = 'Data to send with fastExploit()'
-        o = option('data', self._data, d, 'string')
+        o = opt_factory('data', self._data, d, 'string')
         ol.add(o)
         
         d = 'Variable where to inject with fastExploit()'
-        o = option('injvar', self._injvar, d, 'string')
+        o = opt_factory('injvar', self._injvar, d, 'string')
         ol.add(o)
         
         d = 'String equal ratio (0.0 to 1.0)'
         h = 'Two pages are equal if they match in more than equalLimit. Only used when'
         h += ' equAlgorithm is set to setIntersection.'
-        o = option('equalLimit', self._eq_limit, d, 'float', help=h)
+        o = opt_factory('equalLimit', self._eq_limit, d, 'float', help=h)
         ol.add(o)
         
         d = 'Enable or disable the good samaritan module'
@@ -254,11 +254,11 @@ class sqlmap(AttackPlugin):
         h += ' crawl and you can help the process. For example, if you see "Micros" you'
         h += ' could type "oft", and if it\'s correct, you have made your good action of the day'
         h += ', speeded up the crawl AND had fun doing it.'
-        o = option('goodSamaritan', self._goodSamaritan, d, 'boolean', help=h)
+        o = opt_factory('goodSamaritan', self._goodSamaritan, d, 'boolean', help=h)
         ol.add(o)
         
         d = 'If true, this plugin will try to generate only one shell object.'
-        o = option('generateOnlyOne', self._generate_only_one, d, 'boolean')
+        o = opt_factory('generateOnlyOne', self._generate_only_one, d, 'boolean')
         ol.add(o)        
         
 
@@ -273,18 +273,18 @@ class sqlmap(AttackPlugin):
         @parameter options_list: A map with the options for the plugin.
         @return: No value is returned.
         '''
-        self._url = options_list['url'].getValue().uri2url()
+        self._url = options_list['url'].get_value().uri2url()
             
-        if options_list['method'].getValue() not in ['GET', 'POST']:
+        if options_list['method'].get_value() not in ['GET', 'POST']:
             raise w3afException('Unknown method.')
         else:
-            self._method = options_list['method'].getValue()
+            self._method = options_list['method'].get_value()
 
-        self._data = options_list['data'].getValue()
-        self._injvar = options_list['injvar'].getValue()
-        self._eq_limit = options_list['equalLimit'].getValue()
-        self._goodSamaritan = options_list['goodSamaritan'].getValue()
-        self._generate_only_one = options_list['generateOnlyOne'].getValue()
+        self._data = options_list['data'].get_value()
+        self._injvar = options_list['injvar'].get_value()
+        self._eq_limit = options_list['equalLimit'].get_value()
+        self._goodSamaritan = options_list['goodSamaritan'].get_value()
+        self._generate_only_one = options_list['generateOnlyOne'].get_value()
 
     def getRootProbability( self ):
         '''
@@ -398,7 +398,7 @@ class sqlShellObj(shell):
         self._showPrompt()
 
     def _showPrompt( self ):
-        om.out.console('w3af/exploit/'+self.getName()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
+        om.out.console('w3af/exploit/'+self.get_name()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
         
     def help( self, command='' ):
         '''
@@ -438,7 +438,7 @@ class sqlShellObj(shell):
     def end( self ):
         om.out.debug('sqlmap cleanup complete.')
             
-    def getName( self ):
+    def get_name( self ):
         return 'sqlmap'
         
     def end_interaction(self):

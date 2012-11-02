@@ -88,12 +88,12 @@ class form_autocomplete(GrepPlugin):
                 chain(passwd_inputs, self._text_input_xpath(form) ))):
                     
                     i = info()
-                    i.setName('Auto-completable form')
+                    i.set_name('Auto-completable form')
                     i.setURL(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has a "<form>" element with ' \
                     'auto-complete enabled.' % url
-                    i.setDesc(msg)
+                    i.set_desc(msg)
                     form_str = etree.tostring(form)
                     to_highlight = form_str[:(form_str).find('>') + 1]
                     i.addToHighlight(to_highlight)

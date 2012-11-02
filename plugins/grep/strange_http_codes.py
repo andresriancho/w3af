@@ -68,15 +68,15 @@ class strange_http_codes(GrepPlugin):
             else:
                 # Create a new info object from scratch and save it to the kb:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Strange HTTP Response code - ' + str(response.getCode()))
+                i.setPluginName(self.get_name())
+                i.set_name('Strange HTTP Response code - ' + str(response.getCode()))
                 i.setURL( response.getURL() )
                 i.set_id( response.id )
                 i['code'] = response.getCode()
                 desc = 'The remote Web server sent a strange HTTP response code: "'
                 desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
                 desc += '", manual inspection is advised.'
-                i.setDesc( desc )
+                i.set_desc( desc )
                 i.addToHighlight( str(response.getCode()), response.getMsg() )
                 kb.kb.append( self , 'strange_http_codes' , i )
     

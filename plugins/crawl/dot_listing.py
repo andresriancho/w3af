@@ -93,25 +93,25 @@ class dot_listing(CrawlPlugin):
                 
                 if parsed_url_set:
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id( response.id )
-                    v.setName( '.listing file found' )
+                    v.set_name( '.listing file found' )
                     v.setSeverity(severity.LOW)
                     v.setURL( response.getURL() )
                     msg = ('A .listing file was found at: "%s". The contents'
                            ' of this file disclose filenames.')
-                    v.setDesc( msg % (v.getURL()) )
+                    v.set_desc( msg % (v.getURL()) )
                     kb.kb.append( self, 'dot_listing', v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
                 
                 real_users = set([u for u in users if not u.isdigit()])
                 real_groups = set([g for g in groups if not g.isdigit()])
                 
                 if real_users or real_groups:
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.set_id( response.id )
-                    v.setName( 'Operating system username and group leak' )
+                    v.set_name( 'Operating system username and group leak' )
                     v.setSeverity(severity.LOW)
                     v.setURL( response.getURL() )
                     msg = 'A .listing file which leaks operating system usernames' \
@@ -119,9 +119,9 @@ class dot_listing(CrawlPlugin):
                           ' and the groups are %s. This information can be used' \
                           ' during a bruteforce attack to the Web application,' \
                           ' SSH or FTP services.'
-                    v.setDesc( msg % (v.getURL(), ', '.join(real_users), ', '.join(real_groups)) )
+                    v.set_desc( msg % (v.getURL(), ', '.join(real_users), ', '.join(real_groups)) )
                     kb.kb.append( self, 'dot_listing', v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
                     
 
     def _extract_info_from_listing(self, listing_file_content):

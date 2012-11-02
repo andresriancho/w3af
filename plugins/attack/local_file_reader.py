@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.vuln as vuln
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.kb.read_shell import read_shell as read_shell
 from core.data.parsers.url import parse_qs
@@ -51,7 +51,7 @@ class local_file_reader(AttackPlugin):
         
         # User configured variables
         self._changeToPost = True
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._method = 'GET'
         self._data = ''
         self._file_pattern = ''
@@ -65,7 +65,7 @@ class local_file_reader(AttackPlugin):
             om.out.error('You have to configure the "url" parameter.')
         else:
             v = vuln.vuln()
-            v.setPluginName(self.getName())
+            v.setPluginName(self.get_name())
             v.setURL( self._url )
             v.setMethod( self._method )
             v.setDc( self._data )
@@ -158,23 +158,23 @@ class local_file_reader(AttackPlugin):
         d0 += ' during exploitation.'
         h0 = 'If the vulnerability was found in a GET request, try to change the method to POST'
         h0 += ' during exploitation; this is usefull for not being logged in the webserver logs.'
-        o0 = option('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
+        o0 = opt_factory('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
         
         d1 = 'URL to exploit with fastExploit()'
-        o1 = option('url', self._url, d1, 'url')
+        o1 = opt_factory('url', self._url, d1, 'url')
         
         d2 = 'Method to use with fastExploit()'
-        o2 = option('method', self._method, d2, 'string')
+        o2 = opt_factory('method', self._method, d2, 'string')
 
         d3 = 'Data to send with fastExploit()'
-        o3 = option('data', self._data, d3, 'string')
+        o3 = opt_factory('data', self._data, d3, 'string')
 
         d4 = 'The file pattern to search for while verifiyng the vulnerability.'
         d4 += ' Only used in fastExploit()'
-        o4 = option('file_pattern', self._file_pattern, d4, 'string')
+        o4 = opt_factory('file_pattern', self._file_pattern, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
-        o5 = option('generateOnlyOne', self._generate_only_one, d5, 'boolean')
+        o5 = opt_factory('generateOnlyOne', self._generate_only_one, d5, 'boolean')
         
         ol = OptionList()
         ol.add(o0)
@@ -193,12 +193,12 @@ class local_file_reader(AttackPlugin):
         @parameter options_list: A dict with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._changeToPost = options_list['changeToPost'].getValue()
-        self._url = options_list['url'].getValue()
-        self._method = options_list['method'].getValue()
-        self._data = parse_qs( options_list['data'].getValue() )
-        self._file_pattern = options_list['file_pattern'].getValue()
-        self._generate_only_one = options_list['generateOnlyOne'].getValue()
+        self._changeToPost = options_list['changeToPost'].get_value()
+        self._url = options_list['url'].get_value()
+        self._method = options_list['method'].get_value()
+        self._data = parse_qs( options_list['data'].get_value() )
+        self._file_pattern = options_list['file_pattern'].get_value()
+        self._generate_only_one = options_list['generateOnlyOne'].get_value()
         
     def getRootProbability( self ):
         '''
@@ -419,7 +419,7 @@ class FileReaderShell(read_shell):
         
         return result
     
-    def getName( self ):
+    def get_name( self ):
         '''
         @return: The name of this shell.
         '''

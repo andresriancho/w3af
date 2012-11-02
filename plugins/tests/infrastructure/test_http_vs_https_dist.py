@@ -90,8 +90,8 @@ class test_http_vs_https_dist(unittest.TestCase):
         self.assertEqual(len(infos), 1)
         
         info = infos[0]
-        self.assertEqual('HTTP traceroute', info.getName())
-        self.assertTrue('are the same' in info.getDesc())
+        self.assertEqual('HTTP traceroute', info.get_name())
+        self.assertTrue('are the same' in info.get_desc())
         
     def test_discover_diff_routes(self):
         plugininst = hvshsdist.http_vs_https_dist()
@@ -174,5 +174,5 @@ class TestHTTPvsHTTPS(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertEqual( 'HTTP traceroute', info.getName() )
+        self.assertEqual( 'HTTP traceroute', info.get_name() )
         

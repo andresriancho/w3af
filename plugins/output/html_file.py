@@ -34,7 +34,8 @@ import core.data.kb.vuln as vuln
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
 from core.data.db.disk_list import disk_list
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
 
 
@@ -57,8 +58,8 @@ class html_file(OutputPlugin):
         
         # Internal variables
         self._initialized = False
-        self._style_filename = os.path.join('plugins', 'output', 
-                                            'html_file','style.css' )        
+        self._style_output_file = os.path.join('plugins', 'output', 
+                                               'html_file','style.css' )        
         
         # These attributes hold the file pointers
         self._file = None
@@ -66,7 +67,7 @@ class html_file(OutputPlugin):
         
         # User configured parameters
         self._verbose = False
-        self._file_name = 'report.html'
+        self._output_file_name = 'report.html'
     
     def _init( self ):
         '''
@@ -75,22 +76,22 @@ class html_file(OutputPlugin):
         if not self._initialized: 
             self._initialized = True
             try:
-                self._file = codecs.open( self._file_name, "w", "utf-8", 'replace' )            
-                #self._file = open( self._file_name, "w" )
+                self._file = codecs.open(self._output_file_name, "w", "utf-8", 'replace')            
+                #self._file = open( self._output_file_name, "w" )
             except IOError, io:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
-                msg = msg % (os.path.abspath(self._file_name), io.strerror)
+                msg = msg % (os.path.abspath(self._output_file_name), io.strerror)
                 raise w3afException( msg )
             except Exception, e:
                 msg = 'Can\'t open report file "%s" for writing: "%s"'
-                msg = msg % (os.path.abspath(self._file_name), e)
+                msg = msg % (os.path.abspath(self._output_file_name), e)
                 raise w3afException( msg )
             
             try:
-                style_file = open( self._style_filename, "r" )
+                style_file = open( self._style_output_file, "r" )
             except Exception, e:
                 msg = 'Can\'t open CSS style file "%s" for reading: "%s"'
-                msg = msg % (os.path.abspath(self._style_filename), e)
+                msg = msg % (os.path.abspath(self._style_output_file), e)
                 raise w3afException( msg )
             else:
                 html = HTML_HEADER.substitute(title=cgi.escape (TITLE),
@@ -203,8 +204,8 @@ class html_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        self._file_name = option_list['fileName'].getValue()
-        self._verbose = option_list['verbose'].getValue()
+        self._output_file_name = option_list['output_file'].get_value()
+        self._verbose = option_list['verbose'].get_value()
         
     def get_options( self ):
         '''
@@ -213,11 +214,11 @@ class html_file(OutputPlugin):
         ol = OptionList()
         
         d = 'File name where this plugin will write to'
-        o = option('fileName', self._file_name, d, 'string')
+        o = opt_factory('output_file', self._output_file_name, d, OUTPUT_FILE)
         ol.add(o)
         
         d = 'True if debug information will be appended to the report.'
-        o = option('verbose', self._verbose, d, 'boolean')
+        o = opt_factory('verbose', self._verbose, d, 'boolean')
         ol.add(o)
         
         return ol
@@ -264,7 +265,7 @@ class html_file(OutputPlugin):
         for i in infos:
 
             #   Get all the information I'll be using
-            desc = cgi.escape( i.getDesc() )
+            desc = cgi.escape( i.get_desc() )
             severity = cgi.escape( i.getSeverity() )
 
             if i.getURL() is not None:
@@ -332,7 +333,7 @@ class html_file(OutputPlugin):
         This plugin writes the framework messages to an HTML report file.
         
         Two configurable parameters exist:
-            - fileName
+            - output_file
             - verbose
 
         If you want to write every HTTP request/response to a text file, you

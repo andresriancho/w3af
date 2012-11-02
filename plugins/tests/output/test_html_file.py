@@ -51,7 +51,7 @@ class TestHTMLOutput(PluginTest):
                 'output': (
                     PluginConfig(
                         'html_file',
-                        ('fileName', OUTPUT_FILE, PluginConfig.STR)),
+                        ('output_file', OUTPUT_FILE, PluginConfig.STR)),
                 )         
             },
         }

@@ -91,14 +91,14 @@ class credit_cards(GrepPlugin):
             
             for card in found_cards:
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL( response.getURL() )
                 v.set_id( response.id )
                 v.setSeverity(severity.LOW)
-                v.setName( 'Credit card number disclosure' )
+                v.set_name( 'Credit card number disclosure' )
                 v.addToHighlight(card)
                 msg = 'The URL: "%s" discloses the credit card number: "%s"'
-                v.setDesc( msg % (v.getURL(), card) )
+                v.set_desc( msg % (v.getURL(), card) )
                 kb.kb.append( self, 'credit_cards', v )
      
     def _find_card(self, body):

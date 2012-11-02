@@ -29,7 +29,9 @@ from core.controllers.w3afException import w3afException
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import BOOL, STRING, LIST
+from core.data.options.option_types import URL as URL_OPTION_TYPE
 from core.data.options.option_list import OptionList
 
 
@@ -57,10 +59,10 @@ class web_diff(CrawlPlugin):
         self._ban_url = ['asp', 'jsp', 'php']
         self._content = True
         self._local_dir = ''
-        self._remote_url_path = ''
+        self._remote_url_path = 'http://host.tld/'
     
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         GET's local files one by one until done.
         
@@ -197,20 +199,20 @@ class web_diff(CrawlPlugin):
         ol = OptionList()
         
         d = 'When comparing, also compare the content of files.'
-        o = option('content', self._content, d, 'boolean')
+        o = opt_factory('content', self._content, d, BOOL)
         ol.add(o)
         
         d = 'The local directory used in the comparison.'
-        o = option('local_dir', self._local_dir, d, 'string')
+        o = opt_factory('local_dir', self._local_dir, d, STRING)
         ol.add(o)
         
         d = 'The remote directory used in the comparison.'
-        o = option('remote_url_path', self._remote_url_path, d, 'string')
+        o = opt_factory('remote_url_path', self._remote_url_path, d, URL_OPTION_TYPE)
         ol.add(o)
         
         d = 'When comparing content of two files, ignore files with these'\
             'extensions.'
-        o = option('banned_ext', self._ban_url, d, 'list')
+        o = opt_factory('banned_ext', self._ban_url, d, LIST)
         ol.add(o)
         
         return ol
@@ -223,21 +225,18 @@ class web_diff(CrawlPlugin):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        try:
-            url = options_list['remote_url_path'].getValue()
-            self._remote_url_path = url.getDomainPath()
-        except ValueError, ve:
-            raise w3afException( 'Error in user configuration: "%s".' % ve)
+        url = options_list['remote_url_path'].get_value()
+        self._remote_url_path = url.getDomainPath()
 
-        local_dir = options_list['local_dir'].getValue()
+        local_dir = options_list['local_dir'].get_value()
         if os.path.isdir(local_dir):
             self._local_dir = local_dir
         else:
             msg = 'Error in user configuration: "%s" is not a directory.'
             raise w3afException(msg % local_dir)
         
-        self._content = options_list['content'].getValue()
-        self._ban_url = options_list['banned_ext'].getValue()
+        self._content = options_list['content'].get_value()
+        self._ban_url = options_list['banned_ext'].get_value()
         
 
     def get_long_desc( self ):

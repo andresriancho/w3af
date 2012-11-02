@@ -40,5 +40,5 @@ class TestServerStatus(PluginTest):
         server = self.kb.get('server_status', 'server')
         
         self.assertEqual( len(server), 1, server)
-        self.assertTrue( 'remote server version: "Apache/2.' in server[0].getDesc(), 
-                         server[0].getDesc())
+        self.assertTrue( 'remote server version: "Apache/2.' in server[0].get_desc(), 
+                         server[0].get_desc())

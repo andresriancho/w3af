@@ -57,7 +57,7 @@ class TestPhishtank(PluginTest):
         self.assertEqual( len(vulns), 1, vulns )
         vuln = vulns[0]
         
-        self.assertEqual(vuln.getName(), 'Phishing scam')
+        self.assertEqual(vuln.get_name(), 'Phishing scam')
         self.assertEqual(vuln.getSeverity(), severity.MEDIUM)
         self.assertTrue(vuln.getURL().url_string.startswith(self.vuln_url_1),
                         vuln.getURL())

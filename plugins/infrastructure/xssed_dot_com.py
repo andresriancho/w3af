@@ -115,8 +115,8 @@ class xssed_dot_com(InfrastructurePlugin):
                 matches = re.findall("URL:.+", xss_report_response.getBody())
                 
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
-                v.setName('Possible XSS vulnerability')
+                v.setPluginName(self.get_name())
+                v.set_name('Possible XSS vulnerability')
                 v.setURL( mirror_url )
                 
                 if self._fixed in xss_report_response.getBody():
@@ -128,9 +128,9 @@ class xssed_dot_com(InfrastructurePlugin):
                     msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
                     msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
 
-                v.setDesc( msg )
+                v.set_desc( msg )
                 kb.kb.append( self, 'xss', v )
-                om.out.information( v.getDesc() )
+                om.out.information( v.get_desc() )
                 
                 #
                 #   Add the fuzzable request, this is useful if I have the XSS plugin enabled

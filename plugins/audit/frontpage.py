@@ -31,7 +31,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alpha
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -141,17 +141,17 @@ class frontpage(AuditPlugin):
             # The file we uploaded has the reversed filename as body 
             if res.getBody() == rand_file[::-1] and not is_404( res ):
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.setURL( target_url )
                 v.set_id( [upload_id, res.id] )
                 v.setSeverity(severity.HIGH)
-                v.setName( 'Insecure Frontpage extensions configuration' )
+                v.set_name( 'Insecure Frontpage extensions configuration' )
                 v.setMethod( 'POST' )
                 msg = 'An insecure configuration in the frontpage extensions'
                 msg += ' allows unauthenticated users to upload files to the'
                 msg += ' remote web server.' 
-                v.setDesc( msg )
-                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
+                v.set_desc( msg )
+                om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
                 kb.kb.append( self, 'frontpage', v )
             else:
                 msg = 'The file that was uploaded using the POST method is not'
@@ -169,7 +169,7 @@ class frontpage(AuditPlugin):
         h += 'to a directory, the chances are that we can upload to every directory;'
         h += ' and if this is the case, we would get a lot of vulnerabilities reported,'
         h += ' that are really only one.'
-        o = option('stopOnFirst', self._stop_on_first, d, 'boolean', help=h)
+        o = opt_factory('stopOnFirst', self._stop_on_first, d, 'boolean', help=h)
         ol.add(o)
         
         return ol
@@ -182,7 +182,7 @@ class frontpage(AuditPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._stop_on_first = options_list['stopOnFirst'].getValue()
+        self._stop_on_first = options_list['stopOnFirst'].get_value()
 
     def get_plugin_deps( self ):
         '''

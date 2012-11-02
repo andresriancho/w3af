@@ -52,7 +52,7 @@ class bruteforce(BaseConsumer):
     def _consume(self, work_unit):
         
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.getName(), work_unit ) )
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(), work_unit ) )
             
             # Now I'm adding new tasks that will be in progress until the
             # self._plugin_finished_cb is called.
@@ -64,7 +64,7 @@ class bruteforce(BaseConsumer):
     
     def _plugin_finished_cb(self, ((plugin, input_fuzzable_request), plugin_result)):
         for new_fuzzable_request in plugin_result:
-            self._out_queue.put( (plugin.getName(), 
+            self._out_queue.put( (plugin.get_name(), 
                                   input_fuzzable_request,
                                   new_fuzzable_request) )
         
@@ -87,9 +87,9 @@ class bruteforce(BaseConsumer):
         res = set()
         
         # Status
-        om.out.debug('Called _bruteforce(%s,%s)' %(plugin.getName(),fuzzable_request) )
+        om.out.debug('Called _bruteforce(%s,%s)' %(plugin.get_name(),fuzzable_request) )
         self._w3af_core.status.set_phase('bruteforce')
-        self._w3af_core.status.set_running_plugin( plugin.getName() )
+        self._w3af_core.status.set_running_plugin( plugin.get_name() )
         self._w3af_core.status.set_current_fuzzable_request( fuzzable_request )
         
         # TODO: Report progress to the core.
@@ -97,7 +97,7 @@ class bruteforce(BaseConsumer):
         try:
             new_frs = plugin.bruteforce_wrapper( fuzzable_request )
         except Exception, e:
-            self.handle_exception('bruteforce', plugin.getName(), fuzzable_request, e)        
+            self.handle_exception('bruteforce', plugin.get_name(), fuzzable_request, e)        
         else:
             res.update( new_frs )
         

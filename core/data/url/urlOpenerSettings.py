@@ -33,7 +33,7 @@ import core.data.url.handlers.mangleHandler as mangleHandler
 from core.controllers.configurable import configurable
 from core.controllers.w3afException import w3afException
 from core.data.kb.config import cf as cfg
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
@@ -376,38 +376,38 @@ class urlOpenerSettings( configurable ):
         '''        
         d1 = 'The timeout for connections to the HTTP server'
         h1 = 'Set low timeouts for LAN use and high timeouts for slow Internet connections.'
-        o1 = option('timeout', cfg.get('timeout'), d1, 'integer', help=h1)
+        o1 = opt_factory('timeout', cfg.get('timeout'), d1, 'integer', help=h1)
         
         d2 = 'Set the headers filename. This file has additional headers that are added to each request.'
-        o2 = option('headersFile', cfg.get('headersFile'), d2, 'string')
+        o2 = opt_factory('headersFile', cfg.get('headersFile'), d2, 'string')
 
         d3 = 'Set the basic authentication username for HTTP requests'
-        o3 = option('basicAuthUser', cfg.get('basicAuthUser'), d3, 'string', tabid='Basic HTTP Authentication')
+        o3 = opt_factory('basicAuthUser', cfg.get('basicAuthUser'), d3, 'string', tabid='Basic HTTP Authentication')
 
         d4 = 'Set the basic authentication password for HTTP requests'
-        o4 = option('basicAuthPass', cfg.get('basicAuthPass'), d4, 'string', tabid='Basic HTTP Authentication')
+        o4 = opt_factory('basicAuthPass', cfg.get('basicAuthPass'), d4, 'string', tabid='Basic HTTP Authentication')
 
         d5 = 'Set the basic authentication domain for HTTP requests'
         h5 = 'This configures on which requests to send the authentication settings configured'
         h5 += ' in basicAuthPass and basicAuthUser. If you are unsure, just set it to the'
         h5 += ' target domain name.'
-        o5 = option('basicAuthDomain', cfg.get('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
+        o5 = opt_factory('basicAuthDomain', cfg.get('basicAuthDomain'), d5, 'string', help=h5, tabid='Basic HTTP Authentication')
 
         
         d6a= 'Set the NTLM authentication domain (the windows domain name) for HTTP requests'
-        o6a = option('ntlmAuthDomain', cfg.get('ntlmAuthDomain'), d6a, 'string', tabid='NTLM Authentication')
+        o6a = opt_factory('ntlmAuthDomain', cfg.get('ntlmAuthDomain'), d6a, 'string', tabid='NTLM Authentication')
         
         d6= 'Set the NTLM authentication username for HTTP requests'
-        o6 = option('ntlmAuthUser', cfg.get('ntlmAuthUser'), d6, 'string', tabid='NTLM Authentication')
+        o6 = opt_factory('ntlmAuthUser', cfg.get('ntlmAuthUser'), d6, 'string', tabid='NTLM Authentication')
 
         d7 = 'Set the NTLM authentication password for HTTP requests'
-        o7 = option('ntlmAuthPass', cfg.get('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
+        o7 = opt_factory('ntlmAuthPass', cfg.get('ntlmAuthPass'), d7, 'string', tabid='NTLM Authentication')
 
         d7b = 'Set the NTLM authentication domain for HTTP requests'
         h7b = 'This configures on which requests to send the authentication settings configured'
         h7b += ' in ntlmAuthPass and ntlmAuthUser. If you are unsure, just set it to the'
         h7b += ' target domain name.'
-        o7b = option('ntlmAuthURL', cfg.get('ntlmAuthURL'), d7b, 'string', tabid='NTLM Authentication')
+        o7b = opt_factory('ntlmAuthURL', cfg.get('ntlmAuthURL'), d7b, 'string', tabid='NTLM Authentication')
                 
         d8 = 'Set the cookiejar filename.'
         h8 = 'The cookiejar file MUST be in mozilla format.'
@@ -415,46 +415,46 @@ class urlOpenerSettings( configurable ):
         h8 += '# Netscape HTTP Cookie File\n'
         h8 += '.domain.com    TRUE   /       FALSE   1731510001      user    admin\n\n'
         h8 += 'The comment IS mandatory. Take special attention to spaces.'
-        o8 = option('cookieJarFile', cfg.get('cookieJarFile'), d8, 'string', help=h8, tabid='Cookies')
+        o8 = opt_factory('cookieJarFile', cfg.get('cookieJarFile'), d8, 'string', help=h8, tabid='Cookies')
 
         d9 = 'Ignore session cookies'
         h9 = 'If set to True, w3af will ignore all session cookies sent by the web application.'
-        o9 = option('ignoreSessCookies', cfg.get('ignoreSessCookies'), d9, 'boolean', help=h9, tabid='Cookies')
+        o9 = opt_factory('ignoreSessCookies', cfg.get('ignoreSessCookies'), d9, 'boolean', help=h9, tabid='Cookies')
        
         d10 = 'Proxy TCP port'
         h10 = 'TCP port for the remote proxy server to use. On Microsoft Windows systems, w3af'
         h10 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o10 = option('proxyPort', cfg.get('proxyPort'), d10, 'integer', help=h10, tabid='Outgoing proxy')
+        o10 = opt_factory('proxyPort', cfg.get('proxyPort'), d10, 'integer', help=h10, tabid='Outgoing proxy')
 
         d11 = 'Proxy IP address'
         h11 = 'IP address for the remote proxy server to use. On Microsoft Windows systems, w3af'
         h11 += ' will use the proxy settings that are configured in Internet Explorer.'
-        o11 = option('proxyAddress', cfg.get('proxyAddress'), d11, 'string', help=h11, tabid='Outgoing proxy')
+        o11 = opt_factory('proxyAddress', cfg.get('proxyAddress'), d11, 'string', help=h11, tabid='Outgoing proxy')
 
         d12 = 'User Agent header'
         h12 = 'User Agent header to send in request.'
-        o12 = option('userAgent', cfg.get('User-Agent'), d12, 'string', help=h12, tabid='Misc')
+        o12 = opt_factory('userAgent', cfg.get('User-Agent'), d12, 'string', help=h12, tabid='Misc')
 
         d13 = 'Maximum file size'
         h13 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
-        o13 = option('maxFileSize', cfg.get('maxFileSize'), d13, 'integer', help=h13, tabid='Misc')
+        o13 = opt_factory('maxFileSize', cfg.get('maxFileSize'), d13, 'integer', help=h13, tabid='Misc')
 
         d14 = 'Maximum number of retries'
         h14 = 'Indicates the maximum number of retries when requesting an URL.'
-        o14 = option('maxRetrys', cfg.get('maxRetrys'), d14, 'integer', help=h14, tabid='Misc')
+        o14 = opt_factory('maxRetrys', cfg.get('maxRetrys'), d14, 'integer', help=h14, tabid='Misc')
 
         d15 = 'A comma separated list that determines what URLs will ALWAYS be detected as 404 pages.'
-        o15 = option('always404', cfg.get('always404'), d15, 'list', tabid='404 settings')
+        o15 = opt_factory('always404', cfg.get('always404'), d15, 'list', tabid='404 settings')
 
         d16 = 'A comma separated list that determines what URLs will NEVER be detected as 404 pages.'
-        o16 = option('never404', cfg.get('never404'), d16, 'list', tabid='404 settings')
+        o16 = opt_factory('never404', cfg.get('never404'), d16, 'list', tabid='404 settings')
 
         d17 = 'If this string is found in an HTTP response, then it will be tagged as a 404.'
-        o17 = option('404string', cfg.get('404string'), d17, 'string', tabid='404 settings')
+        o17 = opt_factory('404string', cfg.get('404string'), d17, 'string', tabid='404 settings')
 
         d18 = 'Append the given URL parameter to every accessed URL.'
         d18 += ' Example: http://www.foobar.com/index.jsp;<parameter>?id=2'
-        o18 = option('urlParameter', cfg.get('urlParameter'), d18, 'string')    
+        o18 = opt_factory('urlParameter', cfg.get('urlParameter'), d18, 'string')    
 
         ol = OptionList()
         ol.add(o1)
@@ -487,7 +487,7 @@ class urlOpenerSettings( configurable ):
         @parameter options_list: An OptionList with the option objects for a plugin.
         @return: No value is returned.
         '''
-        getOptsMapValue = lambda n: options_list[n].getValue()
+        getOptsMapValue = lambda n: options_list[n].get_value()
         self.setTimeout(getOptsMapValue('timeout'))
         
         # Only apply changes if they exist
@@ -539,7 +539,7 @@ class urlOpenerSettings( configurable ):
         cfg['always404'] = getOptsMapValue('always404')
         cfg['404string'] = getOptsMapValue('404string')
         
-    def getDesc( self ):
+    def get_desc( self ):
         return ('This section is used to configure URL settings that '
             'affect the core and all plugins.')
     

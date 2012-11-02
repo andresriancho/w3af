@@ -29,7 +29,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.misc.is_private_site import is_private_site
 from core.controllers.w3afException import w3afRunOnce
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -194,7 +194,7 @@ class archive_dot_org(CrawlPlugin):
         d = 'Maximum recursion depth for spidering process'
         h = 'The plugin will spider the archive.org site related to the target'
         h += ' site with the maximum depth specified in this parameter.'
-        o = option('max_depth', self._max_depth, d, 'integer', help=h)
+        o = opt_factory('max_depth', self._max_depth, d, 'integer', help=h)
         ol.add(o)
         
         return ol
@@ -207,7 +207,7 @@ class archive_dot_org(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._max_depth = options_list['max_depth'].getValue()
+        self._max_depth = options_list['max_depth'].get_value()
         
     def get_long_desc( self ):
         '''

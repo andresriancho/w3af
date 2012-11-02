@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.w3afException import w3afException
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -99,14 +99,14 @@ class get_emails(GrepPlugin):
             if mail_address not in email_map:
                 # Create a new info object, and report it
                 i = info.info()
-                i.setPluginName(self.getName())
+                i.setPluginName(self.get_name())
                 i.setURL(url)
                 i.set_id( response.id )
-                i.setName( mail_address )
+                i.set_name( mail_address )
                 desc = 'The mail account: "'+ mail_address + '" was found in: '
                 desc += '\n- ' + url
                 desc += ' - In request with id: '+ str(response.id)
-                i.setDesc( desc )
+                i.set_desc( desc )
                 i['mail'] = mail_address
                 i['url_list'] = [url]
                 i['user'] = mail_address.split('@')[0]
@@ -126,14 +126,14 @@ class get_emails(GrepPlugin):
                     id_list_of_info.append( response.id )
                     i.set_id( id_list_of_info )
                     i.setURL( url )
-                    desc = i.getDesc()
+                    desc = i.get_desc()
                     desc += '\n- ' + url
                     desc += ' - In request with id: '+ str(response.id)
-                    i.setDesc( desc )
+                    i.set_desc( desc )
                     i['url_list'].append(url)
         
     def set_options( self, options_list ):
-        self._only_target_domain = options_list['onlyTargetDomain'].getValue()
+        self._only_target_domain = options_list['onlyTargetDomain'].get_value()
     
     def get_options( self ):
         '''
@@ -142,7 +142,7 @@ class get_emails(GrepPlugin):
         ol = OptionList()
 
         d1 = 'When greping, only search emails for domain of target'
-        o1 = option('onlyTargetDomain', self._only_target_domain, d1, 'boolean')
+        o1 = opt_factory('onlyTargetDomain', self._only_target_domain, d1, 'boolean')
         ol.add(o1)
         
         return ol

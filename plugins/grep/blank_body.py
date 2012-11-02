@@ -55,13 +55,13 @@ class blank_body(GrepPlugin):
             
             #   append the info object to the KB.
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Blank body')
+            i.setPluginName(self.get_name())
+            i.set_name('Blank body')
             i.setURL( response.getURL() )
             i.set_id( response.id )
             msg = 'The URL: "'+ response.getURL()  + '" returned an empty body. '
             msg += 'This could indicate an error.'
-            i.setDesc(msg)
+            i.set_desc(msg)
             kb.kb.append( self, 'blank_body', i )
         
     def end(self):

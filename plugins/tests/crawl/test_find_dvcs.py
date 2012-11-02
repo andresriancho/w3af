@@ -66,7 +66,7 @@ class TestFindDVCS(PluginTest):
             self.assertTrue(url_start, vuln_repo.getURL().url_string)
             
             self.assertEqual(vuln_repo.getSeverity(), severity.MEDIUM)
-            self.assertEqual(vuln_repo.getName(), repo + ' repository found' )
+            self.assertEqual(vuln_repo.get_name(), repo + ' repository found' )
 
 
     def test_ignore_file_blank(self):

@@ -58,7 +58,7 @@ class SingleByteCharSetProber(CharSetProber):
         if self._mNameProber:
             return self._mNameProber.get_charset_name()
         else:
-            return self._mModel['charsetName']
+            return self._mModel['charset_name']
 
     def feed(self, aBuf):
         if not self._mModel['keepEnglishLetter']:
@@ -85,11 +85,11 @@ class SingleByteCharSetProber(CharSetProber):
                 cf = self.get_confidence()
                 if cf > POSITIVE_SHORTCUT_THRESHOLD:
                     if constants._debug:
-                        sys.stderr.write('%s confidence = %s, we have a winner\n' % (self._mModel['charsetName'], cf))
+                        sys.stderr.write('%s confidence = %s, we have a winner\n' % (self._mModel['charset_name'], cf))
                     self._mState = constants.eFoundIt
                 elif cf < NEGATIVE_SHORTCUT_THRESHOLD:
                     if constants._debug:
-                        sys.stderr.write('%s confidence = %s, below negative shortcut threshhold %s\n' % (self._mModel['charsetName'], cf, NEGATIVE_SHORTCUT_THRESHOLD))
+                        sys.stderr.write('%s confidence = %s, below negative shortcut threshhold %s\n' % (self._mModel['charset_name'], cf, NEGATIVE_SHORTCUT_THRESHOLD))
                     self._mState = constants.eNotMe
 
         return self.get_state()

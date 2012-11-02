@@ -23,10 +23,12 @@ import csv
 import itertools
 
 import core.data.kb.knowledgeBase as kb
+import core.controllers.outputManager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.w3afException import w3afException
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
 
 
@@ -43,7 +45,7 @@ class csv_file(OutputPlugin):
 
     def do_nothing(self, *args, **kwds): pass
 
-    debug = logHttp = vulnerability = do_nothing
+    debug = log_http = vulnerability = do_nothing
     information = error = console = debug = log_enabled_plugins = do_nothing
     
     def end(self):
@@ -59,25 +61,27 @@ class csv_file(OutputPlugin):
         except Exception, e:
             msg = 'An exception was raised while trying to open the '
             msg += ' output file. Exception: "%s"' % e
-            raise w3afException( msg )        
+            om.out.error(msg)
+            return        
 
         for data in itertools.chain( all_vulns, all_infos ):
             try:
                 row = [
-                       data.getName() ,
+                       data.get_name() ,
                        data.get_method() ,
                        data.getURI() ,
                        data.getVar() ,
                        data.getDc() ,
                        data.getId() ,
-                       data.getDesc()
+                       data.get_desc()
                       ]
                 csv_writer.writerow( row )
             except Exception, e:
                 msg = 'An exception was raised while trying to write the '
                 msg += ' vulnerabilities to the output file. Exception: "%s"'
                 msg = msg % e
-                raise w3afException( msg )        
+                om.out.error( msg )
+                return        
 
     def get_long_desc( self ):
         '''
@@ -99,11 +103,7 @@ class csv_file(OutputPlugin):
         
         @return: No value is returned.
         ''' 
-        output_file = option_list['output_file'].getValue()
-        if not output_file:
-            raise w3afException('You need to configure an output file.')
-        else:
-            self.output_file = output_file
+        self.output_file = option_list['output_file'].get_value()
 
     def get_options( self ):
         '''
@@ -112,7 +112,7 @@ class csv_file(OutputPlugin):
         ol = OptionList()
         
         d = 'The name of the output file where the vulnerabilities will be saved'
-        o = option('output_file', self.output_file, d, 'string')
+        o = opt_factory('output_file', self.output_file, d, OUTPUT_FILE)
         ol.add(o)
         
         return ol

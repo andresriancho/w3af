@@ -163,17 +163,17 @@ class find_dvcs(CrawlPlugin):
 
             if parsed_url_set:
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id( http_response.id )
-                v.setName( repo+' found' )
+                v.set_name( repo+' found' )
                 v.setSeverity(severity.MEDIUM)
                 v.setURL( http_response.getURL() )
                 msg = ('A %s was found at: "%s"; this could'
                        ' indicate that a %s is accessible. You might'
                        ' be able to download the Web application source code.')
-                v.setDesc( msg % (repo, v.getURL(), repo) )
+                v.set_desc( msg % (repo, v.getURL(), repo) )
                 kb.kb.append( self, repo, v )
-                om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
 
     def _get_and_parse(self, url):
         '''

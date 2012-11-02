@@ -91,20 +91,20 @@ class find_jboss(InfrastructurePlugin):
                 
                 if vuln_db_instance['type'] == 'info':
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName(vuln_db_instance['name'])
+                    i.setPluginName(self.get_name())
+                    i.set_name(vuln_db_instance['name'])
                     i.setURL(vuln_url)
                     i.set_id(response.id)
-                    i.setDesc(vuln_db_instance['desc'])
+                    i.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', i)
                     
                 else:
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
-                    v.setName(vuln_db_instance['name'])
+                    v.setPluginName(self.get_name())
+                    v.set_name(vuln_db_instance['name'])
                     v.setURL(vuln_url)
                     v.set_id(response.id)
-                    v.setDesc(vuln_db_instance['desc'])
+                    v.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', v)
                 
                 fuzzable_requests_to_return.extend(self._create_fuzzable_requests(response))

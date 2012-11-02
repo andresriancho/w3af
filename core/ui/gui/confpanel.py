@@ -59,10 +59,10 @@ class OnlyOptions(gtk.VBox):
 
         # let's get the real info
         for opt in options:
-            if opt.getName() in coreopts:
-                opt.setValue( coreopts[opt.getName()].getValueStr() )
-            if opt.getName() in overwriter:
-                opt.setValue( overwriter[opt.getName()] )
+            if opt.get_name() in coreopts:
+                opt.set_value( coreopts[opt.get_name()].get_value_str() )
+            if opt.get_name() in overwriter:
+                opt.set_value( overwriter[opt.get_name()] )
             self.options.append(opt)
 
         # buttons
@@ -90,7 +90,7 @@ class OnlyOptions(gtk.VBox):
         # let's get the tabs, but in order!
         tabs = []
         for o in self.options:
-            t = o.getTabId()
+            t = o.get_tabid()
             if t not in tabs:
                 tabs.append(t)
 
@@ -102,7 +102,7 @@ class OnlyOptions(gtk.VBox):
         # the notebook
         nb = gtk.Notebook()
         for tab in tabs:
-            options = [x for x in self.options if x.getTabId() == tab]
+            options = [x for x in self.options if x.get_tabid() == tab]
             if not tab:
                 tab = "General"
             label = gtk.Label(tab)
@@ -130,19 +130,19 @@ class OnlyOptions(gtk.VBox):
         table = entries.EasyTable(len(options), 3)
 
         for i,opt in enumerate(options):
-            titl = gtk.Label(opt.getName())
+            titl = gtk.Label(opt.get_name())
             titl.set_alignment(0.0, 0.5)
-            widg = entries.wrapperWidgets[opt.getType()](self._changedWidget, opt )            
+            widg = entries.wrapperWidgets[opt.get_type()](self._changedWidget, opt )            
             opt.widg = widg
-            widg.set_tooltip_text( opt.getDesc() )
-            if opt.getHelp():
+            widg.set_tooltip_text( opt.get_desc() )
+            if opt.get_help():
                 helpbtn = entries.SemiStockButton("", gtk.STOCK_INFO)
-                cleanhelp = helpers.cleanDescription(opt.getHelp())
+                cleanhelp = helpers.cleanDescription(opt.get_help())
                 helpbtn.connect("clicked", self._showHelp, cleanhelp)
             else:
                 helpbtn = None
             table.autoAddRow(titl, widg, helpbtn)
-            self.widgets_status[widg] = (titl, opt.getName(), "<b>%s</b>" % opt.getName())
+            self.widgets_status[widg] = (titl, opt.get_name(), "<b>%s</b>" % opt.get_name())
             self.propagLabels[widg] = prop
         table.show()
         return table
@@ -209,7 +209,7 @@ class OnlyOptions(gtk.VBox):
         for opt in self.options:
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
-                    invalid.append(opt.getName())
+                    invalid.append(opt.get_name())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the following parameter(s):\n\n"
             msg += "\n-".join(invalid)
@@ -222,7 +222,7 @@ class OnlyOptions(gtk.VBox):
         try:
             # Get the value from the GTK widget and set it to the option object
             for opt in self.options:
-                helpers.coreWrap(opt.setValue, opt.widg.getValue())
+                helpers.coreWrap(opt.set_value, opt.widg.get_value())
 
             if isinstance(plugin, Plugin):
                 helpers.coreWrap(self.w3af.plugins.set_plugin_options, 
@@ -269,7 +269,7 @@ class ConfigDialog(gtk.Dialog):
         rvrt_btn = self._button("Revert to previous configuration")
         close_btn = self._button(stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
-        plugin.pname, plugin.ptype = plugin.getName(), plugin.getType()
+        plugin.pname, plugin.ptype = plugin.get_name(), plugin.get_type()
         
         # Show the description
         if showDesc:

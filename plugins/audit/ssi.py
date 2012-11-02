@@ -101,10 +101,10 @@ class ssi(AuditPlugin):
             e_res = self._extract_result_from_payload(mutant.getModValue())
             if e_res in response and not e_res in mutant.getOriginalResponseBody():
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.getName())
-                v.setName( 'Server side include vulnerability' )
+                v.setPluginName(self.get_name())
+                v.set_name( 'Server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
-                v.setDesc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
+                v.set_desc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
                 v.set_id( response.id )
                 v.addToHighlight( e_res )
                 kb.kb.append_uniq( self, 'ssi', v )
@@ -148,13 +148,13 @@ class ssi(AuditPlugin):
                 # and create the vulnerability
                 mutant = self._expected_res_mutant[matched_expected_result]
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.getName())
-                v.setName( 'Persistent server side include vulnerability' )
+                v.setPluginName(self.get_name())
+                v.set_name( 'Persistent server side include vulnerability' )
                 v.setSeverity(severity.HIGH)
                 msg = 'Server side include (SSI) was found at: ' + mutant.foundAt()
                 msg += ' The result of that injection is shown by'
                 msg += ' browsing to "%s".' % freq.getURL()
-                v.setDesc( msg )
+                v.set_desc( msg )
                 v.set_id( response.id )
                 v.addToHighlight( matched_expected_result )
                 kb.kb.append( self, 'ssi', v )         

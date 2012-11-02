@@ -32,7 +32,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -111,16 +111,16 @@ class ria_enumerator(CrawlPlugin):
         if '"entries":' in response:
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Gears Manifest')
+            i.setPluginName(self.get_name())
+            i.set_name('Gears Manifest')
             i.setURL( url )
             i.set_id( response.id )
             desc = 'A gears manifest file was found at: "'+ url 
             desc += '".  Each file should be manually reviewed for sensitive'
             desc += ' information that may get cached on the client.' 
-            i.setDesc( desc )
+            i.set_desc( desc )
             kb.kb.append( self, url, i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
     
     def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
         try:
@@ -132,16 +132,16 @@ class ria_enumerator(CrawlPlugin):
             'cross-domain-policy' in response.getBody() or \
             'cross-domain-access' in response.getBody():
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Invalid ' + file_name)
+                i.setPluginName(self.get_name())
+                i.set_name('Invalid ' + file_name)
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )
                 msg = 'The "' + file_name + '" file at: "' + response.getURL()
                 msg += '" is not a valid XML.'
-                i.setDesc( msg )
+                i.set_desc( msg )
                 i.set_id( response.id )
                 kb.kb.append( self, 'info', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
         else:
             if(file_name == 'crossdomain.xml'):
                 url_list = dom.getElementsByTagName("allow-access-from")
@@ -155,29 +155,29 @@ class ria_enumerator(CrawlPlugin):
 
                 if url == '*':
                     v = vuln.vuln()
-                    v.setPluginName(self.getName())
+                    v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     v.setMethod( 'GET' )
-                    v.setName( 'Insecure "' + file_name + '" settings' )
+                    v.set_name( 'Insecure "' + file_name + '" settings' )
                     v.setSeverity(severity.LOW)
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
                     msg += ' flash/silverlight access from any site.'
-                    v.setDesc( msg )
+                    v.set_desc( msg )
                     v.set_id( response.id )
                     kb.kb.append( self, 'vuln', v )
-                    om.out.vulnerability( v.getDesc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
                 else:
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Crossdomain allow ACL')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Crossdomain allow ACL')
                     i.setURL( response.getURL() )
                     i.setMethod( 'GET' )
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
                     msg += ' flash/silverlight access from "' + url + '".'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     i.set_id( response.id )
                     kb.kb.append( self, 'info', i )
-                    om.out.information( i.getDesc() ) 	
+                    om.out.information( i.get_desc() ) 	
                     
     def get_options( self ):
         '''
@@ -186,11 +186,11 @@ class ria_enumerator(CrawlPlugin):
         ol = OptionList()    
         
         d = 'Wordlist to use in the manifest file name bruteforcing process.'
-        o = option('wordlist', self._wordlist , d, 'string')
+        o = opt_factory('wordlist', self._wordlist , d, 'string')
         ol.add(o)
         
         d = 'File extensions to use when brute forcing Gears Manifest files'
-        o = option('manifestExtensions', self._extensions, d, 'list')
+        o = opt_factory('manifestExtensions', self._extensions, d, 'list')
         ol.add(o)
         
         return ol
@@ -203,11 +203,11 @@ class ria_enumerator(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        wordlist = option_list['wordlist'].getValue()
+        wordlist = option_list['wordlist'].get_value()
         if os.path.exists( wordlist ):
             self._wordlist = wordlist
         
-        self._extensions = option_list['manifestExtensions'].getValue()
+        self._extensions = option_list['manifestExtensions'].get_value()
 
     def get_long_desc( self ):
         '''

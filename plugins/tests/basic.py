@@ -18,12 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import unittest
+
+from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.w3afException import w3afException
-
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.plugins.auth_plugin import AuthPlugin
@@ -34,6 +34,9 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.output_plugin import OutputPlugin
+
+from core.data.options.option_types import (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,
+                                            REGEX,COMBO,INPUT_FILE,OUTPUT_FILE)
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -48,6 +51,7 @@ PLUGIN_TYPES = {'attack': AttackPlugin,
                 'mangle': ManglePlugin,
                 'output': OutputPlugin}
 
+@attr('smoke')
 class TestBasic(unittest.TestCase):
 
     def setUp(self):
@@ -64,9 +68,23 @@ class TestBasic(unittest.TestCase):
                 self.plugins[plugin_type].append( plugin )
             
     def test_plugin_options(self):
+        
+        OPTION_TYPES = (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,REGEX,COMBO,
+                        INPUT_FILE,OUTPUT_FILE)
+        
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                opt1 = plugin.get_options()
+                opt_lst = plugin.get_options()
+                
+                for opt in opt_lst:
+                    self.assertIn(opt.get_type(), OPTION_TYPES)
+                    self.assertTrue(opt.get_name())
+                    self.assertEqual(opt, opt)
+                    
+                    # Just verify that this doesn't crash
+                    opt.get_default_value()
+                    opt.get_value_str()
+                    opt.get_value()
 
     def test_plugin_deps(self):
         for plugin_type in self.plugins:
@@ -90,9 +108,9 @@ class TestBasic(unittest.TestCase):
                 
                 self.assertTrue( isinstance( plugin.get_long_desc(), basestring) )
                 
-                self.assertTrue( isinstance( plugin.getDesc(), basestring) )
+                self.assertTrue( isinstance( plugin.get_desc(), basestring) )
                 msg = 'Description for %s.%s is too short'
-                self.assertGreater( len(plugin.getDesc()), 20, msg % (plugin_type, plugin) )
+                self.assertGreater( len(plugin.get_desc()), 20, msg % (plugin_type, plugin) )
                 
     def test_plugin_root_probability(self):
         for plugin in self.plugins['attack']:
@@ -108,7 +126,7 @@ class TestBasic(unittest.TestCase):
                 msg = '%s if not of expected type %s' % (plugin,PLUGIN_TYPES[plugin_type])
                 self.assertTrue( isinstance(plugin, PLUGIN_TYPES[plugin_type]), msg )
                 
-                self.assertEqual( plugin.getType(), plugin_type, msg )
+                self.assertEqual( plugin.get_type(), plugin_type, msg )
 
 
 class TestFailOnInvalidURL(PluginTest):

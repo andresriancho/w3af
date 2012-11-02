@@ -60,8 +60,8 @@ class WSDL:
        may be created manually or loaded from an xml representation
        using a WSDLReader instance."""
 
-    def __init__(self, targetNamespace=None, strict=1):
-        self.targetNamespace = targetNamespace or 'urn:this-document.wsdl'
+    def __init__(self, target_namespace=None, strict=1):
+        self.target_namespace = target_namespace or 'urn:this-document.wsdl'
         self.documentation = ''
         self.location = None
         self.document = None
@@ -81,47 +81,47 @@ class WSDL:
 
     version = '1.1'
 
-    def addService(self, name, documentation='', targetNamespace=None):
+    def addService(self, name, documentation='', target_namespace=None):
         if self.services.has_key(name):
             raise WSDLError(
                 'Duplicate service element: %s' % name
                 )
         item = Service(name, documentation)
-        if targetNamespace:
-            item.targetNamespace = targetNamespace
+        if target_namespace:
+            item.target_namespace = target_namespace
         self.services[name] = item
         return item
 
-    def addMessage(self, name, documentation='', targetNamespace=None):
+    def addMessage(self, name, documentation='', target_namespace=None):
         if self.messages.has_key(name):
             raise WSDLError(
                 'Duplicate message element: %s.' % name
                 )
         item = Message(name, documentation)
-        if targetNamespace:
-            item.targetNamespace = targetNamespace
+        if target_namespace:
+            item.target_namespace = target_namespace
         self.messages[name] = item
         return item
 
-    def addPortType(self, name, documentation='', targetNamespace=None):
+    def addPortType(self, name, documentation='', target_namespace=None):
         if self.portTypes.has_key(name):
             raise WSDLError(
                 'Duplicate portType element: name'
                 )
         item = PortType(name, documentation)
-        if targetNamespace:
-            item.targetNamespace = targetNamespace
+        if target_namespace:
+            item.target_namespace = target_namespace
         self.portTypes[name] = item
         return item
 
-    def addBinding(self, name, type, documentation='', targetNamespace=None):
+    def addBinding(self, name, type, documentation='', target_namespace=None):
         if self.bindings.has_key(name):
             raise WSDLError(
                 'Duplicate binding element: %s' % name
                 )
         item = Binding(name, type, documentation)
-        if targetNamespace:
-            item.targetNamespace = targetNamespace
+        if target_namespace:
+            item.target_namespace = target_namespace
         self.bindings[name] = item
         return item
 
@@ -132,7 +132,7 @@ class WSDL:
 
     def toDom(self):
         """ Generate a DOM representation of the WSDL instance.
-        Not dealing with generating XML Schema, thus the targetNamespace
+        Not dealing with generating XML Schema, thus the target_namespace
         of all XML Schema elements or types used by WSDL message parts 
         needs to be specified via import information items.
         """
@@ -141,11 +141,11 @@ class WSDL:
 
         # Set up a couple prefixes for easy reading.
         child = DOM.getElement(self.document, None)
-        child.setAttributeNS(None, 'targetNamespace', self.targetNamespace)
+        child.setAttributeNS(None, 'target_namespace', self.target_namespace)
         child.setAttributeNS(XMLNS.BASE, 'xmlns:wsdl', namespaceURI)
         child.setAttributeNS(XMLNS.BASE, 'xmlns:xsd', 'http://www.w3.org/1999/XMLSchema')
         child.setAttributeNS(XMLNS.BASE, 'xmlns:soap', 'http://schemas.xmlsoap.org/wsdl/soap/')
-        child.setAttributeNS(XMLNS.BASE, 'xmlns:tns', self.targetNamespace)
+        child.setAttributeNS(XMLNS.BASE, 'xmlns:tns', self.target_namespace)
 
         # wsdl:import
         for item in self.imports: 
@@ -178,7 +178,7 @@ class WSDL:
         self.version = DOM.WSDLUriToVersion(definitions.namespaceURI)
         NS_WSDL = DOM.GetWSDLUri(self.version)
 
-        self.targetNamespace = DOM.getAttr(definitions, 'targetNamespace',
+        self.target_namespace = DOM.getAttr(definitions, 'target_namespace',
                                            None, None)
         self.name = DOM.getAttr(definitions, 'name', None, None)
         self.documentation = GetDocumentation(definitions)
@@ -194,7 +194,7 @@ class WSDL:
 
         #reader = SchemaReader(base_url=self.location)
         for element in DOM.getElements(definitions, None, None):
-            targetNamespace = DOM.getAttr(element, 'targetNamespace')
+            target_namespace = DOM.getAttr(element, 'target_namespace')
             localName = element.localName
 
             if not DOM.nsUriMatch(element.namespaceURI, NS_WSDL):
@@ -210,7 +210,7 @@ class WSDL:
             elif localName == 'message':
                 name = DOM.getAttr(element, 'name')
                 docs = GetDocumentation(element)
-                message = self.addMessage(name, docs, targetNamespace)
+                message = self.addMessage(name, docs, target_namespace)
                 parts = DOM.getElements(element, 'part', NS_WSDL)
                 message.load(parts)
                 continue
@@ -218,7 +218,7 @@ class WSDL:
             elif localName == 'portType':
                 name = DOM.getAttr(element, 'name')
                 docs = GetDocumentation(element)
-                ptype = self.addPortType(name, docs, targetNamespace)
+                ptype = self.addPortType(name, docs, target_namespace)
                 #operations = DOM.getElements(element, 'operation', NS_WSDL)
                 #ptype.load(operations)
                 ptype.load(element)
@@ -233,7 +233,7 @@ class WSDL:
                         )
                 type = ParseQName(type, element)
                 docs = GetDocumentation(element)
-                binding = self.addBinding(name, type, docs, targetNamespace)
+                binding = self.addBinding(name, type, docs, target_namespace)
                 operations = DOM.getElements(element, 'operation', NS_WSDL)
                 binding.load(operations)
                 binding.load_ex(GetExtensions(element))
@@ -242,7 +242,7 @@ class WSDL:
             elif localName == 'service':
                 name = DOM.getAttr(element, 'name')
                 docs = GetDocumentation(element)
-                service = self.addService(name, docs, targetNamespace)
+                service = self.addService(name, docs, target_namespace)
                 ports = DOM.getElements(element, 'port', NS_WSDL)
                 service.load(ports)
                 service.load_ex(GetExtensions(element))
@@ -324,7 +324,7 @@ class WSDL:
                     continue
                 child = DOM.importNode(document, node, 1)
                 parent.appendChild(child)
-                child.setAttribute('targetNamespace', namespace)
+                child.setAttribute('target_namespace', namespace)
                 attrsNS = imported._attrsNS
                 for attrkey in attrsNS.keys():
                     if attrkey[0] == DOM.NS_XMLNS:
@@ -375,14 +375,14 @@ class ImportElement(Element):
 
 
 class Types(Collection):
-    default = lambda self,k: k.targetNamespace
+    default = lambda self,k: k.target_namespace
     def __init__(self, parent):
         Collection.__init__(self, parent)
         self.documentation = ''
         self.extensions = []
 
     def addSchema(self, schema):
-        name = schema.targetNamespace
+        name = schema.target_namespace
         self[name] = schema
         return schema
 
@@ -436,7 +436,7 @@ class Message(Element):
                 element = wsdl.types[nsuri].elements[name]
         return element
 
-    def getTypeDefinition(self):
+    def get_typeDefinition(self):
         """Return the XMLSchema.TypeDefinition instance or None"""
         type = None
         if self.type:
@@ -470,7 +470,7 @@ class MessagePart(Element):
         """Return the WSDL object that contains this Message Part."""
         return self.parent().parent().parent().parent()
 
-    def getTypeDefinition(self):
+    def get_typeDefinition(self):
         wsdl = self.getWSDL()
         nsuri,name = self.type
         schema = wsdl.types.get(nsuri, {})
@@ -521,8 +521,8 @@ class PortType(Element):
     def getWSDL(self):
         return self.parent().parent()
 
-    def getTargetNamespace(self):
-        return self.targetNamespace or self.getWSDL().targetNamespace
+    def getTarget_namespace(self):
+        return self.target_namespace or self.getWSDL().target_namespace
 
     def getResourceProperties(self):
         return self.resourceProperties
@@ -535,7 +535,7 @@ class PortType(Element):
     def load(self, element):
         self.name = DOM.getAttr(element, 'name')
         self.documentation = GetDocumentation(element)
-        self.targetNamespace = DOM.getAttr(element, 'targetNamespace')
+        self.target_namespace = DOM.getAttr(element, 'target_namespace')
         if DOM.hasAttr(element, 'ResourceProperties', OASIS.PROPERTIES):
             rpref = DOM.getAttr(element, 'ResourceProperties', OASIS.PROPERTIES)
             self.resourceProperties = ParseQName(rpref, element)
@@ -1328,28 +1328,28 @@ def GetWSAActionInput(operation):
     if attr is not None:
         return attr
     portType = operation.getPortType()
-    targetNamespace = portType.getTargetNamespace()
+    target_namespace = portType.getTarget_namespace()
     ptName = portType.name
     msgName = operation.input.name
     if not msgName:
         msgName = operation.name + 'Request'
-    if targetNamespace.endswith('/'):
-        return '%s%s/%s' %(targetNamespace, ptName, msgName)
-    return '%s/%s/%s' %(targetNamespace, ptName, msgName)
+    if target_namespace.endswith('/'):
+        return '%s%s/%s' %(target_namespace, ptName, msgName)
+    return '%s/%s/%s' %(target_namespace, ptName, msgName)
 
 def GetWSAActionOutput(operation):
     """Find wsa:Action attribute, and return value or the default."""
     attr = operation.output.action
     if attr is not None:
         return attr
-    targetNamespace = operation.getPortType().getTargetNamespace()
+    target_namespace = operation.getPortType().getTarget_namespace()
     ptName = operation.getPortType().name
     msgName = operation.output.name
     if not msgName:
         msgName = operation.name + 'Response'
-    if targetNamespace.endswith('/'):
-        return '%s%s/%s' %(targetNamespace, ptName, msgName)
-    return '%s/%s/%s' %(targetNamespace, ptName, msgName)
+    if target_namespace.endswith('/'):
+        return '%s%s/%s' %(target_namespace, ptName, msgName)
+    return '%s/%s/%s' %(target_namespace, ptName, msgName)
 
 def FindExtensions(object, kind, t_type=type(())):
     if isinstance(kind, t_type):

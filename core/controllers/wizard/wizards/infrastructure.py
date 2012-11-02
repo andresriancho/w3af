@@ -47,7 +47,7 @@ class infrastructure(wizard):
         return '''This wizard creates a scan profile that aims to identify the
         Web infrastructure of the target site.'''
 
-    def getName(self):
+    def get_name(self):
         '''
         @return: The name of the wizard.
         '''

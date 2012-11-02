@@ -102,13 +102,13 @@ class strange_headers(GrepPlugin):
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Strange header')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Strange header')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )
                     msg = 'The remote web server sent the HTTP header: "' + header_name
                     msg += '" with value: "' + response.getHeaders()[header_name] + '".'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     i['header_name'] = header_name
                     hvalue = response.getHeaders()[header_name]
                     i['header_value'] = hvalue
@@ -129,15 +129,15 @@ class strange_headers(GrepPlugin):
         if 'content-location' in response.getLowerCaseHeaders() \
         and response.getCode() not in xrange(300,310):
             i = info.info()
-            i.setPluginName(self.getName())
-            i.setName('Content-Location HTTP header anomaly')
+            i.setPluginName(self.get_name())
+            i.set_name('Content-Location HTTP header anomaly')
             i.setURL( response.getURL() )
             i.set_id( response.id )
             msg = 'The URL: "' +  i.getURL() + '" sent the HTTP header: "content-location"' 
             msg += ' with value: "' + response.getLowerCaseHeaders()['content-location']
             msg += '" in an HTTP response with code ' + str(response.getCode()) + ' which is'
             msg += ' a violation to the RFC.'
-            i.setDesc( msg )
+            i.set_desc( msg )
             i.addToHighlight( 'content-location' )
             kb.kb.append( self , 'anomaly' , i )
 

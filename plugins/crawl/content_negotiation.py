@@ -29,7 +29,7 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
@@ -255,16 +255,16 @@ class content_negotiation(CrawlPlugin):
                 
                 # Save the result as an info in the KB, for the user to see it:
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('HTTP Content Negotiation enabled')
+                i.setPluginName(self.get_name())
+                i.set_name('HTTP Content Negotiation enabled')
                 i.setURL( response.getURL() )
                 i.setMethod( 'GET' )
                 desc = 'HTTP Content negotiation is enabled in the remote web server. This'
                 desc += ' could be used to bruteforce file names and find new resources.'
-                i.setDesc( desc )
+                i.set_desc( desc )
                 i.set_id( response.id )
                 kb.kb.append( self, 'content_negotiation', i )
-                om.out.information( i.getDesc() )
+                om.out.information( i.get_desc() )
             else:
                 om.out.information('The remote Web server has Content Negotiation disabled.')
                 
@@ -285,7 +285,7 @@ class content_negotiation(CrawlPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Wordlist to use in the file name bruteforcing process.'
-        o1 = option('wordlist', self._wordlist , d1, 'string')
+        o1 = opt_factory('wordlist', self._wordlist , d1, 'string')
         
         ol = OptionList()
         ol.add(o1)
@@ -299,7 +299,7 @@ class content_negotiation(CrawlPlugin):
         @parameter options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        wordlist = options_list['wordlist'].getValue()
+        wordlist = options_list['wordlist'].get_value()
         if os.path.exists( wordlist ):
             self._wordlist = wordlist
 

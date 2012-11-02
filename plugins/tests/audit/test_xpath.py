@@ -48,7 +48,7 @@ class TestXPATH(PluginTest):
         expected_vuln_number = 4
         vulns = self.kb.get('xpath', 'xpath')
         self.assertEquals(expected_vuln_number, len(vulns))
-        self.assertEquals(all(["XPATH injection vulnerability" == vuln.getName() for vuln in vulns ]) , True)
+        self.assertEquals(all(["XPATH injection vulnerability" == vuln.get_name() for vuln in vulns ]) , True)
 
         # Verify the specifics about the vulnerabilities
         expected = [

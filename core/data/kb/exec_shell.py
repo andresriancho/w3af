@@ -268,13 +268,13 @@ class exec_shell(shell):
         '''
         raise w3afException('You should implement the end method of classes that inherit from "shell"')
 
-    def getName( self ):
+    def get_name( self ):
         '''
         This method is called when the shell is used, in order to create a prompt for the user.
         
         @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
-        raise w3afException('You should implement the getName method of classes that inherit from "shell"')
+        raise w3afException('You should implement the get_name method of classes that inherit from "shell"')
         
     def _identifyOs( self ):
         '''
@@ -294,6 +294,6 @@ class exec_shell(shell):
     def __repr__( self ):
         if not self._rOS:
             self._identifyOs()
-        return '<'+self.getName()+' object (ruser: "'+self.getRemoteUser()+'" | rsystem: "'+self.getRemoteSystem()+'")>'
+        return '<'+self.get_name()+' object (ruser: "'+self.getRemoteUser()+'" | rsystem: "'+self.getRemoteSystem()+'")>'
         
     __str__ = __repr__

@@ -163,7 +163,7 @@ class blind_sqli_response_diff(object):
                     v = vuln.vuln( mutant )
                     v.set_id( [second_false_response.id, second_true_response.id] )
                     v.setSeverity(severity.HIGH)
-                    v.setName( 'Blind SQL injection vulnerability' )
+                    v.set_name( 'Blind SQL injection vulnerability' )
                     # This is needed to be used in fuzz file name
                     v.getMutant().setOriginalValue( '' )
                     v.getMutant().setModValue( '' )
@@ -171,8 +171,8 @@ class blind_sqli_response_diff(object):
                     desc = 'Blind SQL injection was found at: "%s", using'
                     desc += ' HTTP method %s. The injectable parameter is: "%s"'
                     desc = desc % (v.getURL(), v.get_method(), mutant.getVar())
-                    v.setDesc( desc )
-                    om.out.debug( v.getDesc() )
+                    v.set_desc( desc )
+                    om.out.debug( v.get_desc() )
                     
                     v['type'] = statement_type
                     v['trueHtml'] = second_true_response.getBody()

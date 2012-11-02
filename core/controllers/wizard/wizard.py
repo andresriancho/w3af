@@ -112,7 +112,7 @@ class wizard:
         '''
         return ''
 
-    def getName(self):
+    def get_name(self):
         '''
         @return: The name of the wizard.
         '''

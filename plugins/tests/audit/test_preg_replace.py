@@ -48,7 +48,7 @@ class TestPreg(PluginTest):
         vulns = self.kb.get('preg_replace', 'preg_replace')
         self.assertEquals(len(vulns), 2)
         
-        titles = all(['Unsafe usage of preg_replace' == vuln.getName() for vuln in vulns ])
+        titles = all(['Unsafe usage of preg_replace' == vuln.get_name() for vuln in vulns ])
         self.assertEquals( titles , True)
 
         expected_results = (

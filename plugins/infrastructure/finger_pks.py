@@ -53,11 +53,11 @@ class finger_pks(InfrastructurePlugin):
         for result in results:
             i = info.info()
             i.setURL( URL('http://pgp.mit.edu:11371/') )
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.set_id( [] )
             mail = result.username +'@' + root_domain
-            i.setName( mail )
-            i.setDesc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
+            i.set_name( mail )
+            i.set_desc( 'The mail account: "'+ mail + '" was found in the MIT PKS server. ' )
             i['mail'] = mail
             i['user'] = result.username
             i['name'] = result.name
@@ -65,7 +65,7 @@ class finger_pks(InfrastructurePlugin):
             kb.kb.append( 'emails', 'emails', i )
             #   Don't save duplicated information in the KB. It's useless.
             #kb.kb.append( self, 'emails', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
 
     def get_long_desc( self ):
         '''

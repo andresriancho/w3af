@@ -19,15 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.data.kb.knowledgeBase as kb
-
+import core.controllers.outputManager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.w3afException import w3afException
-
-# options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
 from core.data.request.WebServiceRequest import WebServiceRequest
 
@@ -45,7 +42,7 @@ class export_requests(OutputPlugin):
 
     def do_nothing(self, *args, **kwds): pass
 
-    debug = logHttp = vulnerability = do_nothing
+    debug = log_http = vulnerability = do_nothing
     information = error = console = debug = log_enabled_plugins = do_nothing
     
     def end(self):
@@ -56,19 +53,44 @@ class export_requests(OutputPlugin):
         
         filename = self.output_file
         try:
-            file = open(filename, 'w')
+            out_file = open(filename, 'w')
             file.write('HTTP-METHOD,URI,POSTDATA\n')
         
             for fr in fuzzable_request_list:
                 # TODO: How shall we export WebServiceRequests?
                 if not isinstance(fr, WebServiceRequest):
-                    file.write(fr.export() + '\n')
+                    out_file.write(fr.export() + '\n')
             
-            file.close()
+            out_file.close()
         except Exception, e:
-            msg = 'An exception was raised while trying to export fuzzable requests to the'
-            msg += ' output file.' + str(e)
-            raise w3afException( msg )        
+            msg = 'An exception was raised while trying to export fuzzable'\
+                  ' requests to the output file: "%s".' % e
+            raise om.out.error(msg)        
+
+    def set_options( self, option_list ):
+        '''
+        Sets the Options given on the OptionList to self. The options are the
+        result of a user entering some data on a window that was constructed
+        using the XML Options that was retrieved from the plugin using
+        get_options()
+        
+        This method MUST be implemented on every plugin. 
+        
+        @return: No value is returned.
+        ''' 
+        self.output_file = option_list['output_file'].get_value()
+
+    def get_options( self ):
+        '''
+        @return: A list of option objects for this plugin.
+        '''
+        ol = OptionList()
+        
+        d = 'The name of the output file where the HTTP requests will be saved'
+        o = opt_factory('output_file', self.output_file, d, OUTPUT_FILE)
+        ol.add(o)
+        
+        return ol
 
     def get_long_desc( self ):
         '''
@@ -82,30 +104,3 @@ class export_requests(OutputPlugin):
         One configurable parameter exists:
             - output_file
         '''
-
-    def set_options( self, option_list ):
-        '''
-        Sets the Options given on the OptionList to self. The options are the result of a user
-        entering some data on a window that was constructed using the XML Options that was
-        retrieved from the plugin using get_options()
-        
-        This method MUST be implemented on every plugin. 
-        
-        @return: No value is returned.
-        ''' 
-        output_file = option_list['output_file'].getValue()
-        if not output_file:
-            raise w3afException('You need to configure an output file.')
-        else:
-            self.output_file = output_file
-
-    def get_options( self ):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'The name of the output file where the HTTP requests will be saved'
-        o1 = option('output_file', self.output_file, d1, 'string')
-        
-        ol = OptionList()
-        ol.add(o1)
-        return ol

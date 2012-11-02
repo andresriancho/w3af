@@ -46,15 +46,15 @@ class kbMenu(menu):
             'vulns': (
                 kb.kb.getAllVulns, 
                 ['Vulnerabilities'], 
-                [vuln.vuln.getDesc]),
+                [vuln.vuln.get_desc]),
             'info':  (
                 kb.kb.getAllInfos,
                 ['Info'],
-                [info.info.getDesc]),
+                [info.info.get_desc]),
             'shells':  (
                 kb.kb.getAllShells,
                 ['Shells'],
-                [shell.shell.getDesc])
+                [shell.shell.get_desc])
          }
 
     def _list_objects(self, descriptor, objs):

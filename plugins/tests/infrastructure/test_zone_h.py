@@ -44,8 +44,8 @@ class TestZoneH(PluginTest):
         
         info = infos[0]
         
-        self.assertEqual(info.getName(), 'Previous defacements')
-        self.assertTrue(info.getDesc().startswith('The target site was defaced'))
+        self.assertEqual(info.get_name(), 'Previous defacements')
+        self.assertTrue(info.get_desc().startswith('The target site was defaced'))
         
     def test_zone_h_negative(self):
         cfg = self._run_configs['cfg']

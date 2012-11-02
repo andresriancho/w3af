@@ -24,7 +24,7 @@ import core.controllers.outputManager as om
 from core.controllers.plugins.auth_plugin import AuthPlugin
 from core.controllers.w3afException import w3afException
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -33,14 +33,15 @@ class detailed(AuthPlugin):
 
     def __init__(self):
         AuthPlugin.__init__(self)
+        
         self.username = ''
         self.password = ''
         self.username_field = ''
         self.password_field = ''
         self.method = 'POST'
         self.data_format = '%u=%U&%p=%P'
-        self.auth_url = ''
-        self.check_url = ''
+        self.auth_url = 'http://host.tld/'
+        self.check_url = 'http://host.tld/'
         self.check_string = ''
         self._login_error = True
         
@@ -126,7 +127,7 @@ class detailed(AuthPlugin):
                 ]
         ol = OptionList()
         for o in options:
-            ol.add(option(o[0], o[1], o[3], o[2]))
+            ol.add(opt_factory(o[0], o[1], o[3], o[2]))
         return ol
 
     def set_options(self, options_list):
@@ -138,18 +139,18 @@ class detailed(AuthPlugin):
         @parameter options_list: A dict with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self.username = options_list['username'].getValue()
-        self.password = options_list['password'].getValue()
-        self.username_field = options_list['username_field'].getValue()
-        self.password_field = options_list['password_field'].getValue()
-        self.data_format = options_list['data_format'].getValue()
-        self.check_string = options_list['check_string'].getValue()
-        self.method = options_list['method'].getValue()
-        self.auth_url = options_list['auth_url'].getValue()
-        self.check_url = options_list['check_url'].getValue()
+        self.username = options_list['username'].get_value()
+        self.password = options_list['password'].get_value()
+        self.username_field = options_list['username_field'].get_value()
+        self.password_field = options_list['password_field'].get_value()
+        self.data_format = options_list['data_format'].get_value()
+        self.check_string = options_list['check_string'].get_value()
+        self.method = options_list['method'].get_value()
+        self.auth_url = options_list['auth_url'].get_value()
+        self.check_url = options_list['check_url'].get_value()
 
         for o in options_list:
-            if not o.getValue():
+            if not o.get_value():
                 msg = "All parameters are required and can't be empty."
                 raise w3afException( msg )
 

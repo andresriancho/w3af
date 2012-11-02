@@ -38,7 +38,8 @@ from core.data.db.variant_db import variant_db as variant_db
 from core.data.db.disk_set import disk_set
 from core.data.dc.headers import Headers
 from core.data.fuzzer.formFiller import smartFill
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import BOOL, REGEX
 from core.data.options.option_list import OptionList
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
@@ -214,7 +215,7 @@ class web_spider(CrawlPlugin):
             
             # I do not want to mess with the "static" fields
             if isinstance(to_send, form.Form):
-                if to_send.getType(param_name) in ('checkbox', 'file',
+                if to_send.get_type(param_name) in ('checkbox', 'file',
                                                    'radio', 'select'):
                     continue
             
@@ -344,17 +345,17 @@ class web_spider(CrawlPlugin):
         ol = OptionList()
         
         d = 'When spidering, only search directories inside the one that was given as target'
-        o = option('onlyForward', self._only_forward, d, 'boolean')
+        o = opt_factory('onlyForward', self._only_forward, d, BOOL)
         ol.add(o)
         
         d = 'When spidering, only follow links that match this regular expression '
         d +=  '(ignoreRegex has precedence over followRegex)'
-        o = option('followRegex', self._follow_regex, d, 'string')
+        o = opt_factory('followRegex', self._follow_regex, d, REGEX)
         ol.add(o)
         
         d = 'When spidering, DO NOT follow links that match this regular expression '
         d += '(has precedence over followRegex)'
-        o = option('ignoreRegex', self._ignore_regex, d, 'string')
+        o = opt_factory('ignoreRegex', self._ignore_regex, d, REGEX)
         ol.add(o)
         
         return ol
@@ -367,9 +368,9 @@ class web_spider(CrawlPlugin):
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._only_forward = options_list['onlyForward'].getValue()
-        self._ignore_regex = options_list['ignoreRegex'].getValue()
-        self._follow_regex = options_list['followRegex'].getValue()
+        self._only_forward = options_list['onlyForward'].get_value()
+        self._ignore_regex = options_list['ignoreRegex'].get_value()
+        self._follow_regex = options_list['followRegex'].get_value()
         self._compile_re()
     
     def _compile_re(self):
@@ -378,11 +379,9 @@ class web_spider(CrawlPlugin):
         or follow links.
         '''
         if self._ignore_regex:
-            try:
-                self._compiled_ignore_re = re.compile(self._ignore_regex)
-            except:
-                raise w3afException('You specified an invalid regular '
-                                    'expression: "%s".' % self._ignore_regex)
+            # Compilation of this regex can't fail because it was already
+            # verified as valid at regex_option.py: see REGEX in get_options()
+            self._compiled_ignore_re = re.compile(self._ignore_regex)
         else:
             # If the self._ignore_regex is empty then I don't have to ignore
             # anything. To be able to do that, I simply compile an re with "abc"
@@ -390,11 +389,9 @@ class web_spider(CrawlPlugin):
             # start with http:// or https://
             self._compiled_ignore_re = re.compile('abc')
 
-        try:
-            self._compiled_follow_re = re.compile(self._follow_regex)
-        except:
-            raise w3afException('You specified an invalid regular expression: '
-                                '"%s".' % self._follow_regex)
+        # Compilation of this regex can't fail because it was already
+        # verified as valid at regex_option.py: see REGEX in get_options()
+        self._compiled_follow_re = re.compile(self._follow_regex)
             
     def get_long_desc( self ):
         '''

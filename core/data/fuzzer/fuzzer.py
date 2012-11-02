@@ -470,7 +470,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
                         for var_name_dc in dc_copy:
                             for element_index_dc, element_value_dc in enumerate(dc_copy[var_name_dc]):
                                 if (var_name_dc, element_index_dc) != (pname, element_index) and\
-                                dc_copy.getType(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
+                                dc_copy.get_type(var_name_dc) not in ['checkbox', 'radio', 'select', 'file' ]:
                                     
                                     #   Fill only if the parameter does NOT have a value set.
                                     #

@@ -89,7 +89,7 @@ class MSSQLServerMap(Common):
         self.log(logMsg)
 
         if not self.__banner:
-            self.__banner = self.getValue("@@VERSION")
+            self.__banner = self.get_value("@@VERSION")
 
         return self.__banner
 
@@ -98,7 +98,7 @@ class MSSQLServerMap(Common):
         logMsg = "fetching current user"
         self.log(logMsg)
 
-        return self.getValue("USER_NAME()")
+        return self.get_value("USER_NAME()")
 
 
     def getCurrentDb(self):
@@ -108,7 +108,7 @@ class MSSQLServerMap(Common):
         if self.__currentDb:
             return self.__currentDb
         else:
-            return self.getValue("DB_NAME()")
+            return self.get_value("DB_NAME()")
 
 
     def getUsers(self):
@@ -117,7 +117,7 @@ class MSSQLServerMap(Common):
 
         stm  = "SELECT STR(COUNT(name)) FROM master..syslogins"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
@@ -134,7 +134,7 @@ class MSSQLServerMap(Common):
             stm += "FROM master..syslogins ORDER BY name) "
             stm += "ORDER BY name"
 
-            user = self.getValue(stm)
+            user = self.get_value(stm)
             users.append(user)
 
         if not users:
@@ -149,7 +149,7 @@ class MSSQLServerMap(Common):
 
         stm = "SELECT STR(COUNT(name)) FROM master..sysdatabases"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
@@ -167,7 +167,7 @@ class MSSQLServerMap(Common):
             stm += "FROM master..sysdatabases ORDER BY name) "
             stm += "ORDER BY name"
 
-            db = self.getValue(stm)
+            db = self.get_value(stm)
             dbs.append(db)
 
         if dbs:
@@ -201,7 +201,7 @@ class MSSQLServerMap(Common):
             stm += "%s.information_schema.tables " % db
             stm += "WHERE table_type = 'BASE TABLE'"
 
-            count = self.getValue(stm)
+            count = self.get_value(stm)
 
             if not len(count) or count == "0":
                 warnMsg  = "unable to retrieve the number of "
@@ -224,7 +224,7 @@ class MSSQLServerMap(Common):
                 stm += "table_type = 'BASE TABLE' ORDER BY table_name) "
                 stm += "ORDER BY table_name"
 
-                table = self.getValue(stm)
+                table = self.get_value(stm)
                 tables.append(table)
 
             if tables:
@@ -271,7 +271,7 @@ class MSSQLServerMap(Common):
         stm += "AND %s.information_schema.tables.table_type " % self.args.db
         stm += "= 'BASE TABLE'"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of columns "
@@ -307,7 +307,7 @@ class MSSQLServerMap(Common):
             stm += "AND %s.information_schema.tables.table_type " % self.args.db
             stm += "= 'BASE TABLE' ORDER BY column_name) ORDER BY column_name"
 
-            column = self.getValue(stm)
+            column = self.get_value(stm)
 
             stm  = "SELECT data_type FROM "
             stm += "%s.information_schema.columns " % self.args.db
@@ -316,7 +316,7 @@ class MSSQLServerMap(Common):
             stm += "%s.information_schema" % self.args.db
             stm += ".columns.table_name = '%s'" % self.args.tbl
 
-            coltype = self.getValue(stm)
+            coltype = self.get_value(stm)
             columns[column] = coltype
 
         if columns:
@@ -358,7 +358,7 @@ class MSSQLServerMap(Common):
         columnValues = {}
         stm = "SELECT STR(COUNT(*)) FROM %s" % fromExpr
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of entries "
@@ -389,7 +389,7 @@ class MSSQLServerMap(Common):
                 stm  = "SELECT TOP 1 %s FROM %s " % (column, fromExpr)
                 stm += "WHERE %s NOT IN (SELECT TOP %d " % (column, index)
                 stm += "%s FROM %s)" % (column, fromExpr)
-                value = self.getValue(stm)
+                value = self.get_value(stm)
 
                 length = max(length, len(str(value)))
                 values.append(value)
@@ -432,7 +432,7 @@ class MSSQLServerMap(Common):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
-            return self.getValue(expression)
+            return self.get_value(expression)
 
 
     def checkDbms(self):
@@ -442,14 +442,14 @@ class MSSQLServerMap(Common):
         randInt = str(random.randint(1, 9))
         stm = "STR(LEN(%s))" % randInt
 
-        if re.search("\s*1$", self.getValue(stm)):
+        if re.search("\s*1$", self.get_value(stm)):
             if not self.args.exaustiveFp:
                 return True
 
             self.__fingerprint = []
 
             if self.args.getBanner:
-                self.__banner = self.getValue("@@VERSION")
+                self.__banner = self.get_value("@@VERSION")
 
             return True
         else:

@@ -41,7 +41,7 @@ class TestHmap(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertTrue('Apache/2' in info.getDesc(), info.getDesc())
+        self.assertTrue('Apache/2' in info.get_desc(), info.get_desc())
         
     def test_hmap_https(self):
         cfg = self._run_configs['cfg']
@@ -51,6 +51,6 @@ class TestHmap(PluginTest):
         self.assertEqual( len(infos), 1, infos)
         
         info = infos[0]
-        self.assertTrue('Apache/2' in info.getDesc(), info.getDesc())
+        self.assertTrue('Apache/2' in info.get_desc(), info.get_desc())
         
         

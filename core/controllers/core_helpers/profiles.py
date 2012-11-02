@@ -48,8 +48,8 @@ class w3af_core_profiles(object):
         '''
         # Create the new profile.
         profile_inst = profile()
-        profile_inst.setDesc( profileDesc )
-        profile_inst.setName( profile_name )
+        profile_inst.set_desc( profileDesc )
+        profile_inst.set_name( profile_name )
         profile_inst.save( profile_name )
         
         # Save current to profile
@@ -91,8 +91,8 @@ class w3af_core_profiles(object):
         new_profile.setHttpSettings(self._w3af_core.uri_opener.settings.get_options())
         
         # Save the profile name and description
-        new_profile.setDesc(prof_desc)
-        new_profile.setName(profile_name)
+        new_profile.set_desc(prof_desc)
+        new_profile.set_name(profile_name)
         
         # Save the profile to the file
         new_profile.save(profile_name)
@@ -127,7 +127,7 @@ class w3af_core_profiles(object):
         #
         profile_misc_settings = profile_inst.getMiscSettings()
         if 'localAddress' in profile_inst.getMiscSettings():
-            profile_misc_settings['localAddress'].setValue(get_local_ip())
+            profile_misc_settings['localAddress'].set_value(get_local_ip())
         
         misc_settings = miscSettings.miscSettings()
         misc_settings.set_options( profile_misc_settings )
@@ -165,13 +165,16 @@ class w3af_core_profiles(object):
             for plugin_name in set(plugin_names) - set(unknown_plugins):
                 
                 try:
-                    plugin_options = profile_inst.get_plugin_options( plugin_type, plugin_name )
+                    plugin_options = profile_inst.get_plugin_options( plugin_type,
+                                                                      plugin_name )
                     self._w3af_core.plugins.set_plugin_options( plugin_type, 
                                                                 plugin_name,
                                                                 plugin_options )
-                except:
-                    msg = 'Setting the options for plugin "%s.%s" raised an'
-                    msg += ' exception due to unknown configuration parameters.'
+                except w3afException, w3e:
+                    msg = 'Setting the options for plugin "%s.%s" raised an' \
+                          ' exception due to unknown or invalid configuration' \
+                          ' parameters.'
+                    msg += ' ' + str(w3e)
                     error_messages.append( msg % (plugin_type, plugin_name))
                                 
         if error_messages:
@@ -189,7 +192,7 @@ class w3af_core_profiles(object):
         >>> HOME_DIR = '.' 
         >>> p = w3af_core_profiles(None)
         >>> valid, invalid = p.getProfileList()
-        >>> valid_lower = [prof.getName().lower() for prof in valid]
+        >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
         True
         

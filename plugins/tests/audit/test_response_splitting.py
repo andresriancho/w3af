@@ -53,7 +53,7 @@ class TestResponseSplitting(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Response splitting vulnerability', vuln.getName())
+        self.assertEquals('Response splitting vulnerability', vuln.get_name())
         self.assertEquals(self.direct_url, str(vuln.getURL()))
         self.assertEquals('header', vuln.getVar())
     
@@ -65,7 +65,7 @@ class TestResponseSplitting(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Parameter modifies headers', vuln.getName())
+        self.assertEquals('Parameter modifies headers', vuln.get_name())
         self.assertEquals(self.error_url, str(vuln.getURL()))
         self.assertEquals('header', vuln.getVar())
                 

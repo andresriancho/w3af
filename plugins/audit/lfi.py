@@ -168,11 +168,11 @@ class lfi(AuditPlugin):
         for file_pattern_match in file_content_list:
             if file_pattern_match not in mutant.getOriginalResponseBody():
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id(response.id)
-                v.setName('Local file inclusion vulnerability')
+                v.set_name('Local file inclusion vulnerability')
                 v.setSeverity(severity.MEDIUM)
-                v.setDesc('Local File Inclusion was found at: ' + mutant.foundAt())
+                v.set_desc('Local File Inclusion was found at: ' + mutant.foundAt())
                 v['file_pattern'] = file_pattern_match
                 v.addToHighlight(file_pattern_match)
                 kb.kb.append_uniq(self, 'lfi', v)
@@ -191,13 +191,13 @@ class lfi(AuditPlugin):
                 #   We were able to read the source code of the file that is vulnerable to
                 #   local file read
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id( response.id )
-                v.setName( 'Local file read vulnerability' )
+                v.set_name( 'Local file read vulnerability' )
                 v.setSeverity(severity.MEDIUM)
                 msg = 'An arbitrary local file read vulnerability was found at: '
                 msg += mutant.foundAt()
-                v.setDesc( msg )
+                v.set_desc( msg )
                 
                 #
                 #    Set which part of the source code to match
@@ -217,10 +217,10 @@ class lfi(AuditPlugin):
             
             if match and not regex.search( mutant.getOriginalResponseBody() ):
                 i = info.info( mutant )
-                i.setPluginName(self.getName())
+                i.setPluginName(self.get_name())
                 i.set_id( response.id )
-                i.setName( 'File read error' )
-                i.setDesc( 'A file read error was found at: ' + mutant.foundAt() )
+                i.set_name( 'File read error' )
+                i.set_desc( 'A file read error was found at: ' + mutant.foundAt() )
                 kb.kb.append_uniq( self, 'error', i )        
     
     def end(self):

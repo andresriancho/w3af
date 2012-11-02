@@ -43,5 +43,5 @@ class TestDotNetErrors(PluginTest):
         
         info = infos[0]
         
-        self.assertEqual( info.getName(), 'Information disclosure via .NET errors')
+        self.assertEqual( info.get_name(), 'Information disclosure via .NET errors')
                 

@@ -18,16 +18,14 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import gtk
-import gobject
 import re
 import threading
 
 from core.ui.gui import history
 from core.ui.gui import helpers
 from core.data.options.preferences import Preferences
-from core.data.parsers.url import parse_qs, URL
+from core.data.parsers.url import URL
 from core.data.parsers.baseparser import BaseParser
 
 
@@ -172,7 +170,7 @@ class ModifiedMixIn(object):
         '''Returns the widget to its last saved state.'''
         self.setfunct(self.initvalue)
 
-    def getValue(self):
+    def get_value(self):
         '''Queries the value of the widget.
         
         @return: The value of the widget.
@@ -192,7 +190,7 @@ class IntegerOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0"
 
@@ -216,7 +214,7 @@ class FloatOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = "0.0"
 
@@ -266,7 +264,7 @@ class StringOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -284,7 +282,7 @@ class UrlOption(ValidatedEntry, ModifiedMixIn):
     @author: Andres Riancho
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -301,13 +299,36 @@ class UrlOption(ValidatedEntry, ModifiedMixIn):
         else:        
             return True
 
+class PortOption(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config Port.'''
+    def __init__(self, alert, opt):
+        ValidatedEntry.__init__(self, opt.get_value_str())
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ""
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return True if valid.
+        '''
+        try:
+            port = int(text)
+            assert port > 0
+            assert port < 65536
+        except:
+            valid = False
+        else:
+            valid = True
+        return valid
+
 class IPPortOption(ValidatedEntry, ModifiedMixIn):
     '''Class that implements the config option IP and Port.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -326,7 +347,7 @@ class ListOption(ValidatedEntry, ModifiedMixIn):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -344,7 +365,7 @@ class RegexOption(ValidatedEntry, ModifiedMixIn):
     @author: Andres Riancho
     '''
     def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.getValueStr())
+        ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
 
@@ -368,7 +389,7 @@ class BooleanOption(gtk.CheckButton, ModifiedMixIn):
     '''
     def __init__(self, alert, opt):
         gtk.CheckButton.__init__(self)
-        if opt.getValueStr() == "True":
+        if opt.get_value_str() == "True":
             self.set_active(True)
         ModifiedMixIn.__init__(self, alert, "toggled", "get_active", "set_active")
         self.show()
@@ -383,7 +404,7 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
         
         # Create the list store
         liststore = gtk.ListStore(str)
-        optselected = opt.getValueStr()
+        optselected = opt.get_value_str()
         indselected = 0
         for i,option in enumerate(opt.getComboOptions()):
             if optselected == option:
@@ -409,7 +430,7 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
         return model[index][0]
             
     def set_value(self,  t):
-        index = self._opt.getValue().index(t)
+        index = self._opt.get_value().index(t)
         self.set_active(index)
         
     def validate(self, text):
@@ -950,8 +971,13 @@ wrapperWidgets = {
     "boolean": BooleanOption,
     "integer": IntegerOption,
     "string": StringOption,
-    "url": StringOption,    
+    # TODO: Improve url, *file and port in order to provide better user
+    #       experience, validation, etc.
+    "url": StringOption,
+    "output_file": StringOption,
+    "input_file": StringOption,
     "ipport": IPPortOption,
+    "port": PortOption,
     "float": FloatOption,
     "list": ListOption,
     "combo": ComboBoxOption, 
@@ -1117,15 +1143,15 @@ class ConfigOptions(gtk.VBox, Preferences):
             frame.show()
             table = EasyTable(len(optList), 2)
             for i, opt in enumerate(optList):
-                titl = gtk.Label(opt.getDesc())
+                titl = gtk.Label(opt.get_desc())
                 titl.set_alignment(xalign=0.0, yalign=0.5)
-                widg = wrapperWidgets[opt.getType()](self._changedWidget, opt)
+                widg = wrapperWidgets[opt.get_type()](self._changedWidget, opt)
                 if hasattr(widg, 'set_width_chars'):
                     widg.set_width_chars(50)
                 opt.widg = widg
-                widg.set_tooltip_text( opt.getHelp())
+                widg.set_tooltip_text( opt.get_help())
                 table.autoAddRow(titl, widg)
-                self.widgets_status[widg] = (titl, opt.getDesc(), "<b>%s</b>" % opt.getDesc())
+                self.widgets_status[widg] = (titl, opt.get_desc(), "<b>%s</b>" % opt.get_desc())
                 table.show()
                 frame.add(table)
             self.pack_start(frame, False, False)
@@ -1182,7 +1208,7 @@ class ConfigOptions(gtk.VBox, Preferences):
             for opt in optList:
                 if hasattr(opt.widg, "isValid"):
                     if not opt.widg.isValid():
-                        invalid.append(opt.getName())
+                        invalid.append(opt.get_name())
         if invalid:
             msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
             msg += "\n-".join(invalid)
@@ -1195,7 +1221,7 @@ class ConfigOptions(gtk.VBox, Preferences):
         # Get the value from the GTK widget and set it to the option object
         for section, optList in self.options.items():
             for opt in optList:
-                opt.setValue(opt.widg.getValue())
+                opt.set_value(opt.widg.get_value())
 
         for section, optList in self.options.items():
             for opt in optList:

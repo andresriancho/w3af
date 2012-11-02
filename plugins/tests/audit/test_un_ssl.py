@@ -44,7 +44,7 @@ class TestUnSSL(PluginTest):
         
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( vuln.getName(), 'Secure content over insecure channel')
+        self.assertEquals( vuln.get_name(), 'Secure content over insecure channel')
         self.assertEquals( vuln.getURL().url_string, 'http://moth/w3af/')
         
         

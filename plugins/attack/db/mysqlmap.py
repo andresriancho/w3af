@@ -157,7 +157,7 @@ class MySQLMap(Common):
         self.log(logMsg)
 
         if not self.__banner:
-            self.__banner = self.getValue("VERSION()")
+            self.__banner = self.get_value("VERSION()")
 
         return self.__banner
 
@@ -166,7 +166,7 @@ class MySQLMap(Common):
         logMsg = "fetching current user"
         self.log(logMsg)
 
-        return self.getValue("current_user()")
+        return self.get_value("current_user()")
 
 
     def getCurrentDb(self):
@@ -176,7 +176,7 @@ class MySQLMap(Common):
         if self.__currentDb:
             return self.__currentDb
         else:
-            return self.getValue("database()")
+            return self.get_value("database()")
 
 
     def getUsers(self):
@@ -185,7 +185,7 @@ class MySQLMap(Common):
 
         stm = "SELECT COUNT(DISTINCT(user)) FROM mysql.user"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
@@ -200,7 +200,7 @@ class MySQLMap(Common):
             stm  = "SELECT DISTINCT(user) "
             stm += "FROM mysql.user LIMIT %d, 1" % index
 
-            user = self.getValue(stm)
+            user = self.get_value(stm)
             users.append(user)
 
         if not users:
@@ -225,7 +225,7 @@ class MySQLMap(Common):
             stm  = "SELECT COUNT(DISTINCT(schema_name)) "
             stm += "FROM information_schema.schemata"
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
@@ -245,7 +245,7 @@ class MySQLMap(Common):
                 stm += "FROM information_schema.schemata "
                 stm += "LIMIT %d, 1" % index
 
-            db = self.getValue(stm)
+            db = self.get_value(stm)
             dbs.append(db)
 
         if dbs:
@@ -284,7 +284,7 @@ class MySQLMap(Common):
             stm += "FROM information_schema.tables "
             stm += "WHERE table_schema LIKE '%s'" % db
 
-            count = self.getValue(stm)
+            count = self.get_value(stm)
 
             if not len(count) or count == "0":
                 warnMsg  = "unable to retrieve the number of "
@@ -304,7 +304,7 @@ class MySQLMap(Common):
                 stm += "WHERE table_schema LIKE '%s' " % db
                 stm += "LIMIT %d, 1" % index
 
-                table = self.getValue(stm)
+                table = self.get_value(stm)
                 tables.append(table)
 
             if tables:
@@ -347,7 +347,7 @@ class MySQLMap(Common):
         if self.args.db:
             stm += "AND table_schema LIKE '%s'" % self.args.db
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of columns "
@@ -373,7 +373,7 @@ class MySQLMap(Common):
                 stm += "AND table_schema LIKE '%s' " % self.args.db
             stm += "LIMIT %d, 1" % index
 
-            column = self.getValue(stm)
+            column = self.get_value(stm)
 
             stm  = "SELECT data_type "
             stm += "FROM information_schema.columns "
@@ -382,7 +382,7 @@ class MySQLMap(Common):
             if self.args.db:
                 stm += " AND table_schema LIKE '%s'" % self.args.db
 
-            coltype = self.getValue(stm)
+            coltype = self.get_value(stm)
             columns[column] = coltype
 
         if columns:
@@ -423,7 +423,7 @@ class MySQLMap(Common):
         columnValues = {}
         stm = "SELECT COUNT(*) FROM %s" % fromExpr
 
-        count = self.getValue(stm)
+        count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg  = "unable to retrieve the number of entries "
@@ -455,7 +455,7 @@ class MySQLMap(Common):
             for index in range(int(count)):
                 stm  = "SELECT %s FROM %s " % (column, fromExpr)
                 stm += "LIMIT %d, 1" % index
-                value = self.getValue(stm)
+                value = self.get_value(stm)
 
                 length = max(length, len(str(value)))
                 values.append(value)
@@ -496,7 +496,7 @@ class MySQLMap(Common):
         if self.args.unionUse:
             return self.unionUse("SELECT LOAD_FILE('%s')" % filename)
         else:
-            return self.getValue("SELECT LOAD_FILE('%s')" % filename)
+            return self.get_value("SELECT LOAD_FILE('%s')" % filename)
 
     def writeFile( self, filename, content ):
         self.log('Writing %s with content: %s' % (filename,content) )
@@ -545,7 +545,7 @@ class MySQLMap(Common):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
-            return self.getValue(expression)
+            return self.get_value(expression)
 
 
     def checkDbms(self):
@@ -555,13 +555,13 @@ class MySQLMap(Common):
         randInt = str(random.randint(1, 9))
         stm = "CONCAT('%s', '%s')" % (randInt, randInt)
 
-        if self.getValue(stm) == (randInt * 2):
+        if self.get_value(stm) == (randInt * 2):
             logMsg = "confirming MySQL"
             self.log(logMsg)
 
             stm = "LENGTH('%s')" % randInt
 
-            if not self.getValue(stm) == "1":
+            if not self.get_value(stm) == "1":
                 warnMsg = "remote database is not MySQL"
                 self.warn(warnMsg)
 
@@ -571,22 +571,22 @@ class MySQLMap(Common):
             stm += "FROM information_schema.tables "
             stm += "LIMIT 0, 1"
 
-            if self.getValue(stm) == randInt:
+            if self.get_value(stm) == randInt:
                 self.__has_information_schema = True
 
                 if not self.args.exaustiveFp:
                     self.__fingerprint = [">= 5.0.0"]
                     return True
 
-                self.__currentDb = self.getValue("DATABASE()")
-                if self.__currentDb == self.getValue("SCHEMA()"):
+                self.__currentDb = self.get_value("DATABASE()")
+                if self.__currentDb == self.get_value("SCHEMA()"):
                     self.__fingerprint = [">= 5.0.2", "< 5.1"]
 
                     stm  = "SELECT %s " % randInt
                     stm += "FROM information_schema.partitions "
                     stm += "LIMIT 0, 1"
 
-                    if self.getValue(stm) == randInt:
+                    if self.get_value(stm) == randInt:
                         self.__fingerprint = [">= 5.1"]
                 else:
                     self.__fingerprint = ["= 5.0.0 or 5.0.1"]
@@ -596,29 +596,29 @@ class MySQLMap(Common):
                 if not self.args.exaustiveFp:
                     return True
 
-                coercibility = self.getValue("COERCIBILITY(USER())")
+                coercibility = self.get_value("COERCIBILITY(USER())")
                 if coercibility == "3":
                     self.__fingerprint = [">= 4.1.11", "< 5.0.0"]
                 elif coercibility == "2":
                     self.__fingerprint = [">= 4.1.1", "< 4.1.11"]
-                elif self.getValue("CURRENT_USER()"):
+                elif self.get_value("CURRENT_USER()"):
                     self.__fingerprint = [">= 4.0.6", "< 4.1.1"]
 
-                    if self.getValue("CHARSET(CURRENT_USER())") == "utf8":
+                    if self.get_value("CHARSET(CURRENT_USER())") == "utf8":
                         self.__fingerprint = ["= 4.1.0"]
                     else:
                         self.__fingerprint = [">= 4.0.6", "< 4.1.0"]
-                elif self.getValue("FOUND_ROWS()") == "0":
+                elif self.get_value("FOUND_ROWS()") == "0":
                     self.__fingerprint = [">= 4.0.0", "< 4.0.6"]
-                elif self.getValue("CONNECTION_ID()"):
+                elif self.get_value("CONNECTION_ID()"):
                     self.__fingerprint = [">= 3.23.14", "< 4.0.0"]
-                elif re.search("@[\w\.\-\_]+", self.getValue("USER()")):
+                elif re.search("@[\w\.\-\_]+", self.get_value("USER()")):
                     self.__fingerprint = [">= 3.22.11", "< 3.23.14"]
                 else:
                     self.__fingerprint = ["< 3.22.11"]
 
             if self.args.getBanner:
-                self.__banner = self.getValue("VERSION()")
+                self.__banner = self.get_value("VERSION()")
 
             return True
         else:

@@ -46,7 +46,7 @@ class xpath(AttackPlugin):
         
         # User configured parameter
         self._change_to_post = True
-        self._url = ''
+        self._url = 'http://host.tld/'
         self._data = ''
         self._inj_var = ''
         self._method = 'GET'
@@ -318,7 +318,7 @@ class xpath_reader(shell):
         self.max_data_len = 10000
     
     def __repr__(self):
-        return '<'+self.getName()+' object)>'
+        return '<'+self.get_name()+' object)>'
     
     __str__ = __repr__
 
@@ -467,7 +467,7 @@ class xpath_reader(shell):
     def end( self ):
         om.out.debug('xpath_reader cleanup complete.')
         
-    def getName( self ):
+    def get_name( self ):
         return 'xpath_reader'
         
 

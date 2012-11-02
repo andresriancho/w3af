@@ -67,7 +67,7 @@ class TestFormAuth(PluginTest):
         
         vuln = vulns[0]
         
-        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
         vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
         self.assertEquals(vuln.getURL().url_string, vuln_url)
         self.assertEquals(vuln['user'], 'admin')
@@ -82,7 +82,7 @@ class TestFormAuth(PluginTest):
         
         vuln = vulns[0]
         
-        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
         vuln_url = 'http://moth/w3af/bruteforce/form_login/login.php'
         self.assertEquals(vuln.getURL().url_string, vuln_url)
         self.assertEquals(vuln['user'], 'admin')
@@ -97,7 +97,7 @@ class TestFormAuth(PluginTest):
         
         vuln = vulns[0]
         
-        self.assertEquals(vuln.getName(), 'Guessable credentials')
+        self.assertEquals(vuln.get_name(), 'Guessable credentials')
         vuln_url = 'http://moth/w3af/bruteforce/form_login/login-password-only.php'
         self.assertEquals(vuln.getURL().url_string, vuln_url)
         self.assertEquals(vuln['user'], 'password-only-form')

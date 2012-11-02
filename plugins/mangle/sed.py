@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
 
@@ -107,13 +107,13 @@ class sed(ManglePlugin):
         
         @return: No value is returned.
         ''' 
-        self._user_option_fix_content_len = option_list['fixContentLen'].getValue()
-        self._priority = option_list['priority'].getValue()
+        self._user_option_fix_content_len = option_list['fixContentLen'].get_value()
+        self._priority = option_list['priority'].get_value()
         
-        self._expressions = ','.join( option_list['expressions'].getValue() )
+        self._expressions = ','.join( option_list['expressions'].get_value() )
         self._expressions = re.findall( '([qs])([bh])/(.*?)/(.*?)/;?' , self._expressions )
         
-        if len( self._expressions ) == 0 and len ( option_list['expressions'].getValue() ) != 0:
+        if len( self._expressions ) == 0 and len ( option_list['expressions'].get_value() ) != 0:
             raise w3afException('The user specified expression is invalid.')
         
         for exp in self._expressions:
@@ -154,14 +154,14 @@ class sed(ManglePlugin):
         h1 += ' and replace it with NotLuser.\n - sb/[fF]orm/form ; This will make sed search'
         h1 += ' in the re[s]ponse [b]ody for the strings form or Form and replace it with form.'
         h1 += ' Multiple expressions can be specified separated by commas.'
-        o1 = option('expressions', self._expressions, d1, 'list', help=h1)
+        o1 = opt_factory('expressions', self._expressions, d1, 'list', help=h1)
         
         d2 = 'Fix the content length header after mangling'
-        o2 = option('fixContentLen', self._user_option_fix_content_len, d2, 'boolean')
+        o2 = opt_factory('fixContentLen', self._user_option_fix_content_len, d2, 'boolean')
 
         d3 = 'Plugin execution priority'
         h3 = 'Mangle plugins are ordered using the priority parameter'
-        o3 = option('priority', self._priority, d3, 'integer', help=h3)
+        o3 = opt_factory('priority', self._priority, d3, 'integer', help=h3)
         
         ol = OptionList()
         ol.add(o1)

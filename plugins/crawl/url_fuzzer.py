@@ -32,7 +32,7 @@ from core.controllers.w3afException import w3afException
 from core.data.dc.headers import Headers
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.fuzzer.fuzzer import rand_alnum
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
@@ -117,14 +117,14 @@ class url_fuzzer(CrawlPlugin):
             #
             if response.getURL() not in self._seen and response.getURL().getFileName():
                 i = info.info()
-                i.setPluginName(self.getName())
-                i.setName('Potentially interesting file')
+                i.setPluginName(self.get_name())
+                i.set_name('Potentially interesting file')
                 i.setURL(response.getURL())
                 i.set_id(response.id)
                 desc = 'A potentially interesting file was found at: "%s".'
-                i.setDesc( desc % response.getURL() )
+                i.set_desc( desc % response.getURL() )
                 kb.kb.append(self, 'files', i)
-                om.out.information(i.getDesc())
+                om.out.information(i.get_desc())
                 
                 # Report only once
                 self._seen.add(response.getURL())
@@ -323,7 +323,7 @@ class url_fuzzer(CrawlPlugin):
         
         d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
         h = 'Don\'t change this unless you read the plugin code.'
-        o = option('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
+        o = opt_factory('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
         ol.add(o)
         
         return ol
@@ -336,7 +336,7 @@ class url_fuzzer(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzz_images = options_list['fuzzImages'].getValue()
+        self._fuzz_images = options_list['fuzzImages'].get_value()
     
     def get_plugin_deps(self):
         '''

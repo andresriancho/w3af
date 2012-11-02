@@ -108,7 +108,7 @@ class TestOutputManager(unittest.TestCase):
             def error(self, msg, newLine=True):
                 pass
             
-            def getName(self):
+            def get_name(self):
                 return 'InvalidPlugin'
         
         invalid_plugin = InvalidPlugin() 

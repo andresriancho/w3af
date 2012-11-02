@@ -59,13 +59,13 @@ class QuestOptions(gtk.VBox):
             try:
                 opt.widg
             except Exception, e:
-                raise Exception(str(e) + ' || ' + opt.getName())
+                raise Exception(str(e) + ' || ' + opt.get_name())
             # end of debugging code
                 
             
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
-                    invalid.append(opt.getName())
+                    invalid.append(opt.get_name())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"
             msg += " following parameter(s):\n\n" + "\n-".join(invalid)
@@ -76,7 +76,7 @@ class QuestOptions(gtk.VBox):
             return
 
         for opt in options:
-            opt.setValue( opt.widg.getValue() )
+            opt.set_value( opt.widg.get_value() )
 
         try:
             helpers.coreWrap(self.wizard.setAnswer, options)
@@ -116,7 +116,7 @@ class Wizard(entries.RememberingWindow):
     '''
     def __init__(self, w3af, wizard):
         super(Wizard,self).__init__(
-            w3af, "wizard", "w3af Wizard: " + wizard.getName(), "Wizards",
+            w3af, "wizard", "w3af Wizard: " + wizard.get_name(), "Wizards",
             guessResize=False)
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
@@ -286,7 +286,7 @@ class WizardChooser(entries.RememberingWindow):
         for wiz in self._getWizards():
             if initlabel is None:
                 initlabel = wiz.getWizardDescription()
-            self.rbuts.add(wiz.getName(), wiz)
+            self.rbuts.add(wiz.get_name(), wiz)
         innerbox.pack_start(self.rbuts, True, False)
 
         self.wizdesc = gtk.Label(initlabel)

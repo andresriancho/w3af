@@ -49,7 +49,7 @@ class TestTextFile(PluginTest):
                 'output': (
                     PluginConfig(
                         'text_file',
-                        ('fileName', OUTPUT_FILE, PluginConfig.STR)),
+                        ('output_file', OUTPUT_FILE, PluginConfig.STR)),
                 )         
             },
         }

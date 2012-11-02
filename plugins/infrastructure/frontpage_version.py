@@ -98,18 +98,18 @@ class frontpage_version(InfrastructurePlugin):
             self._exec = False
 
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.set_id( response.id )
-            i.setName( 'FrontPage Configuration Information' )
+            i.set_name( 'FrontPage Configuration Information' )
             i.setURL( response.getURL() )
             desc = 'The FrontPage Configuration Information file was found at: "'
             desc += i.getURL() 
             desc += '" and the version of FrontPage Server Extensions is: "'
             desc += version_mo.group(1) + '". '
-            i.setDesc( desc )
+            i.set_desc( desc )
             i['version'] = version_mo.group(1)
             kb.kb.append( self, 'frontpage_version', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
 
             #
             # Handle the admin.exe file
@@ -125,16 +125,16 @@ class frontpage_version(InfrastructurePlugin):
             # This is strange... we found a _vti_inf file, but there is no frontpage
             # information in it... IPS? WAF? honeypot?                            
             i = info.info()
-            i.setPluginName(self.getName())
+            i.setPluginName(self.get_name())
             i.set_id( response.id )
-            i.setName( 'Fake FrontPage Configuration Information' )
+            i.set_name( 'Fake FrontPage Configuration Information' )
             i.setURL( response.getURL() )
             desc = 'A fake FrontPage Configuration Information file was found at: "'
             desc += i.getURL()
             desc += '". This may be an indication of a honeypot, a WAF or an IPS.'
-            i.setDesc( desc )
+            i.set_desc( desc )
             kb.kb.append( self, 'fake_frontpage', i )
-            om.out.information( i.getDesc() )
+            om.out.information( i.get_desc() )
     
     def _analyze_admin(self, response, frontpage_admin):
         '''
@@ -147,7 +147,7 @@ class frontpage_version(InfrastructurePlugin):
         admin_location = response.getURL().getDomainPath().urlJoin(
                                            frontpage_admin.group(1) )
         i = info.info()
-        i.setPluginName(self.getName())
+        i.setPluginName(self.get_name())
         i.set_id( response.id )
         i.setURL( admin_location )
         
@@ -166,11 +166,11 @@ class frontpage_version(InfrastructurePlugin):
             desc += admin_location
             desc += '".'
 
-        i.setName( name )
-        i.setDesc( desc )
+        i.set_name( name )
+        i.set_desc( desc )
         i['FPAdminScriptUrl'] = admin_location
         kb.kb.append( self, 'frontpage_version', i )
-        om.out.information( i.getDesc() )
+        om.out.information( i.get_desc() )
             
     def _analyze_author(self, response, frontpage_author):
         '''
@@ -184,7 +184,7 @@ class frontpage_version(InfrastructurePlugin):
                                             frontpage_author.group(1) )
         
         i = info.info()
-        i.setPluginName(self.getName())
+        i.setPluginName(self.get_name())
         i.set_id( response.id )
         i.setURL( author_location )
         # Check for anomalies in the location of author.exe
@@ -202,11 +202,11 @@ class frontpage_version(InfrastructurePlugin):
             desc += author_location
             desc += '".'
             
-        i.setName( name )
-        i.setDesc( desc )
+        i.set_name( name )
+        i.set_desc( desc )
         i['FPAuthorScriptUrl'] = author_location
         kb.kb.append( self, 'frontpage_version', i )
-        om.out.information( i.getDesc() )        
+        om.out.information( i.get_desc() )        
 
     def get_long_desc( self ):
         '''

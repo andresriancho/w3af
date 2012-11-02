@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
+import os
 import re
 
 import core.controllers.outputManager as om
@@ -27,7 +28,8 @@ import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE, REGEX
 from core.data.options.option_list import OptionList
 
 
@@ -43,7 +45,8 @@ class user_defined_regex(GrepPlugin):
         
         # User defined options
         self._single_regex = ''
-        self._regex_file_path = ''
+        self._regex_file_path = os.path.join('plugins','grep','user_defined_regex',
+                                             'empty.txt')
 
         # Internal variables
         # Improved performance by compiling all the regular expressions
@@ -88,7 +91,7 @@ class user_defined_regex(GrepPlugin):
                         info_inst.set_id(ids)
                     else:
                         info_inst = info.info()
-                        info_inst.setPluginName(self.getName())
+                        info_inst.setPluginName(self.get_name())
                         
                         msg = 'User defined regular expression "%s" matched a' \
                               ' response. Matched string is: "%s".' 
@@ -98,11 +101,11 @@ class user_defined_regex(GrepPlugin):
                             str_match = str_match[:20] + '...'
                         
                         om.out.information(msg % (regex.pattern, str_match))
-                        info_inst.setDesc(msg % (regex.pattern, str_match))
+                        info_inst.set_desc(msg % (regex.pattern, str_match))
                         
                         info_inst.setURL( response.getURL() )
                         info_inst.set_id( response.id )
-                        info_inst.setName( 'User defined regex - %s' % regex.pattern )
+                        info_inst.set_name( 'User defined regex - %s' % regex.pattern )
                         
                         kb.kb.append( self , 'user_defined_regex' , info_inst )
                         
@@ -121,7 +124,7 @@ class user_defined_regex(GrepPlugin):
         #   Add the regexes from the file
         #
         self._regexlist_compiled = []
-        regex_file_path = options_list['regex_file_path'].getValue()
+        regex_file_path = options_list['regex_file_path'].get_value()
         if regex_file_path and not regex_file_path == 'None':
             self._regex_file_path = regex_file_path
             
@@ -145,15 +148,15 @@ class user_defined_regex(GrepPlugin):
         #
         #   Add the single regex
         #
-        self._single_regex = options_list['single_regex'].getValue()
-        if self._single_regex and not self._single_regex == 'None':
-            try:
-                re_inst = re.compile(self._single_regex, re.I | re.DOTALL)
-            except:
-                raise w3afException('Invalid regex in the single_regex field!')
-            else:
-                self._regexlist_compiled.append((re_inst, None))
-                tmp_not_compiled_all.append(self._single_regex)
+        self._single_regex = options_list['single_regex'].get_value()
+        if self._single_regex:
+            # Please note that the regex compilation can not fail because
+            # the option is of type REGEX and there is a validation made in
+            # regex_option.py
+            re_inst = re.compile(self._single_regex, re.I | re.DOTALL)
+            
+            self._regexlist_compiled.append((re_inst, None))
+            tmp_not_compiled_all.append(self._single_regex)
 
         #
         #   Compile all in one regex
@@ -171,17 +174,17 @@ class user_defined_regex(GrepPlugin):
         ol = OptionList()
         
         d = 'Single regex to use in the grep process.'
-        o = option('single_regex', self._single_regex , d, 'string')
+        o = opt_factory('single_regex', self._single_regex , d, REGEX)
         ol.add(o)
         
         d = 'Path to file with regular expressions to use in the grep process.'
-        h = d + '\n\n'
-        h += 'Attention: The file will be loaded line by line into '
-        h += 'memory, because the regex will be precompiled in order to achieve '
-        h += ' better performance during the scan process. \n\n'
-        h += 'A list of example regular expressions can be found at '
-        h += '"plugins/grep/user_defined_regex/".'
-        o = option('regex_file_path', self._regex_file_path , d, 'string', help=h)
+        h = 'Attention: The file will be loaded line by line into memory,'\
+            ' because the regex will be pre-compiled in order to achieve '\
+            ' better performance during the scan process. \n\n'\
+            'A list of example regular expressions can be found at '\
+            '"plugins/grep/user_defined_regex/".'
+        o = opt_factory('regex_file_path', self._regex_file_path , d,
+                        INPUT_FILE, help=h)
         ol.add(o)
         
         return ol
@@ -199,13 +202,14 @@ class user_defined_regex(GrepPlugin):
         return '''
         This plugin greps every response for a user defined regex.
 
-        You can specify a single regex or an entire file of regexes (each line one regex),
-        if both are specified, the single_regex will be added to the list of regular
-        expressions extracted from the file.
+        You can specify a single regex or an entire file of regexes (each line
+        one regex), if both are specified, the single_regex will be added to
+        the list of regular expressions extracted from the file.
 
-        A list of example regular expressions can be found at "plugins/grep/user_defined_regex/".
+        A list of example regular expressions can be found at:
+            "plugins/grep/user_defined_regex/".
 
         For every match an information message is shown.
         '''
 
- 	  	 
+

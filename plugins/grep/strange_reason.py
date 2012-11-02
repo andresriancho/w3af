@@ -118,14 +118,14 @@ class strange_reason(GrepPlugin):
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Strange HTTP Reason message - ' + str(response.getMsg()))
+                    i.setPluginName(self.get_name())
+                    i.set_name('Strange HTTP Reason message - ' + str(response.getMsg()))
                     i.setURL( response.getURL() )
                     i.set_id( response.id )
                     i['reason'] = response.getMsg()
                     desc = 'The remote Web server sent a strange HTTP reason message: "'
                     desc += str(response.getMsg()) + '" manual inspection is advised.'
-                    i.setDesc( desc )
+                    i.set_desc( desc )
                     i.addToHighlight( response.getMsg() )
                     kb.kb.append( self , 'strange_reason' , i )
     def end(self):

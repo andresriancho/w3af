@@ -27,7 +27,7 @@ import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 
@@ -65,8 +65,8 @@ class motw (GrepPlugin):
                 # Create the info object
                 if motw_match or self._withoutMOTW:
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName('Mark of the web')
+                    i.setPluginName(self.get_name())
+                    i.set_name('Mark of the web')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )
                     i.addToHighlight(motw_match.group(0))
@@ -81,24 +81,24 @@ class motw (GrepPlugin):
                     if (url_length_indicated <= url_length_actual):
                         msg = 'The  URL: "'  + response.getURL() + '"'
                         msg += ' contains a  valid Mark of the Web.'
-                        i.setDesc( msg )
+                        i.set_desc( msg )
                         kb.kb.append( self, 'motw', i )
                     else:
                         msg = 'The URL: "' + response.getURL() + '" will be executed in Local '
                         msg += 'Machine Zone security context because the indicated length is '
                         msg += 'greater than the actual URL length.'
                         i['localMachine'] = True
-                        i.setDesc( msg )
+                        i.set_desc( msg )
                         kb.kb.append( self, 'motw', i )
               
                 elif self._withoutMOTW:
                     msg = 'The URL: "' + response.getURL()
                     msg += '" doesn\'t contain a Mark of the Web.'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     kb.kb.append( self, 'no_motw', i )
 
     def set_options( self, options_list ):
-        self._withoutMOTW = options_list['withoutMOTW'].getValue()
+        self._withoutMOTW = options_list['withoutMOTW'].get_value()
         
     def get_options( self ):
         '''
@@ -107,7 +107,7 @@ class motw (GrepPlugin):
         ol = OptionList()
         
         d1 = 'List the pages that don\'t have a MOTW'
-        o1 = option('withoutMOTW', self._withoutMOTW, d1, 'boolean')
+        o1 = opt_factory('withoutMOTW', self._withoutMOTW, d1, 'boolean')
         ol.add(o1)
         
         return ol

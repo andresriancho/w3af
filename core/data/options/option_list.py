@@ -42,7 +42,7 @@ class OptionList(object):
         '''
         A nice way of printing your object =)
         '''
-        return '<OptionList: '+ '|'.join([i.getName() for i in self._internal_opt_list]) +'>'
+        return '<OptionList: '+ '|'.join([i.get_name() for i in self._internal_opt_list]) +'>'
 
     def __eq__(self, other):
         if not isinstance(other, OptionList):
@@ -53,7 +53,7 @@ class OptionList(object):
         
     def __contains__( self, item_name ):
         for o in self._internal_opt_list:
-            if o.getName() == item_name:
+            if o.get_name() == item_name:
                 return True
         return False
     
@@ -66,9 +66,9 @@ class OptionList(object):
             
         @return: The value of the item that was selected
         
-        >>> from core.data.options.option import option
+        >>> from core.data.options.opt_factory import opt_factory
         >>> opt_list = OptionList()
-        >>> opt_list.add( option('name', True, 'desc', 'boolean') )
+        >>> opt_list.add( opt_factory('name', True, 'desc', 'boolean') )
         >>> opt_list['name']
         <option name:name|type:boolean|value:True>
         
@@ -78,11 +78,11 @@ class OptionList(object):
         except:
             # A string
             for o in self._internal_opt_list:
-                if o.getName() == item_name:
+                if o.get_name() == item_name:
                     return o
             else:
                 msg = 'The OptionList doesn\'t contain an option with the name: "%s"'
-                raise w3afException( msg % item_name)
+                raise w3afException(msg % item_name)
         else:
             # An integer
             return self._internal_opt_list[ item_name ]

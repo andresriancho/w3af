@@ -48,7 +48,7 @@ class TestPhishingVector(PluginTest):
         vulns = self.kb.get('phishing_vector', 'phishing_vector')
         
         self.assertEquals(3, len(vulns))
-        self.assertEquals(all(['Phishing vector' == vuln.getName() for vuln in vulns ]) , True)
+        self.assertEquals(all(['Phishing vector' == vuln.get_name() for vuln in vulns ]) , True)
 
         # Verify the specifics about the vulnerabilities
         expected = [

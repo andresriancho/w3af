@@ -156,16 +156,16 @@ class find_backdoors(CrawlPlugin):
         else:
             if self._is_possible_backdoor(response):
                 v = vuln.vuln()
-                v.setPluginName(self.getName())
+                v.setPluginName(self.get_name())
                 v.set_id(response.id)
-                v.setName('Possible web backdoor')
+                v.set_name('Possible web backdoor')
                 v.setSeverity(severity.HIGH)
                 v.setURL(response.getURL())
                 msg = 'A web backdoor was found at: "%s"; this could ' \
                 'indicate that the server was hacked.' % v.getURL()
-                v.setDesc(msg)
+                v.set_desc(msg)
                 kb.kb.append(self, 'backdoors', v)
-                om.out.vulnerability(v.getDesc(), severity=v.getSeverity())
+                om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
 
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)

@@ -40,7 +40,7 @@ class TestDotListing(PluginTest):
         self.assertEqual( len(infos), 2)
         
         self.assertEqual( set(['.listing file found', 'Operating system username and group leak']),
-                          set([i.getName() for i in infos]))
+                          set([i.get_name() for i in infos]))
         self.assertEqual( set([self.base_url + '.listing'] * 2),
                           set([i.getURL().url_string for i in infos]))
         

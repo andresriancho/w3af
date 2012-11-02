@@ -64,5 +64,5 @@ class AuthPlugin(Plugin):
         '''
         raise NotImplementedError('Plugin is not implementing required method isLogged')
 
-    def getType(self):
+    def get_type(self):
         return 'auth'

@@ -47,7 +47,7 @@ class TestEmailReport(PluginTest):
                         'email_report',
                         ('smtpServer', 'smtp.mailinator.com', PluginConfig.STR),
                         ('smtpPort', 25, PluginConfig.INT),
-                        ('toAddrs', ['w3af@mailinator.com',], PluginConfig.LIST),
+                        ('toAddrs', 'w3af@mailinator.com', PluginConfig.LIST),
                         ('fromAddr', 'w3af@gmail.com', PluginConfig.STR),
                         ),
                 )         

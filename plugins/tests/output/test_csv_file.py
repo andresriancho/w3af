@@ -91,13 +91,13 @@ class TestCSVFile(PluginTest):
         for name,method,uri,var,dc,_id,desc in vuln_reader:
             v = vuln.vuln()
             
-            v.setName(name)
+            v.set_name(name)
             v.setMethod( method )
             v.setURI( URL(uri) )
             v.setVar(var)
             v.setDc(dc)
             v.set_id(json.loads(_id) )
-            v.setDesc(desc)
+            v.set_desc(desc)
             
             file_vulns.append(v)
         

@@ -28,7 +28,7 @@ from core.data.parsers.url import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 

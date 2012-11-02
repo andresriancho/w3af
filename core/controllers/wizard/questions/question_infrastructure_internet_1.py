@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
@@ -46,7 +46,7 @@ class question_infrastructure_internet_1(question):
         @return: A list of options for this question.
         '''
         self._d1 = 'Find other virtual hosts using MSN search'
-        o1 = option(self._d1, False, self._d1, 'boolean')
+        o1 = opt_factory(self._d1, False, self._d1, 'boolean')
     
         ol = OptionList()
         ol.add(o1)
@@ -56,7 +56,7 @@ class question_infrastructure_internet_1(question):
     def getNextQuestionId(self,  options_list ):
         plugin_list = []
         
-        if options_list[self._d1].getValue():
+        if options_list[self._d1].get_value():
             plugin_list.append('shared_hosting')
         
         # Set the plugins to be run

@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 # options
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
@@ -49,7 +49,7 @@ class question_target_2(question):
         '''
 
         d1 = 'Is the target web application reachable from the Internet?'
-        o1 = option('internet',True, d1, 'boolean')
+        o1 = opt_factory('internet',True, d1, 'boolean')
 
         ol = OptionList()
         ol.add(o1)
@@ -58,7 +58,7 @@ class question_target_2(question):
         
     def getNextQuestionId(self,  options_list ):
 
-        internet = options_list['internet'].getValue()
+        internet = options_list['internet'].get_value()
         # FIXME: Do something with this value
 
         return None

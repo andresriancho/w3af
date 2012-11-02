@@ -26,7 +26,7 @@ import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
 from core.data.search_engines.google import google as google
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -143,12 +143,12 @@ class finger_google(InfrastructurePlugin):
                     self._accounts.append( mail )
                     
                     i = info.info()
-                    i.setPluginName(self.getName())
-                    i.setName(mail)
+                    i.setPluginName(self.get_name())
+                    i.set_name(mail)
                     i.setURL( response.getURI() )
                     msg = 'The mail account: "'+ mail + '" was found in: "'
                     msg += response.getURI() + '"'
-                    i.setDesc( msg )
+                    i.set_desc( msg )
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
                     i['url_list'] = [response.getURI(), ]
@@ -160,12 +160,12 @@ class finger_google(InfrastructurePlugin):
         @return: A list of option objects for this plugin.
         '''
         d2 = 'Fetch the first "resultLimit" results from the Google search'
-        o2 = option('resultLimit', self._result_limit, d2, 'integer')
+        o2 = opt_factory('resultLimit', self._result_limit, d2, 'integer')
         
         d3 = 'Do a fast search, when this feature is enabled, not all mail addresses are found'
         h3 = 'This method is faster, because it only searches for emails in the small page '
         h3 += 'snippet that google shows to the user after performing a common search.'
-        o3 = option('fastSearch', self._fast_search, d3, 'boolean', help=h3)
+        o3 = opt_factory('fastSearch', self._fast_search, d3, 'boolean', help=h3)
         
         ol = OptionList()
         ol.add(o2)
@@ -180,8 +180,8 @@ class finger_google(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].getValue()
-        self._fast_search = options_list['fastSearch'].getValue()
+        self._result_limit = options_list['resultLimit'].get_value()
+        self._fast_search = options_list['fastSearch'].get_value()
             
     def get_plugin_deps( self ):
         '''

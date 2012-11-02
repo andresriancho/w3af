@@ -28,7 +28,7 @@ from core.controllers.misc.levenshtein import relative_distance_lt
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.options.option import option
+from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.dc.headers import Headers
 
@@ -215,13 +215,13 @@ class digit_sum(CrawlPlugin):
         
         d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
         h = 'It\'s safe to leave this option as the default.'
-        o = option('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
+        o = opt_factory('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
         ol.add(o)
         
         d = 'Set the top number of sections to fuzz'
         h = 'It\'s safe to leave this option as the default. For example, with maxDigitSections'
         h += ' = 1, this string wont be fuzzed: abc123def234 ; but this one will abc23ldd.'
-        o = option('maxDigitSections', self._max_digit_sections, d, 'integer', help=h)
+        o = opt_factory('maxDigitSections', self._max_digit_sections, d, 'integer', help=h)
         ol.add(o)
                 
         return ol
@@ -234,8 +234,8 @@ class digit_sum(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._fuzz_images = options_list['fuzzImages'].getValue()
-        self._max_digit_sections = options_list['maxDigitSections'].getValue()
+        self._fuzz_images = options_list['fuzzImages'].get_value()
+        self._max_digit_sections = options_list['maxDigitSections'].get_value()
     
     def get_long_desc( self ):
         '''

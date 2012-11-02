@@ -131,7 +131,7 @@ class message:
     def getMsg( self ):
         return self._msg
     
-    def getType( self ):
+    def get_type( self ):
         return self._type
         
     def getNewLine( self ):

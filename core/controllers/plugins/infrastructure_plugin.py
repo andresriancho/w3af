@@ -58,5 +58,5 @@ class InfrastructurePlugin(Plugin):
     def _create_fuzzable_requests( self, HTTPResponse, request=None, add_self=True ):
         return create_fuzzable_requests( HTTPResponse, request, add_self )
     
-    def getType( self ):
+    def get_type( self ):
         return 'infrastructure'
