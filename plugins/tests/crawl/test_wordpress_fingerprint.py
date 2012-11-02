@@ -19,8 +19,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from plugins.tests.helper import PluginTest, PluginConfig
+from core.data.misc.file_utils import days_since_file_update
+
 
 class Testwordpress_fingerprint(PluginTest):
     
@@ -83,10 +84,22 @@ class Testwordpress_fingerprint(PluginTest):
         '''
         self.assertTrue(False)
     
-    def test_todo_2(self):
+    def test_updated_release_db(self):
         '''
         This about some way to keep the release.db updated. Maybe it could be
         done by generating it in a unittest, so that it gets updated every time
         I run it?
         '''
-        self.assertTrue(False)
+        wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
+                                                          'wordpress_fingerprint')
+
+        wp_releases_file = wpfp_inst._release_db
+        is_older = days_since_file_update(wp_releases_file, 30)
+        
+        msg = 'The releases.db database is too old. The following commands need'\
+              ' to be run in order to update it:\n'\
+              'cd plugins/crawl/wordpress_fingerprint/\n'\
+              'python generate_release_db.py\n'\
+              'svn commit -m "Updating wordpress release.db file." release.db\n'\
+              'cd -'
+        self.assertFalse(is_older, msg)

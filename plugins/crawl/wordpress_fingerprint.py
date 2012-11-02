@@ -56,6 +56,9 @@ class wordpress_fingerprint(CrawlPlugin):
         
         # Internal variables
         self._exec = True
+        self._release_db = os.path.join('plugins', 'crawl',
+                                        'wordpress_fingerprint', 'release.db')
+        
 
     def crawl(self, fuzzable_request ):
         '''
@@ -121,8 +124,7 @@ class wordpress_fingerprint(CrawlPlugin):
             m.update( response.getBody() )
             remote_release_hash = m.hexdigest()
             
-            release_db = os.path.join('plugins', 'crawl', 'wordpress_fingerprint',
-                                      'release.db')
+            release_db = self._release_db
             
             for line in file(release_db):
                 try:
