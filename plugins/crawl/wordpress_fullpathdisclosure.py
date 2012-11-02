@@ -19,30 +19,26 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.outputManager as om
-
-# Import options
 import re
 
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.crawl_plugin import CrawlPlugin
-
+import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
-# Main class
 class wordpress_fullpathdisclosure(CrawlPlugin):
     '''
     Try to find the path where the WordPress is installed
     @author: Andres Tarantini ( atarantini@gmail.com )
     '''
-
+    
+    CHECK_PATHS = ['wp-content/plugins/akismet/akismet.php',
+                   'wp-content/plugins/hello.php']
+    
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -52,66 +48,84 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
     def crawl(self, fuzzable_request):
         '''
         @parameter fuzzable_request: A fuzzable_request instance that contains
-        (among other things) the URL to test.
+                                     (among other things) the URL to test.
         '''
-        possible_vulnerable_files = ['wp-content/plugins/akismet/akismet.php', 'wp-content/plugins/hello.php']
+        if not self._exec :
+            raise w3afRunOnce()
+        else:
+            # Check if there is a wordpress installation in this directory
+            domain_path = fuzzable_request.getURL().getDomainPath()
+            wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
+            response = self._uri_opener.GET(wp_unique_url, cache=True)
 
-        # Search this theme path and add the themes header/footer to the possible vulnerable files
-        domain_path = fuzzable_request.getURL().getDomainPath()
-        response = self._uri_opener.GET( domain_path, cache=True )
-        if not is_404( response ):
-            response_body = response.getBody()
-            theme_regexp = domain_path+'wp-content/themes/(.*)/style.css'
+            # If wp_unique_url is not 404, wordpress = true
+            if not is_404( response ):
+                # Only run once
+                self._exec = False
+                
+                extracted_paths = self._extract_paths(domain_path)
+                self._force_disclosures(domain_path, 
+                                        self.CHECK_PATHS + extracted_paths)
+    
+    def _extract_paths(self, domain_path):
+        '''
+        @param domain_path: The URL object pointing to the current wordpress
+                            installation
+        @return: A list with the paths that might trigger full path disclosures
+        
+        TODO: Will fail if WordPress is running on a Windows server due to
+              paths manipulation.
+        '''
+        theme_paths = []
+        wp_root_response = self._uri_opener.GET( domain_path, cache=True )
+        
+        if not is_404( wp_root_response ):
+            response_body = wp_root_response.getBody()
+            
+            theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
             theme = re.search(theme_regexp, response_body, re.IGNORECASE)
             if theme:
                 theme_name = theme.group(1)
-                possible_vulnerable_files.append(domain_path+'wp-content/themes/'+theme_name+'/header.php')
-                possible_vulnerable_files.append(domain_path+'wp-content/themes/'+theme_name+'/footer.php')
+                for fname in ('header', 'footer'):
+                    path_fname = 'wp-content/themes/%s/%s.php' % (theme_name, fname)
+                    theme_paths.append(path_fname)
+        
+        return theme_paths
+    
+    def _force_disclosures(self, domain_path, potentially_vulnerable_paths):
+        '''
+        @param domain_path: The path to wordpress' root directory
+        @param potentially_vulnerable_paths: A list with the paths I'll URL-join
+                                             with @domain_path, GET and parse.
+        '''
+        for pvuln_path in potentially_vulnerable_paths:
+            
+            pvuln_url = domain_path.urlJoin(pvuln_path)
+            response = self._uri_opener.GET(pvuln_url, cache=True)
 
-        if not self._exec :
-            # Remove the plugin from the crawl plugins to be run.
-            raise w3afRunOnce()
-        else:
-            for vulnerable_file in possible_vulnerable_files:
-                vulnerable_url = domain_path.urlJoin(vulnerable_file)
-                response = self._uri_opener.GET( vulnerable_url, cache=True )
+            if is_404( response ):
+                continue
+            
+            response_body = response.getBody()
+            if 'Fatal error: ' in response_body:
+                i = info.info()
+                i.setPluginName(self.get_name())
+                i.set_name('WordPress path disclosure')
+                i.setURL( pvuln_url )
+                i.set_id( response.id )
+                desc = 'Analyze the HTTP response body to find the full path'\
+                       ' where wordpress was installed.'
+                i.set_desc( desc )
+                kb.kb.append( self, 'info', i )
+                om.out.information( i.get_desc() )
+                break
 
-                if not is_404( response ):
-                    response_body = response.getBody()
-                    if 'Fatal error' in response_body:
-                        if vulnerable_file in response_body:
-                            # Unix-like
-                            pass
-                        elif vulnerable_file.replace('/', '\\') in response_body:
-                            # Microsoft Windows (back slashes)
-                            vulnerable_file = vulnerable_file.replace('/', '\\')
-                        else:
-                            vulnerrable_path = False
-
-                        if vulnerable_file:
-                            match = ' <b>(.*)'+vulnerable_file+'</b>'
-                            path_disclosure = re.search(match, response_body, re.IGNORECASE)
-                            if path_disclosure:
-                                i = info.info()
-                                i.setPluginName(self.get_name())
-                                i.set_name('WordPress server path found')
-                                i.setURL( vulnerable_url )
-                                i.set_id( response.id )
-                                desc = 'WordPress is installed on "%s"' % path_disclosure.group(1)
-                                i.set_desc( desc )
-                                kb.kb.append( self, 'info', i )
-                                om.out.information( i.get_desc() )
-                                break
-
-        # Only run once
-        self._exec = False
 
     def get_long_desc( self ):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin try to find the path in the server where WordPress is installed.
-
-        The plugin will fail if WordPress is running on a Windows server due to paths manipulation (can be fixed, ToDo!).
+        This plugin try to find the path in the server where WordPress is
+        installed.
         '''
