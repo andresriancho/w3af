@@ -18,17 +18,16 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import datetime
-import pysvn
-
 from mock import patch, call
 
 import core.data.constants.severity as severity
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.ghdb import GoogleHack, google
+
 from core.data.search_engines.google import GoogleResult
 from core.data.parsers.url import URL
+from core.data.misc.file_utils import days_since_file_update
 
 
 class TestGHDB(PluginTest):
@@ -107,18 +106,8 @@ class TestGHDB(PluginTest):
         ghdb_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'ghdb')
 
         ghdb_file = ghdb_inst._ghdb_file
-
-        client = pysvn.Client()
-        entry = client.info(ghdb_file)
-        
-        # entry.commit_time is epoch
-        last_commit_time = datetime.datetime.fromtimestamp(entry.commit_time)
-        last_commit_date = last_commit_time.date()
-        
-        today_date = datetime.date.today()
-
-        time_delta = today_date - last_commit_date
+        is_older = days_since_file_update(ghdb_file, 30)
         
         msg = 'The GHDB database is too old.'
-        self.assertTrue(time_delta.days < 30, msg)
+        self.assertFalse(is_older, msg)
                 
