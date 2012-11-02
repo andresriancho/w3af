@@ -549,7 +549,7 @@ class VersionMgr(object): #TODO: Make it singleton?
             try:
                 return attr(*args, **kwargs)
             except SVNError, err:
-                msg = 'An error occurred while updating:\n%s' % err.args
+                msg = 'An error occurred while updating:\n%s' % str(err.args)
                 self._notify(VersionMgr.ON_ACTION_ERROR, msg)
         attr = object.__getattribute__(self, name)            
         if callable(attr):
@@ -789,7 +789,7 @@ class UIUpdater(object):
             except KeyboardInterrupt:
                 pass
             except Exception, ex:
-                print('An error occurred while updating: %s' % ex.args)
+                print('An error occurred while updating: %s' % str(ex.args))
             
             # Try to convert to int => a valid revision number. Otherwise the
             # code is inconsistent => more than one revision is checked out
