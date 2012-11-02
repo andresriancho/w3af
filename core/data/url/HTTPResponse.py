@@ -388,6 +388,9 @@ class HTTPResponse(object):
     def getURI(self):
         return self._uri
 
+    def was_redirected(self):
+        return self._uri != self._redirectedURI
+
     def set_from_cache(self, fcache):
         '''
         @parameter fcache: True if this response was obtained from the
