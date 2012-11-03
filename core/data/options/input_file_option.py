@@ -41,7 +41,11 @@ class InputFileOption(BaseOption):
         if value == '':
             self._value = value
             return
+        
+        self._value = self.validate(value)
 
+    def validate(self, value):
+        
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):
             msg = 'Invalid input file option value "%s", the directory does not'\
@@ -68,4 +72,4 @@ class InputFileOption(BaseOption):
                   ' point to a file.'
             raise w3afException(msg % value)
         
-        self._value = value
+        return value

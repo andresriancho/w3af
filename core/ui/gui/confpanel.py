@@ -132,7 +132,9 @@ class OnlyOptions(gtk.VBox):
         for i,opt in enumerate(options):
             titl = gtk.Label(opt.get_name())
             titl.set_alignment(0.0, 0.5)
-            widg = entries.wrapperWidgets[opt.get_type()](self._changedWidget, opt )            
+            input_widget_klass = entries.wrapperWidgets.get(opt.get_type(),
+                                                            entries.TextInput)
+            widg = input_widget_klass(self._changedWidget, opt )            
             opt.widg = widg
             widg.set_tooltip_text( opt.get_desc() )
             if opt.get_help():

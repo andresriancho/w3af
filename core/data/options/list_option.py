@@ -47,7 +47,10 @@ class ListOption(BaseOption):
         if isinstance(value, list):
             self._value = value
             return
-                
+        
+        self._value = self.validate(value)
+    
+    def validate(self, value):
         temp_value = value + ','
         mo = self.LST_VALIDATION_RE.match(temp_value)
         try:
@@ -73,5 +76,5 @@ class ListOption(BaseOption):
                 else:
                     res.append(item)
                                 
-            self._value = res
+            return res
             

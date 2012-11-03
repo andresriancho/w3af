@@ -20,9 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from __future__ import with_statement
+
 import os
+
 from ConfigParser import RawConfigParser
 from core.controllers.misc.homeDir import get_home_dir
+
 
 class Preferences(object):
     '''Class for grouping option lists.
@@ -50,7 +53,8 @@ class Preferences(object):
         return self.options[section]
 
     def hasOption(self, section, option):
-        '''If the given section exists, and contains the given option, return True; otherwise return False.'''
+        '''If the given section exists, and contains the given option, return
+        True; otherwise return False.'''
         if section in self.options and option in self.options[section]:
             return True
         else:

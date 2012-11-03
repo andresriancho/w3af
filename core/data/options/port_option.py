@@ -36,6 +36,9 @@ class PortOption(BaseOption):
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
         '''
+        self._value = self.validate(value)
+    
+    def validate(self, value):
         try:
             port = int(value)
             assert port > 0
@@ -45,4 +48,4 @@ class PortOption(BaseOption):
                   ' 1 and 65535.'
             raise w3afException(msg)
         else:        
-            self._value = port
+            return port

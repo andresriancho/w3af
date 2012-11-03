@@ -37,7 +37,10 @@ class RegexOption(BaseOption):
 
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
-        '''    
+        '''
+        self._value = self.validate(value)
+    
+    def validate(self, value): 
         try:
             re.compile(value)
         except Exception, e:
@@ -45,4 +48,4 @@ class RegexOption(BaseOption):
                   ' error was: "%s".'
             raise w3afException(msg% (value, e))
         else:
-            self._value = value
+            return value

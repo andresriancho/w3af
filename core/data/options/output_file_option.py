@@ -37,7 +37,11 @@ class OutputFileOption(BaseOption):
 
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
-        '''       
+        '''  
+        self._value = self.validate(value)
+    
+    def validate(self, value):
+             
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):
             msg = 'Invalid file option value "%s", the directory does not'\
@@ -58,4 +62,4 @@ class OutputFileOption(BaseOption):
             msg = 'Invalid file option, you have to specify a non-empty value.'
             raise w3afException(msg)
         
-        self._value = value
+        return value

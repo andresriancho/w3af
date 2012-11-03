@@ -1,5 +1,5 @@
 '''
-ComboOption.py
+combo_option.py
 
 Copyright 2008 Andres Riancho
 
@@ -62,7 +62,11 @@ class ComboOption(BaseOption):
                       or example sends 'a' when the options of the combobox are
                       '1','2','a','f'
         '''
+        self._value = self.validate(value)
+        
+    def validate(self, value):
         if value in self._combo_options:
-            self._value = value
+            return value
         else:
             raise w3afException('The option you selected is invalid.')
+        

@@ -84,6 +84,21 @@ class BaseOption(object):
         '''
         raise NotImplementedError
     
+    def validate(self, value):
+        '''
+        Convenient method for GUI to call for each change in the input text to
+        show a yellow background when the value is invalid. This was part of a
+        refactoring to reduce duplicated code for each option type where the
+        validation code was in ipport_option.py and in entries.py and in some
+        cases they differ.
+    
+        Each option type should implement this.
+        
+        @return: The validated value (which in the GUI can be ignored) or a
+                 w3afException when the value is invalid.
+        '''
+        raise NotImplementedError
+    
     def set_type( self, v ): self._type = v
     def set_help( self, v ): self._help = v
     def set_tabid( self, v ): self._tabid = v

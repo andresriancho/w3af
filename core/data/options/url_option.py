@@ -37,10 +37,11 @@ class URLOption(BaseOption):
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
         '''
+        self._value = self.validate(value)
+    
+    def validate(self, value):
         try:
-            res = URL(value)
+            return URL(value)
         except Exception, e:
             msg = 'Invalid URL configured by user, error: %s.' % e
             raise w3afException(msg)
-        else:
-            self._value = res

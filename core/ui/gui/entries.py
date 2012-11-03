@@ -19,14 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import gtk
-import re
 import threading
 
 from core.ui.gui import history
 from core.ui.gui import helpers
 from core.data.options.preferences import Preferences
-from core.data.parsers.url import URL
 from core.data.parsers.baseparser import BaseParser
+from core.controllers.w3afException import w3afException
 
 
 class ValidatedEntry(gtk.Entry):
@@ -49,12 +48,12 @@ class ValidatedEntry(gtk.Entry):
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
-    def __init__(self, value):
+    def __init__(self, orig_value):
         super(ValidatedEntry,self).__init__()
         self.connect("changed", self._changed)
         self.connect("focus-out-event", self._setDefault)
         self.connect("key-release-event", self._key)
-        self.orig_value = value
+        self.orig_value = orig_value
         self.esc_key = gtk.gdk.keyval_from_name("Escape") 
 
         # color handling
@@ -62,7 +61,7 @@ class ValidatedEntry(gtk.Entry):
         self.bg_normal = colormap.alloc_color("white")
         self.bg_badentry = colormap.alloc_color("yellow")
 
-        self.set_text(value)
+        self.set_text(self.orig_value)
         self.show()
 
     def _key(self, widg, event):
@@ -183,191 +182,19 @@ class ModifiedMixIn(object):
         self.initvalue = self.getfunct()
         self.alert(self, True)
 
-
-class IntegerOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option Integer.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = "0"
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return True if the text is ok.
-
-        Validates if int() is ok with the received text.
-        '''
-        try:
-            int(text)
-        except:
-            return False
-        return True
-
-class FloatOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option Float.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = "0.0"
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return True if the text is ok.
-
-        Validates if float() is ok with the received text.
-        '''
-        try:
-            float(text)
-        except:
-            return False
-        return True
-
-class EmailEntry(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option email.
-
-    @author: Andres Riancho <andres.riancho =at= gmail.com>
-    '''
-    def __init__(self, alert):
-        ValidatedEntry.__init__(self, '')
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ''
-        self.EMAIL_RE = BaseParser.EMAIL_RE
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return: True if the text is ok.
-        '''
-        if len(text) < 5:
-            return True
-        else:
-            if self.EMAIL_RE.match(text):
-                return True
-            else:
-                return False
-    
-
-class StringOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option String.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ""
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return Always True, there's no validation to perform
-        '''
-        return True
-
-class UrlOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option URL.
+class TextInput(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option for all inputs where the
+    user can enter text freely (that will later be validated by the option
+    object itself). 
 
     @author: Andres Riancho
     '''
     def __init__(self, alert, opt):
+        self.opt_instance = opt
         ValidatedEntry.__init__(self, opt.get_value_str())
         ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
         self.default_value = ""
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return Always True, there's no validation to perform
-        '''
-        try:
-            URL(text)
-        except Exception:
-            return False
-        else:        
-            return True
-
-class PortOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config Port.'''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ""
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return True if valid.
-        '''
-        try:
-            port = int(text)
-            assert port > 0
-            assert port < 65536
-        except:
-            valid = False
-        else:
-            valid = True
-        return valid
-
-class IPPortOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option IP and Port.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ""
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return True if valid.
-        '''
-        parts = text.split(":")
-        return ( len(parts) == 2 and parts[1].isdigit() )
-
-class ListOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option List.
-
-    @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ""
-
-    def validate(self, text):
-        '''Redefinition of ValidatedEntry's method.
-
-        @param text: the text to validate
-        @return Always True, there's no validation to perform
-        '''
-        return True
-
-class RegexOption(ValidatedEntry, ModifiedMixIn):
-    '''Class that implements the config option regex.
-
-    @author: Andres Riancho
-    '''
-    def __init__(self, alert, opt):
-        ValidatedEntry.__init__(self, opt.get_value_str())
-        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
-        self.default_value = ""
+        
 
     def validate(self, text):
         '''Redefinition of ValidatedEntry's method.
@@ -376,13 +203,13 @@ class RegexOption(ValidatedEntry, ModifiedMixIn):
         @return: True if the regex compiles.
         '''
         try:
-            re.compile(text)
-        except:
+            self.opt_instance.validate(text)
+        except w3afException:
             return False
         else:
             return True
-        
-class BooleanOption(gtk.CheckButton, ModifiedMixIn):
+   
+class BooleanInput(gtk.CheckButton, ModifiedMixIn):
     '''Class that implements the config option Boolean.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
@@ -394,7 +221,7 @@ class BooleanOption(gtk.CheckButton, ModifiedMixIn):
         ModifiedMixIn.__init__(self, alert, "toggled", "get_active", "set_active")
         self.show()
 
-class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
+class ComboBoxInput(gtk.ComboBox,  ModifiedMixIn):
     '''Class that implements the config option ComboBox.
 
     @author: Andres Riancho
@@ -443,6 +270,31 @@ class ComboBoxOption(gtk.ComboBox,  ModifiedMixIn):
             return True
         else:
             return False
+
+class EmailEntry(ValidatedEntry, ModifiedMixIn):
+    '''Class that implements the config option email.
+
+    @author: Andres Riancho <andres.riancho =at= gmail.com>
+    '''
+    def __init__(self, alert):
+        ValidatedEntry.__init__(self, '')
+        ModifiedMixIn.__init__(self, alert, "changed", "get_text", "set_text")
+        self.default_value = ''
+        self.EMAIL_RE = BaseParser.EMAIL_RE
+
+    def validate(self, text):
+        '''Redefinition of ValidatedEntry's method.
+
+        @param text: the text to validate
+        @return: True if the text is ok.
+        '''
+        if len(text) < 5:
+            return True
+        else:
+            if self.EMAIL_RE.match(text):
+                return True
+            else:
+                return False
 
 class SemiStockButton(gtk.Button):
     '''Takes the image from the stock, but the label which is passed.
@@ -966,22 +818,15 @@ class EasyTable(gtk.Table):
                 widg.show()
         self.auto_rowcounter += 1
 
-# decision of which widget implements the option to each type
+# Decision of which widget implements the option to each type, most of them are
+# just implemented as a TextInput where the user can input any text and then it
+# is validated in the option itself. The only difference they have is the way
+# they are displayed to the user.
+#
+# If the type is not in this dict, it defaults to TextInput
 wrapperWidgets = {
-    "boolean": BooleanOption,
-    "integer": IntegerOption,
-    "string": StringOption,
-    # TODO: Improve url, *file and port in order to provide better user
-    #       experience, validation, etc.
-    "url": StringOption,
-    "output_file": StringOption,
-    "input_file": StringOption,
-    "ipport": IPPortOption,
-    "port": PortOption,
-    "float": FloatOption,
-    "list": ListOption,
-    "combo": ComboBoxOption, 
-    "regex": RegexOption, 
+    "boolean": BooleanInput,
+    "combo": ComboBoxInput,
 }
 
 
@@ -1145,7 +990,8 @@ class ConfigOptions(gtk.VBox, Preferences):
             for i, opt in enumerate(optList):
                 titl = gtk.Label(opt.get_desc())
                 titl.set_alignment(xalign=0.0, yalign=0.5)
-                widg = wrapperWidgets[opt.get_type()](self._changedWidget, opt)
+                input_widget_klass = wrapperWidgets.get(opt.get_type(), TextInput)
+                widg = input_widget_klass(self._changedWidget, opt)
                 if hasattr(widg, 'set_width_chars'):
                     widg.set_width_chars(50)
                 opt.widg = widg

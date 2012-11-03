@@ -39,11 +39,16 @@ class BoolOption(BaseOption):
         if isinstance(value, bool):
             self._value = value
             return
-        
+    
+        self._value = self.validate(value)
+    
+    def validate(self, value):
         if value.lower() == 'true':
-            self._value = True
+            validated_value = True
         elif value.lower() == 'false':
-            self._value = False
+            validated_value = False
         else:
             msg = 'Invalid boolean option value "%s".' % value
             raise w3afException(msg)
+        
+        return validated_value
