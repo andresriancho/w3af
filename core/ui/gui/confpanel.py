@@ -106,7 +106,8 @@ class OnlyOptions(gtk.VBox):
             if not tab:
                 tab = "General"
             label = gtk.Label(tab)
-            prop = helpers.PropagateBufferPayload(self._changedLabelNotebook, label, tab)
+            prop = helpers.PropagateBufferPayload(self._changedLabelNotebook,
+                                                  label, tab)
             table = self._makeTable(options, prop)
             nb.append_page(table, label)
         nb.show()
@@ -129,7 +130,7 @@ class OnlyOptions(gtk.VBox):
         '''
         table = entries.EasyTable(len(options), 3)
 
-        for i,opt in enumerate(options):
+        for _, opt in enumerate(options):
             titl = gtk.Label(opt.get_name())
             titl.set_alignment(0.0, 0.5)
             input_widget_klass = entries.wrapperWidgets.get(opt.get_type(),
@@ -192,7 +193,8 @@ class OnlyOptions(gtk.VBox):
         @param widg: the widget who generated the signal
         @param helpmsg: the message to show in the dialog
         '''
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, helpmsg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO,
+                                gtk.BUTTONS_OK, helpmsg)
         dlg.set_title('Plugin help')
         dlg.run()
         dlg.destroy()
@@ -203,8 +205,8 @@ class OnlyOptions(gtk.VBox):
         @param widg: the widget who generated the signal
         @param plugin: the plugin to save the configuration
 
-        First it checks if there's some invalid configuration, then gets the value of 
-        each option and save them to the plugin.
+        First it checks if there's some invalid configuration, then gets the
+        value of each option and save them to the plugin.
         '''
         # check if all widgets are valid
         invalid = []
@@ -213,9 +215,11 @@ class OnlyOptions(gtk.VBox):
                 if not opt.widg.isValid():
                     invalid.append(opt.get_name())
         if invalid:
-            msg = "The configuration can't be saved, there is a problem in the following parameter(s):\n\n"
+            msg = "The configuration can't be saved, there is a problem in the"\
+                  " following parameter(s):\n\n"
             msg += "\n-".join(invalid)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                    gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
@@ -246,7 +250,9 @@ class OnlyOptions(gtk.VBox):
         '''Revert all widgets to their initial state.'''
         for widg in self.widgets_status:
             widg.revertValue()
-        self.w3af.mainwin.sb("The plugin configuration was reverted to its last saved state")
+        
+        msg = "The plugin configuration was reverted to its last saved state"
+        self.w3af.mainwin.sb(msg)
 
 
 class ConfigDialog(gtk.Dialog):
@@ -326,7 +332,8 @@ class ConfigDialog(gtk.Dialog):
             return False
 
         msg = "Do you want to quit without saving the changes?"
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                gtk.BUTTONS_YES_NO, msg)
         stayhere = dlg.run() != gtk.RESPONSE_YES
         dlg.destroy()
         return stayhere
@@ -353,7 +360,8 @@ class AdvancedTargetConfigDialog(ConfigDialog):
             return False
 
         msg = "Do you want to save the configuration?"
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                                gtk.BUTTONS_YES_NO, msg)
         saveConfig = dlg.run() == gtk.RESPONSE_YES
         dlg.destroy()
         
