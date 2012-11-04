@@ -36,6 +36,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.options.opt_factory import opt_factory
+from core.data.options.option_types import INPUT_FILE
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
@@ -188,7 +189,7 @@ class ssl_certificate(AuditPlugin):
 
         d = 'Set minimal amount of days before expiration of the certificate for alerting'
         h = 'CA PEM file path'
-        o = opt_factory('caFileName', self._ca_file, d, 'string', help=h)
+        o = opt_factory('caFileName', self._ca_file, d, INPUT_FILE, help=h)
         ol.add(o)
 
         return ol
