@@ -26,7 +26,7 @@ from core.data.options.option_list import OptionList
 from core.data.request.factory import create_fuzzable_request
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
-from core.controllers.plugins.mangle_plugin import headersToString, stringToHeaders
+from core.controllers.plugins.mangle_plugin import headers_to_string, string_to_headers
 from core.controllers.w3afException import w3afException
 
 
@@ -60,10 +60,10 @@ class sed(ManglePlugin):
         for regex, string in self._req_body_manglers:
             data = regex.sub(string, data)
         
-        header_string = headersToString(request.getHeaders())
+        header_string = headers_to_string(request.getHeaders())
         for regex, string in self._req_head_manglers:
             header_string = regex.sub(string, header_string)
-        header_dict = stringToHeaders(header_string)
+        header_dict = string_to_headers(header_string)
         
         return create_fuzzable_request(
                                  request.getURL(),
@@ -85,12 +85,12 @@ class sed(ManglePlugin):
         
         response.setBody(body)
         
-        header_string = headersToString(response.getHeaders())
+        header_string = headers_to_string(response.getHeaders())
         
         for regex, string in self._res_head_manglers:
             header_string = regex.sub(string, header_string)
         
-        response.setHeaders(stringToHeaders(header_string))
+        response.setHeaders(string_to_headers(header_string))
         
         if self._res_body_manglers and self._user_option_fix_content_len:
             response = self._fixContentLen(response)

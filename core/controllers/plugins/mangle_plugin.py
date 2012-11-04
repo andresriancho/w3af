@@ -20,14 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.plugin import Plugin
-from core.controllers.w3afException import w3afException
 import core.controllers.outputManager as om
 
 
 class ManglePlugin(Plugin):
     '''
-    This is the base class for mangle plugins, all mangle plugins should inherit from it 
-    and implement the following methods :
+    This is the base class for mangle plugins, all mangle plugins should
+    inherit from it and implement the following methods :
         1. mangle_request( request )
         2. mangle_response( request )
         3. set_options( OptionList )
@@ -115,29 +114,32 @@ class ManglePlugin(Plugin):
         response.setHeaders( headers )
         return response
     
-def headersToString( headerDict ):
+def headers_to_string( header_dict ):
     '''
-    @parameter headerDict: The header dictionary of the request
+    @parameter header_dict: The header dictionary of the request
     @return: A string representation of the dictionary
     '''
     res = ''
-    for key in headerDict:
-        res += key + ': ' + headerDict[key] + '\r\n'
+    for key in header_dict:
+        res += key + ': ' + header_dict[key] + '\r\n'
     return res
     
-def stringToHeaders( headerString ):
+def string_to_headers( header_str ):
     '''
-    The reverse of headersToString
+    The reverse of headers_to_string
     '''
     res = {}
-    splittedString = headerString.split('\r\n')
-    for s in splittedString:
+    splitted_str = header_str.split('\r\n')
+    for s in splitted_str:
         if s != '':
             try:
                 name = s.split(':')[0]
                 value = ':'.join( s.split(':')[1:] )
             except:
-                om.out.error('You "over-mangled" the header! Now the headers are invalid, ignoring:' + s )
+                msg = 'You "over-mangled" the header! Now the headers are'\
+                      ' invalid, ignoring: "%s".' % s
+                om.out.error(msg)
             else:
-                res[ name ] = value[1:] # Escape the space after the ":"
+                # Escape the space after the ":"
+                res[ name ] = value[1:]
     return res
