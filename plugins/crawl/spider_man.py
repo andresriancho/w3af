@@ -46,6 +46,7 @@ class spider_man(CrawlPlugin):
     @author: Alexander Berezhnoy < alexander.berezhnoy |at| gmail.com >
     '''
     def __init__(self):
+        CrawlPlugin.__init__(self)
         self._first_captured_request = True
         
         # User configured parameters

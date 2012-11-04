@@ -36,7 +36,7 @@ from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.output_plugin import OutputPlugin
 
 from core.data.options.option_types import (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,
-                                            REGEX,COMBO,INPUT_FILE,OUTPUT_FILE)
+                                            REGEX,COMBO,INPUT_FILE,OUTPUT_FILE,PORT)
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -70,7 +70,7 @@ class TestBasic(unittest.TestCase):
     def test_plugin_options(self):
         
         OPTION_TYPES = (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,REGEX,COMBO,
-                        INPUT_FILE,OUTPUT_FILE)
+                        INPUT_FILE,OUTPUT_FILE,PORT)
         
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
@@ -127,6 +127,12 @@ class TestBasic(unittest.TestCase):
                 self.assertTrue( isinstance(plugin, PLUGIN_TYPES[plugin_type]), msg )
                 
                 self.assertEqual( plugin.get_type(), plugin_type, msg )
+                
+                # Also assert that the plugin called <Type>Plugin.__init__(self)
+                # and that the corresponding attrs are there
+                for attr in ('_uri_opener', 'output_queue', '_tm', '_plugin_lock'):
+                    msg = 'Plugin %s doesn\'t have attribute %s.' % (plugin.get_name(), attr)
+                    self.assertTrue( getattr(plugin, attr, False) != False, msg )
 
 
 class TestFailOnInvalidURL(PluginTest):

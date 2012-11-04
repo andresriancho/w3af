@@ -39,7 +39,7 @@ class ManglePlugin(Plugin):
         return 'mangle'
 
     def __init__(self):
-        pass
+        Plugin.__init__( self )
 
     def mangle_request(self, request ):
         '''
@@ -50,7 +50,7 @@ class ManglePlugin(Plugin):
         @param request: This is the request to mangle.
         @return: A mangled version of the request.
         '''
-        raise w3afException('Plugin is not implementing required method mangle_request' )
+        raise NotImplementedError
     
     def mangle_response(self, response ):
         '''
@@ -61,7 +61,7 @@ class ManglePlugin(Plugin):
         @param response: This is the response to mangle.
         @return: A mangled version of the response.
         '''
-        raise w3afException('Plugin is not implementing required method mangle_response' )
+        raise NotImplementedError
         
     def set_url_opener(self, foo):
         pass
@@ -97,7 +97,7 @@ class ManglePlugin(Plugin):
         
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        raise w3afException('Plugin is not implementing required method getPriority' )
+        raise NotImplementedError
     
     def _fixContentLen( self, response ):
         '''
