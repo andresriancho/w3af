@@ -54,8 +54,21 @@ class TestHTTPRequestParser(unittest.TestCase):
                        
         fuzzable_request = HTTPRequestParser(http_request, '')
         exp_headers = Headers([('Host','www.w3af.org'), ('Foo', 'bar')])
+        
         self.assertEquals(fuzzable_request.getHeaders(), exp_headers)
+        self.assertEqual(fuzzable_request.getURL().getDomain(), 'www.w3af.org')
 
+    def test_simple_GET_relative(self):
+        http_request = 'GET / HTTP/1.1\n' \
+                       'Host: www.w3af.org\n' \
+                       'Foo: bar\n'
+                       
+        fuzzable_request = HTTPRequestParser(http_request, '')
+        exp_headers = Headers([('Host','www.w3af.org'), ('Foo', 'bar')])
+        
+        self.assertEquals(fuzzable_request.getHeaders(), exp_headers)
+        self.assertEqual(fuzzable_request.getURL().getDomain(), 'www.w3af.org')
+        
     def test_POST_repeated(self):
         request_head = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \

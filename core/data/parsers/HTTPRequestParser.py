@@ -27,24 +27,24 @@ from core.data.request.factory import create_fuzzable_request
 from core.controllers.w3afException import w3afException
 
 
-def checkVersionSyntax(version):
+def check_version_syntax(version):
     '''
     @return: True if the syntax of the version section of HTTP is valid; else raise an exception.
 
-    >>> checkVersionSyntax('HTTP/1.0')
+    >>> check_version_syntax('HTTP/1.0')
     True
 
-    >>> checkVersionSyntax('HTTPS/1.0')
+    >>> check_version_syntax('HTTPS/1.0')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: The HTTP request has an invalid HTTP token in the version specification: "HTTPS/1.0"
 
-    >>> checkVersionSyntax('HTTP/1.00000000000000')
+    >>> check_version_syntax('HTTP/1.00000000000000')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: HTTP request version "HTTP/1.00000000000000" is unsupported
 
-    >>> checkVersionSyntax('ABCDEF')
+    >>> check_version_syntax('ABCDEF')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: The HTTP request has an invalid version token: "ABCDEF"
@@ -64,14 +64,14 @@ def checkVersionSyntax(version):
             raise w3afException('HTTP request version "' + version + '" is unsupported')
     return True
 
-def checkURISyntax(uri, host=None):
+def check_uri_syntax(uri, host=None):
     '''
     @return: True if the syntax of the URI section of HTTP is valid; else raise an exception.
 
-    >>> checkURISyntax('http://abc/def.html')
+    >>> check_uri_syntax('http://abc/def.html')
     'http://abc/def.html'
 
-    >>> checkURISyntax('ABCDEF')
+    >>> check_uri_syntax('ABCDEF')
     Traceback (most recent call last):
       File "<stdin>", line 1, in ?
     w3afException: You have to specify the complete URI, including the protocol and the host. Invalid URI: ABCDEF
@@ -127,37 +127,32 @@ def HTTPRequestParser(head, postdata):
         raise w3afException(msg)
     elif len(first_line) > 3:
         # GET /hello world.html HTTP/1.0
-        # Mostly because we are permissive... we are going to try to send the request...
+        # Mostly because we are permissive... we are going to try to parse
+        # the request...
         method = first_line[0]
         version = first_line[-1]
         uri = ' '.join( first_line[1:-1] )
     
-    checkVersionSyntax(version)
+    check_version_syntax(version)
     
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
-    headers = splitted_head[1:]
-    headers_dict = {}
-    for header in headers:
+    headers_str = splitted_head[1:]
+    headers_inst = Headers()
+    for header in headers_str:
         one_splitted_header = header.split(':', 1)
         if len(one_splitted_header) == 1:
             raise w3afException('The HTTP request has an invalid header: "' + header + '"')
         
         header_name = one_splitted_header[0].strip()
         header_value = one_splitted_header[1].strip()
-        if header_name in headers_dict:
-            headers_dict[header_name] += ', ' + header_value
+        if header_name in headers_inst:
+            headers_inst[header_name] += ', ' + header_value
         else:
-            headers_dict[header_name] = header_value
+            headers_inst[header_name] = header_value
 
-    headers = Headers(headers_dict.items())
-    
-    host = None
-    for header_name in headers:
-        if header_name.lower() == 'host':
-            host = headers_dict[header_name][0]
-            break
+    host, _ = headers_inst.iget('host', None)
         
-    uri = URL(checkURISyntax(uri, host))
+    uri = URL(check_uri_syntax(uri, host))
     
-    return create_fuzzable_request(uri, method, postdata, headers)
+    return create_fuzzable_request(uri, method, postdata, headers_inst)
