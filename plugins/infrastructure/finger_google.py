@@ -159,8 +159,8 @@ class finger_google(InfrastructurePlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d2 = 'Fetch the first "resultLimit" results from the Google search'
-        o2 = opt_factory('resultLimit', self._result_limit, d2, 'integer')
+        d2 = 'Fetch the first "result_limit" results from the Google search'
+        o2 = opt_factory('result_limit', self._result_limit, d2, 'integer')
         
         d3 = 'Do a fast search, when this feature is enabled, not all mail addresses are found'
         h3 = 'This method is faster, because it only searches for emails in the small page '
@@ -180,7 +180,7 @@ class finger_google(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].get_value()
+        self._result_limit = options_list['result_limit'].get_value()
         self._fast_search = options_list['fastSearch'].get_value()
             
     def get_plugin_deps( self ):
@@ -198,7 +198,7 @@ class finger_google(InfrastructurePlugin):
         This plugin finds mail addresses in google.
         
         Two configurable parameters exist:
-            - resultLimit
+            - result_limit
             - fastSearch
         
         If fastSearch is set to False, this plugin searches google for : "@domain.com", requests all

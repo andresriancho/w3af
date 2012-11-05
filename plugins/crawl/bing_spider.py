@@ -92,8 +92,8 @@ class bing_spider(CrawlPlugin):
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        d = 'Fetch the first "resultLimit" results from the Google search'
-        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
+        d = 'Fetch the first "result_limit" results from the Google search'
+        o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         
         return ol
@@ -106,7 +106,7 @@ class bing_spider(CrawlPlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._result_limit = options_list['resultLimit'].get_value()
+        self._result_limit = options_list['result_limit'].get_value()
 
     def get_long_desc( self ):
         '''
@@ -116,7 +116,7 @@ class bing_spider(CrawlPlugin):
         This plugin finds new URL's in Bing search engine.
 
         One configurable parameters exist:
-            - resultLimit
+            - result_limit
 
         This plugin searches Bing for : "site:domain.com", requests all search
         results and parses them in order to find new URLs.

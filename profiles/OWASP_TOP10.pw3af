@@ -73,7 +73,7 @@ msf_location = /opt/metasploit3/bin/
 [audit.un_ssl]
 
 [infrastructure.shared_hosting]
-resultLimit = 300
+result_limit = 300
 
 [crawl.web_spider]
 followRegex = .*
@@ -233,7 +233,7 @@ ntlmAuthDomain =
 ntlmAuthURL = 
 
 [crawl.bing_spider]
-resultLimit = 300
+result_limit = 300
 
 [audit.file_upload]
 extensions = gif,html

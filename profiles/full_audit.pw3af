@@ -187,7 +187,7 @@ onlyTargetDomain = True
 [infrastructure.netcraft]
 
 [infrastructure.finger_google]
-resultLimit = 300
+result_limit = 300
 fastSearch = False
 
 [infrastructure.favicon_identification]
@@ -195,7 +195,7 @@ fastSearch = False
 [infrastructure.server_header]
 
 [infrastructure.shared_hosting]
-resultLimit = 300
+result_limit = 300
 
 [infrastructure.fingerprint_os]
 
@@ -218,7 +218,7 @@ httpsPort = 443
 [infrastructure.find_jboss]
 
 [infrastructure.finger_bing]
-resultLimit = 300
+result_limit = 300
 
 [infrastructure.halberd]
 

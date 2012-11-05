@@ -370,7 +370,7 @@ class httpLogTab(entries.RememberingHPaned):
         try:
             # Please see the 5000 below
             searchResultObjects = self._historyItem.find(searchData,
-                    resultLimit=5001, orderData=[("id","")])
+                    result_limit=5001, orderData=[("id","")])
         except w3afException, w3:
             self._emptyResults()
             return

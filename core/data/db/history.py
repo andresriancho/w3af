@@ -147,7 +147,7 @@ class HistoryItem(object):
         kb.kb.save('history', 'db', self._db)
         kb.kb.save('history', 'session_dir', self._session_dir)
 
-    def find(self, searchData, resultLimit=-1, orderData=[], full=False):
+    def find(self, searchData, result_limit=-1, orderData=[], full=False):
         '''Make complex search.
         search_data = {name: (value, operator), ...}
         orderData = [(name, direction)]
@@ -169,7 +169,7 @@ class HistoryItem(object):
         if orderby:
             sql += " ORDER BY " + orderby
 
-        sql += ' LIMIT '  + str(resultLimit)
+        sql += ' LIMIT '  + str(result_limit)
         try:
             for row in self._db.select(sql, where.values()):
                 item = self.__class__()

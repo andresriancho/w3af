@@ -89,8 +89,8 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(len(h2.find([('code', 302, '=')])), 1)
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
-        self.assertEqual(len(h2.find([('has_qs', 1, '=')], resultLimit=10)), 10)
-        results = h2.find([('has_qs', 1, '=')], resultLimit=1, orderData=[('id','desc')])
+        self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
+        results = h2.find([('has_qs', 1, '=')], result_limit=1, orderData=[('id','desc')])
         self.assertEqual(results[0].id, 499)
         search_data = []
         search_data.append(('id', find_id + 1, "<"))

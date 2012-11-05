@@ -121,8 +121,8 @@ class finger_bing(InfrastructurePlugin):
         '''
         ol = OptionList()
         
-        d1 = 'Fetch the first "resultLimit" results from the Bing search'
-        o = opt_factory('resultLimit', self._result_limit, d1, 'integer')
+        d1 = 'Fetch the first "result_limit" results from the Bing search'
+        o = opt_factory('result_limit', self._result_limit, d1, 'integer')
         ol.add(o)
         
         return ol
@@ -135,7 +135,7 @@ class finger_bing(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._result_limit = options_list['resultLimit'].get_value()
+        self._result_limit = options_list['result_limit'].get_value()
 
     def get_long_desc( self ):
         '''
@@ -145,7 +145,7 @@ class finger_bing(InfrastructurePlugin):
         This plugin finds mail addresses in Bing search engine.
 
         One configurable parameter exist:
-            - resultLimit
+            - result_limit
 
         This plugin searches Bing for : "@domain.com", requests all search results
         and parses them in order to find new mail addresses.

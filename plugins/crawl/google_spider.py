@@ -93,8 +93,8 @@ class google_spider(CrawlPlugin):
         '''        
         ol = OptionList()
         
-        d = 'Fetch the first "resultLimit" results from the Google search'
-        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
+        d = 'Fetch the first "result_limit" results from the Google search'
+        o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         
         return ol
@@ -107,7 +107,7 @@ class google_spider(CrawlPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].get_value()
+        self._result_limit = options_list['result_limit'].get_value()
 
     def get_long_desc( self ):
         '''
@@ -118,5 +118,5 @@ class google_spider(CrawlPlugin):
         "site:domain.com" and do GET requests all the URL's found in the result.
         
         One configurable parameter exists:
-            - resultLimit
+            - result_limit
         '''

@@ -127,8 +127,8 @@ class shared_hosting(InfrastructurePlugin):
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        d = 'Fetch the first "resultLimit" results from the bing search'
-        o = opt_factory('resultLimit', self._result_limit, d, 'integer')
+        d = 'Fetch the first "result_limit" results from the bing search'
+        o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         return ol
         
@@ -140,7 +140,7 @@ class shared_hosting(InfrastructurePlugin):
         @parameter OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         ''' 
-        self._result_limit = options_list['resultLimit'].get_value()
+        self._result_limit = options_list['result_limit'].get_value()
     
     def get_long_desc( self ):
         '''
@@ -153,7 +153,7 @@ class shared_hosting(InfrastructurePlugin):
         address of the webserver.
         
         One configurable option exists:
-            - resultLimit
+            - result_limit
             
-        Fetch the first "resultLimit" results from the "ip:" bing search.
+        Fetch the first "result_limit" results from the "ip:" bing search.
         '''
