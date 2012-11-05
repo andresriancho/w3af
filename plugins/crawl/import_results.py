@@ -118,9 +118,9 @@ class import_results(CrawlPlugin):
         try:
             (method, uri, postdata) = csv_row
         except ValueError, value_error:
-            msg = 'The file format is incorrect, an error was found while parsing: "'
-            msg += str(csv_row) + '". Exception: "' + str(value_error) + '".'
-            om.out.error(msg)
+            msg = 'The file format is incorrect, an error was found while'\
+                  ' parsing: "%s". Exception: "%s".'
+            om.out.error(msg % (csv_row, value_error))
         else:
             # Create the obj based on the information
             uri = URL(uri)
