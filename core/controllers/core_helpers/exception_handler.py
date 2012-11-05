@@ -81,13 +81,15 @@ class ExceptionHandler(object):
         
         @return: None
         '''
+        except_type, except_class, tb = exec_info
+                
         #
         # There are some exceptions, that because of their nature I don't want
         # to handle. So what I do is to raise them in order for them to get to
         # w3afCore.py , most likely to the except lines around self.strategy.start()
         #
         if isinstance(exception, self.NO_HANDLING):
-            raise
+            raise exception, None, tb
             
         stop_on_first_exception = cf.cf.get( 'stop_on_first_exception' )
         if stop_on_first_exception:
@@ -105,8 +107,6 @@ class ExceptionHandler(object):
         # Now we really handle the exception that was produced by the plugin in
         # the way we want to.
         #
-        except_type, except_class, tb = exec_info
-        
         with self._lock:
             edata = ExceptionData(current_status, exception, tb, enabled_plugins)
             
