@@ -29,10 +29,11 @@ import core.controllers.outputManager as om
 import core.data.kb.knowledgeBase as kb
 import core.data.kb.info as info
 
+from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.dc.headers import Headers
 
 
 class content_negotiation(CrawlPlugin):
@@ -122,7 +123,7 @@ class content_negotiation(CrawlPlugin):
                 self._already_tested_resource.add( alternate_resource )
 
                 _, alternates = self._request_and_get_alternates(alternate_resource,
-                                                              original_headers)
+                                                                 original_headers)
            
                 # And create the new fuzzable requests
                 for fr in self._create_new_fuzzable_requests( fuzzable_request.getURL(),
@@ -137,7 +138,7 @@ class content_negotiation(CrawlPlugin):
         @return: A list of new fuzzable requests.
         '''
         wl_url_generator = self._wordlist_url_generator()
-        args_generator = izip(wl_url_generator, repeat({}))
+        args_generator = izip(wl_url_generator, repeat(Headers()))
         # Send the requests using threads:
         for base_url, alternates in self._tm.threadpool.map_multi_args(
                                                     self._request_and_get_alternates,
@@ -180,7 +181,7 @@ class content_negotiation(CrawlPlugin):
                     - a list of strings containing the alternates.
         '''
         headers['Accept'] = 'w3af/bar'
-        response = self._uri_opener.GET( alternate_resource, headers = headers )
+        response = self._uri_opener.GET( alternate_resource, headers=headers )
         
         # And I parse the result
         if 'alternates' in response.getLowerCaseHeaders():
@@ -243,7 +244,7 @@ class content_negotiation(CrawlPlugin):
             alternate_resource = fuzzable_request.getURL().urlJoin(filename)
             headers = fuzzable_request.getHeaders()
             headers['Accept'] = 'w3af/bar'
-            response = self._uri_opener.GET( alternate_resource, headers = headers )
+            response = self._uri_opener.GET( alternate_resource, headers=headers )
             
             if 'alternates' in response.getLowerCaseHeaders():
                 # Even if there is only one file, with an unique mime type, 
