@@ -194,9 +194,12 @@ class ghdb(CrawlPlugin):
         One configurable parameter exist:
             - result_limit
         
-        Using the google hack database released by Offensive Security, this 
-	    plugin searches google for possible vulnerabilities in the domain
-	    being tested.
+        Using the google hack database released by Exploit-DB.com, this 
+	    plugin searches Google for possible vulnerabilities in the target
+	    domain.
+	    
+	    Special thanks go to the guys at http://www.exploit-db.com/ for
+	    maintaining the GHDB and letting us use this information.
         '''
 
 class GoogleHack(object):
