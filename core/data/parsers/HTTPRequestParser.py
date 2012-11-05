@@ -146,9 +146,9 @@ def HTTPRequestParser(head, postdata):
         header_name = one_splitted_header[0].strip()
         header_value = one_splitted_header[1].strip()
         if header_name in headers_dict:
-            headers_dict[header_name].append(header_value)
+            headers_dict[header_name] += ', ' + header_value
         else:
-            headers_dict[header_name] = [header_value,]
+            headers_dict[header_name] = header_value
 
     headers = Headers(headers_dict.items())
     

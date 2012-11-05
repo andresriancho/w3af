@@ -24,6 +24,7 @@ import unittest
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
+from core.data.dc.headers import Headers
 
 from core.controllers.w3afException import w3afException
 
@@ -52,8 +53,8 @@ class TestHTTPRequestParser(unittest.TestCase):
                        'Foo: bar\n'
                        
         fuzzable_request = HTTPRequestParser(http_request, '')
-        self.assertEquals(fuzzable_request.getHeaders(), {'Host': ['www.w3af.org'],
-                                                          'Foo': ['bar']})
+        exp_headers = Headers([('Host','www.w3af.org'), ('Foo', 'bar')])
+        self.assertEquals(fuzzable_request.getHeaders(), exp_headers)
 
     def test_POST_repeated(self):
         request_head = 'POST http://www.w3af.org/ HTTP/1.1\n' \
@@ -64,8 +65,8 @@ class TestHTTPRequestParser(unittest.TestCase):
                        
         post_data = 'a=1&a=2'
         fuzzable_request = HTTPRequestParser(request_head, post_data)
-        self.assertEqual(fuzzable_request.getHeaders(), {'Host': ['www.w3af.org'],
-                                                         'Foo': ['spam', 'eggs']})
+        exp_headers = Headers([('Host','www.w3af.org'), ('Foo', 'spam, eggs')])
+        self.assertEqual(fuzzable_request.getHeaders(), exp_headers)
         self.assertEquals(fuzzable_request.getData(), 'a=1&a=2')
         self.assertEquals(fuzzable_request.getDc(), {'a': ['1', '2']})
         
