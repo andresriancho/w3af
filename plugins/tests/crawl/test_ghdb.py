@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import datetime
+
 from mock import patch, call
 
 import core.data.constants.severity as severity
@@ -108,6 +110,15 @@ class TestGHDB(PluginTest):
         ghdb_file = ghdb_inst._ghdb_file
         is_older = days_since_file_update(ghdb_file, 30)
         
-        msg = 'The GHDB database is too old.'
-        self.assertFalse(is_older, msg)
+        today = datetime.datetime.today()
+        
+        msg = 'The GHDB database is too old, please update it by running the' \
+              ' following command:'\
+              '\n' \
+              'wget <secret>%02d_%02d_%s.xml' \
+              ' -O plugins/crawl/ghdb/GHDB.xml' \
+              '\n\n' \
+              'Also remember to run this unittest again to verify that the' \
+              ' downloaded file can be parsed by the plugin.'
+        self.assertFalse(is_older, msg % (today.month, today.day, today.year))
                 
