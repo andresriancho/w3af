@@ -26,7 +26,6 @@ import xml.dom.minidom
 
 from functools import partial
 
-import core.data.constants.severity as severity
 import core.data.kb.config as cf
 import core.data.kb.knowledgeBase as kb
 
@@ -97,22 +96,9 @@ class xml_file(OutputPlugin):
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
             raise w3afException( msg % (os.path.abspath(self._file_name), e))
 
-    def debug(self, message, newLine = True ):
-        '''
-        This method is called from the output object. The output object was called
-        from a plugin or from the framework. This method should take an action
-        for debug messages.
-        '''
-        pass
-        
-    def information(self, message , newLine = True ):
-        '''
-        This method is called from the output object. The output object was called
-        from a plugin or from the framework. This method should take an action
-        for informational messages.
-        '''
-        pass 
-    
+    def do_nothing(self, *args, **kwds): pass
+    debug = information = vulnerability = console = log_http = do_nothing
+
     def error(self, message , newLine = True ):
         '''
         This method is called from the output object. The output object was called
@@ -125,20 +111,6 @@ class xml_file(OutputPlugin):
         messageNode.appendChild(description)
         
         self._errorXML.append(messageNode)
-
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
-        '''
-        This method is called from the output object. The output object was called
-        from a plugin or from the framework. This method should take an action
-        when a vulnerability is found.
-        '''     
-        pass 
-    
-    def console( self, message, newLine = True ):
-        '''
-        This method is used by the w3af console to print messages to the outside.
-        '''
-        pass
         
     def set_options( self, option_list ):
         '''
@@ -157,21 +129,13 @@ class xml_file(OutputPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'File name where this plugin will write to'
-        o1 = opt_factory('output_file', self._file_name, d1, OUTPUT_FILE)
-
         ol = OptionList()
-        ol.add(o1)
+        
+        d = 'File name where this plugin will write to'
+        o = opt_factory('output_file', self._file_name, d, OUTPUT_FILE)
+        ol.add(o)
 
         return ol
-
-    def log_http( self, request, response):
-        '''
-        log the http req / res to file.
-        @parameter request: A fuzzable request object
-        @parameter response: A HTTPResponse object
-        '''
-        pass
     
     def _buildPluginScanInfo(self, groupName, pluginList, optionsDict):
         '''
@@ -194,12 +158,12 @@ class xml_file(OutputPlugin):
         
     def log_enabled_plugins(self, pluginsDict, optionsDict):
         '''
-        This method is called from the output manager object. This method should take an action
-        for the enabled plugins and their configuration. Usually, write the info to a file or print
-        it somewhere.
+        This method is called from the output manager object. This method should
+        take an action for the enabled plugins and their configuration. Usually,
+        write the info to a file or print it somewhere.
         
-        @parameter pluginsDict: A dict with all the plugin types and the enabled plugins for that
-                                               type of plugin.
+        @parameter pluginsDict: A dict with all the plugin types and the enabled
+                                plugins for that type of plugin.
         @parameter optionsDict: A dict with the options for every plugin.
         '''
         # Add the user configured targets to scaninfo
@@ -218,8 +182,9 @@ class xml_file(OutputPlugin):
 
     def report_http_action(self, parentNode, action):
         """
-        Write out the request/response in a more parseable XML format
-         will factor anything with a content-type not prefixed with a text/ in a CDATA
+        Write out the request/response in a more parseable XML format will factor
+        anything with a content-type not prefixed with a text/ in a CDATA.
+        
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
         """
@@ -306,7 +271,8 @@ class xml_file(OutputPlugin):
             messageNode.setAttribute("var", str(i.getVar()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
-            # Wrap description in a <description> element and put it above the request/response elements
+            # Wrap description in a <description> element and put it above the
+            # request/response elements
             descriptionNode = self._xmldoc.createElement('description')
             description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
@@ -341,7 +307,8 @@ class xml_file(OutputPlugin):
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
-            # Wrap the description in a description element and put it above the request/response details
+            # Wrap the description in a description element and put it above
+            # the request/response details
             descriptionNode = self._xmldoc.createElement('description')
             description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
