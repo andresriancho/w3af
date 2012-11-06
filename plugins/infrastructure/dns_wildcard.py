@@ -30,6 +30,7 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
+from core.data.dc.headers import Headers
 
 
 class dns_wildcard(InfrastructurePlugin):
@@ -110,7 +111,7 @@ class dns_wildcard(InfrastructurePlugin):
         '''
         Check if http://www.domain.tld/ == http://domain.tld/
         '''
-        headers = {'Host': dns_wildcard_url.getDomain()}
+        headers = Headers([('Host', dns_wildcard_url.getDomain())])
         try:
             modified_response = self._uri_opener.GET( original_response.getURL(),
                                                       cache=True,

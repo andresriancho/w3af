@@ -26,6 +26,7 @@ import core.data.kb.info as info
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
+from core.data.dc.headers import Headers
 
 
 class domain_dot(InfrastructurePlugin):
@@ -66,8 +67,9 @@ class domain_dot(InfrastructurePlugin):
                                                           cache=False )
                 # GET the response with the modified domain
                 # (with the trailing dot)
+                headers = Headers([('Host', domain_dot)])
                 response = self._uri_opener.GET( orig_url, cache=False,
-                                                 headers={'Host': domain_dot } )
+                                                 headers=headers )
             except w3afException,w3:
                 om.out.error( str(w3) )
             else:

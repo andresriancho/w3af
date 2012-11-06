@@ -34,8 +34,10 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadpool import return_args, one_to_many
+
 from core.data.fuzzer.fuzzer import rand_alnum
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.dc.headers import Headers
 
 
 class find_vhosts(InfrastructurePlugin):
@@ -224,8 +226,9 @@ class find_vhosts(InfrastructurePlugin):
         Performs an HTTP GET to a URL using a specific vhost.
         @return: HTTPResponse object.
         '''
+        headers = Headers([('Host', vhost)])
         return self._uri_opener.GET( base_url, cache=False, \
-                                     headers={'Host': vhost } )
+                                     headers=headers )
     
     def _get_non_exist(self, fuzzable_request):
         base_url = fuzzable_request.getURL().baseUrl()
