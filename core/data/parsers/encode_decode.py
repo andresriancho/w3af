@@ -27,9 +27,13 @@ import sys
 
 from htmlentitydefs import name2codepoint
 
+from core.data.misc.encoding import HTML_ENCODE
+from core.data.constants.encodings import DEFAULT_ENCODING
+
 # This pattern matches a character entity reference (a decimal numeric
 # references, a hexadecimal numeric reference, or a named reference).
 CHAR_REF_PATT = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?', re.U)
+
 
 def htmldecode(text, use_repr=False):
     """
@@ -56,8 +60,17 @@ def htmldecode(text, use_repr=False):
         except:
             return match.group(0)
             
+    # re.sub decodes the text before applying the regular expression
+    # and if we don't decode it ourselves, the default settings are
+    # used, which can (in strange cases), trigger a UnicodeDecodeError
+    #
+    # In some cases, the text has special characters, which we want to
+    # encode in &#xYY format. We encode it like this because it is the
+    # "best thing we can do" with the available time we have 
+    decoded_text = text.decode(DEFAULT_ENCODING, errors=HTML_ENCODE)
+    
     # "main"
-    return CHAR_REF_PATT.sub(entitydecode, text)
+    return CHAR_REF_PATT.sub(entitydecode, decoded_text)
 
 
 def urlencode(query, encoding, safe='/<>"\'=:()'):

@@ -25,9 +25,9 @@ import re
 import urllib
 import urlparse
 
-from core.controllers.misc.encoding import smart_str, PERCENT_ENCODE
+from core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from core.controllers.misc.is_ip_address import is_ip_address
-from core.controllers.misc.encoding import is_known_encoding
+from core.data.misc.encoding import is_known_encoding
 from core.controllers.misc.ordereddict import OrderedDict
 from core.controllers.w3afException import w3afException
 from core.data.constants.encodings import DEFAULT_ENCODING

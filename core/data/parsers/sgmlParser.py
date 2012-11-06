@@ -122,6 +122,13 @@ class SGMLParser(BaseParser):
         Perform some initialization tasks
         '''
         body = http_resp.body
+        
+        # These two need to be performed here because the response body is
+        # not going to be stored as an attr for this object. This makes the
+        # parsing process a little bit slower, since we could otherwise
+        # extract the emails when the user runs getEmails(), but is actually
+        # part of a memory usage improvement where the body is NOT saved
+        # as an attribute
         self._regex_url_parse(body)
         self._extract_emails(body)
     

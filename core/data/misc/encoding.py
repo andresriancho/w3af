@@ -24,18 +24,38 @@ import urllib
 import extlib.chardet as chardet
 
 # Custom error handling schemes registration
-ESCAPED_CHAR = "return_escaped_char"
-PERCENT_ENCODE = "percentencode"
+ESCAPED_CHAR = "slash_escape_char"
+PERCENT_ENCODE = "percent_encode"
+HTML_ENCODE = 'html_encode_char'
 
-def _return_escaped_char(exc):
-    slash_x_XX = repr(exc.object[exc.start:exc.end])[1:-1]
-    return (unicode(slash_x_XX), exc.end)
+
+def _return_html_encoded(encodingexc):
+    '''
+    @return: &#xff when input is \xff
+    '''
+    st = encodingexc.start
+    en = encodingexc.end
+    hex_encoded = "".join(hex(ord(c))[2:] for c in encodingexc.object[st:en])
+    
+    return (unicode('&#x' + hex_encoded ), en)
+
+def _return_escaped_char(encodingexc):
+    '''
+    @return: \\xff when input is \xff
+    '''
+    st = encodingexc.start
+    en = encodingexc.end
+
+    slash_x_XX = repr(encodingexc.object[st:en])[1:-1]
+    return (unicode(slash_x_XX), en)
 
 def _percent_encode(encodingexc):
     if not isinstance(encodingexc, UnicodeEncodeError):
         raise encodingexc
+    
     st = encodingexc.start
     en = encodingexc.end
+    
     return (
         u'%s' % (urllib.quote(encodingexc.object[st:en].encode('utf8')),),
         en
@@ -43,6 +63,7 @@ def _percent_encode(encodingexc):
 
 codecs.register_error(ESCAPED_CHAR, _return_escaped_char)
 codecs.register_error(PERCENT_ENCODE, _percent_encode)
+codecs.register_error(HTML_ENCODE, _return_html_encoded)
 
 
 def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):

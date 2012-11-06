@@ -44,7 +44,7 @@ class Headers(DataContainer):
 
     def __setitem__(self, k, v):
         if isinstance(k, basestring):
-            k = k.encode(self.encoding, 'replace').title()
+            k = k.encode(self.encoding, 'replace')
         else:
             raise ValueError('Header name must be a string.')
         

@@ -29,7 +29,7 @@ import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
 
-from core.controllers.misc.encoding import smart_unicode
+from core.data.misc.encoding import smart_unicode
 from core.controllers.w3afException import w3afException
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest

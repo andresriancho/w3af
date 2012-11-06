@@ -28,7 +28,7 @@ from itertools import imap
 
 import core.controllers.outputManager as om
 
-from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
+from core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
@@ -38,6 +38,9 @@ CR = '\r'
 LF = '\n'
 CRLF = CR + LF
 SP = ' '
+
+CHARSET_EXTRACT_RE = re.compile('charset=\s*?([\w-]+)')
+CHARSET_META_RE = re.compile('<meta.*?content=".*?charset=\s*?([\w-]+)".*?>')
 
 
 def from_httplib_resp(httplibresp, original_url=None):
@@ -297,28 +300,31 @@ class HTTPResponse(object):
         self._doc_type = HTTPResponse.DOC_TYPE_OTHER
         find_word = lambda w: content_type.find(w) != -1
         
-        for key in self._headers:
-            if 'content-type' == key.lower():
-                # we need exactly content type but not charset
-                self._content_type = headers[key].split(';', 1)[0]
+        content_type_hvalue, _ = self._headers.iget('content-type', None)
+        
+        # we need exactly content type but not charset
+        if content_type_hvalue is not None:
+            try:
+                self._content_type = content_type_hvalue.split(';', 1)[0]
+            except:
+                msg = 'Invalid Content-Type value "%s" sent in HTTP response.'
+                om.out.debug(msg % (content_type_hvalue,))
+            else:
                 content_type = self._content_type.lower()
-                # Image?
+        
+                # Set the doc_type
                 if content_type.count('image'):
                     self._doc_type = HTTPResponse.DOC_TYPE_IMAGE
                 
-                # PDF?
                 elif content_type.count('pdf'):
                     self._doc_type = HTTPResponse.DOC_TYPE_PDF
                 
-                # SWF?
                 elif content_type.count('x-shockwave-flash'):
                     self._doc_type = HTTPResponse.DOC_TYPE_SWF
                 
-                # Text or HTML?
                 elif any(imap(find_word,
                               ('text', 'html', 'xml', 'txt', 'javascript'))):
                     self._doc_type = HTTPResponse.DOC_TYPE_TEXT_OR_HTML
-                break
 
     def setHeaders(self, headers):
         '''
@@ -456,11 +462,15 @@ class HTTPResponse(object):
             _body = rawbody
             assert charset is not None, ("HTTPResponse objects containing "
                              "unicode body must have an associated charset")
-        elif not 'content-type' in lcase_headers:
-            om.out.debug("The remote web server failed to send the 'content-type'"
-                         " header in HTTP response with id %s" % self.id)
+        elif 'content-type' not in lcase_headers:
             _body = rawbody
             charset = DEFAULT_CHARSET
+
+            if self._code not in (301, 302, 401):
+                msg = "The remote web server failed to send the 'content-type'"\
+                      " header in HTTP response with id %s" % self.id
+                om.out.debug(msg)
+                
         elif not self.is_text_or_html():
             # Not text, save as it is.
             _body = rawbody
@@ -469,17 +479,15 @@ class HTTPResponse(object):
             # Figure out charset to work with
             if not charset:
                 # Start with the headers
-                charset_mo = re.search('charset=\s*?([\w-]+)',
-                                        lcase_headers['content-type'],
-                                        re.I)
+                charset_mo = CHARSET_EXTRACT_RE.search(
+                                                lcase_headers['content-type'],
+                                                re.I)
                 if charset_mo:
                     # Seems like the response's headers contain a charset
                     charset = charset_mo.groups()[0].lower().strip()
                 else:
                     # Continue with the body's meta tag
-                    charset_mo = re.search(
-                            '<meta.*?content=".*?charset=\s*?([\w-]+)".*?>',
-                            rawbody, re.IGNORECASE)
+                    charset_mo = CHARSET_META_RE.search(rawbody, re.IGNORECASE)
                     if charset_mo:
                         charset = charset_mo.groups()[0].lower().strip()
                     else:

@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
-from core.controllers.misc.encoding import smart_unicode, ESCAPED_CHAR
+from core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 
@@ -176,3 +176,12 @@ class TestHTTPResponse(unittest.TestCase):
         resp = self.create_resp(headers, html)
         self.assertEquals(clear_text, resp.getClearTextBody())        
     
+    def test_get_lower_case_headers(self):
+        headers = Headers([('Content-Type', 'text/html')])
+        lcase_headers = Headers([('content-type', 'text/html')])
+        
+        resp = self.create_resp(headers, "<html/>")
+        
+        self.assertEqual( resp.getLowerCaseHeaders(), lcase_headers)
+        self.assertIn( 'content-type', resp.getLowerCaseHeaders())
+        

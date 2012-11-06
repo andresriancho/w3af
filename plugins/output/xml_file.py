@@ -31,7 +31,7 @@ import core.data.kb.knowledgeBase as kb
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.misc import get_w3af_version
-from core.controllers.misc.encoding import smart_str
+from core.data.misc.encoding import smart_str
 from core.controllers.w3afException import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.opt_factory import opt_factory

@@ -26,7 +26,7 @@ import urllib
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.url import URL
-from core.controllers.misc.encoding import is_known_encoding
+from core.data.misc.encoding import is_known_encoding
 
 
 class BaseParser(object):
@@ -62,9 +62,9 @@ class BaseParser(object):
         
         # "setBaseUrl"
         url = HTTPResponse.getURL()
-        redirURL = HTTPResponse.getRedirURL()
-        if redirURL:
-            url = redirURL
+        redir_url = HTTPResponse.getRedirURL()
+        if redir_url:
+            url = redir_url
         
         self._baseUrl = url
         self._baseDomain = url.getDomain()
@@ -72,7 +72,7 @@ class BaseParser(object):
         self._encoding = HTTPResponse.getCharset()
         
         # To store results
-        self._emails = []
+        self._emails = set()
         self._re_urls = set()
 
     def getEmails(self, domain=None):
@@ -89,24 +89,24 @@ class BaseParser(object):
     
     def _extract_emails(self, doc_str):
         '''
-        @return: A list with all mail users that are present in the doc_str.
+        @return: A set() with all mail users that are present in the doc_str.
+        @see: We don't support emails like myself <at> gmail !dot! com
         '''
-        
         # Revert url-encoded sub-strings
         doc_str = urllib.unquote_plus(doc_str)
         
         # Then html-decode HTML special characters
         doc_str = htmldecode(doc_str)
         
+        self._emails = set()
+        
         # Perform a fast search for the @. In w3af, if we don't have an @ we
-        # don't have an email
-        # We don't support emails like myself <at> gmail !dot! com
+        # don't have an email.
         if doc_str.find('@') != -1:
             compiled_re = re.compile('[^\w@\-\\.]', re.UNICODE)
             doc_str = re.sub(compiled_re, ' ', doc_str)
             for email, domain in re.findall(self.EMAIL_RE, doc_str):
-                if email not in self._emails:
-                    self._emails.append(email)
+                self._emails.add(email)
             
         return self._emails
     
