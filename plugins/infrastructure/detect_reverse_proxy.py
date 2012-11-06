@@ -49,47 +49,40 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not self._run:
-            # This will remove the plugin from the infrastructure plugins to be run.
-            raise w3afRunOnce()
-        else:
-            # I will only run this one time. All calls to detect_reverse_proxy return the same url's
-            self._run = False
+        # detect using GET
+        if not kb.kb.get( 'detect_transparent_proxy', 'detect_transparent_proxy'):            
+            response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
+            if self._has_proxy_headers( response ):
+                self._report_finding( response )
+       
+        # detect using TRACE
+        # only if I wasn't able to do it with GET
+        if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
+            response = self._uri_opener.TRACE( fuzzable_request.getURL(), cache=True )
+            if self._has_proxy_content( response ):
+                self._report_finding( response )
+       
+        # detect using TRACK
+        # This is a rather special case that works with ISA server; example follows:
+        # Request:
+        # TRACK http://www.xyz.com.bo/ HTTP/1.1
+        # ...
+        # Response headers:
+        # HTTP/1.1 200 OK
+        # content-length: 99
+        # ...
+        # Response body:
+        # TRACK / HTTP/1.1
+        # Reverse-Via: MUTUN ------> find this!
+        # ....
+        if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
+            response = self._uri_opener.TRACK( fuzzable_request.getURL(), cache=True )
+            if self._has_proxy_content( response ):
+                self._report_finding( response )
             
-            # detect using GET
-            if not kb.kb.get( 'detect_transparent_proxy', 'detect_transparent_proxy'):            
-                response = self._uri_opener.GET( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_headers( response ):
-                    self._report_finding( response )
-           
-            # detect using TRACE
-            # only if I wasn't able to do it with GET
-            if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACE( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_content( response ):
-                    self._report_finding( response )
-           
-            # detect using TRACK
-            # This is a rather special case that works with ISA server; example follows:
-            # Request:
-            # TRACK http://www.xyz.com.bo/ HTTP/1.1
-            # ...
-            # Response headers:
-            # HTTP/1.1 200 OK
-            # content-length: 99
-            # ...
-            # Response body:
-            # TRACK / HTTP/1.1
-            # Reverse-Via: MUTUN ------> find this!
-            # ....
-            if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                response = self._uri_opener.TRACK( fuzzable_request.getURL(), cache=True )
-                if self._has_proxy_content( response ):
-                    self._report_finding( response )
-                
-            # Report failure to detect reverse proxy
-            if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
-                om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
+        # Report failure to detect reverse proxy
+        if not kb.kb.get( 'detect_reverse_proxy', 'detect_reverse_proxy' ):
+            om.out.information( 'The remote web server doesn\'t seem to have a reverse proxy.' )
 
     def _report_finding( self, response ):
         '''
