@@ -81,7 +81,7 @@ class server_status(InfrastructurePlugin):
             i = info.info()
             i.setPluginName(self.get_name())
             i.setURL( response.getURL() )
-            i.setId( response.id )
+            i.set_id( response.id )
             i.set_name( 'Apache Server version' )
             msg = 'The web server has the apache server status module enabled, '
             msg += 'which discloses the following remote server version: "%s".'
@@ -123,7 +123,7 @@ class server_status(InfrastructurePlugin):
             v = vuln.vuln()
             v.setPluginName(self.get_name())
             v.setURL( fuzzable_request.getURL() )
-            v.setId( response.id )
+            v.set_id( response.id )
             self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )
             v['alsoInHosting'] = self._shared_hosting_hosts
             v.set_desc( 'The web application under test seems to be in a shared hosting.' )
