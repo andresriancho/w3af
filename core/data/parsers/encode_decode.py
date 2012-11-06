@@ -21,11 +21,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import re
-from htmlentitydefs import name2codepoint
 import urllib
 import sys
+
+from htmlentitydefs import name2codepoint
 
 # This pattern matches a character entity reference (a decimal numeric
 # references, a hexadecimal numeric reference, or a named reference).
@@ -33,18 +33,7 @@ CHAR_REF_PATT = re.compile(r'&(#(\d+|x[\da-fA-F]+)|[\w.:-]+);?', re.U)
 
 def htmldecode(text, use_repr=False):
     """
-    Decode HTML entities in the given text.
-
-    >>> htmldecode('hola mundo') == 'hola mundo'
-    True
-    >>> htmldecode(u'hólá múndó') == u'hólá múndó'
-    True
-    >>> htmldecode(u'hola &#0443') == u'hola \u01bb' ## u'hola ƻ'
-    True
-    >>> htmldecode(u'hola mundo &#x41') == u'hola mundo A'
-    True
-    >>> htmldecode(u'&aacute;') == u'\xe1' ## u'á'
-    True
+    @return: Decode HTML entities in the given text and return it as unicode.
     """
     
     # Internal function to do the work
@@ -89,19 +78,6 @@ def urlencode(query, encoding, safe='/<>"\'=:()'):
         If the query arg is a sequence of two-element tuples, the order of the
         parameters in the output will match the order of parameters in the
         input.
-
-
-    >>> from urlparse import parse_qs
-    >>> urlencode(parse_qs(u'a=1&a=c'), 'latin1')
-    'a=1&a=c'
-    >>> urlencode(parse_qs(u'a=1&b=c'), 'latin1')
-    'a=1&b=c'
-    >>> urlencode(parse_qs(u'a=á&a=2'), 'latin1')
-    'a=%C3%A1&a=2'
-    >>> urlencode(u'a=b&c=d', 'utf-8')
-    Traceback (most recent call last):
-      ...
-    TypeError: not a valid non-string sequence or mapping object
     '''
 
     if hasattr(query, "items"):
