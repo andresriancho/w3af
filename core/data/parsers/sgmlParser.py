@@ -123,7 +123,7 @@ class SGMLParser(BaseParser):
         '''
         body = http_resp.body
         self._regex_url_parse(body)
-        self._findEmails(body)
+        self._extract_emails(body)
     
     def _parse(self, http_resp):
         '''

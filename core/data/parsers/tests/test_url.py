@@ -1,5 +1,5 @@
 '''
-test_urlParser.py
+test_url.py
 
 Copyright 2012 Andres Riancho
 

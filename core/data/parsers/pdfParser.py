@@ -59,7 +59,7 @@ class pdfParser(BaseParser):
                 pass
         
         # Get the mail addys
-        self._findEmails(content_text)
+        self._extract_emails(content_text)
         
     def getPDFContent(self, documentString):
         content = u""

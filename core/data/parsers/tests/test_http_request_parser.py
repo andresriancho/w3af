@@ -1,5 +1,5 @@
 '''
-test_HTTPRequestParser.py
+test_http_request_parser.py
 
 Copyright 2012 Andres Riancho
 

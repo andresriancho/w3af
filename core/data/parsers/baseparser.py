@@ -26,7 +26,6 @@ import urllib
 from core.data.constants.encodings import UTF8
 from core.data.parsers.encode_decode import htmldecode
 from core.data.parsers.url import URL
-from core.data.dc.headers import Headers
 from core.controllers.misc.encoding import is_known_encoding
 
 
@@ -81,116 +80,16 @@ class BaseParser(object):
         @param domain: Indicates what email addresses I want to retrieve.
                        All are returned if the domain is not set.
                        
-        @return: A list of email accounts that are inside the document.
-        
-        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = URL('http://www.w3af.com/')
-        >>> response = HTTPResponse( 200, '', Headers(), u, u )
-        >>> a = BaseParser(response)
-        >>> a._emails = ['a@w3af.com', 'foo@not-w3af.com']
-        
-        >>> a.getEmails()
-        ['a@w3af.com', 'foo@not-w3af.com']
-
-        >>> a.getEmails( domain='w3af.com')
-        ['a@w3af.com']
-
-        >>> a.getEmails( domain='not-w3af.com')
-        ['foo@not-w3af.com']
-                
+        @return: A list of email accounts that are inside the document.                
         '''
         if domain:
             return [i for i in self._emails if domain == i.split('@')[1]]
         else:
             return self._emails
-            
-    def getForms(self):
-        '''
-        @return: A list of forms.
-        '''        
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getForms() method.')
-        
-    def getReferences(self):
-        '''
-        Searches for references on a page. w3af searches references in every html tag, including:
-            - a
-            - forms
-            - images
-            - frames
-            - etc.
-        
-        @return: Two sets, one with the parsed URLs, and one with the URLs that came out of a
-        regular expression. The second list if less trustworthy.
-        '''
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getReferences() method.')
-        
-    def getComments(self):
-        '''
-        @return: A list of comments.
-        '''        
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getComments() method.')
     
-    def getScripts(self):
-        '''
-        @return: A list of scripts (like javascript).
-        '''        
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getScripts() method.')
-        
-    def getMetaRedir(self):
-        '''
-        @return: Returns list of meta redirections.
-        '''
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getMetaRedir() method.')
-    
-    def getMetaTags(self):
-        '''
-        @return: Returns list of all meta tags.
-        '''
-        raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getMetaTags() method.')
-    
-    def _findEmails(self, doc_str):
+    def _extract_emails(self, doc_str):
         '''
         @return: A list with all mail users that are present in the doc_str.
-
-        Init,
-        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = URL('http://www.w3af.com/')
-        >>> response = HTTPResponse( 200, '', Headers(), u, u )
-        >>> a = BaseParser(response)
-        
-        First test, no emails.
-        >>> a._findEmails( '' )
-        []
-        
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u' abc@w3af.com ')
-        [u'abc@w3af.com']
-        
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u'<a href="mailto:abc@w3af.com">test</a>')
-        [u'abc@w3af.com']
-
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u'<a href="mailto:abc@w3af.com">abc@w3af.com</a>')
-        [u'abc@w3af.com']
-
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u'<a href="mailto:abc@w3af.com">abc_def@w3af.com</a>')
-        [u'abc@w3af.com', u'abc_def@w3af.com']
-
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u'header abc@w3af-scanner.com footer')
-        [u'abc@w3af-scanner.com']
-        
-        >>> a = BaseParser(response)
-        >>> a._findEmails(u'header abc4def@w3af.com footer')
-        [u'abc4def@w3af.com']
         '''
         
         # Revert url-encoded sub-strings
@@ -218,47 +117,6 @@ class BaseParser(object):
         @param HTTPResponse: The http response object that stores the
             response body and the URL.
         @return: None. The findings are stored in self._re_urls as url_objects
-
-        Init,
-        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = URL('http://www.w3af.com/')
-        >>> response = HTTPResponse(200, '', Headers(), u, u)
-
-        Simple, empty result
-        >>> a = BaseParser(response)
-        >>> response = HTTPResponse(200, '', Headers(), u, u)
-        >>> a._regex_url_parse(response.body)
-        >>> len(a._re_urls)
-        0
-        
-        Full URL
-        >>> a = BaseParser(response)
-        >>> a._regex_url_parse(u'header http://www.w3af.com/foo/bar/index.html footer')
-        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
-        True
-
-        One relative URL
-        >>> a = BaseParser(response)
-        >>> a._regex_url_parse(u'header /foo/bar/index.html footer')
-        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
-        True
-
-        >>> a = BaseParser(response)
-        >>> a._regex_url_parse(u'header /subscribe.aspx footer')
-        >>> URL('http://www.w3af.com/subscribe.aspx') in a._re_urls
-        True
-
-        Relative with initial "/" , inside an href
-        >>> a = BaseParser(response)
-        >>> a._regex_url_parse(u'header <a href="/foo/bar/index.html">foo</a> footer')
-        >>> URL('http://www.w3af.com/foo/bar/index.html') in a._re_urls
-        True
-
-        Simple index relative URL
-        >>> a = BaseParser(response)
-        >>> a._regex_url_parse(u'header <a href="index">foo</a> footer')
-        >>> len(a._re_urls)
-        0
         '''
         re_urls = self._re_urls
         
@@ -299,7 +157,8 @@ class BaseParser(object):
         
         # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
         # I'm removing those matches manually below
-        for match_tuple in filter( filter_false_urls, self.RELATIVE_URL_RE.findall(doc_str) ):
+        for match_tuple in filter( filter_false_urls,
+                                   self.RELATIVE_URL_RE.findall(doc_str) ):
             
             match_str = match_tuple[0]
                         
@@ -337,31 +196,6 @@ class BaseParser(object):
         == 'ind\xc3\xa9x.html'
         True
         
-        Init,
-        >>> from core.data.url.HTTPResponse import HTTPResponse as HTTPResponse
-        >>> u = URL('http://www.w3af.com/')
-        >>> response = HTTPResponse(200, u'', Headers(), u, u, charset='latin1')
-        >>> a = BaseParser(response)
-        >>> a._encoding = 'latin1'
-        
-        Simple, no strange encoding
-        >>> a._decode_url(u'http://www.w3af.com/index.html')
-        u'http://www.w3af.com/index.html'
-
-        Encoded
-        >>> a._decode_url(u'http://www.w3af.com/ind%E9x.html') == \
-        u'http://www.w3af.com/ind\xe9x.html'
-        True
-        
-        Decoding of safe chars skipped ('\x00' and ' ')
-        >>> a._decode_url(u'http://w3af.com/search.php?a=%00x&b=2%20c=3%D1') ==\
-        u'http://w3af.com/search.php?a=%00x&b=2 c=3\xd1'
-        True
-        
-        Ignoring possible decoding errors
-        >>> a._encoding = 'utf-8'
-        >>> a._decode_url(u'http://w3af.com/blah.jsp?p=SQU-300&bgc=%FFAAAA')
-        u'http://w3af.com/blah.jsp?p=SQU-300&bgc=AAAA'
         '''
         enc = self._encoding
 
@@ -402,3 +236,55 @@ class BaseParser(object):
 ##                       dec_url[index:].decode('utf-8', 'ignore'))
         
         return dec_url
+
+    def getForms(self):
+        '''
+        @return: A list of forms.
+        '''        
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getForms() method.')
+        
+    def getReferences(self):
+        '''
+        Searches for references on a page. w3af searches references in every
+        html tag, including:
+            - a
+            - forms
+            - images
+            - frames
+            - etc.
+        
+        @return: Two sets, one with the parsed URLs, and one with the URLs that
+                 came out of a regular expression. The second list if less
+                 trustworthy.
+        '''
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getReferences() method.')
+        
+    def getComments(self):
+        '''
+        @return: A list of comments.
+        '''        
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getComments() method.')
+    
+    def getScripts(self):
+        '''
+        @return: A list of scripts (like javascript).
+        '''        
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getScripts() method.')
+        
+    def getMetaRedir(self):
+        '''
+        @return: Returns list of meta redirections.
+        '''
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getMetaRedir() method.')
+    
+    def getMetaTags(self):
+        '''
+        @return: Returns list of all meta tags.
+        '''
+        raise NotImplementedError('You should create your own parser class '
+                                  'and implement the getMetaTags() method.')
