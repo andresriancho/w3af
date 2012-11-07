@@ -35,33 +35,6 @@ def are_variants(uri, other_uri):
     @parameter other_uri: The other URI we want to analyze
     @return: True if the URLs are variants.
 
-    >>> from core.data.parsers.url import URL
-    >>> are_variants(URL('http://w3af.com/foo.php'), \
-                     URL('http://w3af.com/foo.php'))
-    True
-    >>> are_variants(URL('http://w3af.com/foo.php?x=1'), \
-                     URL('http://w3af.com/foo.php?y=1'))
-    False
-    >>> are_variants(URL('http://w3af.com/bar.php?id=1'), \
-                     URL('http://w3af.com/foo.php?foo=1'))
-    False
-    >>> are_variants(URL('http://w3af.com/foo.php?id=1'), \
-                     URL('http://rapid7.com/foo.php?id=1'))
-    False
-    >>> are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'), \
-                     URL('http://rapid7.com/foo.php?id=1'))
-    False
-    >>> are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'), \
-                     URL('http://w3af.com/foo.php?id=333&foo=spam'))
-    True
-    >>> are_variants(URL('http://w3af.com/foo.php?id=1111'), \
-                     URL('http://w3af.com/foo.php?id=spam'))
-    False
-    >>> are_variants('http://w3af.com/foo.php?id=1', \
-                     'http://rapid7.com/foo.php?id=1')
-    Traceback (most recent call last):
-      ...
-    AttributeError: 'str' object has no attribute 'getDomain'
     '''
     if uri.getDomain() != other_uri.getDomain():
         return False
