@@ -57,8 +57,6 @@ class frontpage_version(InfrastructurePlugin):
         @parameter fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        fuzzable_return_value = []
-
         for domain_path in fuzzable_request.getURL().getDirectories():
 
             if domain_path not in self._analyzed_dirs:
@@ -77,10 +75,9 @@ class frontpage_version(InfrastructurePlugin):
                 else:
                     # Check if it's a Frontpage Info file
                     if not is_404( response ):
-                        fuzzable_return_value.extend( self._create_fuzzable_requests( response ) )
+                        for fr in self._create_fuzzable_requests( response ):
+                            self.output_queue.put(fr)
                         self._analyze_response( response )
-        
-        return fuzzable_return_value
                         
     def _analyze_response(self, response):
         '''
