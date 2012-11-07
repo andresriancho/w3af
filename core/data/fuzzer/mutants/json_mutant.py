@@ -1,5 +1,5 @@
 '''
-mutantJSON.py
+JSONMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -20,21 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.mutantPostData import mutantPostData
+from core.data.fuzzer.PostDataMutant import PostDataMutant
 
-class mutantJSON(mutantPostData):
+class JSONMutant(PostDataMutant):
     '''
     This class is a JSON mutant.
     '''
     def __init__( self, freq ):
-        mutantPostData.__init__(self, freq)
+        PostDataMutant.__init__(self, freq)
 
     def getMutantType( self ):
         return 'JSON data'
 
     def foundAt(self):
         '''
-        I had to implement this again here instead of just inheriting from mutantPostData because
+        I had to implement this again here instead of just inheriting from PostDataMutant because
         of the duplicated parameter name support which I added to the framework.
         
         @return: A string representing WHAT was fuzzed. This string is used like this:

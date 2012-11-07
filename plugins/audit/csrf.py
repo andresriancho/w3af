@@ -29,7 +29,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import create_mutants
-from core.data.fuzzer.mutantHeaders import mutantHeaders
+from core.data.fuzzer.HeadersMutant import HeadersMutant
 from core.data.dc.dataContainer import DataContainer
 
 COMMON_CSRF_NAMES = [
@@ -128,7 +128,7 @@ class csrf(AuditPlugin):
     def _is_origin_checked(self, freq, orig_response):
         om.out.debug('Testing %s for Referer/Origin checks' % freq.getURL())
         fake_ref = 'http://www.w3af.org/'
-        mutant = mutantHeaders(freq.copy())
+        mutant = HeadersMutant(freq.copy())
         mutant.setVar('Referer')
         mutant.setOriginalValue(freq.getReferer())
         mutant.setModValue(fake_ref)

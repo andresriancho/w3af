@@ -255,7 +255,7 @@ class xUrllib(object):
         uri = mutant.getURI()
         data = mutant.getData()
 
-        # Also add the cookie header; this is needed by the mutantCookie
+        # Also add the cookie header; this is needed by the CookieMutant
         headers = mutant.getHeaders()
         cookie = mutant.getCookie()
         if cookie:

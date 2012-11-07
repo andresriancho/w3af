@@ -1,5 +1,5 @@
 '''
-mutantFileName.py
+FileNameMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,7 +24,7 @@ import urllib
 from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 
-class mutantFileName(mutant):
+class FileNameMutant(mutant):
     '''
     This class is a filename mutant.
     '''
@@ -60,7 +60,7 @@ class mutantFileName(mutant):
         >>> divided_file_name['end'] = '.html'
         
         >>> fr = FuzzableRequest(URL('http://www.w3af.com/abc/def.html'))        
-        >>> m = mutantFileName( fr )
+        >>> m = FileNameMutant( fr )
         >>> m.setMutantDc(divided_file_name)
         >>> m.setVar( 'fuzzedFname' )
         >>> m.getURL().url_string
@@ -93,7 +93,7 @@ class mutantFileName(mutant):
         return self._mutant_dc['fuzzedFname']
     
     def setURL( self, u ):
-        raise w3afException('You can\'t change the value of the URL in a mutantFileName instance.')
+        raise w3afException('You can\'t change the value of the URL in a FileNameMutant instance.')
 
     def foundAt(self):
         '''

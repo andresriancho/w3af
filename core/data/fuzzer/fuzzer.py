@@ -38,14 +38,14 @@ from core.data.request.HTTPQsRequest import HTTPQSRequest
 
 from core.data.fuzzer.utils import rand_alpha
 from core.data.fuzzer.form_filler import smart_fill
-from core.data.fuzzer.mutants.querystring_mutant import mutantQs
-from core.data.fuzzer.mutants.postdata_mutant import mutantPostData
-from core.data.fuzzer.mutants.filename_mutant import mutantFileName
-from core.data.fuzzer.mutants.urlparts_mutant import mutantUrlParts
-from core.data.fuzzer.mutants.headers_mutant import mutantHeaders
-from core.data.fuzzer.mutants.json_mutant import mutantJSON
-from core.data.fuzzer.mutants.cookie_mutant import mutantCookie
-from core.data.fuzzer.mutants.filecontent_mutant import mutantFileContent
+from core.data.fuzzer.mutants.querystring_mutant import QSMutant
+from core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
+from core.data.fuzzer.mutants.filename_mutant import FileNameMutant
+from core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
+from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
+from core.data.fuzzer.mutants.json_mutant import JSONMutant
+from core.data.fuzzer.mutants.cookie_mutant import CookieMutant
+from core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
 
 #
 # The following is a list of parameter names that will be ignored during
@@ -78,18 +78,18 @@ def create_mutants(freq, mutant_str_list, append=False,
         
         # Query string parameters    
         _fuzzing('_create_mutantsWorker/QS', freq)
-        result.extend(_create_mutantsWorker(freq, mutantQs, mutant_str_list,
+        result.extend(_create_mutantsWorker(freq, QSMutant, mutant_str_list,
                                            fuzzable_param_list, append))
         
         # File name
         if 'fuzzedFname' in _fuzzable:
             _fuzzing('_createFileNameMutants', freq)
-            result.extend(_createFileNameMutants(freq, mutantFileName, 
+            result.extend(_createFileNameMutants(freq, FileNameMutant, 
                                  mutant_str_list, fuzzable_param_list, append))
 
         if 'fuzzURLParts' in _fuzzable:
             _fuzzing('_createUrlPartsMutants', freq)
-            result.extend(_createUrlPartsMutants(freq, mutantUrlParts, 
+            result.extend(_createUrlPartsMutants(freq, URLPartsMutant, 
                                  mutant_str_list, fuzzable_param_list, append))
  
     # POST-data parameters
@@ -99,11 +99,11 @@ def create_mutants(freq, mutant_str_list, append=False,
         
         if isJSON(freq):
             _fuzzing('_createJSONMutants', freq)
-            result.extend(_createJSONMutants(freq, mutantJSON, mutant_str_list,
+            result.extend(_createJSONMutants(freq, JSONMutant, mutant_str_list,
                                              fuzzable_param_list, append))
         else:
             _fuzzing('_createJSONMutants/post-data', freq)
-            result.extend(_create_mutantsWorker(freq, mutantPostData,
+            result.extend(_create_mutantsWorker(freq, PostDataMutant,
                                    mutant_str_list, fuzzable_param_list, append))
         
         # File content of multipart forms
@@ -114,14 +114,14 @@ def create_mutants(freq, mutant_str_list, append=False,
     # Headers
     if 'headers' in _fuzzable:
         _fuzzing('_create_mutantsWorker/headers', freq)
-        result.extend(_create_mutantsWorker(freq, mutantHeaders, mutant_str_list,
+        result.extend(_create_mutantsWorker(freq, HeadersMutant, mutant_str_list,
                                            fuzzable_param_list, append, 
                                            dataContainer=_fuzzable['headers']))
         
     # Cookie values
     if 'cookie' in _fuzzable and freq.getCookie():
         _fuzzing('_create_mutantsWorker/cookie', freq)
-        mutants = _create_mutantsWorker(freq, mutantCookie, mutant_str_list,
+        mutants = _create_mutantsWorker(freq, CookieMutant, mutant_str_list,
                                        fuzzable_param_list, append,
                                        dataContainer=freq.getCookie())        
         result.extend( mutants )
@@ -295,7 +295,7 @@ def _createFileContentMutants(freq, mutant_str_list, fuzzable_param_list, append
                 fname = "%s.%s" % (rand_alpha(7), ext)
                 str_file = NamedStringIO(mutant_str, name=fname)
                 tmp.append(str_file)
-        res = _create_mutantsWorker(freq, mutantFileContent,
+        res = _create_mutantsWorker(freq, FileContentMutant,
                                    tmp, file_vars, append)
     
     return res
@@ -314,11 +314,11 @@ def _createFileNameMutants(freq, mutantClass, mutant_str_list, fuzzable_param_li
     >>> from core.data.request.fuzzable_request import FuzzableRequest
     >>> url = URL('http://www.w3af.com/abc/def.html')
     >>> fr = FuzzableRequest(url)
-    >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['ping!','pong-'], [], False )
+    >>> mutant_list = _createFileNameMutants( fr, FileNameMutant, ['ping!','pong-'], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/abc/ping%21.html', u'http://www.w3af.com/abc/pong-.html', u'http://www.w3af.com/abc/def.ping%21', u'http://www.w3af.com/abc/def.pong-']
     
-    >>> mutant_list = _createFileNameMutants( fr, mutantFileName, ['/etc/passwd',], [], False )
+    >>> mutant_list = _createFileNameMutants( fr, FileNameMutant, ['/etc/passwd',], [], False )
     >>> [ m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/abc/%2Fetc%2Fpasswd.html', u'http://www.w3af.com/abc//etc/passwd.html', u'http://www.w3af.com/abc/def.%2Fetc%2Fpasswd', u'http://www.w3af.com/abc/def./etc/passwd']
 
@@ -376,7 +376,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
     >>> freq = FuzzableRequest(URL('http://www.w3af.com/'), dc=d)
-    >>> f = _create_mutantsWorker( freq, mutantQs, ['abc', 'def'], [], False)
+    >>> f = _create_mutantsWorker( freq, QSMutant, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['abc'], 'b': ['2']}), DataContainer({'a': ['def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['abc']}), DataContainer({'a': ['1'], 'b': ['def']})]
 
@@ -385,7 +385,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d['a'] = ['1',]
     >>> d['b'] = ['2',]
     >>> freq = FuzzableRequest(URL('http://www.w3af.com/'), dc=d)
-    >>> f = _create_mutantsWorker( freq, mutantQs, ['abc', 'def'], [], True)
+    >>> f = _create_mutantsWorker( freq, QSMutant, ['abc', 'def'], [], True)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['1abc'], 'b': ['2']}), DataContainer({'a': ['1def'], 'b': ['2']}), DataContainer({'a': ['1'], 'b': ['2abc']}), DataContainer({'a': ['1'], 'b': ['2def']})]
 
@@ -393,7 +393,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> d = DataContainer()
     >>> d['a'] = ['1','2','3']
     >>> freq.setDc(d)
-    >>> f = _create_mutantsWorker( freq, mutantQs, ['abc', 'def'], [], False)
+    >>> f = _create_mutantsWorker( freq, QSMutant, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [DataContainer({'a': ['abc', '2', '3']}), DataContainer({'a': ['def', '2', '3']}), DataContainer({'a': ['1', 'abc', '3']}), DataContainer({'a': ['1', 'def', '3']}), DataContainer({'a': ['1', '2', 'abc']}), DataContainer({'a': ['1', '2', 'def']})]
 
@@ -404,7 +404,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> _ = f.addInput( [("name", "address") , ("type", "text")] )
     >>> _ = f.addInput( [("name", "foo") , ("type", "text")] )
     >>> pdr = HTTPPostDataRequest(URL('http://www.w3af.com/'), dc=f)
-    >>> f = _create_mutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
+    >>> f = _create_mutantsWorker( pdr, PostDataMutant, ['abc', 'def'], [], False)
     >>> [ i.getDc() for i in f ]
     [Form({'address': ['abc'], 'foo': ['56']}), Form({'address': ['def'], 'foo': ['56']}), Form({'address': ['Bonsai Street 123'], 'foo': ['abc']}), Form({'address': ['Bonsai Street 123'], 'foo': ['def']})]
 
@@ -412,7 +412,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
     >>> f = Form()
     >>> _ = f.addInput( [("name", "password") , ("type", "password")] )
     >>> pdr = HTTPPostDataRequest(URL('http://www.w3af.com/foo.bar?action=login'), dc=f)
-    >>> mutants = _create_mutantsWorker( pdr, mutantPostData, ['abc', 'def'], [], False)
+    >>> mutants = _create_mutantsWorker( pdr, PostDataMutant, ['abc', 'def'], [], False)
     >>> [ i.getURI() for i in mutants ]
     [<URL for "http://www.w3af.com/foo.bar?action=login">, <URL for "http://www.w3af.com/foo.bar?action=login">]
     >>> [ i.getDc() for i in mutants ]
@@ -523,7 +523,7 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzable_param_li
     >>> from core.data.request.fuzzable_request import FuzzableRequest
     >>> url = URL('http://www.w3af.com/abc/def')
     >>> fr = FuzzableRequest(url)
-    >>> mutant_list = _createUrlPartsMutants(fr, mutantUrlParts, ['ping!'], [], False)
+    >>> mutant_list = _createUrlPartsMutants(fr, URLPartsMutant, ['ping!'], [], False)
     >>> [m.getURL().url_string for m in mutant_list]
     [u'http://www.w3af.com/ping%21/def', u'http://www.w3af.com/ping%2521/def', u'http://www.w3af.com/abc/ping%21', u'http://www.w3af.com/abc/ping%2521']
     

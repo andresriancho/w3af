@@ -1,5 +1,5 @@
 '''
-mutantHeaders.py
+HeadersMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -23,7 +23,7 @@ from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 
 
-class mutantHeaders(mutant):
+class HeadersMutant(mutant):
     '''
     This class is a headers mutant.
     '''
@@ -35,7 +35,7 @@ class mutantHeaders(mutant):
 
         >>> freq = FuzzableRequest( URL('http://www.w3af.com/') )
         >>> fake_ref = 'http://w3af.org/'
-        >>> mutant = mutantHeaders( freq.copy() )
+        >>> mutant = HeadersMutant( freq.copy() )
         >>> mutant.setVar('Referer')
         >>> mutant.setOriginalValue(freq.getReferer())
         >>> mutant.setModValue(fake_ref)

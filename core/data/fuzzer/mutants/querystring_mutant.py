@@ -1,5 +1,5 @@
 '''
-mutantQs.py
+QSMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.fuzzer.mutant import mutant
 
 
-class mutantQs(mutant):
+class QSMutant(mutant):
     '''
     This class is a query string mutant.
     '''
@@ -38,7 +38,7 @@ class mutantQs(mutant):
         >>> from core.data.parsers.url import URL
         >>> from core.data.request.fuzzable_request import FuzzableRequest
         >>> freq = FuzzableRequest(URL('http://www.w3af.com/'))
-        >>> m = mutantQs( freq )
+        >>> m = QSMutant( freq )
         >>> m.printModValue()
         u'The sent URI was http://www.w3af.com/ .'
         '''

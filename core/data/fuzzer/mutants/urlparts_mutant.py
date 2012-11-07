@@ -1,5 +1,5 @@
 '''
-mutantUrlParts.py
+URLPartsMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,7 +24,7 @@ import urllib
 from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 
-class mutantUrlParts(mutant):
+class URLPartsMutant(mutant):
     '''
     This class is a urlparts mutant.
     '''
@@ -60,7 +60,7 @@ class mutantUrlParts(mutant):
         >>> divided_path['end'] = '/def'
         
         >>> fr = FuzzableRequest(URL('http://www.w3af.com/abc/def'))        
-        >>> m = mutantUrlParts( fr )
+        >>> m = URLPartsMutant( fr )
         >>> m.setMutantDc(divided_path)
         >>> m.setVar('fuzzedUrlParts')
         >>> m.getURL().url_string
@@ -92,7 +92,7 @@ class mutantUrlParts(mutant):
         return self._mutant_dc['fuzzedUrlParts']
     
     def setURL( self, u ):
-        raise w3afException('You can\'t change the value of the URL in a mutantUrlParts instance.')
+        raise w3afException('You can\'t change the value of the URL in a URLPartsMutant instance.')
 
     def foundAt(self):
         '''

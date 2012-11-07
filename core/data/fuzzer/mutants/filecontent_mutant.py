@@ -1,5 +1,5 @@
 '''
-mutantFileContent.py
+FileContentMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.data.fuzzer.mutant import mutant
 
-class mutantFileContent(mutant):
+class FileContentMutant(mutant):
     '''
     This class is a filename mutant.
     '''

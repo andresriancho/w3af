@@ -1,5 +1,5 @@
 '''
-mutantCookie.py
+CookieMutant.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,7 +24,7 @@ from core.data.fuzzer.mutant import mutant
 from core.controllers.w3afException import w3afException
 
 
-class mutantCookie(mutant):
+class CookieMutant(mutant):
     '''
     This class is a headers mutant.
     '''

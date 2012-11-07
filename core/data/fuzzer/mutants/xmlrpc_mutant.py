@@ -20,21 +20,21 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.mutantPostData import mutantPostData
+from core.data.fuzzer.PostDataMutant import PostDataMutant
 
-class mutantXMLRPC(mutantPostData):
+class mutantXMLRPC(PostDataMutant):
     '''
     This class is a XMLRPC mutant.
     '''
     def __init__( self, freq ):
-        mutantPostData.__init__(self, freq)
+        PostDataMutant.__init__(self, freq)
 
     def getMutantType( self ):
         return 'XMLRPC data'
 
     def foundAt(self):
         '''
-        I had to implement this again here instead of just inheriting from mutantPostData because
+        I had to implement this again here instead of just inheriting from PostDataMutant because
         of the duplicated parameter name support which I added to the framework.
         
         @return: A string representing WHAT was fuzzed. This string is used like this:
