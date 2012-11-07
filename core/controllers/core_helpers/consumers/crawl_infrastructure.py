@@ -356,7 +356,7 @@ class crawl_infrastructure(BaseConsumer):
         om.out.debug('%s is testing "%s"' % (plugin.get_name(), fuzzable_request.getURI() ) )
         
         try:
-            plugin.discover_wrapper(fuzzable_request)
+            result = plugin.discover_wrapper(fuzzable_request)
         except KeyboardInterrupt:
             # TODO: Is this still working? How do we handle Ctrl+C in a thread?
             om.out.information('The user interrupted the crawl phase, '
@@ -375,6 +375,12 @@ class crawl_infrastructure(BaseConsumer):
         
         else:
             # The plugin output is retrieved and analyzed by the 
-            # _route_plugin_results method
-            pass
+            # _route_plugin_results method, here we just verify that the plugin
+            # result is None (which proves that the plugin respects this part
+            # of the API)
+            if result is not None:
+                msg = 'The %s plugin did NOT return None.' % plugin.get_name()
+                ve = ValueError(msg)
+                self.handle_exception(plugin.get_type(), plugin.get_name(),
+                                      fuzzable_request, ve)
         
