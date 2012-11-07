@@ -32,7 +32,7 @@ from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
                                                             get_fuzzable_requests_from_kb)
 from core.controllers.w3afException import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import return_args
-from core.data.db.variant_db import variant_db
+from core.data.db.variant_db import VariantDB
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
 
@@ -57,7 +57,7 @@ class crawl_infrastructure(BaseConsumer):
         self._max_discovery_time = max_discovery_time
         
         # For filtering fuzzable requests found by plugins:
-        self._variant_db = variant_db()
+        self._variant_db = VariantDB()
         self._already_seen_urls = scalable_bloomfilter()
         
         self._disabled_plugins = set()

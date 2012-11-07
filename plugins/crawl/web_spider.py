@@ -34,7 +34,7 @@ from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.itertools_toolset import unique_justseen
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.db.variant_db import variant_db as variant_db
+from core.data.db.variant_db import VariantDB
 from core.data.db.disk_set import disk_set
 from core.data.dc.headers import Headers
 from core.data.fuzzer.formFiller import smartFill
@@ -61,7 +61,7 @@ class web_spider(CrawlPlugin):
         self._compiled_follow_re = None
         self._broken_links = disk_set()
         self._first_run = True
-        self._known_variants = variant_db()
+        self._known_variants = VariantDB()
         self._already_filled_form = scalable_bloomfilter()
 
         # User configured variables

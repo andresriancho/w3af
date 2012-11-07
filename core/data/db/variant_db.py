@@ -24,9 +24,10 @@ import threading
 from core.data.db.temp_shelve import temp_shelve as temp_shelve
 
 
-class variant_db(object):
+class VariantDB(object):
+    
     def __init__(self, max_variants = 5):
-        self._internal_dict = temp_shelve()
+        self._temp_shelve = temp_shelve()
         self._db_lock = threading.RLock()
         self.max_variants = max_variants
         
@@ -36,17 +37,18 @@ class variant_db(object):
         variants are still needed.
         
         @param reference: The reference (as a URL object) to add. This method
-        will "normalize" it before adding it to the internal dict.
+                          will "normalize" it before adding it to the internal
+                          shelve.
         '''
         clean_reference = self._clean_reference( reference )
         
         with self._db_lock:
-            count = self._internal_dict.get( clean_reference, None)
+            count = self._temp_shelve.get( clean_reference, None)
             
             if count is not None:
-                self._internal_dict[ clean_reference ] = count + 1
+                self._temp_shelve[ clean_reference ] = count + 1
             else:
-                self._internal_dict[ clean_reference ] = 1
+                self._temp_shelve[ clean_reference ] = 1
             
     def _clean_reference(self, reference):
         '''
@@ -57,23 +59,6 @@ class variant_db(object):
         What this method does is to "normalize" any input reference string so
         that they can be compared very simply using string match.
 
-        >>> from core.data.parsers.url import URL
-        >>> from core.controllers.misc.temp_dir import create_temp_dir
-        >>> _ = create_temp_dir()
-        
-        >>> vdb = variant_db()
-        
-        >>> vdb._clean_reference(URL('http://w3af.org/'))
-        u'http://w3af.org/'
-        >>> vdb._clean_reference(URL('http://w3af.org/index.php'))
-        u'http://w3af.org/index.php'
-        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2'))
-        u'http://w3af.org/index.php?id=number'
-        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar'))
-        u'http://w3af.org/index.php?id=number&foo=string'
-        >>> vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar&spam='))
-        u'http://w3af.org/index.php?id=number&foo=string&spam=string'
-         
         '''
         res = reference.getDomainPath() + reference.getFileName()
         
@@ -101,7 +86,7 @@ class variant_db(object):
         '''
         clean_reference = self._clean_reference( reference )
         # I believe this is atomic enough...
-        count = self._internal_dict.get( clean_reference, 0 )
+        count = self._temp_shelve.get( clean_reference, 0 )
         if count >= self.max_variants:
             return False
         else:
