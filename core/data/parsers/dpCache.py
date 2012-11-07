@@ -23,13 +23,13 @@ from __future__ import with_statement
 
 import threading
 
-import core.data.parsers.documentParser as documentParser
+import core.data.parsers.document_parser as DocumentParser
 from core.controllers.misc.lru import LRU
 
 DEBUG = False
     
 
-class dpCache:
+class dpCache(object):
     '''
     This class is a document parser cache.
     
@@ -76,7 +76,7 @@ class dpCache:
                 self._debug_in_cache(hash_string)
             else:
                 # Create a new instance of dp, add it to the cache
-                res = documentParser.documentParser(HTTPResponse)
+                res = DocumentParser.DocumentParser(HTTPResponse)
                 self._cache[ hash_string ] = res
                 self._debug_not_in_cache(hash_string)
             return res

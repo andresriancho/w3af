@@ -87,7 +87,7 @@ class swfParser(BaseParser):
         ##self._regex_url_parse(swf_body)
         pass
     
-    def getReferences(self):
+    def get_references(self):
         '''
         Searches for references on a page. w3af searches references in every html tag, including:
             - a
@@ -104,16 +104,16 @@ class swfParser(BaseParser):
     def _returnEmptyList(self, *args, **kwds):
         '''
         This method is called (see below) when the caller invokes one of:
-            - getForms
-            - getComments
-            - getMetaRedir
-            - getMetaTags
-            - getReferencesOfTag
+            - get_forms
+            - get_comments
+            - get_meta_redir
+            - get_meta_tags
+            - get_references_of_tag
         
         @return: Because we are a PDF document, we don't have the same things that
         a nice HTML document has, so we simply return an empty list.
         '''
         return []
         
-    getReferencesOfTag = getForms = getComments = getMetaRedir = getMetaTags = _returnEmptyList
+    get_references_of_tag = get_forms = get_comments = get_meta_redir = get_meta_tags = _returnEmptyList
 

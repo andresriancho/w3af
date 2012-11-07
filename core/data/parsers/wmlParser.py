@@ -56,13 +56,13 @@ class wmlParser(SGMLParser):
         ...    </go>"""
         >>> response = HTTPResponse( 200, form, Headers(), u, u )
         >>> w = wmlParser(response)
-        >>> w.getForms()
+        >>> w.get_forms()
         [Form({'clave': ['$(clave)'], 'cuenta': ['$(cuenta)'], 'tipdat': ['D']})]
 
         Get the simplest link
         >>> response = HTTPResponse( 200, '<a href="/index.aspx">ASP.NET</a>', Headers(), u, u )
         >>> w = wmlParser( response )
-        >>> re, parsed = w.getReferences()
+        >>> re, parsed = w.get_references()
         
         #
         #    TODO:
@@ -77,7 +77,7 @@ class wmlParser(SGMLParser):
         Get a link by applying regular expressions
         >>> response = HTTPResponse(200, 'header /index.aspx footer', Headers(), u, u)
         >>> w = wmlParser( response )
-        >>> re, parsed = w.getReferences()
+        >>> re, parsed = w.get_references()
         >>> #
         >>> # TODO: Shouldn't this be the other way around?!
         >>> #

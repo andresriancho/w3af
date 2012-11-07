@@ -69,7 +69,7 @@ class get_emails(GrepPlugin):
         @parameter request: The HTTP request
         @parameter response: The HTTP response
         @parameter kb_key: Knowledge base dict key
-        @parameter domain: Target domain for getEmails filter
+        @parameter domain: Target domain for get_emails filter
         @return: None
         '''
         try:
@@ -80,7 +80,7 @@ class get_emails(GrepPlugin):
             om.out.debug( msg % response.getURL() )
             return
 
-        emails = dp.getEmails(domain)
+        emails = dp.get_emails(domain)
 
         for mail_address in emails:
             # Reduce false positives

@@ -25,7 +25,7 @@ import core.controllers.outputManager as om
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
-import core.data.parsers.documentParser as documentParser
+import core.data.parsers.document_parser as DocumentParser
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.w3afException import w3afException
@@ -110,11 +110,11 @@ class find_captchas(CrawlPlugin):
             # *might* change the image name for each request of the HTML
             #dp = dpCache.dpc.getDocumentParserFor( response )
             try:
-                document_parser = documentParser.documentParser( response )
+                document_parser = DocumentParser.DocumentParser( response )
             except w3afException:
                 pass
             else:
-                image_path_list = document_parser.getReferencesOfTag('img')
+                image_path_list = document_parser.get_references_of_tag('img')
                 
                 GET = self._uri_opener.GET
                 result_iter = self._tm.threadpool.imap_unordered(GET, image_path_list)

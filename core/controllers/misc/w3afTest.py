@@ -33,7 +33,7 @@ SCRIPT_DIR = 'scripts/'
 ERROR, SKIP, SUCC, FAIL = 'ERROR SKIP OK FAIL'.split()
 
 
-def getScripts():
+def get_scripts():
     res = []
     withOutAssert = []
     for f in os.listdir(SCRIPT_DIR):
@@ -101,7 +101,7 @@ def w3afTest():
     '''
     Test all scripts that have an assert call.
     '''
-    with_assert, without_assert = getScripts()
+    with_assert, without_assert = get_scripts()
     xunit_gen = XunitGen()
     bad_list = []
     ok_list = []

@@ -100,13 +100,13 @@ class http_auth_detect(GrepPlugin):
         #
         url_list = []
         try:
-            documentParser = dpCache.dpc.getDocumentParserFor(response)
+            DocumentParser = dpCache.dpc.getDocumentParserFor(response)
         except w3afException, w3:
             msg = 'Failed to find a suitable document parser. ' \
             'Exception: ' + str(w3)
             om.out.debug(msg)
         else:
-            parsed_references, re_references = documentParser.getReferences()
+            parsed_references, re_references = DocumentParser.get_references()
             url_list.extend(parsed_references)
             url_list.extend(re_references)
 

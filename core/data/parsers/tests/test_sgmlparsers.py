@@ -250,7 +250,7 @@ class TestSGMLParser(unittest.TestCase):
         p = _SGMLParser(_build_http_response(URL_INST, body))
         emails = ['jandalia@bing.com', 'ariancho@gmail.com',
                   u'name_with_ñ@w3af.it']
-        self.assertEquals(emails, p.getEmails())
+        self.assertEquals(emails, p.get_emails())
 
     def test_parsed_references(self):
         # The *parsed* urls *must* come both from valid tags and tag attributes

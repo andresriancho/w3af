@@ -126,7 +126,7 @@ class SGMLParser(BaseParser):
         # These two need to be performed here because the response body is
         # not going to be stored as an attr for this object. This makes the
         # parsing process a little bit slower, since we could otherwise
-        # extract the emails when the user runs getEmails(), but is actually
+        # extract the emails when the user runs get_emails(), but is actually
         # part of a memory usage improvement where the body is NOT saved
         # as an attribute
         self._regex_url_parse(body)
@@ -221,7 +221,7 @@ class SGMLParser(BaseParser):
         '''
         return self._forms        
 
-    def getForms(self):
+    def get_forms(self):
         return self.forms
     
     @property
@@ -236,7 +236,7 @@ class SGMLParser(BaseParser):
         '''
         return (list(self._parsed_urls), list(self._re_urls-self._parsed_urls))
         
-    def getReferences(self):
+    def get_references(self):
         return self.references
     
     @property
@@ -246,7 +246,7 @@ class SGMLParser(BaseParser):
         '''
         return set(self._comments_in_doc)
 
-    def getComments(self):
+    def get_comments(self):
         return self.comments
     
     @property
@@ -256,7 +256,7 @@ class SGMLParser(BaseParser):
         '''
         return set(self._scripts_in_doc)
     
-    def getScripts(self):
+    def get_scripts(self):
         return self.scripts
     
     @property
@@ -266,7 +266,7 @@ class SGMLParser(BaseParser):
         '''
         return self._meta_redirs
         
-    def getMetaRedir(self):
+    def get_meta_redir(self):
         return self.meta_redirs
     
     @property
@@ -276,10 +276,10 @@ class SGMLParser(BaseParser):
         '''
         return self._meta_tags
     
-    def getMetaTags(self):
+    def get_meta_tags(self):
         return self.meta_tags
         
-    def getReferencesOfTag(self, tagType):
+    def get_references_of_tag(self, tagType):
         '''
         @return: A list of the URLs that the parser found in a tag of
             tagType = "tagType" (i.e img, a)

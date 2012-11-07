@@ -140,7 +140,7 @@ class global_redirect(AuditPlugin):
             # Failed to find a suitable parser for the document
             return False
         else:
-            for redir in dp.getMetaRedir():
+            for redir in dp.get_meta_redir():
                 match_url = self._meta_url_re.match(redir)
                 if match_url:
                     url = match_url.group(1)

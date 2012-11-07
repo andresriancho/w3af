@@ -138,7 +138,7 @@ class finger_google(InfrastructurePlugin):
             pass
         else:
             # Search for email addresses
-            for mail in document_parser.getEmails( self._domain_root ):
+            for mail in document_parser.get_emails( self._domain_root ):
                 if mail not in self._accounts:
                     self._accounts.append( mail )
                     

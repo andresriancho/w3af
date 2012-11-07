@@ -125,16 +125,16 @@ class HTMLParser(SGMLParser):
         
         # We are working with the last form
         form_obj = self._forms[-1]
-        type = attrs.get('type', '').lower()
+        _type = attrs.get('type', '').lower()
         items = attrs.items()
         
-        if type == 'file':
+        if _type == 'file':
             # Let the form know, that this is a file input
             form_obj.hasFileInput = True
             form_obj.addFileInput(items)
-        elif type == 'radio':
+        elif _type == 'radio':
             form_obj.addRadio(items)
-        elif type == 'checkbox':
+        elif _type == 'checkbox':
             form_obj.addCheckBox(items)
         else:
             # Simply add all the other input types

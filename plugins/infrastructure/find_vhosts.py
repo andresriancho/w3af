@@ -137,7 +137,7 @@ class find_vhosts(InfrastructurePlugin):
         #
         # In this case, and because I'm only going to use the domain name of the URL
         # I'm going to trust the re_references also.
-        parsed_references, re_references = dp.getReferences()
+        parsed_references, re_references = dp.get_references()
         parsed_references.extend(re_references)
         
         res = []

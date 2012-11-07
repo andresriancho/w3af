@@ -1,5 +1,5 @@
 '''
-documentParser.py
+DocumentParser.py
 
 Copyright 2006 Andres Riancho
 
@@ -28,20 +28,20 @@ except ImportError:
     import pyPdf
 
 import core.data.parsers.htmlParser as htmlParser
-import core.data.parsers.pdfParser as pdfParser
+import core.data.parsers.pdf as PDFParser
 import core.data.parsers.swfParser as swfParser
 import core.data.parsers.wmlParser as wmlParser
 
 from core.controllers.w3afException import w3afException
 
 
-class documentParser(object):
+class DocumentParser(object):
     '''
     This class is a document parser.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, HTTPResponse):
+    def __init__(self, http_resp):
 
         # Create the proper parser instance, please note that
         # the order in which we ask for the type is not random,
@@ -50,30 +50,33 @@ class documentParser(object):
         # a very specific thing to match, then we try text or HTML
         # which is very generic (if we would have exchanged these two
         # we would have never got to WML), etc.
-        if HTTPResponse.is_image():
+        if http_resp.is_image():
             msg = 'There is no parser for images.'
             raise w3afException(msg)
-        elif self._isWML(HTTPResponse):
-            parser = wmlParser.wmlParser(HTTPResponse)
-        elif HTTPResponse.is_text_or_html():
-            parser = htmlParser.HTMLParser(HTTPResponse)
-        elif self._isPDF(HTTPResponse):
-            parser = pdfParser.pdfParser(HTTPResponse)
-        elif self._isSWF(HTTPResponse):
-            parser = swfParser.swfParser(HTTPResponse)
+        elif self._is_wml(http_resp):
+            parser = wmlParser.wmlParser(http_resp)
+        elif http_resp.is_text_or_html():
+            parser = htmlParser.HTMLParser(http_resp)
+        elif self._is_pdf(http_resp):
+            parser = PDFParser.PDFParser(http_resp)
+        elif self._is_swf(http_resp):
+            parser = swfParser.swfParser(http_resp)
         else:
-            msg = 'There is no parser for "%s".' % HTTPResponse.getURL()
+            msg = 'There is no parser for "%s".' % http_resp.getURL()
             raise w3afException(msg)
         
         self._parser = parser
     
-    def _isPDF(self, HTTPResponse):
+    def _is_pdf(self, http_resp):
         '''
-        @HTTPResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
-        @return: True if the document parameter is a string that contains a PDF document.
+        @param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
+        
+        @return: True if the document parameter is a string that contains a PDF
+                 document.
         '''
-        if HTTPResponse.content_type in ('application/x-pdf', 'application/pdf'):
-            document = HTTPResponse.body
+        if http_resp.content_type in ('application/x-pdf', 'application/pdf'):
+            document = http_resp.body
             
             #   With the objective of avoiding this bug:
             #   https://sourceforge.net/tracker/?func=detail&atid=853652&aid=2954220&group_id=170274
@@ -94,13 +97,13 @@ class documentParser(object):
         
         return False
     
-    def _isSWF(self, HTTPResponse):
+    def _is_swf(self, http_resp):
         '''
-        @return: True if the HTTPResponse contains a SWF file.
+        @return: True if the http_resp contains a SWF file.
         '''
-        if HTTPResponse.content_type == 'application/x-shockwave-flash':
+        if http_resp.content_type == 'application/x-shockwave-flash':
             
-            body = HTTPResponse.getBody()
+            body = http_resp.getBody()
         
             if len(body) > 5:
                 magic = body[:3]
@@ -113,27 +116,30 @@ class documentParser(object):
     
     WML_RE = re.compile('<!DOCTYPE wml PUBLIC', re.IGNORECASE)
     
-    def _isWML( self, HTTPResponse ):
+    def _is_wml( self, http_resp ):
         '''
-        @HTTPResponse: A http response object that contains a document of type HTML / PDF / WML / etc.
-        @return: True if the document parameter is a string that contains a WML document.
+        @param http_resp: A http response object that contains a document of
+                          type HTML / PDF / WML / etc.
+                          
+        @return: True if the document parameter is a string that contains a
+                 WML document.
         '''
-        if HTTPResponse.content_type == 'text/vnd.wap.wml':
+        if http_resp.content_type == 'text/vnd.wap.wml':
         
-            document = HTTPResponse.getBody()
+            document = http_resp.getBody()
         
             if self.WML_RE.search( document ):
                 return True
         
         return False
         
-    def getForms( self ):
+    def get_forms( self ):
         '''
         @return: A list of forms.
         '''
-        return self._parser.getForms()
+        return self._parser.get_forms()
         
-    def getReferences( self ):
+    def get_references( self ):
         '''
         @return: A tuple that contains two lists:
             * URL objects extracted through parsing,
@@ -143,46 +149,46 @@ class documentParser(object):
         are much more accurate and they might deserve a different
         treatment.
         '''
-        return self._parser.getReferences()
+        return self._parser.get_references()
     
-    def getReferencesOfTag( self, tag ):
+    def get_references_of_tag( self, tag ):
         '''
-        @parameter tag: A tag object.
+        @param tag: A tag object.
         @return: A list of references related to the tag that is passed as parameter.
         '''
-        return self._parser.getReferencesOfTag( tag )
+        return self._parser.get_references_of_tag( tag )
         
-    def getEmails( self, domain=None ):
+    def get_emails( self, domain=None ):
         '''
-        @parameter domain: Indicates what email addresses I want to retrieve:   "*@domain".
+        @param domain: Indicates what email addresses I want to retrieve:   "*@domain".
         @return: A list of email accounts that are inside the document.
         '''
-        return self._parser.getEmails( domain )
+        return self._parser.get_emails( domain )
     
-    def getComments( self ):
+    def get_comments( self ):
         '''
         @return: A list of comments.
         '''
-        return self._parser.getComments()
+        return self._parser.get_comments()
     
-    def getScripts( self ):
+    def get_scripts( self ):
         '''
         @return: A list of scripts (like javascript).
         '''
-        return self._parser.getScripts()
+        return self._parser.get_scripts()
         
-    def getMetaRedir( self ):
+    def get_meta_redir( self ):
         '''
         @return: A list of the meta redirection tags.
         '''
-        return self._parser.getMetaRedir()
+        return self._parser.get_meta_redir()
         
-    def getMetaTags( self ):
+    def get_meta_tags( self ):
         '''
         @return: A list of all meta tags.
         '''
-        return self._parser.getMetaTags()
+        return self._parser.get_meta_tags()
     
     
-def document_parser_factory(HTTPResponse):
-    return documentParser(HTTPResponse)
+def document_parser_factory(http_resp):
+    return DocumentParser(http_resp)

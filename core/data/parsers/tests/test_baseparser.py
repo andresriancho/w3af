@@ -38,14 +38,14 @@ class TestBaseParser(unittest.TestCase):
         response = HTTPResponse( 200, '', Headers(), self.url, self.url )
         bp_inst = BaseParser(response)
         
-        self.assertEqual( bp_inst.getEmails(), [] )
+        self.assertEqual( bp_inst.get_emails(), [] )
         
-        self.assertRaises( NotImplementedError, bp_inst.getComments )
-        self.assertRaises( NotImplementedError, bp_inst.getForms )
-        self.assertRaises( NotImplementedError, bp_inst.getMetaRedir )
-        self.assertRaises( NotImplementedError, bp_inst.getMetaTags )
-        self.assertRaises( NotImplementedError, bp_inst.getReferences )
-        self.assertRaises( NotImplementedError, bp_inst.getScripts )
+        self.assertRaises( NotImplementedError, bp_inst.get_comments )
+        self.assertRaises( NotImplementedError, bp_inst.get_forms )
+        self.assertRaises( NotImplementedError, bp_inst.get_meta_redir )
+        self.assertRaises( NotImplementedError, bp_inst.get_meta_tags )
+        self.assertRaises( NotImplementedError, bp_inst.get_references )
+        self.assertRaises( NotImplementedError, bp_inst.get_scripts )
 
     
     def test_get_emails_filter(self):
@@ -53,10 +53,10 @@ class TestBaseParser(unittest.TestCase):
         bp_inst = BaseParser(response)
         bp_inst._emails = ['a@w3af.com', 'foo@not-w3af.com']
         
-        self.assertEqual( bp_inst.getEmails(), ['a@w3af.com', 'foo@not-w3af.com'])
+        self.assertEqual( bp_inst.get_emails(), ['a@w3af.com', 'foo@not-w3af.com'])
 
-        self.assertEqual( bp_inst.getEmails( domain='w3af.com'), ['a@w3af.com'])
-        self.assertEqual( bp_inst.getEmails( domain='not-w3af.com'), ['foo@not-w3af.com'])
+        self.assertEqual( bp_inst.get_emails( domain='w3af.com'), ['a@w3af.com'])
+        self.assertEqual( bp_inst.get_emails( domain='not-w3af.com'), ['foo@not-w3af.com'])
 
     def test_extract_emails_blank(self):
         self.assertEqual( self.bp_inst._extract_emails(''), [] )

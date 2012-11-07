@@ -1,5 +1,5 @@
 '''
-pdfParser.py
+PDFParser.py
 
 Copyright 2006 Andres Riancho
 
@@ -34,14 +34,15 @@ import StringIO
 import re
 
 
-class pdfParser(BaseParser):
+class PDFParser(BaseParser):
     '''
-    This class parses pdf documents to find emails and URLs. It's based in the pyPdf library.
+    This class parses pdf documents to find emails and URLs. It's based in the
+    pyPdf library.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, HTTPResponse):
-        super(pdfParser, self).__init__(HTTPResponse)
+        super(PDFParser, self).__init__(HTTPResponse)
         # Work !
         self._pre_parse(HTTPResponse.body)
         
@@ -72,7 +73,7 @@ class pdfParser(BaseParser):
                 om.out.debug('Exception in getPDFContent(), error: ' + str(e))
         return content
     
-    def getReferences( self ):
+    def get_references( self ):
         '''
         Searches for references on a page. w3af searches references in every html tag, including:
             - a
@@ -86,5 +87,5 @@ class pdfParser(BaseParser):
         '''
         return ([], list(self._re_urls))
         
-    getReferencesOfTag = getForms = getComments = \
-    getMetaRedir = getMetaTags = lambda *args, **kwds: []
+    get_references_of_tag = get_forms = get_comments = \
+    get_meta_redir = get_meta_tags = lambda *args, **kwds: []

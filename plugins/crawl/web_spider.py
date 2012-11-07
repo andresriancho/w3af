@@ -131,7 +131,7 @@ class web_spider(CrawlPlugin):
         # Note: I WANT to follow links that are in the 404 page.
         #
         
-        # Modified when I added the pdfParser
+        # Modified when I added the PDFParser
         # I had to add this x OR y stuff, just because I don't want 
         # the SGML parser to analyze a image file, its useless and
         # consumes CPU power.
@@ -150,7 +150,7 @@ class web_spider(CrawlPlugin):
                 # - The re_refs are the result of regular expressions,
                 # which in some cases are just false positives.
                 
-                parsed_refs, re_refs = doc_parser.getReferences()
+                parsed_refs, re_refs = doc_parser.get_references()
                 
                 # I also want to analyze all directories, if the URL I just
                 # fetched is:

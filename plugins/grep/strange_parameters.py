@@ -63,7 +63,7 @@ class strange_parameters(GrepPlugin):
             #
             # - The re_references are the result of regular expressions, which in some cases
             # are just false positives.
-            parsed_references, _ = dp.getReferences()
+            parsed_references, _ = dp.get_references()
             
             for ref in parsed_references:
                 

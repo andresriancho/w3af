@@ -78,7 +78,7 @@ class meta_tags(GrepPlugin):
             except w3afException:
                 pass
             else:
-                meta_tag_list = dp.getMetaTags()
+                meta_tag_list = dp.get_meta_tags()
                 
                 for tag in meta_tag_list:
                     tag_name = self._find_name( tag )

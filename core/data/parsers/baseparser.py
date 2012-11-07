@@ -75,7 +75,7 @@ class BaseParser(object):
         self._emails = set()
         self._re_urls = set()
 
-    def getEmails(self, domain=None):
+    def get_emails(self, domain=None):
         '''
         @param domain: Indicates what email addresses I want to retrieve.
                        All are returned if the domain is not set.
@@ -237,14 +237,14 @@ class BaseParser(object):
         
         return dec_url
 
-    def getForms(self):
+    def get_forms(self):
         '''
         @return: A list of forms.
         '''        
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getForms() method.')
+                                  'and implement the get_forms() method.')
         
-    def getReferences(self):
+    def get_references(self):
         '''
         Searches for references on a page. w3af searches references in every
         html tag, including:
@@ -259,32 +259,32 @@ class BaseParser(object):
                  trustworthy.
         '''
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getReferences() method.')
+                                  'and implement the get_references() method.')
         
-    def getComments(self):
+    def get_comments(self):
         '''
         @return: A list of comments.
         '''        
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getComments() method.')
+                                  'and implement the get_comments() method.')
     
-    def getScripts(self):
+    def get_scripts(self):
         '''
         @return: A list of scripts (like javascript).
         '''        
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getScripts() method.')
+                                  'and implement the get_scripts() method.')
         
-    def getMetaRedir(self):
+    def get_meta_redir(self):
         '''
         @return: Returns list of meta redirections.
         '''
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getMetaRedir() method.')
+                                  'and implement the get_meta_redir() method.')
     
-    def getMetaTags(self):
+    def get_meta_tags(self):
         '''
         @return: Returns list of all meta tags.
         '''
         raise NotImplementedError('You should create your own parser class '
-                                  'and implement the getMetaTags() method.')
+                                  'and implement the get_meta_tags() method.')

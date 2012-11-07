@@ -79,7 +79,7 @@ class html_comments(GrepPlugin):
             except w3afException:
                 return
             else:
-                for comment in dp.getComments():
+                for comment in dp.get_comments():
                     # These next two lines fix this issue:
                     # audit.ssi + grep.html_comments + web app with XSS = false positive
                     if request.sent( comment ):
