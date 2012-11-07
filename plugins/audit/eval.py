@@ -29,7 +29,8 @@ import core.data.kb.vuln as vuln
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
-from core.data.fuzzer.fuzzer import create_mutants, rand_alpha
+from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.utils import rand_alpha
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 

@@ -27,7 +27,7 @@ import tempfile
 import StringIO
 
 from core.controllers.misc.get_w3af_version import get_w3af_version
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 
 # String containing the versions for python, gtk and pygtk
 VERSIONS = '''

@@ -37,7 +37,7 @@ from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 from core.data.kb.shell import shell as shell
 
 #

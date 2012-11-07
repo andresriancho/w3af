@@ -25,13 +25,9 @@ import urllib
 import cgi
 import json
 
-from string import letters, digits
-from random import choice, randint
-
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
-from core.controllers.w3afException import w3afException
 from core.controllers.misc.io import NamedStringIO
 
 from core.data.dc.cookie import Cookie
@@ -40,15 +36,16 @@ from core.data.dc.dataContainer import DataContainer
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 
-from core.data.fuzzer.formFiller import smartFill
-from core.data.fuzzer.mutantQs import mutantQs
-from core.data.fuzzer.mutantPostData import mutantPostData
-from core.data.fuzzer.mutantFileName import mutantFileName
-from core.data.fuzzer.mutantUrlParts import mutantUrlParts
-from core.data.fuzzer.mutantHeaders import mutantHeaders
-from core.data.fuzzer.mutantJSON import mutantJSON
-from core.data.fuzzer.mutantCookie import mutantCookie
-from core.data.fuzzer.mutantFileContent import mutantFileContent
+from core.data.fuzzer.utils import rand_alpha
+from core.data.fuzzer.form_filler import smart_fill
+from core.data.fuzzer.mutants.querystring_mutant import mutantQs
+from core.data.fuzzer.mutants.postdata_mutant import mutantPostData
+from core.data.fuzzer.mutants.filename_mutant import mutantFileName
+from core.data.fuzzer.mutants.urlparts_mutant import mutantUrlParts
+from core.data.fuzzer.mutants.headers_mutant import mutantHeaders
+from core.data.fuzzer.mutants.json_mutant import mutantJSON
+from core.data.fuzzer.mutants.cookie_mutant import mutantCookie
+from core.data.fuzzer.mutants.filecontent_mutant import mutantFileContent
 
 #
 # The following is a list of parameter names that will be ignored during
@@ -483,7 +480,7 @@ def _create_mutantsWorker(freq, mutantClass, mutant_str_list,
                                         #
                                         #   Fill it smartly
                                         #
-                                        dc_copy[var_name_dc][element_index_dc] = smartFill(var_name_dc)
+                                        dc_copy[var_name_dc][element_index_dc] = smart_fill(var_name_dc)
 
                     # __HERE__
                     # Please see the comment above for an explanation of what we are doing here:
@@ -557,82 +554,6 @@ def _createUrlPartsMutants(freq, mutantClass, mutant_str_list, fuzzable_param_li
             m2.setDoubleEncoding(True)
             res.append(m2)
     return res
- 
-def rand_alpha(length=0):
-    '''
-    Create a random string ONLY with letters
-    
-    @return: A random string only composed by letters.
-
-    >>> x = rand_alpha( length=10 )
-    >>> len(x) == 10
-    True
-    >>> x = rand_alpha( length=20 )
-    >>> len(x) == 20
-    True
-    >>> x = rand_alpha( length=5 )
-    >>> y = rand_alpha( length=5 )
-    >>> z = rand_alpha( length=5 )
-    >>> w = rand_alpha( length=5 )
-    >>> x != y != z != w
-    True
-    '''
-    return ''.join(choice(letters) for x in xrange(length or randint(10, 30)))
-    
-def rand_alnum(length=0):
-    '''
-    Create a random string with random length
-    
-    @return: A random string of with length > 10 and length < 30.
-
-    >>> x = rand_number( length=10 )
-    >>> len(x) == 10
-    True
-    >>> x = rand_number( length=20 )
-    >>> len(x) == 20
-    True
-    >>> x = rand_number( length=5 )
-    >>> y = rand_number( length=5 )
-    >>> z = rand_number( length=5 )
-    >>> w = rand_number( length=5 )
-    >>> x != y != z != w
-    True
-    '''
-    jibber = ''.join([letters, digits])
-    return ''.join(choice(jibber) for x in xrange(length or randint(10, 30)))
-
-def rand_number(length=0, exclude_numbers=[]):
-    '''
-    Create a random string ONLY with numbers
-    
-    @return: A random string only composed by numbers.
-
-    >>> x = rand_number( length=1 )
-    >>> int(x) in range(10)
-    True
-    >>> x = rand_number( length=2 )
-    >>> int(x) in range(100)
-    True
-    >>> x = rand_number( length=3 )
-    >>> int(x) in range(1000)
-    True
-    '''
-    ru = ''.join(choice(digits) for x in xrange(length or randint(10, 30)))
-        
-    if int(ru) in exclude_numbers:
-        try:
-            return rand_number(length, exclude_numbers)
-        except:
-            # a recursion exceeded could happend here.
-            raise w3afException('Failed return random number.')
-    return ru
-    
-def create_format_string(length):
-    '''
-    @return: A string with $length %s and a final %n
-    '''
-    result = '%n' * length
-    return result
 
 def _createFuzzable(freq):
     '''

@@ -26,7 +26,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.fuzzer.fuzzer import rand_alpha
+from core.data.fuzzer.utils import rand_alpha
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.parsers.url import URL
 from core.controllers.w3afException import w3afException

@@ -32,7 +32,7 @@ from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.dc import form
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 
 
 class form_auth(BruteforcePlugin):

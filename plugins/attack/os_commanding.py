@@ -25,7 +25,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.data.kb.exec_shell import exec_shell as exec_shell
-from core.data.fuzzer.fuzzer import rand_alpha
+from core.data.fuzzer.utils import rand_alpha
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.w3afException import w3afException

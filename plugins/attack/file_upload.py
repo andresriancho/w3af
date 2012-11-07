@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 import core.controllers.outputManager as om
 
 # options

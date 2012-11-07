@@ -30,7 +30,7 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.fuzzer.fuzzer import rand_alpha
+from core.data.fuzzer.utils import rand_alpha
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 

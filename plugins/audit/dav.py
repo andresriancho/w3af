@@ -25,7 +25,7 @@ import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.fuzzer.fuzzer import rand_alpha, rand_alnum
+from core.data.fuzzer.utils import rand_alpha, rand_alnum
 from core.data.dc.headers import Headers
 from core.controllers.plugins.audit_plugin import AuditPlugin
 

@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.outputManager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -28,7 +27,8 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.w3afException import w3afException, w3afMustStopException
-from core.data.fuzzer.fuzzer import create_mutants, rand_alpha
+from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.utils import rand_alpha
 from core.data.esmre.multi_in import multi_in
 
 

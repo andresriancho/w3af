@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.data.fuzzer.fuzzer import rand_number
+from core.data.fuzzer.utils import rand_number
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.controllers.misc.diff import diff
 

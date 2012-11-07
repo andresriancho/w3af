@@ -41,7 +41,8 @@ from core.controllers.w3afException import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import STRING, PORT, BOOL
 from core.data.options.option_list import OptionList
-from core.data.fuzzer.fuzzer import create_mutants, rand_alnum
+from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.utils import rand_alnum
 from core.data.parsers.url import URL
 
 

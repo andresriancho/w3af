@@ -30,7 +30,7 @@ from core.controllers.w3afException import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.parsers.url import URL
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 
 
 class afd(InfrastructurePlugin):

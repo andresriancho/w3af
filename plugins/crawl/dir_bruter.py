@@ -32,7 +32,7 @@ from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, BOOL
 from core.data.options.option_list import OptionList
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 from core.data.db.disk_set import disk_set
 
 

@@ -26,7 +26,8 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.fuzzer.fuzzer import create_mutants, create_format_string
+from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.utils import create_format_string
 
 
 class format_string(AuditPlugin):

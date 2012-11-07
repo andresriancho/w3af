@@ -28,7 +28,7 @@ import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
-from core.data.fuzzer.fuzzer import rand_alpha
+from core.data.fuzzer.utils import rand_alpha
 from core.data.db.temp_shelve import temp_shelve
 from core.data.db.disk_list import disk_list
 from core.data.esmre.multi_in import multi_in

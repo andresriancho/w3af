@@ -27,7 +27,7 @@ import core.controllers.daemons.webserver as webserver
 import plugins.attack.payloads.shell_handler as shell_handler
 import core.data.constants.ports as ports
 
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.attack_plugin import AttackPlugin

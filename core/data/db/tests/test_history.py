@@ -30,7 +30,7 @@ import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.history import HistoryItem
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
 from core.data.parsers.url import URL
 from core.data.url.HTTPResponse import HTTPResponse

@@ -37,7 +37,7 @@ from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from core.data.db.variant_db import VariantDB
 from core.data.db.disk_set import disk_set
 from core.data.dc.headers import Headers
-from core.data.fuzzer.formFiller import smartFill
+from core.data.fuzzer.form_filler import smart_fill
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import BOOL, REGEX
 from core.data.options.option_list import OptionList
@@ -94,7 +94,7 @@ class web_spider(CrawlPlugin):
                 self._target_domain = targets[0].getDomain()
 
         #
-        # If it is a form, then smartFill the parameters to send something that
+        # If it is a form, then smart_fill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
         if isinstance(fuzzable_req, HTTPPostDataRequest):
@@ -228,7 +228,7 @@ class web_spider(CrawlPlugin):
                     continue
                 
                 # SmartFill it!
-                to_send[param_name][elem_index] = smartFill(param_name)
+                to_send[param_name][elem_index] = smart_fill(param_name)
                 
         fuzzable_req.setDc(to_send)
         return fuzzable_req 

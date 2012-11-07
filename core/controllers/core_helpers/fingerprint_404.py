@@ -29,7 +29,7 @@ import core.data.kb.config as cf
 import core.controllers.outputManager as om
 
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 
 from core.controllers.w3afException import w3afException
 from core.controllers.threads.threadManager import thread_manager

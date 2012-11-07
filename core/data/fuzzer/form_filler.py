@@ -103,10 +103,10 @@ def get_match_rate(variable_name, variable_name_db):
         match_rate += len(variable_name) / 2
     return match_rate
 
-def smartFill( variable_name ):
+def smart_fill( variable_name ):
     '''
     This method returns a "smart" option for a variable name inside a form. For
-    example, if the variable_name is "username" a smartFill response would be
+    example, if the variable_name is "username" a smart_fill response would be
     "john1309", not "0800-111-2233". This helps A LOT with server side validation.
     
     @return: The "most likely to be validated as a good value" string, OR '5672'
@@ -144,7 +144,7 @@ def smartFill( variable_name ):
         return possible_results[0][0]
         
     else:
-        msg = '[smartFill] Failed to find a value for parameter with name "'
+        msg = '[smart_fill] Failed to find a value for parameter with name "'
         msg += variable_name + '".'
         om.out.debug( msg )
         
