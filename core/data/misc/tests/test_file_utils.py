@@ -1,5 +1,5 @@
 '''
-ports.py
+test_file_utils.py
 
 Copyright 2006 Andres Riancho
 
@@ -19,22 +19,21 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import unittest
+import os
 
-'''
-This file was created to organize the port assignment inside w3af, no plugin or
-core class should have a hard-coded ports, all ports MUST be assigned here.
-'''
+from core.data.misc.file_utils import days_since_file_update
 
-MAILER = 25
 
-WEBUI = 44440
-LOCALPROXY = 44442
-WEB20SPIDER = 44443
-SPIDERMAN = 44444
+class TestFileUtils(unittest.TestCase):
+    
+    def test_days_since_file_update_true(self):
+        filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
+        result = days_since_file_update(filename, 0)
+        self.assertTrue(result)
 
-GOOGLEPROXY = 44446
-RFIPROXY = 44447
-RFIPROXY2 = 44448
-REMOTEFILEINCLUDE = 44449
-RFI_SHELL = 44450
-
+    def test_days_since_file_update_false(self):
+        filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
+        result = days_since_file_update(filename, 309**32)
+        self.assertFalse(result)
+        

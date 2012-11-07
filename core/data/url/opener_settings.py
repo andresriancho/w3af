@@ -1,5 +1,5 @@
 '''
-urlOpenerSettings.py
+opener_settings.py
 
 Copyright 2006 Andres Riancho
 
@@ -46,7 +46,7 @@ from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
 
 
-class urlOpenerSettings( configurable ):
+class OpenerSettings(configurable):
     '''
     This is a urllib2 configuration manager.
     
@@ -73,9 +73,11 @@ class urlOpenerSettings( configurable ):
         self.need_update = True
         
         #
-        #   I've found some websites that check the user-agent string, and don't allow you to access
-        #   if you don't have IE (mostly ASP.NET applications do this). So now we use the following
-        #   user-agent string in w3af:
+        #    I've found some websites that check the user-agent string, and 
+        #    don't allow you to access if you don't have IE (mostly ASP.NET
+        #    applications do this). So now we use the following user-agent
+        #    string in w3af:
+        #
         user_agent = 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0;'
         user_agent += ' w3af.sf.net)'
         #   which basically is the UA for IE8 running in Windows 7, plus our website :)

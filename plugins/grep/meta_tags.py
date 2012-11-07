@@ -74,7 +74,7 @@ class meta_tags(GrepPlugin):
             self._already_inspected.add(uri)
             
             try:
-                dp = dpCache.dpc.getDocumentParserFor( response )
+                dp = dpCache.dpc.get_document_parser_for( response )
             except w3afException:
                 pass
             else:

@@ -35,7 +35,7 @@ from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
 
 import core.controllers.outputManager as om
 import core.data.kb.config as cf
-import urlOpenerSettings
+import opener_settings
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
@@ -66,7 +66,7 @@ class xUrllib(object):
     '''
     
     def __init__(self):
-        self.settings = urlOpenerSettings.urlOpenerSettings()
+        self.settings = opener_settings.OpenerSettings()
         self._opener = None
         self._memory_usage_counter = 0
         self._non_targets = None
@@ -302,7 +302,7 @@ class xUrllib(object):
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
         HTTP GET a URI using a proxy, user agent, and other settings
-        that where previously set in urlOpenerSettings.py .
+        that where previously set in opener_settings.py .
         
         @param uri: This is the URI to GET, with the query string included.
         @param data: Only used if the uri parameter is really a URL. The data 

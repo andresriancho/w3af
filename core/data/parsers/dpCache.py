@@ -47,7 +47,7 @@ class dpCache(object):
         self._calculated_more_than_once = 0.0
         self._total = 0.0
                 
-    def getDocumentParserFor(self, HTTPResponse):
+    def get_document_parser_for(self, HTTPResponse):
         res = None
         
         #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with

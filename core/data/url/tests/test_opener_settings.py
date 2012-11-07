@@ -1,7 +1,7 @@
 '''
-ports.py
+test_opener_settings.py
 
-Copyright 2006 Andres Riancho
+Copyright 2012 Andres Riancho
 
 This file is part of w3af, w3af.sourceforge.net .
 
@@ -19,22 +19,19 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import unittest
 
-'''
-This file was created to organize the port assignment inside w3af, no plugin or
-core class should have a hard-coded ports, all ports MUST be assigned here.
-'''
+from core.data.url.opener_settings import OpenerSettings
 
-MAILER = 25
-
-WEBUI = 44440
-LOCALPROXY = 44442
-WEB20SPIDER = 44443
-SPIDERMAN = 44444
-
-GOOGLEPROXY = 44446
-RFIPROXY = 44447
-RFIPROXY2 = 44448
-REMOTEFILEINCLUDE = 44449
-RFI_SHELL = 44450
-
+class TestOpenerSettings(unittest.TestCase):
+    
+    def setUp(self):
+        self.os = OpenerSettings()
+        
+    def test_options(self):
+        options = self.os.get_options()
+        self.os.set_options(options)
+    
+    def test_desc(self):
+        self.os.get_desc()
+        

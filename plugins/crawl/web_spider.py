@@ -138,7 +138,7 @@ class web_spider(CrawlPlugin):
         if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
             original_url = resp.getRedirURI()
             try:
-                doc_parser = dpCache.dpc.getDocumentParserFor(resp)
+                doc_parser = dpCache.dpc.get_document_parser_for(resp)
             except w3afException, w3:
                 om.out.debug('Failed to find a suitable document parser. '
                              'Exception "%s"' % w3)

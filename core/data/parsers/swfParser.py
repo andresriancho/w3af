@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import zlib
 
 from core.data.parsers.baseparser import BaseParser
@@ -27,7 +26,8 @@ from core.data.parsers.baseparser import BaseParser
 
 class swfParser(BaseParser):
     '''
-    This class is a SWF (flash) parser. This is the first version, so don't expect much!
+    This class is a SWF (flash) parser. This is the first version, so don't
+    expect much!
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -89,19 +89,21 @@ class swfParser(BaseParser):
     
     def get_references(self):
         '''
-        Searches for references on a page. w3af searches references in every html tag, including:
+        Searches for references on a page. w3af searches references in every
+        html tag, including:
             - a
             - forms
             - images
             - frames
             - etc.
         
-        @return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
-        regular expression. The second list if less trustworthy.
+        @return: Two lists, one with the parsed URLs, and one with the URLs
+                 that came out of a regular expression. The second list if less
+                 trustworthy.
         '''        
         return ([], list(self._re_urls))
         
-    def _returnEmptyList(self, *args, **kwds):
+    def _return_empty_list(self, *args, **kwds):
         '''
         This method is called (see below) when the caller invokes one of:
             - get_forms
@@ -115,5 +117,6 @@ class swfParser(BaseParser):
         '''
         return []
         
-    get_references_of_tag = get_forms = get_comments = get_meta_redir = get_meta_tags = _returnEmptyList
+    get_references_of_tag = get_forms = get_comments = _return_empty_list
+    get_meta_redir = get_meta_tags = _return_empty_list
 

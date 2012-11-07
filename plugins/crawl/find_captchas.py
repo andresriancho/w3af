@@ -108,7 +108,7 @@ class find_captchas(CrawlPlugin):
         else:
             # Do not use dpCache here, it's not good since CAPTCHA implementations
             # *might* change the image name for each request of the HTML
-            #dp = dpCache.dpc.getDocumentParserFor( response )
+            #dp = dpCache.dpc.get_document_parser_for( response )
             try:
                 document_parser = DocumentParser.DocumentParser( response )
             except w3afException:

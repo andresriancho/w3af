@@ -289,8 +289,8 @@ class profile(object):
         Get the http settings options.
         @return: The http settings in an OptionList
         '''
-        import core.data.url.urlOpenerSettings as urlOpenerSettings
-        url_settings = urlOpenerSettings.urlOpenerSettings()
+        import core.data.url.opener_settings as opener_settings
+        url_settings = opener_settings.OpenerSettings()
         return self._get_x_settings('http-settings', url_settings)
         
     def _get_x_settings( self, section, configurable_instance ):

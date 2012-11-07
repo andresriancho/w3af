@@ -73,7 +73,7 @@ class get_emails(GrepPlugin):
         @return: None
         '''
         try:
-            dp = dpCache.dpc.getDocumentParserFor( response )
+            dp = dpCache.dpc.get_document_parser_for( response )
         except w3afException:
             msg = 'If I can\'t parse the document, I won\'t be able to find any'
             msg += ' emails. Ignoring the response for "%s".'

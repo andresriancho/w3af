@@ -119,7 +119,7 @@ class find_vhosts(InfrastructurePlugin):
         base_resp_body = base_response.getBody()
         
         try:
-            dp = dpCache.dpc.getDocumentParserFor(original_response)
+            dp = dpCache.dpc.get_document_parser_for(original_response)
         except w3afException:
             # Failed to find a suitable parser for the document
             return []

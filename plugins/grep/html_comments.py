@@ -75,7 +75,7 @@ class html_comments(GrepPlugin):
         '''
         if response.is_text_or_html():
             try:
-                dp = dpCache.dpc.getDocumentParserFor( response )
+                dp = dpCache.dpc.get_document_parser_for( response )
             except w3afException:
                 return
             else:

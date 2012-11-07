@@ -135,7 +135,7 @@ class global_redirect(AuditPlugin):
         Test for meta redirects
         '''
         try:
-            dp = dpCache.dpc.getDocumentParserFor( response )
+            dp = dpCache.dpc.get_document_parser_for( response )
         except w3afException:
             # Failed to find a suitable parser for the document
             return False

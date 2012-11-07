@@ -93,7 +93,7 @@ class finger_bing(InfrastructurePlugin):
             
             # I have the response object!
             try:
-                document_parser = dpCache.dpc.getDocumentParserFor(response)
+                document_parser = dpCache.dpc.get_document_parser_for(response)
             except w3afException:
                 # Failed to find a suitable parser for the document
                 pass
