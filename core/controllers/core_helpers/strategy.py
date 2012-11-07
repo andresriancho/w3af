@@ -23,7 +23,7 @@ import Queue
 
 from multiprocessing import TimeoutError
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 import core.controllers.outputManager as om
 

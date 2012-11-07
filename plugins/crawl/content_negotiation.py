@@ -26,7 +26,7 @@ import Queue
 from itertools import izip, repeat
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin

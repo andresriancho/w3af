@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from lxml import etree
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin

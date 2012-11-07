@@ -26,7 +26,7 @@ import core.controllers.outputManager as om
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.parsers.url import URL
-from core.data.kb.knowledgeBase import kb
+from core.data.kb.knowledge_base import kb
 from core.data.kb.info import info
 from core.data.dc.queryString import QueryString
 

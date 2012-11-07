@@ -29,7 +29,7 @@ from core.data.esmre.multi_re import multi_re
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 

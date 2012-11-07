@@ -26,7 +26,7 @@ import time
 import threading
 
 import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.controllers.outputManager as om
 
 from core.controllers.extrusionScanning.server.extrusionServer import extrusionServer

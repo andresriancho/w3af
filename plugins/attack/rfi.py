@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.controllers.daemons.webserver as webserver
 import plugins.attack.payloads.shell_handler as shell_handler
 import core.data.constants.ports as ports

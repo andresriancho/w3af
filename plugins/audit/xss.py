@@ -23,7 +23,7 @@ import re
 
 import core.controllers.outputManager as om
 import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin

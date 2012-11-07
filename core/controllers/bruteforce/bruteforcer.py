@@ -24,7 +24,7 @@ import os.path
 from itertools import chain
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.make_leet import make_leet
 from core.controllers.misc.itertools_toolset import unique_everseen

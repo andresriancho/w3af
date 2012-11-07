@@ -30,7 +30,7 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.w3afException import w3afException, w3afRunOnce
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.data.parsers.url import URL

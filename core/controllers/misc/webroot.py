@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.data.parsers.url import URL
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 
 def get_webroot_dirs( domain=None ):

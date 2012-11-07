@@ -23,7 +23,7 @@ import os
 import xml.dom.minidom
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity

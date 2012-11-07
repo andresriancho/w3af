@@ -23,7 +23,7 @@ from itertools import chain
 from lxml import etree
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter

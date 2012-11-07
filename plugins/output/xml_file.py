@@ -27,7 +27,7 @@ import xml.dom.minidom
 from functools import partial
 
 import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.misc import get_w3af_version

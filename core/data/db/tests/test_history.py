@@ -26,7 +26,7 @@ import os.path
 from nose.plugins.attrib import attr
 
 import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
 from core.data.db.history import HistoryItem

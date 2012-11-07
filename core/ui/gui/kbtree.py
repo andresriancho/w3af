@@ -21,9 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import gtk, gobject
 
-import core.data.kb.knowledgeBase as kb
-from core.ui.gui import helpers, exploittab
+import core.data.kb.knowledge_base as kb
 import core.data.kb
+
+from core.ui.gui import helpers, exploittab
 
 TYPES_OBJ = {
     core.data.kb.vuln.vuln: "vuln",
@@ -167,7 +168,8 @@ class KBTree(gtk.TreeView):
                         maxvariablevel = max(maxvariablevel, colorlevel)
                         # the type must be in the filter, and be in True
                         if self.filter.get(type_obj,False): 
-                            holdvariab.append((idobject, obj, type_obj, severity, helpers.KB_COLORS[colorlevel]))
+                            holdvariab.append((idobject, obj, type_obj, severity,
+                                               helpers.KB_COLORS[colorlevel]))
                 else:
                     # Not a list, try to show it anyway
                     # This is an ugly hack, because these structures in the core
@@ -256,7 +258,8 @@ class KBTree(gtk.TreeView):
                 self.treestore[treeplugin][6] = child_count = '( ' + str(len(plugvalues)) + ' )'
             else:
                 child_count = '( ' + str(len(plugvalues)) + ' )'
-                treeplugin = treestore.append(None, [None, pluginname, 0, None, 0, plugincolor, child_count])
+                treeplugin = treestore.append(None, [None, pluginname, 0, None,
+                                                     0, plugincolor, child_count])
                 holdplugin = {}
                 pathplugin = treestore.get_path(treeplugin)
                 treeholder[pluginname] = (pathplugin, holdplugin)
@@ -272,7 +275,10 @@ class KBTree(gtk.TreeView):
                     self.treestore[treevariab][6] = child_count = '( ' + str(len(variabobjects)) + ' )'
                 else:
                     child_count = '( ' + str(len(variabobjects)) + ' )'
-                    treevariab = treestore.append(treeplugin, [None, variabname, 0, None, 0, variabcolor, child_count])
+                    treevariab = treestore.append(treeplugin, [None, variabname,
+                                                               0, None, 0,
+                                                               variabcolor,
+                                                               child_count])
                     holdvariab = set()
                     pathvariab = treestore.get_path(treevariab)
                     holdplugin[variabname] = (pathvariab, holdvariab)

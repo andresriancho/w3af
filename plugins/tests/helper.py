@@ -24,7 +24,7 @@ import unittest
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH

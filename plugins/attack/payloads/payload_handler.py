@@ -62,7 +62,7 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
         #    I need.
         
         #    The import needs to be here, don't ask why :P
-        import core.data.kb.knowledgeBase as kb
+        import core.data.kb.knowledge_base as kb
         
         available_shells = kb.kb.getAllShells()
         for shell in available_shells:

@@ -26,7 +26,7 @@ from mock import patch, call
 
 import plugins.infrastructure.http_vs_https_dist as hvshsdist
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.parsers.url import URL

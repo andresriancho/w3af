@@ -26,7 +26,7 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
 from plugins.grep.ssndata.ssnAreasGroups import areas_groups_map
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 

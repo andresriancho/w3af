@@ -31,7 +31,7 @@ from core.ui.gui import kbtree, httpLogTab, reqResViewer, craftedRequests, entri
 from extlib.xdot import xdot
 from core.data.db.history import HistoryItem
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.controllers.outputManager as om
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5

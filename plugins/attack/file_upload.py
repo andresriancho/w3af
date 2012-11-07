@@ -28,7 +28,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.attack_plugin import AttackPlugin
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.parsers.url import parse_qs

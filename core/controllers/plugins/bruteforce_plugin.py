@@ -23,7 +23,7 @@ import os.path
 
 from itertools import izip, repeat
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.bruteforce.bruteforcer import (user_password_bruteforcer,

@@ -22,7 +22,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 
 from core.controllers.plugins.output_plugin import OutputPlugin

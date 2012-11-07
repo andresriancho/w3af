@@ -1,4 +1,4 @@
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 from plugins.attack.payloads.base_payload import base_payload
 from core.ui.console.tables import table
 

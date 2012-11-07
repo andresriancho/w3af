@@ -27,7 +27,7 @@ import codecs
 
 from string import Template
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
 

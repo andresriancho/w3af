@@ -36,7 +36,7 @@ except ImportError:
     from StringIO import StringIO
 
 import core.data.kb.config as cf
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 from core.controllers.w3afException import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead

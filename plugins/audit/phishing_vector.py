@@ -23,7 +23,7 @@ from __future__ import with_statement
 
 from lxml import etree
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 

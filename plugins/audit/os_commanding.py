@@ -23,7 +23,7 @@ from __future__ import with_statement
 
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin

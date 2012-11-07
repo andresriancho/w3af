@@ -23,7 +23,7 @@ import copy
 
 import core.controllers.outputManager as om
 import core.data.request.HTTPPostDataRequest as HTTPPostDataRequest
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.w3afException import w3afException
 from core.controllers.plugins.plugin import Plugin

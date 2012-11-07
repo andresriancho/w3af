@@ -41,7 +41,7 @@ import Halberd.version as halberd_shell_version
 import Halberd.clues.analysis as halberd_analysis
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as infokb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin

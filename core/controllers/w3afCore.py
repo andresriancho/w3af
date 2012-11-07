@@ -49,7 +49,7 @@ from core.controllers.w3afException import (w3afException, w3afMustStopException
                                             w3afMustStopByUserRequest)
 
 from core.data.url.xUrllib import xUrllib
-from core.data.kb.knowledgeBase import kb
+from core.data.kb.knowledge_base import kb
 
 
 class w3afCore(object):

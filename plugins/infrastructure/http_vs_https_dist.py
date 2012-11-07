@@ -25,7 +25,7 @@ from scapy.all import traceroute
 
 import core.controllers.outputManager as om
 import core.data.kb.info as info
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce

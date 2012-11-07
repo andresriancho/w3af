@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import repeat, izip
 
 import core.data.kb.info as info
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin

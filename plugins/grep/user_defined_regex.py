@@ -23,7 +23,7 @@ import os
 import re
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.w3afException import w3afException

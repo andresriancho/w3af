@@ -23,7 +23,7 @@ import hashlib
 
 import core.controllers.outputManager as om
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.parsers.documentParser as documentParser
 

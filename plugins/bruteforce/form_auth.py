@@ -24,7 +24,7 @@ from __future__ import with_statement
 from itertools import izip, repeat
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 

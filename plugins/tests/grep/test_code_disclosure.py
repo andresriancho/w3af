@@ -24,7 +24,7 @@ import unittest
 from itertools import repeat
 from mock import patch
 
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 
 from plugins.grep.code_disclosure import code_disclosure
 from core.data.url.HTTPResponse import HTTPResponse

@@ -27,7 +27,7 @@ import BaseHTTPServer
 from functools import partial
 
 import core.controllers.outputManager as om
-import core.data.kb.knowledgeBase as kb
+import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.controllers.daemons.webserver as webserver
