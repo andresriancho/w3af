@@ -38,7 +38,7 @@ class TestBaseParser(unittest.TestCase):
         response = HTTPResponse( 200, '', Headers(), self.url, self.url )
         bp_inst = BaseParser(response)
         
-        self.assertEqual( bp_inst.get_emails(), [] )
+        self.assertEqual( bp_inst.get_emails(), set() )
         
         self.assertRaises( NotImplementedError, bp_inst.get_comments )
         self.assertRaises( NotImplementedError, bp_inst.get_forms )
@@ -59,41 +59,41 @@ class TestBaseParser(unittest.TestCase):
         self.assertEqual( bp_inst.get_emails( domain='not-w3af.com'), ['foo@not-w3af.com'])
 
     def test_extract_emails_blank(self):
-        self.assertEqual( self.bp_inst._extract_emails(''), [] )
+        self.assertEqual( self.bp_inst._extract_emails(''), set() )
         
     def test_extract_emails_simple(self):
         input_str = u' abc@w3af.com '
-        expected_res = [u'abc@w3af.com']
+        expected_res = set([u'abc@w3af.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 
     def test_extract_emails_mailto(self):
         input_str = u'<a href="mailto:abc@w3af.com">test</a>'
-        expected_res = [u'abc@w3af.com']
+        expected_res = set([u'abc@w3af.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 
     def test_extract_emails_mailto_dup(self):
         input_str = u'<a href="mailto:abc@w3af.com">abc@w3af.com</a>'
-        expected_res = [u'abc@w3af.com']
+        expected_res = set([u'abc@w3af.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 
     def test_extract_emails_mailto_not_dup(self):
         input_str = u'<a href="mailto:abc@w3af.com">abc_def@w3af.com</a>'
-        expected_res = [u'abc@w3af.com', u'abc_def@w3af.com']
+        expected_res = set([u'abc@w3af.com', u'abc_def@w3af.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 
     def test_extract_emails_dash(self):
         input_str = u'header abc@w3af-scanner.com footer'
-        expected_res = [u'abc@w3af-scanner.com']
+        expected_res = set([u'abc@w3af-scanner.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 
     def test_extract_emails_number(self):
         input_str = u'header abc4def@w3af.com footer'
-        expected_res = [u'abc4def@w3af.com']
+        expected_res = set([u'abc4def@w3af.com'])
         self.assertEqual( self.bp_inst._extract_emails(input_str),
                           expected_res )
 

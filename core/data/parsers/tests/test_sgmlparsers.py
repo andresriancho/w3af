@@ -248,8 +248,8 @@ class TestSGMLParser(unittest.TestCase):
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
         p = _SGMLParser(_build_http_response(URL_INST, body))
-        emails = ['jandalia@bing.com', 'ariancho@gmail.com',
-                  u'name_with_ñ@w3af.it']
+        emails = set(['jandalia@bing.com', 'ariancho@gmail.com',
+                      u'name_with_ñ@w3af.it'])
         self.assertEquals(emails, p.get_emails())
 
     def test_parsed_references(self):

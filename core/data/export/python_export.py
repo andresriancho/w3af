@@ -54,18 +54,10 @@ def python_export( request_string ):
         
     res += 'headers = { \n'
     headers = http_request.getHeaders()
-    for header_name in headers:
-        #
-        # TODO: While this looks like it supports repeated parameter names,
-        # the generated code doesn't actually do it because the dict will
-        # ignore all but the last value:
-        #         >>> {1:2, 1:3}
-        #         {1: 3}
-        #
-        for header_value in headers[header_name]:
-            header_value = python_escape_string(header_value)
-            header_name = python_escape_string(header_name)        
-            res += '    "' + header_name + '" : "' + header_value + '",\n'
+    for header_name, header_value in headers.iteritems():
+        header_value = python_escape_string(header_value)
+        header_name = python_escape_string(header_name)        
+        res += '    "' + header_name + '" : "' + header_value + '",\n'
         
     res = res [:-2]
     res += '\n}\n'

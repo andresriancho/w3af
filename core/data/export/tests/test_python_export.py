@@ -59,8 +59,7 @@ url = "http://www.w3af.org/"
 data = "a=1&a=2"
 headers = { 
     "Host" : "www.w3af.org",
-    "Foo" : "spam",
-    "Foo" : "eggs"
+    "Foo" : "spam, eggs"
 }
 
 request = urllib2.Request(url, data, headers)
@@ -112,6 +111,6 @@ class TestPythonExport(unittest.TestCase):
                        'a=1&a=2"3'
         python_code = python_export(http_request)
         self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
-        self.assertTrue( 'a=1&a=2%223' in python_code)
-        self.assertTrue( "sp\\\"am" in python_code)
+        self.assertIn( 'a=1&a=2%223', python_code)
+        self.assertIn( "sp\\\"am", python_code)
         
