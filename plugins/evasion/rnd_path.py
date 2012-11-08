@@ -25,7 +25,6 @@ from core.controllers.plugins.evasion_plugin import EvasionPlugin
 
 from core.data.fuzzer.utils import rand_alnum
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
-from core.data.options.option_list import OptionList
 
 
 class rnd_path(EvasionPlugin):
@@ -41,7 +40,8 @@ class rnd_path(EvasionPlugin):
         '''
         Mangles the request
         
-        @param request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @param request: HTTPRequest instance that is going to be modified by
+                        the evasion plugin
         @return: The modified request
 
         >>> from core.data.parsers.url import URL

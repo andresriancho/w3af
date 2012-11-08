@@ -21,9 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 from core.controllers.plugins.evasion_plugin import EvasionPlugin
-from core.controllers.w3afException import w3afException
 
-from core.data.fuzzer.fuzzer import rand_alnum
+from core.data.fuzzer.utils import rand_alnum
 from core.data.parsers.url import parse_qs
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 

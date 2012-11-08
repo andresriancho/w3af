@@ -29,7 +29,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import create_mutants
-from core.data.fuzzer.HeadersMutant import HeadersMutant
+from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
