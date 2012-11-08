@@ -54,23 +54,22 @@ def ruby_export( request_string ):
         
     res += 'headers = { \n'
     headers = http_request.getHeaders()
-    for header_name in headers:
-        for header_value in headers[header_name]:
-            header_value = ruby_escape_string(header_value)        
-            header_name = ruby_escape_string(header_name)
-            res += '\t"' + header_name + '" => "' + header_value + '",\n'
+    for header_name, header_value in headers.iteritems():
+        header_value = ruby_escape_string(header_value)        
+        header_name = ruby_escape_string(header_name)
+        res += '    "' + header_name + '" => "' + header_value + '",\n'
         
     res = res [:-2]
     res += '\n}\n'
 
     method = http_request.get_method()
     res += 'res = Net::HTTP.start(url.host, url.port) do |http|\n'
-    res += '\thttp.use_ssl = '
+    res += '    http.use_ssl = '
     if http_request.getURL().getProtocol().lower() == 'https':
         res += 'true\n'
     else:
         res += 'false\n'
-    res += '\thttp.send_request("' + method + '", url.path, data, headers)\n'
+    res += '    http.send_request("' + method + '", url.path, data, headers)\n'
     res += 'end\n\n'
     res += 'puts res.body\n'
 
