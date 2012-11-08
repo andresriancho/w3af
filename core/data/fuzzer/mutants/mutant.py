@@ -197,7 +197,7 @@ class Mutant(object):
         
         result = []
         
-        if not data_container:
+        if data_container is None:
             data_container = freq.get_dc()
     
         for pname in data_container:

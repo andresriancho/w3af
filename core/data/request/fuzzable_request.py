@@ -64,7 +64,7 @@ class FuzzableRequest(disk_item):
         self._dc = dc or DataContainer()
         self._method = method
         self._headers = Headers(headers or ())
-        self._cookie = cookie
+        self._cookie = cookie or Cookie()
         self._data = None
         self.setURI(uri)
 
@@ -377,7 +377,7 @@ class FuzzableRequest(disk_item):
         elif isinstance(c, basestring):
             self._cookie = Cookie(c)
         elif c is None:
-            self._cookie = None
+            self._cookie = Cookie()
         else:
             fmt = '[FuzzableRequest error] set_cookie received: "%s": "%s".'
             error_str = fmt % (type(c), repr(c))
@@ -415,16 +415,10 @@ class FuzzableRequest(disk_item):
         return self._headers
     
     def getReferer(self):
-        if 'Referer' in self._headers:
-            return self._headers['Referer']
-        else:
-            return None
+        return self._headers.get('Referer', None)
     
     def get_cookie(self):
-        if self._cookie:
-            return self._cookie
-        else:
-            return None
+        return self._cookie
     
     def get_file_vars(self):
         return []
