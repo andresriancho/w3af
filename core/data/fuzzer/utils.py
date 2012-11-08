@@ -84,14 +84,17 @@ def rand_number(length=0, exclude_numbers=[]):
     >>> int(x) in range(1000)
     True
     '''
-    ru = ''.join(choice(digits) for _ in xrange(length or randint(10, 30)))
+    max_tries = 100
+    while True:
+                
+        ru = ''.join(choice(digits) for _ in xrange(length or randint(10, 30)))
+        if int(ru) not in exclude_numbers:
+            return ru
         
-    if int(ru) in exclude_numbers:
-        try:
-            return rand_number(length, exclude_numbers)
-        except:
-            # a recursion exceeded could happend here.
-            raise w3afException('Failed return random number.')
+        max_tries -= 1
+        if max_tries == 0:
+            raise ValueError('Failed return random number.')        
+        
     return ru
     
 def create_format_string(length):
