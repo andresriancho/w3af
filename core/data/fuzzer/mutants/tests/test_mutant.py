@@ -47,18 +47,6 @@ class TestMutant(unittest.TestCase):
         self.fuzzer_config = {}
         self.fuzzer_config['fuzz_form_files'] = 'gif'
     
-    def test_different_types(self):
-        mutant_kls_list = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
-                           HeadersMutant, JSONMutant, CookieMutant, FileContentMutant)
-    
-        mutant_types = []
-        
-        for mutant_kls in mutant_kls_list:
-            mutant_types.append( mutant_kls.get_mutant_type() )
-        
-        self.assertEqual(len(set(mutant_types)), len(mutant_kls_list), mutant_types)
-        
-    
     def test_mutant_creation(self): 
         self.dc['a'] = ['1',]
         self.dc['b'] = ['2',]
