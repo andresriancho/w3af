@@ -59,13 +59,13 @@ class test_knowledge_base(unittest.TestCase):
     def test_append_uniq_true(self):
         i1 = info()
         i1.setURI(URL('http://moth/abc.html?id=1'))
-        i1.setDc(QueryString([('id', '1')]))
-        i1.setVar('id')
+        i1.set_dc(QueryString([('id', '1')]))
+        i1.set_var('id')
 
         i2 = info()
         i2.setURI(URL('http://moth/abc.html?id=3'))
-        i2.setDc(QueryString([('id', '3')]))
-        i2.setVar('id')
+        i2.set_dc(QueryString([('id', '3')]))
+        i2.set_var('id')
         
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
@@ -74,13 +74,13 @@ class test_knowledge_base(unittest.TestCase):
     def test_append_uniq_false(self):
         i1 = info()
         i1.setURI(URL('http://moth/abc.html?id=1'))
-        i1.setDc(QueryString([('id', '1')]))
-        i1.setVar('id')
+        i1.set_dc(QueryString([('id', '1')]))
+        i1.set_var('id')
 
         i2 = info()
         i2.setURI(URL('http://moth/def.html?id=3'))
-        i2.setDc(QueryString([('id', '3')]))
-        i2.setVar('id')
+        i2.set_dc(QueryString([('id', '3')]))
+        i2.set_var('id')
         
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)

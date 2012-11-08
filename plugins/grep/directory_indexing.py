@@ -70,8 +70,8 @@ class directory_indexing(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.getURL().getDomainPath() in self._already_visited:
@@ -93,7 +93,7 @@ class directory_indexing(GrepPlugin):
                     msg += 'indexing vulnerability.'
                     v.set_desc( msg )
                     v.set_id( response.id )
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     path = response.getURL().getPath()
                     v.set_name( 'Directory indexing - ' + path )
                     kb.kb.append( self , 'directory' , v )

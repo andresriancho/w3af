@@ -118,7 +118,7 @@ def parse_xmlrpc(xml_string):
     '''
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
     
-    @parameter xml_string: The original XML string that we got from the browser.
+    @param xml_string: The original XML string that we got from the browser.
     
     @return: A handler that can then be used to access the result information from:
         - handler.fuzzable_parameters
@@ -132,9 +132,9 @@ def build_xmlrpc(xml_string, fuzzed_parameters):
     '''
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
     
-    @parameter xml_string: The original XML string that we got from the browser.
+    @param xml_string: The original XML string that we got from the browser.
     
-    @parameter fuzzed_parameters: The python list with the tuples that contain the fuzzed parameters.
+    @param fuzzed_parameters: The python list with the tuples that contain the fuzzed parameters.
     This list originally came from handler.fuzzable_parameters
     
     @return: The string with the new XMLRPC call to be sent to the server.

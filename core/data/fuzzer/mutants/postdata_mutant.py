@@ -19,39 +19,50 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.data.fuzzer.mutants.mutant import Mutant
+from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
-from core.data.fuzzer.mutant import mutant
 
-class PostDataMutant(mutant):
+class PostDataMutant(Mutant):
     '''
     This class is a post data mutant.
     '''
     def __init__( self, freq ):
-        mutant.__init__(self, freq)
+        Mutant.__init__(self, freq)
 
-    def getMutantType( self ):
+    def get_mutant_type( self ):
         return 'post data'
 
-    def foundAt(self):
+    def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed. This string is used like this:
-                - v.set_desc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        @return: A string representing WHAT was fuzzed.
         '''
-        res = ''
-        res += '"' + self.getURI() + '", using HTTP method '
+        res = '"' + self.getURI() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
         
         # Depending on the data container, print different things:
-        dc_length = 0
-        for i in self._freq._dc:
-            dc_length += len(i) + len(self._freq._dc[i])
+        dc_length = len(str(self.get_dc()))
+        
         if dc_length > 65:
-            res += '...' + self.getVar()  + '=' + self.getModValue() + '...'
-            res += '"'
+            res += '...' + self.get_var()  + '=' + self.get_mod_value() + '...'
         else:
-            res += str(self.getDc())
-            res += '".'
-            if len(self.getDc()) > 1:
-                res +=' The modified parameter was "' + self.getVar() +'".'
+            res += str(self.get_dc())
+        
+        res += '" which modifies the "%s" parameter.' % self.get_var()
         
         return res
+
+    @staticmethod
+    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+                       append, fuzzer_config):
+        '''
+        This is a very important method which is called in order to create
+        mutants. Usually called from fuzzer.py module.
+        '''
+        if not isinstance(freq, HTTPPostDataRequest):
+            return []
+                
+        return Mutant._create_mutants_worker(freq, PostDataMutant,
+                                             mutant_str_list,
+                                             fuzzable_param_list,
+                                             append, fuzzer_config)

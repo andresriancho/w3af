@@ -26,7 +26,7 @@ import random
 import core.controllers.outputManager as om
 
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 from core.data.parsers.encode_decode import urlencode
 from core.data.parsers.url import URL
 
@@ -102,7 +102,7 @@ class Form(DataContainer):
     def get_file_vars( self ):
         return self._files
 
-    def _setVar(self, name, value):
+    def _set_var(self, name, value):
         '''
         Auxiliary setter for name=value
         '''
@@ -113,7 +113,7 @@ class Form(DataContainer):
     def addFileInput( self, attrs ):
         '''
         Adds a file input to the Form
-        @parameter attrs: attrs=[("class", "screen")]
+        @param attrs: attrs=[("class", "screen")]
         '''
         name = ''
 
@@ -130,7 +130,7 @@ class Form(DataContainer):
 
         if name:
             self._files.append( name )
-            self._setVar(name, '')
+            self._set_var(name, '')
             # TODO: This does not work if there are different parameters in a form
             # with the same name, and different types
             self._types[name] = self.INPUT_TYPE_FILE
@@ -172,7 +172,7 @@ class Form(DataContainer):
             <INPUT type="text" name="email"><BR>
             <INPUT type="radio" name="sex" value="Male"> Male<BR>
         
-        @parameter attrs: attrs=[("class", "screen")]
+        @param attrs: attrs=[("class", "screen")]
         '''
         # Set the default input type to text.
         attr_type = self.INPUT_TYPE_TEXT
@@ -203,7 +203,7 @@ class Form(DataContainer):
         if attr_type == self.INPUT_TYPE_SUBMIT:
             self.addSubmit( name, value )
         else:
-            self._setVar(name, value)
+            self._set_var(name, value)
         
         # Save the attr_type
         self._types[name] = attr_type
@@ -274,9 +274,9 @@ class Form(DataContainer):
                     value = attr[1]
                     self._selects[name].append(value)
 
-        self._setVar(name, value)
+        self._set_var(name, value)
 
-    def getVariants(self, mode="tmb"):
+    def get_variants(self, mode="tmb"):
         """
         Generate all Form's variants by mode:
           "all" - all values
@@ -312,7 +312,7 @@ class Form(DataContainer):
                     '''
                     This handles "select" tags that have no options inside.
 
-                    The getVariants method should return a variant with the 
+                    The get_variants method should return a variant with the 
                     select tag name that is always an empty string.
 
                     This case reported by Taras at
@@ -343,7 +343,7 @@ class Form(DataContainer):
         # mode in ["tmb", "all"]
         elif mode in ["tmb", "all"]:
             
-            variants_total = self._getVariantsCount(matrix, mode)
+            variants_total = self._get_variantsCount(matrix, mode)
             
             # Combinatoric explosion. We only want TOP_VARIANTS paths top.
             # Create random sample. We ensure that random sample is unique
@@ -399,7 +399,7 @@ class Form(DataContainer):
                             matrix[row] = new_vector
 
                     # New variants total
-                    variants_total = self._getVariantsCount(matrix, mode)
+                    variants_total = self._get_variantsCount(matrix, mode)
 
                 # Now get all paths!
                 for path in xrange(variants_total):
@@ -434,7 +434,7 @@ class Form(DataContainer):
 
         return decoded_path
     
-    def _getVariantsCount(self, matrix, mode):
+    def _get_variantsCount(self, matrix, mode):
         '''
         
         @param matrix: 

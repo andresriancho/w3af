@@ -108,11 +108,11 @@ class OutputPlugin(Plugin):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
         
-        @parameter enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
+        @param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
                    looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
         
-        @parameter pluginOptionsDict: As defined in the w3afCore, looks similar to: 
+        @param pluginOptionsDict: As defined in the w3afCore, looks similar to: 
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         pass
@@ -126,7 +126,7 @@ class OutputPlugin(Plugin):
     
     def _clean_string( self, string_to_clean ):
         '''
-        @parameter string_to_clean: A string that should be cleaned before using it in a message object.
+        @param string_to_clean: A string that should be cleaned before using it in a message object.
         '''
         for char, replace in [('\0','\\0'),('\t','\\t')]: #('\n','\\n'),('\r','\\r'),
             string_to_clean = string_to_clean.replace(char,replace)
@@ -178,10 +178,10 @@ class OutputPlugin(Plugin):
         @return: A string with the information about enabled plugins and their
                  options.
         
-        @parameter plugin_type: audit, crawl, etc.
-        @parameter plugins_list: A list of the names of the plugins of 
+        @param plugin_type: audit, crawl, etc.
+        @param plugins_list: A list of the names of the plugins of 
                                  plugin_type that are enabled.
-        @parameter plugins_options: The options for the plugins
+        @param plugins_options: The options for the plugins
         '''
         response = ''
         

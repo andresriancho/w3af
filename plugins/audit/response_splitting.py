@@ -79,16 +79,16 @@ class response_splitting(AuditPlugin):
             for error in self.HEADER_ERRORS:
                 
                 if error in response:
-                    msg = 'The variable "' + mutant.getVar() + '" of the URL ' + mutant.getURL()
+                    msg = 'The variable "' + mutant.get_var() + '" of the URL ' + mutant.getURL()
                     msg += ' modifies the headers of the response, but this error was sent while'
                     msg += ' testing for response splitting: "' + error + '"'
                     
                     i = info.info()
                     i.setPluginName(self.get_name())
                     i.set_desc( msg )
-                    i.setVar( mutant.getVar() )
+                    i.set_var( mutant.get_var() )
                     i.setURI( mutant.getURI() )
-                    i.setDc( mutant.getDc() )
+                    i.set_dc( mutant.get_dc() )
                     i.set_id( response.id )
                     i.set_name( 'Parameter modifies headers' )
                     kb.kb.append( self, 'response_splitting', i )
@@ -98,9 +98,9 @@ class response_splitting(AuditPlugin):
             if self._header_was_injected( response ):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.get_name())
-                v.set_desc( 'Response Splitting was found at: ' + mutant.foundAt() )
+                v.set_desc( 'Response Splitting was found at: ' + mutant.found_at() )
                 v.set_id( response.id )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 v.set_name( 'Response splitting vulnerability' )
                 kb.kb.append( self, 'response_splitting', v )
     
@@ -116,7 +116,7 @@ class response_splitting(AuditPlugin):
         '''
         This method verifies if a header was successfully injected
         
-        @parameter response: The HTTP response where I want to find the injected header.
+        @param response: The HTTP response where I want to find the injected header.
         @return: True / False
         '''
         # Get the lower case headers

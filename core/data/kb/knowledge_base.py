@@ -68,9 +68,9 @@ class InMemoryKnowledgeBase(object):
             
         with self._kb_lock:
             for saved_vuln in self.get(location_a, location_b):
-                if saved_vuln.getVar() == info_inst.getVar() and\
+                if saved_vuln.get_var() == info_inst.get_var() and\
                 saved_vuln.getURL() == info_inst.getURL() and \
-                saved_vuln.getDc().keys() == info_inst.getDc().keys():
+                saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
                     return False
             
             self.append(location_a, location_b, info_inst)
@@ -94,11 +94,11 @@ class InMemoryKnowledgeBase(object):
         
     def get( self, plugin_name, variable_name=None ):
         '''
-        @parameter plugin_name: The plugin that saved the data to the
+        @param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
                                 but could also be the plugin instance.
         
-        @parameter variable_name: The name of the variables under which the vuln 
+        @param variable_name: The name of the variables under which the vuln 
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set 
@@ -212,9 +212,9 @@ class DBKnowledgeBase(object):
             
         with self._kb_lock:
             for saved_vuln in self.get(location_a, location_b):
-                if saved_vuln.getVar() == info_inst.getVar() and\
+                if saved_vuln.get_var() == info_inst.get_var() and\
                 saved_vuln.getURL() == info_inst.getURL() and \
-                saved_vuln.getDc().keys() == info_inst.getDc().keys():
+                saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
                     return False
             
             self.append(location_a, location_b, info_inst)
@@ -238,11 +238,11 @@ class DBKnowledgeBase(object):
         
     def get( self, plugin_name, variable_name=None ):
         '''
-        @parameter plugin_name: The plugin that saved the data to the
+        @param plugin_name: The plugin that saved the data to the
                                 kb.info Typically the name of the plugin,
                                 but could also be the plugin instance.
         
-        @parameter variable_name: The name of the variables under which the vuln 
+        @param variable_name: The name of the variables under which the vuln 
                                  objects were saved. Typically the same name of
                                  the plugin, or something like "vulns", "errors",
                                  etc. In most cases this is NOT None. When set 

@@ -58,8 +58,8 @@ EXAMPLE_FUNCTION = """def customized_distance(a, b):
     '''
     Calculates the distance between two responses "a" and "b".
 
-    @parameter a: An HTTP response object.
-    @parameter b: An HTTP response object.
+    @param a: An HTTP response object.
+    @param b: An HTTP response object.
     @return: The the distance between "a" and "b", where 0 means equal and 1 means totally different.
     '''
     if 'error' in b.getBody().lower() and 'error' in a.getBody().lower():
@@ -263,7 +263,7 @@ class w3afDotWindow(xdot.DotWindow):
 class clusterGraphWidget(w3afDotWindow):
     def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN):
         '''
-        @parameter response_list: A list with the responses to graph.
+        @param response_list: A list with the responses to graph.
         '''
         self.w3af = w3af
         w3afDotWindow.__init__(self)
@@ -365,7 +365,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         Generate the dotcode for the current window, based on all the responses.
         
-        @parameter response_list: A list with the responses.
+        @param response_list: A list with the responses.
         '''
         dotcode = 'graph G {graph [ overlap="scale" ]\n'
         # Write the URLs
@@ -432,7 +432,7 @@ class clusterGraphWidget(w3afDotWindow):
     def on_url_clicked(self, widget, id, event):
         '''
         When the user clicks on the node, we get here.
-        @parameter id: The id of the request that the user clicked on.
+        @param id: The id of the request that the user clicked on.
         '''
         reqResWindow(self.w3af, int(id))
         return True

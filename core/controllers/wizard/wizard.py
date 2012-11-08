@@ -125,7 +125,7 @@ class wizard:
 
         This method raises an exception if the selected options are invalid.
         
-        @parameter options_list: This is a map with the answers for every question
+        @param options_list: This is a map with the answers for every question
                                that was made to the user.
         '''
         # This line may rise a w3afException        

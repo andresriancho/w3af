@@ -147,8 +147,8 @@ class error_pages(GrepPlugin):
         '''
         Plugin entry point, find the error pages and report them.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html():

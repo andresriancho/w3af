@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 
 
 class Cookie(DataContainer):
@@ -31,11 +31,11 @@ class Cookie(DataContainer):
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, strValues='', encoding=DEFAULT_ENCODING):
+    def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
         
         super(Cookie, self).__init__(encoding=encoding)
         
-        for k, v in re.findall('(.*?)=(.*?);', strValues + ';' ):
+        for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';' ):
             k = k.strip()
             v = v.strip()
             

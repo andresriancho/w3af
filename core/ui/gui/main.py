@@ -463,7 +463,7 @@ class MainApp(object):
         The main objective of this function is to disable the "Edit Plugin" 
         option, if the user isn't focused over a plugin.
         
-        @parameter widget: Not used
+        @param widget: Not used
         '''
         treeToUse = None
         if self.pcbody.out_plugin_tree.is_focus():
@@ -486,7 +486,7 @@ class MainApp(object):
         '''
         This is the handler for the "Edit Plugin" menu option.
         
-        @parameter widget: Not used
+        @param widget: Not used
         '''
         self.pcbody.editSelectedPlugin()
         

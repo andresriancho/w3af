@@ -97,12 +97,12 @@ class ClientlessReverseHTTP( BasePayloadTransfer ):
         
         # Start a web server on the inbound port and create the file that 
         # will be fetched by the compromised host
-        webserver.start_webserver(cf.cf.get('localAddress'),
+        webserver.start_webserver(cf.cf.get('local_ip_address'),
                                   self._inbound_port,
                                   get_temp_dir())
         
         commandToRun = commandTemplates[self._command] % \
-                            (cf.cf.get('localAddress'), self._inbound_port,
+                            (cf.cf.get('local_ip_address'), self._inbound_port,
                              filename, destination)
         self._exec_method(commandToRun)
 

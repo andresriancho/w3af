@@ -55,7 +55,7 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         
         create_temp_dir()
         cf.cf.save( 'interface', 'lo' )
-        cf.cf.save( 'localAddress', '127.0.0.1' )
+        cf.cf.save( 'local_ip_address', '127.0.0.1' )
         inbound_port = self.get_usable_port('127.0.0.1')
         echo_linux = ClientlessReverseHTTP(exec_method, os, inbound_port)
         
@@ -78,7 +78,7 @@ class TestClientlessReverseHTTP(unittest.TestCase):
         
         create_temp_dir()
         cf.cf.save( 'interface', 'lo' )
-        cf.cf.save( 'localAddress', '127.0.0.1' )
+        cf.cf.save( 'local_ip_address', '127.0.0.1' )
         es = extrusionScanner( exec_method )
         
         inbound_port = es.get_inbound_port()

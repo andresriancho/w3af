@@ -112,13 +112,13 @@ class ldapi(AuditPlugin):
             
             ldap_error_list = self._find_ldap_error( response )
             for ldap_error_string in ldap_error_list:
-                if ldap_error_string not in mutant.getOriginalResponseBody():
+                if ldap_error_string not in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_id( response.id )
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v.set_name( 'LDAP injection vulnerability' )
-                    v.set_desc( 'LDAP injection was found at: ' + mutant.foundAt() )
+                    v.set_desc( 'LDAP injection was found at: ' + mutant.found_at() )
                     v.addToHighlight( ldap_error_string )
                     kb.kb.append_uniq( self, 'ldapi', v )
                     break
@@ -133,7 +133,7 @@ class ldapi(AuditPlugin):
         '''
         This method searches for LDAP errors in html's.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

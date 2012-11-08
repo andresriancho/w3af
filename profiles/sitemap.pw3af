@@ -8,20 +8,20 @@ name = sitemap
 
 [misc-settings]
 maxThreads = 15
-fuzzFCExt = txt
+fuzzed_files_extension = gif
 autoDependencies = True
 demo = False
 fuzzable_headers = 
 fuzzCookie = False
-fuzzFileContent = True
-fuzzFileName = False
-maxDiscoveryTime = 120
-fuzzFormComboValues = tmb
-nonTargets = 
-fuzzURLParts = False
+fuzz_form_files = True
+fuzz_url_filenames = False
+max_discovery_time = 120
+form_fuzzing_mode = tmb
+non_targets = 
+fuzz_url_parts = False
 stop_on_first_exception = False
 interface = ppp0
-localAddress = 10.5.6.18
+local_ip_address = 10.5.6.18
 msf_location = /opt/metasploit3/bin/
 
 [crawl.robots_txt]

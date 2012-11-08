@@ -84,13 +84,13 @@ class un_ssl(AuditPlugin):
                         v.setPluginName(self.get_name())
                         v.setURL(insecure_response.getURL())
                         v.set_name( 'Secure content over insecure channel' )
-                        v.setSeverity(severity.MEDIUM)
+                        v.set_severity(severity.MEDIUM)
                         msg = 'Secure content can be accesed using the insecure'
                         msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
                         v.set_desc( msg % (secure_url, insecure_url) )
                         v.set_id( [insecure_response.id, secure_response.id] )
                         kb.kb.append( self, 'un_ssl', v )
-                        om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+                        om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
     
     def get_long_desc( self ):
         '''

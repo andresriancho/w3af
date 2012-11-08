@@ -34,7 +34,7 @@ class dbDriver(dbDriverFunctions):
         dbDriverFunctions.__init__(self, cmpFunction)
         # Params initialization
         self.args.injectionMethod = vuln['type']
-        self.args.injParameter = vuln.getVar()
+        self.args.injParameter = vuln.get_var()
         self.args.httpMethod = vuln.get_method()
         
         self._uri_opener = urlOpener
@@ -91,7 +91,7 @@ class dbDriver(dbDriverFunctions):
                 possibleFalse = rand_alpha(5)
             
             mutant = vuln.getMutant()
-            mutant.setModValue( possibleFalse )
+            mutant.set_mod_value( possibleFalse )
             
             res = self._uri_opener.send_mutant(mutant)
             if res.getBody() != vuln['trueHtml']:

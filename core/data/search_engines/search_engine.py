@@ -116,9 +116,9 @@ class SearchEngine(object):
         
         This method searches the web and returns a list of URLs.
         
-        @parameter query: The query that we want to perform in the search engine
-        @parameter start: The first result item
-        @parameter count: How many results to get from start
+        @param query: The query that we want to perform in the search engine
+        @param start: The first result item
+        @param count: How many results to get from start
         '''
         raise NotImplementedError('SearchEngine subclasses should implement the search method.')
 
@@ -128,9 +128,9 @@ class SearchEngine(object):
         
         This method searches the web and returns a list of http response objects.
         
-        @parameter query: The query that we want to perform in the search engine
-        @parameter start: The first result item
-        @parameter count: How many results to get from start
+        @param query: The query that we want to perform in the search engine
+        @param start: The first result item
+        @param count: How many results to get from start
         '''
         raise NotImplementedError('SearchEngine subclasses should implement the page_search method.')
 

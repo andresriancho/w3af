@@ -49,8 +49,8 @@ class get_emails(GrepPlugin):
         '''
         Plugin entry point, get the emails and save them to the kb.
         
-        @parameter request: The HTTP request
-        @parameter request: The HTTP response
+        @param request: The HTTP request
+        @param request: The HTTP response
         @return: None
         '''
         uri = response.getURI()
@@ -66,10 +66,10 @@ class get_emails(GrepPlugin):
         '''
         Helper method for using in self.grep()
         
-        @parameter request: The HTTP request
-        @parameter response: The HTTP response
-        @parameter kb_key: Knowledge base dict key
-        @parameter domain: Target domain for get_emails filter
+        @param request: The HTTP request
+        @param response: The HTTP response
+        @param kb_key: Knowledge base dict key
+        @param domain: Target domain for get_emails filter
         @return: None
         '''
         try:

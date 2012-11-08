@@ -54,7 +54,7 @@ class frontpage_version(InfrastructurePlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         for domain_path in fuzzable_request.getURL().getDirectories():
@@ -83,7 +83,7 @@ class frontpage_version(InfrastructurePlugin):
         '''
         It seems that we have found a _vti_inf file, parse it and analyze the content!
         
-        @parameter response: The http response object for the _vti_inf file.
+        @param response: The http response object for the _vti_inf file.
         @return: None. All the info is saved to the kb.
         '''
         version_mo = self.VERSION_RE.search( response.getBody() )
@@ -137,8 +137,8 @@ class frontpage_version(InfrastructurePlugin):
         '''
         Analyze the admin URL.
         
-        @parameter response: The http response object for the _vti_inf file.
-        @parameter frontpage_admin: A regex match object.
+        @param response: The http response object for the _vti_inf file.
+        @param frontpage_admin: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
         admin_location = response.getURL().getDomainPath().urlJoin(
@@ -173,8 +173,8 @@ class frontpage_version(InfrastructurePlugin):
         '''
         Analyze the author URL.
         
-        @parameter response: The http response object for the _vti_inf file.
-        @parameter frontpage_author: A regex match object.
+        @param response: The http response object for the _vti_inf file.
+        @param frontpage_author: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
         author_location = response.getURL().getDomainPath().urlJoin( 

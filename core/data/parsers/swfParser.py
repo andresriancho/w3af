@@ -48,7 +48,7 @@ class swfParser(BaseParser):
     def _is_compressed(self, swf_document):
         '''
         
-        @parameter swf_content: The SWF file.
+        @param swf_content: The SWF file.
         @return: True if the SWF is compressed
         '''
         return swf_document.startswith('CWS')
@@ -57,7 +57,7 @@ class swfParser(BaseParser):
         '''
         zlib.inflate the SWF file.
         
-        @parameter swf_content: The SWF file.
+        @param swf_content: The SWF file.
         @return: A decompressed version of the SWF
         '''
         compressed_data = swf_document[8:]

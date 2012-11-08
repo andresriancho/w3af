@@ -194,9 +194,9 @@ class reqResViewer(gtk.VBox):
         """
         Audit a request using one or more plugins.
 
-        @parameter menuItem: The name of the audit plugin, or the 'All audit plugins' wildcard
-        @parameter plugin_name: The name of the plugin
-        @parameter plugin_type: The type of plugin
+        @param menuItem: The name of the audit plugin, or the 'All audit plugins' wildcard
+        @param plugin_name: The name of the plugin
+        @param plugin_type: The type of plugin
         @return: None
         """
         # We show a throbber, and start it

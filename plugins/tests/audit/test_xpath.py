@@ -60,7 +60,7 @@ class TestXPATH(PluginTest):
 
         verified_vulns = 0
         for vuln in vulns:
-            if ( vuln.getURL().getFileName() , vuln.getMutant().getVar() ) in expected:
+            if ( vuln.getURL().getFileName() , vuln.getMutant().get_var() ) in expected:
                 verified_vulns += 1
 
         self.assertEquals(expected_vuln_number, verified_vulns)

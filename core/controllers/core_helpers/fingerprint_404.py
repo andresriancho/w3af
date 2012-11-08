@@ -179,7 +179,7 @@ class fingerprint_404:
                setting a string that identifies the 404 response (in case we
                are missing it for some reason in case #1)
         
-        @parameter http_response: The HTTP response which we want to know if it
+        @param http_response: The HTTP response which we want to know if it
                                   is a 404 or not.
         '''
         #
@@ -356,7 +356,7 @@ def get_clean_body(response):
     The same works with filenames.
     All of them, are removed encoded and "as is".
     
-    @parameter response: The HTTPResponse object to clean
+    @param response: The HTTPResponse object to clean
     @return: A string that represents the "cleaned" response body of the response.
     '''
     

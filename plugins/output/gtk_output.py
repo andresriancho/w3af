@@ -82,7 +82,7 @@ class gtk_output(OutputPlugin):
         action when a vulnerability is found.
         '''     
         m = message( 'vulnerability', self._clean_string(msg_string), newLine )
-        m.setSeverity( severity )
+        m.set_severity( severity )
         self._addToQueue( m )
         
     def console( self, msg_string, newLine=True ):
@@ -112,9 +112,9 @@ class gtk_output(OutputPlugin):
 class message:
     def __init__( self, msg_type, msg, newLine=True ):
         '''
-        @parameter msg_type: console, information, vulnerability, etc
-        @parameter msg: The message itself
-        @parameter newLine: Should I print a newline ? True/False
+        @param msg_type: console, information, vulnerability, etc
+        @param msg: The message itself
+        @param newLine: Should I print a newline ? True/False
         '''
         self._type = msg_type
         self._msg = msg
@@ -122,10 +122,10 @@ class message:
         self._time = time.time()
         self._severity = None
     
-    def getSeverity( self ):
+    def get_severity( self ):
         return self._severity
         
-    def setSeverity( self, the_severity ):
+    def set_severity( self, the_severity ):
         self._severity = the_severity
     
     def getMsg( self ):

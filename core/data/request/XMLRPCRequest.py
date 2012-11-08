@@ -58,7 +58,7 @@ class XMLRPCRequest(HTTPPostDataRequest):
         res += ')'
         return res
     
-    def setDc(self , data_container):
+    def set_dc(self , data_container):
         self._dc = data_container
             
     def __repr__(self):

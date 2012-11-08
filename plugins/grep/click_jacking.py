@@ -68,7 +68,7 @@ class click_jacking(GrepPlugin):
         v = vuln.vuln()
         v.setPluginName(self.get_name())
         v.set_name('Potential Click-Jacking vulnerability' )
-        v.setSeverity(severity.MEDIUM)
+        v.set_severity(severity.MEDIUM)
         v.set_id([_id for _id in self._ids])
         # If none of the URLs implement protection, simply report
         # ONE vulnerability that says that.

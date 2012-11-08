@@ -57,8 +57,8 @@ class http_in_body (GrepPlugin):
         '''
         Plugin entry point.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         uri = response.getURI()

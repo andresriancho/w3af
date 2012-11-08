@@ -46,7 +46,7 @@ class wordnet(CrawlPlugin):
         
     def crawl(self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         original_response = self._uri_opener.send_mutant(fuzzable_request)        
@@ -163,7 +163,7 @@ class wordnet(CrawlPlugin):
     
     def _popularity_contest( self, result ):
         '''
-        @parameter results: The result map of the wordnet search.
+        @param results: The result map of the wordnet search.
         @return: The same result map, but each item is ordered by popularity
         '''
         def sort_function( i, j ):
@@ -202,10 +202,10 @@ class wordnet(CrawlPlugin):
         '''
         Based on the result, create the new URLs to test.
         
-        @parameter analyzed_variable: The parameter name that is being analyzed
-        @parameter element_index: 0 in most cases, >0 if we have repeated parameter names
-        @parameter result_set: The set of results that wordnet gave use
-        @parameter fuzzable_request: The fuzzable request that we got as input in the first place.
+        @param analyzed_variable: The parameter name that is being analyzed
+        @param element_index: 0 in most cases, >0 if we have repeated parameter names
+        @param result_set: The set of results that wordnet gave use
+        @param fuzzable_request: The fuzzable request that we got as input in the first place.
         
         @return: An URL list.
         '''

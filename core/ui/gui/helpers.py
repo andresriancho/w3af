@@ -427,7 +427,7 @@ def write_console_messages( dlg ):
     '''
     Write console messages to the TextDialog.
     
-    @parameter dlg: The TextDialog.
+    @param dlg: The TextDialog.
     '''
     import core.data.kb.knowledge_base as kb
     from core.ui.gui import messages

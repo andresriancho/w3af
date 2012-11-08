@@ -41,8 +41,8 @@ class blank_body(GrepPlugin):
         '''
         Plugin entry point, find the blank bodies and report them.
 
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.getBody() == '' and request.get_method() in ['GET', 'POST']\

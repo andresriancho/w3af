@@ -27,6 +27,8 @@ from core.data.constants.disclaimer import DISCLAIMER
 from core.data.constants.ports import MAILER
 from core.data.constants.response_codes import OK
 from core.data.constants.severity import HIGH
+from core.data.constants.ignored_params import IGNORED_PARAMETERS
+
 
 class TestAll(unittest.TestCase):
     '''
@@ -41,3 +43,4 @@ class TestAll(unittest.TestCase):
         self.assertEqual(MAILER, MAILER)
         self.assertEqual(OK, OK)
         self.assertEqual(HIGH, HIGH)
+        self.assertEqual(IGNORED_PARAMETERS, IGNORED_PARAMETERS)

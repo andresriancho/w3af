@@ -30,7 +30,7 @@ from core.data.constants.encodings import DEFAULT_ENCODING
 from core.controllers.w3afException import w3afException
 from core.data.dc.cookie import Cookie
 from core.data.dc.headers import Headers
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 from core.data.db.disk_item import disk_item
 from core.data.parsers.url import URL
 
@@ -116,13 +116,13 @@ class FuzzableRequest(disk_item):
         
         @return: a csv str representation of the request
 
-        >>> from core.data.dc.dataContainer import DataContainer
+        >>> from core.data.dc.data_container import DataContainer
         >>> fr = FuzzableRequest(URL("http://www.w3af.com/"))
         >>> fr.export()
         'GET,http://www.w3af.com/,'
         >>> d = DataContainer()
         >>> d['a'] = ['1',]
-        >>> fr.setDc(d)
+        >>> fr.set_dc(d)
         >>> fr.export()
         'GET,http://www.w3af.com/?a=1,'
 
@@ -172,7 +172,7 @@ class FuzzableRequest(disk_item):
         >>> f.sent('<ScRIPT>a=/PlaO/fake_alert(a.source)</SCRiPT>')
         True
 
-        @parameter smth_instng: The string
+        @param smth_instng: The string
         @return: True if something similar was sent
         '''
         def make_comp(heterogen_string):
@@ -355,9 +355,9 @@ class FuzzableRequest(disk_item):
     def setMethod(self, method):
         self._method = method
         
-    def setDc(self, dataCont):
+    def set_dc(self, dataCont):
         if not isinstance(dataCont, DataContainer):
-            raise TypeError('Invalid call to fuzzable_request.setDc(), the '
+            raise TypeError('Invalid call to fuzzable_request.set_dc(), the '
                             'argument must be a DataContainer instance.')
         self._dc = dataCont
         
@@ -367,9 +367,9 @@ class FuzzableRequest(disk_item):
     def setReferer(self, referer):
         self._headers['Referer'] = str(referer)
     
-    def setCookie(self, c):
+    def set_cookie(self, c):
         '''
-        @parameter cookie: A Cookie object as defined in core.data.dc.cookie,
+        @param cookie: A Cookie object as defined in core.data.dc.cookie,
             or a string.
         '''
         if isinstance(c, Cookie):
@@ -379,9 +379,10 @@ class FuzzableRequest(disk_item):
         elif c is None:
             self._cookie = None
         else:
-            om.out.error('[FuzzableRequest error] setCookie received: "' + 
-                         str(type(c)) + '" , "' + repr(c) + '"')
-            raise w3afException('Invalid call to fuzzable_request.setCookie()')
+            fmt = '[FuzzableRequest error] set_cookie received: "%s": "%s".'
+            error_str = fmt % (type(c), repr(c))
+            om.out.error(error_str)
+            raise w3afException(error_str)
             
     def getURL(self):
         return self._url
@@ -407,7 +408,7 @@ class FuzzableRequest(disk_item):
     def get_method(self):
         return self._method
         
-    def getDc(self):
+    def get_dc(self):
         return self._dc
         
     def getHeaders(self):
@@ -419,7 +420,7 @@ class FuzzableRequest(disk_item):
         else:
             return None
     
-    def getCookie(self):
+    def get_cookie(self):
         if self._cookie:
             return self._cookie
         else:

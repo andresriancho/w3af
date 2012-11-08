@@ -66,7 +66,7 @@ class halberd(InfrastructurePlugin):
         '''
         It calls the "main" from halberd and writes the results to the kb.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         msg = 'halberd plugin is starting. Original halberd author: '

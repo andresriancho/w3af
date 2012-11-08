@@ -31,8 +31,8 @@ def are_variants(uri, other_uri):
         - have the same parameters
         - values for each parameter have the same type (int/string)
     
-    @parameter uri: The URI we want to analyze
-    @parameter other_uri: The other URI we want to analyze
+    @param uri: The URI we want to analyze
+    @param other_uri: The other URI we want to analyze
     @return: True if the URLs are variants.
 
     '''

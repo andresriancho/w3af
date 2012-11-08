@@ -60,8 +60,8 @@ class dom_xss(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the DOM XSS vulns.
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if not response.is_text_or_html():
@@ -73,7 +73,7 @@ class dom_xss(GrepPlugin):
             v.addToHighlight(vuln_code)
             v.setURL(response.getURL())
             v.set_id(response.id)
-            v.setSeverity(severity.LOW)
+            v.set_severity(severity.LOW)
             v.set_name('DOM Cross site scripting (Risky JavaScript Code)')
             msg = 'The URL: "' + v.getURL() + '" has a DOM XSS (Risky JavaScript Code) '
             msg += 'bug using: "'+ vuln_code + '".'
@@ -83,7 +83,7 @@ class dom_xss(GrepPlugin):
     def _smart_grep(self, response):
         '''
         Search for the DOM XSS vulns using smart grep (context regex).
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: list of dom xss items
         '''
         res = []

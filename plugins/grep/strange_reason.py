@@ -86,8 +86,8 @@ class strange_reason(GrepPlugin):
         '''
         Plugin entry point. Analyze if the HTTP response reason messages are strange.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         response_code = response.getCode()

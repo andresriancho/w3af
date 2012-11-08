@@ -69,7 +69,7 @@ def extract_result(body):
 
 def _get_file_list( type_of_list, extension, forceExtension=False ):
     '''
-    @parameter type_of_list: Indicates what type of list to return, options:
+    @param type_of_list: Indicates what type of list to return, options:
         - code
         - webshell
     

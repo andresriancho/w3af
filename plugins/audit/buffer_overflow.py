@@ -119,7 +119,7 @@ class buffer_overflow(AuditPlugin):
             msg = 'A potential (most probably a false positive than a bug) buffer-'
             msg += 'overflow was found when requesting: "%s", using HTTP method'
             msg += ' %s. The data sent was: "%s".' 
-            msg = msg % ( mutant.getURL(), mutant.get_method(), mutant.getDc())
+            msg = msg % ( mutant.getURL(), mutant.get_method(), mutant.get_dc())
             i.set_desc( msg )
             kb.kb.append_uniq( self, 'buffer_overflow', i )
         else:
@@ -131,15 +131,15 @@ class buffer_overflow(AuditPlugin):
         '''
         for error_str in self._multi_in.query( response.body ):
             # And not in the original response
-            if error_str not in mutant.getOriginalResponseBody() and \
+            if error_str not in mutant.get_original_response_body() and \
             self._has_no_bug(mutant):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.get_name())
                 v.set_id( response.id )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 v.set_name( 'Buffer overflow vulnerability' )
                 msg = 'A potential buffer overflow (accurate detection is hard...)'
-                msg += ' was found at: ' + mutant.foundAt()
+                msg += ' was found at: ' + mutant.found_at()
                 v.set_desc( msg )
                 v.addToHighlight( error_str )
                 kb.kb.append_uniq( self, 'buffer_overflow', v )

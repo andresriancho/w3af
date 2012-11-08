@@ -93,8 +93,8 @@ def sortfunc(x_obj, y_obj):
 
 def get_match_rate(variable_name, variable_name_db):
     '''
-    @parameter variable_name: The name of the variable for which we want a value
-    @parameter variable_name_db: A name from the DB that ressembles the variable_name
+    @param variable_name: The name of the variable for which we want a value
+    @param variable_name_db: A name from the DB that ressembles the variable_name
     
     @return: A match rate between variable_name and variable_name_db.
     '''

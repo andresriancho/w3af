@@ -81,5 +81,5 @@ class TestHTTPRequestParser(unittest.TestCase):
         exp_headers = Headers([('Host','www.w3af.org'), ('Foo', 'spam, eggs')])
         self.assertEqual(fuzzable_request.getHeaders(), exp_headers)
         self.assertEquals(fuzzable_request.getData(), 'a=1&a=2')
-        self.assertEquals(fuzzable_request.getDc(), {'a': ['1', '2']})
+        self.assertEquals(fuzzable_request.get_dc(), {'a': ['1', '2']})
         

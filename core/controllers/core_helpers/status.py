@@ -100,7 +100,7 @@ class w3af_core_status(object):
         This method saves the phase (discovery/audit/exploit), so in the future
         the UI can use the getPhase() method to show it.
         
-        @parameter phase: The phase which the w3afCore is running in a given moment
+        @param phase: The phase which the w3afCore is running in a given moment
         '''
         self._currentPhase = phase
     
@@ -109,7 +109,7 @@ class w3af_core_status(object):
         This method saves the phase, so in the future the UI can use the 
         getPhase() method to show it.
         
-        @parameter plugin_name: The plugin_name which the w3afCore is running in
+        @param plugin_name: The plugin_name which the w3afCore is running in
         a given moment
         '''
         if log:
@@ -137,7 +137,7 @@ class w3af_core_status(object):
         
     def set_current_fuzzable_request( self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: The FuzzableRequest that the w3afCore is
+        @param fuzzable_request: The FuzzableRequest that the w3afCore is
         working on right now.
         '''
         self._current_fuzzable_request = fuzzable_request

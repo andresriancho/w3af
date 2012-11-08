@@ -57,8 +57,8 @@ class private_ip(GrepPlugin):
         '''
         Plugin entry point. Search for private IPs in the header and the body.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, results are saved to the kb.
         '''
         if self._ignore_if_match is None:
@@ -86,7 +86,7 @@ class private_ip(GrepPlugin):
                         v.setPluginName(self.get_name())
                         v.setURL( response.getURL() )
                         v.set_id( response.id )
-                        v.setSeverity(severity.LOW)
+                        v.set_severity(severity.LOW)
                         v.set_name( 'Private IP disclosure vulnerability' )
                         
                         msg = 'The URL: "' + v.getURL() + '" returned an HTTP header '
@@ -122,7 +122,7 @@ class private_ip(GrepPlugin):
                             v.setPluginName(self.get_name())
                             v.setURL( response.getURL() )
                             v.set_id( response.id )
-                            v.setSeverity(severity.LOW)
+                            v.set_severity(severity.LOW)
                             v.set_name( 'Private IP disclosure vulnerability' )
                             
                             msg = 'The URL: "' + v.getURL() + '" returned an HTML document '

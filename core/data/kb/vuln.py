@@ -42,8 +42,8 @@ class vuln(info):
         if isinstance(data_obj, mutant) or \
             isinstance(data_obj, vuln):
             self.setMethod(data_obj.get_method())
-            self.setDc(data_obj.getDc())
-            self.setVar(data_obj.getVar())
+            self.set_dc(data_obj.get_dc())
+            self.set_var(data_obj.get_var())
             self.setURI(data_obj.getURI())
             self.setMutant(data_obj)
 
@@ -56,13 +56,13 @@ class vuln(info):
     def getMutant(self):
         return self._mutant
         
-    def setVar(self, variable):
+    def set_var(self, variable):
         self._variable = variable
 
-    def setDc(self, dc):
+    def set_dc(self, dc):
         self._dc = dc
         
-    def setSeverity(self, severity):
+    def set_severity(self, severity):
         self._severity = severity
         
     def get_method(self):
@@ -71,19 +71,19 @@ class vuln(info):
         else:
             return self._method
 
-    def getVar(self):
+    def get_var(self):
         if self._mutant:
-            return self._mutant.getVar()
+            return self._mutant.get_var()
         else:
             return self._variable
 
-    def getDc(self):
+    def get_dc(self):
         if self._mutant:
-            return self._mutant.getDc()
+            return self._mutant.get_dc()
         else:
             return self._dc
     
-    def getSeverity(self):
+    def get_severity(self):
         return self._severity
         
     def get_desc(self):

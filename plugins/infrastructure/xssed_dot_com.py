@@ -54,7 +54,7 @@ class xssed_dot_com(InfrastructurePlugin):
         '''
         Search in xssed.com and parse the output.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains 
+        @param fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.getURL().getRootDomain()
@@ -120,11 +120,11 @@ class xssed_dot_com(InfrastructurePlugin):
                 v.setURL( mirror_url )
                 
                 if self._fixed in xss_report_response.getBody():
-                    v.setSeverity( severity.LOW )
+                    v.set_severity( severity.LOW )
                     msg = 'This script contained a XSS vulnerability: "'
                     msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
                 else:
-                    v.setSeverity( severity.HIGH )
+                    v.set_severity( severity.HIGH )
                     msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
                     msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
 

@@ -114,12 +114,12 @@ class xpath(AuditPlugin):
             
             xpath_error_list = self._find_xpath_error( response )
             for xpath_error in xpath_error_list:
-                if xpath_error not in mutant.getOriginalResponseBody():
+                if xpath_error not in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_name( 'XPATH injection vulnerability' )
-                    v.setSeverity(severity.MEDIUM)
-                    v.set_desc( 'XPATH injection was found at: ' + mutant.foundAt() )
+                    v.set_severity(severity.MEDIUM)
+                    v.set_desc( 'XPATH injection was found at: ' + mutant.found_at() )
                     v.set_id( response.id )
                     v.addToHighlight( xpath_error )
                     kb.kb.append( self, 'xpath', v )
@@ -135,7 +135,7 @@ class xpath(AuditPlugin):
         '''
         This method searches for xpath errors in html's.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

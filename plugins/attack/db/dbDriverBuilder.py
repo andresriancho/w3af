@@ -46,13 +46,13 @@ class dbDriverBuilder:
         '''
         Determine how to escape the sql injection
         '''
-        exploitDc = vuln.getDc()
-        exploitDc[ vuln.getVar() ] = "'z'z'z'"
+        exploitDc = vuln.get_dc()
+        exploitDc[ vuln.get_var() ] = "'z'z'z'"
         functionReference = getattr( self._uri_opener , vuln.get_method() )
         errorResponse = functionReference( vuln.getURL(), str(exploitDc) )
 
         for escape, type in [ ('\'','stringsingle') , ('"','stringdouble'), (' ','numeric')]:
-            exploitDc[ vuln.getVar() ] = '1' + escape + ' AND ' + escape + '1' + escape + '=' + escape + '1'
+            exploitDc[ vuln.get_var() ] = '1' + escape + ' AND ' + escape + '1' + escape + '=' + escape + '1'
             response = functionReference( vuln.getURL(), str(exploitDc) )
             if response.getBody() != errorResponse.getBody():
                 vuln['type'] = type

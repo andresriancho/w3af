@@ -53,7 +53,7 @@ class wsdlParser:
         in "SOAPpy.WSDL.Proxy( xmlData )". This test was mostly added to enhance
         framework's performance.
         
-        @parameter data: A string that might represent a WSDL
+        @param data: A string that might represent a WSDL
         @return: True if the data parameter is a WSDL document.
         '''
         return False
@@ -64,7 +64,7 @@ class wsdlParser:
         
     def setWsdl( self, xmlData ):
         '''
-        @parameter xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
+        @param xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
         '''
         if not self.is_WSDL(xmlData):
             raise w3afException('The body content is not a WSDL.')

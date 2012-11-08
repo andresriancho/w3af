@@ -61,8 +61,8 @@ class menu(object):
     def suggest(self, tokens, part, onlyLocalCommands=False):
         '''
         Suggest the possible completions
-        @parameter tokens: list of string
-        @parameter part: base for completion
+        @param tokens: list of string
+        @param part: base for completion
         '''
         if len(tokens)==0:
             return self.suggestCommands(part, onlyLocalCommands)

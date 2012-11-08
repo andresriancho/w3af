@@ -54,10 +54,10 @@ class helpRepository(object):
     def loadHelp(self, topic, obj=None, vars=None):
         '''
         Loads an object from the repository.
-        @parameter topic: the name of a context (for example, menu)
-        @parameter obj: the help object where to load the help data 
+        @param topic: the name of a context (for example, menu)
+        @param obj: the help object where to load the help data 
         (if None, a new one is created)
-        @parameter vars: a dict of variables to replace in the help text
+        @param vars: a dict of variables to replace in the help text
         '''
 
         #a closure to simplify the substitution
@@ -117,8 +117,8 @@ class HelpContainer(object):
     def addHelpEntry(self, subj, content, cat=''):
         '''
         Adds the help entry.
-        @parameter content: usually a tuple like (head, body)
-        @parameter cat: a name of the category. 
+        @param content: usually a tuple like (head, body)
+        @param cat: a name of the category. 
         If the item exists in an other category, it will be replaced.
         '''
 
@@ -159,9 +159,9 @@ class HelpContainer(object):
         '''
         Returns a table of format 'subject -> head' 
         to display with the table.py module
-        @parameter separators: if True, the categories are separated 
+        @param separators: if True, the categories are separated 
         by extra line.
-        @parameter cat: category to include into the page. 
+        @param cat: category to include into the page. 
         If None, all are included.
         '''
         result = []

@@ -19,28 +19,33 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.data.fuzzer.mutants.mutant import Mutant
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 
-from core.data.fuzzer.mutant import mutant
 
-
-class QSMutant(mutant):
+class QSMutant(Mutant):
     '''
     This class is a query string mutant.
     '''
     def __init__( self, freq ):
-        mutant.__init__(self, freq)
+        Mutant.__init__(self, freq)
     
-    def getMutantType( self ):
+    def get_mutant_type( self ):
         return 'query string'
     
-    def printModValue( self ):
-        '''
-        >>> from core.data.parsers.url import URL
-        >>> from core.data.request.fuzzable_request import FuzzableRequest
-        >>> freq = FuzzableRequest(URL('http://www.w3af.com/'))
-        >>> m = QSMutant( freq )
-        >>> m.printModValue()
-        u'The sent URI was http://www.w3af.com/ .'
-        '''
+    def print_mod_value( self ):
         return 'The sent URI was '+ self.getURI() +' .'
     
+    @staticmethod
+    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+                       append, fuzzer_config):
+        '''
+        This is a very important method which is called in order to create
+        mutants. Usually called from fuzzer.py module.
+        '''
+        if not isinstance(freq, HTTPQSRequest):
+            return []
+                
+        return Mutant._create_mutants_worker(freq, QSMutant, mutant_str_list,
+                                             fuzzable_param_list,
+                                             append, fuzzer_config)

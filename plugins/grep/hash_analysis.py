@@ -48,8 +48,8 @@ class hash_analysis(GrepPlugin):
         '''
         Plugin entry point, identify hashes in the HTTP response.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...
@@ -86,7 +86,7 @@ class hash_analysis(GrepPlugin):
     
     def _has_hash_distribution( self, possible_hash ):
         '''
-        @parameter possible_hash: A string that may be a hash.
+        @param possible_hash: A string that may be a hash.
         @return: True if the possible_hash has an equal (aprox.) distribution 
         of numbers and letters and only has hex characters (0-9, a-f)
         '''
@@ -116,7 +116,7 @@ class hash_analysis(GrepPlugin):
         
     def _get_hash_type( self, possible_hash ):
         '''
-        @parameter possible_hash: A string that may be a hash.
+        @param possible_hash: A string that may be a hash.
         @return: The hash type if the string seems to be a md5 / sha1 hash.
         None otherwise.
         '''

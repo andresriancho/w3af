@@ -85,8 +85,8 @@ class path_disclosure(GrepPlugin):
         '''
         Identify the path disclosure vulnerabilities.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, the result is saved in the kb.
         '''
         if response.is_text_or_html():
@@ -145,7 +145,7 @@ class path_disclosure(GrepPlugin):
                             msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
                             msg += 'vulnerability which discloses: "' + match  + '".'
                             v.set_desc( msg )
-                            v.setSeverity(severity.LOW)
+                            v.set_severity(severity.LOW)
                             v.set_name( 'Path disclosure vulnerability' )
                             v['path'] = match
                             v.addToHighlight( match )
@@ -155,8 +155,8 @@ class path_disclosure(GrepPlugin):
     
     def _longest(self, a, b):
         '''
-        @parameter a: A string.
-        @parameter a: Another string.
+        @param a: A string.
+        @param a: Another string.
         @return: The longest string.
         '''
         return cmp(len(a), len(b))

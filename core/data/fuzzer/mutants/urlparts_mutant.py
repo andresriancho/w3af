@@ -21,57 +21,45 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urllib
 
-from core.data.fuzzer.mutant import mutant
-from core.controllers.w3afException import w3afException
+from core.data.fuzzer.mutants.mutant import Mutant
+from core.data.request.HTTPQsRequest import HTTPQSRequest
+from core.data.dc.data_container import DataContainer
 
-class URLPartsMutant(mutant):
+
+class URLPartsMutant(Mutant):
     '''
     This class is a urlparts mutant.
     '''
     def __init__( self, freq ):
-        mutant.__init__(self, freq)
-        self._doubleEncoding = False
-        self._safeEncodeChars = ''
+        Mutant.__init__(self, freq)
+        self._double_encoding = False
+        self._safe_encode_chars = ''
 
-    def getMutantType( self ):
+    def get_mutant_type( self ):
         return 'urlparts'
 
-    def setDoubleEncoding( self, trueFalse ):
-        self._doubleEncoding = trueFalse
+    def set_double_encoding( self, trueFalse ):
+        self._double_encoding = trueFalse
     
-    def setSafeEncodeChars( self, safeChars ):
+    def set_safe_encode_chars( self, safeChars ):
         '''
-        @parameter safeChars: A string with characters we don't want to URL encode in the urlparts. Example:
-            - '/&!'
-            - '/'
+        @param safeChars: A string with characters we don't want to URL
+                         encode in the filename. Example: '/&!'
         '''
-        self._safeEncodeChars = safeChars
+        self._safe_encode_chars = safeChars
     
     def getURL( self ):
         '''
-        @return: The URL, as modified by "setModValue()"
-        
-        >>> from core.data.parsers.url import URL
-        >>> from core.data.request.fuzzable_request import FuzzableRequest
-        >>> from core.data.dc.dataContainer import DataContainer
-        >>> divided_path = DataContainer()
-        >>> divided_path['start'] = '/'
-        >>> divided_path['fuzzedUrlParts'] = 'ping!'
-        >>> divided_path['end'] = '/def'
-        
-        >>> fr = FuzzableRequest(URL('http://www.w3af.com/abc/def'))        
-        >>> m = URLPartsMutant( fr )
-        >>> m.setMutantDc(divided_path)
-        >>> m.setVar('fuzzedUrlParts')
-        >>> m.getURL().url_string
-        u'http://www.w3af.com/ping%21/def'
+        @return: The URL, as modified by "set_mod_value()"
         '''
         domain_path = self._freq.getURL().getDomainPath()
         
-        # Please note that this double encoding is needed if we want to work with mod_rewrite
-        encoded = urllib.quote_plus( self._mutant_dc['fuzzedUrlParts'], self._safeEncodeChars )
-        if self._doubleEncoding:
-            encoded = urllib.quote_plus( encoded, safe=self._safeEncodeChars )
+        # Please note that this double encoding is needed if we want to work
+        # with mod_rewrite
+        encoded = urllib.quote_plus( self._mutant_dc['modified_part'],
+                                     self._safe_encode_chars )
+        if self._double_encoding:
+            encoded = urllib.quote_plus(encoded, safe=self._safe_encode_chars)
         domain_path.setPath( self._mutant_dc['start'] + encoded + self._mutant_dc['end'] )
         return domain_path
         
@@ -80,27 +68,72 @@ class URLPartsMutant(mutant):
     def getData( self ):
         return None
     
-    def printModValue( self ):
-        res = 'The sent '+ self.getMutantType() +' is: "' + self._mutant_dc['start']
-        res += self._mutant_dc['fuzzedUrlParts'] + self._mutant_dc['end'] + '" .'
-        return res
+    def print_mod_value( self ):
+        fmt = 'The sent %s is: "%s%s%s".'
+        return fmt % (self.get_mutant_type(), self._mutant_dc['start'],
+                      self._mutant_dc['modified_part'], self._mutant_dc['end'])
         
-    def setModValue( self, val ):
-        self._mutant_dc['fuzzedUrlParts'] = val
+    def set_mod_value( self, val ):
+        self._mutant_dc['modified_part'] = val
         
-    def getModValue(self):
-        return self._mutant_dc['fuzzedUrlParts']
+    def get_mod_value(self):
+        return self._mutant_dc['modified_part']
     
-    def setURL( self, u ):
-        raise w3afException('You can\'t change the value of the URL in a URLPartsMutant instance.')
+    def setURL(self, u):
+        msg = 'You can\'t change the value of the URL in a URLPartsMutant'\
+              ' instance.'
+        raise ValueError(msg)
 
-    def foundAt(self):
+    def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed. This string is used like this:
-                - v.set_desc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        @return: A string representing WHAT was fuzzed.
         '''
-        res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
-        res += self.get_method() + '. The fuzzed parameter was the target URL, with value: "'
-        res += self.getModValue() + '".'
+        fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
+              ' path, with value: "%s".'
+              
+        return fmt % (self.getURL(), self.get_method(), self.get_mod_value())
+    
+    @staticmethod
+    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+                       append, fuzzer_config, data_container=None):
+        '''
+        This is a very important method which is called in order to create
+        mutants. Usually called from fuzzer.py module.
+        '''
+        if not fuzzer_config['fuzz_url_parts']:
+            return []
+        
+        if not isinstance(freq, HTTPQSRequest):
+            return []
+        
+        res = []
+        path_sep = '/'
+        path = freq.getURL().getPath()
+        path_chunks = path.split(path_sep)
+        for idx, p_chunk in enumerate(path_chunks):
+            if not p_chunk:
+                continue
+            for mutant_str in mutant_str_list:
+                divided_path = DataContainer()
+                divided_path['start'] = path_sep.join(path_chunks[:idx] + [''])
+                divided_path['end'] = path_sep.join([''] + path_chunks[idx+1:])
+                divided_path['modified_part'] = \
+                    (p_chunk if append else '') + urllib.quote_plus(mutant_str)
+                freq_copy = freq.copy()
+                freq_copy.setURL(freq.getURL())
+                
+                m = URLPartsMutant(freq_copy) 
+                m.set_original_value(p_chunk)
+                m.set_var('modified_part')
+                m.set_mutant_dc(divided_path)
+                m.set_mod_value(mutant_str)
+                res.append(m)
+                
+                # Same URLs but with different types of encoding!
+                m2 = m.copy()
+                m2.set_double_encoding(True)
+                
+                if m2.getURL() != m.getURL():
+                    res.append(m2)
+                
         return res

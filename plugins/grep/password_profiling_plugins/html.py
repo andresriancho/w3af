@@ -40,7 +40,7 @@ class html(basePpPlugin):
         '''
         Get words from the body, this is a modified "strings" that filters out HTML tags.
         
-        @parameter body: In most common cases, an html. Could be almost anything.
+        @param body: In most common cases, an html. Could be almost anything.
         @return: A map of strings:repetitions.
         '''
         

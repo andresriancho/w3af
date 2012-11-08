@@ -63,8 +63,8 @@ class form_autocomplete(GrepPlugin):
         containing password-type inputs. Either form's <autocomplete> attribute
         is not present or is 'off'.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         url = response.getURL()

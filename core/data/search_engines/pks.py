@@ -43,7 +43,7 @@ class pks(SearchEngine):
         '''
         Searches a PKS server, and returns all emails related to hostname.
         
-        @parameter hostname: The hostname from which we want to get emails from.
+        @param hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'

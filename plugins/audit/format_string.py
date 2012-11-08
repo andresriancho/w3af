@@ -70,16 +70,16 @@ class format_string(AuditPlugin):
                 # Check if the error string is in the response
                 
                 if error in response.body and \
-                error not in mutant.getOriginalResponseBody():
+                error not in mutant.get_original_response_body():
                     # vuln, vuln!
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_id( response.id )
-                    v.setSeverity(severity.MEDIUM)
+                    v.set_severity(severity.MEDIUM)
                     v.set_name( 'Format string vulnerability' )
                     msg = 'A possible (detection is really hard...) format'
                     msg += ' string vulnerability was found at: '
-                    msg += mutant.foundAt()
+                    msg += mutant.found_at()
                     v.set_desc( msg )
                     v.addToHighlight( error )
                     kb.kb.append_uniq( self, 'format_string', v )

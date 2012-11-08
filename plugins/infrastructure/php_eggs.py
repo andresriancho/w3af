@@ -231,7 +231,7 @@ class php_eggs(InfrastructurePlugin):
         Nothing strange, just do some GET requests to the eggs and analyze the
         response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # Get the extension of the URL (.html, .php, .. etc)

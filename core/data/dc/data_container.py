@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-dataContainer.py
+data_container.py
 
 Copyright 2006 Andres Riancho
 

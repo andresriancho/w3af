@@ -59,7 +59,7 @@ class pdf(basePpPlugin):
         '''
         Get words from the pdf document.
         
-        @parameter response: In most common cases, an html. Could be almost anything, if we are lucky, it's a PDF file.
+        @param response: In most common cases, an html. Could be almost anything, if we are lucky, it's a PDF file.
         @return: A map of strings:repetitions.
         '''
         res = None

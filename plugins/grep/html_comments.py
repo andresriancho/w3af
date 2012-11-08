@@ -69,8 +69,8 @@ class html_comments(GrepPlugin):
         '''
         Plugin entry point, parse those comments!
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html():
@@ -107,7 +107,7 @@ class html_comments(GrepPlugin):
                 msg += response.getURL() + '". This could be interesting.'
                 i.set_desc( msg )
                 i.set_id( response.id )
-                i.setDc( request.getDc )
+                i.set_dc( request.get_dc )
                 i.setURI( response.getURI() )
                 i.addToHighlight( word )
                 kb.kb.append( self, 'interesting_comments', i )
@@ -131,7 +131,7 @@ class html_comments(GrepPlugin):
             desc += response.getURL() + '" . This could be interesting.'
             i.set_desc( desc )
             i.set_id( response.id )
-            i.setDc( request.getDc )
+            i.set_dc( request.get_dc )
             i.setURI( response.getURI() )
             i.addToHighlight( html_in_comment.group(0) )
             kb.kb.append( self, 'html_comment_hides_html', i )

@@ -183,7 +183,7 @@ class xUrllib(object):
         that configuration here. This is the lowest layer inside w3af.
         '''
         if self._non_targets is None:
-            non_targets = cf.cf.get('nonTargets') or []
+            non_targets = cf.cf.get('non_targets') or []
             self._non_targets = set()
             self._non_targets.update([nt_url.uri2url() for nt_url in non_targets])
              
@@ -209,9 +209,9 @@ class xUrllib(object):
         this library allows the user to send the request by specifying two 
         parameters for the send_raw_request method:
         
-        @parameter head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
-        @parameter postdata: The postdata, if any. If set to '' or None, no postdata is sent.
-        @parameter fix_content_len: Indicates if the content length has to be fixed or not.
+        @param head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
+        @param postdata: The postdata, if any. If set to '' or None, no postdata is sent.
+        @param fix_content_len: Indicates if the content length has to be fixed or not.
         
         @return: An HTTPResponse object.
         '''
@@ -257,7 +257,7 @@ class xUrllib(object):
 
         # Also add the cookie header; this is needed by the CookieMutant
         headers = mutant.getHeaders()
-        cookie = mutant.getCookie()
+        cookie = mutant.get_cookie()
         if cookie:
             headers['Cookie'] = str(cookie)
 
@@ -467,7 +467,7 @@ class xUrllib(object):
         '''
         This is a "catch-all" way to be able to handle every HTTP method.
         
-        @parameter method_name: The name of the method being called:
+        @param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         '''
         class AnyMethod(object):
@@ -805,7 +805,7 @@ class xUrllib(object):
         ignore all calls to "_increment_global_error_count" and don't raise the
         w3afMustStopException.
 
-        @parameter yes_no: True to ignore errors.
+        @param yes_no: True to ignore errors.
         '''
         self._ignore_errors_conf = yes_no
             
@@ -829,7 +829,7 @@ class xUrllib(object):
         
     def _evasion( self, request ):
         '''
-        @parameter request: HTTPRequest instance that is going to be modified
+        @param request: HTTPRequest instance that is going to be modified
         by the evasion plugins
         '''
         for eplugin in self._evasion_plugins:

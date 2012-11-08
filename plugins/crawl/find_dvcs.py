@@ -95,7 +95,7 @@ class find_dvcs(CrawlPlugin):
         '''
         For every directory, fetch a list of files and analyze the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.getURL().getDomainPath()
@@ -166,20 +166,20 @@ class find_dvcs(CrawlPlugin):
                 v.setPluginName(self.get_name())
                 v.set_id( http_response.id )
                 v.set_name( repo+' found' )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 v.setURL( http_response.getURL() )
                 msg = ('A %s was found at: "%s"; this could'
                        ' indicate that a %s is accessible. You might'
                        ' be able to download the Web application source code.')
                 v.set_desc( msg % (repo, v.getURL(), repo) )
                 kb.kb.append( self, repo, v )
-                om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+                om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
 
     def _get_and_parse(self, url):
         '''
         GET a URL that was found in the repository index file, and parse it.
         
-        @parameter url: The URL to GET.
+        @param url: The URL to GET.
         @return: None, everything is saved to self.out_queue.
         '''
         try:
@@ -200,7 +200,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the Git index and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
@@ -233,7 +233,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the HG dirstate and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
@@ -254,7 +254,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the BZR dirstate and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
@@ -282,7 +282,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the SVN entries and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
@@ -305,7 +305,7 @@ class find_dvcs(CrawlPlugin):
         '''
         Analyze the contents of the CVS entries and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
@@ -324,7 +324,7 @@ class find_dvcs(CrawlPlugin):
         Analyze the possible regexp contents and extract filenames or 
         directories without regexp.
         
-        @parameter line: A regexp filename or directory.
+        @param line: A regexp filename or directory.
         @return: A real filename or directory.
         '''
         special_characters = ['*', '?', '[', ']', ':']
@@ -345,7 +345,7 @@ class find_dvcs(CrawlPlugin):
         Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file 
         and extract filenames.
         
-        @parameter body: The contents of the file to analyze.
+        @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()

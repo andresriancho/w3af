@@ -40,7 +40,7 @@ class wmlParser(SGMLParser):
         
     def _pre_parse(self, HTTPResponse):
         '''
-        @parameter HTTPResponse: The HTTP response document that contains the WML
+        @param HTTPResponse: The HTTP response document that contains the WML
         document inside its body.
 
         Init,

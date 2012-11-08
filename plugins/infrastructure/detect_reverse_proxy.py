@@ -46,7 +46,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)        
     def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # detect using GET
@@ -88,7 +88,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         '''
         Save the finding to the kb.
         
-        @parameter response: The response that triggered the detection
+        @param response: The response that triggered the detection
         '''
         i = info.info()
         i.setPluginName(self.get_name())
@@ -115,7 +115,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         '''
         Performs the analysis of the response of the TRACE and TRACK command.
         
-        @parameter response: The HTTP response object to analyze
+        @param response: The HTTP response object to analyze
         @return: True if the remote web server has a reverse proxy
         '''
         response_body = response.getBody().upper()

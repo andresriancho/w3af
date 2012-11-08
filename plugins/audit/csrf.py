@@ -30,7 +30,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.HeadersMutant import HeadersMutant
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
         'csrf_token',
@@ -75,7 +75,7 @@ class csrf(AuditPlugin):
         v.setPluginName(self.get_name())
         v.set_id(orig_response.id)
         v.set_name('CSRF vulnerability')
-        v.setSeverity(severity.HIGH)
+        v.set_severity(severity.HIGH)
         msg = 'Cross Site Request Forgery has been found at: ' + freq.getURL()
         v.set_desc(msg)
         kb.kb.append(self, 'csrf', v)
@@ -111,7 +111,7 @@ class csrf(AuditPlugin):
         
         # Payload? 
         if not ((freq.get_method() == 'GET' and freq.getURI().hasQueryString()) \
-            or (freq.get_method() =='POST' and len(freq.getDc()))):
+            or (freq.get_method() =='POST' and len(freq.get_dc()))):
                 return False, None
             
         # Send the same request twice and analyze if we get the same responses
@@ -129,9 +129,9 @@ class csrf(AuditPlugin):
         om.out.debug('Testing %s for Referer/Origin checks' % freq.getURL())
         fake_ref = 'http://www.w3af.org/'
         mutant = HeadersMutant(freq.copy())
-        mutant.setVar('Referer')
-        mutant.setOriginalValue(freq.getReferer())
-        mutant.setModValue(fake_ref)
+        mutant.set_var('Referer')
+        mutant.set_original_value(freq.getReferer())
+        mutant.set_mod_value(fake_ref)
         mutant_response = self._uri_opener.send_mutant(mutant)
         if not self._is_resp_equal(orig_response, mutant_response):
             return True
@@ -140,7 +140,7 @@ class csrf(AuditPlugin):
     def _find_csrf_token(self, freq):
         om.out.debug('Testing for token in %s' % freq.getURL())
         result = DataContainer()
-        dc = freq.getDc()
+        dc = freq.get_dc()
         for k in dc:
             if self.is_csrf_token(k, dc[k][0]):
                 result[k] = dc[k]

@@ -47,7 +47,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
     def crawl(self, fuzzable_request):
         '''
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         if not self._exec :

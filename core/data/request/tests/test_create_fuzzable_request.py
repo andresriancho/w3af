@@ -136,7 +136,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         self.assertEqual( fr.getHeaders(), headers )
         self.assertTrue( 'multipart/form-data' in fr.getHeaders()['content-type'])
         self.assertEqual( fr.get_method(), 'POST' )
-        self.assertEqual( fr.getDc(), {'a': ['bcd',]})
+        self.assertEqual( fr.get_dc(), {'a': ['bcd',]})
         self.assertIsInstance( fr, HTTPPostDataRequest)
 
     def test_invalid_multipart_post(self):
@@ -156,7 +156,7 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         
         # And this is how it affects the result:
         self.assertEqual( fr.getData(), '')
-        self.assertEqual( fr.getDc(), {})
+        self.assertEqual( fr.get_dc(), {})
         
         self.assertIsInstance( fr, HTTPPostDataRequest)
         

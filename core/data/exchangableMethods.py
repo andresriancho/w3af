@@ -45,8 +45,8 @@ def isExchangable(uri_opener, freq):
         pdr = HTTPPostDataRequest(
                           freq.getURL(),
                           headers=freq.getHeaders(),
-                          cookie=freq.getCookie(),
-                          dc=freq.getDc()
+                          cookie=freq.get_cookie(),
+                          dc=freq.get_dc()
                           )
         response2 = uri_opener.send_mutant(pdr)
     
@@ -55,9 +55,9 @@ def isExchangable(uri_opener, freq):
         qsr = HTTPQSRequest(
                     freq.getURL(),
                     headers=freq.getHeaders(),
-                    cookie=freq.getCookie()
+                    cookie=freq.get_cookie()
                     )
-        qsr.setDc(freq.getDc())
+        qsr.set_dc(freq.get_dc())
         response2 = uri_opener.send_mutant(qsr)
         
     return response2.getBody() == response.getBody()

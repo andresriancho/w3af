@@ -52,7 +52,7 @@ class server_status(InfrastructurePlugin):
         '''
         Get the server-status and parse it.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
@@ -128,10 +128,10 @@ class server_status(InfrastructurePlugin):
             v['alsoInHosting'] = self._shared_hosting_hosts
             v.set_desc( 'The web application under test seems to be in a shared hosting.' )
             v.set_name( 'Shared hosting' )
-            v.setSeverity(severity.MEDIUM)
+            v.set_severity(severity.MEDIUM)
             
             kb.kb.append( self, 'shared_hosting', v )
-            om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+            om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
         
             msg = 'This list of domains, and the domain of the web application under test,'
             msg += ' all point to the same server:'

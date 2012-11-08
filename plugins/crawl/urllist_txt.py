@@ -43,7 +43,7 @@ class urllist_txt(CrawlPlugin):
         '''
         Get the urllist.txt file and parse it.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
@@ -110,7 +110,7 @@ class urllist_txt(CrawlPlugin):
         '''
         GET and URL that was found in the robots.txt file, and parse it.
         
-        @parameter url: The URL to GET.
+        @param url: The URL to GET.
         @return: None, everything is put() to self.output_queue.
         '''
         try:

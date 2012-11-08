@@ -48,8 +48,8 @@ class objects(GrepPlugin):
         '''
         Plugin entry point. Parse the object tags.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         url = response.getURL()

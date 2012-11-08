@@ -55,7 +55,7 @@ class afd(InfrastructurePlugin):
         invented parameter and the custom payloads that are supposed to be
         filtered, and analyze the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         try:
@@ -68,7 +68,7 @@ class afd(InfrastructurePlugin):
     def _send_requests( self, fuzzable_request ):
         '''
         Actually send the requests that might be blocked.
-        @parameter fuzzable_request: The FuzzableRequest to modify in order to
+        @param fuzzable_request: The FuzzableRequest to modify in order to
                                      see if it's blocked
         '''
         rnd_param = rand_alnum(7)

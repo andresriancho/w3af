@@ -161,7 +161,7 @@ class KBTree(gtk.TreeView):
                         idobject = self._getBestObjName(obj)
                         type_obj = TYPES_OBJ.get(type(obj), "misc")
                         if type_obj == "vuln":
-                            severity = obj.getSeverity()
+                            severity = obj.get_severity()
                         else:
                             severity = None
                         colorlevel = helpers.KB_COLOR_LEVEL.get((type_obj, severity), 0)
@@ -311,7 +311,7 @@ class KBTree(gtk.TreeView):
         '''Shows a menu when you right click on an object inside the kb.
         
         @param tv: the treeview.
-        @parameter event: The GTK event 
+        @param event: The GTK event 
         '''
         if event.button != 3:
             return

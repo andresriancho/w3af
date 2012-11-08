@@ -51,9 +51,9 @@ class extrusionScanner(object):
                   tcpPortList=[25,80,53,1433,8080],
                   udpPortList=[53,69,139,1025] ):
         '''
-        @parameter execMethod: The execMethod used to execute commands on the
+        @param execMethod: The execMethod used to execute commands on the
                                remote host
-        @parameter forceReRun: If forceReRun is True, the extrusion scanner
+        @param forceReRun: If forceReRun is True, the extrusion scanner
                                won't fetch the results from the KB
         '''
         self._execMethod = execMethod
@@ -249,7 +249,7 @@ class extrusionScanner(object):
 
     def _execExtrusionClient( self, interpreter, remoteFilename ):
         
-        local_address = cf.cf.get( 'localAddress' )
+        local_address = cf.cf.get( 'local_ip_address' )
         if local_address is None:
             raise Exception('Invalid environment: no local address found in cf.')
         

@@ -39,7 +39,7 @@ class ClusterCellWindow(entries.RememberingWindow):
         '''
         A window that stores the clusterCellData and the level changer.
         
-        @parameter data: A list with the HTTPResponse objects to be clustered.
+        @param data: A list with the HTTPResponse objects to be clustered.
         '''
         # First we save the data        
         self._data = data
@@ -153,7 +153,7 @@ class clusterCellData(gtk.TreeView):
 
     def __init__ ( self, data, level=50 ):
         '''
-        @parameter clusteredData: A list of objects that are clustered.
+        @param clusteredData: A list of objects that are clustered.
         '''
         # Save the data
         self._data = data

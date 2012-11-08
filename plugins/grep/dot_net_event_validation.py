@@ -56,8 +56,8 @@ class dot_net_event_validation(GrepPlugin):
         '''
         If I find __VIEWSTATE and empty __EVENTVALIDATION => vuln.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         '''
         if response.is_text_or_html():
 

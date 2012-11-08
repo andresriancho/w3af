@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.constants.encodings import UTF8
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 
 
 class Headers(DataContainer):
@@ -42,6 +42,12 @@ class Headers(DataContainer):
         
         return default, None
 
+    def clone_with_list_values(self):
+        clone = Headers()
+        for key, value in self.iteritems():
+            clone[key] = [value,]
+        return clone
+
     def __setitem__(self, k, v):
         if isinstance(k, basestring):
             k = k.encode(self.encoding, 'replace')
@@ -50,8 +56,10 @@ class Headers(DataContainer):
         
         if isinstance(v, basestring):
             v = v.encode(self.encoding, 'replace')
-        else:
-            raise ValueError('Header value must be a string.')
+        #
+        # Had to remove this for clone_with_list_values
+        #else:
+        #    raise ValueError('Header value must be a string.')
             
         super(Headers, self).__setitem__(k, v)
     

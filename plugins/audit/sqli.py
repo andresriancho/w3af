@@ -150,7 +150,7 @@ class sqli(AuditPlugin):
         Analyze results of the _send_mutant method.
         '''
         sql_error_list = self._findsql_error(response)
-        orig_resp_body = mutant.getOriginalResponseBody()
+        orig_resp_body = mutant.get_original_response_body()
 
         for sql_regex, sql_error_string, dbms_type in sql_error_list:
             if not sql_regex.search(orig_resp_body):
@@ -160,12 +160,12 @@ class sqli(AuditPlugin):
                     v.setPluginName(self.get_name())
                     v.set_id(response.id)
                     v.set_name('SQL injection')
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v.addToHighlight(sql_error_string)
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
                     v.set_desc('SQL injection in a %s was found at: %s' %
-                              (v['db'], mutant.foundAt()))
+                              (v['db'], mutant.found_at()))
                     kb.kb.append_uniq(self, 'sqli', v)
                     break
     
@@ -179,7 +179,7 @@ class sqli(AuditPlugin):
         '''
         This method searches for SQL errors in html's.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

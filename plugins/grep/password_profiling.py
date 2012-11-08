@@ -66,8 +66,8 @@ class password_profiling(GrepPlugin):
         '''
         Plugin entry point. Get responses, analyze words, create dictionary.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None.
         '''
         # Initial setup
@@ -124,7 +124,7 @@ class password_profiling(GrepPlugin):
     def _run_plugins( self, response ):
         '''
         Runs password profiling plugins to collect data from HTML, TXT, PDF, etc files.
-        @parameter response: A HTTPResponse object
+        @param response: A HTTPResponse object
         @return: A map with word:repetitions
         '''
         # Create plugin instances only once

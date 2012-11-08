@@ -27,7 +27,7 @@ def commonPrefix(completions):
     ''' 
     Utility function which is used by console to extract the string to be
     suggested as autocompletion.
-    @parameter completions: [(part, completion)] where part is a prefix of completion 
+    @param completions: [(part, completion)] where part is a prefix of completion 
     (see core.ui.console.menu)
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
@@ -89,7 +89,7 @@ def removePrefix(s, prefix='!'):
 def suggest(tree, part, skipList=[]):
     '''
     The basic autocompletion logic.
-    @parameter tree: dict of list to take possible completions from.
+    @param tree: dict of list to take possible completions from.
     @part: the prefix for the completions.
     @allowSet: if True, it allows to autocomplete expressions 
     like "dog,!cat,gira" into dog,!cat,giraffee' (useful for plugins)

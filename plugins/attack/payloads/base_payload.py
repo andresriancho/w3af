@@ -55,7 +55,7 @@ class base_payload(object):
         '''
         Execute ANOTHER payload, by providing the other payload name.
         
-        @parameter payload_name: The name of the payload I want to run.
+        @param payload_name: The name of the payload I want to run.
         @return: The payload result.
         '''
         try:

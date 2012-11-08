@@ -106,7 +106,7 @@ class FullKBTree(kbtree.KBTree):
                             self.kbbrowser.rrV.response.showObject(historyItem.response)
                             
                             # Don't forget to highlight if neccesary
-                            severity = instance.getSeverity()
+                            severity = instance.get_severity()
                             for s in instance.getToHighlight():
                                 self.kbbrowser.rrV.response.highlight( s, severity )
                             
@@ -496,7 +496,7 @@ class URLsTree(gtk.TreeView):
         '''Shows a menu when you right click on a URL in the treeview.
 
         @param tv: the treeview.
-        @parameter event: The GTK event
+        @param event: The GTK event
         '''
         if event.button != 3:
             return

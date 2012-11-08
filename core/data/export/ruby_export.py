@@ -31,7 +31,7 @@ def ruby_escape_string( str_in ):
 
 def ruby_export( request_string ):
     '''
-    @parameter request_string: The string of the request to export
+    @param request_string: The string of the request to export
     @return: A net/http based ruby script that will perform the same HTTP request.
     '''
     # get the header and the body

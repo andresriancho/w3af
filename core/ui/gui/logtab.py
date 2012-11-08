@@ -90,7 +90,7 @@ class LogGraph(gtk.DrawingArea):
             mmseg = int(mess.getRealTime() * 1000)
             mtype = mess.get_type()
             if mtype == "vulnerability":
-                sever = mess.getSeverity()
+                sever = mess.get_severity()
             else:
                 sever = None
             self.all_messages.append((mmseg, mtype, sever))

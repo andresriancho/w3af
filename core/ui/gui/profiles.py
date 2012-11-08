@@ -196,7 +196,7 @@ class ProfileList(gtk.TreeView):
         '''Get executed when a plugin is changed.
 
         @param plugin: The plugin which changed.
-        @parameter changed: Force a change.
+        @param changed: Force a change.
 
         When executed, this check if the saved config is equal or not to the 
         original one, and enables color and buttons.
@@ -268,7 +268,7 @@ class ProfileList(gtk.TreeView):
         '''Shows a menu when you right click on a plugin.
         
         @param tv: the treeview.
-        @parameter event: The GTK event 
+        @param event: The GTK event 
         '''
         if event.button != 3:
             return

@@ -42,16 +42,19 @@ class miscSettings(configurable):
         #
         # User configured variables
         #
-        if cf.cf.get('fuzzableCookie') is None:
+        if cf.cf.get('fuzz_cookies') is None:
             # It's the first time I'm run
-            cf.cf.save('fuzzableCookie', False )
-            cf.cf.save('fuzzFileContent', True )
-            cf.cf.save('fuzzFileName', False )
-            cf.cf.save('fuzzURLParts', False )
-            cf.cf.save('fuzzFCExt', 'txt' )
-            cf.cf.save('fuzzFormComboValues', 'tmb')
-            cf.cf.save('maxDiscoveryTime', 120 )
+            cf.cf.save('fuzz_cookies', False )
+            cf.cf.save('fuzz_form_files', True )
+            cf.cf.save('fuzzed_files_extension', 'gif' )
+            cf.cf.save('fuzz_url_filenames', False )
+            cf.cf.save('fuzz_url_parts', False )
             cf.cf.save('fuzzable_headers', [] )
+            
+            cf.cf.save('form_fuzzing_mode', 'tmb')
+            
+            cf.cf.save('max_discovery_time', 120 )
+            
             cf.cf.save('msf_location', '/opt/metasploit3/bin/' )
             
             #
@@ -69,9 +72,9 @@ class miscSettings(configurable):
             if not local_address:
                 local_address = '127.0.0.1' #do'h!                
         
-            cf.cf.save('localAddress', local_address)
+            cf.cf.save('local_ip_address', local_address)
             cf.cf.save('demo', False )
-            cf.cf.save('nonTargets', [] )
+            cf.cf.save('non_targets', [] )
             cf.cf.save('stop_on_first_exception', False )
     
     def get_options( self ):
@@ -82,34 +85,34 @@ class miscSettings(configurable):
 
         ######## Fuzzer parameters ########
         desc = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        opt = opt_factory('fuzzCookie', cf.cf.get('fuzzableCookie'), desc, 'boolean',
+        opt = opt_factory('fuzzCookie', cf.cf.get('fuzz_cookies'), desc, 'boolean',
                      tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
-        opt = opt_factory('fuzzFileContent', cf.cf.get('fuzzFileContent'), desc, 'boolean',
+        opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), desc, 'boolean',
                      tabid='Fuzzer parameters')
         ol.add(opt)
         
         desc = 'Indicates if w3af plugins will send fuzzed filenames in order to find vulnerabilities'
-        help = 'For example, if the discovered URL is http://test/filename.php, and fuzzFileName'
+        help = 'For example, if the discovered URL is http://test/filename.php, and fuzz_url_filenames'
         help += ' is enabled, w3af will request among other things: http://test/file\'a\'a\'name.php'
         help += ' in order to find SQL injections. This type of vulns are getting more common every'
         help += ' day!'
-        opt = opt_factory('fuzzFileName', cf.cf.get('fuzzFileName'), desc, 'boolean', help=help, 
+        opt = opt_factory('fuzz_url_filenames', cf.cf.get('fuzz_url_filenames'), desc, 'boolean', help=help, 
                      tabid='Fuzzer parameters')
         ol.add(opt)
         
         desc = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
-        help = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzzURLParts'
+        help = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzz_url_parts'
         help += ' is enabled, w3af will request among other things: '
         help += 'http://test/foo/bar/<script>alert(document.cookie)</script> in order to find XSS.'
-        opt = opt_factory('fuzzURLParts', cf.cf.get('fuzzURLParts'), desc, 'boolean', help=help, 
+        opt = opt_factory('fuzz_url_parts', cf.cf.get('fuzz_url_parts'), desc, 'boolean', help=help, 
                      tabid='Fuzzer parameters')
         ol.add(opt)
         
         desc = 'Indicates the extension to use when fuzzing file content'
-        opt = opt_factory('fuzzFCExt', cf.cf.get('fuzzFCExt'), desc, 'string', tabid='Fuzzer parameters')
+        opt = opt_factory('fuzzed_files_extension', cf.cf.get('fuzzed_files_extension'), desc, 'string', tabid='Fuzzer parameters')
         ol.add(opt)
         
         desc = 'A list with all fuzzable header names'
@@ -121,7 +124,7 @@ class miscSettings(configurable):
         help = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
         help += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
         help += ' values), t (top values), b (bottom values)'
-        opt = opt_factory('fuzzFormComboValues', cf.cf.get('fuzzFormComboValues'), desc, 'string',
+        opt = opt_factory('form_fuzzing_mode', cf.cf.get('form_fuzzing_mode'), desc, 'string',
                      help=help, tabid='Fuzzer parameters')
         ol.add(opt)
         
@@ -139,7 +142,7 @@ class miscSettings(configurable):
         help = 'Many users tend to enable numerous plugins without actually knowing what they are'
         help += ' and the potential time they will take to run. By using this parameter, users will'
         help += ' be able to set the maximum amount of time the crawl phase will run.'
-        opt = opt_factory('maxDiscoveryTime', cf.cf.get('maxDiscoveryTime'), desc, 'integer', 
+        opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'), desc, 'integer', 
                      help=help, tabid='Core settings')
         ol.add(opt)
                 
@@ -149,7 +152,7 @@ class miscSettings(configurable):
         ol.add(opt)
         
         desc = 'Local IP address to use when doing reverse connections'
-        opt = opt_factory('localAddress', cf.cf.get('localAddress'), desc, 'string',
+        opt = opt_factory('local_ip_address', cf.cf.get('local_ip_address'), desc, 'string',
                      tabid='Network settings')
         ol.add(opt)
                 
@@ -161,7 +164,7 @@ class miscSettings(configurable):
                 
         desc = 'A comma separated list of URLs that w3af should completely ignore'
         help = 'Sometimes it\'s a good idea to ignore some URLs and test them manually'
-        opt = opt_factory('nonTargets', cf.cf.get('nonTargets'), desc, 'list', help=help, 
+        opt = opt_factory('non_targets', cf.cf.get('non_targets'), desc, 'list', help=help, 
                      tabid='Misc settings')
         ol.add(opt)
                 
@@ -180,26 +183,26 @@ class miscSettings(configurable):
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of get_options().
         
-        @parameter options_list: A dictionary with the options for the plugin.
+        @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        cf.cf.save('fuzzableCookie', options_list['fuzzCookie'].get_value() )
-        cf.cf.save('fuzzFileContent', options_list['fuzzFileContent'].get_value() )
-        cf.cf.save('fuzzFileName', options_list['fuzzFileName'].get_value() )
-        cf.cf.save('fuzzURLParts', options_list['fuzzURLParts'].get_value() )
-        cf.cf.save('fuzzFCExt', options_list['fuzzFCExt'].get_value() )
-        cf.cf.save('fuzzFormComboValues', options_list['fuzzFormComboValues'].get_value() )
-        cf.cf.save('maxDiscoveryTime', options_list['maxDiscoveryTime'].get_value() )
+        cf.cf.save('fuzz_cookies', options_list['fuzzCookie'].get_value() )
+        cf.cf.save('fuzz_form_files', options_list['fuzz_form_files'].get_value() )
+        cf.cf.save('fuzz_url_filenames', options_list['fuzz_url_filenames'].get_value() )
+        cf.cf.save('fuzz_url_parts', options_list['fuzz_url_parts'].get_value() )
+        cf.cf.save('fuzzed_files_extension', options_list['fuzzed_files_extension'].get_value() )
+        cf.cf.save('form_fuzzing_mode', options_list['form_fuzzing_mode'].get_value() )
+        cf.cf.save('max_discovery_time', options_list['max_discovery_time'].get_value() )
         
         cf.cf.save('fuzzable_headers', options_list['fuzzable_headers'].get_value() )
         cf.cf.save('interface', options_list['interface'].get_value() )
-        cf.cf.save('localAddress', options_list['localAddress'].get_value() )
+        cf.cf.save('local_ip_address', options_list['local_ip_address'].get_value() )
         cf.cf.save('demo', options_list['demo'].get_value()  )
         
         url_list = []
-        for url_str in options_list['nonTargets'].get_value():
+        for url_str in options_list['non_targets'].get_value():
             url_list.append( URL( url_str ) )
-        cf.cf.save('nonTargets', url_list )
+        cf.cf.save('non_targets', url_list )
         
         cf.cf.save('msf_location', options_list['msf_location'].get_value() )
         cf.cf.save('stop_on_first_exception', 

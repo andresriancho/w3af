@@ -52,7 +52,7 @@ class dot_listing(CrawlPlugin):
         '''
         For every directory, fetch the .listing file and analyze the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         for domain_path in fuzzable_request.getURL().getDirectories():
@@ -96,13 +96,13 @@ class dot_listing(CrawlPlugin):
                     v.setPluginName(self.get_name())
                     v.set_id( response.id )
                     v.set_name( '.listing file found' )
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     v.setURL( response.getURL() )
                     msg = ('A .listing file was found at: "%s". The contents'
                            ' of this file disclose filenames.')
                     v.set_desc( msg % (v.getURL()) )
                     kb.kb.append( self, 'dot_listing', v )
-                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
                 
                 real_users = set([u for u in users if not u.isdigit()])
                 real_groups = set([g for g in groups if not g.isdigit()])
@@ -112,7 +112,7 @@ class dot_listing(CrawlPlugin):
                     v.setPluginName(self.get_name())
                     v.set_id( response.id )
                     v.set_name( 'Operating system username and group leak' )
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     v.setURL( response.getURL() )
                     msg = 'A .listing file which leaks operating system usernames' \
                           ' and groups was identified at %s. The leaked users are %s,' \
@@ -121,7 +121,7 @@ class dot_listing(CrawlPlugin):
                           ' SSH or FTP services.'
                     v.set_desc( msg % (v.getURL(), ', '.join(real_users), ', '.join(real_groups)) )
                     kb.kb.append( self, 'dot_listing', v )
-                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
                     
 
     def _extract_info_from_listing(self, listing_file_content):
@@ -142,7 +142,7 @@ class dot_listing(CrawlPlugin):
         '''
         GET a URL that was found in the .listing file, and parse it.
         
-        @parameter url: The URL to GET.
+        @param url: The URL to GET.
         @return: None, everything is saved to self.out_queue.
         '''
         try:

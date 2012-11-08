@@ -90,7 +90,7 @@ class dav(AuditPlugin):
             v.setPluginName(self.get_name())
             v.setURL( res.getURL() )
             v.set_id( res.id )
-            v.setSeverity(severity.MEDIUM)
+            v.set_severity(severity.MEDIUM)
             v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'SEARCH' )
             msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
@@ -117,7 +117,7 @@ class dav(AuditPlugin):
             v.setPluginName(self.get_name())
             v.setURL( res.getURL() )
             v.set_id( res.id )
-            v.setSeverity(severity.MEDIUM)
+            v.set_severity(severity.MEDIUM)
             v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'PROPFIND' )
             msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
@@ -141,7 +141,7 @@ class dav(AuditPlugin):
             v.setPluginName(self.get_name())
             v.setURL( url )
             v.set_id( [put_response.id, res.id] )
-            v.setSeverity(severity.HIGH)
+            v.set_severity(severity.HIGH)
             v.set_name( 'Insecure DAV configuration' )
             v.setMethod( 'PUT' )
             msg = 'File upload with HTTP PUT method was found at resource: "%s".'

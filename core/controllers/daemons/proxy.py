@@ -82,13 +82,13 @@ class proxy(Process):
     def __init__(self, ip, port, uri_opener, proxyHandler=None,
                  proxyCert='core/controllers/daemons/mitm.crt'):
         '''
-        @parameter ip: IP address to bind
-        @parameter port: Port to bind
-        @parameter uri_opener: The uri_opener that will be used to open
+        @param ip: IP address to bind
+        @param port: Port to bind
+        @param uri_opener: The uri_opener that will be used to open
             the requests that arrive from the browser
-        @parameter proxyHandler: A class that will know how to handle
+        @param proxyHandler: A class that will know how to handle
             requests from the browser
-        @parameter proxyCert: Proxy certificate to use, this is needed
+        @param proxyCert: Proxy certificate to use, this is needed
             for proxying SSL connections.
         '''
         Process.__init__(self)

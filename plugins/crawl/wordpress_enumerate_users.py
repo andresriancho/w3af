@@ -45,7 +45,7 @@ class wordpress_enumerate_users(CrawlPlugin):
     def crawl(self, fuzzable_request):
         '''
         Find users in a WordPress installation
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec :

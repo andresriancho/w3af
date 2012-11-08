@@ -56,11 +56,11 @@ class blind_sqli_time_delay(object):
                 # time with the delay
                 v = vuln.vuln( mutant )
                 v.set_name( 'Blind SQL injection vulnerability' )
-                v.setSeverity(severity.HIGH)
+                v.set_severity(severity.HIGH)
                 desc = 'Blind SQL injection using time delays was found at: %s'
-                desc = desc % mutant.foundAt()
+                desc = desc % mutant.found_at()
                 v.set_desc( desc )
-                v.setDc( mutant.getDc() )
+                v.set_dc( mutant.get_dc() )
                 v.set_id( [r.id for r in responses ] )
                 v.setURI( r.getURI() )
                 

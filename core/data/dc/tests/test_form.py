@@ -109,7 +109,7 @@ class test_form(unittest.TestCase):
         total_variants = 2*2*3
         variants_set = set()
         
-        for i, form_variant in enumerate(new_bigform.getVariants(mode="tmb")):
+        for i, form_variant in enumerate(new_bigform.get_variants(mode="tmb")):
 
             if i == 0: # First element must be the created `new_bigform`
                 self.assertEquals(id(new_bigform), id(form_variant))
@@ -161,7 +161,7 @@ class test_form(unittest.TestCase):
                         15: ('volvo', 'black', 'i', 'female')
                        }
         
-        for i, form_variant in enumerate(new_bigform.getVariants(mode="tmb")):
+        for i, form_variant in enumerate(new_bigform.get_variants(mode="tmb")):
 
             if i == 0: # First element must be the created `new_bigform`
                 self.assertEquals(id(new_bigform), id(form_variant))
@@ -192,7 +192,7 @@ class test_form(unittest.TestCase):
         total_variants = 2*5*10
         variants_set = set()
         
-        for i, form_variant in enumerate(new_bigform.getVariants(mode="all")):
+        for i, form_variant in enumerate(new_bigform.get_variants(mode="all")):
 
             if i == 0: # First element must be the created `new_bigform`
                 self.assertEquals(id(new_bigform), id(form_variant))
@@ -218,7 +218,7 @@ class test_form(unittest.TestCase):
         total_variants = 1
         
         # 'top' mode variants
-        t_form_variants = [fv for fv in new_bigform.getVariants(mode="t")][1:]
+        t_form_variants = [fv for fv in new_bigform.get_variants(mode="t")][1:]
         # Ensure we actually got the expected number of variants
         self.assertEquals(total_variants, len(t_form_variants))
 
@@ -226,7 +226,7 @@ class test_form(unittest.TestCase):
             self.assertEquals(values[0], t_form_variants[0][name][0])
         
         # 'bottom' mode variants
-        t_form_variants = [fv for fv in new_bigform.getVariants(mode="b")][1:]
+        t_form_variants = [fv for fv in new_bigform.get_variants(mode="b")][1:]
         # Ensure we actually got the expected number of variants
         self.assertEquals(total_variants, len(t_form_variants))
 
@@ -240,17 +240,17 @@ class test_form(unittest.TestCase):
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc)
         self.assertEquals(form.Form.TOP_VARIANTS, 
-                          len([fv for fv in new_form.getVariants(mode="all")])-1)
+                          len([fv for fv in new_form.get_variants(mode="all")])-1)
 
         
     def test_same_variants_generation(self):
         # Combinatoric explosion (mode="all"): total_variants = 250 > 150
         # Therefore will be used random variants generation. We should get the
-        #  same every time we call `form.getVariants`
+        #  same every time we call `form.get_variants`
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc)
         get_all_variants = lambda: set(repr(fv) for fv in \
-                                       new_form.getVariants(mode="all"))
+                                       new_form.get_variants(mode="all"))
         variants = get_all_variants()
         for i in xrange(10):
             self.assertEquals(variants, get_all_variants())
@@ -259,29 +259,29 @@ class test_form(unittest.TestCase):
         '''
         This tests for handling of "select" tags that have no options inside.
 
-        The getVariants method should return a variant with the select tag name
+        The get_variants method should return a variant with the select tag name
         that is always an empty string.
 
-        In this case I'm going to call getVariants with mode="all"
+        In this case I'm going to call get_variants with mode="all"
         '''
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc + form_select_empty)
-        [ i for i in new_form.getVariants(mode="all") ]
+        [ i for i in new_form.get_variants(mode="all") ]
         
     def test_empty_select_tb(self):
         '''
         This tests for handling of "select" tags that have no options inside.
 
-        The getVariants method should return a variant with the select tag name
+        The get_variants method should return a variant with the select tag name
         that is always an empty string.
 
-        In this case I'm going to call getVariants with mode="tb"
+        In this case I'm going to call get_variants with mode="tb"
 
         This is the case reported by Taras at https://sourceforge.net/apps/trac/w3af/ticket/171015
         '''
         new_form = create_form_helper(form_with_radio + form_select_cars + \
                                       form_select_misc + form_select_empty)
-        [ i for i in new_form.getVariants(mode="tb") ]
+        [ i for i in new_form.get_variants(mode="tb") ]
     
     def test_form_with_plus_value(self):
         '''

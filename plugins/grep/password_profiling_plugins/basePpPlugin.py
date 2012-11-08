@@ -39,7 +39,7 @@ class basePpPlugin:
         Get words from the body.
         THIS PLUGIN MUST BE IMPLEMENTED BY ALL PLUGINS.
         
-        @parameter response: In most common cases, an html. Could be almost anything.
+        @param response: In most common cases, an html. Could be almost anything.
         @return: Two map of strings:repetitions. One for titles and one for words.
         '''
         raise w3afException('The method getWords must be implemented by all password profiling plugins.')

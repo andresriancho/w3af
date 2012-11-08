@@ -105,10 +105,10 @@ class dbDriverFunctions:
 
     def urlReplace(self, parameter="", value="", newValue=""):
         mutant = self._vuln.getMutant()
-        mutant.setModValue( self._vuln['falseValue'] + newValue )
+        mutant.set_mod_value( self._vuln['falseValue'] + newValue )
         
-        if mutant.getDc():
-            baseUrl = mutant.getURL().uri2url() + '?' + urllib.unquote_plus( str( mutant.getDc() ) )
+        if mutant.get_dc():
+            baseUrl = mutant.getURL().uri2url() + '?' + urllib.unquote_plus( str( mutant.get_dc() ) )
         else:
             baseUrl = mutant.getURL()
         return baseUrl
@@ -120,7 +120,7 @@ class dbDriverFunctions:
         """
         m = self._vuln.getMutant()
         url = URL( url )
-        m.setDc(url.querystring)
+        m.set_dc(url.querystring)
         m.setURL( url.uri2url() )
         response = self._uri_opener.send_mutant( m )
         if response.getCode() in range( 500, 599 ):

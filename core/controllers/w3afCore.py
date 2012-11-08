@@ -230,7 +230,7 @@ class w3afCore(object):
     def pause(self, pause_yes_no):
         '''
         Pauses/Un-Pauses scan.
-        @parameter trueFalse: True if the UI wants to pause the scan.
+        @param trueFalse: True if the UI wants to pause the scan.
         '''
         self.status.pause( pause_yes_no )
         self.strategy.pause( pause_yes_no )

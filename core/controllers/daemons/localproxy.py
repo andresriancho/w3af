@@ -118,7 +118,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         headers = fuzzable_request.getHeaders()
         method = fuzzable_request.get_method()
         # Also add the cookie header.
-        cookie = fuzzable_request.getCookie()
+        cookie = fuzzable_request.get_cookie()
         if cookie:
             headers['Cookie'] = str(cookie)
 
@@ -137,7 +137,7 @@ class w3afLocalProxyHandler(w3afProxyHandler):
             - self._trap
         
         If the request needs to be trapped or not.
-        @parameter fuzzable_request: The request to analyze.
+        @param fuzzable_request: The request to analyze.
         '''
 
         if not self.server.w3afLayer._trap:
@@ -163,11 +163,11 @@ class localproxy(proxy):
     
     def __init__( self, ip, port, urlOpener=xUrllib(), proxyCert='core/controllers/daemons/mitm.crt' ):
         '''
-        @parameter ip: IP address to bind
-        @parameter port: Port to bind
-        @parameter urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
-        @parameter proxyHandler: A class that will know how to handle requests from the browser
-        @parameter proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
+        @param ip: IP address to bind
+        @param port: Port to bind
+        @param urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
+        @param proxyHandler: A class that will know how to handle requests from the browser
+        @param proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
         '''
         proxy.__init__(self,  ip, port, urlOpener, w3afLocalProxyHandler, proxyCert)
 
@@ -218,7 +218,7 @@ class localproxy(proxy):
 
     def setTrap(self,  trap):
         '''
-        @parameter trap: True if we want to trap requests.
+        @param trap: True if we want to trap requests.
         '''
         self._trap = trap
         

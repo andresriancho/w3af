@@ -80,8 +80,8 @@ class credit_cards(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the credit cards.
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() == 200 \
@@ -94,7 +94,7 @@ class credit_cards(GrepPlugin):
                 v.setPluginName(self.get_name())
                 v.setURL( response.getURL() )
                 v.set_id( response.id )
-                v.setSeverity(severity.LOW)
+                v.set_severity(severity.LOW)
                 v.set_name( 'Credit card number disclosure' )
                 v.addToHighlight(card)
                 msg = 'The URL: "%s" discloses the credit card number: "%s"'

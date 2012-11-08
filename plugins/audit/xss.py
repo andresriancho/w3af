@@ -125,7 +125,7 @@ class xss(AuditPlugin):
         Analyze the mutant for reflected XSS. We get here because we
         already verified and the parameter is being echoed back.
         
-        @parameter mutant: A mutant that was used to test if the parameter
+        @param mutant: A mutant that was used to test if the parameter
             was echoed back or not
         '''
         # Verify what characters are allowed
@@ -152,16 +152,16 @@ class xss(AuditPlugin):
         # Get the strings only
         xss_strings = [i[0] for i in filtered_xss_tests]
         mutant_list = create_mutants(
-                            mutant.getFuzzableReq(),
+                            mutant.get_fuzzable_req(),
                             xss_strings,
-                            fuzzable_param_list=[mutant.getVar()]
+                            fuzzable_param_list=[mutant.get_var()]
                             )
 
         # In the mutant, we have to save which browsers are vulnerable
         # to that specific string
         for mutant in mutant_list:
             for xss_string, affected_browsers in filtered_xss_tests:
-                if xss_string in mutant.getModValue():
+                if xss_string in mutant.get_mod_value():
                     mutant.affected_browsers = affected_browsers
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -185,18 +185,18 @@ class xss(AuditPlugin):
         # Create a random number and assign it to the mutant
         # modified parameter
         rndNum = str(rand_alnum(2))
-        oldValue = mutant.getModValue() 
+        oldValue = mutant.get_mod_value() 
         
         joined_list = rndNum.join(self._special_characters)
         list_delimiter = str(rand_alnum(2))
         joined_list = list_delimiter + joined_list + list_delimiter
-        mutant.setModValue(joined_list)
+        mutant.set_mod_value(joined_list)
         
         # send
         response = self._uri_opener.send_mutant(mutant)
         
         # restore the mutant values
-        mutant.setModValue(oldValue)
+        mutant.set_mod_value(oldValue)
         
         # Analyze the response
         allowed = []
@@ -231,7 +231,7 @@ class xss(AuditPlugin):
         Analyze the mutant for stored XSS. We get here because we
         already verified and the parameter is NOT being echoed back.
         
-        @parameter mutant: A mutant that was used to test if the
+        @param mutant: A mutant that was used to test if the
             parameter was echoed back or not
         '''
         xss_tests = self._get_xss_tests()
@@ -245,9 +245,9 @@ class xss(AuditPlugin):
                         for xss_test in xss_strings]
         
         mutant_list = create_mutants(
-                            mutant.getFuzzableReq(),
+                            mutant.get_fuzzable_req(),
                             xss_strings,
-                            fuzzable_param_list=[mutant.getVar()]
+                            fuzzable_param_list=[mutant.get_var()]
                             )
         
         # In the mutant, we have to save which browsers are vulnerable
@@ -255,7 +255,7 @@ class xss(AuditPlugin):
         for mutant in mutant_list:
             for xss_string, affected_browsers in xss_tests:
                 if xss_string.replace('alert', 'fake_alert') in \
-                                                    mutant.getModValue():
+                                                    mutant.get_mod_value():
                     mutant.affected_browsers = affected_browsers
         
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
@@ -289,25 +289,25 @@ class xss(AuditPlugin):
         (and only numbers are echoed back by the application) that won't
         be of any use in the XSS detection.
         
-        @parameter mutant: The request to send.
+        @param mutant: The request to send.
         @return: True if variable is echoed
         '''
         # Create a random number and assign it to the mutant modified
         # parameter
         rndNum = str(rand_alnum(5))
-        oldValue = mutant.getModValue() 
-        mutant.setModValue(rndNum)
+        oldValue = mutant.get_mod_value() 
+        mutant.set_mod_value(rndNum)
 
         # send
         response = self._uri_opener.send_mutant(mutant)
         
         # restore the mutant values
-        mutant.setModValue(oldValue)
+        mutant.set_mod_value(oldValue)
         
         # Analyze and return response
         res = rndNum in response
         om.out.debug('The variable %s is %sbeing echoed back.' %
-                     (mutant.getVar(), '' if res else 'NOT '))
+                     (mutant.get_var(), '' if res else 'NOT '))
         return res
     
     def _analyze_result(self, mutant, response):
@@ -321,7 +321,7 @@ class xss(AuditPlugin):
         
         with self._plugin_lock:
             
-            mod_value = mutant.getModValue()
+            mod_value = mutant.get_mod_value()
             
             #
             #   I will only report the XSS vulnerability once.
@@ -349,8 +349,8 @@ class xss(AuditPlugin):
                     v.setPluginName(self.get_name())
                     v.set_id(response.id)
                     v.set_name('Cross site scripting vulnerability')
-                    v.setSeverity(severity.MEDIUM)
-                    msg = 'Cross Site Scripting was found at: ' + mutant.foundAt() 
+                    v.set_severity(severity.MEDIUM)
+                    msg = 'Cross Site Scripting was found at: ' + mutant.found_at() 
                     msg += ' This vulnerability affects ' + ','.join(mutant.affected_browsers)
                     v.set_desc(msg)
                     v.addToHighlight(mod_value)
@@ -390,8 +390,8 @@ class xss(AuditPlugin):
         '''
         This is used to check for permanent xss.
         
-        @parameter mutant: The mutant objects
-        @parameter response_id: The response id generated from sending the mutant
+        @param mutant: The mutant objects
+        @param response_id: The response id generated from sending the mutant
         
         @return: No value is returned.
         '''
@@ -415,25 +415,25 @@ class xss(AuditPlugin):
                     # Remember that HTTPResponse objects have a faster "__in__" than
                     # the one in strings; so string in response.getBody() is slower than
                     # string in response                    
-                    if mutant.getModValue() in response:
+                    if mutant.get_mod_value() in response:
                         
                         v = vuln.vuln(mutant)
                         v.setPluginName(self.get_name())
                         v.setURL(fuzzable_request.getURL())
-                        v.setDc(fuzzable_request.getDc())
+                        v.set_dc(fuzzable_request.get_dc())
                         v.setMethod(fuzzable_request.get_method())
                         
                         v['permanent'] = True
                         v['write_payload'] = mutant
                         v['read_payload'] = fuzzable_request
                         v.set_name('Permanent cross site scripting vulnerability')
-                        v.setSeverity(severity.HIGH)
+                        v.set_severity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + response.getURL()
                         msg += ' . Using method: ' + v.get_method() + '. The XSS was sent to the'
-                        msg += ' URL: ' + mutant.getURL() + '. ' + mutant.printModValue()
+                        msg += ' URL: ' + mutant.getURL() + '. ' + mutant.print_mod_value()
                         v.set_desc(msg)
                         v.set_id([response.id, mutant_response_id])
-                        v.addToHighlight(mutant.getModValue())
+                        v.addToHighlight(mutant.get_mod_value())
 
                         om.out.vulnerability(v.get_desc())
                         kb.kb.append(self, 'xss', v)
@@ -470,7 +470,7 @@ class xss(AuditPlugin):
         This method sets all the options that are configured using the user interface 
         generated by the framework using the result of get_options().
         
-        @parameter OptionList: A dictionary with the options for the plugin.
+        @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
         self._check_stored_xss = options_list['checkStored'].get_value()

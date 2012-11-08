@@ -42,7 +42,7 @@ class finger_pks(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         root_domain = fuzzable_request.getURL().getRootDomain()

@@ -58,7 +58,7 @@ class find_vhosts(InfrastructurePlugin):
         '''
         Find virtual hosts.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         analysis_result = self._analyze(fuzzable_request)
@@ -90,7 +90,7 @@ class find_vhosts(InfrastructurePlugin):
                 v.setURL( fuzzable_request.getURL() )
                 v.setMethod( 'GET' )
                 v.set_name( 'Shared hosting' )
-                v.setSeverity(severity.LOW)
+                v.set_severity(severity.LOW)
                 
                 domain = fuzzable_request.getURL().getDomain()
                 
@@ -238,7 +238,7 @@ class find_vhosts(InfrastructurePlugin):
     def _get_common_virtualhosts( self, base_url ):
         '''
         
-        @parameter base_url: The target URL object. 
+        @param base_url: The target URL object. 
         
         @return: A list of possible domain names that could be hosted in the same web
         server that "domain".

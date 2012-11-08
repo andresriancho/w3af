@@ -43,7 +43,7 @@ class EvasionPlugin(Plugin):
         
         This method MUST be implemented on every plugin.
         
-        @parameter request: urllib2.Request instance that is going to be modified by the evasion plugin
+        @param request: urllib2.Request instance that is going to be modified by the evasion plugin
         @return: A fuzzed version of the Request.
         '''
         raise w3afException('Plugin is not implementing required method modifyRequest' )

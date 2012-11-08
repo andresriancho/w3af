@@ -47,7 +47,7 @@ class zone_h(InfrastructurePlugin):
         '''
         Search zone_h and parse the output.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains 
+        @param fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.getURL().getRootDomain()
@@ -99,7 +99,7 @@ class zone_h(InfrastructurePlugin):
                 v.setPluginName(self.get_name())
                 v.set_name('Previous defacements')
                 v.setURL( response.getURL() )
-                v.setSeverity( severity.MEDIUM )
+                v.set_severity( severity.MEDIUM )
                 msg = 'The target site was defaced more than one time in the past. For more'
                 msg += ' information please visit the following URL: "' + response.getURL()
                 msg += '".'

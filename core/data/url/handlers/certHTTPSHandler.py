@@ -55,7 +55,7 @@ class certHTTPSHandler( urllib2.HTTPSHandler ):
         
     def setSSLKeyFile( self, keyFile ):
         '''
-        @parameter keyFile: A string with the SSL key path and filename.
+        @param keyFile: A string with the SSL key path and filename.
         @return: None
         ''' 
         self._sslKeyFile = keyFile
@@ -68,7 +68,7 @@ class certHTTPSHandler( urllib2.HTTPSHandler ):
         
     def setSSLCertFile( self, file ):
         '''
-        @parameter file: A string with the SSL cert path and filename.
+        @param file: A string with the SSL cert path and filename.
         @return: None
         '''     
         self._sslCertFile = file

@@ -36,7 +36,7 @@ _multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 def is_source_file( file_content ):
     '''
-    @parameter file_content: 
+    @param file_content: 
     @return: A tuple with (
                             a re.match object if the file_content matches a source code file,
                             a string with the source code programming language

@@ -46,7 +46,7 @@ class TestExtrusionScanner(unittest.TestCase):
     def test_scan(self):
         # FIXME: This unittest will only work in Linux
         cf.cf.save( 'interface', 'lo' )
-        cf.cf.save( 'localAddress', '127.0.0.1' )
+        cf.cf.save( 'local_ip_address', '127.0.0.1' )
         es = extrusionScanner(commands.getoutput)
         
         inbound_port = es.get_inbound_port()

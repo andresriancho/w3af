@@ -50,8 +50,8 @@ class file_upload(GrepPlugin):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         url = response.getURL()

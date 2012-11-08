@@ -40,8 +40,8 @@ class w3af_core_profiles(object):
         '''
         Saves current config to a newly created profile.
         
-        @parameter profile_name: The profile to clone
-        @parameter profileDesc: The description of the new profile
+        @param profile_name: The profile to clone
+        @param profileDesc: The description of the new profile
         
         @return: The new profile instance if the profile was successfully saved.
                  Else, raise a w3afException.
@@ -123,11 +123,11 @@ class w3af_core_profiles(object):
         # Set the misc and http settings
         #
         # IGNORE the following parameters from the profile:
-        #   - miscSettings.localAddress
+        #   - miscSettings.local_ip_address
         #
         profile_misc_settings = profile_inst.getMiscSettings()
-        if 'localAddress' in profile_inst.getMiscSettings():
-            profile_misc_settings['localAddress'].set_value(get_local_ip())
+        if 'local_ip_address' in profile_inst.getMiscSettings():
+            profile_misc_settings['local_ip_address'].set_value(get_local_ip())
         
         misc_settings = miscSettings.miscSettings()
         misc_settings.set_options( profile_misc_settings )

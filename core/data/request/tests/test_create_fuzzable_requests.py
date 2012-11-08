@@ -38,7 +38,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
         cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzzFormComboValues', 'tmb')
+        cf.cf.save('form_fuzzing_mode', 'tmb')
     
     def test_not_add_self(self):
         body = ''
@@ -138,4 +138,4 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual( len(redir_fr_cookie), 1 )
         
         redir_fr_cookie = redir_fr_cookie[0]
-        self.assertEqual( str(redir_fr_cookie.getCookie()), 'abc=def;')
+        self.assertEqual( str(redir_fr_cookie.get_cookie()), 'abc=def;')

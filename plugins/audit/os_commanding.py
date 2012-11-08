@@ -119,7 +119,7 @@ class os_commanding(AuditPlugin):
             
             for file_pattern_match in self._multi_in.query( response.getBody() ):
                 
-                if file_pattern_match not in mutant.getOriginalResponseBody():
+                if file_pattern_match not in mutant.get_original_response_body():
                     # Search for the correct command and separator
                     sentOs, sentSeparator = self._get_os_separator(mutant)
 
@@ -127,11 +127,11 @@ class os_commanding(AuditPlugin):
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_name( 'OS commanding vulnerability' )
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v['os'] = sentOs
                     v['separator'] = sentSeparator
-                    v.set_desc( 'OS Commanding was found at: ' + mutant.foundAt() )
-                    v.setDc( mutant.getDc() )
+                    v.set_desc( 'OS Commanding was found at: ' + mutant.found_at() )
+                    v.set_dc( mutant.get_dc() )
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
                     v.addToHighlight( file_pattern_match )
@@ -140,7 +140,7 @@ class os_commanding(AuditPlugin):
     
     def _get_os_separator(self, mutant):
         '''
-        @parameter mutant: The mutant that is being analyzed.
+        @param mutant: The mutant that is being analyzed.
         @return: A tuple with the OS and the command separator
         that was used to generate the mutant.
         '''
@@ -149,7 +149,7 @@ class os_commanding(AuditPlugin):
         
         ### BUGBUG: Are you sure that this works as expected?!?!?!
         for comm in command_list:
-            if comm.get_command() in mutant.getModValue():
+            if comm.get_command() in mutant.get_mod_value():
                 os = comm.get_OS()
                 separator = comm.get_separator()
         return os, separator
@@ -176,11 +176,11 @@ class os_commanding(AuditPlugin):
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_name( 'OS commanding vulnerability' )
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v['os'] = delay_obj.get_OS()
                     v['separator'] = delay_obj.get_separator()
-                    v.set_desc( 'OS Commanding was found at: ' + mutant.foundAt() )
-                    v.setDc( mutant.getDc() )
+                    v.set_desc( 'OS Commanding was found at: ' + mutant.found_at() )
+                    v.set_dc( mutant.get_dc() )
                     v.set_id( [r.id for r in responses] )
                     v.setURI( r.getURI() )
                     kb.kb.append_uniq( self, 'os_commanding', v )

@@ -47,7 +47,7 @@ class wsdl_finder(CrawlPlugin):
         '''
         If url not in _tested, append a ?WSDL and check the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         url = fuzzable_request.getURL().uri2url()

@@ -26,7 +26,7 @@ from core.controllers.w3afException import w3afException
 
 def is_private_site( domain_or_IP_address ):
     '''
-    @parameter domain_or_IP_address: The domain or IP address that we want to check
+    @param domain_or_IP_address: The domain or IP address that we want to check
     @return: Get the IP address of the domain, return True if its a private address.
     '''
     if re.match('(10\.\d?\d?\d?\.\d?\d?\d?\.\d?\d?\d?)', domain_or_IP_address) or\

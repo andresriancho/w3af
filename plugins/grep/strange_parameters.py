@@ -48,8 +48,8 @@ class strange_parameters(GrepPlugin):
         '''
         Plugin entry point.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         try:
@@ -85,7 +85,7 @@ class strange_parameters(GrepPlugin):
                             msg = 'The URI: "' +  i.getURI() + '" has a parameter named: "' + param_name
                             msg += '" with value: "' + qs[param_name][element_index] + '", which is quite odd.'
                             i.set_desc( msg )
-                            i.setVar( param_name )
+                            i.set_var( param_name )
                             i['parameterValue'] = qs[param_name][element_index]
                             i.addToHighlight(qs[param_name][element_index])
 
@@ -109,7 +109,7 @@ class strange_parameters(GrepPlugin):
                             msg = 'The URI: "' +  v.getURI() + '" has a parameter named: "' + param_name
                             msg +='" with value: "' + qs[param_name][element_index] + '", which is a SQL sentence.'
                             v.set_desc( msg )
-                            v.setVar( param_name )
+                            v.set_var( param_name )
                             v['parameterValue'] = qs[param_name][element_index]
                             v.addToHighlight(qs[param_name][element_index])
                             kb.kb.append( self , 'strange_parameters' , v )

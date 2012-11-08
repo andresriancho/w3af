@@ -46,7 +46,7 @@ class AuditPlugin(Plugin):
         Receives a FuzzableRequest and forwards it to the internal method
         audit()
         
-        @parameter fuzzable_request: A fuzzable_request instance
+        @param fuzzable_request: A fuzzable_request instance
         '''
         # These lines were added because we need to return the new vulnerabilities found by this
         # audit plugin, and I don't want to change the code of EVERY plugin!
@@ -109,8 +109,8 @@ class AuditPlugin(Plugin):
         '''
         with self._plugin_lock:
             if not varname:
-                if hasattr(fuzz_req, 'getVar'):
-                    varname = fuzz_req.getVar()
+                if hasattr(fuzz_req, 'get_var'):
+                    varname = fuzz_req.get_var()
                 else:
                     raise ValueError, "Invalid arg 'varname': %s" % varname
             
@@ -119,8 +119,8 @@ class AuditPlugin(Plugin):
             vulns = kb.kb.get(pname, kb_varname)
     
             for vuln in vulns:
-                if (vuln.getVar() == varname and
-                fuzz_req.getDc().keys() == vuln.getDc().keys() and
+                if (vuln.get_var() == varname and
+                fuzz_req.get_dc().keys() == vuln.get_dc().keys() and
                 are_variants(vuln.getURI(), fuzz_req.getURI())):
                     return False
             return True

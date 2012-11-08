@@ -55,7 +55,7 @@ class TestResponseSplitting(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Response splitting vulnerability', vuln.get_name())
         self.assertEquals(self.direct_url, str(vuln.getURL()))
-        self.assertEquals('header', vuln.getVar())
+        self.assertEquals('header', vuln.get_var())
     
     def test_found_error(self):
         cfg = self._run_configs['cfg_error']
@@ -67,5 +67,5 @@ class TestResponseSplitting(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Parameter modifies headers', vuln.get_name())
         self.assertEquals(self.error_url, str(vuln.getURL()))
-        self.assertEquals('header', vuln.getVar())
+        self.assertEquals('header', vuln.get_var())
                 

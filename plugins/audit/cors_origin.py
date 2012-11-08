@@ -134,7 +134,7 @@ class cors_origin(AuditPlugin):
                     v = vuln.vuln()
                     v.setURL(analysis_response[0].getURL())
                     v.set_id(analysis_response[0].getId())
-                    v.setSeverity(vuln_severity)
+                    v.set_severity(vuln_severity)
                     v.set_name('Multiple CORS misconfigurations')
                     
                     msg = 'More than %s URLs in the Web application under analysis' \
@@ -229,7 +229,7 @@ class cors_origin(AuditPlugin):
                 v = vuln.vuln()
                 v.setURL(forged_req.getURL())
                 v.set_id(response.getId())
-                v.setSeverity(severity.LOW)
+                v.set_severity(severity.LOW)
                 v.set_name(name)
                 v.set_desc(msg)
                 kb.kb.append(self , 'cors_origin' , v)
@@ -254,7 +254,7 @@ class cors_origin(AuditPlugin):
             v = vuln.vuln()
             v.setURL(forged_req.getURL())
             v.set_id(response.getId())
-            v.setSeverity(severity.LOW)
+            v.set_severity(severity.LOW)
             v.set_name('Access-Control-Allow-Origin set to "*"')
             
             msg = 'The remote Web application, specifically "%s", returned' \
@@ -318,7 +318,7 @@ class cors_origin(AuditPlugin):
                     msg = msg % (forged_req.getURL(),
                                  ACCESS_CONTROL_ALLOW_ORIGIN) 
                                     
-                v.setSeverity(sev)
+                v.set_severity(sev)
                 v.set_desc(msg)
                 
                 kb.kb.append(self , 'cors_origin' , v)
@@ -356,7 +356,7 @@ class cors_origin(AuditPlugin):
             v = vuln.vuln()
             v.setURL(forged_req.getURL())
             v.set_id(response.getId())
-            v.setSeverity(severity.INFORMATION)
+            v.set_severity(severity.INFORMATION)
             v.set_name('Incorrect withCredentials implementation')
             
             msg = 'The remote Web application, specifically "%s", returned' \

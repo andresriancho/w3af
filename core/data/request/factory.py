@@ -53,10 +53,10 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an HTTP response instance.
     
-    @parameter resp: An HTTPResponse instance.
-    @parameter request: The HTTP request that generated the resp
-    @parameter add_self: If I should add the current HTTP request
-                         (@parameter request) to the result on not.
+    @param resp: An HTTPResponse instance.
+    @param request: The HTTP request that generated the resp
+    @param add_self: If I should add the current HTTP request
+                         (@param request) to the result on not.
     
     @return: A list of fuzzable requests.
     '''
@@ -135,9 +135,9 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 res.append(wspdr)
     else:
         # Create one HTTPPostDataRequest for each form variant
-        mode = cf.cf.get('fuzzFormComboValues')
+        mode = cf.cf.get('form_fuzzing_mode')
         for form in form_list:
-            for variant in form.getVariants(mode):
+            for variant in form.get_variants(mode):
                 if form.get_method().upper() == 'POST':
                     r = HTTPPostDataRequest(
                                         variant.getAction(),
@@ -154,7 +154,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                   headers=req_headers,
                                   cookie=cookieObj
                                   )
-                    r.setDc(variant)
+                    r.set_dc(variant)
                 
                 res.append(r)
     return res

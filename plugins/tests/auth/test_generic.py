@@ -87,7 +87,7 @@ class TestGeneric(PluginTest):
         
         vuln = vulns[0]
         self.assertEquals( vuln.get_name(), 'Cross site scripting vulnerability', vuln.get_name() )
-        self.assertEquals( vuln.getVar(), 'section', vuln.getVar() )
+        self.assertEquals( vuln.get_var(), 'section', vuln.get_var() )
         
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its

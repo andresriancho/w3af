@@ -71,13 +71,13 @@ class preg_replace(AuditPlugin):
         if self._has_no_bug(mutant):
             
             for preg_error_string in self._find_preg_error( response ):
-                if preg_error_string not in mutant.getOriginalResponseBody():
+                if preg_error_string not in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_id( response.id )
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v.set_name( 'Unsafe usage of preg_replace' )
-                    v.set_desc( 'Unsafe usage of preg_replace was found at: ' + mutant.foundAt() )
+                    v.set_desc( 'Unsafe usage of preg_replace was found at: ' + mutant.found_at() )
                     v.addToHighlight( preg_error_string )
                     kb.kb.append_uniq( self, 'preg_replace', v )
                     break
@@ -92,7 +92,7 @@ class preg_replace(AuditPlugin):
         '''
         This method searches for preg_replace errors in html's.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

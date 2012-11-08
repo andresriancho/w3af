@@ -26,7 +26,8 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 
 class JSONPostDataRequest(HTTPPostDataRequest):
     '''
-    This class represents a fuzzable request for a http request that contains JSON postdata.
+    This class represents a fuzzable request for a http request that contains
+    JSON postdata.
     
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -41,16 +42,16 @@ class JSONPostDataRequest(HTTPPostDataRequest):
         '''
         Return a str representation of this fuzzable request.
         '''
-        strRes = '[[JSON]] '
-        strRes += self._url
-        strRes += ' | Method: ' + self._method
-        strRes += ' | JSON: ('
-        strRes += json.dumps(self._dc)
-        strRes += ')'
-        return strRes
+        str_res = '[[JSON]] '
+        str_res += self._url
+        str_res += ' | Method: ' + self._method
+        str_res += ' | JSON: ('
+        str_res += json.dumps(self._dc)
+        str_res += ')'
+        return str_res
     
-    def setDc( self , dataCont ):
-        self._dc = dataCont
+    def set_dc( self , data_cont ):
+        self._dc = data_cont
             
     def __repr__( self ):
         return '<JSON fuzzable request | '+ self.get_method() +' | '+ self.getURI() +' >'

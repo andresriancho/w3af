@@ -130,8 +130,8 @@ class Plugin(configurable):
         '''
         Print the items of infoObjList to the user interface
         
-        @parameter infoObjList: A list of info objects
-        @parameter unique: Defines whats unique:
+        @param infoObjList: A list of info objects
+        @param unique: Defines whats unique:
             - 'URL': The URL must be unique
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
@@ -158,8 +158,8 @@ class Plugin(configurable):
         elif unique == 'VAR':
             reportedVARs = []
             for i in infoObjList:
-                if (i.getURL(), i.getVar()) not in reportedVARs:
-                    reportedVARs.append( (i.getURL(), i.getVar()) )
+                if (i.getURL(), i.get_var()) not in reportedVARs:
+                    reportedVARs.append( (i.getURL(), i.get_var()) )
                     inform.append( i )
         
         elif unique is None:
@@ -171,7 +171,7 @@ class Plugin(configurable):
         # Print the list            
         for i in inform:
             if isinstance(i, vuln.vuln):
-                om.out.vulnerability( i.get_desc(), severity=i.getSeverity() )
+                om.out.vulnerability( i.get_desc(), severity=i.get_severity() )
             else:
                 om.out.information( i.get_desc() )
             

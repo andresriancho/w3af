@@ -88,7 +88,7 @@ class text_file(OutputPlugin):
         '''
         Write to the log file.
         
-        @parameter msg: The text to write.
+        @param msg: The text to write.
         '''
         try:
             self._file.write( self._clean_string(msg) )
@@ -101,7 +101,7 @@ class text_file(OutputPlugin):
         '''
         Write to the HTTP log file.
         
-        @parameter msg: The text to write (a string representation of the HTTP
+        @param msg: The text to write (a string representation of the HTTP
                         request and response)
         '''
         try:
@@ -183,9 +183,9 @@ class text_file(OutputPlugin):
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
         
-        @parameter pluginsDict: A dict with all the plugin types and the enabled
+        @param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
-        @parameter optionsDict: A dict with the options for every plugin.
+        @param optionsDict: A dict with the options for every plugin.
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
@@ -262,8 +262,8 @@ class text_file(OutputPlugin):
     def log_http(self, request, response):
         '''
         log the http req / res to file.
-        @parameter request: A fuzzable request object
-        @parameter response: A HTTPResponse object
+        @param request: A fuzzable request object
+        @param response: A HTTPResponse object
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)

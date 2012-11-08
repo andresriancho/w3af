@@ -43,4 +43,4 @@ class TestFormatString(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Format string vulnerability',vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.getURL()))
-        self.assertEquals('id', vuln.getVar())
+        self.assertEquals('id', vuln.get_var())

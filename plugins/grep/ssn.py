@@ -51,8 +51,8 @@ class ssn(GrepPlugin):
         '''
         Plugin entry point, find the SSN numbers.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None.
         '''
         uri = response.getURI()
@@ -70,7 +70,7 @@ class ssn(GrepPlugin):
                 v.setPluginName(self.get_name())
                 v.setURI( uri )
                 v.set_id( response.id )
-                v.setSeverity(severity.LOW)
+                v.set_severity(severity.LOW)
                 v.set_name( 'US Social Security Number disclosure' )
                 msg = 'The URL: "' + uri + '" possibly discloses a US '
                 msg += 'Social Security Number: "'+ validated_ssn +'"'

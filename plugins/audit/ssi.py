@@ -62,7 +62,7 @@ class ssi(AuditPlugin):
 
         # Used in end() to detect "persistent SSI"
         for m in mutants:
-            expected_result = self._extract_result_from_payload(m.getModValue())
+            expected_result = self._extract_result_from_payload(m.get_mod_value())
             self._expected_res_mutant[ expected_result ] = m
         
         self._freq_list.append(freq)
@@ -98,13 +98,13 @@ class ssi(AuditPlugin):
         @return: None, save the vuln to the kb.
         '''
         if self._has_no_bug(mutant):
-            e_res = self._extract_result_from_payload(mutant.getModValue())
-            if e_res in response and not e_res in mutant.getOriginalResponseBody():
+            e_res = self._extract_result_from_payload(mutant.get_mod_value())
+            if e_res in response and not e_res in mutant.get_original_response_body():
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.get_name())
                 v.set_name( 'Server side include vulnerability' )
-                v.setSeverity(severity.HIGH)
-                v.set_desc( 'Server side include (SSI) was found at: ' + mutant.foundAt() )
+                v.set_severity(severity.HIGH)
+                v.set_desc( 'Server side include (SSI) was found at: ' + mutant.found_at() )
                 v.set_id( response.id )
                 v.addToHighlight( e_res )
                 kb.kb.append_uniq( self, 'ssi', v )
@@ -150,8 +150,8 @@ class ssi(AuditPlugin):
                 v = vuln.vuln( mutant )
                 v.setPluginName(self.get_name())
                 v.set_name( 'Persistent server side include vulnerability' )
-                v.setSeverity(severity.HIGH)
-                msg = 'Server side include (SSI) was found at: ' + mutant.foundAt()
+                v.set_severity(severity.HIGH)
+                msg = 'Server side include (SSI) was found at: ' + mutant.found_at()
                 msg += ' The result of that injection is shown by'
                 msg += ' browsing to "%s".' % freq.getURL()
                 v.set_desc( msg )
@@ -171,7 +171,7 @@ class ssi(AuditPlugin):
         This method finds out if the server side has been successfully included in 
         the resulting HTML.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

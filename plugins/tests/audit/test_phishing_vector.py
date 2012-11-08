@@ -57,7 +57,7 @@ class TestPhishingVector(PluginTest):
             ('frame_phishing.php', 'url'),
         ]
 
-        found = [ (str(v.getURL()), v.getVar()) for v in vulns]
+        found = [ (str(v.getURL()), v.get_var()) for v in vulns]
         expected = [ ((self.target_url + end), param) for (end, param) in expected ]
         
         self.assertEquals(

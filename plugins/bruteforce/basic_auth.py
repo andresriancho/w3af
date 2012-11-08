@@ -68,8 +68,8 @@ class basic_auth(BruteforcePlugin):
         Try a user/password combination with HTTP basic authentication against
         a specific URL.
         
-        @parameter url: A string representation of an URL
-        @parameter combination: A tuple that contains (user,pass)
+        @param url: A string representation of an URL
+        @param combination: A tuple that contains (user,pass)
         '''
         # Remember that this worker is called from a thread which lives in a 
         # threadpool. If the worker finds something, it has to let the rest know
@@ -111,11 +111,11 @@ class basic_auth(BruteforcePlugin):
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v.set_name( 'Guessable credentials' )
             
                     kb.kb.append( self , 'auth' , v )
-                    om.out.vulnerability( v.get_desc(), severity=v.getSeverity() )
+                    om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
     
     def end( self ):
         '''

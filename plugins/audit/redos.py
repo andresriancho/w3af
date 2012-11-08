@@ -99,10 +99,10 @@ class redos(AuditPlugin):
                 first_wait_time = response.getWaitTime()
                 
                 # Replace the old pattern with the new one:
-                original_wait_param = mutant.getModValue()
+                original_wait_param = mutant.get_mod_value()
                 more_wait_param = original_wait_param.replace( 'X', 'XX' )
                 more_wait_param = more_wait_param.replace( '9', '99' )
-                mutant.setModValue( more_wait_param )
+                mutant.set_mod_value( more_wait_param )
                 
                 # send
                 response = self._uri_opener.send_mutant(mutant)
@@ -113,9 +113,9 @@ class redos(AuditPlugin):
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_name( 'ReDoS vulnerability' )
-                    v.setSeverity(severity.MEDIUM)
-                    v.set_desc( 'ReDoS was found at: ' + mutant.foundAt() )
-                    v.setDc( mutant.getDc() )
+                    v.set_severity(severity.MEDIUM)
+                    v.set_desc( 'ReDoS was found at: ' + mutant.found_at() )
+                    v.set_dc( mutant.get_dc() )
                     v.set_id( response.id )
                     v.setURI( response.getURI() )
                     kb.kb.append_uniq( self, 'redos', v )
@@ -126,9 +126,9 @@ class redos(AuditPlugin):
                     i.setPluginName(self.get_name())
                     i.set_name('Possible ReDoS vulnerability')
                     i.set_id( response.id )
-                    i.setDc( mutant.getDc() )
+                    i.set_dc( mutant.get_dc() )
                     i.setMethod( mutant.get_method() )
-                    msg = 'A possible ReDoS was found at: ' + mutant.foundAt() 
+                    msg = 'A possible ReDoS was found at: ' + mutant.found_at() 
                     msg += ' . Please review manually.'
                     i.set_desc( msg )
                     

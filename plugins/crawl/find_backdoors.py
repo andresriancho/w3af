@@ -130,7 +130,7 @@ class find_backdoors(CrawlPlugin):
         '''
         For every directory, fetch a list of shell files and analyze the response.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains 
+        @param fuzzable_request: A fuzzable_request instance that contains 
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.getURL().getDomainPath()
@@ -147,7 +147,7 @@ class find_backdoors(CrawlPlugin):
         '''
         Check if the file exists.
         
-        @parameter web_shell_url: The URL to check
+        @param web_shell_url: The URL to check
         '''
         try:
             response = self._uri_opener.GET(web_shell_url, cache=True)
@@ -159,13 +159,13 @@ class find_backdoors(CrawlPlugin):
                 v.setPluginName(self.get_name())
                 v.set_id(response.id)
                 v.set_name('Possible web backdoor')
-                v.setSeverity(severity.HIGH)
+                v.set_severity(severity.HIGH)
                 v.setURL(response.getURL())
                 msg = 'A web backdoor was found at: "%s"; this could ' \
                 'indicate that the server was hacked.' % v.getURL()
                 v.set_desc(msg)
                 kb.kb.append(self, 'backdoors', v)
-                om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)

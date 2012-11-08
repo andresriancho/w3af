@@ -107,7 +107,7 @@ class form_auth(BruteforcePlugin):
         # The result is going to be stored here
         login_failed_result_list = []
 
-        data_container = freq.getDc()
+        data_container = freq.get_dc()
         data_container = self._true_extra_fields(data_container, user_field, passwd_field)
         
         # The first tuple is an invalid username and a password
@@ -121,7 +121,7 @@ class form_auth(BruteforcePlugin):
             if user_field is not None:
                 data_container[user_field][0] = user
             data_container[passwd_field][0] = passwd
-            freq.setDc(data_container)
+            freq.set_dc(data_container)
             
             response = self._uri_opener.send_mutant(freq, grep=False)
             
@@ -144,7 +144,7 @@ class form_auth(BruteforcePlugin):
             if user_field is not None:
                 data_container[user_field][0] = user
             data_container[passwd_field][0] = passwd
-            freq.setDc(data_container)
+            freq.set_dc(data_container)
             response = self._uri_opener.send_mutant(freq, grep=False)
             
             body = response.getBody()
@@ -174,7 +174,7 @@ class form_auth(BruteforcePlugin):
         @return: True if this FuzzableRequest is a loginForm.
         '''
         passwd = text = other = 0
-        data_container = freq.getDc()
+        data_container = freq.get_dc()
         
         if isinstance(data_container, form.Form):
             
@@ -213,7 +213,7 @@ class form_auth(BruteforcePlugin):
             password. Please remember that maybe user_parameter might be None,
             since we support password only login forms.
         '''
-        data_container = freq.getDc()
+        data_container = freq.get_dc()
         passwd_parameter = None
         user_parameter = None
         
@@ -248,13 +248,13 @@ class form_auth(BruteforcePlugin):
     def _brute_worker(self, freq, user_field, passwd_field, 
                       login_failed_result_list, combination):
         '''
-        @parameter freq: A FuzzableRequest
-        @parameter combination: A tuple with (user, pass) or a pass if this is a
+        @param freq: A FuzzableRequest
+        @param combination: A tuple with (user, pass) or a pass if this is a
                                 password only form.
         '''
         if freq.getURL() not in self._found or not self._stop_on_first:
             freq = freq.copy()
-            data_container = freq.getDc()
+            data_container = freq.get_dc()
             data_container = self._true_extra_fields(data_container, user_field, passwd_field)
                         
             # Handle password-only forms!
@@ -267,7 +267,7 @@ class form_auth(BruteforcePlugin):
                 pwd = combination
                 data_container[passwd_field][0] = pwd
 
-            freq.setDc(data_container)
+            freq.set_dc(data_container)
 
             try:
                 resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
@@ -282,7 +282,7 @@ class form_auth(BruteforcePlugin):
                     # Now test with a new invalid password to ensure our
                     # previous possible found credentials are valid                        
                     data_container[passwd_field][0] = rand_alnum(8)
-                    freq.setDc(data_container)
+                    freq.set_dc(data_container)
                     verif_resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
                     body = verif_resp.getBody()
                     body = body.replace(user, '').replace(pwd, '')
@@ -308,7 +308,7 @@ class form_auth(BruteforcePlugin):
                         v['user'] = user
                         v['pass'] = pwd
                         v['response'] = resp
-                        v.setSeverity(severity.HIGH)
+                        v.set_severity(severity.HIGH)
                         v.set_name('Guessable credentials')
                         kb.kb.append(self, 'auth', v)
     

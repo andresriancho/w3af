@@ -226,8 +226,8 @@ class SourceforgeHTTP(Sourceforge):
         Once the user has logged in, the session is kept using the urllib2 cookie handler,
         nothing special has to be done regarding that.
         
-        @parameter user: The user
-        @parameter passwd: The password
+        @param user: The user
+        @param passwd: The password
         
         @return: True if successful login, false otherwise.
         '''

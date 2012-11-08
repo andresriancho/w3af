@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 from itertools import imap
 
 from core.controllers.misc.io import is_file_like
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.headers import Headers
+from core.data.dc.form import Form
 
 
 class HTTPPostDataRequest(FuzzableRequest):
@@ -35,9 +35,8 @@ class HTTPPostDataRequest(FuzzableRequest):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, uri, method='POST', headers=Headers(),
-                 cookie=None, dc=None, files=None):
+                 cookie=None, dc=None):
         FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
-        self._files = files or []
 
     def getData(self):
         '''
@@ -62,18 +61,14 @@ class HTTPPostDataRequest(FuzzableRequest):
         # Ok, no file was found; return the string representation
         return str(self._dc)
         
-    def setFileVariables( self, file_variables ):
-        '''
-        @parameter file_variables: A list of postdata parameters that contain
-            a file
-        '''
-        self._files = file_variables
-    
     def get_file_vars( self ):
         '''
         @return: A list of postdata parameters that contain a file
         '''
-        return self._files
+        if isinstance(self._dc, Form):
+            return self._dc.get_file_vars()
+        else:
+            return []
     
     def __repr__( self ):
         return '<postdata fuzzable request | %s | %s>' % \

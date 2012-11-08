@@ -13,19 +13,19 @@ verbose = True
 
 [misc-settings]
 fuzzCookie = False
-fuzzFileContent = True
-fuzzFileName = False
-fuzzURLParts = False
-fuzzFCExt = txt
+fuzz_form_files = True
+fuzz_url_filenames = False
+fuzz_url_parts = False
+fuzzed_files_extension = gif
 fuzzable_headers = 
-fuzzFormComboValues = tmb
+form_fuzzing_mode = tmb
 autoDependencies = True
 stop_on_first_exception = False
-maxDiscoveryTime = 120
+max_discovery_time = 120
 interface = ppp0
-localAddress = 10.5.6.18
+local_ip_address = 10.5.6.18
 demo = False
-nonTargets = 
+non_targets = 
 msf_location = /opt/metasploit3/bin/
 
 [http-settings]

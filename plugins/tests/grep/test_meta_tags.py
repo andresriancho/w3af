@@ -49,7 +49,7 @@ class TestMetaTags(PluginTest):
         self.assertEquals(2, len(vulns))
         
         self.assertEquals( set([severity.INFORMATION] * 2), 
-                           set([v.getSeverity() for v in vulns]))
+                           set([v.get_severity() for v in vulns]))
         
         self.assertEquals( set(['Interesting META tag'] * 2),
                            set([v.get_name() for v in vulns]))

@@ -1,5 +1,5 @@
 '''
-mutantXMLRPC.py
+MutantXMLRPC.py
 
 Copyright 2009 Andres Riancho
 
@@ -19,30 +19,40 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 
-from core.data.fuzzer.PostDataMutant import PostDataMutant
 
-class mutantXMLRPC(PostDataMutant):
+class MutantXMLRPC(PostDataMutant):
     '''
     This class is a XMLRPC mutant.
+    
+    *** IMPORTANT ***
+    Not in use in any section of the code!
+    *** IMPORTANT ***
     '''
     def __init__( self, freq ):
         PostDataMutant.__init__(self, freq)
 
-    def getMutantType( self ):
+    def get_mutant_type( self ):
         return 'XMLRPC data'
 
-    def foundAt(self):
+    def getHeaders(self):
+        headers = self._headers
+        # TODO: Verify this, I had no internet while adding the next line
+        headers['Content-Type'] = 'application/xml'
+        return headers
+
+    def found_at(self):
         '''
-        I had to implement this again here instead of just inheriting from PostDataMutant because
-        of the duplicated parameter name support which I added to the framework.
+        I had to implement this again here instead of just inheriting from
+        PostDataMutant because of the duplicated parameter name support which
+        I added to the framework.
         
-        @return: A string representing WHAT was fuzzed. This string is used like this:
-                - v.set_desc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        @return: A string representing WHAT was fuzzed.
         '''
         res = ''
         res += '"' + self.getURL() + '", using HTTP method '
         res += self.get_method() + '. The sent JSON-data was: "'
-        res += str(self.getDc())
+        res += str(self.get_dc())
         res += '"'
         return res

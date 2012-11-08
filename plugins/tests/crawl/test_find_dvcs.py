@@ -65,7 +65,7 @@ class TestFindDVCS(PluginTest):
             
             self.assertTrue(url_start, vuln_repo.getURL().url_string)
             
-            self.assertEqual(vuln_repo.getSeverity(), severity.MEDIUM)
+            self.assertEqual(vuln_repo.get_severity(), severity.MEDIUM)
             self.assertEqual(vuln_repo.get_name(), repo + ' repository found' )
 
 

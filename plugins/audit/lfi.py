@@ -152,7 +152,7 @@ class lfi(AuditPlugin):
 
         if not self._open_basedir:
             if 'open_basedir restriction in effect' in response\
-            and 'open_basedir restriction in effect' not in mutant.getOriginalResponseBody():
+            and 'open_basedir restriction in effect' not in mutant.get_original_response_body():
                 self._open_basedir = True
         
         #
@@ -166,13 +166,13 @@ class lfi(AuditPlugin):
         #
         file_content_list = self._find_file(response)
         for file_pattern_match in file_content_list:
-            if file_pattern_match not in mutant.getOriginalResponseBody():
+            if file_pattern_match not in mutant.get_original_response_body():
                 v = vuln.vuln(mutant)
                 v.setPluginName(self.get_name())
                 v.set_id(response.id)
                 v.set_name('Local file inclusion vulnerability')
-                v.setSeverity(severity.MEDIUM)
-                v.set_desc('Local File Inclusion was found at: ' + mutant.foundAt())
+                v.set_severity(severity.MEDIUM)
+                v.set_desc('Local File Inclusion was found at: ' + mutant.found_at())
                 v['file_pattern'] = file_pattern_match
                 v.addToHighlight(file_pattern_match)
                 kb.kb.append_uniq(self, 'lfi', v)
@@ -185,7 +185,7 @@ class lfi(AuditPlugin):
         #   (note that this is run if no vulns were identified)
         #
         #   http://host.tld/show_user.php?id=show_user.php
-        if mutant.getModValue() == mutant.getURL().getFileName():
+        if mutant.get_mod_value() == mutant.getURL().getFileName():
             match, lang = is_source_file( response.getBody() )
             if match:
                 #   We were able to read the source code of the file that is vulnerable to
@@ -194,9 +194,9 @@ class lfi(AuditPlugin):
                 v.setPluginName(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'Local file read vulnerability' )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 msg = 'An arbitrary local file read vulnerability was found at: '
-                msg += mutant.foundAt()
+                msg += mutant.found_at()
                 v.set_desc( msg )
                 
                 #
@@ -215,12 +215,12 @@ class lfi(AuditPlugin):
             
             match = regex.search( response.getBody() )
             
-            if match and not regex.search( mutant.getOriginalResponseBody() ):
+            if match and not regex.search( mutant.get_original_response_body() ):
                 i = info.info( mutant )
                 i.setPluginName(self.get_name())
                 i.set_id( response.id )
                 i.set_name( 'File read error' )
-                i.set_desc( 'A file read error was found at: ' + mutant.foundAt() )
+                i.set_desc( 'A file read error was found at: ' + mutant.found_at() )
                 kb.kb.append_uniq( self, 'error', i )        
     
     def end(self):
@@ -235,7 +235,7 @@ class lfi(AuditPlugin):
         This method finds out if the local file has been successfully included in 
         the resulting HTML.
         
-        @parameter response: The HTTP response object
+        @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []

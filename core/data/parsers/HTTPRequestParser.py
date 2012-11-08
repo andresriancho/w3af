@@ -99,8 +99,8 @@ def HTTPRequestParser(head, postdata):
     '''
     This function parses HTTP Requests from a string to a FuzzableRequest.
     
-    @parameter head: The head of the request.
-    @parameter postdata: The post data of the request
+    @param head: The head of the request.
+    @param postdata: The post data of the request
     @return: A FuzzableRequest object with all the corresponding information
         that was sent in head and postdata
     

@@ -102,7 +102,7 @@ class html_file(OutputPlugin):
         '''
         Write all parameters to the output file.
         
-        @parameter msg_list: The messages (strings) to write to the file.
+        @param msg_list: The messages (strings) to write to the file.
         '''
         for msg in msg_list:
             try:
@@ -157,9 +157,9 @@ class html_file(OutputPlugin):
         should take an action for the enabled plugins and their configuration.
         Usually, write the info to a file or print it somewhere.
         
-        @parameter pluginsDict: A dict with all the plugin types and the 
+        @param pluginsDict: A dict with all the plugin types and the 
                                 enabled plugins for that type of plugin.
-        @parameter optionsDict: A dict with the options for every plugin.
+        @param optionsDict: A dict with the options for every plugin.
         '''
         to_print = ''
         
@@ -184,8 +184,8 @@ class html_file(OutputPlugin):
         '''
         Add a message to the debug table.
         
-        @parameter message: The message to add to the table. It's in HTML.
-        @parameter msg_type: The type of message
+        @param message: The message to add to the table. It's in HTML.
+        @param msg_type: The type of message
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
@@ -266,7 +266,7 @@ class html_file(OutputPlugin):
 
             #   Get all the information I'll be using
             desc = cgi.escape( i.get_desc() )
-            severity = cgi.escape( i.getSeverity() )
+            severity = cgi.escape( i.get_severity() )
 
             if i.getURL() is not None:
                 port = str( i.getURL().getPort() )

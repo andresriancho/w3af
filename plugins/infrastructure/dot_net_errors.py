@@ -48,7 +48,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         Requests the special filenames.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if len(self._already_tested) < self.MAX_TESTS \
@@ -65,7 +65,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         Generate new URLs based on original_url.
 
-        @parameter original_url: The original url that has to be modified in
+        @param original_url: The original url that has to be modified in
                                  order to trigger errors in the remote application.
         '''
         special_chars = ['|', '~']
@@ -83,7 +83,7 @@ class dot_net_errors(InfrastructurePlugin):
 
     def _send_and_check(self, url):
         '''
-        @parameter response: The HTTPResponse object that holds the content of
+        @param response: The HTTPResponse object that holds the content of
                              the response to analyze.
         '''
         response = self._uri_opener.GET( url, cache=True )
@@ -97,7 +97,7 @@ class dot_net_errors(InfrastructurePlugin):
             v = vuln.vuln( response )
             v.setPluginName(self.get_name())
             v.set_id( response.id )
-            v.setSeverity(severity.LOW)
+            v.set_severity(severity.LOW)
             v.set_name( 'Information disclosure via .NET errors' )
             msg = 'Detailed information about ASP.NET error messages can be'
             msg += ' viewed from remote sites. The URL: "%s" discloses detailed'

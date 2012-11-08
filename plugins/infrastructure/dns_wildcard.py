@@ -49,7 +49,7 @@ class dns_wildcard(InfrastructurePlugin):
         '''
         Get www.site.com and site.com and compare responses.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         

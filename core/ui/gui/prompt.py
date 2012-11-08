@@ -81,7 +81,7 @@ class PromptView(gtk.TextView):
         '''
         This method is called from the write_console_messages generator.
         
-        @parameter text: A string to write to the console textviev
+        @param text: A string to write to the console textviev
         @return: None
         '''
         self.insert_into_textbuffer( text )
@@ -90,7 +90,7 @@ class PromptView(gtk.TextView):
         '''
         Insert a text into the text buffer, taking care of \r, \n, self.user_started.
 
-        @parameter text: The text to insert into the textbuffer
+        @param text: The text to insert into the textbuffer
         @return: None
         '''
         iterl = self.textbuffer.get_end_iter()

@@ -86,7 +86,7 @@ class HTTPResponse(object):
         @param original_url: URL object instance
         @param msg: HTTP message
         @param id: Optional response identifier
-        @parameter time: The time between the request and the response
+        @param time: The time between the request and the response
         @param alias: Optional alias for the response
         @param charset: Response's encoding; obligatory when `read` is unicode
         '''
@@ -331,7 +331,7 @@ class HTTPResponse(object):
         Sets the headers and also analyzes them in order to get the response
         mime type (text/html , application/pdf, etc).
 
-        @parameter headers: The headers dict.
+        @param headers: The headers dict.
         '''
         self.headers = headers
     
@@ -399,7 +399,7 @@ class HTTPResponse(object):
 
     def set_from_cache(self, fcache):
         '''
-        @parameter fcache: True if this response was obtained from the
+        @param fcache: True if this response was obtained from the
         local cache.
         '''
         self._fromCache = fcache

@@ -47,7 +47,7 @@ class domain_dot(InfrastructurePlugin):
         '''
         Sends the special request.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         domain = fuzzable_request.getURL().getDomain()
@@ -77,9 +77,9 @@ class domain_dot(InfrastructurePlugin):
 
     def _analyze_response(self, original_resp, resp):
         '''
-        @parameter original_resp: The HTTPResponse object that holds the
+        @param original_resp: The HTTPResponse object that holds the
                                   ORIGINAL response.
-        @parameter resp: The HTTPResponse object that holds the content of
+        @param resp: The HTTPResponse object that holds the content of
                          the response to analyze.
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):

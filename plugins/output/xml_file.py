@@ -162,9 +162,9 @@ class xml_file(OutputPlugin):
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
         
-        @parameter pluginsDict: A dict with all the plugin types and the enabled
+        @param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
-        @parameter optionsDict: A dict with the options for every plugin.
+        @param optionsDict: A dict with the options for every plugin.
         '''
         # Add the user configured targets to scaninfo
         strTargets = ''
@@ -265,10 +265,10 @@ class xml_file(OutputPlugin):
         vulns = kb.kb.getAllVulns()
         for i in vulns:
             messageNode = self._xmldoc.createElement("vulnerability")
-            messageNode.setAttribute("severity", str(i.getSeverity()))
+            messageNode.setAttribute("severity", str(i.get_severity()))
             messageNode.setAttribute("method", str(i.get_method()))
             messageNode.setAttribute("url", str(i.getURL()))
-            messageNode.setAttribute("var", str(i.getVar()))
+            messageNode.setAttribute("var", str(i.get_var()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.getPluginName()))
             # Wrap description in a <description> element and put it above the

@@ -19,25 +19,26 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+from core.data.fuzzer.mutants.mutant import Mutant
+from core.data.request.HTTPQsRequest import HTTPQSRequest
 
-from core.data.fuzzer.mutant import mutant
-from core.controllers.w3afException import w3afException
 
-
-class CookieMutant(mutant):
+class CookieMutant(Mutant):
     '''
     This class is a headers mutant.
     '''
     def __init__( self, freq ):
-        mutant.__init__(self, freq)
+        Mutant.__init__(self, freq)
 
-    def getMutantType( self ):
+    def get_mutant_type( self ):
         return 'cookie'
 
     def getURL( self ):
         '''
-        The next methods (getURL and getURI) are really simple, but they override the URL creation algorithm of HTTPQSRequest, that
-        uses the self._dc variable. If I don't have these methods, I end up with something like this:
+        The next methods (getURL and getURI) are really simple, but they override
+        the URL creation algorithm of HTTPQSRequest, that uses the self._dc
+        attribute. If I don't have these methods, I end up with something like
+        this:
         
         ========================================Request 15 - Sat Oct 27 21:05:34 2007========================================
         GET http://localhost/w3af/cookieFuzzing/cf.php?domain=%3CSCRIPT%3Ealert2%28%27bzbbw1R8AJ9ALQEM5jKI50fZn%27%29%3C%2FSCRIPT%3E HTTP/1.1
@@ -52,48 +53,66 @@ class CookieMutant(mutant):
     def getURI( self ):
         return self._uri
 
-    def setDc( self, c ):
-        self.setCookie( c )
+    def set_dc( self, c ):
+        self.set_cookie( c )
         
-    def getDc( self ):
-        return self.getCookie()
+    def get_dc( self ):
+        return self.get_cookie()
         
-    def getData( self ):
-        return ''
-    
-    def setModValue( self, val ):
+    def set_mod_value( self, val ):
         '''
         Set the value of the variable that this mutant modifies.
         '''
         try:
-            self._freq._cookie[ self.getVar() ][ self._index ] = val
-        except Exception, e:
-            raise w3afException('The cookie mutant object wasn\'t correctly initialized.')
+            self._freq._cookie[ self.get_var() ][ self._index ] = val
+        except Exception:
+            msg = 'The mutant object wasn\'t correctly initialized.'
+            raise ValueError(msg)
         
-    def getModValue( self ): 
+    def get_mod_value( self ): 
         try:
-            return self._freq._cookie[ self.getVar() ][ self._index ]
+            return self._freq._cookie[ self.get_var() ][ self._index ]
         except:
-            raise w3afException('The cookie mutant object was\'nt correctly initialized.')
+            msg = 'The mutant object wasn\'t correctly initialized.'
+            raise ValueError(msg)
             
-    def foundAt(self):
+    def found_at(self):
         '''
-        @return: A string representing WHAT was fuzzed. This string is used like this:
-                - v.set_desc( 'SQL injection in a '+ v['db'] +' was found at: ' + mutant.foundAt() )
+        @return: A string representing WHAT was fuzzed.
         '''
-        res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
-        res += self.get_method() + '. The modified parameter was the session cookie with value: "'
-        
+        fmt = '"%s", using HTTP method %s. The modified parameter was the'\
+              ' session cookie with value: "%s".'
+                      
         # Depending on the data container, print different things:
-        dc_length = 0
-        for i in self._freq._dc:
-            dc_length += len(i) + len(self._freq._dc[i])
-        if dc_length > 65:
-            res += '...' + self.getVar()  + '=' + self.getModValue() + '...'
-            res += '"'
-        else:
-            res += str(self.getDc())
-            res += '".'
+        dc_length = len(self._freq._dc)
         
-        return res       
+        if dc_length > 65:
+            cookie_str = '...%s=%s...' % (self.get_var(), self.get_mod_value()) 
+        else:
+            cookie_str = str(self.get_dc())
+        
+        return fmt % (self.getURI(), self.get_method(), cookie_str)       
+
+    def print_mod_value( self ):
+        fmt = 'The cookie data that was sent is: "%s".'
+        return fmt % self.get_dc()
+    
+    @staticmethod
+    def create_mutants(freq, mutant_str_list, fuzzable_param_list,
+                       append, fuzzer_config, data_container=None):
+        '''
+        This is a very important method which is called in order to create
+        mutants. Usually called from fuzzer.py module.
+        '''
+        if not isinstance(freq, HTTPQSRequest):
+            return []
+                
+        if not fuzzer_config['fuzz_cookies']:
+            return []
+        
+        orig_cookie = freq.get_cookie()
+        
+        return Mutant._create_mutants_worker(freq, CookieMutant, mutant_str_list,
+                                             fuzzable_param_list,
+                                             append, fuzzer_config,
+                                             data_container=orig_cookie)

@@ -49,16 +49,17 @@ class info(dict):
             self.setURI( data_obj.getURI() )
             self.set_desc( data_obj.get_desc() )
             self.setMethod( data_obj.get_method() )
-            self.setVar( data_obj.getVar() )
+            self.set_var( data_obj.get_var() )
             self.set_id( data_obj.getId() )
             self.set_name( data_obj.get_name() )
-            self.setDc( data_obj.getDc() )
+            self.set_dc( data_obj.get_dc() )
             for k in data_obj.keys():
                 self[ k ] = data_obj[ k ]
     
-    def getSeverity( self ):
+    def get_severity( self ):
         '''
-        @return: severity.INFORMATION , all information objects have the same level of severity.
+        @return: severity.INFORMATION , all information objects have the same
+                 level of severity.
         '''
         return severity.INFORMATION
     
@@ -250,16 +251,16 @@ class info(dict):
         '''
         return self._id
         
-    def setVar( self, variable ):
+    def set_var( self, variable ):
         self._variable = variable
         
-    def getVar( self ):
+    def get_var( self ):
         return self._variable
         
-    def setDc( self, dc ):
+    def set_dc( self, dc ):
         self._dc = dc
         
-    def getDc( self ):
+    def get_dc( self ):
         return self._dc
         
     def getToHighlight(self):

@@ -61,7 +61,7 @@ class oracle_discovery(CrawlPlugin):
         '''
         GET some files and parse them.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()

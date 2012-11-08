@@ -80,8 +80,8 @@ class lang(GrepPlugin):
         Get the page indicated by the fuzzable_request and determine the language
         using the preposition list.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         '''
         with self._plugin_lock:
             if self._exec and not is_404( response ) and response.is_text_or_html():

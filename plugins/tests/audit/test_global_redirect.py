@@ -58,7 +58,7 @@ class TestGlobalRedirect(PluginTest):
             ('302-filtered.php', 'url')
         ]
 
-        found = [ (str(v.getURL()), v.getVar()) for v in vulns]
+        found = [ (str(v.getURL()), v.get_var()) for v in vulns]
         expected = [ ((self.target_url + end), param) for (end, param) in EXPECTED ]
         
         self.assertEquals(

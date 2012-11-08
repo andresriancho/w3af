@@ -48,9 +48,9 @@ class extrusionServer(object):
         (the one thats running the extrusionClient ) you can just say None
         and the extrusionServer will try to figure it out.
         
-        @parameter host: The host from where we expect the connections
-        @parameter portList: The portList ( as passed to extrusionClient ) to listen for        
-        @parameter iface: The interface where scapy is going to listen for packets
+        @param host: The host from where we expect the connections
+        @param portList: The portList ( as passed to extrusionClient ) to listen for        
+        @param iface: The interface where scapy is going to listen for packets
         '''
         self._host = host
         self._udp_ports = udp_ports

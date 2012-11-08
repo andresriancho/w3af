@@ -52,8 +52,8 @@ class svn_users(GrepPlugin):
         '''
         Plugin entry point.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         uri = response.getURI()
@@ -72,7 +72,7 @@ class svn_users(GrepPlugin):
                     msg += 'signature with the username: "' + m[0] + '" .'
                     v.set_desc(msg)
                     v['user'] = m[0]
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     v.set_name('SVN user disclosure vulnerability')
                     v.addToHighlight(m[0])
                     kb.kb.append(self, 'users', v)

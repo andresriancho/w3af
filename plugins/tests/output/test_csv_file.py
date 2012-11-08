@@ -94,8 +94,8 @@ class TestCSVFile(PluginTest):
             v.set_name(name)
             v.setMethod( method )
             v.setURI( URL(uri) )
-            v.setVar(var)
-            v.setDc(dc)
+            v.set_var(var)
+            v.set_dc(dc)
             v.set_id(json.loads(_id) )
             v.set_desc(desc)
             

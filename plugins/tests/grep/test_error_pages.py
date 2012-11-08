@@ -47,7 +47,7 @@ class TestErrorPages(PluginTest):
 
         self.assertEquals(1, len(infos))
         self.assertEquals(self.target_url, str(info.getURL()))
-        self.assertEquals(severity.INFORMATION, info.getSeverity())
+        self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertTrue(info.get_name().startswith('Descriptive error page'))
 
         '''
@@ -56,6 +56,6 @@ class TestErrorPages(PluginTest):
 
         self.assertEquals(1, len(infos))
         self.assertEquals(self.target_url, str(info.getURL()))
-        self.assertEquals(severity.INFORMATION, info.getSeverity())
+        self.assertEquals(severity.INFORMATION, info.get_severity())
         self.assertTrue(info.get_name().startswith('Error page with information disclosure'))
         '''

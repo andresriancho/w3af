@@ -28,7 +28,7 @@ from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 def html_export(request_string):
     '''
-    @parameter request_string: The string of the request to export
+    @param request_string: The string of the request to export
     @return: A HTML that will perform the same HTTP request.
     '''
     request_lines = request_string.split('\n\n')
@@ -45,7 +45,7 @@ def html_export(request_string):
     res += '<form action="' + cgi.escape(http_request.getURI().url_string, True)
     res += '" method="' + cgi.escape(http_request.get_method(), True) + '">\n'
     if http_request.getData() and http_request.getData() != '\n':
-        post_data = http_request.getDc()
+        post_data = http_request.get_dc()
         for param_name in post_data:
             for value in post_data[param_name]:
                 res += '<label>' + cgi.escape(param_name) + '</label>\n'

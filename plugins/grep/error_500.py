@@ -47,8 +47,8 @@ class error_500(GrepPlugin):
         '''
         Plugin entry point, identify which requests generated a 500 error.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() \
@@ -84,16 +84,16 @@ class error_500(GrepPlugin):
         of my audit plugins
         '''
         all_vulns = kb.kb.getAllVulns()
-        all_vulns_tuples = [ (v.getURI(), v.getDc()) for v in all_vulns ]
+        all_vulns_tuples = [ (v.getURI(), v.get_dc()) for v in all_vulns ]
 
         for request, error_500_response_id in self._error_500_responses:
-            if ( request.getURI() , request.getDc() ) not in all_vulns_tuples:
+            if ( request.getURI() , request.get_dc() ) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
                 v = vuln.vuln()
                 v.setPluginName(self.get_name())
                 v.setURI( request.getURI() )
                 v.set_id( error_500_response_id )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 v.set_name( 'Unhandled error in web application' )
                 msg = 'An unidentified web application error (HTTP response code 500)'
                 msg += ' was found at: "' + v.getURL()+'".'

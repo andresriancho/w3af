@@ -54,7 +54,7 @@ class fingerprint_WAF(InfrastructurePlugin):
     @runonce(exc_class=w3afRunOnce)        
     def discover(self, fuzzable_request ):
         '''
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         methods = [ self._fingerprint_URLScan,
@@ -284,9 +284,9 @@ class fingerprint_WAF(InfrastructurePlugin):
         Creates a information object based on the name and the response parameter
         and saves the data in the kb.
         
-        @parameter name: The name of the WAF
-        @parameter response: The HTTP response object that was used to identify the WAF
-        @parameter protected_by: A more detailed description/version of the WAF
+        @param name: The name of the WAF
+        @param response: The HTTP response object that was used to identify the WAF
+        @param protected_by: A more detailed description/version of the WAF
         '''
         i = info.info()
         i.setPluginName(self.get_name())

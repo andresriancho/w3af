@@ -298,7 +298,7 @@ class w3af_core_strategy(object):
             
             self._discovery_consumer = crawl_infrastructure(discovery_plugins,
                                                             self._w3af_core,
-                                                            cf.cf.get('maxDiscoveryTime'))
+                                                            cf.cf.get('max_discovery_time'))
             self._discovery_consumer.start()
     
     def _setup_grep(self):

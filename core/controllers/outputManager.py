@@ -194,7 +194,7 @@ class outputManager(Process):
     
     def set_output_plugins(self, outputPlugins):
         '''
-        @parameter outputPlugins: A list with the names of Output Plugins that
+        @param outputPlugins: A list with the names of Output Plugins that
                                   will be used.
         @return: No value is returned.
         '''     
@@ -209,7 +209,7 @@ class outputManager(Process):
     
     def set_plugin_options(self, plugin_name, PluginsOptions):
         '''
-        @parameter PluginsOptions: A tuple with a string and a dictionary
+        @param PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
                                    { console:{'verbose': True} }
             
@@ -222,7 +222,7 @@ class outputManager(Process):
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
         
-        @parameter OutputPluginName: The name of the plugin to add to the list.
+        @param OutputPluginName: The name of the plugin to add to the list.
         @return: No value is returned.
         '''
         if OutputPluginName == 'all':

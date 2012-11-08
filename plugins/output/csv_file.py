@@ -70,8 +70,8 @@ class csv_file(OutputPlugin):
                        data.get_name() ,
                        data.get_method() ,
                        data.getURI() ,
-                       data.getVar() ,
-                       data.getDc() ,
+                       data.get_var() ,
+                       data.get_dc() ,
                        data.getId() ,
                        data.get_desc()
                       ]

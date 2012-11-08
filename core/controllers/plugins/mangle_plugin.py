@@ -116,7 +116,7 @@ class ManglePlugin(Plugin):
     
 def headers_to_string( header_dict ):
     '''
-    @parameter header_dict: The header dictionary of the request
+    @param header_dict: The header dictionary of the request
     @return: A string representation of the dictionary
     '''
     res = ''

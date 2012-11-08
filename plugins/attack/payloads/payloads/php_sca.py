@@ -24,7 +24,7 @@ import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 from core.ui.console.tables import table
 from plugins.attack.payloads.base_payload import base_payload
 
@@ -59,11 +59,11 @@ class php_sca(base_payload):
             vulndata = php_sca.KB_DATA[vulnty]
             for f in funcs:
                 v = vuln.vuln()
-                v.setSeverity(vulndata['severity'])
+                v.set_severity(vulndata['severity'])
                 v.set_name(vulndata['name'])
                 v.setURL(url)
                 v.setURI(url)
-                v.setVar(f.vulnsources[0])
+                v.set_var(f.vulnsources[0])
                 v.set_desc(vulndata['name'])
                 args = list(vulndata['kb_key']) + [v]
 
@@ -75,7 +75,7 @@ class php_sca(base_payload):
                 
                 # TODO: Extract all the other variables that are
                 # present in the PHP file using the SCA
-                v.setDc(DataContainer())
+                v.set_dc(DataContainer())
                 
                 #
                 # TODO: This needs to be checked! OS Commanding specific

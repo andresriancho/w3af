@@ -79,12 +79,12 @@ class mx_injection(AuditPlugin):
             
             mx_error_list = self._multi_in.query( response.body )
             for mx_error in mx_error_list:
-                if mx_error not in mutant.getOriginalResponseBody():
+                if mx_error not in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
                     v.setPluginName(self.get_name())
                     v.set_name( 'MX injection vulnerability' )
-                    v.setSeverity(severity.MEDIUM)
-                    v.set_desc( 'MX injection was found at: ' + mutant.foundAt() )
+                    v.set_severity(severity.MEDIUM)
+                    v.set_desc( 'MX injection was found at: ' + mutant.found_at() )
                     v.set_id( response.id )
                     v.addToHighlight( mx_error )
                     kb.kb.append_uniq( self, 'mx_injection', v )

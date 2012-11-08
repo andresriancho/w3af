@@ -50,7 +50,7 @@ class blind_sqli_response_diff(object):
         Most of the equal algorithms use a rate to tell if two responses 
         are equal or not. 1 is 100% equal, 0 is totally different.
         
-        @parameter eq_limit: The equal limit to use.
+        @param eq_limit: The equal limit to use.
         '''
         self._eq_limit = eq_limit
         
@@ -59,7 +59,7 @@ class blind_sqli_response_diff(object):
         Check if "parameter" of the fuzzable request object is injectable or not.
         
         @mutant: The mutant object that I have to inject to
-        @parameter: A string with the parameter name to test
+        @param: A string with the parameter name to test
         
         @return: A vulnerability object or None if nothing is found
         '''
@@ -105,10 +105,10 @@ class blind_sqli_response_diff(object):
         true_statement = statement_tuple[0]
         false_statement = statement_tuple[1]
         
-        mutant.setModValue( true_statement )
+        mutant.set_mod_value( true_statement )
         _, body_true_response = self.send_clean( mutant )
 
-        mutant.setModValue( false_statement )
+        mutant.set_mod_value( false_statement )
         _, body_false_response = self.send_clean( mutant )
         
         if body_true_response == body_false_response:
@@ -132,7 +132,7 @@ class blind_sqli_response_diff(object):
             compare_diff = True
             
         syntax_error = "d'z'0"
-        mutant.setModValue( syntax_error )
+        mutant.set_mod_value( syntax_error )
         syntax_error_response, body_syntax_error_response = self.send_clean( mutant )
         
         self.debug('Comparing body_true_response and body_syntax_error_response.')
@@ -145,10 +145,10 @@ class blind_sqli_response_diff(object):
             second_true_stm = statements[ statement_type ][0]
             second_false_stm = statements[ statement_type ][1]
             
-            mutant.setModValue( second_true_stm )
+            mutant.set_mod_value( second_true_stm )
             second_true_response, body_second_true_response = self.send_clean( mutant )
 
-            mutant.setModValue( second_false_stm )
+            mutant.set_mod_value( second_false_stm )
             second_false_response, body_second_false_response = self.send_clean( mutant ) 
             
             self.debug('Comparing body_second_true_response and body_true_response.')
@@ -162,15 +162,15 @@ class blind_sqli_response_diff(object):
                                           compare_diff ):
                     v = vuln.vuln( mutant )
                     v.set_id( [second_false_response.id, second_true_response.id] )
-                    v.setSeverity(severity.HIGH)
+                    v.set_severity(severity.HIGH)
                     v.set_name( 'Blind SQL injection vulnerability' )
                     # This is needed to be used in fuzz file name
-                    v.getMutant().setOriginalValue( '' )
-                    v.getMutant().setModValue( '' )
+                    v.getMutant().set_original_value( '' )
+                    v.getMutant().set_mod_value( '' )
                     
                     desc = 'Blind SQL injection was found at: "%s", using'
                     desc += ' HTTP method %s. The injectable parameter is: "%s"'
-                    desc = desc % (v.getURL(), v.get_method(), mutant.getVar())
+                    desc = desc % (v.getURL(), v.get_method(), mutant.get_var())
                     v.set_desc( desc )
                     om.out.debug( v.get_desc() )
                     
@@ -240,7 +240,7 @@ def get_clean_body(mutant, response):
     body = response.body
     
     if response.is_text_or_html():
-        mod_value = mutant.getModValue()
+        mod_value = mutant.get_mod_value()
         
         body = body.replace(mod_value, '')
         body = body.replace(urllib.unquote_plus(mod_value), '')

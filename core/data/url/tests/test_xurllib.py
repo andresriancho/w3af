@@ -28,7 +28,7 @@ from nose.plugins.attrib import attr
 
 from core.data.url.xUrllib import xUrllib
 from core.data.parsers.url import URL
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 
 from core.controllers.w3afException import (w3afMustStopByUserRequest,
                                             w3afMustStopOnUrlError)

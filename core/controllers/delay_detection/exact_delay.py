@@ -53,7 +53,7 @@ class exact_delay(object):
                           the remote server (ie. sleep(%s) )
         '''
         self.mutant = mutant
-        self.mutant.setModValue( self.mutant.getOriginalValue() )
+        self.mutant.set_mod_value( self.mutant.get_original_value() )
         
         self.delay_obj = delay_obj
         self.uri_opener = uri_opener
@@ -96,7 +96,7 @@ class exact_delay(object):
         
         delay_str = self.delay_obj.get_string_for_delay( seconds )
         mutant = self.mutant.copy()
-        mutant.setModValue(delay_str)
+        mutant.set_mod_value(delay_str)
         
         #    Send
         response = self.uri_opener.send_mutant( mutant, cache=False )

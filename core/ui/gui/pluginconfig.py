@@ -360,7 +360,7 @@ class PluginTree(gtk.TreeView):
         '''Shows a menu when you right click on a plugin.
         
         @param tv: the treeview.
-        @parameter event: The GTK event 
+        @param event: The GTK event 
         '''
         if event.button == 3:
             # It's a right click !

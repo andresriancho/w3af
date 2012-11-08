@@ -242,7 +242,7 @@ class analyze_cookies(GrepPlugin):
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             
             httponly_severity = severity.MEDIUM if fingerprinted else severity.LOW
-            v.setSeverity(httponly_severity)
+            v.set_severity(httponly_severity)
             
             v.set_name( 'Cookie without HttpOnly' )
             msg = 'A cookie without the HttpOnly flag was sent when requesting' \
@@ -272,7 +272,7 @@ class analyze_cookies(GrepPlugin):
                             v = vuln.vuln()
                             v.setPluginName(self.get_name())
                             v.setURL( response.getURL() )
-                            v.setSeverity(severity.HIGH)
+                            v.set_severity(severity.HIGH)
                             v.set_id( response.id )
                             v.set_name( 'Secure cookies over insecure channel' )
                             msg = 'Cookie values that were set over HTTPS, are' \
@@ -348,7 +348,7 @@ class analyze_cookies(GrepPlugin):
             v.setURL( response.getURL() )
             v.set_id( response.getId() )
             self._set_cookie_to_rep(v, cobj=cookie_obj)
-            v.setSeverity(severity.HIGH)
+            v.set_severity(severity.HIGH)
             v.set_name( 'Secure cookie over HTTP' )
             msg = 'A cookie marked with the secure flag was sent over' \
                   ' an insecure channel (HTTP) when requesting the URL:'\
@@ -378,7 +378,7 @@ class analyze_cookies(GrepPlugin):
             v.setURL( response.getURL() )
             v.set_id( response.getId() )
             self._set_cookie_to_rep(v, cobj=cookie_obj)
-            v.setSeverity(severity.HIGH)
+            v.set_severity(severity.HIGH)
             v.set_name( 'Secure flag missing in HTTPS cookie' )
             msg = 'A cookie without the secure flag was sent in an HTTPS' \
                   ' response at "%s". The secure flag prevents the browser' \

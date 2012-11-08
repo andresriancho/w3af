@@ -49,8 +49,8 @@ class code_disclosure(GrepPlugin):
         
         Unit tests are available at plugins/grep/tests.
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() and response.getURL() not in self._already_added:
@@ -64,7 +64,7 @@ class code_disclosure(GrepPlugin):
                     v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     v.set_name( lang + ' code disclosure vulnerability' )
                     v.addToHighlight(match.group())
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
@@ -78,7 +78,7 @@ class code_disclosure(GrepPlugin):
                     v.setPluginName(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
-                    v.setSeverity(severity.LOW)
+                    v.set_severity(severity.LOW)
                     v.addToHighlight(match.group())
                     v.set_name( lang + ' code disclosure vulnerability in 404 page' )
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability'\

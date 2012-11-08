@@ -55,8 +55,8 @@ class DBClient(object):
         '''
         Create index for speed and performance
 
-        @parameter table: The table from which you want to create an index from
-        @parameter columns: A list of column names.
+        @param table: The table from which you want to create an index from
+        @param columns: A list of column names.
         '''
         sql = 'CREATE INDEX %s_index ON %s( %s )' % (table, table, ','.join(columns) )
         

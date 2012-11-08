@@ -105,7 +105,7 @@ class ghdb(CrawlPlugin):
                 v.setURL( response.getURL() )
                 v.setMethod( 'GET' )
                 v.set_name( 'Google hack database vulnerability' )
-                v.setSeverity(severity.MEDIUM)
+                v.set_severity(severity.MEDIUM)
                 msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
                       ' According to GHDB the vulnerability description is "%s".'
                 v.set_desc(msg % (response.getURL(), gh.desc))

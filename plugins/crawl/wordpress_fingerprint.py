@@ -63,7 +63,7 @@ class wordpress_fingerprint(CrawlPlugin):
     def crawl(self, fuzzable_request ):
         '''
         Finds the version of a WordPress installation.   
-        @parameter fuzzable_request: A fuzzable_request instance that contains 
+        @param fuzzable_request: A fuzzable_request instance that contains 
         (among other things) the URL to test.
         '''
         if not self._exec :

@@ -47,7 +47,7 @@ class find_captchas(CrawlPlugin):
         '''
         Find CAPTCHA images.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # GET the document, and fetch the images
@@ -96,7 +96,7 @@ class find_captchas(CrawlPlugin):
         '''
         Get all img tags and retrieve the src.
         
-        @parameter fuzzable_request: The request to modify
+        @param fuzzable_request: The request to modify
         @return: A list with tuples containing (img_src, image_hash)
         '''
         res = []

@@ -58,8 +58,8 @@ class user_defined_regex(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for the user defined regex.
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         if self._all_in_one is None:

@@ -48,8 +48,8 @@ class http_auth_detect(GrepPlugin):
         '''
         Finds 401 or authentication URIs like http://user:pass@domain.com/
         
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         # If I have a 401 code, and this URL wasn't already reported...
@@ -87,12 +87,12 @@ class http_auth_detect(GrepPlugin):
             desc = 'The resource: "%s" has a user and password in ' \
             'the URI.' % response.getURI()
             v.set_desc(desc)
-            v.setSeverity(severity.HIGH)
+            v.set_severity(severity.HIGH)
             v.set_name('Basic HTTP credentials')
             v.addToHighlight( response.getURI().url_string )
             
             kb.kb.append(self, 'userPassUri', v)
-            om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
 
         #
@@ -122,12 +122,12 @@ class http_auth_detect(GrepPlugin):
                 msg += ' body. The offending URL is: "' + url + '".'
                 v.set_desc(msg)
                 
-                v.setSeverity(severity.HIGH)
+                v.set_severity(severity.HIGH)
                 v.set_name('Basic HTTP credentials')
                 v.addToHighlight( url.url_string )
                 
                 kb.kb.append(self, 'userPassUri', v)
-                om.out.vulnerability(v.get_desc(), severity=v.getSeverity())
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                     
     def _analyze_401(self, response):
         '''

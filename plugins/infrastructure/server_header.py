@@ -44,7 +44,7 @@ class server_header(InfrastructurePlugin):
         Nothing strange, just do a GET request to the url and save the server headers
         to the kb. A smarter way to check the server type is with the hmap plugin.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         if self._server_header:

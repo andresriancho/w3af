@@ -209,7 +209,7 @@ class web_spider(CrawlPlugin):
         '''
         self._already_filled_form.add(fuzzable_req.getURL())
         
-        to_send = fuzzable_req.getDc().copy()
+        to_send = fuzzable_req.get_dc().copy()
         
         for param_name in to_send:
             
@@ -230,7 +230,7 @@ class web_spider(CrawlPlugin):
                 # SmartFill it!
                 to_send[param_name][elem_index] = smart_fill(param_name)
                 
-        fuzzable_req.setDc(to_send)
+        fuzzable_req.set_dc(to_send)
         return fuzzable_req 
     
     def _need_more_variants(self, new_reference):

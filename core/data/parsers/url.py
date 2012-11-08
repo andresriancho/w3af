@@ -31,7 +31,7 @@ from core.data.misc.encoding import is_known_encoding
 from core.controllers.misc.ordereddict import OrderedDict
 from core.controllers.w3afException import w3afException
 from core.data.constants.encodings import DEFAULT_ENCODING
-from core.data.dc.dataContainer import DataContainer
+from core.data.dc.data_container import DataContainer
 from core.data.dc.queryString import QueryString
 from core.data.db.disk_item import disk_item
 
@@ -831,7 +831,7 @@ class URL(disk_item):
         >>> URL("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain()
         True
         
-        @parameter url: The url to parse.
+        @param url: The url to parse.
         @return: Returns a boolean that indicates if <url>'s domain is valid
         '''
         return re.match('[a-z0-9-]+(\.[a-z0-9-]+)*(:\d\d?\d?\d?\d?)?$', self.netloc) is not None
@@ -1033,7 +1033,7 @@ class URL(disk_item):
     @set_changed    
     def setExtension( self, extension ):
         '''
-        @parameter extension: The new extension to set, without the '.'
+        @param extension: The new extension to set, without the '.'
         @return: None. The extension is set. An exception is raised if the
         original URL had no extension.
         
@@ -1276,7 +1276,7 @@ class URL(disk_item):
         >>> u.getPathQs()
         '/xyz.txt;file=3?file=2'
         
-        @parameter param_string: The param to set (e.g. "foo=aaa").
+        @param param_string: The param to set (e.g. "foo=aaa").
         @return: Returns the url containing param.
         '''
         self.params = param_string 

@@ -167,8 +167,8 @@ class profile(object):
         '''
         Set the enabled plugins of type plugin_type.
         
-        @parameter plugin_type: 'audit', 'output', etc.
-        @parameter plugin_nameList: ['xss', 'sqli'] ...
+        @param plugin_type: 'audit', 'output', etc.
+        @param plugin_nameList: ['xss', 'sqli'] ...
         @return: None
         '''
         # First, get the enabled plugins of the current profile
@@ -205,9 +205,9 @@ class profile(object):
     def set_plugin_options( self, plugin_type, plugin_name, options ):
         '''
         Set the plugin options.
-        @parameter plugin_type: 'audit', 'output', etc.
-        @parameter plugin_name: 'xss', 'sqli', etc.
-        @parameter options: an OptionList
+        @param plugin_type: 'audit', 'output', etc.
+        @param plugin_name: 'xss', 'sqli', etc.
+        @param options: an OptionList
         @return: None
         '''
         section = plugin_type + "." + plugin_name
@@ -248,7 +248,7 @@ class profile(object):
     def setMiscSettings( self, options ):
         '''
         Set the misc settings options.
-        @parameter options: an OptionList
+        @param options: an OptionList
         @return: None
         '''
         self._set_x_settings('misc-settings', options)
@@ -256,7 +256,7 @@ class profile(object):
     def setHttpSettings( self, options ):
         '''
         Set the http settings options.
-        @parameter options: an OptionList
+        @param options: an OptionList
         @return: None
         '''
         self._set_x_settings('http-settings', options)    
@@ -265,8 +265,8 @@ class profile(object):
         '''
         Set the section options.
         
-        @parameter section: The section name
-        @parameter options: an OptionList
+        @param section: The section name
+        @param options: an OptionList
         @return: None
         '''
         if section not in self._config.sections():
@@ -319,7 +319,7 @@ class profile(object):
     def set_name( self, name ):
         '''
         Set the name of the profile.
-        @parameter name: The description of the profile
+        @param name: The description of the profile
         @return: None
         '''
         section = 'profile'
@@ -345,7 +345,7 @@ class profile(object):
     def setTarget( self, target ):
         '''
         Set the target of the profile.
-        @parameter target: The target URL of the profile
+        @param target: The target URL of the profile
         @return: None
         '''
         section = 'target'
@@ -373,7 +373,7 @@ class profile(object):
     def set_desc( self, desc ):
         '''
         Set the description of the profile.
-        @parameter desc: The description of the profile
+        @param desc: The description of the profile
         @return: None
         '''
         section = 'profile'

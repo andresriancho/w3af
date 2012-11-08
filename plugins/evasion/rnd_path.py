@@ -41,7 +41,7 @@ class rnd_path(EvasionPlugin):
         '''
         Mangles the request
         
-        @parameter request: HTTPRequest instance that is going to be modified by the evasion plugin
+        @param request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
 
         >>> from core.data.parsers.url import URL

@@ -31,12 +31,12 @@ class BaseOption(object):
     '''
     def __init__(self, name, default_value, desc, _help='', tabid=''):
         '''
-        @parameter name: The name of the option
-        @parameter default_value: The default value of the option
-        @parameter desc: The description of the option
-        @parameter type: boolean, integer, string, etc..
-        @parameter help: The help of the option; a large description of the option
-        @parameter tabid: The tab id of the option
+        @param name: The name of the option
+        @param default_value: The default value of the option
+        @param desc: The description of the option
+        @param type: boolean, integer, string, etc..
+        @param help: The help of the option; a large description of the option
+        @param tabid: The tab id of the option
         '''
         self.set_value(default_value)
         self._default_value = self._value
@@ -75,7 +75,7 @@ class BaseOption(object):
 
     def set_value(self, value):
         '''
-        @parameter value: The value parameter is set by the user interface, which
+        @param value: The value parameter is set by the user interface, which
         for example sends 'True' or 'a,b,c'
 
         Based on the value parameter and the option type, I have to create a nice

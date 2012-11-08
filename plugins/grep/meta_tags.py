@@ -62,8 +62,8 @@ class meta_tags(GrepPlugin):
         '''
         Plugin entry point, search for meta tags.
 
-        @parameter request: The HTTP request object.
-        @parameter response: The HTTP response object
+        @param request: The HTTP request object.
+        @param response: The HTTP response object
         @return: None
         '''
         uri = response.getURI()

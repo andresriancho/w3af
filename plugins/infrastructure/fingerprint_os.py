@@ -44,7 +44,7 @@ class fingerprint_os(InfrastructurePlugin):
         '''
         It calls the "main" and writes the results to the kb.
         
-        @parameter fuzzable_request: A fuzzable_request instance that contains
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
