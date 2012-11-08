@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.data.kb.info import info as info
-from core.data.fuzzer.mutant import mutant as mutant
+from core.data.fuzzer.mutants.mutant import Mutant
 
 
 class vuln(info):
@@ -39,21 +39,21 @@ class vuln(info):
         self._variable = None
         self._mutant = None
         
-        if isinstance(data_obj, mutant) or \
+        if isinstance(data_obj, Mutant) or \
             isinstance(data_obj, vuln):
             self.setMethod(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())
             self.setURI(data_obj.getURI())
-            self.setMutant(data_obj)
+            self.set_mutant(data_obj)
 
-    def setMutant(self, mutant):
+    def set_mutant(self, mutant):
         '''
         Sets the mutant that created this vuln.
         '''
         self._mutant = mutant
         
-    def getMutant(self):
+    def get_mutant(self):
         return self._mutant
         
     def set_var(self, variable):

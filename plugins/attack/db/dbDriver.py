@@ -40,10 +40,10 @@ class dbDriver(dbDriverFunctions):
         self._uri_opener = urlOpener
         self._vuln = vuln
         
-        mutant = vuln.getMutant()
+        mutant = vuln.get_mutant()
         url = mutant.getURI()       
         if vuln.get_method() == 'POST':
-            url += '?' + str(vuln.getMutant().getData())
+            url += '?' + str(vuln.get_mutant().getData())
         self.args.trueResult = vuln['trueHtml']
         
         falseValue = self._findFalseValue( vuln )
@@ -90,7 +90,7 @@ class dbDriver(dbDriverFunctions):
             elif vuln['type'] in ['stringsingle','stringdouble']:
                 possibleFalse = rand_alpha(5)
             
-            mutant = vuln.getMutant()
+            mutant = vuln.get_mutant()
             mutant.set_mod_value( possibleFalse )
             
             res = self._uri_opener.send_mutant(mutant)

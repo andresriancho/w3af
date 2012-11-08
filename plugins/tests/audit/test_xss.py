@@ -68,7 +68,7 @@ class TestXSS(PluginTest):
         
         xssvulns = self.kb.get('xss', 'xss')
         kb_data = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
-                   for m in (xv.getMutant() for xv in xssvulns)]
+                   for m in (xv.get_mutant() for xv in xssvulns)]
                 
         EXPECTED = [('simple_xss_no_js.php', 'text', ['text']),]
         expected_data = [(self.xss_smoke, e[1],tuple(sorted(e[2]))) for e in EXPECTED]
@@ -98,7 +98,7 @@ class TestXSS(PluginTest):
             
         ]
         res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
-                for m in (xv.getMutant() for xv in xssvulns)]
+                for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
             set([(self.xss_url + e[0], e[1],tuple(sorted(e[2]))) for e in expected]),
             set(res),
@@ -118,7 +118,7 @@ class TestXSS(PluginTest):
             ('printer.php', 'added', ('x', 'added'))
         ]
         res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
-                        for m in (xv.getMutant() for xv in xssvulns)]
+                        for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
             set([(self.xss_302_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
             set(res),

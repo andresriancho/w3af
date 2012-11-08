@@ -100,7 +100,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         method is also changed from GET to POST.
         '''
         vulnCopy = copy.deepcopy( vuln )
-        mutant = vulnCopy.getMutant()
+        mutant = vulnCopy.get_mutant()
         
         #    Sometimes there is no mutant (php_sca).
         if mutant is None:

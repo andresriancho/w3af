@@ -104,7 +104,7 @@ class dbDriverFunctions:
         om.out.error( "[WARN] %s" % message)
 
     def urlReplace(self, parameter="", value="", newValue=""):
-        mutant = self._vuln.getMutant()
+        mutant = self._vuln.get_mutant()
         mutant.set_mod_value( self._vuln['falseValue'] + newValue )
         
         if mutant.get_dc():
@@ -118,7 +118,7 @@ class dbDriverFunctions:
         Connect to the target url or proxy and return the target
         url page.
         """
-        m = self._vuln.getMutant()
+        m = self._vuln.get_mutant()
         url = URL( url )
         m.set_dc(url.querystring)
         m.setURL( url.uri2url() )

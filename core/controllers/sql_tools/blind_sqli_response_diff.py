@@ -165,8 +165,8 @@ class blind_sqli_response_diff(object):
                     v.set_severity(severity.HIGH)
                     v.set_name( 'Blind SQL injection vulnerability' )
                     # This is needed to be used in fuzz file name
-                    v.getMutant().set_original_value( '' )
-                    v.getMutant().set_mod_value( '' )
+                    v.get_mutant().set_original_value( '' )
+                    v.get_mutant().set_mod_value( '' )
                     
                     desc = 'Blind SQL injection was found at: "%s", using'
                     desc += ' HTTP method %s. The injectable parameter is: "%s"'

