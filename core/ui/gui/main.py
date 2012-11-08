@@ -88,7 +88,7 @@ class AboutDialog(gtk.Dialog):
     '''
     def __init__(self, w3af):
         super(AboutDialog,self).__init__(_("About..."), None, gtk.DIALOG_MODAL,
-                      (_("Check the web site"),gtk.RESPONSE_CANCEL,gtk.STOCK_OK,gtk.RESPONSE_OK))
+              (_("Check the web site"),gtk.RESPONSE_CANCEL,gtk.STOCK_OK,gtk.RESPONSE_OK))
 
         # content
         img = gtk.image_new_from_file('core/ui/gui/data/splash.png')
@@ -112,7 +112,7 @@ class AboutDialog(gtk.Dialog):
         '''Opens the web site and closes the dialog.'''
         try:
             webbrowser.open("http://w3af.sourceforge.net/")
-        except Exception,  e:
+        except Exception:
             #
             #   This catches bug #2685576
             #   https://sourceforge.net/tracker2/?func=detail&atid=853652&aid=2685576&group_id=170274

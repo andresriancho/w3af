@@ -20,12 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from mock import Mock
-
-from core.ui.gui.tests.mocked.utils import refresh_gui
-from core.ui.gui.tests.mocked.check_called import CheckCalled
+from mock import patch
 
 from core.ui.gui.tests.helloworld import HelloWorld
+
 
 class TestHelloWorld(unittest.TestCase):
     
@@ -37,14 +35,15 @@ class TestHelloWorld(unittest.TestCase):
         self.assertEqual( hw.window.get_title(), 'helloworld.py')
         
     def test_click_button(self):
-        hw = HelloWorld()
-        
-        mock_signal_hldr = Mock()
-        hw.button.connect('clicked', mock_signal_hldr)
-        
-        hw.button.clicked()
-        refresh_gui()
-        
-        print dir(mock_signal_hldr)
-        mock_signal_hldr.a()
-        print mock_signal_hldr.call_count
+        module = 'core.ui.gui.tests.helloworld.%s'
+        with patch(module % 'gtk.main_quit') as main_quit_mock:
+            with patch(module % 'HelloWorld.hello') as hello_mock:
+                hw = HelloWorld()
+                hw.button.clicked()
+                self.assertEqual( hw.window.get_title(), 'helloworld.py')
+                self.assertTrue(hello_mock.called)
+                self.assertTrue(main_quit_mock.called)
+                
+                # Still haven't found the need to use this one...
+                # refresh_gui()
+                

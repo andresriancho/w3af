@@ -26,8 +26,8 @@ class HelloWorld:
         return False
 
     def destroy(self, widget, data=None):
-        print "destroy signal occurred"
-        #gtk.main_quit()
+        #print "destroy signal occurred"
+        gtk.main_quit()
 
     def __init__(self):
         # create a new window

@@ -20,20 +20,23 @@ class CheckCalled(object):
 
         >>> import gtk
         >>> from pygtkhelpers.utils import refresh_gui
-        >>> b = gtk.Button()
+        >>> b = gtk.Button('ABC')
         >>> check = CheckCalled(b, 'clicked')
         >>> b.clicked()
         >>> assert check.called
-        >>> assert check.called_count = 1
-        >>> b.click()
-        >>> assert check.called_count = 2
+        >>> assert check.called_count == 1
+        >>> b.clicked()
+        >>> assert check.called_count == 2
 
     """
-    def __init__(self, object, signal):
+    def __init__(self, _object, signal):
         self.called = None
         self.called_count = 0
-        object.connect(signal, self)
+        _object.connect(signal, self)
 
     def __call__(self, *k):
         self.called = k
         self.called_count += 1
+
+    def __str__(self):
+        return '<check_called object with %s calls>' % self.called_count
