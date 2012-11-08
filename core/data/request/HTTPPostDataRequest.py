@@ -36,6 +36,12 @@ class HTTPPostDataRequest(FuzzableRequest):
     '''
     def __init__(self, uri, method='POST', headers=Headers(),
                  cookie=None, dc=None):
+        
+        if dc is not None and not isinstance(dc, Form):
+            msg = 'The dc parameter for forms needs to be a Form instance,'\
+                  'got %s instead.' % type(dc)
+            TypeError(msg)
+        
         FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
 
     def getData(self):

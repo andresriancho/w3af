@@ -144,9 +144,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                                         variant.get_method(),
                                         req_headers,
                                         cookieObj,
-                                        variant,
-                                        form.get_file_vars()
-                                        )
+                                        variant)
                 else:
                     # The default is a GET request
                     r = HTTPQSRequest(
