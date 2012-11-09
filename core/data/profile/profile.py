@@ -28,7 +28,7 @@ from core.controllers.core_helpers.target import w3af_core_target
 from core.controllers.misc.factory import factory
 from core.controllers.misc.homeDir import get_home_dir
 from core.data.constants.encodings import UTF8
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class profile(object):
@@ -280,8 +280,8 @@ class profile(object):
         Get the misc settings options.
         @return: The misc settings in an OptionList
         '''
-        import core.controllers.miscSettings as miscSettings
-        misc_settings = miscSettings.miscSettings()
+        import core.controllers.misc_settings as misc_settings
+        misc_settings = misc_settings.misc_settings()
         return self._get_x_settings('misc-settings', misc_settings)
 
     def getHttpSettings( self ):

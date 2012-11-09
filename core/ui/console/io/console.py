@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import sys
 import os
 
@@ -31,7 +31,7 @@ import os
 
 #from ecma48 import *
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 CTRL_CODES = range(1,27)

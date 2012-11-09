@@ -21,15 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.controllers.exceptions import w3afException
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 # By aungkhant. Lists are taken from underground shell repositories and
 # common sense
@@ -124,7 +124,7 @@ class find_backdoors(CrawlPlugin):
         CrawlPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = scalable_bloomfilter()
+        self._analyzed_dirs = ScalableBloomFilter()
 
     def crawl(self, fuzzable_request):
         '''

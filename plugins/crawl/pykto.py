@@ -23,14 +23,14 @@ import itertools
 import os.path
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afException
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afException
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.fuzzer.utils import rand_alnum
@@ -38,7 +38,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class pykto(CrawlPlugin):
@@ -52,7 +52,7 @@ class pykto(CrawlPlugin):
         
         # internal variables
         self._exec = True
-        self._already_analyzed = scalable_bloomfilter()
+        self._already_analyzed = ScalableBloomFilter()
         self._show_remote_server = True
         
         # User configured parameters

@@ -25,7 +25,7 @@ DEBUG_REFERENCES = False
 SAMPLE_LEN = 20
 
 if DEBUG_MEMORY:
-    import core.controllers.outputManager as om
+    import core.controllers.output_manager as om
     from core.controllers.profiling.ps_mem import get_memory_usage, human
     
     import random

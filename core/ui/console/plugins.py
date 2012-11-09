@@ -23,12 +23,12 @@ import copy
 import sys
 import textwrap
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
 from core.ui.console.config import configMenu
 from core.ui.console.util import suggest
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class pluginsMenu(menu):

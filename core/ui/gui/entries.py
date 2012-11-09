@@ -25,7 +25,7 @@ from core.ui.gui import history
 from core.ui.gui import helpers
 from core.data.options.preferences import Preferences
 from core.data.parsers.baseparser import BaseParser
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class ValidatedEntry(gtk.Entry):

@@ -27,7 +27,7 @@ import core.data.kb.info as info
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -44,7 +44,7 @@ class symfony(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._override = False
         
     def grep(self, request, response):

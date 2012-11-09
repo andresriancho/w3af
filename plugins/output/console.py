@@ -25,7 +25,7 @@ import sys
 from errno import ENOSPC
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.w3afException import w3afMustStopByKnownReasonExc
+from core.controllers.exceptions import w3afMustStopByKnownReasonExc
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 

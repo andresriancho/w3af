@@ -22,9 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import pprint
 
 import core.data.kb.knowledge_base as kb        
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.ui.console.util import splitPath, suggest
 from core.ui.console.history import history
 from core.ui.console.help import helpMainRepository, HelpContainer

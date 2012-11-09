@@ -26,7 +26,7 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class TestHTTPRequestParser(unittest.TestCase):

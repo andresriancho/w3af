@@ -1,4 +1,4 @@
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.misc.is_ip_address import is_ip_address
 from core.controllers.w3afAgent.w3afAgentManager import w3afAgentManager
 

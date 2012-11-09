@@ -23,7 +23,7 @@ import re
 import itertools
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from plugins.grep.ssndata.ssnAreasGroups import areas_groups_map
 
 import core.data.kb.knowledge_base as kb
@@ -45,7 +45,7 @@ class ssn(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
                 
     def grep(self, request, response):
         '''

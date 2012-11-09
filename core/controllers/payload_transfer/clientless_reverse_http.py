@@ -25,7 +25,7 @@ import core.controllers.daemons.webserver as webserver
 import core.data.kb.config as cf
 
 from core.controllers.misc.temp_dir import get_temp_dir
-from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
+from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 from core.data.fuzzer.utils import rand_alpha
 

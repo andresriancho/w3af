@@ -19,17 +19,17 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.constants.response_codes as response_codes
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.group_by_min_key import group_by_min_key
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class allowed_methods(InfrastructurePlugin):
@@ -59,7 +59,7 @@ class allowed_methods(InfrastructurePlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = scalable_bloomfilter()
+        self._already_tested = ScalableBloomFilter()
         
         # Methods
         self._supported_methods = self.DAV_METHODS | self.COMMON_METHODS | \

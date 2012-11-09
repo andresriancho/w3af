@@ -26,7 +26,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class svn_users(GrepPlugin):
@@ -38,7 +38,7 @@ class svn_users(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         # Add the regex to match something like this:
         #
         #   $Id: lzio.c,v 1.24 2003/03/20 16:00:56 roberto Exp $

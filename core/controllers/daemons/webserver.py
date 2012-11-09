@@ -26,7 +26,7 @@ import socket
 import threading
 import select
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 # Created servers
 _servers = {}

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 import traceback
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 def factory(module_name, *args):

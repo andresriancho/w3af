@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.vdaemon.lnxVd import lnxVd
 from core.controllers.vdaemon.winVd import winVd
-from core.controllers.intrusionTools.execMethodHelpers import os_detection_exec
-from core.controllers.w3afException import w3afException
+from core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
+from core.controllers.exceptions import w3afException
 
 
 def getVirtualDaemon( exec_method ):

@@ -24,7 +24,7 @@ DEBUG_CPU_USAGE = False
 TOP_N_FUNCTIONS = 50
 
 if DEBUG_CPU_USAGE:
-    import core.controllers.outputManager as om
+    import core.controllers.output_manager as om
     
     try:
         import yappi

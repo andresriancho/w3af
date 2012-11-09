@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.plugin import Plugin
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 
 class ManglePlugin(Plugin):

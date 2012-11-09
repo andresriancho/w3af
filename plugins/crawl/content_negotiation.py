@@ -25,14 +25,14 @@ import Queue
 
 from itertools import izip, repeat
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.dc.headers import Headers
 
 
@@ -50,8 +50,8 @@ class content_negotiation(CrawlPlugin):
                                       'common_filenames.db')
         
         # Internal variables
-        self._already_tested_dir = scalable_bloomfilter()
-        self._already_tested_resource = scalable_bloomfilter()
+        self._already_tested_dir = ScalableBloomFilter()
+        self._already_tested_resource = ScalableBloomFilter()
         self._content_negotiation_enabled = None
         self._to_bruteforce = Queue.Queue()
         # I want to try 3 times to see if the remote host is vulnerable

@@ -19,10 +19,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.kb.shell import shell
-from core.controllers.intrusionTools.readMethodHelpers import read_os_detection
+from core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 

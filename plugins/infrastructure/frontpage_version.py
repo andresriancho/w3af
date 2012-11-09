@@ -21,17 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.info as info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afRunOnce
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afRunOnce
+from core.controllers.exceptions import w3afException
 from core.controllers.misc.decorators import runonce
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class frontpage_version(InfrastructurePlugin):
@@ -47,7 +47,7 @@ class frontpage_version(InfrastructurePlugin):
         InfrastructurePlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = scalable_bloomfilter()
+        self._analyzed_dirs = ScalableBloomFilter()
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request ):

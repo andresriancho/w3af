@@ -29,7 +29,7 @@ from core.data.export.html_export import html_export
 from core.data.export.python_export import python_export
 from core.data.export.ruby_export import ruby_export
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 export_request_example = """\
 GET http://localhost/script.php HTTP/1.0

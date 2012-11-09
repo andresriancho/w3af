@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from core.data.kb.shell import shell as shell
@@ -31,7 +31,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.threads.threadManager import thread_manager as tm
 

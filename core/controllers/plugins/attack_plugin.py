@@ -21,11 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.request.HTTPPostDataRequest as HTTPPostDataRequest
 import core.data.kb.knowledge_base as kb
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.plugins.plugin import Plugin
 from core.controllers.misc.common_attack_methods import CommonAttackMethods
 from core.data.parsers.url import URL

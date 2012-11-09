@@ -25,7 +25,7 @@ import time
 
 from subprocess import Popen, PIPE, STDOUT
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.misc.xunit import XunitGen
 

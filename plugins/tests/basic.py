@@ -23,7 +23,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.plugins.auth_plugin import AuthPlugin

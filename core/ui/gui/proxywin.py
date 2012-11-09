@@ -25,7 +25,7 @@ import os
 import webbrowser
 
 from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
-from core.controllers.w3afException import w3afException, w3afProxyException
+from core.controllers.exceptions import w3afException, w3afProxyException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.daemons import localproxy

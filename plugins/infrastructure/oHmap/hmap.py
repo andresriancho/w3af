@@ -22,8 +22,8 @@
 
 import sys,pprint,glob,getopt,re,time
 import socket, urlparse, select
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
+import core.controllers.output_manager as om
+from core.controllers.exceptions import w3afException
 import core.data.kb.config as cf
 import os
 

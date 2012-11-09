@@ -24,13 +24,13 @@ import json
 
 from StringIO import StringIO
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.config as cf
 import core.data.parsers.dpCache as dpCache
 import core.data.parsers.wsdlParser as wsdlParser
 
 from core.data.misc.encoding import smart_unicode
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.request.HTTPQsRequest import HTTPQSRequest

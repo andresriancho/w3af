@@ -27,7 +27,7 @@ import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.threads.threadpool import one_to_many
 

@@ -24,16 +24,16 @@ from __future__ import with_statement
 
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.data.esmre.multi_in import multi_in
 from core.data.db.temp_shelve import temp_shelve
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class html_comments(GrepPlugin):
@@ -63,7 +63,7 @@ class html_comments(GrepPlugin):
 
         # Internal variables
         self._comments = temp_shelve()
-        self._already_reported_interesting = scalable_bloomfilter()
+        self._already_reported_interesting = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import sys
 import os
-from core.controllers.w3afException import *
+from core.controllers.exceptions import *
 
 class pe:
     '''

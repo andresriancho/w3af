@@ -26,8 +26,8 @@ import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.controllers.exceptions import w3afException
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class meta_tags(GrepPlugin):
@@ -55,7 +55,7 @@ class meta_tags(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         
        
     def grep(self, request, response):

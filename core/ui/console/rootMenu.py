@@ -25,8 +25,8 @@ import select
 
 from multiprocessing.dummy import Process
 
-import core.controllers.outputManager as om
-import core.controllers.miscSettings as ms
+import core.controllers.output_manager as om
+import core.controllers.misc_settings as ms
 import core.ui.console.io.console as term
 
 from core.ui.console.menu import menu
@@ -36,7 +36,7 @@ from core.ui.console.exploit import exploit
 from core.ui.console.config import configMenu
 from core.ui.console.kbMenu import kbMenu
 from core.ui.console.bug_report import bug_report_menu
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.exceptions import w3afException, w3afMustStopException
 from core.controllers.misc.get_w3af_version import get_w3af_version
 from core.ui.console.util import mapDict
 
@@ -57,7 +57,7 @@ class rootMenu(menu):
         mapDict(self.addChild, {
             'plugins': pluginsMenu,
             'target' : (configMenu, self._w3af.target),
-            'misc-settings' : (configMenu, ms.miscSettings()),
+            'misc-settings' : (configMenu, ms.misc_settings()),
             'http-settings' : (configMenu, self._w3af.uri_opener.settings),
             'profiles' : profilesMenu,
             'bug-report' : bug_report_menu,

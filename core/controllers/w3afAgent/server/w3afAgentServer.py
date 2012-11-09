@@ -26,9 +26,9 @@ import threading
 
 from multiprocessing.dummy import Process
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class ConnectionManager( Process ):

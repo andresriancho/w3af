@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.parsers.url import URL
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afException
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.controllers.exceptions import w3afException
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class wsdl_finder(CrawlPlugin):
@@ -41,7 +41,7 @@ class wsdl_finder(CrawlPlugin):
         CrawlPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested = scalable_bloomfilter()
+        self._already_tested = ScalableBloomFilter()
         
     def crawl(self, fuzzable_request ):
         '''

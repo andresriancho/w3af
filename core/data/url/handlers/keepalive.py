@@ -119,11 +119,11 @@ import urllib
 import sys
 import time
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.config as cf
 
 from core.data.constants.response_codes import NO_CONTENT
-from core.controllers.w3afException import (w3afException,
+from core.controllers.exceptions import (w3afException,
                                             w3afMustStopByKnownReasonExc)
 
 

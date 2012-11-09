@@ -27,7 +27,7 @@ import core.data.kb.config as cf
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList

@@ -24,7 +24,7 @@ from __future__ import with_statement
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.esmre.multi_in import multi_in

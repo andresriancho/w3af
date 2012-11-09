@@ -34,7 +34,7 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(_type, KeyboardInterrupt ):
         helpers.endThreads()
-        import core.controllers.outputManager as om
+        import core.controllers.output_manager as om
         om.out.set_output_plugins( ['console'] )
         om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af.'))
         om.out.console(_('Bye!'))

@@ -25,7 +25,7 @@ from multiprocessing import TimeoutError
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.request.fuzzable_request import FuzzableRequest
 
@@ -38,7 +38,7 @@ from core.controllers.core_helpers.consumers.crawl_infrastructure import crawl_i
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.core_helpers.exception_handler import ExceptionData
 
-from core.controllers.w3afException import w3afMustStopException
+from core.controllers.exceptions import w3afMustStopException
 
 
 class w3af_core_strategy(object):

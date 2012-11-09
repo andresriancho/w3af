@@ -32,7 +32,7 @@ from extlib.xdot import xdot
 from core.data.db.history import HistoryItem
 
 import core.data.kb.knowledge_base as kb
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 RECURSION_LIMIT = sys.getrecursionlimit() - 5
 RECURSION_MSG = "Recursion limit: can't go deeper"

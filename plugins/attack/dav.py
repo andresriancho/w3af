@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import plugins.attack.payloads.shell_handler as shell_handler
@@ -29,7 +29,7 @@ from core.data.options.option_list import OptionList
 from core.data.fuzzer.utils import rand_alpha
 from core.data.kb.exec_shell import exec_shell as exec_shell
 from core.data.parsers.url import URL
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
 
 

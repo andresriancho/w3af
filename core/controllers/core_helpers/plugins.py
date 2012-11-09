@@ -24,11 +24,11 @@ import sys
 
 from functools import partial
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.misc.get_file_list import get_file_list
 from core.controllers.misc.factory import factory
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class w3af_core_plugins(object):

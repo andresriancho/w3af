@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 import core.data.kb.config as cf
-import core.controllers.miscSettings as miscSettings
+import core.controllers.misc_settings as misc_settings
 
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_file_list import get_file_list
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.misc.homeDir import HOME_DIR
 from core.data.profile.profile import profile as profile
 
@@ -86,7 +86,7 @@ class w3af_core_profiles(object):
             new_profile.setTarget(' , '.join(t.url_string for t in targets))
                 
         # Save the misc and http settings
-        misc_settings = miscSettings.miscSettings()
+        misc_settings = misc_settings.misc_settings()
         new_profile.setMiscSettings(misc_settings.get_options())
         new_profile.setHttpSettings(self._w3af_core.uri_opener.settings.get_options())
         
@@ -123,13 +123,13 @@ class w3af_core_profiles(object):
         # Set the misc and http settings
         #
         # IGNORE the following parameters from the profile:
-        #   - miscSettings.local_ip_address
+        #   - misc_settings.local_ip_address
         #
         profile_misc_settings = profile_inst.getMiscSettings()
         if 'local_ip_address' in profile_inst.getMiscSettings():
             profile_misc_settings['local_ip_address'].set_value(get_local_ip())
         
-        misc_settings = miscSettings.miscSettings()
+        misc_settings = misc_settings.misc_settings()
         misc_settings.set_options( profile_misc_settings )
         self._w3af_core.uri_opener.settings.set_options( profile_inst.getHttpSettings() )
         

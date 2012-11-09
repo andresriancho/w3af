@@ -24,7 +24,7 @@ import core.data.kb.vuln as vuln
 import core.data.kb.info as info
 import core.data.constants.severity as severity
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alpha, rand_alnum
 from core.data.dc.headers import Headers
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -41,7 +41,7 @@ class dav(AuditPlugin):
         AuditPlugin.__init__(self)
         
         # Internal variables
-        self._already_tested_dirs = scalable_bloomfilter()
+        self._already_tested_dirs = ScalableBloomFilter()
 
     def audit(self, freq ):
         '''

@@ -10,8 +10,8 @@ use BitVector [1].
 [0] http://pypi.python.org/pypi/bitarray/
 [1] http://pypi.python.org/pypi/BitVector/
 
-    >>> from pybloom import BloomFilter
-    >>> f = BloomFilter(capacity=10000, error_rate=0.001)
+    >>> from bitvector_bloom import BitVectorBloomFilter
+    >>> f = BitVectorBloomFilter(capacity=10000, error_rate=0.001)
     >>> for i in xrange(0, f.capacity):
     ...     _ = f.add(i)
     ...
@@ -27,7 +27,7 @@ use BitVector [1].
 """
 import math
 import hashlib
-from struct import unpack, pack, calcsize
+from struct import unpack, pack
 
 import extlib.bitvector as bitvector
 
@@ -82,14 +82,14 @@ def make_hashfuncs(num_slices, num_bits):
     return _make_hashfuncs
 
 
-class BloomFilter(object):
+class BitVectorBloomFilter(object):
     FILE_FMT = '<dQQQQ'
 
     def __init__(self, capacity, error_rate=0.001):
         """Implements a space-efficient probabilistic data structure
 
         capacity
-            this BloomFilter must be able to store at least *capacity* elements
+            this BitVectorBloomFilter must be able to store at least *capacity* elements
             while maintaining no more than *error_rate* chance of false
             positives
         error_rate
@@ -97,7 +97,7 @@ class BloomFilter(object):
             determines the filters capacity. Inserting more than capacity
             elements greatly increases the chance of false positives.
 
-        >>> b = BloomFilter(capacity=100000, error_rate=0.001)
+        >>> b = BitVectorBloomFilter(capacity=100000, error_rate=0.001)
         >>> b.add("test")
         False
         >>> "test" in b
@@ -136,7 +136,7 @@ class BloomFilter(object):
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
 
-        >>> b = BloomFilter(capacity=100)
+        >>> b = BitVectorBloomFilter(capacity=100)
         >>> b.add("hello")
         False
         >>> "hello" in b
@@ -164,7 +164,7 @@ class BloomFilter(object):
         """ Adds a key to this bloom filter. If the key already exists in this
         filter it will return True. Otherwise False.
 
-        >>> b = BloomFilter(capacity=100)
+        >>> b = BitVectorBloomFilter(capacity=100)
         >>> b.add("hello")
         False
         >>> b.add("hello")
@@ -177,7 +177,7 @@ class BloomFilter(object):
         if not skip_check and hashes in self:
             return True
         if self.count > self.capacity:
-            raise IndexError("BloomFilter is at capacity")
+            raise IndexError("BitVectorBloomFilter is at capacity")
         offset = 0
         for k in hashes:
             self.bitvector[offset + k] = 1
@@ -197,7 +197,7 @@ class BloomFilter(object):
     @classmethod
     def fromfile(cls, f, n=-1):
         """Read a bloom filter from file-object `f' serialized with
-        ``BloomFilter.tofile''. If `n' > 0 read only so many bytes."""
+        ``BitVectorBloomFilter.tofile''. If `n' > 0 read only so many bytes."""
         headerlen = calcsize(cls.FILE_FMT)
 
         if 0 < n < headerlen:

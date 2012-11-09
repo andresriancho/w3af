@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from urllib import urlencode
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.plugins.auth_plugin import AuthPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class generic(AuthPlugin):

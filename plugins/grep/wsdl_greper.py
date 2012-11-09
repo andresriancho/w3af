@@ -23,7 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
 
 
@@ -42,7 +42,7 @@ class wsdl_greper(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._disco_strings = ['disco:discovery ']
 
     def grep(self, request, response):

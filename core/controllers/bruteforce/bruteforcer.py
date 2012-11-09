@@ -23,7 +23,7 @@ import os.path
 
 from itertools import chain
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.make_leet import make_leet

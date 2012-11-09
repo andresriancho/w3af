@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
+from core.controllers.exceptions import w3afException
+import core.controllers.output_manager as om
 # options
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList

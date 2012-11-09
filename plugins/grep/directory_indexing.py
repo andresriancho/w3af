@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 # options
 from core.data.options.opt_factory import opt_factory
@@ -32,7 +32,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
 
 import re
@@ -65,7 +65,7 @@ class directory_indexing(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._already_visited = scalable_bloomfilter()
+        self._already_visited = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''

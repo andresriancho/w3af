@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import platform
 import subprocess
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.dependency_check.dependency_check import is_mac
 

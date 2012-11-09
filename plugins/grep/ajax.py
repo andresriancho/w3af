@@ -26,7 +26,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class ajax(GrepPlugin):
@@ -40,7 +40,7 @@ class ajax(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         
         # Create the regular expression to search for AJAX
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'

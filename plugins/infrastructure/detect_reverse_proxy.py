@@ -23,10 +23,10 @@ import re
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
 

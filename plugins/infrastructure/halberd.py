@@ -40,12 +40,12 @@ import Halberd.ScanTask as halberd_scan_task
 import Halberd.version as halberd_shell_version
 import Halberd.clues.analysis as halberd_analysis
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as infokb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
 

@@ -526,7 +526,7 @@ class VersionMgr(object): #TODO: Make it singleton?
         self._localpath = localpath
         
         if not log:
-            import core.controllers.outputManager as om
+            import core.controllers.output_manager as om
             log = om.out.console
         self._log = log
         self._client = SVNClientClass(localpath)

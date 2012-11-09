@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.url.HTTPResponse as HTTPResponse
 import core.data.constants.ports as ports
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList

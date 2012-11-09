@@ -1,6 +1,6 @@
 from plugins.attack.payloads.base_payload import base_payload
 from core.controllers.vdaemon.vdFactory import getVirtualDaemon
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class metasploit(base_payload):

@@ -29,7 +29,7 @@ from core.data.misc.encoding import smart_str, PERCENT_ENCODE
 from core.controllers.misc.is_ip_address import is_ip_address
 from core.data.misc.encoding import is_known_encoding
 from core.controllers.misc.ordereddict import OrderedDict
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.data_container import DataContainer
 from core.data.dc.queryString import QueryString

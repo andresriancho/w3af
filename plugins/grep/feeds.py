@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class feeds(GrepPlugin):
@@ -41,7 +41,7 @@ class feeds(GrepPlugin):
                             'feed': 'OPML',# <feed version="..."
                             'opml': 'OPML' # <opml version="...">
                            }
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//rss | //feed | //opml')

@@ -23,7 +23,7 @@ import socket
 
 from itertools import izip, repeat
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.parsers.dpCache as dpCache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -32,11 +32,11 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.levenshtein import relative_distance_lt
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.threads.threadpool import return_args, one_to_many
 
 from core.data.fuzzer.utils import rand_alnum
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.dc.headers import Headers
 
 
@@ -51,7 +51,7 @@ class find_vhosts(InfrastructurePlugin):
         
         # Internal variables
         self._first_exec = True
-        self._already_queried = scalable_bloomfilter()
+        self._already_queried = ScalableBloomFilter()
         self._can_resolve_domain_names = False
         
     def discover(self, fuzzable_request ):

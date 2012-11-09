@@ -23,10 +23,10 @@ import os
 
 from itertools import repeat, izip
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 from core.data.options.opt_factory import opt_factory

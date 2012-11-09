@@ -23,15 +23,15 @@ import hashlib
 
 from itertools import repeat, izip
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import one_to_many
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class php_eggs(InfrastructurePlugin):
@@ -222,7 +222,7 @@ class php_eggs(InfrastructurePlugin):
         InfrastructurePlugin.__init__(self)
         
         # Already analyzed extensions
-        self._already_analyzed_ext = scalable_bloomfilter()
+        self._already_analyzed_ext = ScalableBloomFilter()
     
     
     @runonce(exc_class=w3afRunOnce)

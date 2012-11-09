@@ -24,14 +24,14 @@ import socket
 import urlparse
 import cookielib
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 import core.data.url.handlers.localCache as localCache
 import core.data.url.handlers.mangleHandler as mangleHandler
 
 from core.controllers.configurable import configurable
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.kb.config import cf as cfg
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList

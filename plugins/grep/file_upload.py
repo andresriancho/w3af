@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.options.option_list import OptionList
 
 
@@ -43,7 +43,7 @@ class file_upload(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._file_input_xpath = etree.XPath( FILE_INPUT_XPATH )
 
     def grep(self, request, response):

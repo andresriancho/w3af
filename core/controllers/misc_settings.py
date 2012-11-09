@@ -1,5 +1,5 @@
 '''
-miscSettings.py
+misc_settings.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,7 +29,7 @@ from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
 
-class miscSettings(configurable):
+class misc_settings(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can
     configure w3af settings using get_options and SetOptions.
@@ -209,4 +209,4 @@ class miscSettings(configurable):
                    options_list['stop_on_first_exception'].get_value() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
-miscSettings()
+misc_settings()

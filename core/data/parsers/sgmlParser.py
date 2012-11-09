@@ -25,7 +25,7 @@ import traceback
 
 from lxml import etree
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.parsers.baseparser import BaseParser
 from core.data.parsers.url import URL

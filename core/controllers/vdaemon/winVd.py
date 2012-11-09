@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 from core.controllers.vdaemon.vdaemon import vdaemon
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.intrusionTools.atHandler import atHandler
+from core.controllers.intrusion_tools.atHandler import atHandler
 
 
 class winVd(vdaemon):

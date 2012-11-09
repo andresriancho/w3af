@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.options.baseoption import BaseOption
 from core.data.options.option_types import FLOAT
 

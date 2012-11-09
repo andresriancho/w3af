@@ -23,13 +23,13 @@ import traceback
 
 from multiprocessing.dummy import Queue, Process
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import (w3afMustStopException, 
+from core.controllers.exceptions import (w3afMustStopException, 
                                             w3afMustStopOnUrlError)
 from core.controllers.core_helpers.update_urls_in_kb import update_kb
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.request.factory import create_fuzzable_requests
 
 

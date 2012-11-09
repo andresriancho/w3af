@@ -21,7 +21,7 @@ import smtplib
 
 from email.mime.text import MIMEText
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 

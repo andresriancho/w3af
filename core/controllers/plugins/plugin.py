@@ -23,14 +23,14 @@ import sys
 import threading
 import Queue
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.vuln as vuln
 
 from core.data.options.option_list import OptionList
 from core.controllers.configurable import configurable
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.threads.threadpool import return_args
-from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
+from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
 
 
 class Plugin(configurable):

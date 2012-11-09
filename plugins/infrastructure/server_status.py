@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -30,7 +30,7 @@ import core.data.constants.severity as severity
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.data.parsers.url import URL
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 
 

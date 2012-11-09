@@ -40,13 +40,13 @@ import sys
 
 from multiprocessing.dummy import Process
 
-import core.controllers.outputManager as om
-import core.controllers.miscSettings
+import core.controllers.output_manager as om
+import core.controllers.misc_settings
 import core.data.kb.config as cf
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.auto_update import VersionMgr, UIUpdater
-from core.controllers.w3afException import w3afException, w3afMustStopByUserRequest
+from core.controllers.exceptions import w3afException, w3afMustStopByUserRequest
 from core.controllers.exception_handling.helpers import pprint_plugins
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_w3af_version import get_w3af_version
@@ -754,7 +754,7 @@ class MainApp(object):
 
     def menu_config_misc(self, action):
         '''Configure Misc options.'''
-        configurable = core.controllers.miscSettings.miscSettings()
+        configurable = core.controllers.misc_settings.misc_settings()
         confpanel.ConfigDialog(_("Configure Misc settings"), self.w3af, configurable)
 
     def dynPanels(self, widget, panel):

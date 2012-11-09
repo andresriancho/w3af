@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 SCRIPT_SRC_XPATH = ".//script[@src]"
 
@@ -41,7 +41,7 @@ class cross_domain_js(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._script_src_xpath = etree.XPath( SCRIPT_SRC_XPATH )
 
     def grep(self, request, response):

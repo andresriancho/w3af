@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import time
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class EchoWindows( BasePayloadTransfer ):

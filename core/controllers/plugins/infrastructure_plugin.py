@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.plugin import Plugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.request.factory import create_fuzzable_requests
 
 

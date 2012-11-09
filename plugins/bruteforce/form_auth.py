@@ -23,13 +23,13 @@ from __future__ import with_statement
 
 from itertools import izip, repeat
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
-from core.controllers.w3afException import w3afException, w3afMustStopOnUrlError
+from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.dc import form
 from core.data.fuzzer.utils import rand_alnum

@@ -23,10 +23,10 @@ import csv
 import itertools
 
 import core.data.kb.knowledge_base as kb
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList

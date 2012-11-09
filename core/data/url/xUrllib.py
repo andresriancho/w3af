@@ -33,14 +33,14 @@ from collections import deque
 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
                   ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.config as cf
 import opener_settings
 
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import consecutive_number_generator as seq_gen
-from core.controllers.w3afException import (w3afMustStopException, w3afException,
+from core.controllers.exceptions import (w3afMustStopException, w3afException,
                                             w3afMustStopByUnknownReasonExc,
                                             w3afMustStopByKnownReasonExc,
                                             w3afMustStopByUserRequest,

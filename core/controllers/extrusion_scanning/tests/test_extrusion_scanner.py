@@ -24,7 +24,7 @@ import commands
 
 import core.data.kb.config as cf
 
-from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
+from core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
 from plugins.tests.helper import onlyroot
 
 

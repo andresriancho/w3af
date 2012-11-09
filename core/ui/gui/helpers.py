@@ -28,7 +28,7 @@ import textwrap
 import gtk
 import os
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class PropagateBuffer(object):

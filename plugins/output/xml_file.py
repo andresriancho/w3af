@@ -32,7 +32,7 @@ import core.data.kb.knowledge_base as kb
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.misc import get_w3af_version
 from core.data.misc.encoding import smart_str
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE

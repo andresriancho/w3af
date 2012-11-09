@@ -23,7 +23,7 @@ import socket
 
 from scapy.all import traceroute
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.info as info
 import core.data.kb.knowledge_base as kb
 
@@ -32,7 +32,7 @@ from core.controllers.misc.decorators import runonce
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INT
 from core.data.options.option_list import OptionList
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
                  " It seems that the user running the w3af process has not"\

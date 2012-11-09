@@ -19,15 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.payload_transfer.echo_windows import EchoWindows
 from core.controllers.payload_transfer.echo_linux import EchoLinux
 from core.controllers.payload_transfer.reverse_ftp import ReverseFTP
 from core.controllers.payload_transfer.clientless_reverse_http import ClientlessReverseHTTP
-from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
-from core.controllers.intrusionTools.execMethodHelpers import os_detection_exec
+from core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
+from core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
 
 
 class payload_transfer_factory(object):

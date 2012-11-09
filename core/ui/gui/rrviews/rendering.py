@@ -45,7 +45,7 @@ try:
 except Exception, e:
     pass
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.constants.encodings import UTF8
 
 def getRenderingView(w3af, parentView):

@@ -24,7 +24,7 @@ import urlparse
 from core.data.parsers.url import URL
 from core.data.dc.headers import Headers
 from core.data.request.factory import create_fuzzable_request
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 def check_version_syntax(version):

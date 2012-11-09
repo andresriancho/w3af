@@ -24,7 +24,7 @@ import inspect
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.plugin import Plugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class OutputPlugin(Plugin):

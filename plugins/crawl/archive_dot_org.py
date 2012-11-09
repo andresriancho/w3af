@@ -23,16 +23,16 @@ import re
 
 from itertools import izip, repeat
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.misc.is_private_site import is_private_site
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 
@@ -52,8 +52,8 @@ class archive_dot_org(CrawlPlugin):
         CrawlPlugin.__init__(self)
         
         # Internal variables
-        self._already_crawled = scalable_bloomfilter()
-        self._already_verified = scalable_bloomfilter()
+        self._already_crawled = ScalableBloomFilter()
+        self._already_verified = ScalableBloomFilter()
         
         # User configured parameters
         self._max_depth = 3

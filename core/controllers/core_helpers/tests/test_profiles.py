@@ -25,7 +25,7 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 class Test_w3afCore_profiles(unittest.TestCase):
 

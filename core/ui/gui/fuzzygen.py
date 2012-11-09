@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 try:
-    from core.controllers.w3afException import w3afException
+    from core.controllers.exceptions import w3afException
 except ImportError:
     # this is to easy the test when executing this file directly
     w3afException = Exception

@@ -22,11 +22,11 @@ from __future__ import with_statement
 import os
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, REGEX

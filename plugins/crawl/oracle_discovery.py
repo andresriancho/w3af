@@ -23,10 +23,10 @@ import re
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 

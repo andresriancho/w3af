@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 # options
 from core.data.options.opt_factory import opt_factory
@@ -27,7 +27,7 @@ from core.data.options.option_list import OptionList
 from core.data.esmre.multi_re import multi_re
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
@@ -51,7 +51,7 @@ class http_in_body (GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
         
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
                         
     def grep(self, request, response):
         '''

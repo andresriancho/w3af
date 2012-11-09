@@ -5,8 +5,8 @@ This file was part of sqlmap, I ( Andres Riancho ), adapted it to work with w3af
 License: GPL v2.
 '''
 
-import core.controllers.outputManager as om
-from core.controllers.w3afException import w3afException
+import core.controllers.output_manager as om
+from core.controllers.exceptions import w3afException
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.data.parsers.url import URL
 import core.data.kb.config as cf

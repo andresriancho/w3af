@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import urllib2
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.url.HTTPResponse as HTTPResponse
 
 from core.data.dc.headers import Headers

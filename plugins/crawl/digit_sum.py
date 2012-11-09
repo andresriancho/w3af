@@ -27,7 +27,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.dc.headers import Headers
@@ -43,7 +43,7 @@ class digit_sum(CrawlPlugin):
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        self._already_visited = scalable_bloomfilter()
+        self._already_visited = ScalableBloomFilter()
         
         # User options
         self._fuzz_images = False

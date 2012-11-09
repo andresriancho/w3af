@@ -23,7 +23,7 @@ import sys
 import platform
 import warnings
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.dependency_check.lazy_load import lazy_load
 

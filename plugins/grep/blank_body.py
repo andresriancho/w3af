@@ -23,7 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class blank_body(GrepPlugin):
@@ -35,7 +35,7 @@ class blank_body(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_reported = scalable_bloomfilter()
+        self._already_reported = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''

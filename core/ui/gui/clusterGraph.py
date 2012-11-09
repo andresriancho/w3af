@@ -29,7 +29,7 @@ from core.controllers.misc.levenshtein import relative_distance
 
 # To show request and responses
 from core.ui.gui.reqResViewer import reqResWindow
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 import gobject
 from core.ui.gui import helpers, entries

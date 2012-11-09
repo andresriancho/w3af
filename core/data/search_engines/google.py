@@ -23,8 +23,8 @@ import re
 import urllib
 import json
 
-from core.controllers import outputManager as om
-from core.controllers.w3afException import w3afException
+from core.controllers import output_manager as om
+from core.controllers.exceptions import w3afException
 
 from core.data.dc.headers import Headers
 from core.data.search_engines.search_engine import SearchEngine

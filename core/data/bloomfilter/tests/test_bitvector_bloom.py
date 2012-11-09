@@ -1,5 +1,5 @@
 '''
-test_pybloom.py
+test_bitvector_bloom.py
 
 Copyright 2012 Andres Riancho
 
@@ -25,16 +25,14 @@ import string
 
 from nose.plugins.attrib import attr
 
-from core.data.bloomfilter.pybloom import BloomFilter
-
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.bitvector_bloom import BitVectorBloomFilter
 
 
 class TestBloomFilter(unittest.TestCase):
 
     @attr('smoke')
     def test_bloom_int(self):
-        f = BloomFilter(capacity=10000, error_rate=0.001)
+        f = BitVectorBloomFilter(capacity=10000, error_rate=0.001)
 
         for i in xrange(0, f.capacity / 3):
             already_in_filter = f.add(i)
@@ -53,7 +51,7 @@ class TestBloomFilter(unittest.TestCase):
     def test_bloom_int_over_capacity(self):
         
         def add_too_many():
-            f = BloomFilter(capacity=10, error_rate=0.001)
+            f = BitVectorBloomFilter(capacity=10, error_rate=0.001)
             for i in xrange(0, f.capacity * 2):
                 _ = f.add(i)
             
@@ -61,47 +59,9 @@ class TestBloomFilter(unittest.TestCase):
     
     @attr('smoke')
     def test_bloom_string(self):
-        f = BloomFilter(capacity=10000, error_rate=0.001)
+        f = BitVectorBloomFilter(capacity=10000, error_rate=0.001)
 
         for i in xrange(0, f.capacity):
-            rnd = ''.join(random.choice(string.letters) for i in xrange(40))
-            _ = f.add(rnd)
-
-        self.assertEqual(rnd in f, True)
-
-        for i in string.letters:
-            self.assertEqual(i in f, False)
-
-        self.assertEqual(rnd in f, True)
-
-class TestScalableBloomfilter(unittest.TestCase):
-
-    @attr('smoke')
-    def test_bloom_int(self):
-
-        f = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
-
-        for i in xrange(0, 10000):
-            _ = f.add(i)
-        
-        self.assertEqual( len(f), 10000)
-        
-        for i in xrange(0, 10000):
-            self.assertEqual(i in f, True)
-
-        for i in xrange(0, 10000 / 2 ):
-            r = random.randint(0,10000-1)
-            self.assertEqual(r in f, True)
-
-        for i in xrange(0, 10000 / 2 ):
-            r = random.randint(10000,10000 * 2)
-            self.assertEqual(r in f, False)
-
-    @attr('smoke')
-    def test_bloom_string(self):
-        f = scalable_bloomfilter(mode=scalable_bloomfilter.SMALL_SET_GROWTH)
-
-        for i in xrange(0, 10000):
             rnd = ''.join(random.choice(string.letters) for i in xrange(40))
             _ = f.add(rnd)
 

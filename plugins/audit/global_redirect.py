@@ -27,7 +27,7 @@ import core.data.constants.severity as severity
 import core.data.parsers.dpCache as dpCache
 
 from core.data.fuzzer.fuzzer import create_mutants
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 

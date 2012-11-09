@@ -32,7 +32,7 @@ import core.data.parsers.pdf as PDFParser
 import core.data.parsers.swfParser as swfParser
 import core.data.parsers.wmlParser as wmlParser
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class DocumentParser(object):

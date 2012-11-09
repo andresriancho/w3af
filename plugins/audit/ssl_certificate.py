@@ -28,7 +28,7 @@ from time import gmtime
 from datetime import date
 from pprint import pformat
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
@@ -38,7 +38,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE
 from core.data.options.option_list import OptionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class ssl_certificate(AuditPlugin):
@@ -52,7 +52,7 @@ class ssl_certificate(AuditPlugin):
     def __init__(self):
         AuditPlugin.__init__(self)
         
-        self._already_tested = scalable_bloomfilter()
+        self._already_tested = ScalableBloomFilter()
         self._min_expire_days = 30
         self._ca_file = os.path.join('plugins','audit','ssl_certificate','ca.pem')
 

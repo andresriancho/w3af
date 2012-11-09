@@ -25,7 +25,7 @@ import urllib2
 import core.data.kb.config as cf
 
 from core.controllers.configurable import configurable
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 from core.data.parsers.url import URL
 from core.data.options.opt_factory import opt_factory

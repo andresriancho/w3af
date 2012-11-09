@@ -30,7 +30,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.parsers.htmlParser import HTMLParser
 from core.data.parsers.pdf import PDFParser
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
  
 
 def _build_http_response(body_content, content_type):

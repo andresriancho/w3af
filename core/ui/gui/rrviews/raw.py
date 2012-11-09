@@ -23,7 +23,7 @@ import gtk
 
 from core.ui.gui.httpeditor import HttpEditor
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class HttpRawView(HttpEditor):

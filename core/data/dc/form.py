@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import operator
 import random
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.data_container import DataContainer

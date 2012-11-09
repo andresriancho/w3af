@@ -19,14 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.constants.response_codes as http_constants
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class htaccess_methods(AuditPlugin):
@@ -42,7 +42,7 @@ class htaccess_methods(AuditPlugin):
     
     def __init__(self):
         AuditPlugin.__init__(self)
-        self._already_tested = scalable_bloomfilter()
+        self._already_tested = ScalableBloomFilter()
         
     def audit(self, freq ):
         '''

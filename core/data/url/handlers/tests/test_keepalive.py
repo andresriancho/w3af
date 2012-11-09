@@ -26,7 +26,7 @@ import time
 
 from mock import MagicMock, Mock
 
-from core.controllers.w3afException import w3afException, w3afMustStopException
+from core.controllers.exceptions import w3afException, w3afMustStopException
 from core.data.url.handlers.keepalive import (KeepAliveHandler, ConnectionManager,
                                               HTTPResponse, URLTimeoutError)
 

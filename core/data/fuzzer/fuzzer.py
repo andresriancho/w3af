@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.config as cf
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from core.data.fuzzer.mutants.postdata_mutant import PostDataMutant

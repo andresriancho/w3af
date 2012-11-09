@@ -24,7 +24,7 @@ import sys
 import time
 import traceback
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.config as cf
 
 from core.controllers.core_helpers.progress import progress
@@ -44,7 +44,7 @@ from core.controllers.misc.homeDir import (create_home_dir,
                                            verify_dir_has_perm, HOME_DIR)
 from core.controllers.misc.temp_dir import (create_temp_dir, remove_temp_dir,
                                             TEMP_DIR)
-from core.controllers.w3afException import (w3afException, w3afMustStopException,
+from core.controllers.exceptions import (w3afException, w3afMustStopException,
                                             w3afMustStopByUnknownReasonExc,
                                             w3afMustStopByUserRequest)
 
@@ -90,8 +90,8 @@ class w3afCore(object):
         # And one of the most important aspects of our core, the exception handler
         self.exception_handler = ExceptionHandler()
         
-        # FIXME: In the future, when the outputManager is not an awful singleton
-        # anymore, this line should be removed and the outputManager object
+        # FIXME: In the future, when the output_manager is not an awful singleton
+        # anymore, this line should be removed and the output_manager object
         # should take a w3afCore object as a parameter in its __init__
         om.out.set_w3af_core(self)
         
@@ -207,8 +207,8 @@ class w3afCore(object):
         
         # It is also a feature to keep the mist settings from the last run.
         # Set some defaults for the core
-        #import core.controllers.miscSettings as miscSettings
-        #miscSettings.miscSettings()
+        #import core.controllers.misc_settings as misc_settings
+        #misc_settings.misc_settings()
         
         # Not calling:
         # self.plugins.zero_enabled_plugins()

@@ -30,7 +30,7 @@ import hashlib
 import random
 
 import core.data.parsers.encode_decode as encode_decode
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.ui.gui import entries
 
 class SimpleTextView(gtk.TextView):

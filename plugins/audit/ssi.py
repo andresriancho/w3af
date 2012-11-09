@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -32,7 +32,7 @@ from core.data.fuzzer.utils import rand_alpha
 from core.data.db.temp_shelve import temp_shelve
 from core.data.db.disk_list import disk_list
 from core.data.esmre.multi_in import multi_in
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class ssi(AuditPlugin):
@@ -133,7 +133,7 @@ class ssi(AuditPlugin):
         multi_in_inst = multi_in( self._expected_res_mutant.keys() )
         
         def filtered_freq_generator(freq_list):
-            already_tested = scalable_bloomfilter()
+            already_tested = ScalableBloomFilter()
             
             for freq in freq_list:
                 if freq not in already_tested:

@@ -27,8 +27,8 @@ import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
-from core.controllers.w3afException import w3afException
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.controllers.exceptions import w3afException
 
 
 class strange_parameters(GrepPlugin):
@@ -42,7 +42,7 @@ class strange_parameters(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_reported = scalable_bloomfilter()
+        self._already_reported = ScalableBloomFilter()
         
     def grep(self, request, response):
         '''

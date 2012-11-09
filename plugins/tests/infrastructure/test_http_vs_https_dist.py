@@ -25,13 +25,13 @@ from mock import MagicMock, Mock, create_autospec
 from mock import patch, call
 
 import plugins.infrastructure.http_vs_https_dist as hvshsdist
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
-from core.controllers.w3afException import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce
 from plugins.tests.helper import onlyroot
 
 

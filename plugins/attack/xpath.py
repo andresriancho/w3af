@@ -25,8 +25,8 @@ import re
 import difflib
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.w3afException import w3afException
-import core.controllers.outputManager as om
+from core.controllers.exceptions import w3afException
+import core.controllers.output_manager as om
 from core.data.kb.exec_shell import shell as shell
 
 ERROR_MSG = 'Empty Path Expression'

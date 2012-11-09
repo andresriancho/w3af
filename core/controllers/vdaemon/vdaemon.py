@@ -26,11 +26,11 @@ import subprocess
 import time
 
 import core.data.kb.config as cf
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
-from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
+from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 
 
 class vdaemon(object):

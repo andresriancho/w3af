@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class objects(GrepPlugin):
@@ -41,7 +41,7 @@ class objects(GrepPlugin):
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//object | //applet')
         self._tag_names = ('object', 'applet')
-        self._already_analyzed = scalable_bloomfilter()
+        self._already_analyzed = ScalableBloomFilter()
         
 
     def grep(self, request, response):

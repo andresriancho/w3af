@@ -21,15 +21,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class dot_listing(CrawlPlugin):
@@ -42,7 +42,7 @@ class dot_listing(CrawlPlugin):
         CrawlPlugin.__init__(self)
         
         # Internal variables
-        self._analyzed_dirs = scalable_bloomfilter()
+        self._analyzed_dirs = ScalableBloomFilter()
         
         # -rw-r--r--    1 andresr   w3af         8139 Apr 12 13:23 foo.zip
         regex_str = '[a-z-]{10}\s*\d+\s*(.*?)\s+(.*?)\s+\d+\s+\w+\s+\d+\s+[0-9:]{4,5}\s+(.*)'

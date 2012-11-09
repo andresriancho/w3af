@@ -26,7 +26,7 @@ import httplib
 from lxml import etree
 from itertools import imap
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
 from core.data.constants.encodings import DEFAULT_ENCODING

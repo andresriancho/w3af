@@ -22,7 +22,7 @@ from xml.dom.minidom import parseString
 from xml.sax import saxutils
 import os
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 
 class XunitGen(object):

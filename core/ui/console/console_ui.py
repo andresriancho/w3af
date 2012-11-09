@@ -29,7 +29,7 @@ try:
     import core.ui.console.io.console as term
     import core.ui.console.tables as tables
     import core.controllers.w3afCore
-    import core.controllers.outputManager as om
+    import core.controllers.output_manager as om
     
     from core.ui.console.rootMenu import rootMenu
     from core.ui.console.callbackMenu import callbackMenu
@@ -40,7 +40,7 @@ try:
     from core.data.db.startup_cfg import StartUpConfig
     
     from core.controllers.auto_update import UIUpdater
-    from core.controllers.w3afException import (w3afException, 
+    from core.controllers.exceptions import (w3afException, 
                                                 w3afMustStopException)
 except KeyboardInterrupt:
     sys.exit(0)

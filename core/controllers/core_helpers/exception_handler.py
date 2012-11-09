@@ -25,13 +25,13 @@ import threading
 import traceback
 
 import core.data.kb.config as cf
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from os.path import basename
 
 from core.controllers.core_helpers.status import w3af_core_status
 from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_report
-from core.controllers.w3afException import (w3afMustStopException,
+from core.controllers.exceptions import (w3afMustStopException,
                                             w3afMustStopByUserRequest,
                                             w3afMustStopByUnknownReasonExc)
 

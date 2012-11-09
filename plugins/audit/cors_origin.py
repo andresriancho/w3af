@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -26,7 +26,7 @@ import core.data.constants.severity as severity
 from core.data.options.option_list import OptionList
 from core.data.options.opt_factory import opt_factory
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.cors.utils import (build_cors_request,
                                          provides_cors_features,
                                          retrieve_cors_header,

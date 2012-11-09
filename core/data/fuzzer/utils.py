@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from string import letters, digits
 from random import choice, randint
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 def rand_alpha(length=0):

@@ -26,10 +26,10 @@ import time
 import traceback
 
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.url.xUrllib import xUrllib
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 
 class w3afLocalProxyHandler(w3afProxyHandler):

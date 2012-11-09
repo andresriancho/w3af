@@ -25,7 +25,7 @@ from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.factory import factory
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 from core.data.options.bool_option import BoolOption
 

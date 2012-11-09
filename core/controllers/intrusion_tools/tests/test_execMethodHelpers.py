@@ -23,8 +23,8 @@ import commands
 
 from mock import MagicMock
 
-from core.controllers.w3afException import w3afException
-from core.controllers.intrusionTools.execMethodHelpers import (os_detection_exec,
+from core.controllers.exceptions import w3afException
+from core.controllers.intrusion_tools.execMethodHelpers import (os_detection_exec,
                                                                get_remote_temp_file)
 
 

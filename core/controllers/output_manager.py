@@ -1,5 +1,5 @@
 '''
-outputManager.py
+output_manager.py
 
 Copyright 2006 Andres Riancho
 
@@ -46,7 +46,7 @@ def start_thread_on_demand(func):
     return od_wrapper
 
 
-class outputManager(Process):
+class output_manager(Process):
     '''
     This class manages output. It has a list of output plugins and sends the 
     messages to every plugin on that list.
@@ -64,7 +64,7 @@ class outputManager(Process):
               )
         
     def __init__(self):
-        super(outputManager, self).__init__()
+        super(output_manager, self).__init__()
         self.daemon = True
         self.name = 'OutputManager'
         
@@ -261,7 +261,7 @@ class outputManager(Process):
         if name in self.METHODS:
             return functools.partial(self._add_to_queue, name)
         else:
-            raise AttributeError("'outputManager' object has no attribute '%s'"
+            raise AttributeError("'output_manager' object has no attribute '%s'"
                                  % name)
 
-out = outputManager()
+out = output_manager()

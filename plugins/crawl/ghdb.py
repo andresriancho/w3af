@@ -23,7 +23,7 @@ import os.path
 import random
 import xml.dom.minidom
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -32,7 +32,7 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.is_private_site import is_private_site
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.exceptions import w3afException, w3afRunOnce
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList

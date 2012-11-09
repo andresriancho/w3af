@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.parsers.dpCache as dpCache
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class get_emails(GrepPlugin):
@@ -40,7 +40,7 @@ class get_emails(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         
         # User configured variables
         self._only_target_domain = True

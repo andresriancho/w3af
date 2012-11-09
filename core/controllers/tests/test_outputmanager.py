@@ -24,7 +24,7 @@ import unittest
 from mock import MagicMock, Mock
 from nose.plugins.attrib import attr
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.w3afCore import w3afCore
 

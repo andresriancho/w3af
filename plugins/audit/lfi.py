@@ -23,7 +23,7 @@ from __future__ import with_statement
 
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info

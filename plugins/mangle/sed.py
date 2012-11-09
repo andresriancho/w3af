@@ -27,7 +27,7 @@ from core.data.request.factory import create_fuzzable_request
 
 from core.controllers.plugins.mangle_plugin import ManglePlugin
 from core.controllers.plugins.mangle_plugin import headers_to_string, string_to_headers
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 
 class sed(ManglePlugin):

@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import chain
 from lxml import etree
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.kb.info import info
 
 # Find all form elements that don't include the'autocomplete' attribute;
@@ -52,7 +52,7 @@ class form_autocomplete(GrepPlugin):
         GrepPlugin.__init__(self)
         
         # Internal variables
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._autocomplete_forms_xpath = etree.XPath( AUTOCOMPLETE_FORMS_XPATH )
         self._pwd_input_xpath = etree.XPath( PWD_INPUT_XPATH )
         self._text_input_xpath =  etree.XPath( TEXT_INPUT_XPATH )

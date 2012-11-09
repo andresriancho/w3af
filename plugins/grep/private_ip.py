@@ -28,7 +28,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.get_local_ip import get_local_ip
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class private_ip(GrepPlugin):
@@ -50,7 +50,7 @@ class private_ip(GrepPlugin):
         self._private_ip_address = re.compile(regex_str)
         self._regex_list = [self._private_ip_address, ]
 
-        self._already_inspected = scalable_bloomfilter()
+        self._already_inspected = ScalableBloomFilter()
         self._ignore_if_match = None
         
     def grep(self, request, response):

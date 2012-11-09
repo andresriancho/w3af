@@ -21,11 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import xml.dom.minidom
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.url import URL
 

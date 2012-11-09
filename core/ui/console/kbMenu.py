@@ -23,7 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.kb.shell as shell
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest

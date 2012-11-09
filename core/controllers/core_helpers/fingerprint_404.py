@@ -26,12 +26,12 @@ import thread
 import urllib
 
 import core.data.kb.config as cf
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alnum
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
@@ -63,8 +63,8 @@ class fingerprint_404:
         self._already_analyzed = False
         self._404_bodies = []
         self._lock = thread.allocate_lock()
-        self._fingerprinted_paths = scalable_bloomfilter()
-        self._directory_uses_404_codes = scalable_bloomfilter()
+        self._fingerprinted_paths = ScalableBloomFilter()
+        self._directory_uses_404_codes = ScalableBloomFilter()
         
         # It is OK to store 200 here, I'm only storing path+filename as the key,
         # and bool as the value.

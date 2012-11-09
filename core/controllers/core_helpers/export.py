@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.data.kb.config as cf
 import core.data.request.WebServiceRequest as WebServiceRequest
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 class export:
     """

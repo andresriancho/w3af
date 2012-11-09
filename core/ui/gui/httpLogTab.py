@@ -27,7 +27,7 @@ import pango
 from core.ui.gui import reqResViewer, entries
 from core.ui.gui.entries import EasyTable
 from core.ui.gui.entries import wrapperWidgets
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.preferences import Preferences
 from core.data.options.opt_factory import opt_factory

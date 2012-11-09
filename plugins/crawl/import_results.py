@@ -25,10 +25,10 @@ import os
 
 from lxml import etree
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 
 from core.data.options.opt_factory import opt_factory

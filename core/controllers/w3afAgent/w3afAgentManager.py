@@ -25,14 +25,14 @@ import socket
 
 from multiprocessing.dummy import Process
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.w3afAgent.server.w3afAgentServer import w3afAgentServer
 from core.controllers.payload_transfer.payload_transfer_factory import payload_transfer_factory
-from core.controllers.extrusionScanning.extrusionScanner import extrusionScanner
-from core.controllers.intrusionTools.delayedExecutionFactory import delayedExecutionFactory
-from core.controllers.intrusionTools.execMethodHelpers import get_remote_temp_file
+from core.controllers.extrusion_scanning.extrusionScanner import extrusionScanner
+from core.controllers.intrusion_tools.delayedExecutionFactory import delayedExecutionFactory
+from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 
 
 class w3afAgentManager( Process ):

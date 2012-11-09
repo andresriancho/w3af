@@ -1,6 +1,6 @@
 import re
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.threads.threadManager import thread_manager
 from core.ui.console.tables import table

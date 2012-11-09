@@ -50,7 +50,7 @@ class php_sca(base_payload):
         try:
             from core.controllers.sca.sca import PhpSCA
         except ImportError, ie:
-            import core.controllers.outputManager as om
+            import core.controllers.output_manager as om
             om.out.console('You have to install phply lib in order to use this'
             ' payload. Download it from <https://github.com/ramen/phply>\n')
             return

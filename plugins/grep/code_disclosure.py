@@ -23,7 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
@@ -40,7 +40,7 @@ class code_disclosure(GrepPlugin):
         GrepPlugin.__init__(self)
         
         #   Internal variables
-        self._already_added = scalable_bloomfilter()
+        self._already_added = ScalableBloomFilter()
         self._first_404 = True
 
     def grep(self, request, response):

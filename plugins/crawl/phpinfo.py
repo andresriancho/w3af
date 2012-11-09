@@ -23,7 +23,7 @@ import re
 
 from itertools import repeat, izip
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
@@ -31,7 +31,7 @@ import core.data.constants.severity as severity
 import core.data.kb.info as info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.db.disk_set import disk_set
 

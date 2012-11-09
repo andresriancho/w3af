@@ -21,16 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from itertools import chain, repeat, izip
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.info as info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 
 from core.data.dc.headers import Headers
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alnum
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -61,7 +61,7 @@ class url_fuzzer(CrawlPlugin):
         
         self._first_time = True
         self._fuzz_images = False
-        self._seen = scalable_bloomfilter()
+        self._seen = ScalableBloomFilter()
         
     def crawl(self, fuzzable_request):
         '''

@@ -25,14 +25,14 @@ import os.path
 import StringIO
 import urllib2
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.url.HTTPResponse as HTTPResponse
 
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.number_generator import (consecutive_number_generator
                                                     as core_num_gen)
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.data.db.history import HistoryItem
 from core.data.dc.headers import Headers
 from core.data.request.factory import create_fuzzable_request

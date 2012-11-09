@@ -24,7 +24,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class dot_net_errors(InfrastructurePlugin):
@@ -39,7 +39,7 @@ class dot_net_errors(InfrastructurePlugin):
         InfrastructurePlugin.__init__(self)
 
         # Internal variables
-        self._already_tested = scalable_bloomfilter()
+        self._already_tested = ScalableBloomFilter()
         # On real web applications, if we can't trigger an error in the first
         # MAX_TESTS tests, it simply won't happen and we have to stop testing.
         self.MAX_TESTS = 25

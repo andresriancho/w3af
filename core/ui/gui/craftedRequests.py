@@ -30,7 +30,7 @@ from core.ui.gui.clusterGraph import distance_function_selector
 from core.ui.gui.payload_generators import create_generator_menu
 
 from core.data.db.history import HistoryItem
-from core.controllers.w3afException import (w3afException, w3afMustStopException,
+from core.controllers.exceptions import (w3afException, w3afMustStopException,
                                             w3afMustStopOnUrlError,
                                             w3afMustStopByKnownReasonExc,
                                             w3afProxyException)

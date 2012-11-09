@@ -24,9 +24,9 @@ import signal
 import gtk
 import gobject
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
-from core.controllers.w3afException import (w3afException, w3afMustStopException,
+from core.controllers.exceptions import (w3afException, w3afMustStopException,
                                             w3afMustStopOnUrlError)
 
 from core.data.db.history import HistoryItem

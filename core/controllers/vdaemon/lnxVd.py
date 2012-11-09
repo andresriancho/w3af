@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import time
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 from core.controllers.vdaemon.vdaemon import vdaemon
-from core.controllers.w3afException import w3afException
-from core.controllers.intrusionTools.crontabHandler import crontabHandler
+from core.controllers.exceptions import w3afException
+from core.controllers.intrusion_tools.crontabHandler import crontabHandler
 
 
 class lnxVd(vdaemon):

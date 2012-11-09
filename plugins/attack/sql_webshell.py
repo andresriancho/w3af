@@ -25,7 +25,7 @@ import urllib
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 
 import plugins.attack.payloads.shell_handler as shell_handler
 
@@ -39,7 +39,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.w3afException import w3afException
+from core.controllers.exceptions import w3afException
 from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
 from core.controllers.misc.webroot import get_webroot_dirs
 

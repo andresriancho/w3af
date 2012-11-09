@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.config as cf
 
 
@@ -30,10 +30,10 @@ from core.controllers.core_helpers.consumers.constants import POISON_PILL
 from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
                                                             get_urls_from_kb,
                                                             get_fuzzable_requests_from_kb)
-from core.controllers.w3afException import w3afException, w3afRunOnce
+from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import return_args
 from core.data.db.variant_db import VariantDB
-from core.data.bloomfilter.bloomfilter import scalable_bloomfilter
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 
 class crawl_infrastructure(BaseConsumer):
@@ -58,7 +58,7 @@ class crawl_infrastructure(BaseConsumer):
         
         # For filtering fuzzable requests found by plugins:
         self._variant_db = VariantDB()
-        self._already_seen_urls = scalable_bloomfilter()
+        self._already_seen_urls = ScalableBloomFilter()
         
         self._disabled_plugins = set()
     

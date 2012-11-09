@@ -26,7 +26,7 @@ import socket
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
-import core.controllers.outputManager as om
+import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
@@ -37,7 +37,7 @@ from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.w3afException import w3afRunOnce, w3afException
+from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 
 
