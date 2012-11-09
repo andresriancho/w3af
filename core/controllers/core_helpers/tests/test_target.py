@@ -1,5 +1,5 @@
 '''
-test_opener_settings.py
+test_target.py
 
 Copyright 2012 Andres Riancho
 
@@ -17,25 +17,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-
 '''
 import unittest
 
-from core.data.url.opener_settings import OpenerSettings
+from nose.plugins.attrib import attr
+
+from core.controllers.core_helpers.target import w3af_core_target
 from core.data.options.option_types import (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,
                                             REGEX,COMBO,INPUT_FILE,OUTPUT_FILE,PORT)
 
 OPTION_TYPES = (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,REGEX,COMBO,
                 INPUT_FILE,OUTPUT_FILE,PORT)
-
-class TestOpenerSettings(unittest.TestCase):
-    
-    def setUp(self):
-        self.os = OpenerSettings()
         
-    def test_options(self):
-        opt_lst = self.os.get_options()
-        self.os.set_options(opt_lst)
+@attr('smoke')
+class TestTarget(unittest.TestCase):
+    def test_basic(self):
+        opt_lst = w3af_core_target().get_options()
         
         for opt in opt_lst:
             self.assertIn(opt.get_type(), OPTION_TYPES)
@@ -49,8 +46,3 @@ class TestOpenerSettings(unittest.TestCase):
             self.assertIsInstance(opt.get_type(), basestring)
             self.assertIsInstance(opt.get_help(), basestring)
             self.assertIsInstance(opt.get_value_str(), basestring)
-        
-    
-    def test_desc(self):
-        self.os.get_desc()
-        
