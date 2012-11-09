@@ -50,7 +50,7 @@ class ComboOption(BaseOption):
         
         self._name = name
         self._desc = desc
-        self._help = help
+        self._help = _help
         self._tabid = tabid
 
     def getComboOptions(self):

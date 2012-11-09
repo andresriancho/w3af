@@ -81,10 +81,14 @@ class TestBasic(unittest.TestCase):
                     self.assertTrue(opt.get_name())
                     self.assertEqual(opt, opt)
                     
-                    # Just verify that this doesn't crash
-                    opt.get_default_value()
-                    opt.get_value_str()
-                    opt.get_value()
+                    # Just verify that this doesn't crash and that the types
+                    # are correct
+                    self.assertIsInstance(opt.get_name(), basestring)
+                    self.assertIsInstance(opt.get_desc(), basestring)
+                    self.assertIsInstance(opt.get_type(), basestring)
+                    self.assertIsInstance(opt.get_help(), basestring)
+                    self.assertIsInstance(opt.get_value_str(), basestring)
+                    
 
     def test_plugin_deps(self):
         for plugin_type in self.plugins:

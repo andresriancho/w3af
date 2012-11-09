@@ -56,6 +56,11 @@ class TestOptionFactory(unittest.TestCase):
             self.assertEqual(opt.get_type(), _type)
             self.assertEqual(opt.get_default_value(), parsed_value)
             self.assertEqual(opt.get_value(), parsed_value)
+            
+            self.assertIsInstance(opt.get_name(), basestring)
+            self.assertIsInstance(opt.get_desc(), basestring)
+            self.assertIsInstance(opt.get_type(), basestring)
+            self.assertIsInstance(opt.get_help(), basestring)
 
     def test_factory_unknown_type(self):
         self.assertRaises(KeyError, opt_factory, 'name', 'value', 'desc',
