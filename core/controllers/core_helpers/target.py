@@ -47,8 +47,8 @@ class w3af_core_target(configurable):
         self.clear()
         
         # Some internal variables
-        self._operatingSystems = ['unknown','unix','windows']
-        self._programmingFrameworks = ['unknown', 'php','asp','asp.net','java',
+        self._operating_systems = ['unknown','unix','windows']
+        self._programming_frameworks = ['unknown', 'php','asp','asp.net','java',
                                        'jsp','cfm','ruby','perl']
 
     def clear(self):
@@ -65,27 +65,27 @@ class w3af_core_target(configurable):
         '''        
         ol = OptionList()
         
+        targets = ','.join(str(tar) for tar in cf.cf.get('targets'))
         d = 'A comma separated list of URLs'
-        o = opt_factory('target', ','.join(str(tar) for tar in 
-                                       cf.cf.get('targets')), d, 'list')
+        o = opt_factory('target', targets, d, 'list')
         ol.add(o)
         
-        d = 'Target operating system ('+ '/'.join(self._operatingSystems) +')'
+        d = 'Target operating system ('+ '/'.join(self._operating_systems) +')'
         h = 'This setting is here to enhance w3af performance.'
         
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
-        tmp_list = self._operatingSystems[:]
+        tmp_list = self._operating_systems[:]
         tmp_list.remove( cf.cf.get('targetOS') )
         tmp_list.insert(0, cf.cf.get('targetOS') )
         o = opt_factory('targetOS', tmp_list, d, 'combo', help=h)
         ol.add(o)
         
-        d = 'Target programming framework ('+ '/'.join(self._programmingFrameworks) +')'
+        d = 'Target programming framework ('+ '/'.join(self._programming_frameworks) +')'
         h = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done because the default value is the one
         # in the first position on the list
-        tmp_list = self._programmingFrameworks[:]
+        tmp_list = self._programming_frameworks[:]
         tmp_list.remove( cf.cf.get('targetFramework') )
         tmp_list.insert(0, cf.cf.get('targetFramework') )
         o = opt_factory('targetFramework', tmp_list, d, 'combo', help=h)
@@ -183,13 +183,13 @@ class w3af_core_target(configurable):
         
         # Advanced target selection
         os = options_list['targetOS'].get_value_str()
-        if os.lower() in self._operatingSystems:
+        if os.lower() in self._operating_systems:
             cf.cf.save('targetOS', os.lower() )
         else:
             raise w3afException('Unknown target operating system: ' + os)
         
         pf = options_list['targetFramework'].get_value_str()
-        if pf.lower() in self._programmingFrameworks:
+        if pf.lower() in self._programming_frameworks:
             cf.cf.save('targetFramework', pf.lower() )
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
