@@ -28,6 +28,7 @@ from core.data.constants.ports import MAILER
 from core.data.constants.response_codes import OK
 from core.data.constants.severity import HIGH
 from core.data.constants.ignored_params import IGNORED_PARAMETERS
+from core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
 
 
 class TestAll(unittest.TestCase):
@@ -44,3 +45,6 @@ class TestAll(unittest.TestCase):
         self.assertEqual(OK, OK)
         self.assertEqual(HIGH, HIGH)
         self.assertEqual(IGNORED_PARAMETERS, IGNORED_PARAMETERS)
+        
+        self.assertIn('ar', GTOP_LEVEL_DOMAINS)
+        self.assertIn('py', GTOP_LEVEL_DOMAINS)
