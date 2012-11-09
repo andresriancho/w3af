@@ -280,8 +280,8 @@ class profile(object):
         Get the misc settings options.
         @return: The misc settings in an OptionList
         '''
-        import core.controllers.misc_settings as misc_settings
-        misc_settings = misc_settings.misc_settings()
+        from core.controllers.misc_settings import MiscSettings
+        misc_settings = MiscSettings()
         return self._get_x_settings('misc-settings', misc_settings)
 
     def getHttpSettings( self ):

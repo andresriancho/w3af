@@ -29,7 +29,7 @@ from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
 
-class misc_settings(configurable):
+class MiscSettings(configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can
     configure w3af settings using get_options and SetOptions.
@@ -84,23 +84,25 @@ class misc_settings(configurable):
         ol = OptionList()
 
         ######## Fuzzer parameters ########
-        desc = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        opt = opt_factory('fuzzCookie', cf.cf.get('fuzz_cookies'), desc, 'boolean',
-                     tabid='Fuzzer parameters')
+        d = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
+        opt = opt_factory('fuzzCookie', cf.cf.get('fuzz_cookies'), d, 'boolean',
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
-        desc = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
-        opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), desc, 'boolean',
-                     tabid='Fuzzer parameters')
+        d = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
+        opt = opt_factory('fuzz_form_files', cf.cf.get('fuzz_form_files'), d,
+                          'boolean', tabid='Fuzzer parameters')
         ol.add(opt)
         
-        desc = 'Indicates if w3af plugins will send fuzzed filenames in order to find vulnerabilities'
-        help = 'For example, if the discovered URL is http://test/filename.php, and fuzz_url_filenames'
-        help += ' is enabled, w3af will request among other things: http://test/file\'a\'a\'name.php'
-        help += ' in order to find SQL injections. This type of vulns are getting more common every'
-        help += ' day!'
-        opt = opt_factory('fuzz_url_filenames', cf.cf.get('fuzz_url_filenames'), desc, 'boolean', help=help, 
-                     tabid='Fuzzer parameters')
+        d = 'Indicates if w3af plugins will send fuzzed filenames in order to'\
+            ' find vulnerabilities'
+        h = 'For example, if the discovered URL is http://test/filename.php,'\
+            ' and fuzz_url_filenames is enabled, w3af will request among'\
+            ' other things: http://test/file\'a\'a\'name.php in order to'\
+            ' find SQL injections. This type of vulns are getting more '\
+            ' common every day!'
+        opt = opt_factory('fuzz_url_filenames', cf.cf.get('fuzz_url_filenames'),
+                          d, 'boolean', help=h, tabid='Fuzzer parameters')
         ol.add(opt)
         
         desc = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
@@ -209,4 +211,5 @@ class misc_settings(configurable):
                    options_list['stop_on_first_exception'].get_value() )
         
 # This is an undercover call to __init__ :) , so I can set all default parameters.
-misc_settings()
+# TODO: FIXME: This is awful programming.
+MiscSettings()

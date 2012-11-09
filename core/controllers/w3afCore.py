@@ -205,10 +205,8 @@ class w3afCore(object):
         # time.
         # reload(cf)
         
-        # It is also a feature to keep the mist settings from the last run.
-        # Set some defaults for the core
-        #import core.controllers.misc_settings as misc_settings
-        #misc_settings.misc_settings()
+        # It is also a feature to keep the misc settings from the last run, this
+        # means that we don't cleanup the misc settings.
         
         # Not calling:
         # self.plugins.zero_enabled_plugins()

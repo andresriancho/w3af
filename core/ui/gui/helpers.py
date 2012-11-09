@@ -116,7 +116,6 @@ def cleanDescription(desc):
     return textwrap.dedent(desc)
 
 
-
 #-- the following are for thread handling
 
 _threadPool = []

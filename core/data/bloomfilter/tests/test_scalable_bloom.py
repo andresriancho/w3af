@@ -46,6 +46,7 @@ class TestScalableBloomFilterLargeCmmap(unittest.TestCase, GenericFilterTest):
     CAPACITY = 20000
         
     def setUp(self):
+        super(TestScalableBloomFilterLargeCmmap, self).setUp()
         self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
 class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
@@ -53,6 +54,7 @@ class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
     CAPACITY = 500
         
     def setUp(self):
+        super(TestScalableBloomfilterSmallCmmap, self).setUp()
         self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
 class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest):
@@ -60,6 +62,7 @@ class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest)
     CAPACITY = 20000
     
     def setUp(self):
+        super(TestScalableBloomFilterLargeSeekFile, self).setUp()
         self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
                                           filter_impl=WrappedFileSeekBloomFilter)
 
@@ -69,6 +72,7 @@ class TestScalableBloomfilterSmallSeekFile(unittest.TestCase, GenericFilterTest)
     CAPACITY = 500
         
     def setUp(self):
+        super(TestScalableBloomfilterSmallSeekFile, self).setUp()
         self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
                                           filter_impl=WrappedFileSeekBloomFilter)
         

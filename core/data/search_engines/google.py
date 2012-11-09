@@ -134,7 +134,8 @@ class GoogleAPISearch(object):
         if self._status == IS_NEW:
             try:
                 self._pages = self._do_google_search()
-            except w3afException:
+            except w3afException, w3:
+                om.out.error('%s' % w3)
                 self._status = FINISHED_BAD
             else:
                 self._status = FINISHED_OK
@@ -223,12 +224,19 @@ class GAjaxSearch(GoogleAPISearch):
             except Exception, e:
                 raise w3afException('Failed to GET google.com AJAX API: "%s"' % e)
             
-            # Parse the response. Convert the json string into a py dict.
-            parsed_resp = json.loads(resp.getBody())
+            try:
+                # Parse the response. Convert the json string into a py dict.
+                parsed_resp = json.loads(resp.getBody())
+            except ValueError:
+                # ValueError: No JSON object could be decoded
+                msg = 'Invalid JSON returned by Google, got "%s"' % resp.getBody() 
+                raise w3afException(msg)
 
             # Expected response code is 200; otherwise raise Exception
             if parsed_resp.get('responseStatus') != 200:
-                raise w3afException(parsed_resp.get('responseDetails'))
+                msg = 'Invalid JSON format returned by Google, response status'\
+                      ' needs to be 200, got "%s" instead.'
+                raise w3afException(msg % parsed_resp.get('responseDetails'))
 
             # Update result pages
             res_pages.append(resp)

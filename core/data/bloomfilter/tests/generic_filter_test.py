@@ -27,6 +27,11 @@ from core.data.parsers.url import URL
 
 class GenericFilterTest(object):
 
+    def setUp(self):
+        # Init the seed to something fixed in order to have always the same
+        # "random" numbers used.
+        random.seed(20)
+
     def test_bloom_int(self):
 
         for i in xrange(0, self.CAPACITY):
