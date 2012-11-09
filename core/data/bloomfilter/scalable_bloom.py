@@ -27,8 +27,8 @@ class ScalableBloomFilter(object):
     SMALL_SET_GROWTH = 2 # slower, but takes up less memory
     LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
 
-    def __init__(self, initial_capacity=1000, error_rate=0.001,
-                 mode=SMALL_SET_GROWTH):
+    def __init__(self, initial_capacity=10000, error_rate=0.001,
+                 mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
         positive rate
@@ -71,7 +71,11 @@ class ScalableBloomFilter(object):
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
-        self._setup(mode, 0.9, initial_capacity, error_rate)
+        self.filter_impl = filter_impl
+        self.scale = mode
+        self.ratio = 0.9
+        self.initial_capacity = initial_capacity
+        self.error_rate = error_rate
         self.filters = []
 
     def _setup(self, mode, ratio, initial_capacity, error_rate):
@@ -111,14 +115,19 @@ class ScalableBloomFilter(object):
         """
         if key in self:
             return True
-        filter = self.filters[-1] if self.filters else None
-        if filter is None or len(filter) >= filter.capacity:
+        
+        _filter = self.filters[-1] if self.filters else None
+        if _filter is None or len(_filter) >= _filter.capacity:
             num_filters = len(self.filters)
-            filter = BloomFilter(
-                capacity=self.initial_capacity * (self.scale ** num_filters),
-                error_rate=self.error_rate * (self.ratio ** num_filters))
-            self.filters.append(filter)
-        filter.add(key)
+            
+            new_capacity = self.initial_capacity * (self.scale ** num_filters)
+            new_error_rate = self.error_rate * (self.ratio ** num_filters)
+            
+            _filter = self.filter_impl(capacity=new_capacity,
+                                       error_rate=new_error_rate)
+            
+            self.filters.append(_filter)
+        _filter.add(key)
         return False
 
     @property

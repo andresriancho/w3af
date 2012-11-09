@@ -23,39 +23,71 @@ import os
 import math
 
 from core.data.misc import python2x3
+from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class FileSeekBloomFilter(object):
-    '''Backend storage for our "array of bits" using a file in which we seek'''
+class FileSeekBloomFilter(GenericBloomFilter):
+    '''Backend storage for our "array of bits" using a file in which we seek
+    
+    Shamelessly borrowed (under MIT license) from
+    http://code.activestate.com/recipes/577686-bloom-filter/
+    
+    About Bloom Filters: http://en.wikipedia.org/wiki/Bloom_filter
+
+    Tweaked by Daniel Richard Stromberg, mostly to:
+        1) Give it a little nicer __init__ parameters.
+        2) Improve the hash functions to get a much lower rate of false positives
+        3) Make it pass pylint
+    
+    http://stromberg.dnsalias.org/svn/bloom-filter/trunk/bloom_filter_mod.py
+    '''
 
     effs = 2 ^ 8 - 1
 
-    def __init__(self, capacity=10000, error_rate=0.001):
+    def __init__(self, capacity, error_rate, temp_file):
         self.error_rate = error_rate
-        # With fewer elements, we should do very well.  With more elements, our error rate "guarantee"
-        # drops rapidly.
+        # With fewer elements, we should do very well.  With more elements, our 
+        # error rate "guarantee" drops rapidly.
         self.capacity = capacity
-
+        self.stored_items = 0
+        
         numerator = -1 * self.capacity * math.log(self.error_rate)
         denominator = math.log(2) ** 2
-        #self.num_bits_m = - int((self.capacity * math.log(self.error_rate)) / (math.log(2) ** 2))
-        real_num_bits_m = numerator / denominator
-        self.num_bits_m = int(math.ceil(real_num_bits_m))
-        '''
-        self.num_bits = num_bits
+        real_num_bits = numerator / denominator
+        
+        self.num_bits = int(math.ceil(real_num_bits))
         self.num_chars = (self.num_bits + 7) // 8
+        
+        real_num_probes_k = (self.num_bits / self.capacity) * math.log(2)
+        self.num_probes_k = int(math.ceil(real_num_probes_k))
+                
         flags = os.O_RDWR | os.O_CREAT
         if hasattr(os, 'O_BINARY'):
             flags |= getattr(os, 'O_BINARY')
-        self.file_ = os.open(filename, flags)
+        
+        self.file_ = os.open(temp_file, flags)
         os.lseek(self.file_, self.num_chars + 1, os.SEEK_SET)
         os.write(self.file_, python2x3.null_byte)
-        '''
         
     def add(self, key):
         '''Add an element to the filter'''
+        if key not in self:
+            self.stored_items += 1
+            
         for bitno in self.get_bitno_lin_comb(key):
             self.set(bitno)
+    
+    def __len__(self):
+        return self.stored_items
+        
+    def __contains__(self, key):
+        for bitno in self.get_bitno_lin_comb(key):
+            #wordno, bit_within_word = divmod(bitno, 32)
+            #mask = 1 << bit_within_word
+            #if not (self.array_[wordno] & mask):
+            if not self.is_set(bitno):
+                return False
+        return True
     
     def get_bitno_lin_comb(self, key):
         '''Apply num_probes_k hash functions to key.  Generate the array index
@@ -72,12 +104,19 @@ class FileSeekBloomFilter(object):
                 quotient, remainder = divmod(temp, 256)
                 int_list.append(remainder)
                 temp = quotient
-        elif hasattr(key[0], '__divmod__'):
-            int_list = key
-        elif isinstance(key[0], str):
+        
+        elif hasattr(key, '__getitem__'):
+            if hasattr(key[0], '__divmod__'):
+                int_list = key
+   
+            elif isinstance(key[0], str):
+                int_list = [ ord(char) for char in key ]
+        
+        elif hasattr(key, '__iter__'):
             int_list = [ ord(char) for char in key ]
+            
         else:
-            raise TypeError('Sorry, I do not know how to hash this type')
+            raise TypeError('Bloom filter can NOT hash type: %s' % type(key))
     
         hash_value1 = self.hash1(int_list)
         hash_value2 = self.hash2(int_list)
@@ -86,7 +125,7 @@ class FileSeekBloomFilter(object):
         # obtain num_probes_k hash functions
         for probeno in range(1, self.num_probes_k + 1):
             bit_index = hash_value1 + probeno * hash_value2
-            yield bit_index % self.num_bits_m
+            yield bit_index % self.num_bits
 
     MERSENNES1 = [ 2 ** x - 1 for x in [ 17, 31, 127 ] ]
     MERSENNES2 = [ 2 ** x - 1 for x in [ 19, 67, 257 ] ]
@@ -139,51 +178,6 @@ class FileSeekBloomFilter(object):
         else:
             char = python2x3.intlist_to_binary([ byte ])
             os.write(self.file_, char)
-
-    def clear(self, bitno):
-        '''clear bit number bitno - set it to false'''
-
-        byteno, bit_within_byteno = divmod(bitno, 8)
-        mask = 1 << bit_within_byteno
-        os.lseek(self.file_, byteno, os.SEEK_SET)
-        char = os.read(self.file_, 1)
-        if isinstance(char, str):
-            byte = ord(char)
-            was_char = True
-        else:
-            byte = int(char)
-            was_char = False
-        byte &= FileSeekBloomFilter.effs - mask
-        os.lseek(self.file_, byteno, os.SEEK_SET)
-        if was_char:
-            os.write(chr(byte))
-        else:
-            char = python2x3.intlist_to_binary([ byte ])
-            os.write(char)
-
-    # These are quite slow ways to do iand and ior, but they should work,
-    # and a faster version is going to take more time
-    def __iand__(self, other):
-        assert self.num_bits == other.num_bits
-
-        for bitno in xrange(self.num_bits):
-            if self.is_set(bitno) and other.is_set(bitno):
-                self.set(bitno)
-            else:
-                self.clear(bitno)
-
-        return self
-
-    def __ior__(self, other):
-        assert self.num_bits == other.num_bits
-
-        for bitno in xrange(self.num_bits):
-            if self.is_set(bitno) or other.is_set(bitno):
-                self.set(bitno)
-            else:
-                self.clear(bitno)
-
-        return self
 
     def close(self):
         '''Close the file'''

@@ -44,11 +44,18 @@ class GenericBloomFilter(object):
         
     def __len__(self):
         return len(self.bf)
-        
+    
+    def __repr__(self):
+        return repr(self.bf)
+
+    def __str__(self):
+        return str(self.bf)
+    
     def add(self, key):
         return self.bf.add(key)
 
-    def get_temp_file(self):
+    @staticmethod
+    def get_temp_file():
         #
         #    Create the temp file
         #

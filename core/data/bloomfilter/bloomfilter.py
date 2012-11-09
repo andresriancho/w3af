@@ -22,22 +22,39 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.bloomfilter.wrappers import GenericBloomFilter
 
+# This import can't fail, it is pure-python love ;)
+from core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter\
+                                                 as FileSeekFilter
 
+ 
 try:
     # This might fail since it is a C library that only works in Linux
-    from pybloomfilter import BloomFilter as WrappedBloom
+    from pybloomfilter import BloomFilter as CMmapFilter
+
+    # There were reports of the C mmap filter not working properly in OSX,
+    # just in case, I'm testing here...
+    temp_file = GenericBloomFilter.get_temp_file()
+    try:
+        bf = CMmapFilter(1000, 0.01, temp_file)
+        bf.add(1)
+        assert 1 in bf
+        assert 2 not in bf
+    except:
+        WrappedBloomFilter = FileSeekFilter
+    else:
+        WrappedBloomFilter = CMmapFilter
     
-    class BloomFilter(GenericBloomFilter):
-        def __init__(self, capacity, error_rate=0.01):
-            GenericBloomFilter.__init__(self, capacity, error_rate)
-            
-            temp_file = self.get_temp_file()
-            self.bf = WrappedBloom(capacity, error_rate, temp_file)    
 except:
-    from core.data.bloomfilter.bitvector_bloom import BitVectorBloomFilter\
-                                                      as WrappedBloom
-                                                      
-    class BloomFilter(GenericBloomFilter):
-        def __init__(self, capacity, error_rate=0.01):
-            GenericBloomFilter.__init__(self, capacity, error_rate)
-            self.bf = WrappedBloom(capacity, error_rate)
+    WrappedBloomFilter = FileSeekFilter
+
+    
+class BloomFilter(GenericBloomFilter):
+    def __init__(self, capacity, error_rate):
+        '''
+        @param capacity: How many items you want to store, eg. 10000
+        @param error_rate: The acceptable false positive rate, eg. 0.001
+        '''
+        GenericBloomFilter.__init__(self, capacity, error_rate)
+        
+        temp_file = self.get_temp_file()
+        self.bf = WrappedBloomFilter(capacity, error_rate, temp_file)

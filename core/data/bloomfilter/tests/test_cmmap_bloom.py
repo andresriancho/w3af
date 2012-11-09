@@ -1,5 +1,5 @@
 '''
-test_seekfile_bloom.py
+test_cmmap_bloom.py
 
 Copyright 2012 Andres Riancho
 
@@ -21,25 +21,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-from core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter
+from nose.plugins.attrib import attr
+
+from pybloomfilter import BloomFilter as CMmapFilter
 from core.data.bloomfilter.tests.generic_filter_test import GenericFilterTest
 from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class TestCMmapBloomFilterLarge(unittest.TestCase, GenericFilterTest):
+class TestCMmapBloomfilterLarge(unittest.TestCase, GenericFilterTest):
     
     CAPACITY = 20000
     ERROR_RATE = 0.001
     
     def setUp(self):
         temp_file = GenericBloomFilter.get_temp_file()
-        self.filter = FileSeekBloomFilter(self.CAPACITY, self.ERROR_RATE, temp_file)
-        
-class TestCMmapBloomFilterSmall(unittest.TestCase, GenericFilterTest):
+        self.filter = CMmapFilter(self.CAPACITY, self.ERROR_RATE, temp_file)
+
+@attr('smoke')
+class TestCMmapBloomfilterSmall(unittest.TestCase, GenericFilterTest):
     
     CAPACITY = 500
     ERROR_RATE = 0.001
     
     def setUp(self):
         temp_file = GenericBloomFilter.get_temp_file()
-        self.filter = FileSeekBloomFilter(self.CAPACITY, self.ERROR_RATE, temp_file)
+        self.filter = CMmapFilter(self.CAPACITY, self.ERROR_RATE, temp_file)

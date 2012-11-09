@@ -19,50 +19,57 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import random
 import unittest
-import string
 
 from nose.plugins.attrib import attr
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.bloomfilter.tests.generic_filter_test import GenericFilterTest
+from core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter
+from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class TestScalableBloomfilter(unittest.TestCase):
-
-    @attr('smoke')
-    def test_bloom_int(self):
-
-        f = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-
-        for i in xrange(0, 10000):
-            _ = f.add(i)
+class WrappedFileSeekBloomFilter(GenericBloomFilter):
+    def __init__(self, capacity, error_rate):
+        '''
+        @param capacity: How many items you want to store, eg. 10000
+        @param error_rate: The acceptable false positive rate, eg. 0.001
+        '''
+        GenericBloomFilter.__init__(self, capacity, error_rate)
         
-        self.assertEqual( len(f), 10000)
+        temp_file = self.get_temp_file()
+        self.bf = FileSeekBloomFilter(capacity, error_rate, temp_file)
+
+@attr('smoke')
+class TestScalableBloomFilterLargeCmmap(unittest.TestCase, GenericFilterTest):
+    
+    CAPACITY = 20000
         
-        for i in xrange(0, 10000):
-            self.assertEqual(i in f, True)
+    def setUp(self):
+        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
-        for i in xrange(0, 10000 / 2 ):
-            r = random.randint(0,10000-1)
-            self.assertEqual(r in f, True)
+class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
+    
+    CAPACITY = 500
+        
+    def setUp(self):
+        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
-        for i in xrange(0, 10000 / 2 ):
-            r = random.randint(10000,10000 * 2)
-            self.assertEqual(r in f, False)
+class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest):
+    
+    CAPACITY = 20000
+    
+    def setUp(self):
+        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
+                                          filter_impl=WrappedFileSeekBloomFilter)
 
-    @attr('smoke')
-    def test_bloom_string(self):
-        f = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-
-        for i in xrange(0, 10000):
-            rnd = ''.join(random.choice(string.letters) for i in xrange(40))
-            _ = f.add(rnd)
-
-        self.assertEqual(rnd in f, True)
-
-        for i in string.letters:
-            self.assertEqual(i in f, False)
-
-        self.assertEqual(rnd in f, True)
-
+@attr('smoke')
+class TestScalableBloomfilterSmallSeekFile(unittest.TestCase, GenericFilterTest):
+    
+    CAPACITY = 500
+        
+    def setUp(self):
+        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
+                                          filter_impl=WrappedFileSeekBloomFilter)
+        
+        
