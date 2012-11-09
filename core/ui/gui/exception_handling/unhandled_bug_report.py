@@ -83,14 +83,14 @@ class bug_report_window(simple_base_window, trac_bug_report):
         # the label for the rest of the message
         self.label = gtk.Label()
         self.label.set_line_wrap(True)
-        label_text = _("<i>All this info is in a file called '%s' for later")
-        label_text += _(' review.</i>\n\nIf you wish, <b>you can contribute')
-        label_text += _('</b> to the w3af project and submit this bug to our')
-        label_text += _(' bug tracking system from within this window. It is')
-        label_text += _(' a simple <i>two step process</i>.\n\n')
-        label_text += _('w3af will only send the exception traceback and the')
-        label_text += _(' version information to Trac, no personal or ')
-        label_text += _(' confidential information is collected.')
+        label_text = _("<i>All this info is in a file called '%s' for later"
+                       ' review.</i>\n\nIf you wish, <b>you can contribute'
+                       '</b> to the w3af project and submit this bug to our'
+                       ' bug tracking system from within this window. It is'
+                       ' a simple <i>two step process</i>.\n\n'
+                       'w3af will only send the exception traceback and the'
+                       ' version information to Trac, no personal or '
+                       ' confidential information is collected.')
         self.label.set_markup( label_text % fname )
         self.label.show()
         
@@ -108,7 +108,7 @@ class bug_report_window(simple_base_window, trac_bug_report):
         self.butt_send = gtk.Button(stock=gtk.STOCK_OK)
         self.butt_send.connect("clicked", self.report_bug)
         self.hbox.pack_start(self.butt_send, True, False)
-        
+                
         self.vbox.pack_start(self.hbox, True, False, 10)
                 
         #self.resize(400,450)

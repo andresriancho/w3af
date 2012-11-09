@@ -42,10 +42,12 @@ class simple_base_window(gtk.Window):
         '''
         super(simple_base_window,self).__init__(type=type)    
         
-        self.connect("delete-event", gtk.main_quit)
+        self.connect("delete-event", self._handle_cancel)
+        self.connect("destroy", self._handle_cancel)
+        
         self.set_icon_from_file(W3AF_ICON)
         
-    def _handle_cancel(self, widg):
+    def _handle_cancel(self, *args):
         endThreads()
         self.destroy()
 
@@ -243,7 +245,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
     def __init__(self, invalid_login=False):
         '''
         @return: A tuple with the following information:
-                    (method, params)
+                    (user_exit, method, params)
                 
                 Where method is one of METHOD_ANON, METHOD_EMAIL, METHOD_SF and,
                 params is the email or the sourceforge username and password,
@@ -267,10 +269,10 @@ class dlg_ask_credentials(gtk.MessageDialog):
         Setup the dialog and return the results to the invoker.
         '''
         
-        msg = '\nChoose how to report the bug(s)'
+        msg = _('\nChoose how to report the bug(s)')
         
         if self._invalid_login:
-            msg += '<b><i>Invalid credentials, please try again.</i></b>\n\n'
+            msg += _('<b><i>Invalid credentials, please try again.</i></b>\n\n')
         
         self.set_markup( msg )
     
@@ -333,8 +335,8 @@ class dlg_ask_credentials(gtk.MessageDialog):
         
         # Some secondary text
         warning_label = gtk.Label()
-        warning = "\nYour credentials won't be stored in your computer,\n"
-        warning += "  and will only be sent over HTTPS connections."
+        warning = _("\nYour credentials won't be stored in your computer,\n"
+                    "  and will only be sent over HTTPS connections.")
         warning_label.set_text(warning)
         sf_vbox.pack_start(warning_label, True, True, 0)
         sf_vbox.set_sensitive(False)
@@ -350,7 +352,11 @@ class dlg_ask_credentials(gtk.MessageDialog):
                 
         # Go go go!        
         self.show_all()
-        super(dlg_ask_credentials, self).run()
+        gtk_response = super(dlg_ask_credentials, self).run()
+        
+        # The user closed the dialog with the X
+        if gtk_response == gtk.RESPONSE_DELETE_EVENT:
+            return True, None, None
         
         #
         # Get the results, generate the result tuple and return
@@ -374,7 +380,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         # I'm done!
         self.destroy()
 
-        return (method, params)
+        return (False, method, params)
 
     def _email_entry_changed(self, x, y):
         '''
@@ -421,7 +427,7 @@ class dlg_ask_bug_info(gtk.MessageDialog):
     def __init__(self, invalid_login=False):
         '''
         @return: A tuple with the following information:
-                    (bug_summary, bug_description)
+                    (user_exit, bug_summary, bug_description)
                 
         '''
         gtk.MessageDialog.__init__(self,
@@ -483,14 +489,18 @@ Please provide any additional information below:
         self.show_all()
         
         # Go go go
-        super(dlg_ask_bug_info, self).run()
+        gtk_response = super(dlg_ask_bug_info, self).run()
+        
+        # The user closed the dialog with the X
+        if gtk_response == gtk.RESPONSE_DELETE_EVENT:
+            return True, None, None
         
         summary = summary_entry.get_text()
         description = buffer.get_text(buffer.get_start_iter(), buffer.get_end_iter())
         
         self.destroy()
         
-        return summary, description
+        return False, summary, description
 
 class trac_bug_report(object):
     '''
@@ -505,19 +515,30 @@ class trac_bug_report(object):
         self.autogen = False
     
     def report_bug(self):
-        sf, summary, userdesc, email = self._info_and_login()
-        rbsr = report_bug_show_result( self._report_bug_to_sf, [(sf, summary, userdesc, email),] )
+        user_exit, sf, summary, userdesc, email = self._info_and_login()
+        
+        if user_exit:
+            return
+        
+        rbsr = report_bug_show_result( self._report_bug_to_sf,
+                                       [(sf, summary, userdesc, email),] )
         rbsr.run()
     
     def _info_and_login(self):
         # Do the login
-        sf, email = self._login_sf()
+        user_exit, sf, email = self._login_sf()
+        
+        if user_exit:
+            return user_exit, None, None, None, None
         
         # Ask for a bug title and description
         dlg_bug_info = dlg_ask_bug_info()
-        summary, userdesc = dlg_bug_info.run()
+        user_exit, summary, userdesc = dlg_bug_info.run()
+
+        if user_exit:
+            return user_exit, None, None, None, None
         
-        return sf, summary, userdesc, email
+        return user_exit, sf, summary, userdesc, email
         
     def _report_bug_to_sf(self, sf, summary, userdesc, email):
         '''
@@ -544,8 +565,12 @@ class trac_bug_report(object):
             retry -= 1
             # Ask for user and password, or anonymous
             dlg_cred = dlg_ask_credentials(invalid_login)
-            method, params = dlg_cred.run()
+            user_exit, method, params = dlg_cred.run()
             dlg_cred.destroy()
+            
+            # The user closed the dialog and wants to exit
+            if user_exit:
+                return user_exit, None, None
             
             if method == dlg_ask_credentials.METHOD_SF:
                 user, password = params
@@ -570,11 +595,11 @@ class trac_bug_report(object):
             if login_result:
                 break
             
-        return (sf, email)
+        return (False, sf, email)
 
 class trac_multi_bug_report(trac_bug_report):
     '''
-    Class that models user interaction with Trac to report ONE or MORE bugs.
+    Class that models user interaction with Trac to report ONE OR MORE bugs.
     '''
     
     def __init__(self, exception_list, scan_id):
@@ -585,7 +610,10 @@ class trac_multi_bug_report(trac_bug_report):
         self.autogen = False
     
     def report_bug(self):
-        sf, email = self._login_sf()
+        user_exit, sf, email = self._login_sf()
+        
+        if user_exit:
+            return
         
         bug_info_list = []
         for edata in self.exception_list:
