@@ -438,12 +438,12 @@ class PluginTree(gtk.TreeView):
         if len(path) == 1:
             plugin_type = self.treestore[path][3]
             desc = self.w3af.plugins.get_plugin_type_desc( plugin_type )
-            label = helpers.cleanDescription( desc )
+            label = helpers.clean_description( desc )
             self.config_panel.clear(label=label )
         else:
             plugin = self._get_plugin_inst(path)
             longdesc = plugin.get_long_desc()
-            longdesc = helpers.cleanDescription(longdesc)
+            longdesc = helpers.clean_description(longdesc)
             self.mainwin.profiles.pluginConfig(plugin)
             self.config_panel.config(self, plugin, longdesc)
 
@@ -666,15 +666,16 @@ class PluginConfigBody(gtk.VBox):
     def _advancedTarget(self, widg):
         '''Builds the advanced target widget.'''
         # overwrite the plugin info with the target url
-        configurableTarget = self.w3af.target
-        options = configurableTarget.get_options()
+        configurable_target = self.w3af.target
         url = self.target.get_text()
 
         # open config
-        confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"), self.w3af, configurableTarget, {"target":url})
+        confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"),
+                                             self.w3af, configurable_target,
+                                             {"target":url})
 
         # update the Entry with plugin info
-        options = configurableTarget.get_options()
+        options = configurable_target.get_options()
         self.target.set_text(options['target'].get_value_str())
 
     def getActivatedPlugins(self):

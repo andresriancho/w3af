@@ -99,7 +99,7 @@ class PropagateBufferPayload(object):
         return
 
 
-def cleanDescription(desc):
+def clean_description(desc):
     '''Cleans a description.
 
     Normally a plugin generates these descriptions with a lot of

@@ -140,7 +140,7 @@ class OnlyOptions(gtk.VBox):
             widg.set_tooltip_text( opt.get_desc() )
             if opt.get_help():
                 helpbtn = entries.SemiStockButton("", gtk.STOCK_INFO)
-                cleanhelp = helpers.cleanDescription(opt.get_help())
+                cleanhelp = helpers.clean_description(opt.get_help())
                 helpbtn.connect("clicked", self._showHelp, cleanhelp)
             else:
                 helpbtn = None
