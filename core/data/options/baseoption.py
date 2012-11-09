@@ -35,7 +35,7 @@ class BaseOption(object):
         @param default_value: The default value of the option
         @param desc: The description of the option
         @param type: boolean, integer, string, etc..
-        @param help: The help of the option; a large description of the option
+        @param _help: The help of the option; a large description of the option
         @param tabid: The tab id of the option
         '''
         self.set_value(default_value)
