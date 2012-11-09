@@ -71,18 +71,13 @@ class ScalableBloomFilter(object):
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
+        
         self.filter_impl = filter_impl
         self.scale = mode
         self.ratio = 0.9
         self.initial_capacity = initial_capacity
         self.error_rate = error_rate
         self.filters = []
-
-    def _setup(self, mode, ratio, initial_capacity, error_rate):
-        self.scale = mode
-        self.ratio = ratio
-        self.initial_capacity = initial_capacity
-        self.error_rate = error_rate
 
     def __contains__(self, key):
         """Tests a key's membership in this bloom filter.
