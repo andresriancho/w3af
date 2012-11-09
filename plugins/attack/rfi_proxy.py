@@ -78,7 +78,7 @@ class rfi_proxy(AttackPlugin, Process):
         self._exploitQs = None
         self._proxyPublicIP = cf.cf.get( 'local_ip_address' )
         
-    def fastExploit(self, url, method, data ):
+    def fast_exploit(self, url, method, data ):
         '''
         Exploits a web app with os_commanding vuln.
         
@@ -89,13 +89,13 @@ class rfi_proxy(AttackPlugin, Process):
         '''
         return self._shell
     
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'proxy'
         
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
@@ -252,7 +252,7 @@ class rfi_proxy(AttackPlugin, Process):
         return options
 
         
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"

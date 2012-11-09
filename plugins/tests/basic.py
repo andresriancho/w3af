@@ -118,7 +118,7 @@ class TestBasic(unittest.TestCase):
                 
     def test_plugin_root_probability(self):
         for plugin in self.plugins['attack']:
-            plugin.getRootProbability()
+            plugin.get_root_probability()
         
     def test_plugin_type_description(self):
         for plugin_type in self.w3afcore.plugins.get_plugin_types():

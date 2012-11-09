@@ -55,7 +55,7 @@ class xpath(AttackPlugin):
         self.use_difflib = None        
         self.rnum = randint(1,100)
 
-    def fastExploit( self ):
+    def fast_exploit( self ):
         '''
         Exploits a web app with os_commanding vuln, the settings are configured using set_options()
         '''
@@ -69,13 +69,13 @@ class xpath(AttackPlugin):
         #TODO: Implement this
         pass
     
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
 
-    def getRootProbability(self):
+    def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -86,7 +86,7 @@ class xpath(AttackPlugin):
         '''        
         return 0.0
     
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:

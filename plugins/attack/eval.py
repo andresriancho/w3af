@@ -59,7 +59,7 @@ class eval(AttackPlugin):
         self._inj_var = ''
         self._generate_only_one = True
 
-    def fastExploit(self, url, method, data ):
+    def fast_exploit(self, url, method, data ):
         '''
         Exploits a web app with remote file include vuln.
         
@@ -70,13 +70,13 @@ class eval(AttackPlugin):
         '''
         return None
     
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
     
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
@@ -145,16 +145,16 @@ class eval(AttackPlugin):
         h0 += ' during exploitation; this is usefull for not being logged in the webserver logs.'
         o0 = opt_factory('changeToPost', self._changeToPost, d0, 'boolean', help=h0)
         
-        d1 = 'URL to exploit with fastExploit()'
+        d1 = 'URL to exploit with fast_exploit()'
         o1 = opt_factory('url', self._url, d1, 'url')
         
-        d2 = 'Method to use with fastExploit()'
+        d2 = 'Method to use with fast_exploit()'
         o2 = opt_factory('method', self._method, d2, 'string')
 
-        d3 = 'Data to send with fastExploit()'
+        d3 = 'Data to send with fast_exploit()'
         o3 = opt_factory('data', self._data, d3, 'string')
 
-        d4 = 'Variable where to inject with fastExploit()'
+        d4 = 'Variable where to inject with fast_exploit()'
         o4 = opt_factory('injvar', self._inj_var, d4, 'string')
 
         d5 = 'Exploit only one vulnerability.'
@@ -184,7 +184,7 @@ class eval(AttackPlugin):
         self._inj_var = options_list['injvar'].get_value()
         self._generate_only_one = options_list['generateOnlyOne'].get_value()
                 
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"

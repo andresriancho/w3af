@@ -35,7 +35,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
     '''
     This is the base class for attack plugins, all attack plugins should inherit
     from it and implement the following methods :
-        1. fastExploit(...)
+        1. fast_exploit(...)
         2. _generate_shell(...)
         
     @author: Andres Riancho ((andres.riancho@gmail.com))
@@ -52,10 +52,10 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         # User configured parameter
         self._generate_only_one = False
 
-    def fastExploit(self, url ):
+    def fast_exploit(self, url ):
         '''
         '''
-        raise NotImplementedError('Plugin is not implementing required method fastExploit' )
+        raise NotImplementedError('Plugin is not implementing required method fast_exploit' )
         
     def _generate_shell( self, vuln ):
         '''
@@ -64,7 +64,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         raise NotImplementedError('Plugin is not implementing required method _generate_shell' )
         
     def getExploitableVulns(self):
-        return kb.kb.get( self.getVulnName2Exploit() , self.getVulnName2Exploit() )
+        return kb.kb.get( self.get_kb_location() , self.get_kb_location() )
         
     def canExploit(self, vulnToExploit=None):
         '''
@@ -87,11 +87,11 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             else:
                 return False
 
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''
-        raise NotImplementedError('Plugin is not implementing required method getAttackType' )
+        raise NotImplementedError('Plugin is not implementing required method get_attack_type' )
 
     def GET2POST( self, vuln ):
         '''
@@ -120,7 +120,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             mutant.set_fuzzable_req(pdr)
             return vulnCopy
             
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -129,12 +129,12 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
         '''
-        raise NotImplementedError( 'Plugin is not implementing required method getRootProbability' )
+        raise NotImplementedError( 'Plugin is not implementing required method get_root_probability' )
         
     def get_type( self ):
         return 'attack'
         
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
@@ -144,7 +144,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''
-        raise NotImplementedError( 'Plugin is not implementing required method getVulnName2Exploit' )
+        raise NotImplementedError( 'Plugin is not implementing required method get_kb_location' )
     
     def exploit( self, vulnToExploit=None):
         '''
@@ -155,7 +155,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         '''
         om.out.information( self.get_name() + ' exploit plugin is starting.' )
         if not self.canExploit():
-            raise w3afException('No '+ self.getVulnName2Exploit() + ' vulnerabilities have been found.')
+            raise w3afException('No '+ self.get_kb_location() + ' vulnerabilities have been found.')
 
         for vuln in self.getExploitableVulns():
             

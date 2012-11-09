@@ -52,19 +52,19 @@ class os_commanding(AttackPlugin):
         self._inj_var = ''
         self._method = 'GET'
 
-    def fastExploit( self ):
+    def fast_exploit( self ):
         '''
         Exploits a web app with os_commanding vuln, the settings are configured using set_options()
         '''
         raise w3afException('Not implemented.')
     
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
     
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
@@ -139,16 +139,16 @@ class os_commanding(AttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''        
-        d1 = 'URL to exploit with fastExploit()'
+        d1 = 'URL to exploit with fast_exploit()'
         o1 = opt_factory('url', self._url, d1, 'url')
         
-        d2 = 'HTTP method to use with fastExploit()'
+        d2 = 'HTTP method to use with fast_exploit()'
         o2 = opt_factory('method', self._method, d2, 'string')
 
-        d3 = 'Data to send with fastExploit()'
+        d3 = 'Data to send with fast_exploit()'
         o3 = opt_factory('data', self._data, d3, 'string')
 
-        d4 = 'Variable where to inject with fastExploit()'
+        d4 = 'Variable where to inject with fast_exploit()'
         o4 = opt_factory('injvar', self._inj_var, d4, 'string')
 
         d5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
@@ -191,7 +191,7 @@ class os_commanding(AttackPlugin):
         self._url = options_list['url'].get_value()
         self._change_to_post = options_list['changeToPost'].get_value()
 
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"

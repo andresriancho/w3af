@@ -59,7 +59,7 @@ class sql_webshell(AttackPlugin):
         self._vuln = None
         self._driver = None
         
-        # User configured options for fastExploit
+        # User configured options for fast_exploit
         self._url = 'http://host.tld/'
         self._method = 'GET'
         self._data = ''
@@ -70,12 +70,12 @@ class sql_webshell(AttackPlugin):
         self._goodSamaritan = True
         self._generate_only_one = True
         
-    def fastExploit( self ):
+    def fast_exploit( self ):
         '''
         Exploits a web app with [blind] sql injections vulns.
         The options are configured using the plugin options and set_options() method.
         '''
-        om.out.debug( 'Starting sql_webshell fastExploit.' )
+        om.out.debug( 'Starting sql_webshell fast_exploit.' )
         
         if any(
              lambda attr: attr is None,
@@ -113,7 +113,7 @@ class sql_webshell(AttackPlugin):
                 raise w3afException('No exploitable vulnerabilities found.')
 
             
-    def getAttackType(self):
+    def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''        
@@ -140,7 +140,7 @@ class sql_webshell(AttackPlugin):
         else:
             om.out.console( 'No [blind] SQL injection vulnerabilities have been found.' )
             om.out.console( 'Hint #1: Try to find vulnerabilities using the audit plugins.' )
-            msg = 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fastExploit.'
+            msg = 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fast_exploit.'
             om.out.console( msg )
             return False
 
@@ -347,19 +347,19 @@ class sql_webshell(AttackPlugin):
         '''
         ol = OptionList()
         
-        d = 'URL to exploit with fastExploit()'
+        d = 'URL to exploit with fast_exploit()'
         o = opt_factory('url', self._url, d, 'url')
         ol.add(o)        
         
-        d = 'Method to use with fastExploit()'
+        d = 'Method to use with fast_exploit()'
         o = opt_factory('method', self._method, d, 'string')
         ol.add(o)
         
-        d = 'Data to send with fastExploit()'
+        d = 'Data to send with fast_exploit()'
         o = opt_factory('data', self._data, d, 'string')
         ol.add(o)
         
-        d = 'Variable where to inject with fastExploit()'
+        d = 'Variable where to inject with fast_exploit()'
         o = opt_factory('injvar', self._injvar, d, 'string')
         ol.add(o)
         
@@ -407,7 +407,7 @@ class sql_webshell(AttackPlugin):
         self._goodSamaritan = options_list['goodSamaritan'].get_value()
         self._generate_only_one = options_list['generateOnlyOne'].get_value()
     
-    def getRootProbability( self ):
+    def get_root_probability( self ):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
