@@ -78,7 +78,7 @@ class http_in_body (GrepPlugin):
 
                 if reqres == 'REQUEST':            
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Request in HTTP body')
                     i.setURI(uri)
                     i.set_id(response.id)
@@ -88,7 +88,7 @@ class http_in_body (GrepPlugin):
 
                 if reqres == 'RESPONSE':                    
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Response in HTTP body')
                     i.setURI(uri)
                     i.set_id(response.id)
@@ -116,7 +116,7 @@ class http_in_body (GrepPlugin):
                 msg = 'The following URLs have an HTTP '+ info_type +' in the HTTP response body:'
                 om.out.information(msg)
                 for i in kb.kb.get('http_in_body', info_type):
-                    om.out.information('- ' + i.getURI() + '  (id:' + str(i.getId()) + ')' )
+                    om.out.information('- ' + i.getURI() + '  (id:' + str(i.get_id()) + ')' )
         
     def get_plugin_deps( self ):
         '''

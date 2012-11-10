@@ -131,10 +131,10 @@ class allowed_methods(InfrastructurePlugin):
             if non_exist_response.getCode() not in self.BAD_CODES\
             and get_response.getBody() == non_exist_response.getBody():
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name( 'Non existent methods default to GET' )
                 i.setURL( url )
-                i.set_id( [non_exist_response.getId(), get_response.getId()] )
+                i.set_id( [non_exist_response.get_id(), get_response.get_id()] )
                 msg = 'The remote Web server has a custom configuration, in'\
                       ' which any not implemented methods that are invoked are'\
                       ' defaulted to GET instead of returning a "Not Implemented"'\
@@ -175,7 +175,7 @@ class allowed_methods(InfrastructurePlugin):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url )
             i.setURL( url )
             i.set_id( id_list )
@@ -188,7 +188,7 @@ class allowed_methods(InfrastructurePlugin):
             # Save the results in the KB so that other plugins can use this information
             # Do not remove these information, other plugins REALLY use it !
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url )
             i.setURL( url )
             i.set_id( id_list )

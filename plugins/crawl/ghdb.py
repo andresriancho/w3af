@@ -101,9 +101,9 @@ class ghdb(CrawlPlugin):
             response = self._uri_opener.GET(result.URL, cache=True )
             if not is_404( response ):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL( response.getURL() )
-                v.setMethod( 'GET' )
+                v.set_method( 'GET' )
                 v.set_name( 'Google hack database vulnerability' )
                 v.set_severity(severity.MEDIUM)
                 msg = 'ghdb plugin found a vulnerability at URL: "%s".' \

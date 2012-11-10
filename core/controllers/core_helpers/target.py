@@ -24,7 +24,7 @@ import urllib2
 
 import core.data.kb.config as cf
 
-from core.controllers.configurable import configurable
+from core.controllers.configurable import Configurable
 from core.controllers.exceptions import w3afException
 
 from core.data.parsers.url import URL
@@ -36,7 +36,7 @@ cf.cf.save('targetDomains', set() )
 cf.cf.save('baseURLs', [] )
 
 
-class w3af_core_target(configurable):
+class w3af_core_target(Configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can 
     configure the target settings using get_options and SetOptions.

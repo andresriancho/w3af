@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.kb.config as cf
 
-from core.controllers.configurable import configurable
+from core.controllers.configurable import Configurable
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.controllers.misc.get_net_iface import get_net_iface
 from core.data.options.opt_factory import opt_factory
@@ -29,7 +29,7 @@ from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 
 
-class MiscSettings(configurable):
+class MiscSettings(Configurable):
     '''
     A class that acts as an interface for the user interfaces, so they can
     configure w3af settings using get_options and SetOptions.

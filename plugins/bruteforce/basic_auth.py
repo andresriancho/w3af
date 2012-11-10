@@ -104,7 +104,7 @@ class basic_auth(BruteforcePlugin):
                     self._found = True
                     v = vuln.vuln()
                     v.set_id(response.id)
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.setURL( url )
                     v.set_desc( 'Found authentication credentials to: "'+ url +
                     '". A correct user and password combination is: ' + user + '/' + passwd)

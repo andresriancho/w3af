@@ -270,19 +270,19 @@ class xml_file(OutputPlugin):
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("var", str(i.get_var()))
             messageNode.setAttribute("name", str(i.get_name()))
-            messageNode.setAttribute("plugin", str(i.getPluginName()))
+            messageNode.setAttribute("plugin", str(i.get_plugin_name()))
             # Wrap description in a <description> element and put it above the
             # request/response elements
             descriptionNode = self._xmldoc.createElement('description')
             description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
             messageNode.appendChild(descriptionNode)
-            if i.getId():
-                messageNode.setAttribute("id", str(i.getId()))
+            if i.get_id():
+                messageNode.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
                 transaction_set = self._xmldoc.createElement('http-transactions')
                 messageNode.appendChild(transaction_set)
-                for requestid in i.getId():
+                for requestid in i.get_id():
                     details = self._history.read(requestid)
                     # Wrap the entire http transaction in a single block
                     actionset = self._xmldoc.createElement("http-transaction")
@@ -306,19 +306,19 @@ class xml_file(OutputPlugin):
             messageNode = self._xmldoc.createElement("information")
             messageNode.setAttribute("url", str(i.getURL()))
             messageNode.setAttribute("name", str(i.get_name()))
-            messageNode.setAttribute("plugin", str(i.getPluginName()))
+            messageNode.setAttribute("plugin", str(i.get_plugin_name()))
             # Wrap the description in a description element and put it above
             # the request/response details
             descriptionNode = self._xmldoc.createElement('description')
             description = self._xmldoc.createTextNode(i.get_desc())
             descriptionNode.appendChild(description)
             messageNode.appendChild(descriptionNode)
-            if i.getId():
-                messageNode.setAttribute("id", str(i.getId()))
+            if i.get_id():
+                messageNode.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
                 transaction_set = self._xmldoc.createElement('http-transactions')
                 messageNode.appendChild(transaction_set)
-                for requestid in i.getId():
+                for requestid in i.get_id():
                     details = self._history.read(requestid)
                     # Wrap the entire http transaction in a single block
                     actionset = self._xmldoc.createElement("http-transaction")

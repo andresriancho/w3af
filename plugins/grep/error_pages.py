@@ -155,7 +155,7 @@ class error_pages(GrepPlugin):
             
             for msg in self._multi_in.query( response.body ):
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 
                 # Set a nicer name for the vulnerability
                 name = 'Descriptive error page - "'
@@ -185,7 +185,7 @@ class error_pages(GrepPlugin):
                     if match_string not in self._already_reported_versions:
                         # Save the info obj
                         i = info.info()
-                        i.setPluginName(self.get_name())
+                        i.set_plugin_name(self.get_name())
                         i.set_name('Error page with information disclosure')
                         i.setURL( response.getURL() )
                         i.set_id( response.id )

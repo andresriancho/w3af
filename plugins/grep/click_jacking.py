@@ -66,7 +66,7 @@ class click_jacking(GrepPlugin):
             return
         
         v = vuln.vuln()
-        v.setPluginName(self.get_name())
+        v.set_plugin_name(self.get_name())
         v.set_name('Potential Click-Jacking vulnerability' )
         v.set_severity(severity.MEDIUM)
         v.set_id([_id for _id in self._ids])

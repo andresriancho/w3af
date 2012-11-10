@@ -49,7 +49,7 @@ class TestDAVShell(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Insecure DAV configuration', vuln.get_name())
 
-        vuln_to_exploit_id = vuln.getId()
+        vuln_to_exploit_id = vuln.get_id()
         
         plugin = self.w3afcore.plugins.get_plugin_inst('attack','dav' )
         

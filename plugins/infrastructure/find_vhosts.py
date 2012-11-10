@@ -86,9 +86,9 @@ class find_vhosts(InfrastructurePlugin):
             if vhost not in reported:
                 reported.add(vhost)
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL( fuzzable_request.getURL() )
-                v.setMethod( 'GET' )
+                v.set_method( 'GET' )
                 v.set_name( 'Shared hosting' )
                 v.set_severity(severity.LOW)
                 
@@ -153,10 +153,10 @@ class find_vhosts(InfrastructurePlugin):
                 res.append( (domain, vhost_response.id) )
             else:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Internal hostname in HTML link')
                 i.setURL( fuzzable_request.getURL() )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 i.set_id( original_response.id )
                 msg = 'The content of "'+ fuzzable_request.getURL() +'" references a non '
                 msg += 'existant domain: "' + domain + '". This may be a broken link, or an'

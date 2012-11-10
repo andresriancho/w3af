@@ -244,7 +244,7 @@ class rfi(AuditPlugin):
         '''
         if rfi_data.rfi_result in response:
             v = vuln.vuln(mutant)
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id(response.id)
             v.set_severity(severity.HIGH)
             v.set_name('Remote code execution')
@@ -259,7 +259,7 @@ class rfi(AuditPlugin):
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
             v = vuln.vuln(mutant)
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id(response.id)
             v.set_severity(severity.MEDIUM)
             v.set_name('Remote file inclusion')
@@ -276,7 +276,7 @@ class rfi(AuditPlugin):
             for error in self.RFI_ERRORS:
                 if error in response and not error in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_severity(severity.LOW)
                     v.addToHighlight(error)

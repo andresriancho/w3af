@@ -49,7 +49,7 @@ class TestRFI(PluginTest):
         self.assertEquals( vuln.get_name(), 'Remote code execution')
         self.assertEquals( vuln.getURL().url_string, self.target_url)
 
-        vuln_to_exploit_id = vuln.getId()
+        vuln_to_exploit_id = vuln.get_id()
         
         plugin = self.w3afcore.plugins.get_plugin_inst('attack','rfi' )
         

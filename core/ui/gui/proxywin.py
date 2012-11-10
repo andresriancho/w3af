@@ -204,7 +204,7 @@ class ProxiedRequests(entries.RememberingWindow):
         try:
             self.proxy.setWhatToTrap(self.pref.get_value('proxy', 'trap'))
             self.proxy.setWhatNotToTrap(self.pref.get_value('proxy', 'notrap'))
-            self.proxy.setMethodsToTrap(self.pref.get_value('proxy', 'methodtrap'))
+            self.proxy.set_methodsToTrap(self.pref.get_value('proxy', 'methodtrap'))
             self.proxy.setFixContentLength(self.pref.get_value('proxy', 'fixlength'))
         except w3afException, w3:
             self.showAlert(_("Invalid configuration!\n" + str(w3)))

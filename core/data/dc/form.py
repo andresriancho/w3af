@@ -96,7 +96,7 @@ class Form(DataContainer):
         '''
         return self._method
     
-    def setMethod(self, method):
+    def set_method(self, method):
         self._method = method.upper()
     
     def get_file_vars( self ):

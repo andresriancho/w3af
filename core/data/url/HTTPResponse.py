@@ -155,7 +155,7 @@ class HTTPResponse(object):
     def set_id(self, id):
         self.id = id
     
-    def getId(self):
+    def get_id(self):
         return self.id
 
     def setCode(self, code):

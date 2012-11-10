@@ -46,7 +46,7 @@ class xss_protection_header(GrepPlugin):
         value = response.getLowerCaseHeaders().get('x-xss-protection', None)
         if value == '0':
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Insecure X-XSS-Protection header usage')
             i.setURL( response.getURL() )
             i.set_id( response.id )

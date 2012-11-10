@@ -101,7 +101,7 @@ class ssi(AuditPlugin):
             e_res = self._extract_result_from_payload(mutant.get_mod_value())
             if e_res in response and not e_res in mutant.get_original_response_body():
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_name( 'Server side include vulnerability' )
                 v.set_severity(severity.HIGH)
                 v.set_desc( 'Server side include (SSI) was found at: ' + mutant.found_at() )
@@ -148,7 +148,7 @@ class ssi(AuditPlugin):
                 # and create the vulnerability
                 mutant = self._expected_res_mutant[matched_expected_result]
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_name( 'Persistent server side include vulnerability' )
                 v.set_severity(severity.HIGH)
                 msg = 'Server side include (SSI) was found at: ' + mutant.found_at()

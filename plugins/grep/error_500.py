@@ -90,7 +90,7 @@ class error_500(GrepPlugin):
             if ( request.getURI() , request.get_dc() ) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURI( request.getURI() )
                 v.set_id( error_500_response_id )
                 v.set_severity(severity.MEDIUM)

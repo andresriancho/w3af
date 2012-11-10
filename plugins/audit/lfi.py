@@ -168,7 +168,7 @@ class lfi(AuditPlugin):
         for file_pattern_match in file_content_list:
             if file_pattern_match not in mutant.get_original_response_body():
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id(response.id)
                 v.set_name('Local file inclusion vulnerability')
                 v.set_severity(severity.MEDIUM)
@@ -191,7 +191,7 @@ class lfi(AuditPlugin):
                 #   We were able to read the source code of the file that is vulnerable to
                 #   local file read
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'Local file read vulnerability' )
                 v.set_severity(severity.MEDIUM)
@@ -217,7 +217,7 @@ class lfi(AuditPlugin):
             
             if match and not regex.search( mutant.get_original_response_body() ):
                 i = info.info( mutant )
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_id( response.id )
                 i.set_name( 'File read error' )
                 i.set_desc( 'A file read error was found at: ' + mutant.found_at() )

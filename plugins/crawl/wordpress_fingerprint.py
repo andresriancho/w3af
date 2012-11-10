@@ -137,7 +137,7 @@ class wordpress_fingerprint(CrawlPlugin):
     
                     # Save it to the kb!
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('WordPress version')
                     i.setURL( install_url )
                     i.set_id( response.id )
@@ -167,7 +167,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
             i.setURL( wp_readme_url )
             i.set_id( response.id )
@@ -195,7 +195,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
             i.setURL( wp_index_url )
             i.set_id( response.id )
@@ -223,7 +223,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
         # Save it to the kb!
         i = info.info()
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.set_name('WordPress version')
         i.setURL( test_url )
         i.set_id( response.id )

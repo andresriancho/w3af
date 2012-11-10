@@ -103,7 +103,7 @@ class meta_tags(GrepPlugin):
                             if where is not None:
                                 # The atribute is interesting!
                                 i = info.info()
-                                i.setPluginName(self.get_name())
+                                i.set_plugin_name(self.get_name())
                                 i.set_name('Interesting META tag')
                                 i.setURI( response.getURI() )
                                 i.set_id( response.id )

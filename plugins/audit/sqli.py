@@ -157,7 +157,7 @@ class sqli(AuditPlugin):
                 if self._has_no_bug(mutant):
                     # Create the vuln,
                     v = vuln.vuln(mutant)
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id(response.id)
                     v.set_name('SQL injection')
                     v.set_severity(severity.HIGH)

@@ -79,7 +79,7 @@ class FuzzableRequest(disk_item):
                                  headers=Headers([('Host','www.w3af.com'),]))
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
-        >>> fr.setMethod('POST')
+        >>> fr.set_method('POST')
         >>> fr.setData('D474')
         >>> fr.dump()
         'POST http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\nD474'
@@ -231,7 +231,7 @@ class FuzzableRequest(disk_item):
         >>> repr( fr )
         '<fuzzable request | GET | http://www.w3af.com/>'
 
-        >>> fr.setMethod('TRACE')
+        >>> fr.set_method('TRACE')
         >>> str(fr)
         'http://www.w3af.com/ | Method: TRACE'
         
@@ -352,7 +352,7 @@ class FuzzableRequest(disk_item):
         self._uri = uri
         self._url = uri.uri2url()
         
-    def setMethod(self, method):
+    def set_method(self, method):
         self._method = method
         
     def set_dc(self, dataCont):

@@ -125,7 +125,7 @@ class os_commanding(AuditPlugin):
 
                     # Create the vuln obj
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_name( 'OS commanding vulnerability' )
                     v.set_severity(severity.HIGH)
                     v['os'] = sentOs
@@ -174,7 +174,7 @@ class os_commanding(AuditPlugin):
                 
                 if success:
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_name( 'OS commanding vulnerability' )
                     v.set_severity(severity.HIGH)
                     v['os'] = delay_obj.get_OS()

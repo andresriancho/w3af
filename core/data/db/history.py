@@ -284,7 +284,7 @@ class HistoryItem(object):
         '''Save object into DB.'''
         resp = self.response
         values = []
-        values.append(resp.getId())
+        values.append(resp.get_id())
         values.append(self.request.getURI().url_string)
         values.append(resp.getCode())
         values.append(self.tag)
@@ -308,7 +308,7 @@ class HistoryItem(object):
                     'charset, method, response_size, codef, alias, has_qs) '
             'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._DATA_TABLE)
             self._db.execute(sql, values)
-            self.id = self.response.getId()
+            self.id = self.response.get_id()
         else:
             values.append(self.id)
             sql = ('UPDATE %s' 

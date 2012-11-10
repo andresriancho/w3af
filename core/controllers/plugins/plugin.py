@@ -27,13 +27,13 @@ import core.controllers.output_manager as om
 import core.data.kb.vuln as vuln
 
 from core.data.options.option_list import OptionList
-from core.controllers.configurable import configurable
+from core.controllers.configurable import Configurable
 from core.controllers.threads.threadManager import thread_manager
 from core.controllers.threads.threadpool import return_args
 from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
 
 
-class Plugin(configurable):
+class Plugin(Configurable):
     '''
     This is the base class for ALL plugins, all plugins should inherit from it 
     and implement the following method :

@@ -140,7 +140,7 @@ class analyze_cookies(GrepPlugin):
                 break
         else:
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Cookie')
             i.setURL( response.getURL() )
             
@@ -186,7 +186,7 @@ class analyze_cookies(GrepPlugin):
         except Cookie.CookieError:
 
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Invalid cookie')
             i.setURL( response.getURL() )
             
@@ -236,9 +236,9 @@ class analyze_cookies(GrepPlugin):
         if not self.HTTPONLY_RE.search(cookie_header_value):
             
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( response.getURL() )
-            v.set_id( response.getId() )
+            v.set_id( response.get_id() )
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             
             httponly_severity = severity.MEDIUM if fingerprinted else severity.LOW
@@ -270,7 +270,7 @@ class analyze_cookies(GrepPlugin):
                         if len( cookie['cookie-object'][key] ) > 6 and \
                         cookie['cookie-object'][key] in request.dump():
                             v = vuln.vuln()
-                            v.setPluginName(self.get_name())
+                            v.set_plugin_name(self.get_name())
                             v.setURL( response.getURL() )
                             v.set_severity(severity.HIGH)
                             v.set_id( response.id )
@@ -295,7 +295,7 @@ class analyze_cookies(GrepPlugin):
             if cookie_str_db in cookie_obj_str:
                 if system_name not in self._already_reported_server:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_id( response.id )
                     i.set_name('Identified cookie')
                     i.setURL( response.getURL() )
@@ -344,9 +344,9 @@ class analyze_cookies(GrepPlugin):
         if self.SECURE_RE.search(cookie_header_value) and \
         response.getURL().getProtocol().lower() == 'http':
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( response.getURL() )
-            v.set_id( response.getId() )
+            v.set_id( response.get_id() )
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             v.set_severity(severity.HIGH)
             v.set_name( 'Secure cookie over HTTP' )
@@ -374,9 +374,9 @@ class analyze_cookies(GrepPlugin):
         if response.getURL().getProtocol().lower() == 'https' and \
         not self.SECURE_RE.search(cookie_header_value):
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( response.getURL() )
-            v.set_id( response.getId() )
+            v.set_id( response.get_id() )
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             v.set_severity(severity.HIGH)
             v.set_name( 'Secure flag missing in HTTPS cookie' )

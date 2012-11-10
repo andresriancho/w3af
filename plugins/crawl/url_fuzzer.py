@@ -117,7 +117,7 @@ class url_fuzzer(CrawlPlugin):
             #
             if response.getURL() not in self._seen and response.getURL().getFileName():
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Potentially interesting file')
                 i.setURL(response.getURL())
                 i.set_id(response.id)

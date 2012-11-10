@@ -72,7 +72,7 @@ class csv_file(OutputPlugin):
                        data.getURI() ,
                        data.get_var() ,
                        data.get_dc() ,
-                       data.getId() ,
+                       data.get_id() ,
                        data.get_desc()
                       ]
                 csv_writer.writerow( row )

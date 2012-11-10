@@ -95,7 +95,7 @@ class frontpage_version(InfrastructurePlugin):
             self._exec = False
 
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name( 'FrontPage Configuration Information' )
             i.setURL( response.getURL() )
@@ -122,7 +122,7 @@ class frontpage_version(InfrastructurePlugin):
             # This is strange... we found a _vti_inf file, but there is no frontpage
             # information in it... IPS? WAF? honeypot?                            
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name( 'Fake FrontPage Configuration Information' )
             i.setURL( response.getURL() )
@@ -144,7 +144,7 @@ class frontpage_version(InfrastructurePlugin):
         admin_location = response.getURL().getDomainPath().urlJoin(
                                            frontpage_admin.group(1) )
         i = info.info()
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.set_id( response.id )
         i.setURL( admin_location )
         
@@ -181,7 +181,7 @@ class frontpage_version(InfrastructurePlugin):
                                             frontpage_author.group(1) )
         
         i = info.info()
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.set_id( response.id )
         i.setURL( author_location )
         # Check for anomalies in the location of author.exe

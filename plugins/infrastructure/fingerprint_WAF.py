@@ -289,7 +289,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         @param protected_by: A more detailed description/version of the WAF
         '''
         i = info.info()
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.setURL( response.getURL() )
         i.set_id( response.id )
         msg = 'The remote network seems to have a "'+name+'" WAF deployed to' \

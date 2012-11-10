@@ -91,9 +91,9 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @param response: The response that triggered the detection
         '''
         i = info.info()
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.set_name('Reverse proxy')
-        i.set_id( response.getId() )
+        i.set_id( response.get_id() )
         i.setURL( response.getURL() )
         i.set_desc( 'The remote web server seems to have a reverse proxy installed.' )
         i.set_name('Found reverse proxy')

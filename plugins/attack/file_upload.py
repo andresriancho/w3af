@@ -70,9 +70,9 @@ class file_upload(AttackPlugin):
             om.out.error('You have to configure the plugin parameters.')
         else:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( self._url )
-            v.setMethod( self._method )
+            v.set_method( self._method )
             v.set_dc( self._data )
             v['fileVars'] = self._fileVars
             v['fileDest'] = self._fileDest
@@ -237,8 +237,9 @@ class file_upload(AttackPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits insecure file uploads and returns a shell. It's rather simple, using a form
-        the plugin uploads the corresponding webshell ( php, asp, etc. ) verifies that the shell is working, and if
+        This plugin exploits insecure file uploads and returns a shell. It's
+        rather simple, using a form the plugin uploads the corresponding 
+        webshell ( php, asp, etc. ) verifies that the shell is working, and if
         everything is working as expected the user can start typing commands.
         
         No configurable parameters exist.

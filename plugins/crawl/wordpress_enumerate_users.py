@@ -142,7 +142,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         @return: None, everything is saved in kb
         '''
         i = info.info()
-        i.setPluginName(p_name)
+        i.set_plugin_name(p_name)
         i.set_name('WordPress user "%s" found' % username)
         i.setURL( url )
         i.set_id( response_id )

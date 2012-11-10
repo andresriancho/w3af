@@ -186,7 +186,7 @@ class file_upload(AuditPlugin):
             # be picked
             mutant.set_mod_value('<file_object>')
             v = vuln.vuln(mutant)
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id([http_response.id, get_response.id])
             v.set_severity(severity.HIGH)
             v.set_name('Insecure file upload')

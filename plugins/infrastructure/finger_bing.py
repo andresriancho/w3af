@@ -104,7 +104,7 @@ class finger_bing(InfrastructurePlugin):
                         self._accounts.append( mail )
 
                         i = info.info()
-                        i.setPluginName(self.get_name())
+                        i.set_plugin_name(self.get_name())
                         i.setURL(page.URL)
                         i.set_name(mail)
                         msg = 'The mail account: "'+ mail + '" was found in: "' + page.URL + '"'

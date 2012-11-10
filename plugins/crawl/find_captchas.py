@@ -82,10 +82,10 @@ class find_captchas(CrawlPlugin):
                     self._captchas_found.add( img_src.uri2url() )
                     
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Captcha image detected')
                     i.setURI( img_src )
-                    i.setMethod( 'GET' )
+                    i.set_method( 'GET' )
                     i.set_desc( 'Found a CAPTCHA image at: "%s".' % img_src)
                     kb.kb.append( self, 'CAPTCHA', i )
                     om.out.information( i.get_desc() )

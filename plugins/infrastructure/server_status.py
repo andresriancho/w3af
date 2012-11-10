@@ -79,7 +79,7 @@ class server_status(InfrastructurePlugin):
                                   response.getBody()):
             # Save the results in the KB so the user can look at it
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.setURL( response.getURL() )
             i.set_id( response.id )
             i.set_name( 'Apache Server version' )
@@ -121,7 +121,7 @@ class server_status(InfrastructurePlugin):
         # Now that we are outsite the for loop, we can report the possible vulns
         if len( self._shared_hosting_hosts ):
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( fuzzable_request.getURL() )
             v.set_id( response.id )
             self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )

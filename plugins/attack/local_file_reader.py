@@ -65,9 +65,9 @@ class local_file_reader(AttackPlugin):
             om.out.error('You have to configure the "url" parameter.')
         else:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( self._url )
-            v.setMethod( self._method )
+            v.set_method( self._method )
             v.set_dc( self._data )
             v['file_pattern'] = self._file_pattern
             kb.kb.append( 'lfi', 'lfi', v )

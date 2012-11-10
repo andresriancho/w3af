@@ -370,7 +370,7 @@ class clusterGraphWidget(w3afDotWindow):
         dotcode = 'graph G {graph [ overlap="scale" ]\n'
         # Write the URLs
         for response in response_list:
-            dotcode += str(response.getId()) + ' [URL="'+ str(response.getId()) +'"];\n'
+            dotcode += str(response.get_id()) + ' [URL="'+ str(response.get_id()) +'"];\n'
         
         # Calculate the distances
         dist_dict = {}
@@ -383,7 +383,7 @@ class clusterGraphWidget(w3afDotWindow):
         # Write the links between them
         for r1, r2 in dist_dict:
             distance = dist_dict[(r1, r2)]
-            dotcode += str(r1.getId()) + ' -- ' + str(r2.getId()) + ' [len='+str(distance)+', style=invis];\n'
+            dotcode += str(r1.get_id()) + ' -- ' + str(r2.get_id()) + ' [len='+str(distance)+', style=invis];\n'
         
         dotcode += '}'
         

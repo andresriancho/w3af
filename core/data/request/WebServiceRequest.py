@@ -102,7 +102,7 @@ class WebServiceRequest(HTTPPostDataRequest):
     def get_methodName(self):
         return self._name
     
-    def setMethodName(self , name):
+    def set_methodName(self , name):
         self._name = name
     
     def getParameters(self):

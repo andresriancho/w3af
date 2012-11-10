@@ -143,7 +143,7 @@ class CommonAttackMethods(object):
                 
         return True 
         
-    def _define_exact_cut( self, body, expected_result):
+    def _define_exact_cut(self, body, expected_result):
         '''
         Defines the section where the result of an attack will be.
         
@@ -154,7 +154,7 @@ class CommonAttackMethods(object):
         
         @return: True if the cut could be defined
         '''
-        if not body.count( expected_result ):
+        if not expected_result in body:
             # I won't be able to define the cut
             return False
         

@@ -61,7 +61,7 @@ class code_disclosure(GrepPlugin):
                 # Check also for 404
                 if not is_404( response ):
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
                     v.set_severity(severity.LOW)
@@ -75,7 +75,7 @@ class code_disclosure(GrepPlugin):
                 else:
                     self._first_404 = False
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.setURL( response.getURL() )
                     v.set_id( response.id )
                     v.set_severity(severity.LOW)

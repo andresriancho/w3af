@@ -54,7 +54,7 @@ class urllist_txt(CrawlPlugin):
             if self._is_urllist_txt(base_url, http_response.getBody() ):
                 # Save it to the kb!
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('urllist.txt file')
                 i.setURL( urllist_url )
                 i.set_id( http_response.id )

@@ -73,7 +73,7 @@ class xst(AuditPlugin):
             if re.search(regex, response.getBody()):
                 # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln( freq )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_severity(severity.LOW)
                 v.set_name( 'Cross site tracing vulnerability' )

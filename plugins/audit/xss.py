@@ -346,7 +346,7 @@ class xss(AuditPlugin):
                 # Save it to the KB
                 if vulnerable:                
                     v = vuln.vuln(mutant)
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id(response.id)
                     v.set_name('Cross site scripting vulnerability')
                     v.set_severity(severity.MEDIUM)
@@ -418,10 +418,10 @@ class xss(AuditPlugin):
                     if mutant.get_mod_value() in response:
                         
                         v = vuln.vuln(mutant)
-                        v.setPluginName(self.get_name())
+                        v.set_plugin_name(self.get_name())
                         v.setURL(fuzzable_request.getURL())
                         v.set_dc(fuzzable_request.get_dc())
-                        v.setMethod(fuzzable_request.get_method())
+                        v.set_method(fuzzable_request.get_method())
                         
                         v['permanent'] = True
                         v['write_payload'] = mutant

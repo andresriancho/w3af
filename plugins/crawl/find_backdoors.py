@@ -156,7 +156,7 @@ class find_backdoors(CrawlPlugin):
         else:
             if self._is_possible_backdoor(response):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id(response.id)
                 v.set_name('Possible web backdoor')
                 v.set_severity(severity.HIGH)

@@ -86,7 +86,7 @@ class TestTextFile(PluginTest):
             if mo:
                 v = vuln.vuln()
                 v.setURL( URL(mo.group(1)) )
-                v.setMethod( mo.group(2) )
+                v.set_method( mo.group(2) )
                 file_vulns.append(v)
         
         return file_vulns

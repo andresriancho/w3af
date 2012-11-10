@@ -72,7 +72,7 @@ class csrf(AuditPlugin):
         
         # Ok, we have found vulnerable to CSRF attack request
         v = vuln.vuln(freq)
-        v.setPluginName(self.get_name())
+        v.set_plugin_name(self.get_name())
         v.set_id(orig_response.id)
         v.set_name('CSRF vulnerability')
         v.set_severity(severity.HIGH)

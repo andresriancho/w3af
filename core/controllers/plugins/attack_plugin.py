@@ -75,7 +75,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         '''
         vulns = self.getExploitableVulns()
         if vulnToExploit is not None:
-            vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
+            vulns = [ v for v in vulns if v.get_id() == vulnToExploit ]
             if vulns:
                 return True
             else:
@@ -160,7 +160,7 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         for vuln in self.getExploitableVulns():
             
             if vulnToExploit is not None:
-                if vulnToExploit != vuln.getId():
+                if vulnToExploit != vuln.get_id():
                     continue
                 
             #
@@ -168,12 +168,12 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             #                
             if not isinstance( vuln.getURL(), URL):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an URL.'
-                om.out.debug( msg % (self.get_name(), vuln.getId()) )
+                om.out.debug( msg % (self.get_name(), vuln.get_id()) )
                 continue
 
             if not isinstance( vuln.get_method(), basestring):
                 msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an HTTP method.'
-                om.out.debug( msg % (self.get_name(), vuln.getId()) )
+                om.out.debug( msg % (self.get_name(), vuln.get_id()) )
                 continue
                     
             # Try to get a shell using a vuln

@@ -93,7 +93,7 @@ class dot_listing(CrawlPlugin):
                 
                 if parsed_url_set:
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_name( '.listing file found' )
                     v.set_severity(severity.LOW)
@@ -109,7 +109,7 @@ class dot_listing(CrawlPlugin):
                 
                 if real_users or real_groups:
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_name( 'Operating system username and group leak' )
                     v.set_severity(severity.LOW)

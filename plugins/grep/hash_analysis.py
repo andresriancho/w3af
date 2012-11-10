@@ -71,7 +71,7 @@ class hash_analysis(GrepPlugin):
                         if self._has_hash_distribution( possible_hash ):
                             if (possible_hash, response.getURL()) not in self._already_reported:
                                 i = info.info()
-                                i.setPluginName(self.get_name())
+                                i.set_plugin_name(self.get_name())
                                 i.set_name( hash_type + 'hash in HTML content')
                                 i.setURL( response.getURL() )
                                 i.addToHighlight(possible_hash)

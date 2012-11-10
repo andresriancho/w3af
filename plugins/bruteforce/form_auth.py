@@ -292,7 +292,7 @@ class form_auth(BruteforcePlugin):
                         self._found.add(freq_url)
                         v = vuln.vuln()
                         v.set_id(resp.id)
-                        v.setPluginName(self.get_name())
+                        v.set_plugin_name(self.get_name())
                         v.setURL(freq.getURL())
                         if user_field is not None:
                             msg = ('Found authentication credentials to: '

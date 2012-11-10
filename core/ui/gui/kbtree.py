@@ -332,7 +332,7 @@ class KBTree(gtk.TreeView):
         #    # get instance
         #    vuln = self.getInstance(path)
         #    if isinstance(vuln, core.data.kb.vuln.vuln):
-        #        vulnid = vuln.getId()
+        #        vulnid = vuln.get_id()
         #    
         #        def goLog(w):
         #            self.w3af.mainwin.httplog.showReqResById(vulnid)
@@ -413,7 +413,7 @@ class KBTree(gtk.TreeView):
         if _type != 'vuln':
             return
         
-        vuln_id = str(vuln.getId())
+        vuln_id = str(vuln.get_id())
         if self.exploit_vulns.get(vuln_id):
             return True
         else:
@@ -433,7 +433,7 @@ class KBTree(gtk.TreeView):
         exploits = self._getExploits(vuln) or []
         # Ensure the each vuln is processed only once.
         if not exploits:
-            vuln_id = vuln.getId()
+            vuln_id = vuln.get_id()
             for exploit_name in self.w3af.plugins.get_plugin_list("attack"):
                 exploit = self.w3af.plugins.get_plugin_inst("attack", exploit_name)
                 if exploit.canExploit(vuln_id):
@@ -443,4 +443,4 @@ class KBTree(gtk.TreeView):
                 self.exploit_vulns[str(vuln_id)] = exploits
     
     def _getExploits(self, vuln):
-        return self.exploit_vulns.get(str(vuln.getId()))
+        return self.exploit_vulns.get(str(vuln.get_id()))

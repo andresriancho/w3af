@@ -67,7 +67,7 @@ class ssn(GrepPlugin):
             found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURI( uri )
                 v.set_id( response.id )
                 v.set_severity(severity.LOW)

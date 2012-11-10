@@ -96,10 +96,10 @@ class dns_wildcard(InfrastructurePlugin):
             if relative_distance_lt(modified_response.getBody(), 
                                     original_response.getBody(), 0.35):
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Default domain')
                 i.setURL( modified_response.getURL() )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 msg = 'The contents of ' + modified_response.getURI()
                 msg += ' differ from the contents of ' + original_response.getURI() 
                 i.set_desc( msg )
@@ -122,10 +122,10 @@ class dns_wildcard(InfrastructurePlugin):
             if relative_distance_lt(modified_response.getBody(), 
                                     original_response.getBody(), 0.35):
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('No DNS wildcard')
                 i.setURL( dns_wildcard_url )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 msg = 'The target site has NO DNS wildcard, and the contents of ' \
                       '"%s" differ from the contents of "%s".' 
                 i.set_desc( msg % (dns_wildcard_url, original_response.getURL()) )
@@ -134,10 +134,10 @@ class dns_wildcard(InfrastructurePlugin):
                 om.out.information( i.get_desc() )
             else:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('DNS wildcard')
                 i.setURL( original_response.getURL() )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 msg = 'The target site has a DNS wildcard configuration, the' \
                       ' contents of "%s" are equal to the ones of "%s".'
                 i.set_desc( msg % (dns_wildcard_url, original_response.getURL()) )

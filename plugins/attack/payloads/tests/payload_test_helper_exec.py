@@ -49,7 +49,7 @@ class PayloadTestHelperExec(PluginTest):
         self.assertEquals(1, len(vulns))
         
         vuln = vulns[0]
-        vuln_to_exploit_id = vuln.getId()
+        vuln_to_exploit_id = vuln.get_id()
         
         return vuln, vuln_to_exploit_id
     

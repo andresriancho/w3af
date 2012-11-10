@@ -144,9 +144,6 @@ class dav(AttackPlugin):
         corresponding webshell ( php, asp, etc. ) verifies that the shell is
         working, and if everything is working as expected the user can start 
         typing commands.
-        
-        One configurable parameter exists:
-            - URL (only used in fast_exploit)
         '''
         
 class DAVShell(exec_shell):

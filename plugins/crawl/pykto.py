@@ -453,9 +453,9 @@ class pykto(CrawlPlugin):
             kb.kb.append( self, 'url', response.getURL() )
             
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURI( response.getURI() )
-            v.setMethod( method )
+            v.set_method( method )
             vuln_desc = 'pykto plugin found a vulnerability at URL: "' + v.getURL() + '". '
             vuln_desc += 'Vulnerability description: "' + desc.strip() + '"'
             if not vuln_desc.endswith('.'):

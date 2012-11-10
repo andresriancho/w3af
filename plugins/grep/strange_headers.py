@@ -95,14 +95,14 @@ class strange_headers(GrepPlugin):
                 for info_obj in strange_header_infos:
                     if info_obj['header_name'] == header_name:
                         # Work with the "old" info object:
-                        id_list = info_obj.getId()
+                        id_list = info_obj.get_id()
                         id_list.append( response.id )
                         info_obj.set_id( id_list )
                         break
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Strange header')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )
@@ -129,7 +129,7 @@ class strange_headers(GrepPlugin):
         if 'content-location' in response.getLowerCaseHeaders() \
         and response.getCode() not in xrange(300,310):
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Content-Location HTTP header anomaly')
             i.setURL( response.getURL() )
             i.set_id( response.id )

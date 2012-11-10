@@ -71,7 +71,7 @@ class php_sca(base_payload):
                 #     $_GET == GET
                 #     $_POST == POST
                 #     $_REQUEST == GET
-                v.setMethod('GET')
+                v.set_method('GET')
                 
                 # TODO: Extract all the other variables that are
                 # present in the PHP file using the SCA

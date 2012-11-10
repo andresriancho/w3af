@@ -69,7 +69,7 @@ class dom_xss(GrepPlugin):
 
         for vuln_code in self._smart_grep(response):
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.addToHighlight(vuln_code)
             v.setURL(response.getURL())
             v.set_id(response.id)

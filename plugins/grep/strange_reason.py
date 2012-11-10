@@ -111,14 +111,14 @@ class strange_reason(GrepPlugin):
                 
                 if corresponding_info:
                     # Work with the "old" info object:
-                    id_list = corresponding_info.getId()
+                    id_list = corresponding_info.get_id()
                     id_list.append( response.id )
                     corresponding_info.set_id( id_list )
                     
                 else:
                     # Create a new info object from scratch and save it to the kb:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Strange HTTP Reason message - ' + str(response.getMsg()))
                     i.setURL( response.getURL() )
                     i.set_id( response.id )

@@ -48,9 +48,9 @@ class info(dict):
         if isinstance( data_obj, info ):
             self.setURI( data_obj.getURI() )
             self.set_desc( data_obj.get_desc() )
-            self.setMethod( data_obj.get_method() )
+            self.set_method( data_obj.get_method() )
             self.set_var( data_obj.get_var() )
-            self.set_id( data_obj.getId() )
+            self.set_id( data_obj.get_id() )
             self.set_name( data_obj.get_name() )
             self.set_dc( data_obj.get_dc() )
             for k in data_obj.keys():
@@ -112,7 +112,7 @@ class info(dict):
     def getURI( self ):
         return self._uri
     
-    def setMethod( self, method ):
+    def set_method( self, method ):
         self._method = method.upper()
     
     def get_method( self ):
@@ -145,10 +145,10 @@ class info(dict):
         else:
             return self._desc
     
-    def setPluginName(self, plugin_name):
+    def set_plugin_name(self, plugin_name):
         self._plugin_name = plugin_name
     
-    def getPluginName(self):
+    def get_plugin_name(self):
         return self._plugin_name
     
     def _convert_to_range_wrapper(self, list_of_integers):
@@ -244,7 +244,7 @@ class info(dict):
         else:
             self._id = [ id, ]
     
-    def getId( self ):
+    def get_id( self ):
         '''
         @return: The list of ids related to this information object. Please read
                  the documentation of set_id().

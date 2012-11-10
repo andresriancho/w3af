@@ -139,7 +139,7 @@ class path_disclosure(GrepPlugin):
                             self._already_added.append( (realurl, match) )
                             
                             v = vuln.vuln()
-                            v.setPluginName( self.get_name() )
+                            v.set_plugin_name( self.get_name() )
                             v.setURL( realurl )
                             v.set_id( response.id )
                             msg = 'The URL: "' + v.getURL() + '" has a path disclosure '
@@ -260,9 +260,9 @@ class path_disclosure(GrepPlugin):
                 tmp[ v.getURL() ] = [ v['path'], ]
                                 
             if v['path'] in ids.keys():
-                ids[ v['path'] ].append( v.getId() )
+                ids[ v['path'] ].append( v.get_id() )
             else:
-                ids[ v['path'] ] = [ v.getId(), ]
+                ids[ v['path'] ] = [ v.get_id(), ]
         
         # Avoid duplicates
         for url in tmp.keys():

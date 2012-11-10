@@ -101,7 +101,7 @@ class html_comments(GrepPlugin):
         for word in self._multi_in.query( response.body ):                    
             if (word, response.getURL()) not in self._already_reported_interesting:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('HTML comment with "' + word + '" inside')
                 msg = 'A comment with the string "' + word + '" was found in: "'
                 msg += response.getURL() + '". This could be interesting.'
@@ -123,7 +123,7 @@ class html_comments(GrepPlugin):
         ( comment, response.getURL() ) not in self._already_reported_interesting:
             # There is HTML code in the comment.
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('HTML comment contains HTML code')
             comment = comment.replace('\n','')
             comment = comment.replace('\r','')

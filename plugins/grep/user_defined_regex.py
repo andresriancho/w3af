@@ -86,12 +86,12 @@ class user_defined_regex(GrepPlugin):
                     #which evaluates to false
                     #but an info object is not the same as None
                     if not info_inst is None:
-                        ids = info_inst.getId()
+                        ids = info_inst.get_id()
                         ids.append(response.id)
                         info_inst.set_id(ids)
                     else:
                         info_inst = info.info()
-                        info_inst.setPluginName(self.get_name())
+                        info_inst.set_plugin_name(self.get_name())
                         
                         msg = 'User defined regular expression "%s" matched a' \
                               ' response. Matched string is: "%s".' 

@@ -550,7 +550,7 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         if httpResp is not None:
-            self.responses.append((True, httpResp.getId()))
+            self.responses.append((True, httpResp.get_id()))
         else:
             self.responses.append((False, realreq, realbody, errorMsg))
 
@@ -572,7 +572,7 @@ class FuzzyRequests(entries.RememberingWindow):
         Change the page, and show the information that was stored in self.responses
             
         If OK, the responses are saved like this:
-            self.responses.append((True, httpResp.getId()))
+            self.responses.append((True, httpResp.get_id()))
         
         else:
             self.responses.append((False, realreq, realbody, errorMsg))        

@@ -103,7 +103,7 @@ class shared_hosting(InfrastructurePlugin):
             
             if is_vulnerable:
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL(fuzzable_request.getURL())
                 v.set_id(1)
                 

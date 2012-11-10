@@ -141,12 +141,12 @@ class frontpage(AuditPlugin):
             # The file we uploaded has the reversed filename as body 
             if res.getBody() == rand_file[::-1] and not is_404( res ):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL( target_url )
                 v.set_id( [upload_id, res.id] )
                 v.set_severity(severity.HIGH)
                 v.set_name( 'Insecure Frontpage extensions configuration' )
-                v.setMethod( 'POST' )
+                v.set_method( 'POST' )
                 msg = 'An insecure configuration in the frontpage extensions'
                 msg += ' allows unauthenticated users to upload files to the'
                 msg += ' remote web server.' 

@@ -76,7 +76,7 @@ class favicon_identification(InfrastructurePlugin):
                 if md5part == remote_fav_md5:
                     # Save it to the kb!
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Favicon identification')
                     i.setURL( favicon_url )
                     i.set_id( response.id )
@@ -91,7 +91,7 @@ class favicon_identification(InfrastructurePlugin):
                 #   and that the md5 should be sent to the developers.
                 #
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Favicon identification failed')
                 i.setURL( favicon_url )
                 i.set_id( response.id )

@@ -103,7 +103,7 @@ class HTMLParser(SGMLParser):
         
         # Create the form object and store everything for later use
         form_obj = form.Form(encoding=self._encoding)
-        form_obj.setMethod(method)
+        form_obj.set_method(method)
         form_obj.setAction(action)
         self._forms.append(form_obj)
 

@@ -121,7 +121,7 @@ class wsdlParser:
         res = []
         for methodName in self._proxy.methods.keys():
             remoteMethodObject = remoteMethod()
-            remoteMethodObject.setMethodName( str( methodName ) )
+            remoteMethodObject.set_methodName( str( methodName ) )
             remoteMethodObject.set_namespace( self.getNS( methodName ) )
             remoteMethodObject.setAction( self.getAction( methodName ) )
             remoteMethodObject.setLocation( self.getLocation( methodName ) )
@@ -191,7 +191,7 @@ class remoteMethod:
     def get_methodName( self ):
         return self._name
         
-    def setMethodName( self, name ):
+    def set_methodName( self, name ):
         self._name = name
     
     def getAction( self ):

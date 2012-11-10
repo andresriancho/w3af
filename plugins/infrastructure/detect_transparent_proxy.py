@@ -49,7 +49,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
         '''
         if self._is_proxyed_conn( fuzzable_request ):
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name( 'Transparent proxy detected' )
             i.setURL( fuzzable_request.getURL() )
             msg = 'Your ISP seems to have a transparent proxy installed, this can influence'

@@ -256,10 +256,10 @@ class content_negotiation(CrawlPlugin):
                 
                 # Save the result as an info in the KB, for the user to see it:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('HTTP Content Negotiation enabled')
                 i.setURL( response.getURL() )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 desc = 'HTTP Content negotiation is enabled in the remote web server. This'
                 desc += ' could be used to bruteforce file names and find new resources.'
                 i.set_desc( desc )

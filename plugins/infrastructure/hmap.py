@@ -88,7 +88,7 @@ class hmap(InfrastructurePlugin):
                 server = results[0]
             
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Webserver Fingerprint')
                 desc = 'The most accurate fingerprint for this HTTP server is: "'
                 desc += str(server) + '".'

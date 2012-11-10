@@ -81,7 +81,7 @@ class un_ssl(AuditPlugin):
                                                   secure_response.getBody(),
                                                   0.95 ):
                         v = vuln.vuln( freq )
-                        v.setPluginName(self.get_name())
+                        v.set_plugin_name(self.get_name())
                         v.setURL(insecure_response.getURL())
                         v.set_name( 'Secure content over insecure channel' )
                         v.set_severity(severity.MEDIUM)

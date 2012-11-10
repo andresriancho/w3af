@@ -91,7 +91,7 @@ class credit_cards(GrepPlugin):
             
             for card in found_cards:
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL( response.getURL() )
                 v.set_id( response.id )
                 v.set_severity(severity.LOW)

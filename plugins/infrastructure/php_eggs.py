@@ -306,7 +306,7 @@ class php_eggs(InfrastructurePlugin):
             #
             for response, egg_desc, egg_URL in GET_results:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('PHP Egg - ' + egg_desc)
                 i.setURL( egg_URL )
                 desc = 'The PHP framework running on the remote server has a "'
@@ -346,7 +346,7 @@ class php_eggs(InfrastructurePlugin):
             
             if matching_versions:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('PHP Egg')
                 msg = 'The PHP framework version running on the remote server was identified as:'
                 for m_ver in matching_versions:

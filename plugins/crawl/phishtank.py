@@ -78,7 +78,7 @@ class phishtank(CrawlPlugin):
         # Only create the vuln object once
         if phishtank_matches:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( ptm.url )
             v.set_id( response.id )
             v.set_name( 'Phishing scam' )

@@ -73,7 +73,7 @@ class feeds(GrepPlugin):
                 version = element.attrib.get('version', 'unknown')
                 
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name(feed_type +' feed')
                 i.setURI(uri)
                 fmt = 'The URL "%s" is a %s version %s feed.'

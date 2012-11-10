@@ -114,7 +114,7 @@ class buffer_overflow(AuditPlugin):
             response = self._uri_opener.send_mutant(mutant)
         except (w3afException,w3afMustStopException):
             i = info.info( mutant )
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name( 'Potential buffer overflow vulnerability' )
             msg = 'A potential (most probably a false positive than a bug) buffer-'
             msg += 'overflow was found when requesting: "%s", using HTTP method'
@@ -134,7 +134,7 @@ class buffer_overflow(AuditPlugin):
             if error_str not in mutant.get_original_response_body() and \
             self._has_no_bug(mutant):
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_severity(severity.MEDIUM)
                 v.set_name( 'Buffer overflow vulnerability' )

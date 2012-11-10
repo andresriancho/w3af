@@ -122,7 +122,7 @@ class phpinfo(CrawlPlugin):
 
                 if (php_version and sysinfo):
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_name( 'phpinfo() file found' )
                     v.set_severity(severity.MEDIUM)
@@ -159,7 +159,7 @@ class phpinfo(CrawlPlugin):
             rg = register_globals.group(1)            
             if(rg == 'On'):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'register_globals: On' )
                 v.set_severity(severity.MEDIUM)
@@ -180,7 +180,7 @@ class phpinfo(CrawlPlugin):
         allow_url_fopen = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if allow_url_fopen:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'allow_url_fopen: On' )
             v.set_severity(severity.MEDIUM)
@@ -196,7 +196,7 @@ class phpinfo(CrawlPlugin):
         allow_url_include = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if allow_url_include:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'allow_url_include: On' )
             v.set_severity(severity.MEDIUM)
@@ -212,7 +212,7 @@ class phpinfo(CrawlPlugin):
         display_errors = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if display_errors:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'display_errors: On' )
             v.set_severity(severity.MEDIUM)
@@ -228,7 +228,7 @@ class phpinfo(CrawlPlugin):
         expose_php = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if expose_php:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'expose_php: On' )
             v.set_severity(severity.MEDIUM)
@@ -250,7 +250,7 @@ class phpinfo(CrawlPlugin):
             lpt_gid = lowest_privilege_test.group(3) 
             if( lpt_uid < 99 or lpt_gid < 99 or re.match('root|apache|daemon|bin|operator|adm',lpt_uname,re.IGNORECASE)):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'lowest_privilege_test:fail' )
                 v.set_severity(severity.MEDIUM)
@@ -281,7 +281,7 @@ class phpinfo(CrawlPlugin):
             dfe = df.split(',')
             if(len(dfe) < secure_df):    
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'disable_functions:few' )
                 v.set_severity(severity.MEDIUM)
@@ -323,7 +323,7 @@ class phpinfo(CrawlPlugin):
             
             if(curl_vuln == 1):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'curl_file_support:not_fixed' )
                 v.set_severity(severity.MEDIUM)
@@ -343,7 +343,7 @@ class phpinfo(CrawlPlugin):
             utd = cgi_force_redirect.group(1) + ''
             if(utd != 'On'):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'cgi_force_redirect: Off' )
                 v.set_severity(severity.MEDIUM)
@@ -359,7 +359,7 @@ class phpinfo(CrawlPlugin):
         session_cookie_httponly = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_cookie_httponly:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'session.cookie_httponly: Off' )
             v.set_severity(severity.MEDIUM)
@@ -375,7 +375,7 @@ class phpinfo(CrawlPlugin):
         session_save_path = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_save_path:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'session_save_path:Everyone' )
             v.set_severity(severity.LOW)
@@ -391,7 +391,7 @@ class phpinfo(CrawlPlugin):
         session_use_trans = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_use_trans:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'session_use_trans: On' )
             v.set_severity(severity.MEDIUM)
@@ -407,7 +407,7 @@ class phpinfo(CrawlPlugin):
         default_charset = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if default_charset:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'default_charset: Off' )
             v.set_severity(severity.MEDIUM)
@@ -427,7 +427,7 @@ class phpinfo(CrawlPlugin):
             rg = enable_dl.group(1)
             if(rg == 'On'):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'enable_dl: On' )
                 v.set_severity(severity.MEDIUM)
@@ -451,7 +451,7 @@ class phpinfo(CrawlPlugin):
             ml = ml.replace('M','')
             if(ml > secure_ml):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'memory_limit:high' )
                 v.set_severity(severity.MEDIUM)
@@ -472,7 +472,7 @@ class phpinfo(CrawlPlugin):
             pms = int(pms)
             if(pms > secure_pms):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'post_max_size:high' )
                 v.set_severity(severity.LOW)
@@ -493,7 +493,7 @@ class phpinfo(CrawlPlugin):
             umf = int(umf)
             if(umf > secure_umf):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( response.id )
                 v.set_name( 'post_max_size:high' )
                 v.set_severity(severity.LOW)
@@ -509,7 +509,7 @@ class phpinfo(CrawlPlugin):
         upload_tmp_dir = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if upload_tmp_dir:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'upload_tmp_dir:Everyone' )
             v.set_severity(severity.LOW)
@@ -530,7 +530,7 @@ class phpinfo(CrawlPlugin):
         ### [privilege] ###
         if lpt_flag == 'info':
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name(lpt_name )            
             i.setURL( response.getURL() )                            
@@ -542,7 +542,7 @@ class phpinfo(CrawlPlugin):
         ### [register_globals]###
         if rg_flag=='info':
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name( rg_name )            
             i.setURL( response.getURL() )            
@@ -554,7 +554,7 @@ class phpinfo(CrawlPlugin):
         ### [enable_dl]###
         if ed_flag == 'info':
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name(ed_name )            
             i.setURL( response.getURL() )                            
@@ -568,7 +568,7 @@ class phpinfo(CrawlPlugin):
         file_uploads = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if file_uploads:
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.set_name( 'file_uploads: On' )            
             i.setURL( response.getURL() )
@@ -584,7 +584,7 @@ class phpinfo(CrawlPlugin):
         if magic_quotes_gpc:
             mqg = magic_quotes_gpc.group(1)
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.setURL( response.getURL() )
             if (mqg == 'On'):            
@@ -606,7 +606,7 @@ class phpinfo(CrawlPlugin):
         if open_basedir:
             obd = open_basedir.group(1)
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.setURL( response.getURL() )
             
@@ -629,7 +629,7 @@ class phpinfo(CrawlPlugin):
         session_hash_function = re.search(regex_str, response.getBody() , re.IGNORECASE)
         if session_hash_function:
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id( response.id )
             i.setURL( response.getURL() )
             if (session_hash_function.group(1) == 0 or session_hash_function.group(1) != 'no'):

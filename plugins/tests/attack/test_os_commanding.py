@@ -64,7 +64,7 @@ class TestOSCommandingShell(PluginTest):
                            set(found_vulns)
                           )
 
-        vuln_to_exploit_id = [v.getId() for v in vulns 
+        vuln_to_exploit_id = [v.get_id() for v in vulns 
                               if v.getURL().getFileName() == 'simple_osc.php'][0]
         
         plugin = self.w3afcore.plugins.get_plugin_inst('attack','os_commanding' )

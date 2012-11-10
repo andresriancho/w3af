@@ -111,7 +111,7 @@ class ria_enumerator(CrawlPlugin):
         if '"entries":' in response:
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Gears Manifest')
             i.setURL( url )
             i.set_id( response.id )
@@ -132,10 +132,10 @@ class ria_enumerator(CrawlPlugin):
             'cross-domain-policy' in response.getBody() or \
             'cross-domain-access' in response.getBody():
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Invalid ' + file_name)
                 i.setURL( response.getURL() )
-                i.setMethod( 'GET' )
+                i.set_method( 'GET' )
                 msg = 'The "' + file_name + '" file at: "' + response.getURL()
                 msg += '" is not a valid XML.'
                 i.set_desc( msg )
@@ -155,9 +155,9 @@ class ria_enumerator(CrawlPlugin):
 
                 if url == '*':
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.setURL( response.getURL() )
-                    v.setMethod( 'GET' )
+                    v.set_method( 'GET' )
                     v.set_name( 'Insecure "' + file_name + '" settings' )
                     v.set_severity(severity.LOW)
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
@@ -168,10 +168,10 @@ class ria_enumerator(CrawlPlugin):
                     om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
                 else:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Crossdomain allow ACL')
                     i.setURL( response.getURL() )
-                    i.setMethod( 'GET' )
+                    i.set_method( 'GET' )
                     msg = 'The "' + file_name + '" file at "' + response.getURL() + '" allows'
                     msg += ' flash/silverlight access from "' + url + '".'
                     i.set_desc( msg )

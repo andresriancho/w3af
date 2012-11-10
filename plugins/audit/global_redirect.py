@@ -69,7 +69,7 @@ class global_redirect(AuditPlugin):
         '''
         if self._find_redirect( response ):
             v = vuln.vuln( mutant )
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_name( 'Insecure redirection' )
             v.set_severity(severity.MEDIUM)

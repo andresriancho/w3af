@@ -114,7 +114,7 @@ class ldapi(AuditPlugin):
             for ldap_error_string in ldap_error_list:
                 if ldap_error_string not in mutant.get_original_response_body():
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_severity(severity.HIGH)
                     v.set_name( 'LDAP injection vulnerability' )

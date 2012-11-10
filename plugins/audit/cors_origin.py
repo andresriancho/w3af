@@ -133,7 +133,7 @@ class cors_origin(AuditPlugin):
                     
                     v = vuln.vuln()
                     v.setURL(analysis_response[0].getURL())
-                    v.set_id(analysis_response[0].getId())
+                    v.set_id(analysis_response[0].get_id())
                     v.set_severity(vuln_severity)
                     v.set_name('Multiple CORS misconfigurations')
                     
@@ -228,7 +228,7 @@ class cors_origin(AuditPlugin):
 
                 v = vuln.vuln()
                 v.setURL(forged_req.getURL())
-                v.set_id(response.getId())
+                v.set_id(response.get_id())
                 v.set_severity(severity.LOW)
                 v.set_name(name)
                 v.set_desc(msg)
@@ -253,7 +253,7 @@ class cors_origin(AuditPlugin):
         
             v = vuln.vuln()
             v.setURL(forged_req.getURL())
-            v.set_id(response.getId())
+            v.set_id(response.get_id())
             v.set_severity(severity.LOW)
             v.set_name('Access-Control-Allow-Origin set to "*"')
             
@@ -293,7 +293,7 @@ class cors_origin(AuditPlugin):
                 
                 v = vuln.vuln()
                 v.setURL(forged_req.getURL())
-                v.set_id(response.getId())
+                v.set_id(response.get_id())
                 
                 if allow_credentials:
                     sev = severity.HIGH
@@ -355,7 +355,7 @@ class cors_origin(AuditPlugin):
             
             v = vuln.vuln()
             v.setURL(forged_req.getURL())
-            v.set_id(response.getId())
+            v.set_id(response.get_id())
             v.set_severity(severity.INFORMATION)
             v.set_name('Incorrect withCredentials implementation')
             

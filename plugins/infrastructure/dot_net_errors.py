@@ -95,7 +95,7 @@ class dot_net_errors(InfrastructurePlugin):
         if viewable_remote_machine not in response.body\
         and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
             v = vuln.vuln( response )
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.set_id( response.id )
             v.set_severity(severity.LOW)
             v.set_name( 'Information disclosure via .NET errors' )

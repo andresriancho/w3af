@@ -72,8 +72,8 @@ class FullKBTree(kbtree.KBTree):
         self.kbbrowser.explanation.set_text(longdesc)
 
         success = False
-        if hasattr(instance, "getId" ):
-            if instance.getId() is not None:
+        if hasattr(instance, "get_id" ):
+            if instance.get_id() is not None:
                 #
                 # We have two different cases:
                 #
@@ -85,7 +85,7 @@ class FullKBTree(kbtree.KBTree):
                 #
                 # Work:
                 #
-                if len( instance.getId() ) == 1:
+                if len( instance.get_id() ) == 1:
                     # There is ONLY ONE id related to the object
                     # This is 1)
                     self.kbbrowser.pagesControl.deactivate()
@@ -95,12 +95,12 @@ class FullKBTree(kbtree.KBTree):
 
                     # This handles a special case, where the plugin writer made a mistake and
                     # failed to set an id to the info / vuln object:
-                    if instance.getId()[0] is None:
+                    if instance.get_id()[0] is None:
                         raise Exception('Exception - The id should not be None! "' + str(instance._desc) + '".')
                         success = False
                     else:
                         # ok, we don't have None in the id:
-                        historyItem = self._historyItem.read(instance.getId()[0])
+                        historyItem = self._historyItem.read(instance.get_id()[0])
                         if historyItem:
                             self.kbbrowser.rrV.request.showObject(historyItem.request)
                             self.kbbrowser.rrV.response.showObject(historyItem.response)
@@ -112,15 +112,15 @@ class FullKBTree(kbtree.KBTree):
                             
                             success = True
                         else:
-                            om.out.error(_('Failed to find request/response with id: ') + str(instance.getId()) + _(' in the database.') )
+                            om.out.error(_('Failed to find request/response with id: ') + str(instance.get_id()) + _(' in the database.') )
                 else:
                     # There are MORE THAN ONE ids related to the object
                     # This is 2)
                     self.kbbrowser.pagesControl.show()
                     self.kbbrowser.title0.show()
 
-                    self.kbbrowser.req_res_ids = instance.getId()
-                    self.kbbrowser.pagesControl.activate(len(instance.getId()))
+                    self.kbbrowser.req_res_ids = instance.get_id()
+                    self.kbbrowser.pagesControl.activate(len(instance.get_id()))
                     self.kbbrowser._pageChange(0)
                     success = True
 

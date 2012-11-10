@@ -143,7 +143,7 @@ class finger_google(InfrastructurePlugin):
                     self._accounts.append( mail )
                     
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name(mail)
                     i.setURL( response.getURI() )
                     msg = 'The mail account: "'+ mail + '" was found in: "'

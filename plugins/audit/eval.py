@@ -132,7 +132,7 @@ class eval(AuditPlugin):
 
             if success:
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( [r.id for r in responses] )
                 v.set_severity(severity.HIGH)
                 v.set_name('eval() input injection vulnerability')
@@ -149,7 +149,7 @@ class eval(AuditPlugin):
         for eval_error in eval_error_list:
             if not re.search(eval_error, mutant.get_original_response_body(), re.I):
                 v = vuln.vuln(mutant)
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id(response.id)
                 v.set_severity(severity.HIGH)
                 v.set_name('eval() input injection vulnerability')

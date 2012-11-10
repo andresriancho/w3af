@@ -81,7 +81,7 @@ class oracle_discovery(CrawlPlugin):
                 
                 if mo:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
                     i.setURL( response.getURL() )
                     desc = '"%s" version "%s" was detected at "%s".'

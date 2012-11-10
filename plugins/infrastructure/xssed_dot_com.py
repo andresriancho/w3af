@@ -115,7 +115,7 @@ class xssed_dot_com(InfrastructurePlugin):
                 matches = re.findall("URL:.+", xss_report_response.getBody())
                 
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_name('Possible XSS vulnerability')
                 v.setURL( mirror_url )
                 

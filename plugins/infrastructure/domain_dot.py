@@ -84,7 +84,7 @@ class domain_dot(InfrastructurePlugin):
         '''
         if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
             i = info.info(resp)
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_id([original_resp.id, resp.id])
             i.set_name('Responses differ')
             msg = '[Manual verification required] The response body for a ' \

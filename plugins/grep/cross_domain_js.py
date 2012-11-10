@@ -76,7 +76,7 @@ class cross_domain_js(GrepPlugin):
                     
                     if script_domain != response.getURL().getDomain():
                         i = info.info()
-                        i.setPluginName(self.get_name())
+                        i.set_plugin_name(self.get_name())
                         i.set_name('Cross-domain javascript source')
                         i.setURL(url)
                         i.set_id(response.id)

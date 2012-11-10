@@ -110,7 +110,7 @@ class user_dir(CrawlPlugin):
                 # Avoid duplicates
                 if user not in [ u['user'] for u in kb.kb.get( 'user_dir', 'users') ]:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('User directory: ' + response.getURL() )
                     i.set_id( response.id )
                     i.setURL( response.getURL() )
@@ -221,7 +221,7 @@ class user_dir(CrawlPlugin):
             for uDir, user in url_user_list:
                 if self._do_request( uDir, user ):
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     if ident == 'os':
                         msg = 'The remote OS can be identified as "' + data_related_to_user
                         msg += '" based on the remote user "'+ user +'".'

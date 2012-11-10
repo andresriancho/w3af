@@ -77,8 +77,8 @@ class TestXMLOutput(PluginTest):
         )
             
         self.assertEquals(
-            set(sorted([v.getPluginName() for v in kb_vulns])),
-            set(sorted([v.getPluginName() for v in file_vulns]))
+            set(sorted([v.get_plugin_name() for v in kb_vulns])),
+            set(sorted([v.get_plugin_name() for v in file_vulns]))
         )
         
         self.assertEqual( validate_XML(file(self.FILENAME).read(), self.XSD) ,
@@ -107,7 +107,7 @@ class XMLParser:
         '''        
         if tag == 'vulnerability':
             v = vuln.vuln()
-            v.setPluginName(attrib['plugin'])
+            v.set_plugin_name(attrib['plugin'])
             v.set_name(attrib['name'])
             v.setURL( URL(attrib['url']) )
             self.vulns.append(v)

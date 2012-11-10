@@ -95,7 +95,7 @@ class phishing_vector(AuditPlugin):
                     if src_attr.startswith( url ):
                         # Vuln vuln!
                         v = vuln.vuln( mutant )
-                        v.setPluginName(self.get_name())
+                        v.set_plugin_name(self.get_name())
                         v.set_id( response.id )
                         v.set_severity(severity.LOW)
                         v.set_name( 'Phishing vector' )

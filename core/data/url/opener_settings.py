@@ -30,7 +30,7 @@ import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 import core.data.url.handlers.localCache as localCache
 import core.data.url.handlers.mangleHandler as mangleHandler
 
-from core.controllers.configurable import configurable
+from core.controllers.configurable import Configurable
 from core.controllers.exceptions import w3afException
 from core.data.kb.config import cf as cfg
 from core.data.options.opt_factory import opt_factory
@@ -46,7 +46,7 @@ from core.data.url.handlers.redirect import HTTPErrorHandler, HTTP30XHandler
 from core.data.url.handlers.urlParameterHandler import URLParameterHandler
 
 
-class OpenerSettings(configurable):
+class OpenerSettings(Configurable):
     '''
     This is a urllib2 configuration manager.
     

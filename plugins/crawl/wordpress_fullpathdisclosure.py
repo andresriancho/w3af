@@ -109,7 +109,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
             response_body = response.getBody()
             if 'Fatal error: ' in response_body:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('WordPress path disclosure')
                 i.setURL( pvuln_url )
                 i.set_id( response.id )

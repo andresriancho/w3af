@@ -64,7 +64,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         
         def set_info(name, desc):
             inf = info.info()
-            inf.setPluginName(self.get_name())
+            inf.set_plugin_name(self.get_name())
             inf.set_name(name)
             inf.set_desc(desc)
             kb.kb.append(self, 'http_vs_https_dist', inf)

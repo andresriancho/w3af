@@ -83,7 +83,7 @@ class private_ip(GrepPlugin):
                     # alerted about it
                     if match not in self._ignore_if_match:
                         v = vuln.vuln()
-                        v.setPluginName(self.get_name())
+                        v.set_plugin_name(self.get_name())
                         v.setURL( response.getURL() )
                         v.set_id( response.id )
                         v.set_severity(severity.LOW)
@@ -119,7 +119,7 @@ class private_ip(GrepPlugin):
                         if match not in self._ignore_if_match and \
                         not request.sent( match ):
                             v = vuln.vuln()
-                            v.setPluginName(self.get_name())
+                            v.set_plugin_name(self.get_name())
                             v.setURL( response.getURL() )
                             v.set_id( response.id )
                             v.set_severity(severity.LOW)

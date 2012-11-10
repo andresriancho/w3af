@@ -136,7 +136,7 @@ class htaccess_methods(AuditPlugin):
         
         if len(allowed_methods)>0:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL( url )
             v.set_id([i for m, i in allowed_methods])
             v.set_name( 'Misconfigured access control' )

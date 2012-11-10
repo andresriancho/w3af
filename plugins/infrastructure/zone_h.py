@@ -96,7 +96,7 @@ class zone_h(InfrastructurePlugin):
             # Do the if...
             if total_attacks > 1:
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_name('Previous defacements')
                 v.setURL( response.getURL() )
                 v.set_severity( severity.MEDIUM )
@@ -108,7 +108,7 @@ class zone_h(InfrastructurePlugin):
                 om.out.information( v.get_desc() )
             elif total_attacks == 1:
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Previous defacement')
                 i.setURL( response.getURL() )
                 msg = 'The target site was defaced in the past. For more information'

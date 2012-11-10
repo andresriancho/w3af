@@ -102,7 +102,7 @@ class sqlmap(AttackPlugin):
                     om.out.console('SQL injection verified, trying to create the DB driver.')
                     
                     # Try to get a shell using all vuln
-                    msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.getId())
+                    msg = 'Trying to exploit using vulnerability with id: ' + str(vuln_obj.get_id())
                     msg += '. Please wait...'
                     om.out.console(msg)
                     shell_obj = self._generate_shell(vuln_obj)
@@ -133,7 +133,7 @@ class sqlmap(AttackPlugin):
         vulns = self.getExploitableVulns()
 
         if vulnToExploit is not None:
-            vulns = [ v for v in vulns if v.getId() == vulnToExploit ]
+            vulns = [ v for v in vulns if v.get_id() == vulnToExploit ]
             
         if len(vulns) != 0:
             return True
@@ -164,7 +164,7 @@ class sqlmap(AttackPlugin):
             
                 # Filter the vuln that was selected by the user
                 if vulnToExploit is not None:
-                    if vulnToExploit != v.getId():
+                    if vulnToExploit != v.get_id():
                         continue
             
                 mutant = v.get_mutant()
@@ -186,7 +186,7 @@ class sqlmap(AttackPlugin):
             else:
                 for vuln_obj in vulns:
                     # Try to get a shell using all vuln
-                    msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.getId() )
+                    msg = 'Trying to exploit using vulnerability with id: ' + str( vuln_obj.get_id() )
                     msg += '. Please wait...' 
                     om.out.console( msg )
                     shell_obj = self._generate_shell( vuln_obj )
@@ -398,7 +398,7 @@ class sqlShellObj(shell):
         self._showPrompt()
 
     def _showPrompt( self ):
-        om.out.console('w3af/exploit/'+self.get_name()+'-'+str(self.getExploitResultId())+'>>>', newLine = False)
+        om.out.console('w3af/exploit/'+self.get_name()+'-'+str(self.get_exploit_result_id())+'>>>', newLine = False)
         
     def help( self, command='' ):
         '''

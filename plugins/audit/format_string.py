@@ -73,7 +73,7 @@ class format_string(AuditPlugin):
                 error not in mutant.get_original_response_body():
                     # vuln, vuln!
                     v = vuln.vuln( mutant )
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_id( response.id )
                     v.set_severity(severity.MEDIUM)
                     v.set_name( 'Format string vulnerability' )

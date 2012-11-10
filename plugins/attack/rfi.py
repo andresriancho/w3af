@@ -91,7 +91,7 @@ class rfi(AttackPlugin):
         
         rfi_vulns = kb.kb.get('rfi' , 'rfi')
         if vuln_to_exploit is not None:
-            rfi_vulns = [v for v in rfi_vulns if v.getId() == vuln_to_exploit]
+            rfi_vulns = [v for v in rfi_vulns if v.get_id() == vuln_to_exploit]
         
         if not rfi_vulns:
             return False

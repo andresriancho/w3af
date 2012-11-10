@@ -73,7 +73,7 @@ class dot_net_event_validation(GrepPlugin):
                 # I have __viewstate!, verify if event validation is enabled
                 if not self._eventvalidation.search(response.getBody()):
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('.NET Event Validation is disabled')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )
@@ -86,7 +86,7 @@ class dot_net_event_validation(GrepPlugin):
                 if not self._encryptedVs.search(response.getBody()):
                     # Nice! We can decode the viewstate! =)
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('.NET ViewState encryption is disabled')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )

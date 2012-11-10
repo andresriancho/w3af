@@ -82,7 +82,7 @@ class ssl_certificate(AuditPlugin):
             pass
         else:
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL(url)
             v.set_severity(severity.LOW)
             v.set_name('Insecure SSL version')
@@ -126,7 +126,7 @@ class ssl_certificate(AuditPlugin):
                 tag = 'invalid_ssl_connect'
 
             v.set_desc(desc % (domain, details))
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL(url)
             kb.kb.append(self, tag, v)
             om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
@@ -146,7 +146,7 @@ class ssl_certificate(AuditPlugin):
         if expire_days < self._min_expire_days:
             i = info.info()
             i.setURL(url)
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Soon expire SSL certificate')
             i.set_desc('The certificate for "%s" will expire soon.' % domain)
             kb.kb.append(self, 'ssl_soon_expire', i) 
@@ -158,7 +158,7 @@ class ssl_certificate(AuditPlugin):
         om.out.information(desc)
         i = info.info()
         i.setURL(url)
-        i.setPluginName(self.get_name())
+        i.set_plugin_name(self.get_name())
         i.set_name('SSL Certificate')
         i.set_desc(desc)
         kb.kb.append(self, 'certificate', i)

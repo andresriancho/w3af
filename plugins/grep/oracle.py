@@ -56,7 +56,7 @@ class oracle(GrepPlugin):
                 if msg in response:
                     
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
                     i.setURL(url)
                     i.set_id( response.id )

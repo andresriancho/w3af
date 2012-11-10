@@ -87,7 +87,7 @@ class directory_indexing(GrepPlugin):
                 html_string = response.getBody()
                 for dir_indexing_match in self._multi_in.query( html_string ):
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.setURL( response.getURL() )
                     msg = 'The URL: "' + response.getURL() + '" has a directory '
                     msg += 'indexing vulnerability.'

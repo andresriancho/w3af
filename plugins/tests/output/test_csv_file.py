@@ -78,8 +78,8 @@ class TestCSVFile(PluginTest):
         )
 
         self.assertEquals(
-            set(sorted([v.getId()[0] for v in xss_vulns])),
-            set(sorted([v.getId()[0] for v in file_vulns]))
+            set(sorted([v.get_id()[0] for v in xss_vulns])),
+            set(sorted([v.get_id()[0] for v in file_vulns]))
         )
         
     def _from_csv_get_vulns(self):
@@ -92,7 +92,7 @@ class TestCSVFile(PluginTest):
             v = vuln.vuln()
             
             v.set_name(name)
-            v.setMethod( method )
+            v.set_method( method )
             v.setURI( URL(uri) )
             v.set_var(var)
             v.set_dc(dc)

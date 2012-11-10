@@ -202,7 +202,7 @@ class localproxy(proxy):
         except:
             raise w3afException('The regular expression you configured is invalid.')
 
-    def setMethodsToTrap(self, methods):
+    def set_methodsToTrap(self, methods):
         '''Set list that indicates what METHODS TO trap.
 
            If list is empty then we will trap all methods

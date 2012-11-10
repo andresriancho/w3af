@@ -99,7 +99,7 @@ class get_emails(GrepPlugin):
             if mail_address not in email_map:
                 # Create a new info object, and report it
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.setURL(url)
                 i.set_id( response.id )
                 i.set_name( mail_address )
@@ -122,7 +122,7 @@ class get_emails(GrepPlugin):
                     # This email was already found in some other URL
                     # I'm just going to modify the url_list and the description message
                     # of the information object.
-                    id_list_of_info = i.getId()
+                    id_list_of_info = i.get_id()
                     id_list_of_info.append( response.id )
                     i.set_id( id_list_of_info )
                     i.setURL( url )

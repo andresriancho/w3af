@@ -219,7 +219,7 @@ class clusterCellData(gtk.TreeView):
         # After some tests I realized that the amount of calls to this method 
         # was HUGE. It seems that python-cluster compares each pair (a,b) more
         # than once!! So I implemented this ratio cache...
-        in_cache = self._distance_cache.get( (a.getId(), b.getId()), None )
+        in_cache = self._distance_cache.get( (a.get_id(), b.get_id()), None )
         if in_cache is not None:
             return in_cache
             
@@ -245,8 +245,8 @@ class clusterCellData(gtk.TreeView):
         r = 100 - r * 100
         
         # Save in cache
-        self._distance_cache[ (a.getId(), b.getId()) ] = r
-        self._distance_cache[ (b.getId(), a.getId()) ] = r
+        self._distance_cache[ (a.get_id(), b.get_id()) ] = r
+        self._distance_cache[ (b.get_id(), a.get_id()) ] = r
         return r
         
     def _add_tooltip_support( self ):
@@ -313,14 +313,14 @@ class clusterCellData(gtk.TreeView):
         for i in clusteredData:
             if isinstance( i, type([]) ):
                 # We have a list to pad
-                i = [ w.getId() for w in i]
+                i = [ w.get_id() for w in i]
                 for j in xrange(larger_list-len(i)):
                     i.append('')
                 padded_list.append( i )
             else:
                 # Its an object, create a list and pad it.
                 tmp = []
-                tmp.append( i.getId() )
+                tmp.append( i.get_id() )
                 for j in xrange(larger_list-len(tmp)):
                     tmp.append('')
                 padded_list.append( tmp )
@@ -382,7 +382,7 @@ class clusterCellData(gtk.TreeView):
         @return: A string with information about the request with id == id
         '''
         try:
-            obj = [ i for i in self._data if i.getId() == int(id) ][0]
+            obj = [ i for i in self._data if i.get_id() == int(id) ][0]
         except Exception, e:
             return ''
         else:

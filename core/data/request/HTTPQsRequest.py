@@ -59,7 +59,7 @@ class HTTPQSRequest(FuzzableRequest):
     def setData(self, d):
         pass
     
-    def setMethod(self, meth):
+    def set_method(self, meth):
         pass
         
     def getData(self):

@@ -84,7 +84,7 @@ class response_splitting(AuditPlugin):
                     msg += ' testing for response splitting: "' + error + '"'
                     
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_desc( msg )
                     i.set_var( mutant.get_var() )
                     i.setURI( mutant.getURI() )
@@ -97,7 +97,7 @@ class response_splitting(AuditPlugin):
                 
             if self._header_was_injected( response ):
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_desc( 'Response Splitting was found at: ' + mutant.found_at() )
                 v.set_id( response.id )
                 v.set_severity(severity.MEDIUM)
@@ -134,7 +134,7 @@ class response_splitting(AuditPlugin):
                 om.out.information(msg)
 
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_desc( msg )
                 i.set_id( response.id )
                 i.set_name( 'Parameter modifies headers' )

@@ -91,7 +91,7 @@ class find_jboss(InfrastructurePlugin):
                 
                 if vuln_db_instance['type'] == 'info':
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name(vuln_db_instance['name'])
                     i.setURL(vuln_url)
                     i.set_id(response.id)
@@ -100,7 +100,7 @@ class find_jboss(InfrastructurePlugin):
                     
                 else:
                     v = vuln.vuln()
-                    v.setPluginName(self.get_name())
+                    v.set_plugin_name(self.get_name())
                     v.set_name(vuln_db_instance['name'])
                     v.setURL(vuln_url)
                     v.set_id(response.id)

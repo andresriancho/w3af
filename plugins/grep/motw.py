@@ -65,7 +65,7 @@ class motw (GrepPlugin):
                 # Create the info object
                 if motw_match or self._withoutMOTW:
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('Mark of the web')
                     i.setURL( response.getURL() )
                     i.set_id( response.id )

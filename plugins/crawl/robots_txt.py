@@ -57,7 +57,7 @@ class robots_txt(CrawlPlugin):
         if not is_404( http_response ):
             # Save it to the kb!
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('robots.txt file')
             i.setURL( robots_url )
             i.set_id( http_response.id )

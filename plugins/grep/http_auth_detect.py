@@ -81,7 +81,7 @@ class http_auth_detect(GrepPlugin):
                self._auth_uri_regex.match(response.getURI().url_string)):
             # An authentication URI was found!
             v = vuln.vuln()
-            v.setPluginName(self.get_name())
+            v.set_plugin_name(self.get_name())
             v.setURL(response.getURL())
             v.set_id(response.id)
             desc = 'The resource: "%s" has a user and password in ' \
@@ -115,7 +115,7 @@ class http_auth_detect(GrepPlugin):
             if ('@' in url.url_string and
                     self._auth_uri_regex.match(url.url_string)):
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.setURL(response.getURL())
                 v.set_id( response.id )
                 msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
@@ -145,7 +145,7 @@ class http_auth_detect(GrepPlugin):
         if realm is None:
             # Report this strange case
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Authentication without www-authenticate header')
             i.setURL( response.getURL() )
             i.set_id( response.id )
@@ -157,7 +157,7 @@ class http_auth_detect(GrepPlugin):
         else:
             # Report the common case, were a realm is set.
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             if 'ntlm' in realm.lower():
                 i.set_name('NTLM authentication')
             else:

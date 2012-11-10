@@ -41,7 +41,7 @@ class vuln(info):
         
         if isinstance(data_obj, Mutant) or \
             isinstance(data_obj, vuln):
-            self.setMethod(data_obj.get_method())
+            self.set_method(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())
             self.setURI(data_obj.getURI())

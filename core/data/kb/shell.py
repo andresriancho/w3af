@@ -23,10 +23,10 @@ import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
 from core.data.kb.vuln import vuln as vuln
-from core.data.kb.exploitResult import exploitResult
+from core.data.kb.ExploitResult import ExploitResult
 
 
-class shell(vuln, exploitResult):
+class shell(vuln, ExploitResult):
     '''
     This class represents the output of an attack plugin that gives a shell to
     the w3af user.
@@ -36,7 +36,7 @@ class shell(vuln, exploitResult):
 
     def __init__(self, v):
         vuln.__init__(self, v)
-        exploitResult.__init__(self)
+        ExploitResult.__init__(self)
         
         self._rOS = None
         self._rSystem = None

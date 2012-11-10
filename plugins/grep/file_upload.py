@@ -67,7 +67,7 @@ class file_upload(GrepPlugin):
                 # Loop through file inputs tags                
                 for input_file in self._file_input_xpath( dom ):
                     i = info.info()
-                    i.setPluginName(self.get_name())
+                    i.set_plugin_name(self.get_name())
                     i.set_name('File upload form')
                     i.setURL(url)
                     i.set_id(response.id)

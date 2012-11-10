@@ -384,7 +384,7 @@ class SQLCachedResponse(CachedResponse):
             msg = ('Exception while inserting request/response to the'
                    ' database: %s\nThe request/response that generated'
                    ' the error is: %s %s %s' % 
-                   (ex, resp.getId(), req.getURI(), resp.getCode()))
+                   (ex, resp.get_id(), req.getURI(), resp.getCode()))
             om.out.error(msg)
             raise
     

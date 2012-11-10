@@ -103,7 +103,7 @@ class wmlParser(SGMLParser):
                                 encoding=self._encoding)
             # Create the form
             f = form.Form(encoding=self._encoding)
-            f.setMethod(method)           
+            f.set_method(method)           
             f.setAction(action)
             self._forms.append(f)
         else:

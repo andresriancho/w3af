@@ -64,9 +64,9 @@ class server_header(InfrastructurePlugin):
             if hname == 'server':
                 server = hvalue
                 i = info.info()
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_name('Server header')
-                i.set_id( response.getId() )
+                i.set_id( response.get_id() )
                 i.set_desc('The server header for the remote web server is: "' + server + '".' )
                 i['server'] = server
                 om.out.information( i.get_desc() )
@@ -83,9 +83,9 @@ class server_header(InfrastructurePlugin):
         else:
             # strange !
             i = info.info()
-            i.setPluginName(self.get_name())
+            i.set_plugin_name(self.get_name())
             i.set_name('Omitted server header')
-            i.set_id( response.getId() )
+            i.set_id( response.get_id() )
             msg = 'The remote HTTP Server omitted the "server" header in its response.'
             i.set_desc( msg )
             om.out.information( i.get_desc() )
@@ -124,9 +124,9 @@ class server_header(InfrastructurePlugin):
                         #    I don't have it in the KB, so I need to add it,
                         #
                         i = info.info()
-                        i.setPluginName(self.get_name())
+                        i.set_plugin_name(self.get_name())
                         i.set_name('"%s" header' % header_name)
-                        i.set_id( response.getId() )
+                        i.set_id( response.get_id() )
                         msg = '"' + header_name + '" header for this HTTP server is: "'
                         msg += powered_by + '".'
                         i.set_desc( msg )

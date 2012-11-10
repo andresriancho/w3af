@@ -163,7 +163,7 @@ class find_dvcs(CrawlPlugin):
 
             if parsed_url_set:
                 v = vuln.vuln()
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( http_response.id )
                 v.set_name( repo+' found' )
                 v.set_severity(severity.MEDIUM)

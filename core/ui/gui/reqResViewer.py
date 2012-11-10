@@ -227,8 +227,8 @@ class reqResViewer(gtk.VBox):
             for result in impact.result:
                 
                 # TODO: I'm not sure when this is None bug it appeared in Trac bug #167736
-                if result.getId() is not None:
-                    for itemId in result.getId():
+                if result.get_id() is not None:
+                    for itemId in result.get_id():
                         historyItem = HistoryItem()
                         historyItem.load(itemId)
                         historyItem.updateTag(historyItem.tag + result.plugin_name)

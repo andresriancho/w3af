@@ -131,7 +131,7 @@ class generic(AuditPlugin):
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
                 v = vuln.vuln( mutant )
-                v.setPluginName(self.get_name())
+                v.set_plugin_name(self.get_name())
                 v.set_id( id_list )
                 v.set_severity(severity.MEDIUM)
                 v.set_name( 'Unidentified vulnerability' )
@@ -141,7 +141,7 @@ class generic(AuditPlugin):
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info( mutant )
-                i.setPluginName(self.get_name())
+                i.set_plugin_name(self.get_name())
                 i.set_id( id_list )
                 i.set_name( 'Possible unidentified vulnerability' )
                 msg = '[Manual verification required] A possible vulnerability was found at: '
