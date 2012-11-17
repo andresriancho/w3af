@@ -28,7 +28,7 @@ from core.ui.console.io.common import *
 SEQ_PREFIX = '\xE0'
 LONGEST_SEQUENCE = 2
 
-win2UnixMap = { 
+win2UnixMap = {
     '\xE0\x48': KEY_UP,
     '\xE0\x50': KEY_DOWN,
     '\xE0\x4D': KEY_RIGHT,
@@ -36,28 +36,32 @@ win2UnixMap = {
     '\xE0\x47': KEY_HOME,
     '\xE0\x4F': KEY_END
 }
-    
-def read( amt ):
+
+
+def read(amt):
     res = ''
-    for i in xrange( amt ):
+    for i in xrange(amt):
         res += msvcrt.getch()
     return res
-       
 
-def setRawInputMode( raw ):
+
+def setRawInputMode(raw):
     '''
     Sets the raw input mode, in windows.
     '''
     pass
- 
+
+
 def normalizeSequence(seq):
     if seq in win2UnixMap:
         return win2UnixMap[seq]
     return None
 
+
 def moveBack(steps=1):
     for i in range(steps):
         sys.stdout.write('\x08')
+
 
 def clearScreen():
     """Clears the screen (Plug)"""

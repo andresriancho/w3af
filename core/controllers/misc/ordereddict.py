@@ -3,6 +3,7 @@ from collections import MutableMapping
 # TODO: To be removed (client code as well) when w3af is
 # supported under python >= 2.7. Use collections.OrderedDict instead.
 
+
 class OrderedDict(dict, MutableMapping):
 
     # Methods with direct access to underlying attributes

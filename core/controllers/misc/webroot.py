@@ -23,45 +23,43 @@ from core.data.parsers.url import URL
 import core.data.kb.knowledge_base as kb
 
 
-def get_webroot_dirs( domain=None ):
+def get_webroot_dirs(domain=None):
     '''
     @return: A list of strings with possible webroots. This function also analyzed the contents of the
     knowledgeBase and tries to use that information in order to guess.
     '''
     result = []
-    
+
     # This one has more probability of success that all the other ones together
-    obtained_webroot = kb.kb.get( 'path_disclosure', 'webroot' )
+    obtained_webroot = kb.kb.get('path_disclosure', 'webroot')
     if obtained_webroot:
         result.append(obtained_webroot)
-    
+
     if domain:
-        root_domain = URL( 'http://' + domain ).getRootDomain()
-        
-        result.append('/var/www/' +  domain )
-        result.append( '/var/www/' + domain + '/www/' )
-        result.append( '/var/www/' + domain + '/html/' )
-        result.append( '/var/www/' + domain + '/htdocs/' )
-        
-        result.append( '/home/' + domain )
-        result.append( '/home/' + domain + '/www/' )
-        result.append( '/home/' + domain + '/html/' )
-        result.append( '/home/' + domain + '/htdocs/' )
-        
+        root_domain = URL('http://' + domain).getRootDomain()
+
+        result.append('/var/www/' + domain)
+        result.append('/var/www/' + domain + '/www/')
+        result.append('/var/www/' + domain + '/html/')
+        result.append('/var/www/' + domain + '/htdocs/')
+
+        result.append('/home/' + domain)
+        result.append('/home/' + domain + '/www/')
+        result.append('/home/' + domain + '/html/')
+        result.append('/home/' + domain + '/htdocs/')
+
         if domain != root_domain:
-            result.append( '/home/' + root_domain )
-            result.append( '/home/' + root_domain + '/www/' )
-            result.append( '/home/' + root_domain + '/html/' )
-            result.append( '/home/' + root_domain + '/htdocs/' )
-            result.append('/var/www/' +  root_domain )
-            result.append( '/var/www/' + root_domain + '/www/' )
-            result.append( '/var/www/' + root_domain + '/html/' )
-            result.append( '/var/www/' + root_domain + '/htdocs/' )            
-    
+            result.append('/home/' + root_domain)
+            result.append('/home/' + root_domain + '/www/')
+            result.append('/home/' + root_domain + '/html/')
+            result.append('/home/' + root_domain + '/htdocs/')
+            result.append('/var/www/' + root_domain)
+            result.append('/var/www/' + root_domain + '/www/')
+            result.append('/var/www/' + root_domain + '/html/')
+            result.append('/var/www/' + root_domain + '/htdocs/')
+
     result.append('/var/www/')
     result.append('/var/www/html/')
     result.append('/var/www/htdocs/')
-    
+
     return result
-    
-    

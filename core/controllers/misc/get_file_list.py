@@ -21,18 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
-def get_file_list( directory, extension='.py' ):
+
+def get_file_list(directory, extension='.py'):
     '''
     @return: A list of the files that are present in @directory and match
              @extension. The files returned won't have an extension.
-    
+
     >>> filename_list = get_file_list( os.path.join('plugins','audit') )
     >>> 'sqli' in filename_list
     True
-    
+
     '''
     filename_list = []
-    
+
     for f in os.listdir(directory):
         fname, ext = os.path.splitext(f)
         if ext == extension and fname != '__init__':

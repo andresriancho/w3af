@@ -66,22 +66,22 @@ class TestAll(unittest.TestCase):
     def test_noniterable(self):
         self.assertRaises(FuzzyError, FuzzyGenerator, "", "aa $3$ bb")
         self.assertRaises(FuzzyError, FuzzyGenerator, "",
-                                            "aa $[].extend([1,2])$ bb")
+                          "aa $[].extend([1,2])$ bb")
 
     def test_inside_doubledollar(self):
         fg = FuzzyGenerator(
-                "GET http://localhost/$['aaa\$b', 'b\$ccc']$ HTTP/1.0", "")
+            "GET http://localhost/$['aaa\$b', 'b\$ccc']$ HTTP/1.0", "")
         self.assertEqual(list(fg.generate()), [
             ("GET http://localhost/aaa$b HTTP/1.0", ""),
             ("GET http://localhost/b$ccc HTTP/1.0", ""),
-                            ])
+        ])
 
     def test_double_token_together(self):
         # from bug 2393362, the idea is to generate 00 to 99
         # using to generators (I'm doing less iterations here)
         fg = FuzzyGenerator("-$xrange(2)$$xrange(2)$-", "")
         self.assertEqual(list(fg.generate()), [
-            ("-00-", ""), ("-01-", ""), ("-10-", ""), ("-11-", "") ])
+            ("-00-", ""), ("-01-", ""), ("-10-", ""), ("-11-", "")])
 
 if __name__ == '__main__':
     unittest.main()

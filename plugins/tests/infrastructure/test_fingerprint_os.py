@@ -21,30 +21,30 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestFingerprintOS(PluginTest):
-    
+
     modsecurity_url = 'http://modsecurity/w3af/index.html'
     moth_url = 'http://moth/w3af/index.html'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('fingerprint_os'),)}
-            }
         }
-    
+    }
+
     def test_moth(self):
         '''
         Test the "default" configuration for Apache+PHP.
         '''
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
-        
+
         os_str = self.kb.get('fingerprint_os', 'operating_system_str')
-        
-        self.assertEqual('unix', os_str )
-        
-       
+
+        self.assertEqual('unix', os_str)
+
     def test_modsecurity(self):
         '''
         Test a different configuration:
@@ -54,7 +54,7 @@ class TestFingerprintOS(PluginTest):
         '''
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
-        
+
         os_str = self.kb.get('fingerprint_os', 'operating_system_str')
-        
-        self.assertEqual('unix', os_str )
+
+        self.assertEqual('unix', os_str)

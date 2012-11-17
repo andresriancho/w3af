@@ -31,47 +31,46 @@ class TestBasicConsoleUI(ConsoleTestHelper):
     '''
     def test_menu_browse_misc(self):
         commands_to_run = ['misc-settings', 'back', 'exit']
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        expected = ('w3af>>> ','w3af/config:misc-settings>>> ')
-        self.assertTrue( self.all_expected_in_output(expected), 
-                         self._mock_stdout.messages )
-        
+
+        expected = ('w3af>>> ', 'w3af/config:misc-settings>>> ')
+        self.assertTrue(self.all_expected_in_output(expected),
+                        self._mock_stdout.messages)
+
     def test_menu_browse_http(self):
         commands_to_run = ['http-settings', 'back', 'exit']
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        expected = ('w3af>>> ','w3af/config:http-settings>>> ')
-        self.assertTrue( self.all_expected_in_output(expected), 
-                         self._mock_stdout.messages )
+
+        expected = ('w3af>>> ', 'w3af/config:http-settings>>> ')
+        self.assertTrue(self.all_expected_in_output(expected),
+                        self._mock_stdout.messages)
 
     def test_menu_browse_target(self):
         commands_to_run = ['target', 'back', 'exit']
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        expected = ('w3af>>> ','w3af/config:target>>> ')
-        self.assertTrue( self.all_expected_in_output(expected), 
-                         self._mock_stdout.messages )
-    
+
+        expected = ('w3af>>> ', 'w3af/config:target>>> ')
+        self.assertTrue(self.all_expected_in_output(expected),
+                        self._mock_stdout.messages)
+
     def test_menu_plugin_desc(self):
         commands_to_run = ['plugins',
                            'infrastructure desc zone_h',
-                           'back', 
+                           'back',
                            'exit']
-        
+
         expected = ('This plugin searches the zone-h.org',
                     'result. The information stored in',
                     'previous defacements to the target website.')
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        self.assertTrue( self.startswith_expected_in_output(expected), 
-                         self._mock_stdout.messages )
-    
+
+        self.assertTrue(self.startswith_expected_in_output(expected),
+                        self._mock_stdout.messages)

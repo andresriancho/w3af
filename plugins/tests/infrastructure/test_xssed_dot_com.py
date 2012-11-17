@@ -23,37 +23,34 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestXssedDotCom(PluginTest):
-    
+
     vuln_url = 'http://www.alarabiya.net'
     safe_url = 'http://www.xssed.com/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('xssed_dot_com'),)}
-            }
         }
-    
+    }
+
     def test_xssed_dot_com_positive(self):
         cfg = self._run_configs['cfg']
         self._scan(self.vuln_url, cfg['plugins'])
-        
+
         infos = self.kb.get('xssed_dot_com', 'xss')
-        
-        self.assertEqual( len(infos), 1, infos)
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
+
         self.assertEqual(info.get_name(), 'Possible XSS vulnerability')
         self.assertTrue(info.get_desc().startswith('According to xssed.com,'))
-        
+
     def test_xssed_dot_com_negative(self):
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])
-        
-        infos = self.kb.get('xssed_dot_com', 'xss')
-        
-        self.assertEqual( len(infos), 0, infos)
-        
-        
 
+        infos = self.kb.get('xssed_dot_com', 'xss')
+
+        self.assertEqual(len(infos), 0, infos)

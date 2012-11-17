@@ -26,9 +26,9 @@ from core.data.options.option_types import URL as URL_OPTION_TYPE
 
 
 class URLOption(BaseOption):
-    
+
     _type = URL_OPTION_TYPE
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -38,7 +38,7 @@ class URLOption(BaseOption):
         looking object like True or ['a','b','c'].
         '''
         self._value = self.validate(value)
-    
+
     def validate(self, value):
         try:
             return URL(value)

@@ -34,25 +34,25 @@ class test_wizards(object):
 
     unique_wizard_ids = []
 
-    @attr('smoke')    
+    @attr('smoke')
     def test_all_wizards(self):
         mod = 'core.controllers.wizard.wizards.%s'
         w3af_core = w3afCore()
-        
+
         for filename in os.listdir('core/controllers/wizard/wizards/'):
             wizard_id, ext = os.path.splitext(filename)
-        
+
             if wizard_id in ('__init__', '.svn') or ext == '.pyc':
                 continue
 
             klass = mod % wizard_id
-            wizard_inst = factory( klass, w3af_core )
-            
+            wizard_inst = factory(klass, w3af_core)
+
             yield self._test_wizard_correct, wizard_inst
-            
-            wizard_inst = factory( klass, w3af_core )
+
+            wizard_inst = factory(klass, w3af_core)
             yield self._test_wizard_fail, wizard_inst
-    
+
     @attr('smoke')
     def _test_wizard_correct(self, wizard_inst):
         '''
@@ -62,10 +62,10 @@ class test_wizards(object):
         wid = wizard_inst.get_name()
         assert wid != ''
         assert wid not in self.unique_wizard_ids
-        self.unique_wizard_ids.append( wid )
-        
+        self.unique_wizard_ids.append(wid)
+
         assert len(wizard_inst.getWizardDescription()) > 30
-        
+
         while True:
             question = wizard_inst.next()
             if question is None:
@@ -74,7 +74,7 @@ class test_wizards(object):
                 opt = question.getOptionObjects()
                 filled_opt = self._correctly_fill_options(opt)
                 wizard_inst.setAnswer(filled_opt)
-    
+
     @attr('smoke')
     def _test_wizard_fail(self, wizard_inst):
         '''
@@ -82,7 +82,7 @@ class test_wizards(object):
              instances of that class that live in the questions directory.
         '''
         while True:
-            
+
             question = wizard_inst.next()
 
             if question is None:
@@ -102,45 +102,43 @@ class test_wizards(object):
                     # and show something to him. If we get here then something
                     # went wrong
                     assert False
-                    
+
     def _correctly_fill_options(self, option_list):
         '''
         @return: A correctly completed option list, simulates a user that knows
                  what he's doing and doesn't make any mistakes.
         '''
         values = {
-                  'target': 'http://www.w3af.org',
-                  'targetOS': 'Unix',
-                  'targetFramework': 'PHP'
-                 }
-        
+            'target': 'http://www.w3af.org',
+            'targetOS': 'Unix',
+            'targetFramework': 'PHP'
+        }
+
         for option in option_list:
             if isinstance(option, BoolOption):
                 value = 'true'
             else:
-                value = values.get( option.get_name(), 'abc' )
+                value = values.get(option.get_name(), 'abc')
             option.set_value(value)
-        
+
         return option_list
-    
-        
+
     def _incorrectly_fill_options(self, option_list):
         '''
         @return: Inorrectly completed option list, simulates a user that
                  doesn't know what he's doing and makes all the mistakes.
         '''
         values = {
-                  'target': 'foo://www.w3af.org',
-                  'targetOS': 'Minix',
-                  'targetFramework': 'C++'
-                 }
-        
+            'target': 'foo://www.w3af.org',
+            'targetOS': 'Minix',
+            'targetFramework': 'C++'
+        }
+
         for option in option_list:
             if isinstance(option, BoolOption):
                 value = 'true'
             else:
-                value = values.get( option.get_name(), '#FAIL' )
+                value = values.get(option.get_name(), '#FAIL')
             option.set_value(value)
-        
-        return option_list        
-            
+
+        return option_list

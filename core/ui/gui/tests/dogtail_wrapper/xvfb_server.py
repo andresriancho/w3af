@@ -36,83 +36,82 @@ class XVFBServer(threading.Thread):
     '''
     This class is a wrapper that helps me start/stop a Xvfb server and allows
     me to run any X client in it.
-    
+
     For running LDTP tests we need to run Gnome (which actually provides the a11y
     features). Gnome is started once the Xvfb is ready and all the Gnome stuff
     is handled in gnome.py
     '''
     WIDTH = 1024
     HEIGTH = 768
-    
-    XVFB_BIN = '/usr/bin/Xvfb'
-    START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s'  % (XVFB_BIN, DISPLAY, WIDTH,
-                                                          HEIGTH, tempfile.gettempdir())
-    
-    SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
 
+    XVFB_BIN = '/usr/bin/Xvfb'
+    START_CMD = '%s %s -screen 0 %sx%sx16 -fbdir %s' % (XVFB_BIN, DISPLAY, WIDTH,
+                                                        HEIGTH, tempfile.gettempdir())
+
+    SCREEN_XWD_FILE_0 = '%s/Xvfb_screen0' % tempfile.gettempdir()
 
     def __init__(self):
         super(XVFBServer, self).__init__()
         self.name = 'XVFBServer'
         self.daemon = True
-        
+
         self.xvfb_process = None
         self.xvfb_start_result = None
         self.vnc_server_running = False
-        
+
     def is_installed(self):
         status, output = commands.getstatusoutput('%s --fake' % self.XVFB_BIN)
-        
+
         if status == 256 and 'use: X [:<display>] [option]' in output:
             return True
-        
+
         return False
-    
+
     def start_sync(self):
         '''Launch the xvfb process and wait for it to start the X server
-        
+
         @return: True if the server is started.
         '''
         i = 0
         self.start()
-        
+
         while i < 10:
             if self.xvfb_start_result is None:
                 time.sleep(0.2)
                 i += 1
             else:
                 return self.xvfb_start_result
-    
+
     def run(self):
         if self.is_installed():
             args = shlex.split(self.START_CMD)
             self.xvfb_process = subprocess.Popen(args, shell=False,
                                                  stdout=subprocess.PIPE,
                                                  stderr=subprocess.PIPE)
-            
+
             returncode = self.xvfb_process.wait()
 
             if returncode != 0:
                 self.xvfb_process = None
                 self.xvfb_start_result = False
-            
+
             self.xvfb_start_result = True
-        
+
         self.xvfb_start_result = False
-    
+
     def stop(self):
         if self.is_running():
             self.xvfb_process.terminate()
             self.xvfb_process = None
-        
+
         return True
-    
+
     def is_running(self):
         if self.xvfb_process is not None:
             return True
-        
+
         return False
-    
+
     def __del__(self):
         '''Just in case, restore the DISPLAY to the original value again'''
         try:
@@ -120,12 +119,12 @@ class XVFBServer(threading.Thread):
             restore_original_display()
         except:
             pass
-    
+
     def run_x_process(self, cmd, block=False, display=DISPLAY):
         '''
         Run a new process (in most cases one that will open an X window) within
         the xvfb instance.
-        
+
         @param cmd: The command to run.
         @param block: If block is True this method blocks until the command
                       finishes, if not, the method returns immediately which
@@ -136,9 +135,9 @@ class XVFBServer(threading.Thread):
         '''
         if not self.is_running():
             return False
-        
+
         display_cmd = 'DISPLAY=%s %s' % (display, cmd)
-                    
+
         if block:
             commands.getoutput(display_cmd)
         else:
@@ -147,32 +146,32 @@ class XVFBServer(threading.Thread):
             th.daemon = True
             th.name = 'XvfbProcess'
             th.start()
-        
+
         return True
-    
+
     def get_screenshot(self):
         '''
         Verify useful for debugging! When a test does NOT pass we can take a
         screenshot of the current virtual X environment and "attach" it to the error
         log.
-        
+
         Note: This requires Xvfb to be started with -fbdir
         '''
-        output_fname = None 
-        
+        output_fname = None
+
         if self.is_running():
-            
+
             for xwd_file in (self.SCREEN_XWD_FILE_0, ):
                 temp_file = tempfile.mkstemp(prefix='xvfb-screenshot-')[1]
                 shutil.copy(xwd_file, temp_file)
                 target_jpeg = temp_file + '.jpeg'
                 convert_cmd = 'convert %s %s' % (temp_file, target_jpeg)
                 _, _ = commands.getstatusoutput(convert_cmd)
-                
+
                 os.unlink(temp_file)
-                
+
                 output_fname = target_jpeg
-                
+
         return output_fname
 
     def start_vnc_server(self):
@@ -188,7 +187,7 @@ class XVFBServer(threading.Thread):
             th.start()
             self.vnc_server_running = True
             return True
-    
+
     def start_vnc_client(self):
         '''
         Requires "sudo apt-get install xvnc4viewer"
@@ -196,10 +195,9 @@ class XVFBServer(threading.Thread):
         if not self.vnc_server_running:
             self.start_vnc_server()
             time.sleep(3)
-            
+
         args = ('DISPLAY=:0 xvnc4viewer localhost',)
         th = threading.Thread(target=commands.getoutput, args=args)
         th.daemon = True
         th.name = 'VNCClient'
         th.start()
-            

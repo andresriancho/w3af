@@ -41,14 +41,14 @@ import re
 class directory_indexing(GrepPlugin):
     '''
     Grep every response for directory indexing problems.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     DIR_INDEXING = (
-        "<title>Index of /", 
+        "<title>Index of /",
         '<a href="?C=N;O=D">Name</a>',
-        '<A HREF="?M=A">Last modified</A>', 
+        '<A HREF="?M=A">Last modified</A>',
         "Last modified</a>",
         "Parent Directory</a>",
         "Directory Listing for",
@@ -56,17 +56,17 @@ class directory_indexing(GrepPlugin):
         '<table summary="Directory Listing" ',
         "- Browsing directory ",
         # IIS 6.0 and 7.0
-        '">[To Parent Directory]</a><br><br>', 
+        '">[To Parent Directory]</a><br><br>',
         # IIS 5.0
         '<A HREF=".*?">.*?</A><br></pre><hr></body></html>'
     )
-    _multi_in = multi_in( DIR_INDEXING )    
-    
+    _multi_in = multi_in(DIR_INDEXING)
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._already_visited = ScalableBloomFilter()
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point, search for directory indexing.
@@ -77,52 +77,53 @@ class directory_indexing(GrepPlugin):
         if response.getURL().getDomainPath() in self._already_visited:
             # Already worked for this URL, no reason to work twice
             return
-        
+
         else:
             # Save it,
-            self._already_visited.add( response.getURL().getDomainPath() )
-            
+            self._already_visited.add(response.getURL().getDomainPath())
+
             # Work,
             if response.is_text_or_html():
                 html_string = response.getBody()
-                for dir_indexing_match in self._multi_in.query( html_string ):
+                for dir_indexing_match in self._multi_in.query(html_string):
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
-                    v.setURL( response.getURL() )
-                    msg = 'The URL: "' + response.getURL() + '" has a directory '
+                    v.setURL(response.getURL())
+                    msg = 'The URL: "' + \
+                        response.getURL() + '" has a directory '
                     msg += 'indexing vulnerability.'
-                    v.set_desc( msg )
-                    v.set_id( response.id )
+                    v.set_desc(msg)
+                    v.set_id(response.id)
                     v.set_severity(severity.LOW)
                     path = response.getURL().getPath()
-                    v.set_name( 'Directory indexing - ' + path )
-                    kb.kb.append( self , 'directory' , v )
+                    v.set_name('Directory indexing - ' + path)
+                    kb.kb.append(self, 'directory', v)
                     break
-    
-    def set_options( self, option_list ):
+
+    def set_options(self, option_list):
         pass
-    
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = OptionList()
         return ol
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'directory_indexing', 'directory' ), 'URL' )
-            
-    def get_plugin_deps( self ):
+        self.print_uniq(kb.kb.get('directory_indexing', 'directory'), 'URL')
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

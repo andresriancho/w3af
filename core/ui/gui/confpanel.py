@@ -38,7 +38,7 @@ class OnlyOptions(gtk.VBox):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, parentwidg, w3af, plugin, save_btn, rvrt_btn, overwriter=None):
-        super(OnlyOptions,self).__init__()
+        super(OnlyOptions, self).__init__()
         if overwriter is None:
             overwriter = {}
         self.set_spacing(5)
@@ -46,23 +46,25 @@ class OnlyOptions(gtk.VBox):
         self.parentwidg = parentwidg
         self.widgets_status = {}
         self.tab_widget = {}
-        self.propagAnyWidgetChanged = helpers.PropagateBuffer(self._changedAnyWidget)
+        self.propagAnyWidgetChanged = helpers.PropagateBuffer(
+            self._changedAnyWidget)
         self.propagLabels = {}
 
         # options
         self.options = OptionList()
         options = plugin.get_options()
         # let's use the info from the core
-        coreopts = self.w3af.plugins.get_plugin_options(plugin.ptype, plugin.pname)
+        coreopts = self.w3af.plugins.get_plugin_options(
+            plugin.ptype, plugin.pname)
         if coreopts is None:
             coreopts = {}
 
         # let's get the real info
         for opt in options:
             if opt.get_name() in coreopts:
-                opt.set_value( coreopts[opt.get_name()].get_value_str() )
+                opt.set_value(coreopts[opt.get_name()].get_value_str())
             if opt.get_name() in overwriter:
-                opt.set_value( overwriter[opt.get_name()] )
+                opt.set_value(overwriter[opt.get_name()])
             self.options.append(opt)
 
         # buttons
@@ -72,7 +74,7 @@ class OnlyOptions(gtk.VBox):
         rvrt_btn.connect("clicked", self._revertPanel)
         self.save_btn = save_btn
         self.rvrt_btn = rvrt_btn
-        
+
         # middle (the heart of the panel)
         if self.options:
             tabbox = gtk.HBox()
@@ -135,9 +137,9 @@ class OnlyOptions(gtk.VBox):
             titl.set_alignment(0.0, 0.5)
             input_widget_klass = entries.wrapperWidgets.get(opt.get_type(),
                                                             entries.TextInput)
-            widg = input_widget_klass(self._changedWidget, opt )            
+            widg = input_widget_klass(self._changedWidget, opt)
             opt.widg = widg
-            widg.set_tooltip_text( opt.get_desc() )
+            widg.set_tooltip_text(opt.get_desc())
             if opt.get_help():
                 helpbtn = entries.SemiStockButton("", gtk.STOCK_INFO)
                 cleanhelp = helpers.clean_description(opt.get_help())
@@ -145,7 +147,8 @@ class OnlyOptions(gtk.VBox):
             else:
                 helpbtn = None
             table.autoAddRow(titl, widg, helpbtn)
-            self.widgets_status[widg] = (titl, opt.get_name(), "<b>%s</b>" % opt.get_name())
+            self.widgets_status[widg] = (titl, opt.get_name(),
+                                         "<b>%s</b>" % opt.get_name())
             self.propagLabels[widg] = prop
         table.show()
         return table
@@ -218,20 +221,21 @@ class OnlyOptions(gtk.VBox):
             msg = "The configuration can't be saved, there is a problem in the"\
                   " following parameter(s):\n\n"
             msg += "\n-".join(invalid)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                                    gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(
+                None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
             return
-        
+
         try:
             # Get the value from the GTK widget and set it to the option object
             for opt in self.options:
                 helpers.coreWrap(opt.set_value, opt.widg.get_value())
 
             if isinstance(plugin, Plugin):
-                helpers.coreWrap(self.w3af.plugins.set_plugin_options, 
+                helpers.coreWrap(self.w3af.plugins.set_plugin_options,
                                  plugin.ptype, plugin.pname, self.options)
             else:
                 helpers.coreWrap(plugin.set_options, self.options)
@@ -239,10 +243,10 @@ class OnlyOptions(gtk.VBox):
             return
         for opt in self.options:
             opt.widg.save()
-            
+
         # Tell the profile tree that something changed
         self.w3af.mainwin.profiles.profileChanged(changed=True)
-        
+
         # Status bar
         self.w3af.mainwin.sb("Plugin configuration saved successfully")
 
@@ -250,14 +254,14 @@ class OnlyOptions(gtk.VBox):
         '''Revert all widgets to their initial state.'''
         for widg in self.widgets_status:
             widg.revertValue()
-        
+
         msg = "The plugin configuration was reverted to its last saved state"
         self.w3af.mainwin.sb(msg)
 
 
 class ConfigDialog(gtk.Dialog):
     '''Puts a Config panel inside a Dialog.
-    
+
     @param title: the title of the window.
     @param w3af: the Core instance
     @param plugin: the plugin to configure
@@ -267,7 +271,7 @@ class ConfigDialog(gtk.Dialog):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, title, w3af, plugin, overwriter=None, showDesc=False):
-        super(ConfigDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+        super(ConfigDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         if overwriter is None:
             overwriter = {}
@@ -278,19 +282,20 @@ class ConfigDialog(gtk.Dialog):
         close_btn = self._button(stock=gtk.STOCK_CLOSE)
         close_btn.connect("clicked", self._btn_close)
         plugin.pname, plugin.ptype = plugin.get_name(), plugin.get_type()
-        
+
         # Show the description
         if showDesc:
             # The long description of the plugin
             longLabel = gtk.Label()
-            longLabel.set_text( plugin.get_long_desc() )
+            longLabel.set_text(plugin.get_long_desc())
             longLabel.set_alignment(0.0, 0.5)
             longLabel.show()
             self.vbox.pack_start(longLabel)
-        
+
         # Save it , I need it when I inherit from this class
         self._plugin = plugin
-        self._panel = OnlyOptions(self, w3af, plugin, save_btn, rvrt_btn, overwriter)
+        self._panel = OnlyOptions(
+            self, w3af, plugin, save_btn, rvrt_btn, overwriter)
         self.vbox.pack_start(self._panel)
 
         self.like_initial = True
@@ -338,9 +343,10 @@ class ConfigDialog(gtk.Dialog):
         dlg.destroy()
         return stayhere
 
+
 class AdvancedTargetConfigDialog(ConfigDialog):
     '''Inherits from the config dialog and overwrites the close method
-    
+
     @param title: the title of the window.
     @param w3af: the Core instance
     @param plugin: the plugin to configure
@@ -353,7 +359,7 @@ class AdvancedTargetConfigDialog(ConfigDialog):
         if overwriter is None:
             overwriter = {}
         ConfigDialog.__init__(self, title, w3af, plugin, overwriter)
-        
+
     def _close(self):
         '''Advanced target close that makes more sense.'''
         if self.like_initial:
@@ -364,9 +370,8 @@ class AdvancedTargetConfigDialog(ConfigDialog):
                                 gtk.BUTTONS_YES_NO, msg)
         saveConfig = dlg.run() == gtk.RESPONSE_YES
         dlg.destroy()
-        
+
         if saveConfig:
-            self._panel._savePanel( self._panel, self._plugin )
-            
+            self._panel._savePanel(self._panel, self._plugin)
+
         return False
-    

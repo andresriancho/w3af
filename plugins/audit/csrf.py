@@ -33,19 +33,20 @@ from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
 from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
-        'csrf_token',
-        'token'
-        ]
+    'csrf_token',
+    'token'
+]
+
 
 class csrf(AuditPlugin):
     '''
     Identify Cross-Site Request Forgery vulnerabilities.
     @author: Taras (oxdef@oxdef.info)
     '''
-    
+
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         self._strict_mode = False
         self._equal_limit = 0.95
 
@@ -58,18 +59,18 @@ class csrf(AuditPlugin):
         suitable, orig_response = self._is_suitable(freq)
         if not suitable:
             return
-        
-        # Referer/Origin check 
+
+        # Referer/Origin check
         if self._is_origin_checked(freq, orig_response):
             om.out.debug('Origin for %s is checked' % freq.getURL())
             return
-        
+
         # Does request has CSRF token in query string or POST payload?
         token = self._find_csrf_token(freq, orig_response)
         if token and self._is_token_checked(freq, token):
             om.out.debug('Token for %s is exist and checked' % freq.getURL())
             return
-        
+
         # Ok, we have found vulnerable to CSRF attack request
         v = vuln.vuln(freq)
         v.set_plugin_name(self.get_name())
@@ -87,16 +88,16 @@ class csrf(AuditPlugin):
         if res1.getCode() != res2.getCode():
             return False
 
-        if not relative_distance_boolean(res1.body, res2.body, self._equal_limit ):
+        if not relative_distance_boolean(res1.body, res2.body, self._equal_limit):
             return False
-        
+
         return True
 
     def _is_suitable(self, freq):
         '''
         For CSRF attack we need request with payload and persistent/session
-        cookies. 
-        
+        cookies.
+
         @return: True if the request can have a CSRF vulnerability
         '''
         for cookie in self._uri_opener.get_cookies():
@@ -104,23 +105,23 @@ class csrf(AuditPlugin):
                 break
         else:
             return False, None
-        
+
         # Strict mode on/off - do we need to audit GET requests? Not always...
         if freq.get_method() == 'GET' and not self._strict_mode:
             return False, None
-        
-        # Payload? 
-        if not ((freq.get_method() == 'GET' and freq.getURI().hasQueryString()) \
-            or (freq.get_method() =='POST' and len(freq.get_dc()))):
+
+        # Payload?
+        if not ((freq.get_method() == 'GET' and freq.getURI().hasQueryString())
+                or (freq.get_method() == 'POST' and len(freq.get_dc()))):
                 return False, None
-            
+
         # Send the same request twice and analyze if we get the same responses
         # TODO: Ask Taras about these lines, I don't really understand.
         response1 = self._uri_opener.send_mutant(freq)
         response2 = self._uri_opener.send_mutant(freq)
         if not self._is_resp_equal(response1, response2):
             return False, None
-        
+
         orig_response = response1
         om.out.debug('%s is suitable for CSRF attack' % freq.getURL())
         return True, orig_response
@@ -144,7 +145,8 @@ class csrf(AuditPlugin):
         for k in dc:
             if self.is_csrf_token(k, dc[k][0]):
                 result[k] = dc[k]
-                om.out.debug('Found token %s for %s: ' % (freq.getURL(),str(result)))
+                om.out.debug(
+                    'Found token %s for %s: ' % (freq.getURL(), str(result)))
                 break
         return result
 
@@ -188,27 +190,28 @@ class csrf(AuditPlugin):
             if i == ' ':
                 total_spaces = True
                 continue
-        total = int(total_digit) * 10 + int(total_upper) * 26 + int(total_lower) * 26
-        entropy = floor(log(total)*(len(value)/log(2)))
+        total = int(
+            total_digit) * 10 + int(total_upper) * 26 + int(total_lower) * 26
+        entropy = floor(log(total) * (len(value) / log(2)))
         if entropy >= min_entropy:
             if not total_spaces and total_digit:
                 return True
         return False
 
-    def end( self ):
+    def end(self):
         '''
         This method is called at the end, when w3afCore aint going to use this
         plugin anymore.
         '''
         self.printUniq(kb.kb.get('csrf', 'csrf'), None)
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds Cross Site Request Forgeries (csrf) vulnerabilities.
-        
+
         The simplest type of csrf is checked to be vulnerable, the web application
         must have sent a permanent cookie, and the aplicacion must have query
         string parameters.

@@ -23,10 +23,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_mysql_config_directory(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'directory': ['/etc/mysql/']}
 
     def test_mysql_config_directory(self):
-        result = exec_payload(self.shell, 'mysql_config_directory', use_api=True)
+        result = exec_payload(
+            self.shell, 'mysql_config_directory', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

@@ -25,9 +25,9 @@ from core.data.options.option_types import INT
 
 
 class IntegerOption(BaseOption):
-    
+
     _type = INT
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -37,7 +37,7 @@ class IntegerOption(BaseOption):
         looking object like True or ['a','b','c'].
         '''
         self._value = self.validate(value)
-        
+
     def validate(self, value):
         try:
             return int(value)

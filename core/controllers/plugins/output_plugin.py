@@ -29,7 +29,7 @@ from core.controllers.exceptions import w3afException
 
 class OutputPlugin(Plugin):
     '''
-    This is the base class for data output, all output plugins should inherit 
+    This is the base class for data output, all output plugins should inherit
     from it and implement the following methods :
         1. debug( message, verbose )
         2. information( message, verbose )
@@ -39,137 +39,142 @@ class OutputPlugin(Plugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
-        Plugin.__init__( self )
+        Plugin.__init__(self)
 
-    def get_type( self ):
+    def get_type(self):
         return 'output'
-        
-    def debug(self, message, newLine = True ):
+
+    def debug(self, message, newLine=True):
         '''
         This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
+        called from a plugin or from the framework. This method should take an
         action for debug messages.
-        
+
         @return: No value is returned.
         '''
-        raise w3afException('Plugin is not implementing required method debug' )
+        raise w3afException(
+            'Plugin is not implementing required method debug')
 
-    def information(self, message, newLine = True):
+    def information(self, message, newLine=True):
         '''
         This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
+        called from a plugin or from the framework. This method should take an
         action for information messages.
-        
+
         @return: No value is returned.
         '''
-        raise w3afException('Plugin is not implementing required method information' )
+        raise w3afException(
+            'Plugin is not implementing required method information')
 
-    def error(self, message, newLine = True):
+    def error(self, message, newLine=True):
         '''
         This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
+        called from a plugin or from the framework. This method should take an
         action for error messages.
-        
+
         @return: No value is returned.
         '''
-        raise w3afException('Plugin is not implementing required method error' )
+        raise w3afException(
+            'Plugin is not implementing required method error')
 
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
+    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
         '''
         This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
+        called from a plugin or from the framework. This method should take an
         action for vulnerability messages.
-        
-        @return: No value is returned.
-        '''
-        raise w3afException('Plugin is not implementing required method vulnerability' )
 
-    def console(self, message, newLine = True ):
-        '''
-        This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
-        action for console messages.
-        
         @return: No value is returned.
         '''
-        raise w3afException('Plugin is not implementing required method console' )
-    
-    def log_http(self, request, response ):
+        raise w3afException(
+            'Plugin is not implementing required method vulnerability')
+
+    def console(self, message, newLine=True):
         '''
         This method is called from the output manager object. The OM object was
-        called from a plugin or from the framework. This method should take an 
+        called from a plugin or from the framework. This method should take an
+        action for console messages.
+
+        @return: No value is returned.
+        '''
+        raise w3afException(
+            'Plugin is not implementing required method console')
+
+    def log_http(self, request, response):
+        '''
+        This method is called from the output manager object. The OM object was
+        called from a plugin or from the framework. This method should take an
         action to log HTTP requests and responses.
 
         @return: No value is returned.
         '''
         pass
-    
-    def log_enabled_plugins(self,  enabledPluginsDict,  pluginOptionsDict):
+
+    def log_enabled_plugins(self, enabledPluginsDict, pluginOptionsDict):
         '''
         This method logs to the output plugins the enabled plugins and their configuration.
-        
+
         @param enabledPluginsDict: As returned by w3afCore.get_all_enabled_plugins()
                    looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
-        
-        @param pluginOptionsDict: As defined in the w3afCore, looks similar to: 
+
+        @param pluginOptionsDict: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         pass
 
-    def get_plugin_deps( self ):
+    def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be 
+        @return: A list with the names of the plugins that should be
         run before the current one.
         '''
         return []
-    
-    def _clean_string( self, string_to_clean ):
+
+    def _clean_string(self, string_to_clean):
         '''
         @param string_to_clean: A string that should be cleaned before using it in a message object.
         '''
-        for char, replace in [('\0','\\0'),('\t','\\t')]: #('\n','\\n'),('\r','\\r'),
-            string_to_clean = string_to_clean.replace(char,replace)
+        for char, replace in [('\0', '\\0'), ('\t', '\\t')]:  # ('\n','\\n'),('\r','\\r'),
+            string_to_clean = string_to_clean.replace(char, replace)
         return string_to_clean
 
-    def getCaller( self, which_stack_item=4 ):
+    def getCaller(self, which_stack_item=4):
         '''
         What I'm going to do is:
             - inspect the stack and try to find a reference to a plugin
             - if a plugin is the caller, then i'll return something like audit.xss
-            - if no plugin is in the caller stack, i'll return the stack item 
+            - if no plugin is in the caller stack, i'll return the stack item
               specified by which_stack_item
-        
+
         Maybe you are asking yourself why which_stack_item == 4, well, this is why:
             I know that getCaller method will be in the stack
             I also know that the method that calls getCaller will be in the stack
             I also know that the om.out.XYZ method will be in the stack
             That's 3... so... number 4 is the one that really called me.
-        
+
         @return: The caller of the om.out.XYZ method; this is used to make output
                  more readable.
-                 
+
         >>> bop = OutputPlugin()
         >>> bop.getCaller()
         'doctest'
-        
+
         '''
         try:
             the_stack = inspect.stack()
-        
+
             for item in the_stack:
                 if item[1].startswith('plugins/'):
-                    # Now I have the caller item from the stack, I want to do 
-                    # some things with it...        
-                    res = item[1].replace('plugins/','')
-                    res = res.replace('/','.')
-                    return res.replace('.py','')
+                    # Now I have the caller item from the stack, I want to do
+                    # some things with it...
+                    res = item[1].replace('plugins/', '')
+                    res = res.replace('/', '.')
+                    return res.replace('.py', '')
             else:
                 # From the unknown caller, I just need the name of the function
-                item = the_stack[ which_stack_item ]
+                item = the_stack[which_stack_item]
                 res = item[1].split('/')[-1:][0]
-                return res.replace('.py','')
-            
+                return res.replace('.py', '')
+
         except:
             return 'unknown-caller'
 
@@ -177,31 +182,33 @@ class OutputPlugin(Plugin):
         '''
         @return: A string with the information about enabled plugins and their
                  options.
-        
+
         @param plugin_type: audit, crawl, etc.
-        @param plugins_list: A list of the names of the plugins of 
+        @param plugins_list: A list of the names of the plugins of
                                  plugin_type that are enabled.
         @param plugins_options: The options for the plugins
         '''
         response = ''
-        
+
         # Only work if something is enabled
         if plugins_list:
             response = 'plugins\n'
-            response += '    ' + plugin_type + ' ' + ', '.join(plugins_list) + '\n'
-            
+            response += '    ' + plugin_type + ' ' + ', '.join(
+                plugins_list) + '\n'
+
             for plugin_name in plugins_list:
-                if plugins_options.has_key(plugin_name):
-                    response += '    ' + plugin_type + ' config ' + plugin_name + '\n'
-                    
+                if plugin_name in plugins_options:
+                    response += '    ' + plugin_type + \
+                        ' config ' + plugin_name + '\n'
+
                     for plugin_option in plugins_options[plugin_name]:
                         name = str(plugin_option.get_name())
                         value = str(plugin_option.get_value())
                         response += '        set ' + name + ' ' + value + '\n'
-                    
+
                     response += '        back\n'
-            
+
             response += '    back\n'
-            
+
         # The response
         return response

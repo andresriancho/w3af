@@ -39,37 +39,37 @@ class find_jboss(InfrastructurePlugin):
     @author: Nahuel Sanchez (nsanchez@bonsai-sec.com)
     '''
     JBOSS_VULNS = (
-        {'url': '/admin-console/', 
+        {'url': '/admin-console/',
          'name': 'JBoss Admin Console enabled',
          'desc': 'Jboss Admin Console was found!',
          'type': 'info'},
-        {'url': '/jmx-console/', 
+        {'url': '/jmx-console/',
          'name': 'JBoss JMX Console found',
          'desc': 'JMX Console found without Auth Enabled',
          'type': 'vuln'},
-        {'url': '/status', 
+        {'url': '/status',
          'name': 'JBoss Status Servlet found',
          'desc': 'JBoss Status Servlet gives valuable information',
          'type': 'info'},
-        {'url': '/web-console/ServerInfo.jsp', 
+        {'url': '/web-console/ServerInfo.jsp',
          'name': 'WebConsole ServerInfo.jsp found',
          'desc': 'WebConsole ServerInfo.jsp gives valuable information',
          'type': 'info'},
-        {'url': '/WebConsole/Invoker', 
+        {'url': '/WebConsole/Invoker',
          'name': 'WebConsole Invoker found',
          'desc': 'JBoss WebConsole Invoker enables attackers to send any JMX '
-                    'command to JBoss AS',
+         'command to JBoss AS',
          'type': 'vuln'},
-        {'url': '/invoker/JMXInvokerServlet', 
+        {'url': '/invoker/JMXInvokerServlet',
          'name': 'JMX Invoker enabled without Auth',
          'desc': 'JMX Invoker enables attackers to send any JMX command to '
-                    'JBoss AS',
+         'JBoss AS',
          'type': 'vuln'}
-        )
-    
+    )
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
     @runonce(exc_class=w3afRunOnce)
     def discover(self, fuzzable_request):
         '''
@@ -78,17 +78,18 @@ class find_jboss(InfrastructurePlugin):
         '''
         fuzzable_requests_to_return = []
         base_url = fuzzable_request.getURL().baseUrl()
-        
+
         args_iter = izip(repeat(base_url), self.JBOSS_VULNS)
         otm_send_request = one_to_many(self.send_request)
-        response_pool = self._tm.threadpool.imap_unordered(otm_send_request, args_iter)
-        
+        response_pool = self._tm.threadpool.imap_unordered(
+            otm_send_request, args_iter)
+
         for vuln_db_instance, response in response_pool:
-            
+
             if not is_404(response):
-                
-                vuln_url = base_url.urlJoin( vuln_db_instance['url'] )
-                
+
+                vuln_url = base_url.urlJoin(vuln_db_instance['url'])
+
                 if vuln_db_instance['type'] == 'info':
                     i = info.info()
                     i.set_plugin_name(self.get_name())
@@ -97,7 +98,7 @@ class find_jboss(InfrastructurePlugin):
                     i.set_id(response.id)
                     i.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', i)
-                    
+
                 else:
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
@@ -106,19 +107,20 @@ class find_jboss(InfrastructurePlugin):
                     v.set_id(response.id)
                     v.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', v)
-                
-                fuzzable_requests_to_return.extend(self._create_fuzzable_requests(response))
-      
+
+                fuzzable_requests_to_return.extend(
+                    self._create_fuzzable_requests(response))
+
         return fuzzable_requests_to_return
 
     def send_request(self, base_url, vuln_db_instance):
-        vuln_url = base_url.urlJoin( vuln_db_instance['url'] )
+        vuln_url = base_url.urlJoin(vuln_db_instance['url'])
         response = self._uri_opener.GET(vuln_url)
         return vuln_db_instance, response
 
     def handleUrlError(self, url_error):
         return (True, None)
-    
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

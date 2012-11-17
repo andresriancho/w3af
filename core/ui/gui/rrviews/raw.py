@@ -39,11 +39,11 @@ class HttpRawView(HttpEditor):
         if editable:
             buf = self.textView.get_buffer()
             buf.connect("changed", self._changed)
-    
+
     def showObject(self, obj):
         '''Show object in textview.'''
         self.set_text(obj.dump())
-        
+
     def getObject(self):
         '''Return object (request or resoponse).'''
         head, body = self.get_text(splitted=True)
@@ -51,7 +51,7 @@ class HttpRawView(HttpEditor):
             return HTTPRequestParser(head, body)
         else:
             raise Exception('HttpResponseParser is not implemented!:(')
-    
+
     def _changed(self, widg=None):
         '''Synchronize changes with other views (callback).'''
         if not self.initial:
@@ -59,7 +59,7 @@ class HttpRawView(HttpEditor):
                 obj = self.getObject()
                 self.reset_bg_color()
             except w3afException, ex:
-                self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))            
+                self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))
                 return
             self.parentView.setObject(obj)
             self.parentView.synchronize(self.id)

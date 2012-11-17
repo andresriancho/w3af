@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import gtk, os, cgi
+import gtk
+import os
+import cgi
 from core.ui.gui import entries, confpanel, helpers
 from core.controllers.exceptions import w3afException
 
@@ -34,25 +36,26 @@ class Quest(object):
         opts = self.quest.getOptionObjects()
         return opts
 
+
 class QuestOptions(gtk.VBox):
     def __init__(self, w3af, wizard):
         self.w3af = w3af
         self.wizard = wizard
-        super(QuestOptions,self).__init__()
+        super(QuestOptions, self).__init__()
 
         self.widg = gtk.Label("")
         self.pack_start(self.widg)
         self.activeQuestion = None
-        
+
         self.show_all()
 
     def saveOptions(self):
         '''Saves the changed options.'''
         options = self.widg.options
         invalid = []
-        
+
         for opt in options:
-            #       Trying to reproduce bug 
+            #       Trying to reproduce bug
             #       https://sourceforge.net/tracker2/?func=detail&aid=2652434&group_id=170274&atid=853652
             #
             #       To get more info:
@@ -61,22 +64,22 @@ class QuestOptions(gtk.VBox):
             except Exception, e:
                 raise Exception(str(e) + ' || ' + opt.get_name())
             # end of debugging code
-                
-            
+
             if hasattr(opt.widg, "isValid"):
                 if not opt.widg.isValid():
                     invalid.append(opt.get_name())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"
             msg += " following parameter(s):\n\n" + "\n-".join(invalid)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Configuration error')
             dlg.run()
             dlg.destroy()
             return
 
         for opt in options:
-            opt.set_value( opt.widg.get_value() )
+            opt.set_value(opt.widg.get_value())
 
         try:
             helpers.coreWrap(self.wizard.setAnswer, options)
@@ -91,23 +94,25 @@ class QuestOptions(gtk.VBox):
     def setQuestOptions(self, quest):
         self.activeQuestion = quest
         self.remove(self.widg)
-        self.widg = confpanel.OnlyOptions(self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
+        self.widg = confpanel.OnlyOptions(
+            self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
         self.pack_start(self.widg)
 
     def askFinal(self):
         # the text entries
         table = gtk.Table(2, 2)
-        for row,tit in enumerate(("Name", "Description")):
+        for row, tit in enumerate(("Name", "Description")):
             titlab = gtk.Label(tit)
             titlab.set_alignment(0.0, 0.5)
-            table.attach(titlab, 0,1,row,row+1)
+            table.attach(titlab, 0, 1, row, row + 1)
             entry = gtk.Entry()
-            table.attach(entry, 1,2,row,row+1)
+            table.attach(entry, 1, 2, row, row + 1)
         table.show_all()
         # insert it
         self.remove(self.widg)
         self.widg = table
         self.pack_start(self.widg)
+
 
 class Wizard(entries.RememberingWindow):
     '''The wizard to help the user to create a profile.
@@ -115,7 +120,7 @@ class Wizard(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, wizard):
-        super(Wizard,self).__init__(
+        super(Wizard, self).__init__(
             w3af, "wizard", "w3af Wizard: " + wizard.get_name(), "Wizards",
             guessResize=False)
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
@@ -125,7 +130,8 @@ class Wizard(entries.RememberingWindow):
         # the image at the left
         mainhbox = gtk.HBox()
         self.vbox.pack_start(mainhbox)
-        leftframe = gtk.image_new_from_file('core/ui/gui/data/wizard_frame.png')
+        leftframe = gtk.image_new_from_file(
+            'core/ui/gui/data/wizard_frame.png')
         mainhbox.pack_start(leftframe, False, False)
         mainvbox = gtk.VBox()
         mainhbox.pack_start(mainvbox)
@@ -142,7 +148,7 @@ class Wizard(entries.RememberingWindow):
         # fill it
         self.nextbtn = gtk.Button("  Next  ")
         quest = self.wizard.next()
-        
+
         self._firstQuestion = quest
         self._buildWindow(quest)
 
@@ -155,7 +161,7 @@ class Wizard(entries.RememberingWindow):
         self.nextbtn.connect("clicked", self._goNext)
         butbox.pack_start(self.nextbtn, True, False)
         mainvbox.pack_start(butbox, False, False)
-        
+
         # Show all!
         self.finalQ = False
         self.show_all()
@@ -166,7 +172,8 @@ class Wizard(entries.RememberingWindow):
         description = self.panel.widg.get_children()[0].get_text()
         if not filename:
             msg = "The configuration can't be saved, you need to insert a profile name!\n\n"
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title('Missing info')
             dlg.run()
             dlg.destroy()
@@ -174,7 +181,8 @@ class Wizard(entries.RememberingWindow):
 
         filename = cgi.escape(filename)
         try:
-            helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile, filename , description)
+            helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile,
+                             filename, description)
         except w3afException:
             self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
             return
@@ -228,10 +236,11 @@ class Wizard(entries.RememberingWindow):
         self.nextbtn.set_label("  Save  ")
         self.finalQ = True
 
+
 class SimpleRadioButton(gtk.VBox):
     '''Simple to use radiobutton.'''
     def __init__(self, callback):
-        super(SimpleRadioButton,self).__init__()
+        super(SimpleRadioButton, self).__init__()
         self.selected = None
         self._rb = None
         self.callback = callback
@@ -243,11 +252,12 @@ class SimpleRadioButton(gtk.VBox):
         self.pack_start(self._rb, False, False)
         if self.active is None:
             self.active = obj
-        
+
     def _changed(self, widget, obj):
         if widget.get_active():
             self.callback(obj)
             self.active = obj
+
 
 class WizardChooser(entries.RememberingWindow):
     '''Window that let's the user to choose a Wizard.
@@ -255,8 +265,8 @@ class WizardChooser(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(WizardChooser,self).__init__(
-            w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards", 
+        super(WizardChooser, self).__init__(
+            w3af, "wizardchooser", "w3af - Wizard Chooser", "Wizards",
             guessResize=False)
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
@@ -264,7 +274,8 @@ class WizardChooser(entries.RememberingWindow):
         # the image at the left
         mainhbox = gtk.HBox()
         self.vbox.pack_start(mainhbox)
-        leftframe = gtk.image_new_from_file('core/ui/gui/data/wizard_frame.png')
+        leftframe = gtk.image_new_from_file(
+            'core/ui/gui/data/wizard_frame.png')
         vb = gtk.VBox()
         vb.pack_end(leftframe, False, False)
         eb = gtk.EventBox()
@@ -277,7 +288,7 @@ class WizardChooser(entries.RememberingWindow):
 
         # the message
         l = gtk.Label("Select the wizard to run:")
-        mainvbox.pack_start(l, False, False, padding = 10)
+        mainvbox.pack_start(l, False, False, padding=10)
 
         # radiobutton and descrip
         innerbox = gtk.HBox()
@@ -298,8 +309,8 @@ class WizardChooser(entries.RememberingWindow):
         gobtn = gtk.Button("Run the wizard")
         gobtn.connect("clicked", self._goWizard)
         buthbox.pack_start(gobtn, True, False)
-        mainvbox.pack_start(buthbox, False, False, padding = 10)
-        
+        mainvbox.pack_start(buthbox, False, False, padding=10)
+
         # Show all!
         self.show_all()
 
@@ -312,10 +323,10 @@ class WizardChooser(entries.RememberingWindow):
         # First, clean all the enabled plugins that the user may have selected:
         for ptype in self.w3af.plugins.get_plugin_types():
             self.w3af.plugins.set_plugins([], ptype)
-        
+
         # Destroy myself
         self.destroy()
-        
+
         # Run the selected wizard
         Wizard(self.w3af, self.rbuts.active)
 
@@ -325,8 +336,9 @@ class WizardChooser(entries.RememberingWindow):
         for arch in os.listdir("core/controllers/wizard/wizards"):
             if arch.endswith(".py") and not arch.startswith("__"):
                 base = arch[:-3]
-                modbase = __import__("core.controllers.wizard.wizards."+base, fromlist=[None])
+                modbase = __import__("core.controllers.wizard.wizards." +
+                                     base, fromlist=[None])
                 cls = getattr(modbase, base)
-                wizard_instance = cls( self.w3af )
+                wizard_instance = cls(self.w3af)
                 wizs.append(wizard_instance)
         return wizs

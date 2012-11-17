@@ -43,42 +43,42 @@ class finger_google(InfrastructurePlugin):
     '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         # Internal variables
         self._accounts = []
-        
-        # User configured 
+
+        # User configured
         self._result_limit = 300
         self._fast_search = False
-    
+
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not is_private_site( fuzzable_request.getURL().getDomain() ):
+        if not is_private_site(fuzzable_request.getURL().getDomain()):
             self._google = google(self._uri_opener)
             self._domain = domain = fuzzable_request.getURL().getDomain()
             self._domain_root = fuzzable_request.getURL().getRootDomain()
-            
+
             if self._fast_search:
                 self._do_fast_search(domain)
             else:
                 self._do_complete_search(domain)
-            
+
             self.print_uniq(kb.kb.get('finger_google', 'emails'), None)
 
-    def _do_fast_search( self, domain ):
+    def _do_fast_search(self, domain):
         '''
         Only search for mail addresses in the google result page.
         '''
-        search_string = '@'+ self._domain_root
+        search_string = '@' + self._domain_root
         try:
             result_page_objects = self._google.getNResultPages(
-                                                           search_string,
-                                                           self._result_limit
-                                                           )
+                search_string,
+                self._result_limit
+            )
         except w3afException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
@@ -86,123 +86,124 @@ class finger_google(InfrastructurePlugin):
         else:
             # Happy happy joy, no error here!
             for result in result_page_objects:
-                self._parse_document( result )
-        
-    def _do_complete_search( self, domain ):
+                self._parse_document(result)
+
+    def _do_complete_search(self, domain):
         '''
         Performs a complete search for email addresses.
         '''
-        search_string = '@'+ self._domain_root
+        search_string = '@' + self._domain_root
         try:
             result_page_objects = self._google.getNResultPages(
-                                                           search_string,
-                                                           self._result_limit
-                                                           )
+                search_string,
+                self._result_limit
+            )
         except w3afException, w3:
             om.out.error(str(w3))
             # If I found an error, I don't want to be run again
             raise w3afRunOnce()
         else:
             #   Send the requests using threads:
-            self._tm.threadpool.map(self._find_accounts, result_page_objects)            
-            
-    def _find_accounts(self, googlePage ):
+            self._tm.threadpool.map(self._find_accounts, result_page_objects)
+
+    def _find_accounts(self, googlePage):
         '''
         Finds emails in google result page.
-        
+
         @return: A list of valid accounts
         '''
         try:
             gpuri = googlePage.getURI()
             om.out.debug('Searching for emails in: ' + gpuri)
-            
+
             grep_res = True if (gpuri.getDomain() == self._domain) else False
             response = self._uri_opener.GET(gpuri, cache=True,
-                                           grep=grep_res)
+                                            grep=grep_res)
         except w3afException, w3:
             msg = 'xUrllib exception raised while fetching page in finger_google,'
             msg += ' error description: ' + str(w3)
-            om.out.debug( msg )
+            om.out.debug(msg)
             self._newAccounts = []
         else:
             self._parse_document(response)
-            
-    def _parse_document( self, response ):
+
+    def _parse_document(self, response):
         '''
         Parses the HTML and adds the mail addresses to the kb.
         '''
         try:
-            document_parser = dpCache.dpc.get_document_parser_for( response )
+            document_parser = dpCache.dpc.get_document_parser_for(response)
         except w3afException:
             # Failed to find a suitable parser for the document
             pass
         else:
             # Search for email addresses
-            for mail in document_parser.get_emails( self._domain_root ):
+            for mail in document_parser.get_emails(self._domain_root):
                 if mail not in self._accounts:
-                    self._accounts.append( mail )
-                    
+                    self._accounts.append(mail)
+
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name(mail)
-                    i.setURL( response.getURI() )
-                    msg = 'The mail account: "'+ mail + '" was found in: "'
+                    i.setURL(response.getURI())
+                    msg = 'The mail account: "' + mail + '" was found in: "'
                     msg += response.getURI() + '"'
-                    i.set_desc( msg )
+                    i.set_desc(msg)
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
                     i['url_list'] = [response.getURI(), ]
-                    kb.kb.append( 'emails', 'emails', i )
-                    kb.kb.append( self, 'emails', i )
-    
-    def get_options( self ):
+                    kb.kb.append('emails', 'emails', i)
+                    kb.kb.append(self, 'emails', i)
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         d2 = 'Fetch the first "result_limit" results from the Google search'
         o2 = opt_factory('result_limit', self._result_limit, d2, 'integer')
-        
+
         d3 = 'Do a fast search, when this feature is enabled, not all mail addresses are found'
         h3 = 'This method is faster, because it only searches for emails in the small page '
         h3 += 'snippet that google shows to the user after performing a common search.'
-        o3 = opt_factory('fastSearch', self._fast_search, d3, 'boolean', help=h3)
-        
+        o3 = opt_factory(
+            'fastSearch', self._fast_search, d3, 'boolean', help=h3)
+
         ol = OptionList()
         ol.add(o2)
         ol.add(o3)
         return ol
-        
-    def set_options( self, options_list ):
+
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._result_limit = options_list['result_limit'].get_value()
         self._fast_search = options_list['fastSearch'].get_value()
-            
-    def get_plugin_deps( self ):
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds mail addresses in google.
-        
+
         Two configurable parameters exist:
             - result_limit
             - fastSearch
-        
+
         If fastSearch is set to False, this plugin searches google for : "@domain.com", requests all
-        search results and parses them in order   to find new mail addresses. If the fastSearch 
-        configuration parameter is set to True, only mail addresses that appear on the google 
+        search results and parses them in order   to find new mail addresses. If the fastSearch
+        configuration parameter is set to True, only mail addresses that appear on the google
         result page are parsed and added to the list, the result links are\'nt visited.
         '''

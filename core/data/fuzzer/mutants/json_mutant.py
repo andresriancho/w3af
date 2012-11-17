@@ -54,19 +54,19 @@ def is_json(postdata):
 def _make_json_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, parsed_json_inst):
     res = []
-    
+
     for fuzzed_json, original_value in _fuzz_json(mutant_str_list,
-                                                  parsed_json_inst, append):    
+                                                  parsed_json_inst, append):
         freq_copy = freq.copy()
         m = JSONMutant(freq_copy)
         m.set_original_value(original_value)
         m.set_var('<JSON data>')
         m.set_dc(fuzzed_json)
-        
+
         res.append(m)
-        
+
     return res
-    
+
 
 # Now we define a function that does the work...
 def _fuzz_json(mutant_str_list, parsed_json_inst, append):
@@ -75,7 +75,7 @@ def _fuzz_json(mutant_str_list, parsed_json_inst, append):
              represents a JSON object, original value)
     '''
     res = []
-    
+
     if isinstance(parsed_json_inst, int):
         for mutant_str in mutant_str_list:
             if mutant_str.isdigit():
@@ -87,12 +87,12 @@ def _fuzz_json(mutant_str_list, parsed_json_inst, append):
                 #
                 # In the postdata.
                 if append:
-                    fuzzed = int('%s%s' % (parsed_json_inst,mutant_str))
-                    res.append((fuzzed,parsed_json_inst))
+                    fuzzed = int('%s%s' % (parsed_json_inst, mutant_str))
+                    res.append((fuzzed, parsed_json_inst))
                 else:
                     fuzzed = int(mutant_str)
-                    res.append((fuzzed,parsed_json_inst))
-    
+                    res.append((fuzzed, parsed_json_inst))
+
     elif isinstance(parsed_json_inst, basestring):
         # This will look something like:
         #
@@ -101,33 +101,34 @@ def _fuzz_json(mutant_str_list, parsed_json_inst, append):
         # In the postdata.
         for mutant_str in mutant_str_list:
             if append:
-                fuzzed = parsed_json_inst +  mutant_str
-                res.append((fuzzed,parsed_json_inst))
+                fuzzed = parsed_json_inst + mutant_str
+                res.append((fuzzed, parsed_json_inst))
             else:
-                res.append((mutant_str,parsed_json_inst))
-                
-                
+                res.append((mutant_str, parsed_json_inst))
+
     elif isinstance(parsed_json_inst, list):
         # This will look something like:
         #
         # ["abc", "def"]
         #
         # In the postdata.
-        for item, i in zip( parsed_json_inst,xrange(len(parsed_json_inst)) ):
-            fuzzed_item_list = _fuzz_json( mutant_str_list, parsed_json_inst[i] , append )
+        for item, i in zip(parsed_json_inst, xrange(len(parsed_json_inst))):
+            fuzzed_item_list = _fuzz_json(
+                mutant_str_list, parsed_json_inst[i], append)
             for fuzzed_item, original_value in fuzzed_item_list:
-                json_postdata_copy = copy.deepcopy( parsed_json_inst )
-                json_postdata_copy[ i ] = fuzzed_item
-                res.append( (json_postdata_copy, original_value) )
-    
+                json_postdata_copy = copy.deepcopy(parsed_json_inst)
+                json_postdata_copy[i] = fuzzed_item
+                res.append((json_postdata_copy, original_value))
+
     elif isinstance(parsed_json_inst, dict):
         for key in parsed_json_inst:
-            fuzzed_item_list = _fuzz_json( mutant_str_list, parsed_json_inst[key] , append )
+            fuzzed_item_list = _fuzz_json(
+                mutant_str_list, parsed_json_inst[key], append)
             for fuzzed_item, original_value in fuzzed_item_list:
-                json_postdata_copy = copy.deepcopy( parsed_json_inst )
-                json_postdata_copy[ key ] = fuzzed_item
-                res.append( (json_postdata_copy, original_value) )
-    
+                json_postdata_copy = copy.deepcopy(parsed_json_inst)
+                json_postdata_copy[key] = fuzzed_item
+                res.append((json_postdata_copy, original_value))
+
     return res
 
 
@@ -135,10 +136,10 @@ class JSONMutant(PostDataMutant):
     '''
     This class is a JSON mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         PostDataMutant.__init__(self, freq)
-         
-    def get_mutant_type( self ):
+
+    def get_mutant_type(self):
         return 'JSON data'
 
     def getHeaders(self):
@@ -152,7 +153,7 @@ class JSONMutant(PostDataMutant):
         I had to implement this again here instead of just inheriting from
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
-        
+
         @return: A string representing WHAT was fuzzed.
         '''
         res = ''
@@ -161,7 +162,7 @@ class JSONMutant(PostDataMutant):
         res += str(self.get_dc())
         res += '"'
         return res
-    
+
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
@@ -171,14 +172,13 @@ class JSONMutant(PostDataMutant):
         '''
         if not isinstance(freq, HTTPPostDataRequest):
             return []
-                
+
         if not is_json(freq.getData()):
             return []
-                
+
         # Now, fuzz the parsed JSON data...
         post_data = freq.getData()
         parsed_json_inst = json.loads(post_data)
         return _make_json_mutants(freq, mutant_str_list,
                                   fuzzable_param_list,
-                                  append, parsed_json_inst )
-    
+                                  append, parsed_json_inst)

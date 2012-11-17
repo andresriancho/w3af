@@ -35,10 +35,10 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
     Try to find the path where the WordPress is installed
     @author: Andres Tarantini ( atarantini@gmail.com )
     '''
-    
+
     CHECK_PATHS = ['wp-content/plugins/akismet/akismet.php',
                    'wp-content/plugins/hello.php']
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -50,48 +50,49 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
-        if not self._exec :
+        if not self._exec:
             raise w3afRunOnce()
         else:
             # Check if there is a wordpress installation in this directory
             domain_path = fuzzable_request.getURL().getDomainPath()
-            wp_unique_url = domain_path.urlJoin( 'wp-login.php' )
+            wp_unique_url = domain_path.urlJoin('wp-login.php')
             response = self._uri_opener.GET(wp_unique_url, cache=True)
 
             # If wp_unique_url is not 404, wordpress = true
-            if not is_404( response ):
+            if not is_404(response):
                 # Only run once
                 self._exec = False
-                
+
                 extracted_paths = self._extract_paths(domain_path)
-                self._force_disclosures(domain_path, 
+                self._force_disclosures(domain_path,
                                         self.CHECK_PATHS + extracted_paths)
-    
+
     def _extract_paths(self, domain_path):
         '''
         @param domain_path: The URL object pointing to the current wordpress
                             installation
         @return: A list with the paths that might trigger full path disclosures
-        
+
         TODO: Will fail if WordPress is running on a Windows server due to
               paths manipulation.
         '''
         theme_paths = []
-        wp_root_response = self._uri_opener.GET( domain_path, cache=True )
-        
-        if not is_404( wp_root_response ):
+        wp_root_response = self._uri_opener.GET(domain_path, cache=True)
+
+        if not is_404(wp_root_response):
             response_body = wp_root_response.getBody()
-            
+
             theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
             theme = re.search(theme_regexp, response_body, re.IGNORECASE)
             if theme:
                 theme_name = theme.group(1)
                 for fname in ('header', 'footer'):
-                    path_fname = 'wp-content/themes/%s/%s.php' % (theme_name, fname)
+                    path_fname = 'wp-content/themes/%s/%s.php' % (
+                        theme_name, fname)
                     theme_paths.append(path_fname)
-        
+
         return theme_paths
-    
+
     def _force_disclosures(self, domain_path, potentially_vulnerable_paths):
         '''
         @param domain_path: The path to wordpress' root directory
@@ -99,29 +100,28 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
                                              with @domain_path, GET and parse.
         '''
         for pvuln_path in potentially_vulnerable_paths:
-            
+
             pvuln_url = domain_path.urlJoin(pvuln_path)
             response = self._uri_opener.GET(pvuln_url, cache=True)
 
-            if is_404( response ):
+            if is_404(response):
                 continue
-            
+
             response_body = response.getBody()
             if 'Fatal error: ' in response_body:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('WordPress path disclosure')
-                i.setURL( pvuln_url )
-                i.set_id( response.id )
+                i.setURL(pvuln_url)
+                i.set_id(response.id)
                 desc = 'Analyze the HTTP response body to find the full path'\
                        ' where wordpress was installed.'
-                i.set_desc( desc )
-                kb.kb.append( self, 'info', i )
-                om.out.information( i.get_desc() )
+                i.set_desc(desc)
+                kb.kb.append(self, 'info', i)
+                om.out.information(i.get_desc())
                 break
 
-
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

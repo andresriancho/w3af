@@ -32,49 +32,49 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class ajax(GrepPlugin):
     '''
     Grep every page for traces of Ajax code.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Internal variables
         self._already_inspected = ScalableBloomFilter()
-        
+
         # Create the regular expression to search for AJAX
         ajax_regex_string = '(XMLHttpRequest|eval\(|ActiveXObject|Msxml2\.XMLHTTP|'
         ajax_regex_string += 'ActiveXObject|Microsoft\.XMLHTTP)'
-        self._ajax_regex_re = re.compile( ajax_regex_string, re.IGNORECASE )
-        
+        self._ajax_regex_re = re.compile(ajax_regex_string, re.IGNORECASE)
+
         # Compile the XPATH
         self._script_xpath = etree.XPath('.//script')
 
     def grep(self, request, response):
         '''
         Plugin entry point.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         url = response.getURL()
         if response.is_text_or_html() and url not in self._already_inspected:
-            
+
             # Don't repeat URLs
             self._already_inspected.add(url)
-            
+
             dom = response.getDOM()
             # In some strange cases, we fail to normalize the document
             if dom is not None:
 
-                script_elements = self._script_xpath( dom )
+                script_elements = self._script_xpath(dom)
                 for element in script_elements:
                     # returns the text between <script> and </script>
                     script_content = element.text
-                    
+
                     if script_content is not None:
-                        
+
                         res = self._ajax_regex_re.search(script_content)
                         if res:
                             i = info.info()
@@ -90,9 +90,9 @@ class ajax(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'ajax', 'ajax' ), 'URL' )
-    
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('ajax', 'ajax'), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

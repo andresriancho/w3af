@@ -40,7 +40,7 @@ class pluginsMenu(menu):
 
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
-        types = w3af.plugins.get_plugin_types()        
+        types = w3af.plugins.get_plugin_types()
         self._children = {}
 
         self._loadHelp('plugins')
@@ -52,34 +52,33 @@ class pluginsMenu(menu):
 
 #        self._help.addHelpEntry('list', "List plugins by their type", 'commands')
 #        self._help.addHelpEntry('config', "Config plugins (same as <type> config>)", 'commands')
-          
-    def __loadPluginTypesHelp(self, types): 
+
+    def __loadPluginTypesHelp(self, types):
         vars = {}
         for t in types:
             pList = self._w3af.plugins.get_plugin_list(t)
-            (p1, p2) = len(pList)>1 and (pList[0], pList[1]) \
+            (p1, p2) = len(pList) > 1 and (pList[0], pList[1]) \
                 or ('plugin1', 'plugin2')
             vars['PLUGIN1'], vars['PLUGIN2'] = p1, p2
             vars['TYPE'] = t
-            
+
             self._loadHelp('plugin_type', vars=vars)
-    
+
     def getChildren(self):
         return self._children
 
     def execute(self, tokens):
         '''
         This is a trick to make this console back-compatible.
-        For example, command 'audit' means 'show all audit plugins', 
+        For example, command 'audit' means 'show all audit plugins',
         while command 'audit xss' means 'enable xss plugin'.
         At the same time, to show only enabled audit plugin, the command
-        'list audit enabled' has to be used. 
+        'list audit enabled' has to be used.
         That's an inconsistency, which needs a resolution.
         '''
         if len(tokens) == 1 and tokens[0] in self._children:
             return self._cmd_list(tokens)
         return menu.execute(self, tokens)
-
 
 #    def _cmd_config(self, params):
 #        try:
@@ -89,8 +88,6 @@ class pluginsMenu(menu):
 #            self._cmd_help(['config'])
 #        else:
 #            subMenu._list(params[1:])
-
-
     def _cmd_list(self, params):
         try:
             type = params[0]
@@ -104,32 +101,32 @@ class pluginsMenu(menu):
 
     def _para_list(self, params, part):
         l = len(params)
-        if l==0:
+        if l == 0:
             return suggest(self._children.keys(), part)
-        if l==1:
+        if l == 1:
             return suggest(['all', 'enabled', 'disabled'], part)
         return []
 
-        
+
 class pluginsTypeMenu(menu):
     '''
-        Common menu for all types of plugins. 
+        Common menu for all types of plugins.
         The type of plugins is defined by the menu's own name.
     '''
     def __init__(self, name, console, w3af, parent):
         menu.__init__(self, name, console, w3af, parent)
         plugins = w3af.plugins.get_plugin_list(name)
-        self._plugins = {} # name to number of options
+        self._plugins = {}  # name to number of options
         for p in plugins:
             try:
-                options = self._w3af.plugins.get_plugin_inst(self._name, p).get_options()
+                options = self._w3af.plugins.get_plugin_inst(
+                    self._name, p).get_options()
             except Exception, e:
-                om.out.error('Error while reading plugin options: "%s"' % e)                
+                om.out.error('Error while reading plugin options: "%s"' % e)
                 sys.exit(-8)
             else:
                 self._plugins[p] = len(options)
         self._configs = {}
-      
 
     def suggestCommands(self, part, *skip):
         return suggest(self._plugins.keys() + ['all'], part.lstrip('!')) + \
@@ -138,18 +135,17 @@ class pluginsTypeMenu(menu):
     def suggestParams(self, command, params, part):
         if command in self.getCommands():
             return menu.suggestParams(self, command, params, part)
-        
-        alreadySel =[s.lstrip('!') for s in [command] + params]
-        
+
+        alreadySel = [s.lstrip('!') for s in [command] + params]
+
         plugins = self._plugins.keys()
         return suggest(plugins, part.lstrip('!'), alreadySel)
-
 
     def getCommands(self):
         return ['config', 'desc']
 
     def execute(self, tokens):
-        if len(tokens)>0:
+        if len(tokens) > 0:
             command, params = tokens[0], tokens[1:]
             #print "command: " + command + "; " + str(self.getCommands())
             if command in self.getCommands():
@@ -161,17 +157,17 @@ class pluginsTypeMenu(menu):
 
     def _enablePlugins(self, list):
         enabled = copy.copy(self._w3af.plugins.get_enabled_plugins(self._name))
-        
+
         for plugin in list:
-            if plugin=='':
-                continue 
+            if plugin == '':
+                continue
             if plugin.startswith('!'):
                 disabling = True
                 plugin = plugin.lstrip('!')
             else:
                 disabling = False
 
-            if plugin!='all' and plugin not in self._plugins:
+            if plugin != 'all' and plugin not in self._plugins:
                 raise w3afException("Unknown plugin: '%s'" % plugin)
 
             if disabling:
@@ -183,7 +179,7 @@ class pluginsTypeMenu(menu):
                 enabled = self._plugins.keys()
             elif plugin not in enabled:
                 enabled.append(plugin)
-        
+
         # Note: Disabling this check after talking with olle. Only advanced users
         #       are going to remove the console output plugin, and if someone
         #       else does, he will realize that he fucked up ;)
@@ -196,18 +192,18 @@ class pluginsTypeMenu(menu):
         # blind mode:
         #
         if self._name == 'output' and 'console' not in enabled and \
-        len(enabled) == 0:
+                len(enabled) == 0:
             msg = "Warning: You disabled the console output plugin. If you"\
                   " start a new scan, the discovered vulnerabilities won\'t be"\
                   " printed to the console, we advise you to enable at least"\
                   " one output plugin in order to be able to actually see the"\
                   " the scan output."
-            om.out.console( msg )
-            
+            om.out.console(msg)
+
         self._w3af.plugins.set_plugins(enabled, self._name)
 
     def _cmd_desc(self, params):
-        
+
         if len(params) == 0:
             raise w3afException("Plugin name is required")
 
@@ -218,19 +214,17 @@ class pluginsTypeMenu(menu):
         plugin = self._w3af.plugins.get_plugin_inst(self._name, plugin_name)
         long_desc = plugin.get_long_desc()
         long_desc = textwrap.dedent(long_desc)
-        om.out.console( long_desc )
-
+        om.out.console(long_desc)
 
     def _para_desc(self, params, part):
-        if len(params)>0:
+        if len(params) > 0:
             return []
 
         return suggest(self._plugins.keys(), part)
 
-        
     def _list(self, params):
         #print 'list : ' + str(params)
-        filter = len(params)>0 and params[0] or 'all'
+        filter = len(params) > 0 and params[0] or 'all'
 
         all = self._plugins.keys()
         enabled = self._w3af.plugins.get_enabled_plugins(self._name)
@@ -243,46 +237,44 @@ class pluginsTypeMenu(menu):
             list = [p for p in all if p not in enabled]
         else:
             list = []
-                       
 
         if len(list) == 0:
             om.out.console('No plugins have status ' + filter)
             return
-
 
         list.sort()
         table = [['Plugin name', 'Status', 'Conf', 'Description']]
 
         for plugin_name in list:
             row = []
-            plugin = self._w3af.plugins.get_plugin_inst(self._name, plugin_name)
-    
+            plugin = self._w3af.plugins.get_plugin_inst(
+                self._name, plugin_name)
+
             optCount = self._plugins[plugin_name]
             row.append(plugin_name)
             status = plugin_name in enabled and 'Enabled' or ''
             row.append(status)
-            optInfo = optCount>0 and 'Yes' or ''
+            optInfo = optCount > 0 and 'Yes' or ''
             row.append(optInfo)
             row.append(str(plugin.get_desc()))
 
             table.append(row)
         self._console.drawTable(table, True)
 
-       
     def _cmd_config(self, params):
-        
-        if len(params) ==0:
+
+        if len(params) == 0:
             raise w3afException("Plugin name is required")
 
         name = params[0]
 
         if name not in self._plugins:
-            raise w3afException("Unknown plugin: '%s'" %name)
+            raise w3afException("Unknown plugin: '%s'" % name)
 
-        if self._configs.has_key(name):
+        if name in self._configs:
             config = self._configs[name]
         else:
-            config = configMenu(name, self._console, self._w3af, self, 
+            config = configMenu(name, self._console, self._w3af, self,
                                 self._w3af.plugins.get_plugin_inst(self._name, params[0]))
             self._configs[name] = config
 
@@ -292,12 +284,10 @@ class pluginsTypeMenu(menu):
         if len(params) > 0:
             return []
 
-        return suggest([p for p in self._plugins.keys() \
-            if self._plugins[p] > 0], part)
-                
+        return suggest([p for p in self._plugins.keys()
+                        if self._plugins[p] > 0], part)
+
     def _para_list(self, params, part=''):
-        if len(params)==0:
+        if len(params) == 0:
             return suggest(['enabled', 'all', 'disabled'], part)
         return []
-
-

@@ -27,9 +27,9 @@ from core.data.options.option_types import OUTPUT_FILE
 
 
 class OutputFileOption(BaseOption):
-    
+
     _type = OUTPUT_FILE
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -37,11 +37,11 @@ class OutputFileOption(BaseOption):
 
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
-        '''  
+        '''
         self._value = self.validate(value)
-    
+
     def validate(self, value):
-             
+
         directory = os.path.abspath(os.path.dirname(value))
         if not os.path.isdir(directory):
             msg = 'Invalid file option value "%s", the directory does not'\
@@ -56,10 +56,10 @@ class OutputFileOption(BaseOption):
         # Please note the following:
         #     >>> os.path.abspath(os.path.dirname(''))
         #     '/home/foobar/workspace/threading2'
-        # 
+        #
         # This is why we need this check:
         if value == '':
             msg = 'Invalid file option, you have to specify a non-empty value.'
             raise w3afException(msg)
-        
+
         return value

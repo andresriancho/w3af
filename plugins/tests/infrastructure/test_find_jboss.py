@@ -23,23 +23,22 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFindJBoss(PluginTest):
-    
+
     target_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': target_url,
-                'plugins': {'infrastructure': (PluginConfig('find_jboss'),)}
-                }
+        'target': target_url,
+        'plugins': {'infrastructure': (PluginConfig('find_jboss'),)}
         }
-    
+    }
+
     def test_find_jboss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('find_jboss', 'find_jboss')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
         self.assertEqual('JMX Invoker enabled without Auth', info.get_name())
-        

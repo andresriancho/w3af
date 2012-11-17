@@ -40,69 +40,70 @@ class find_captchas(CrawlPlugin):
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        
+
         self._captchas_found = disk_set()
-        
-    def crawl(self, fuzzable_request ):
+
+    def crawl(self, fuzzable_request):
         '''
         Find CAPTCHA images.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         # GET the document, and fetch the images
-        images_1 = self._get_images( fuzzable_request )
-        
+        images_1 = self._get_images(fuzzable_request)
+
         # Re-GET the document, and fetch the images
-        images_2 = self._get_images( fuzzable_request )
-        
+        images_2 = self._get_images(fuzzable_request)
+
         # If the number of images in each response is different, don't even bother
         # to perform any analysis since our simplistic approach will fail.
         # TODO: Add something more advanced.
         if len(images_1) == len(images_2):
-            
+
             not_in_2 = []
-            
+
             for img_src_1, img_hash_1 in images_1:
                 for _, img_hash_2 in images_2:
                     if img_hash_1 == img_hash_2:
-                        # The image is in both lists, can't be a CAPTCHA 
+                        # The image is in both lists, can't be a CAPTCHA
                         break
                 else:
-                    not_in_2.append( (img_src_1, img_hash_1) )
-            
+                    not_in_2.append((img_src_1, img_hash_1))
+
             # Results
             #
             # TODO: This allows for more than one CAPTCHA in the same page. Does
             #       that make sense? When that's found, should I simply declare
             #       defeat and don't report anything?
             for img_src, _ in not_in_2:
-                
+
                 if img_src.uri2url() not in self._captchas_found:
-                    self._captchas_found.add( img_src.uri2url() )
-                    
+                    self._captchas_found.add(img_src.uri2url())
+
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Captcha image detected')
-                    i.setURI( img_src )
-                    i.set_method( 'GET' )
-                    i.set_desc( 'Found a CAPTCHA image at: "%s".' % img_src)
-                    kb.kb.append( self, 'CAPTCHA', i )
-                    om.out.information( i.get_desc() )
-            
+                    i.setURI(img_src)
+                    i.set_method('GET')
+                    i.set_desc('Found a CAPTCHA image at: "%s".' % img_src)
+                    kb.kb.append(self, 'CAPTCHA', i)
+                    om.out.information(i.get_desc())
+
         return []
-    
-    def _get_images( self, fuzzable_request ):
+
+    def _get_images(self, fuzzable_request):
         '''
         Get all img tags and retrieve the src.
-        
+
         @param fuzzable_request: The request to modify
         @return: A list with tuples containing (img_src, image_hash)
         '''
         res = []
 
         try:
-            response = self._uri_opener.GET( fuzzable_request.getURI(), cache=False )
+            response = self._uri_opener.GET(
+                fuzzable_request.getURI(), cache=False)
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
@@ -110,23 +111,25 @@ class find_captchas(CrawlPlugin):
             # *might* change the image name for each request of the HTML
             #dp = dpCache.dpc.get_document_parser_for( response )
             try:
-                document_parser = DocumentParser.DocumentParser( response )
+                document_parser = DocumentParser.DocumentParser(response)
             except w3afException:
                 pass
             else:
                 image_path_list = document_parser.get_references_of_tag('img')
-                
+
                 GET = self._uri_opener.GET
-                result_iter = self._tm.threadpool.imap_unordered(GET, image_path_list)
+                result_iter = self._tm.threadpool.imap_unordered(
+                    GET, image_path_list)
                 for image_response in result_iter:
                     if image_response.is_image():
                         img_src = image_response.getURI()
-                        img_hash = hashlib.sha1(image_response.getBody()).hexdigest()
-                        res.append( (img_src, img_hash) ) 
-        
+                        img_hash = hashlib.sha1(
+                            image_response.getBody()).hexdigest()
+                        res.append((img_src, img_hash))
+
         return res
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

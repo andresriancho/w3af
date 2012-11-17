@@ -23,26 +23,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGeneric(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?id=1',
             'plugins': {
-                 'audit': (PluginConfig('generic'),),
-                 }
+                'audit': (PluginConfig('generic'),),
             }
         }
-    
+    }
+
     def test_found_generic(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('generic', 'generic')
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Unidentified vulnerability', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.getURL()))
-        

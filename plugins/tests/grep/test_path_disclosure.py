@@ -41,21 +41,22 @@ class test_path_disclosure(unittest.TestCase):
 
     def tearDown(self):
         self.plugin.end()
-            
+
     def test_path_disclosure(self):
-        
-        res = HTTPResponse(200, 'header body footer' , self.header, self.url, self.url)
-        self.plugin.grep( self.request, res )
+
+        res = HTTPResponse(
+            200, 'header body footer', self.header, self.url, self.url)
+        self.plugin.grep(self.request, res)
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
-        self.assertEquals( len(infos), 0)
-    
+        self.assertEquals(len(infos), 0)
+
     def test_path_disclosure_positive(self):
-        res = HTTPResponse(200, 'header /etc/passwd footer' , self.header, self.url, self.url)
-        self.plugin.grep( self.request, res )
-        
+        res = HTTPResponse(200, 'header /etc/passwd footer',
+                           self.header, self.url, self.url)
+        self.plugin.grep(self.request, res)
+
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
-        self.assertEquals( len(infos), 1 )
-        
+        self.assertEquals(len(infos), 1)
+
         path = infos[0]['path']
-        self.assertEqual( path, '/etc/passwd' )
-        
+        self.assertEqual(path, '/etc/passwd')

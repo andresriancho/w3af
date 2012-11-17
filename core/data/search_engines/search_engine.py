@@ -27,7 +27,7 @@ from core.data.dc.headers import Headers
 class SearchEngine(object):
     '''
     This class represents a search engine .
-    
+
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
@@ -36,7 +36,8 @@ class SearchEngine(object):
         #   Based on some tests performed by Nahuel Sanchez, Google will allow us to automate
         #   searches if we use this user agent:
         #
-        hdrs = [('User-Agent', 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)')]
+        hdrs = [('User-Agent',
+                 'Googlebot/3.1 (+http://www.googlebot.com/bot.html)')]
         self._headers = Headers(hdrs)
 
     def getNResults(self, query, limit=0):
@@ -113,25 +114,24 @@ class SearchEngine(object):
     def search(self, query, start, count=10):
         '''
         This method is meant to be overriden by the subclasses of SearchEngine.py
-        
+
         This method searches the web and returns a list of URLs.
-        
+
         @param query: The query that we want to perform in the search engine
         @param start: The first result item
         @param count: How many results to get from start
         '''
-        raise NotImplementedError('SearchEngine subclasses should implement the search method.')
+        raise NotImplementedError(
+            'SearchEngine subclasses should implement the search method.')
 
     def page_search(self, query, start, count=10):
         '''
         This method is meant to be overriden by the subclasses of SearchEngine.py
-        
+
         This method searches the web and returns a list of http response objects.
-        
+
         @param query: The query that we want to perform in the search engine
         @param start: The first result item
         @param count: How many results to get from start
         '''
         raise NotImplementedError('SearchEngine subclasses should implement the page_search method.')
-
-

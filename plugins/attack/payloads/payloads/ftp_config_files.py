@@ -29,17 +29,17 @@ class ftp_config_files(base_payload):
         yield '/etc/pam.d/ftp'
         yield '/etc/xinetd.d/wu-ftpd'
         yield '/opt/bin/ftponly'
-                
+
     def api_read(self):
         result = {}
 
         fname_iter = self.fname_generator()
         for file_path, content in self.read_multi(fname_iter):
             if content:
-                result.update({file_path:content})
+                result.update({file_path: content})
 
         return result
-    
+
     def run_read(self):
         api_result = self.api_read()
         result = []
@@ -51,7 +51,6 @@ class ftp_config_files(base_payload):
                 result.append('-------------------------')
                 result.append(content)
 
-        if result == [ ]:
+        if result == []:
             result.append('FTP configuration files not found.')
         return result
-        

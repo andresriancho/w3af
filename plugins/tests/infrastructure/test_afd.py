@@ -22,60 +22,59 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestAFD(PluginTest):
-    
+
     modsecurity_https_url = 'https://modsecurity/'
     modsecurity_http_url = 'http://modsecurity/'
     moth_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('afd'),)}
-            }
         }
-    
+    }
+
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_http_url, cfg['plugins'])
-        
+
         infos = self.kb.get('afd', 'afd')
-        
-        self.assertEqual( len(infos), 1, infos )
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
-        self.assertEqual( info.get_name(), 'Active filter detected')
-        values = [ u.split('=')[1] for u in info['filtered'] ]
+
+        self.assertEqual(info.get_name(), 'Active filter detected')
+        values = [u.split('=')[1] for u in info['filtered']]
 
         expected = [
-                    '..%2F..%2F..%2F..%2Fetc%2Fpasswd',
-                    '.%2F..%2F..%2F..%2Fetc%2Fmotd%00html',
-                    'id%3Buname+-a',
-                    '%3C%3F+passthru%28%22id%22%29%3B%3F%3E',
-                    'type%2Bc%3A%5Cwinnt%5Crepair%5Csam._',
-                    '..%2F..%2FWINNT%2Fsystem32%2Fcmd.exe%3Fdir%2Bc%3A%5C',
-                    'ps+-aux%3B',
-                    '..%2F..%2F..%2F..%2Fbin%2Fchgrp+nobody+%2Fetc%2Fshadow%7C',
-                    'SELECT+TOP+1+name+FROM+sysusers',
-                    'exec+master..xp_cmdshell+dir',
-                    'exec+xp_cmdshell+dir'
-                    ]
-        
-        self.assertEqual( set(expected),set(values), values)
+            '..%2F..%2F..%2F..%2Fetc%2Fpasswd',
+            '.%2F..%2F..%2F..%2Fetc%2Fmotd%00html',
+            'id%3Buname+-a',
+            '%3C%3F+passthru%28%22id%22%29%3B%3F%3E',
+            'type%2Bc%3A%5Cwinnt%5Crepair%5Csam._',
+            '..%2F..%2FWINNT%2Fsystem32%2Fcmd.exe%3Fdir%2Bc%3A%5C',
+            'ps+-aux%3B',
+            '..%2F..%2F..%2F..%2Fbin%2Fchgrp+nobody+%2Fetc%2Fshadow%7C',
+            'SELECT+TOP+1+name+FROM+sysusers',
+            'exec+master..xp_cmdshell+dir',
+            'exec+xp_cmdshell+dir'
+        ]
+
+        self.assertEqual(set(expected), set(values), values)
 
     def test_afd_found_https(self):
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_https_url, cfg['plugins'])
-        
+
         infos = self.kb.get('afd', 'afd')
-        
-        self.assertEqual( len(infos), 1, infos )
+
+        self.assertEqual(len(infos), 1, infos)
 
     def test_afd_not_found(self):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
-        
+
         infos = self.kb.get('afd', 'afd')
-        
-        self.assertEqual( len(infos), 0, infos )
-                
+
+        self.assertEqual(len(infos), 0, infos)

@@ -36,4 +36,3 @@ def refresh_gui(delay=0.0001, wait=0.0001):
     while gtk.events_pending():
         gtk.main_iteration_do(block=False)
         time.sleep(wait)
-        

@@ -27,9 +27,9 @@ from core.data.options.option_types import REGEX
 
 
 class RegexOption(BaseOption):
-    
+
     _type = REGEX
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -39,13 +39,13 @@ class RegexOption(BaseOption):
         looking object like True or ['a','b','c'].
         '''
         self._value = self.validate(value)
-    
-    def validate(self, value): 
+
+    def validate(self, value):
         try:
             re.compile(value)
         except Exception, e:
             msg = 'The regular expression "%s" is invalid, the compilation'\
                   ' error was: "%s".'
-            raise w3afException(msg% (value, e))
+            raise w3afException(msg % (value, e))
         else:
             return value

@@ -33,37 +33,37 @@ from core.data.parsers.url import URL
 class sitemap_xml(CrawlPlugin):
     '''
     Analyze the sitemap.xml file and find new URLs
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        
+
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         Get the sitemap.xml file and parse it.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                    (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
-        sitemap_url = base_url.urlJoin( 'sitemap.xml' )
-        response = self._uri_opener.GET( sitemap_url, cache=True )
-        
+        sitemap_url = base_url.urlJoin('sitemap.xml')
+        response = self._uri_opener.GET(sitemap_url, cache=True)
+
         # Remember that HTTPResponse objects have a faster "__in__" than
         # the one in strings; so string in response.getBody() is slower than
         # string in response
-        if '</urlset>' in response and not is_404( response ):
+        if '</urlset>' in response and not is_404(response):
             om.out.debug('Analyzing sitemap.xml file.')
-            
-            for fr in self._create_fuzzable_requests( response ):
+
+            for fr in self._create_fuzzable_requests(response):
                 self.output_queue.put(fr)
-            
+
             om.out.debug('Parsing xml file with xml.dom.minidom.')
             try:
-                dom = xml.dom.minidom.parseString( response.getBody() )
+                dom = xml.dom.minidom.parseString(response.getBody())
             except:
                 raise w3afException('Error while parsing sitemap.xml')
             else:
@@ -74,42 +74,43 @@ class sitemap_xml(CrawlPlugin):
                         url = url.childNodes[0].data
                         url = URL(url)
                     except ValueError, ve:
-                        om.out.debug('Sitemap file had an invalid URL: "%s"' % ve)
+                        om.out.debug(
+                            'Sitemap file had an invalid URL: "%s"' % ve)
                     except:
                         om.out.debug('Sitemap file had an invalid format')
                     else:
                         parsed_url_list.append(url)
-                
+
                 self._tm.threadpool.map(self._get_and_parse, parsed_url_list)
-        
+
     def _get_and_parse(self, url):
         '''
         GET and URL that was found in the robots.txt file, and parse it.
-        
+
         @param url: The URL to GET.
         @return: None, everything is put() to self.output_queue.
         '''
         try:
-            http_response = self._uri_opener.GET( url, cache=True )
+            http_response = self._uri_opener.GET(url, cache=True)
         except KeyboardInterrupt, k:
             raise k
         except w3afException, w3:
             msg = 'w3afException while fetching page in crawl.sitemap_xml, error: "'
             msg += str(w3) + '"'
-            om.out.debug( msg )
+            om.out.debug(msg)
         else:
-            if not is_404( http_response ):
-                for fr in self._create_fuzzable_requests( http_response ):
+            if not is_404(http_response):
+                for fr in self._create_fuzzable_requests(http_response):
                     self.output_queue.put(fr)
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin searches for the sitemap.xml file, and parses it.
-        
-        The sitemap.xml file is used by the site administrator to give the 
+
+        The sitemap.xml file is used by the site administrator to give the
         Google crawler more information about the site. By parsing this file,
         the plugin finds new URLs and other useful information.
         '''

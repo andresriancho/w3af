@@ -27,19 +27,19 @@ class CookieMutant(Mutant):
     '''
     This class is a headers mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type( self ):
+    def get_mutant_type(self):
         return 'cookie'
 
-    def getURL( self ):
+    def getURL(self):
         '''
         The next methods (getURL and getURI) are really simple, but they override
         the URL creation algorithm of HTTPQSRequest, that uses the self._dc
         attribute. If I don't have these methods, I end up with something like
         this:
-        
+
         ========================================Request 15 - Sat Oct 27 21:05:34 2007========================================
         GET http://localhost/w3af/cookieFuzzing/cf.php?domain=%3CSCRIPT%3Ealert2%28%27bzbbw1R8AJ9ALQEM5jKI50fZn%27%29%3C%2FSCRIPT%3E HTTP/1.1
         Host: localhost
@@ -49,54 +49,54 @@ class CookieMutant(Mutant):
         User-agent: w3af.sourceforge.net
         '''
         return self._url
-    
-    def getURI( self ):
+
+    def getURI(self):
         return self._uri
 
-    def set_dc( self, c ):
-        self.set_cookie( c )
-        
-    def get_dc( self ):
+    def set_dc(self, c):
+        self.set_cookie(c)
+
+    def get_dc(self):
         return self.get_cookie()
-        
-    def set_mod_value( self, val ):
+
+    def set_mod_value(self, val):
         '''
         Set the value of the variable that this mutant modifies.
         '''
         try:
-            self._freq._cookie[ self.get_var() ][ self._index ] = val
+            self._freq._cookie[self.get_var()][self._index] = val
         except Exception:
             msg = 'The mutant object wasn\'t correctly initialized.'
             raise ValueError(msg)
-        
-    def get_mod_value( self ): 
+
+    def get_mod_value(self):
         try:
-            return self._freq._cookie[ self.get_var() ][ self._index ]
+            return self._freq._cookie[self.get_var()][self._index]
         except:
             msg = 'The mutant object wasn\'t correctly initialized.'
             raise ValueError(msg)
-            
+
     def found_at(self):
         '''
         @return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified parameter was the'\
               ' session cookie with value: "%s".'
-                      
+
         # Depending on the data container, print different things:
         dc_length = len(self._freq._dc)
-        
+
         if dc_length > 65:
-            cookie_str = '...%s=%s...' % (self.get_var(), self.get_mod_value()) 
+            cookie_str = '...%s=%s...' % (self.get_var(), self.get_mod_value())
         else:
             cookie_str = str(self.get_dc())
-        
-        return fmt % (self.getURI(), self.get_method(), cookie_str)       
 
-    def print_mod_value( self ):
+        return fmt % (self.getURI(), self.get_method(), cookie_str)
+
+    def print_mod_value(self):
         fmt = 'The cookie data that was sent is: "%s".'
         return fmt % self.get_dc()
-    
+
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
@@ -106,13 +106,14 @@ class CookieMutant(Mutant):
         '''
         if not isinstance(freq, HTTPQSRequest):
             return []
-                
+
         if not fuzzer_config['fuzz_cookies']:
             return []
-        
+
         orig_cookie = freq.get_cookie()
-        
-        return Mutant._create_mutants_worker(freq, CookieMutant, mutant_str_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config,
-                                             data_container=orig_cookie)
+
+        return Mutant._create_mutants_worker(
+            freq, CookieMutant, mutant_str_list,
+            fuzzable_param_list,
+            append, fuzzer_config,
+            data_container=orig_cookie)

@@ -21,17 +21,18 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestURLFuzzer(PluginTest):
-    
+
     base_url = 'http://moth/w3af/crawl/url_fuzzer'
-    
+
     _run_configs = {
         'cfg1': {
             'target': base_url + '/index.html',
             'plugins': {'crawl': (PluginConfig('url_fuzzer'),)}
-            }
         }
-    
+    }
+
     def test_fuzzer_found_urls(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -39,6 +40,6 @@ class TestURLFuzzer(PluginTest):
                          '/index.html.zip', '.tgz')
         urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.base_url + end) for end in expected_urls)
-                )
+            set(str(u) for u in urls),
+            set((self.base_url + end) for end in expected_urls)
+        )

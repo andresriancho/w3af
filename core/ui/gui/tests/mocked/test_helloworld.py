@@ -26,24 +26,23 @@ from core.ui.gui.tests.helloworld import HelloWorld
 
 
 class TestHelloWorld(unittest.TestCase):
-    
+
     def test_get_instance(self):
         HelloWorld()
 
     def test_title_is_correct(self):
         hw = HelloWorld()
-        self.assertEqual( hw.window.get_title(), 'helloworld.py')
-        
+        self.assertEqual(hw.window.get_title(), 'helloworld.py')
+
     def test_click_button(self):
         module = 'core.ui.gui.tests.helloworld.%s'
         with patch(module % 'gtk.main_quit') as main_quit_mock:
             with patch(module % 'HelloWorld.hello') as hello_mock:
                 hw = HelloWorld()
                 hw.button.clicked()
-                self.assertEqual( hw.window.get_title(), 'helloworld.py')
+                self.assertEqual(hw.window.get_title(), 'helloworld.py')
                 self.assertTrue(hello_mock.called)
                 self.assertTrue(main_quit_mock.called)
-                
+
                 # Still haven't found the need to use this one...
                 # refresh_gui()
-                

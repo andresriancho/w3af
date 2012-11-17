@@ -27,16 +27,16 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_pixy(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {}
 
     def test_pixy(self):
         temp_dir = tempfile.mkdtemp()
-        result = exec_payload(self.shell, 'pixy', args=(temp_dir, temp_dir), use_api=True)
+        result = exec_payload(
+            self.shell, 'pixy', args=(temp_dir, temp_dir), use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-    
+
     def test_a_positive_test(self):
         raise SkipTest('A positive test is needed here, BUT think twice about it'
                        ' since pixy is not supported anymore, and PHP SCA is getting'
                        ' much better, so we might just deprecate all the pixy stuff.')
-                

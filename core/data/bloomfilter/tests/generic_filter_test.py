@@ -36,7 +36,7 @@ class GenericFilterTest(object):
 
         for i in xrange(0, self.CAPACITY):
             self.filter.add(i)
-        
+
         # After understanding a little bit more about how bloom filters work,
         # I decided to comment this line. Given the probabilistic nature of
         # these filters, it might be the case that the length of the filter is
@@ -44,22 +44,22 @@ class GenericFilterTest(object):
         # were already set to 1) and that doesn't mean that the filter is useless
         # it just means that it's false positive rate is going up.
         #self.assertEqual( len(self.filter), self.CAPACITY)
-        
+
         for i in xrange(0, self.CAPACITY):
             self.assertIn(i, self.filter)
 
-        for i in xrange(0, self.CAPACITY / 2 ):
+        for i in xrange(0, self.CAPACITY / 2):
             r = random.randint(self.CAPACITY, self.CAPACITY * 2)
             self.assertNotIn(r, self.filter)
 
     def test_bloom_string(self):
         randomly_generated_strings = []
-        
+
         for _ in xrange(0, self.CAPACITY):
             rnd = ''.join(random.choice(string.letters) for i in xrange(40))
             randomly_generated_strings.append(rnd)
             self.filter.add(rnd)
-        
+
         for saved_str in randomly_generated_strings:
             self.assertIn(saved_str, self.filter)
 
@@ -68,7 +68,6 @@ class GenericFilterTest(object):
 
         for saved_str in randomly_generated_strings:
             self.assertNotIn(saved_str[::-1], self.filter)
-
 
     def test_bloom_url_objects(self):
         for i in xrange(0, self.CAPACITY):
@@ -84,4 +83,3 @@ class GenericFilterTest(object):
         for i in xrange(self.CAPACITY, self.CAPACITY * 2):
             url_char = URL('http://moth/index%s.html' % i)
             self.assertNotIn(url_char, self.filter)
-    

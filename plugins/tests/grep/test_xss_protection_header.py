@@ -31,49 +31,53 @@ from core.data.parsers.url import URL
 
 
 class test_xss_protection_header(unittest.TestCase):
-    
+
     def setUp(self):
         self.plugin = xss_protection_header()
         kb.kb.save('xss_protection_header', 'xss_protection_header', [])
-    
+
     def tearDown(self):
         self.plugin.end()
-        
+
     def test_no_xss_protection_header(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('xss_protection_header', 'xss_protection_header')), 0 )
-            
+        self.assertEqual(len(
+            kb.kb.get('xss_protection_header', 'xss_protection_header')), 0)
+
     def test_xss_protection_header_enable(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '1')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('xss_protection_header', 'xss_protection_header')), 0 )
+        self.assertEqual(len(
+            kb.kb.get('xss_protection_header', 'xss_protection_header')), 0)
 
     def test_xss_protection_header_disable(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '0')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('xss_protection_header', 'xss_protection_header')), 1 )
+        self.assertEqual(len(
+            kb.kb.get('xss_protection_header', 'xss_protection_header')), 1)
 
     def test_xss_protection_header_invalid(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', 'abc' * 45)])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('xss_protection_header', 'xss_protection_header')), 0 )
+        self.assertEqual(len(
+            kb.kb.get('xss_protection_header', 'xss_protection_header')), 0)

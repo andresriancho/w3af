@@ -47,6 +47,7 @@ EXPECTED_POST_REPEATED = '''
 </form>
 '''
 
+
 class TestHTMLExport(unittest.TestCase):
 
     def test_export_GET(self):
@@ -76,7 +77,7 @@ class TestHTMLExport(unittest.TestCase):
                        'a=1&a=2'
         html_code = html_export(http_request)
         self.assertTrue(EXPECTED_POST_REPEATED in html_code)
-    
+
     def test_export_inject(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \

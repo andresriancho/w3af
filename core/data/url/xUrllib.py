@@ -26,12 +26,13 @@ import socket
 import threading
 import time
 import traceback
-import urllib, urllib2
+import urllib
+import urllib2
 import sqlite3
 
 from collections import deque
 from errno import ECONNREFUSED, EHOSTUNREACH, ECONNRESET, \
-                  ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
+    ENETDOWN, ENETUNREACH, ETIMEDOUT, ENOSPC
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
@@ -41,10 +42,10 @@ from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import consecutive_number_generator as seq_gen
 from core.controllers.exceptions import (w3afMustStopException, w3afException,
-                                            w3afMustStopByUnknownReasonExc,
-                                            w3afMustStopByKnownReasonExc,
-                                            w3afMustStopByUserRequest,
-                                            w3afMustStopOnUrlError)
+                                         w3afMustStopByUnknownReasonExc,
+                                         w3afMustStopByKnownReasonExc,
+                                         w3afMustStopByUserRequest,
+                                         w3afMustStopOnUrlError)
 
 from core.data.constants.response_codes import NO_CONTENT
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
@@ -61,22 +62,22 @@ from core.data.dc.headers import Headers
 class xUrllib(object):
     '''
     This is a urllib2 wrapper.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         self.settings = opener_settings.OpenerSettings()
         self._opener = None
         self._memory_usage_counter = 0
         self._non_targets = None
-        
+
         # For error handling
         self._last_request_failed = False
         self._last_errors = deque(maxlen=10)
         self._error_count = {}
         self._count_lock = threading.RLock()
-        
+
         # User configured options (in an indirect way)
         self._grep_queue_put = None
         self._evasion_plugins = []
@@ -84,22 +85,22 @@ class xUrllib(object):
         self._user_stopped = False
         self._error_stopped = False
         self._ignore_errors_conf = False
-    
+
     def pause(self, pause_yes_no):
         '''
         When the core wants to pause a scan, it calls this method, in order to
         freeze all actions
-        
+
         @param pause_yes_no: True if I want to pause the scan; False to un-pause it.
         '''
         self._user_paused = pause_yes_no
-        
+
     def stop(self):
         '''
         Called when the user wants to finish a scan.
         '''
         self._user_stopped = True
-    
+
     def _call_before_send(self):
         '''
         This is a method that is called before every request is sent. I'm using
@@ -108,12 +109,12 @@ class xUrllib(object):
             - Memory debugging features
         '''
         self._sleep_if_paused_die_if_stopped()
-        
+
         self._memory_usage_counter += 1
         if self._memory_usage_counter == 150:
             dump_memory_usage()
             self._memory_usage_counter = 0
-    
+
     def _sleep_if_paused_die_if_stopped(self):
         '''
         This method sleeps until self._user_paused is False.
@@ -123,29 +124,29 @@ class xUrllib(object):
             if self._error_stopped:
                 msg = 'Exceptions found while sending HTTP requests.'
                 raise w3afMustStopException(msg)
-            
+
             if self._user_stopped:
                 msg = 'The user stopped the scan.'
                 raise w3afMustStopByUserRequest(msg)
-            
+
         while self._user_paused:
             time.sleep(0.5)
             analyze_state()
-        
+
         analyze_state()
-    
+
     def clear(self):
         '''Clear all status set during the scanner run'''
         self._user_stopped = False
         self._user_paused = False
         self._error_stopped = False
-    
+
     def end(self):
         '''
         This method is called when the xUrllib is not going to be used anymore.
         '''
         self.clear()
-                
+
         path_join = os.path.join
         try:
             cacheLocation = path_join(get_home_dir(), 'urllib2cache',
@@ -159,7 +160,7 @@ class xUrllib(object):
                          % e)
         else:
             om.out.debug('Cleared urllib2 local cache.')
-        
+
     def _init(self):
         if self.settings.need_update or self._opener is None:
             self.settings.need_update = False
@@ -169,14 +170,14 @@ class xUrllib(object):
     def getHeaders(self, uri):
         '''
         @param uri: The URI we want to know the request headers
-        
+
         @return: A Headers object with the HTTP headers that would be added by
                 the library when sending a request to uri.
         '''
-        req = HTTPRequest( uri )
-        req = self._add_headers( req )
+        req = HTTPRequest(uri)
+        req = self._add_headers(req)
         return Headers(req.headers)
-    
+
     def _is_blacklisted(self, uri):
         '''
         If the user configured w3af to ignore a URL, we are going to be applying
@@ -185,8 +186,9 @@ class xUrllib(object):
         if self._non_targets is None:
             non_targets = cf.cf.get('non_targets') or []
             self._non_targets = set()
-            self._non_targets.update([nt_url.uri2url() for nt_url in non_targets])
-             
+            self._non_targets.update(
+                [nt_url.uri2url() for nt_url in non_targets])
+
         if uri.uri2url() in self._non_targets:
             msg = 'The URL you are trying to reach (%s) was configured as a' \
                   'non-target. NOT performing the HTTP request and returning an' \
@@ -195,56 +197,56 @@ class xUrllib(object):
             return True
 
         return False
-    
+
     def get_cookies(self):
         '''
         @return: The cookies that this uri opener has collected during this scan.
         '''
         return self.settings.get_cookies()
-    
+
     def send_raw_request(self, head, postdata, fix_content_len=True):
         '''
-        In some cases the xUrllib user wants to send a request that was typed 
+        In some cases the xUrllib user wants to send a request that was typed
         in a textbox or is stored in a file. When something like that happens,
-        this library allows the user to send the request by specifying two 
+        this library allows the user to send the request by specifying two
         parameters for the send_raw_request method:
-        
+
         @param head: "<method> <URI> <HTTP version>\r\nHeader: Value\r\nHeader2: Value2..."
         @param postdata: The postdata, if any. If set to '' or None, no postdata is sent.
         @param fix_content_len: Indicates if the content length has to be fixed or not.
-        
+
         @return: An HTTPResponse object.
         '''
         # Parse the two strings
         fuzz_req = HTTPRequestParser(head, postdata)
-        
+
         # Fix the content length
         if fix_content_len:
             headers = fuzz_req.getHeaders()
             fixed = False
             for h in headers:
                 if h.lower() == 'content-length':
-                    headers[ h ] = str(len(postdata))
+                    headers[h] = str(len(postdata))
                     fixed = True
             if not fixed and postdata:
-                headers[ 'content-length' ] = str(len(postdata))
+                headers['content-length'] = str(len(postdata))
             fuzz_req.setHeaders(headers)
-        
+
         # Send it
-        function_reference = getattr( self , fuzz_req.get_method() )
+        function_reference = getattr(self, fuzz_req.get_method())
         return function_reference(fuzz_req.getURI(), data=fuzz_req.getData(),
                                   headers=fuzz_req.getHeaders(), cache=False,
                                   grep=False)
-    
-    def send_mutant( self, mutant, callback=None, grep=True, cache=True,
-                     follow_redir=True, cookies=True):
+
+    def send_mutant(self, mutant, callback=None, grep=True, cache=True,
+                    follow_redir=True, cookies=True):
         '''
         Sends a mutant to the remote web server.
-        
+
         @param callback: If None, return the HTTP response object, else call
                          the callback with the mutant and the http response as
                          parameters.
-        
+
         @return: The HTTPResponse object associated with the request
                  that was just sent.
         '''
@@ -263,25 +265,25 @@ class xUrllib(object):
 
         args = (uri,)
         kwargs = {
-              'data': data, 
-              'headers': headers,
-              'grep': grep,
-              'cache': cache,
-              'follow_redir': follow_redir,
-              'cookies': cookies,
-              }
+            'data': data,
+            'headers': headers,
+            'grep': grep,
+            'cache': cache,
+            'follow_redir': follow_redir,
+            'cookies': cookies,
+        }
         method = mutant.get_method()
-        
+
         functor = getattr(self, method)
         res = functor(*args, **kwargs)
-        
+
         if callback is not None:
             # The user specified a custom callback for analyzing the HTTP response
             # this is commonly used when sending requests in an async way.
             callback(mutant, res)
 
         return res
-    
+
     def raise_size_limit(self, respect_size_limit):
         '''
         TODO: This is an UGLY hack that allows me to download oversized files,
@@ -290,22 +292,22 @@ class xUrllib(object):
         '''
         if not respect_size_limit:
             original_size = cf.cf.get('maxFileSize')
-            cf.cf.save('maxFileSize', 10**10)
+            cf.cf.save('maxFileSize', 10 ** 10)
             return
-    
+
     def lower_size_limit(self, respect_size_limit, original_size):
         if not respect_size_limit:
             # restore the original value
             cf.cf.save('maxFileSize', original_size)
-    
+
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
         '''
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
-        
+
         @param uri: This is the URI to GET, with the query string included.
-        @param data: Only used if the uri parameter is really a URL. The data 
+        @param data: Only used if the uri parameter is really a URL. The data
                      will be converted into a string and set as the URL object
                      query string before sending.
         @param headers: Any special headers that will be sent with this request
@@ -332,16 +334,16 @@ class xUrllib(object):
 
         if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-        
+
         original_max = self.raise_size_limit(respect_size_limit)
-        
+
         #
         # Create and send the request
         #
         if data:
             uri = uri.copy()
             uri.querystring = data
-            
+
         req = HTTPRequest(uri, follow_redir=follow_redir, cookies=cookies,
                           cache=cache)
         req = self._add_headers(req, headers)
@@ -353,17 +355,17 @@ class xUrllib(object):
             raise
         else:
             self.lower_size_limit(respect_size_limit, original_max)
-            return http_response            
+            return http_response
 
     def _new_no_content_resp(self, uri, log_it=False):
         '''
         Return a new NO_CONTENT HTTPResponse object. Optionally call the
         subscribed log handlers
-        
+
         @param uri: URI string or request object
-        
+
         @param log_it: Boolean that indicated whether to log request
-        and response.  
+        and response.
         '''
         # accept a URI or a Request object
         if isinstance(uri, URL):
@@ -373,7 +375,7 @@ class xUrllib(object):
         else:
             msg = 'The uri parameter of xUrllib._new_content_resp() has to be of'
             msg += ' HTTPRequest of URL type.'
-            raise Exception( msg )
+            raise Exception(msg)
 
         # Work,
         no_content_response = HTTPResponse(NO_CONTENT, '', Headers(), uri,
@@ -381,30 +383,29 @@ class xUrllib(object):
         if log_it:
             # This also assigns the id to both objects.
             LogHandler.log_req_resp(req, no_content_response)
-        
+
         if no_content_response.id is None:
             no_content_response.id = seq_gen.inc()
-            
+
         return no_content_response
-            
+
     def POST(self, uri, data='', headers=Headers(), grep=True,
              cache=False, follow_redir=True, cookies=True):
         '''
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
-        
+
         @param uri: This is the url where to post.
         @param data: A string with the data for the POST.
         @return: An HTTPResponse object.
         '''
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of xUrllib.POST() must be of '
-                            'url.URL type.')            
+                            'url.URL type.')
 
         if not isinstance(headers, Headers):
             raise TypeError('The header parameter of xUrllib.POST() must be of '
                             'Headers type.')
-
 
         #    Validate what I'm sending, init the library (if needed) and check
         #    blacklists.
@@ -413,7 +414,7 @@ class xUrllib(object):
 
         if self._is_blacklisted(uri):
             return self._new_no_content_resp(uri, log_it=True)
-        
+
         #
         #    Create and send the request
         #
@@ -423,65 +424,67 @@ class xUrllib(object):
         #
         req = HTTPRequest(uri, data=data, follow_redir=follow_redir,
                           cookies=cookies, cache=False)
-        req = self._add_headers( req, headers )
-        return self._send(req , grep=grep)
-    
+        req = self._add_headers(req, headers)
+        return self._send(req, grep=grep)
+
     def getRemoteFileSize(self, req, cache=True):
         '''
-        This method was previously used in the framework to perform a HEAD 
+        This method was previously used in the framework to perform a HEAD
         request before each GET/POST (ouch!) and get the size of the response.
         The bad thing was that I was performing two requests for each resource...
         I moved the "protection against big files" to the keepalive.py module.
-        
+
         I left it here because maybe I want to use it at some point... Mainly
         to call it directly or something.
-        
+
         @return: The file size of the remote file.
         '''
-        res = self.HEAD( req.get_full_url(), headers=req.headers, 
-                         data=req.get_data(), cache=cache )  
-        
+        res = self.HEAD(req.get_full_url(), headers=req.headers,
+                        data=req.get_data(), cache=cache)
+
         resource_length = None
         for i in res.getHeaders():
             if i.lower() == 'content-length':
-                resource_length = res.getHeaders()[ i ]
+                resource_length = res.getHeaders()[i]
                 if resource_length.isdigit():
-                    resource_length = int( resource_length )
+                    resource_length = int(resource_length)
                 else:
                     msg = 'The content length header value of the response wasn\'t an integer...'
-                    msg += ' this is strange... The value is: "' + res.getHeaders()[ i ] + '"'
-                    om.out.error( msg )
-                    raise w3afException( msg )
-        
+                    msg += ' this is strange... The value is: "' + \
+                        res.getHeaders()[i] + '"'
+                    om.out.error(msg)
+                    raise w3afException(msg)
+
         if resource_length is not None:
             return resource_length
         else:
             msg = 'The response didn\'t contain a content-length header. Unable to return the'
             msg += ' remote file size of request with id: ' + str(res.id)
-            om.out.debug( msg )
+            om.out.debug(msg)
             # I prefer to fetch the file, before this om.out.debug was a "raise w3afException",
             # but this didnt make much sense
             return 0
-        
+
     def __getattr__(self, method_name):
         '''
         This is a "catch-all" way to be able to handle every HTTP method.
-        
+
         @param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         '''
         class AnyMethod(object):
-            
+
             class MethodRequest(HTTPRequest):
                 def get_method(self):
                     return self._method
+
                 def set_method(self, method):
                     self._method = method
-            
+
             def __init__(self, xu, method):
                 self._xurllib = xu
                 self._method = method
-            
+
             def __call__(self, uri, data=None, headers=Headers(), cache=False,
                          grep=True, follow_redir=True, cookies=True):
                 '''
@@ -491,55 +494,55 @@ class xUrllib(object):
                 '''
                 if not isinstance(uri, URL):
                     raise TypeError('The uri parameter of AnyMethod.'
-                         '__call__() must be of url.URL type.')
-                
+                                    '__call__() must be of url.URL type.')
+
                 if not isinstance(headers, Headers):
                     raise TypeError('The headers parameter of AnyMethod.'
-                         '__call__() must be of Headers type.')
-                    
+                                    '__call__() must be of Headers type.')
+
                 self._xurllib._init()
-                
+
                 if self._xurllib._is_blacklisted(uri):
                     return self._xurllib._new_no_content_resp(uri, log_it=True)
-            
+
                 req = self.MethodRequest(uri, data, follow_redir=follow_redir,
                                          cookies=cookies, cache=cache)
                 req.set_method(self._method)
                 req = self._xurllib._add_headers(req, headers or {})
                 return self._xurllib._send(req, grep=grep)
-        
+
         return AnyMethod(self, method_name)
 
-    def _add_headers( self , req, headers=Headers() ):
+    def _add_headers(self, req, headers=Headers()):
         # Add all custom Headers() if they exist
         for h, v in self.settings.header_list:
-            req.add_header( h, v )
-        
+            req.add_header(h, v)
+
         for h, v in headers.iteritems():
-            req.add_header( h, v )
+            req.add_header(h, v)
 
         return req
-    
-    def _check_uri( self, req ):
+
+    def _check_uri(self, req):
         # BUGBUG!
         #
         # Reason: "unknown url type: javascript" , Exception: "<urlopen error unknown url type: javascript>"; going to retry.
         # Too many retries when trying to get: http://localhost/w3af/global_redirect/2.php?url=javascript%3Aalert
         #
         ###TODO: The problem is that the urllib2 library fails even if i do this
-        #        tests, it fails if it finds javascript: in some part of the URL    
-        if req.get_full_url().startswith( 'http' ):
+        #        tests, it fails if it finds javascript: in some part of the URL
+        if req.get_full_url().startswith('http'):
             return True
-        elif req.get_full_url().startswith( 'javascript:' ) or \
-        req.get_full_url().startswith( 'mailto:' ):
-            raise w3afException('Unsupported URL: ' +  req.get_full_url() )
+        elif req.get_full_url().startswith('javascript:') or \
+                req.get_full_url().startswith('mailto:'):
+            raise w3afException('Unsupported URL: ' + req.get_full_url())
         else:
             return False
-            
+
     def _send(self, req, useMultipart=False, grep=True):
         '''
         Actually send the request object.
-        
+
         @param req: The HTTPRequest object that represents the request.
         @return: An HTTPResponse object.
         '''
@@ -549,12 +552,12 @@ class xUrllib(object):
 
         # Sanitize the URL
         self._check_uri(req)
-        
+
         # Evasion
         original_url = req._Request__original
         original_url_inst = req.url_object
         req = self._evasion(req)
-        
+
         start_time = time.time()
         res = None
 
@@ -570,17 +573,17 @@ class xUrllib(object):
             flags = ' (id=%s,from_cache=%i,grep=%i)' % (e.id, from_cache, grep)
             msg += flags
             om.out.debug(msg)
-            
+
             # Return this info to the caller
             code = int(e.code)
             headers = Headers(e.info().items())
             geturl_instance = URL(e.geturl())
             read = self._readRespose(e)
             http_resp = HTTPResponse(code, read, headers, geturl_instance,
-                                      original_url_inst, _id=e.id,
-                                      time=time.time()-start_time, msg=e.msg,
-                                      charset=getattr(e.fp, 'encoding', None))
-            
+                                     original_url_inst, _id=e.id,
+                                     time=time.time() - start_time, msg=e.msg,
+                                     charset=getattr(e.fp, 'encoding', None))
+
             # Clear the log of failed requests; this request is done!
             req_id = id(req)
             if req_id in self._error_count:
@@ -588,7 +591,7 @@ class xUrllib(object):
 
             # Reset errors counter
             self._zero_global_error_count()
-        
+
             if grep:
                 self._grep(req, http_resp)
 
@@ -597,7 +600,7 @@ class xUrllib(object):
             # I get to this section of the code if a 400 error is returned
             # also possible when a proxy is configured and not available
             # also possible when auth credentials are wrong for the URI
-            
+
             # Timeouts are not intended to increment the global error counter.
             # They are part of the expected behaviour.
             if not isinstance(e, URLTimeoutError):
@@ -606,9 +609,9 @@ class xUrllib(object):
                 e.reason[0]
             except:
                 raise w3afException('Unexpected error in urllib2 : %s'
-                                     % repr(e.reason))
+                                    % repr(e.reason))
 
-            msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' % 
+            msg = ('Failed to HTTP "%s" "%s". Reason: "%s", going to retry.' %
                   (req.get_method(), original_url, e.reason))
 
             # Log the errors
@@ -622,7 +625,7 @@ class xUrllib(object):
             msg = 'A sqlite3 error was raised: "%s".' % e
             if 'disk' in str(e).lower():
                 msg += ' Please check if your disk is full.'
-            raise w3afMustStopException( msg )
+            raise w3afMustStopException(msg)
         except w3afMustStopException:
             raise
         except Exception, e:
@@ -657,21 +660,24 @@ class xUrllib(object):
             # Everything went well!
             rdata = req.get_data()
             if not rdata:
-                msg = ('%s %s returned HTTP code "%s"' % 
-                       (req.get_method(), urllib.unquote_plus(original_url), res.code) )
-            else:                
+                msg = ('%s %s returned HTTP code "%s"' %
+                       (req.get_method(), urllib.unquote_plus(original_url), res.code))
+            else:
                 msg = ('%s %s with data: "%s" returned HTTP code "%s"'
-                % (req.get_method(), original_url, urllib.unquote_plus(rdata),
-                   res.code))
-            
+                       % (
+                       req.get_method(
+                       ), original_url, urllib.unquote_plus(rdata),
+                       res.code))
+
             from_cache = hasattr(res, 'from_cache')
-            flags = ' (id=%s,from_cache=%i,grep=%i)' % (res.id, from_cache, grep)
+            flags = ' (id=%s,from_cache=%i,grep=%i)' % (
+                res.id, from_cache, grep)
             msg += flags
             om.out.debug(msg)
 
             http_resp = from_httplib_resp(res, original_url=original_url_inst)
             http_resp.set_id(id=res.id)
-            http_resp.set_wait_time(time.time()-start_time)
+            http_resp.set_wait_time(time.time() - start_time)
 
             # Let the upper layers know that this response came from the
             # local cache.
@@ -689,7 +695,7 @@ class xUrllib(object):
 
             return http_resp
 
-    def _readRespose( self, res ):
+    def _readRespose(self, res):
         read = ''
         try:
             read = res.read()
@@ -698,7 +704,7 @@ class xUrllib(object):
         except Exception, e:
             om.out.error(str(e))
         return read
-        
+
     def _retry(self, req, grep, urlerr):
         '''
         Try to send the request again while doing some error handling.
@@ -707,7 +713,7 @@ class xUrllib(object):
         if self._error_count.setdefault(req_id, 1) <= \
                 self.settings.getMaxRetrys():
             # Increment the error count of this particular request.
-            self._error_count[req_id] += 1            
+            self._error_count[req_id] += 1
             om.out.debug('Re-sending request...')
             return self._send(req, grep=grep)
         else:
@@ -715,12 +721,12 @@ class xUrllib(object):
             # Let the caller decide what to do
             del self._error_count[req_id]
             raise w3afMustStopOnUrlError(urlerr, req)
-    
+
     def _increment_global_error_count(self, error, parsed_traceback=[]):
         '''
         Increment the error count, and if we got a lot of failures raise a
         "w3afMustStopException" subtype.
-        
+
         @param error: Exception object.
 
         @param parsed_traceback: A list with the following format:
@@ -731,60 +737,60 @@ class xUrllib(object):
         '''
         if self._ignore_errors_conf:
             return
-        
+
         last_errors = self._last_errors
 
         if self._last_request_failed:
-            last_errors.append((str(error) , parsed_traceback))
+            last_errors.append((str(error), parsed_traceback))
         else:
             self._last_request_failed = True
-        
+
         errtotal = len(last_errors)
-        
+
         om.out.debug('Incrementing global error count. GEC: %s' % errtotal)
-        
+
         with self._count_lock:
             if errtotal >= 10 and not self._error_stopped:
                 # Stop using xUrllib instance
                 self.stop()
                 # Known reason errors. See errno module for more info on these
                 # errors.
-                EUNKNSERV = -2 # Name or service not known error
-                EINVHOSTNAME = -5 # No address associated with hostname
+                EUNKNSERV = -2  # Name or service not known error
+                EINVHOSTNAME = -5  # No address associated with hostname
                 known_errors = (EUNKNSERV, ECONNREFUSED, EHOSTUNREACH,
                                 ECONNRESET, ENETDOWN, ENETUNREACH,
                                 EINVHOSTNAME, ETIMEDOUT, ENOSPC)
-                
+
                 msg = ('w3af found too many consecutive errors while performing'
                        ' HTTP requests. Either the web server is not reachable'
                        ' anymore or there is an internal error. The last error'
                        ' message is "%s".')
-                
+
                 if parsed_traceback:
                     tback_str = ''
                     for path, line, call in parsed_traceback[-3:]:
                         tback_str += '    %s:%s at %s\n' % (path, line, call)
-                    
+
                     msg += ' The last calls in the traceback are: \n%s' % tback_str
-                
+
                 if type(error) is urllib2.URLError:
                     # URLError exceptions may wrap either httplib.HTTPException
                     # or socket.error exception instances. We're interested on
                     # treat'em in a special way.
-                    reason_err = error.reason 
+                    reason_err = error.reason
                     reason_msg = None
-                    
+
                     if isinstance(reason_err, socket.error):
                         if isinstance(reason_err, socket.sslerror):
                             reason_msg = 'SSL Error: %s' % error.reason
                         elif reason_err[0] in known_errors:
                             reason_msg = str(reason_err)
-                    
+
                     elif isinstance(reason_err, httplib.HTTPException):
                         #
                         #    Here we catch:
                         #
-                        #    BadStatusLine, ResponseNotReady, CannotSendHeader, 
+                        #    BadStatusLine, ResponseNotReady, CannotSendHeader,
                         #    CannotSendRequest, ImproperConnectionState,
                         #    IncompleteRead, UnimplementedFileMode, UnknownTransferEncoding,
                         #    UnknownProtocol, InvalidURL, NotConnected.
@@ -792,12 +798,13 @@ class xUrllib(object):
                         #    TODO: Maybe we're being TOO generic in this isinstance?
                         #
                         reason_msg = '%s: %s' % (error.__class__.__name__,
-                                             error.args)
+                                                 error.args)
                     if reason_msg is not None:
-                        raise w3afMustStopByKnownReasonExc(msg % error, reason=reason_err)
-                
+                        raise w3afMustStopByKnownReasonExc(
+                            msg % error, reason=reason_err)
+
                 errors = [] if parsed_traceback else last_errors
-                raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)                   
+                raise w3afMustStopByUnknownReasonExc(msg % error, errs=errors)
 
     def ignore_errors(self, yes_no):
         '''
@@ -808,17 +815,17 @@ class xUrllib(object):
         @param yes_no: True to ignore errors.
         '''
         self._ignore_errors_conf = yes_no
-            
-    def _zero_global_error_count( self ):
+
+    def _zero_global_error_count(self):
         if self._last_request_failed or self._last_errors:
             self._last_request_failed = False
             self._last_errors.clear()
             om.out.debug('Resetting global error count. GEC: 0')
-    
-    def set_grep_queue_put(self, grep_queue_put ):
+
+    def set_grep_queue_put(self, grep_queue_put):
         self._grep_queue_put = grep_queue_put
-    
-    def set_evasion_plugins( self, evasion_plugins ):
+
+    def set_evasion_plugins(self, evasion_plugins):
         # I'm sorting evasion plugins based on priority
         def sortFunc(x, y):
             return cmp(x.getPriority(), y.getPriority())
@@ -826,35 +833,35 @@ class xUrllib(object):
 
         # Save the info
         self._evasion_plugins = evasion_plugins
-        
-    def _evasion( self, request ):
+
+    def _evasion(self, request):
         '''
         @param request: HTTPRequest instance that is going to be modified
         by the evasion plugins
         '''
         for eplugin in self._evasion_plugins:
             try:
-                request = eplugin.modifyRequest( request )
+                request = eplugin.modifyRequest(request)
             except w3afException, e:
                 msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"'
-                om.out.error( msg % (eplugin.get_name(), e) )
-                
+                om.out.error(msg % (eplugin.get_name(), e))
+
         return request
-        
+
     def _grep(self, request, response):
 
         url_instance = request.url_object
         domain = url_instance.getDomain()
-        
+
         if self._grep_queue_put is not None and\
-           domain in cf.cf.get('targetDomains'):
-            
+                domain in cf.cf.get('targetDomains'):
+
             # Create a fuzzable request based on the urllib2 request object
             fr = create_fuzzable_request(
-                                        url_instance,
-                                        request.get_method(),
-                                        request.get_data(),
-                                        Headers(request.headers.items())
-                                        )
-            
-            self._grep_queue_put( (fr, response) )    
+                url_instance,
+                request.get_method(),
+                request.get_data(),
+                Headers(request.headers.items())
+            )
+
+            self._grep_queue_put((fr, response))

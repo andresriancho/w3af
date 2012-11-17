@@ -33,8 +33,7 @@ class FastHTTPBasicAuthHandler(urllib2.AbstractBasicAuthHandler, urllib2.BaseHan
             raw = "%s:%s" % (user, pw)
             auth = 'Basic %s' % base64.b64encode(raw).strip()
             request.add_header('Authorization', auth)
-            
-        return request
-        
-    https_request = http_request
 
+        return request
+
+    https_request = http_request

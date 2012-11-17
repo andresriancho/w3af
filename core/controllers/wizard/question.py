@@ -25,7 +25,7 @@ from core.data.options.option_list import OptionList
 class question(object):
     '''
     This class represents a question that is made to a user through a wizard.
-    
+
     The idea is that a wizard object has a lot of this question objects.
     '''
     def __init__(self, w3af_core):
@@ -37,16 +37,16 @@ class question(object):
 
     def getQuestionTitle(self):
         return self._question_title
-        
+
     def setQuestionTitle(self, s):
-        self._question_title = s    
+        self._question_title = s
 
     def getQuestionString(self):
         return self._question_str
-        
+
     def setQuestionString(self, s):
         self._question_str = s
-        
+
     def getOptionObjects(self):
         '''
         This is the method that is shown to the user interfaces;
@@ -69,7 +69,7 @@ class question(object):
         '''
         ol = OptionList()
         return ol
-    
+
     def setPreviouslyAnsweredValues(self, values):
         '''
         This is needed to implement the previous/back feature!
@@ -78,10 +78,10 @@ class question(object):
 
     def getQuestionId(self):
         return self._question_id
-        
+
     def setQuestionId(self, qid):
         self._question_id = qid
-        
+
     def getNextQuestionId(self, options_list):
         '''
         @return: The id of the next question that the wizard has to ask to the
@@ -89,7 +89,6 @@ class question(object):
                  question of the wizard.
         '''
         return None
-        
+
     def __repr__(self):
-        return '<question object '+self._question_id+'>'
-        
+        return '<question object ' + self._question_id + '>'

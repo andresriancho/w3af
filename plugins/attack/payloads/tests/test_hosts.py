@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_hosts(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = ['/etc/hosts', '/etc/hosts.deny', '/etc/hosts.allow']
 
     def test_hosts(self):
         result = exec_payload(self.shell, 'hosts', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result.keys())
-        

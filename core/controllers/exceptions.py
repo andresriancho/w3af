@@ -20,15 +20,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+
 class w3afException(Exception):
     '''
     A small class that defines a w3afException.
     '''
-    
+
     def __init__(self, value):
-        Exception.__init__( self )
+        Exception.__init__(self)
         self.value = str(value)
-    
+
     def __str__(self):
         return self.value
 
@@ -39,15 +40,16 @@ class w3afRunOnce(Exception):
     dont want to be run anymore.
     '''
     def __init__(self, value=''):
-        Exception.__init__( self )
+        Exception.__init__(self)
         self.value = str(value)
-    
+
     def __str__(self):
         return self.value
 
+
 class w3afMustStopException(Exception):
     '''
-    If this exception is caught by the core, then it should stop the whole 
+    If this exception is caught by the core, then it should stop the whole
     process. This exception is raised in a few places. NOT to be used
     extensively.
     '''
@@ -56,15 +58,17 @@ class w3afMustStopException(Exception):
         self.errs = errs
 
     def __str__(self):
-        return str(self.msg) + '\n'.join( [str(e) for e in self.errs])
-    
+        return str(self.msg) + '\n'.join([str(e) for e in self.errs])
+
     __repr__ = __str__
+
 
 class w3afMustStopByUserRequest(w3afMustStopException):
     pass
 
+
 class w3afMustStopOnUrlError(w3afMustStopException):
-    
+
     def __init__(self, urlerr, req):
         reason = urlerr.reason
         if type(reason) is str:
@@ -78,11 +82,11 @@ class w3afMustStopOnUrlError(w3afMustStopException):
         w3afMustStopException.__init__(self, em)
         self.errcode = ec
         self.req = req
-    
+
     def __str__(self):
-        return ("UrlError '%s' while requesting '%s'. Error code was: %s" % 
+        return ("UrlError '%s' while requesting '%s'. Error code was: %s" %
                 (self.msg, self.req.get_full_url(), self.errcode))
-    
+
     __repr__ = __str__
 
 
@@ -91,7 +95,7 @@ class w3afMustStopByKnownReasonExc(w3afMustStopException):
     def __init__(self, msg, errs=(), reason=None):
         w3afMustStopException.__init__(self, msg, errs)
         self.reason = reason
-    
+
     def __str__(self):
         _str = w3afMustStopException.__str__(self)
         if self.reason:
@@ -100,7 +104,7 @@ class w3afMustStopByKnownReasonExc(w3afMustStopException):
 
 
 class w3afMustStopByUnknownReasonExc(w3afMustStopException):
-    
+
     def __str__(self):
         _str = self.msg
 

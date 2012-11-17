@@ -28,7 +28,7 @@ from core.controllers.exceptions import w3afException
 def rand_alpha(length=0):
     '''
     Create a random string ONLY with letters
-    
+
     @return: A random string only composed by letters.
 
     >>> x = rand_alpha( length=10 )
@@ -45,11 +45,12 @@ def rand_alpha(length=0):
     True
     '''
     return ''.join(choice(letters) for _ in xrange(length or randint(10, 30)))
-    
+
+
 def rand_alnum(length=0):
     '''
     Create a random string with random length
-    
+
     @return: A random string of with length > 10 and length < 30.
 
     >>> x = rand_number( length=10 )
@@ -68,10 +69,11 @@ def rand_alnum(length=0):
     jibber = ''.join([letters, digits])
     return ''.join(choice(jibber) for _ in xrange(length or randint(10, 30)))
 
+
 def rand_number(length=0, exclude_numbers=[]):
     '''
     Create a random string ONLY with numbers
-    
+
     @return: A random string only composed by numbers.
 
     >>> x = rand_number( length=1 )
@@ -86,17 +88,18 @@ def rand_number(length=0, exclude_numbers=[]):
     '''
     max_tries = 100
     while True:
-                
+
         ru = ''.join(choice(digits) for _ in xrange(length or randint(10, 30)))
         if int(ru) not in exclude_numbers:
             return ru
-        
+
         max_tries -= 1
         if max_tries == 0:
-            raise ValueError('Failed return random number.')        
-        
+            raise ValueError('Failed return random number.')
+
     return ru
-    
+
+
 def create_format_string(length):
     '''
     @return: A string with $length %s and a final %n

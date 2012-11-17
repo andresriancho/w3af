@@ -52,39 +52,39 @@ URL_HEADERS = ('location', 'uri', 'content-location')
 def create_fuzzable_requests(resp, request=None, add_self=True):
     '''
     Generates the fuzzable requests based on an HTTP response instance.
-    
+
     @param resp: An HTTPResponse instance.
     @param request: The HTTP request that generated the resp
     @param add_self: If I should add the current HTTP request
                          (@param request) to the result on not.
-    
+
     @return: A list of fuzzable requests.
     '''
     res = []
-    
+
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
     req_headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
     req_headers.update(request and request.getHeaders() or {})
     req_headers = Headers(req_headers.items())
-    
+
     # Get the cookie!
     cookieObj = _create_cookie(resp)
-    
+
     # Create the fuzzable request that represents the request object
     # passed as parameter
     if add_self:
         qsr = HTTPQSRequest(
-                    resp.getURI(),
-                    headers=req_headers,
-                    cookie=cookieObj
-                    )
+            resp.getURI(),
+            headers=req_headers,
+            cookie=cookieObj
+        )
         res.append(qsr)
-    
+
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request.
     resp_headers = resp.getHeaders()
-    
+
     for url_header_name in URL_HEADERS:
         url_header_value, _ = resp_headers.iget(url_header_name, '')
         if url_header_value:
@@ -95,15 +95,15 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 msg = 'The application sent a "%s" redirect that w3af' \
                       ' failed to correctly parse as an URL, the header' \
                       ' value was: "%s"'
-                om.out.debug( msg % (url_header_name,url) )
+                om.out.debug(msg % (url_header_name, url))
             else:
                 qsr = HTTPQSRequest(
                     absolute_location,
                     headers=req_headers,
                     cookie=cookieObj
-                    )
+                )
                 res.append(qsr)
-    
+
     # Try to find forms in the document
     try:
         dp = dpCache.dpc.get_document_parser_for(resp)
@@ -112,9 +112,10 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         form_list = []
     else:
         form_list = dp.get_forms()
-        same_domain = lambda f: f.getAction().getDomain() == resp.getURL().getDomain()
+        same_domain = lambda f: f.getAction(
+        ).getDomain() == resp.getURL().getDomain()
         form_list = [f for f in form_list if same_domain(f)]
-    
+
     if not form_list:
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
@@ -125,13 +126,13 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         else:
             for rem_meth in wsdlp.get_methods():
                 wspdr = WebServiceRequest(
-                                  rem_meth.getLocation(),
-                                  rem_meth.getAction(),
-                                  rem_meth.getParameters(),
-                                  rem_meth.get_namespace(),
-                                  rem_meth.get_methodName(),
-                                  req_headers
-                                  )
+                    rem_meth.getLocation(),
+                    rem_meth.getAction(),
+                    rem_meth.getParameters(),
+                    rem_meth.get_namespace(),
+                    rem_meth.get_methodName(),
+                    req_headers
+                )
                 res.append(wspdr)
     else:
         # Create one HTTPPostDataRequest for each form variant
@@ -140,25 +141,27 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
             for variant in form.get_variants(mode):
                 if form.get_method().upper() == 'POST':
                     r = HTTPPostDataRequest(
-                                        variant.getAction(),
-                                        variant.get_method(),
-                                        req_headers,
-                                        cookieObj,
-                                        variant)
+                        variant.getAction(),
+                        variant.get_method(),
+                        req_headers,
+                        cookieObj,
+                        variant)
                 else:
                     # The default is a GET request
                     r = HTTPQSRequest(
-                                  variant.getAction(),
-                                  headers=req_headers,
-                                  cookie=cookieObj
-                                  )
+                        variant.getAction(),
+                        headers=req_headers,
+                        cookie=cookieObj
+                    )
                     r.set_dc(variant)
-                
+
                 res.append(r)
     return res
 
 XMLRPC_WORDS = ('<methodcall>', '<methodname>', '<params>',
                 '</methodcall>', '</methodname>', '</params>')
+
+
 def create_fuzzable_request(req_url, method='GET', post_data='',
                             add_headers=None):
     '''
@@ -177,7 +180,7 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     '''
     if add_headers is not None and not isinstance(add_headers, Headers):
         raise ValueError('create_fuzzable_request requires Headers object.')
-    
+
     if isinstance(req_url, HTTPRequest):
         url = req_url.url_object
         post_data = str(req_url.get_data() or '')
@@ -191,14 +194,16 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
     # Just a query string request! No postdata
     if not post_data:
         return HTTPQSRequest(url, method, headers)
- 
-    else: # Seems to be something that has post data
+
+    else:  # Seems to be something that has post data
         data = {}
         conttype, header_name = headers.iget('content-type', '')
-        if conttype: del headers[header_name]
-        
-        contlen, header_name = headers.iget('content-length', '')            
-        if contlen: del headers[header_name]
+        if conttype:
+            del headers[header_name]
+
+        contlen, header_name = headers.iget('content-length', '')
+        if contlen:
+            del headers[header_name]
 
         #
         # Case #1 - multipart form data - prepare data container
@@ -211,21 +216,21 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
                 msg = 'Multipart form data is invalid, exception: "%s".' \
                       ' Returning our best match HTTPPostDataRequest.'
                 om.out.debug(msg % e)
-                
+
                 empty_data = QueryString()
                 return HTTPPostDataRequest(url, method, headers, dc=empty_data)
             else:
                 data = QueryString()
                 data.update(dc)
-                
+
                 # Please note that the QueryString is just a container for the
                 # information. When the HTTPPostDataRequest is sent it should
                 # be serialized into multipart again by the MultipartPostHandler
                 # because the headers contain the multipart/form-data header
                 headers['content-type'] = conttype
-                
+
                 return HTTPPostDataRequest(url, method, headers, dc=data)
-        
+
         #
         # Case #2 - JSON request
         #
@@ -236,13 +241,13 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
         else:
             if data:
                 return JSONPostDataRequest(url, method, headers, dc=data)
-        
+
         #
         # Case #3 - XMLRPC request
         #
         if all(map(lambda stop: stop in post_data.lower(), XMLRPC_WORDS)):
             return XMLRPCRequest(post_data, url, method, headers)
-        
+
         #
         # Case #4 - a typical post request
         #
@@ -254,8 +259,9 @@ def create_fuzzable_request(req_url, method='GET', post_data='',
         else:
             # Finally create request
             return HTTPPostDataRequest(url, method, headers, dc=data)
-            
+
         return None
+
 
 def _create_cookie(http_response):
     '''
@@ -269,19 +275,19 @@ def _create_cookie(http_response):
     >>> cookie = _create_cookie(response)
     >>> cookie
     Cookie({'abc': ['def']})
-    
+
     '''
     cookies = []
-        
+
     # Get data from RESPONSE
     response_headers = http_response.getHeaders()
-    
+
     for hname, hvalue in response_headers.iteritems():
         if 'cookie' in hname.lower():
             cookies.append(hvalue)
-                
+
     cookie_inst = Cookie(''.join(cookies))
-    
+
     #
     # delete everything that the browsers usually keep to themselves, since
     # this cookie object is the one we're going to send to the wire
@@ -292,5 +298,4 @@ def _create_cookie(http_response):
         except:
             pass
 
-    return cookie_inst 
-
+    return cookie_inst

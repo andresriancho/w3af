@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+
 class Configurable(object):
     '''
     This is mostly "an interface", this "interface" states that all
@@ -27,7 +28,7 @@ class Configurable(object):
     implement the following methods :
         1. set_options( options_list )
         2. get_options()
-        
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def set_options(self, options_list):
@@ -36,24 +37,23 @@ class Configurable(object):
         are the result of a user entering some data on a window that
         was constructed using the XML Options that was retrieved from
         the plugin using get_options()
-        
-        This method MUST be implemented on every configurable object. 
-        
+
+        This method MUST be implemented on every configurable object.
+
         @return: No value is returned.
-        ''' 
+        '''
         raise NotImplementedError('Configurable object is not implementing '
                                   'required method set_options')
-        
 
     def get_options(self):
         '''
         This method returns an OptionList containing the options
         objects that the configurable object has. Using this option
-        list the framework will build a window, a menu, or some 
+        list the framework will build a window, a menu, or some
         other input method to retrieve the info from the user.
-        
-        This method MUST be implemented on every plugin. 
-        
+
+        This method MUST be implemented on every plugin.
+
         @return: OptionList.
         '''
         raise NotImplementedError('Configurable object is not implementing '
@@ -61,6 +61,6 @@ class Configurable(object):
 
     def get_name(self):
         return type(self).__name__
-        
+
     def get_type(self):
         return 'configurable'

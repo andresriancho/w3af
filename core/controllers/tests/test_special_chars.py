@@ -28,39 +28,38 @@ class TestSpecialChars(PluginTest):
     This test verifies that a fix for the bug identified while scanning
     demo.testfire.net is still working as expected. The issue was that the
     site had a form that looked like:
-    
+
     <form action="/xyz">
         <intput name="foo" value="bar+spam" type="hidden">
         <intput name="eggs" type="text">
         ...
     </form>
-    
+
     And when trying to send a request to that form the "+" in the value
     was sent as %20. The input was an .NET's EVENTVALIDATION thus it was
     impossible to find any bugs in the "eggs" parameter.
-    
+
     Please note that this is a functional test and a unittest (which does not
     verify that everything works as expected) can be found at test_form.py
     '''
-    
+
     target_url = 'http://moth/w3af/core/encoding/spaces/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('xss'),),
-                 'crawl': (
-                     PluginConfig('web_spider',
-                                    ('onlyForward', True, PluginConfig.BOOL),
+                'audit': (PluginConfig('xss'),),
+                'crawl': (
+                    PluginConfig('web_spider',
+                                 ('onlyForward', True, PluginConfig.BOOL),
                                  ),
-                           ),
-                 }
+                ),
             }
         }
-    
+    }
+
     def test_special_chars(self):
         cfg = self._run_configs['cfg']
-        
+
         self._scan(cfg['target'], cfg['plugins'])
-        

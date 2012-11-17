@@ -36,13 +36,14 @@ class historyTable(object):
         If no object exist yet, a new one is created and registered.
         @param key
         '''
-        if self._table.has_key(key):
+        if key in self._table:
             result = self._table[key]
         else:
             result = history()
             self._table[key] = result
 
         return result
+
 
 class history(object):
     '''
@@ -59,9 +60,8 @@ class history(object):
     def remember(self, pending):
         self._stack.append(copy.deepcopy(pending))
         self._pointer = len(self._stack)
-        
 
-    def back(self, pending = None):
+    def back(self, pending=None):
         if self._pointer == 0:
             return None
 
@@ -71,9 +71,8 @@ class history(object):
         self._pointer -= 1
         return self._stack[self._pointer]
 
-        
     def forward(self):
-    
+
         sl = len(self._stack)
         if self._pointer == sl:
             return None
@@ -88,7 +87,5 @@ class history(object):
                 result = None
         else:
             result = self._stack[self._pointer]
-            
-            
+
         return result
-        

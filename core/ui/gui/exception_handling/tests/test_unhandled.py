@@ -27,16 +27,15 @@ from core.ui.gui.exception_handling.unhandled import handle_crash, set_except_ho
 
 
 class TestUnhandled(unittest.TestCase):
-    
+
     def setUp(self):
-        self.w3af_core = Mock() 
-        
+        self.w3af_core = Mock()
+
     def test_set_except_hook(self):
         set_except_hook(self.w3af_core)
         self.assertTrue(True)
-        
+
     def test_handle_exception(self):
         with patch('core.ui.gui.exception_handling.unhandled.sys') as mock_sys:
             handle_crash(self.w3af_core, KeyboardInterrupt, Mock(), Mock())
             mock_sys.exit.called_once_with(0)
-            

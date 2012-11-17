@@ -26,53 +26,55 @@ from core.controllers.exceptions import w3afException
 
 
 class CommonAttackMethods(object):
-    
-    def __init__( self ):
+
+    def __init__(self):
         self._header_length = None
         self._footer_length = None
-        
-    def set_cut( self, header_end, footer_start ):
+
+    def set_cut(self, header_end, footer_start):
         self._header_length = header_end
         self._footer_length = footer_start
-    
-    def get_cut( self ):
+
+    def get_cut(self):
         return self._header_length, self._footer_length
-    
+
     def _guess_cut(self, body_a, body_b, expected_result):
         '''
         Guesses the header and footer based on two responses and an expected result
         that should be in body_a.
-        
+
         @param body_a: The response body for the request with the expected result.
         For example, in local file read vulnerabilities this should be the result
         of requesting file.php?f=/etc/passwd
-        
-        @param body_b: The response body for the request with an invalid resource. 
+
+        @param body_b: The response body for the request with an invalid resource.
         For example, in local file read vulnerabilities this should be the result
         of requesting file.php?f=/does/not/exist
-        
+
         @param expected_result: The expected result that should be found in body_a.
         For example, in local file read vulnerabilities this should look like:
         root:x:0:0:root:/root:/bin/bash
-        
+
         @return: True if the cut could be defined
         '''
         if expected_result not in body_a:
             return False
-        
+
         if body_a == body_b:
             return False
-        
-        sequence_matcher = difflib.SequenceMatcher(lambda x: len(x)<3, body_a, body_b)
-        
+
+        sequence_matcher = difflib.SequenceMatcher(
+            lambda x: len(x) < 3, body_a, body_b)
+
         body_a_len = len(body_a)
         body_b_len = len(body_b)
-        
-        longest_match = sequence_matcher.find_longest_match(0, body_a_len, 0, body_b_len)
+
+        longest_match = sequence_matcher.find_longest_match(
+            0, body_a_len, 0, body_b_len)
         longest_match_a = longest_match[0]
         longest_match_b = longest_match[1]
         longest_match_size = longest_match[2]
-        
+
         #    This should return a long match at the beginning or the end of the string
         #
         #    If the longest_match is very small in relation to the whole response,
@@ -86,7 +88,7 @@ class CommonAttackMethods(object):
         if float(longest_match_size) == body_b_len == 0 or (float(longest_match_size) / body_b_len) < 0.01:
             self._footer_length = 0
             self._header_length = 0
-            
+
         else:
             #
             #    The match object has the following interesting attributes:
@@ -103,11 +105,12 @@ class CommonAttackMethods(object):
             if longest_match_a + longest_match_size == body_a_len:
                 #    The longest match is in the footer
                 self._footer_length = longest_match_size
-                
+
                 #    Now I need to calculate the header
-                longest_match_header = sequence_matcher.find_longest_match(0, longest_match_a, 0, longest_match_b)
+                longest_match_header = sequence_matcher.find_longest_match(
+                    0, longest_match_a, 0, longest_match_b)
                 longest_match_header_size = longest_match_header[2]
-    
+
                 #    Do we really have a header?
                 if (float(longest_match_header_size) / (body_b_len - longest_match_a)) < 0.1:
                     #    No we don't
@@ -115,22 +118,24 @@ class CommonAttackMethods(object):
                 else:
                     # We have a header!
                     self._header_length = longest_match_header_size
-                
+
             else:
-            
+
                 #    The longest match is in the header
                 self._header_length = longest_match_size
-                
+
                 #    Now I need to calculate the footer
                 #
                 #    It seems that with a reverse it works better!
                 #
                 body_a_reverse = body_a[::-1]
                 body_b_reverse = body_b[::-1]
-                sequence_matcher = difflib.SequenceMatcher(lambda x: len(x)<3, body_a_reverse, body_b_reverse)
-                
-                longest_match_footer = sequence_matcher.find_longest_match(0, body_a_len - self._header_length, \
-                                                                           0, body_b_len - self._header_length)
+                sequence_matcher = difflib.SequenceMatcher(
+                    lambda x: len(x) < 3, body_a_reverse, body_b_reverse)
+
+                longest_match_footer = sequence_matcher.find_longest_match(
+                    0, body_a_len - self._header_length,
+                    0, body_b_len - self._header_length)
                 longest_match_footer_size = longest_match_footer[2]
 
                 #    Do we really have a footer?
@@ -140,43 +145,44 @@ class CommonAttackMethods(object):
                 else:
                     # We have a header!
                     self._footer_length = longest_match_footer_size
-                
-        return True 
-        
+
+        return True
+
     def _define_exact_cut(self, body, expected_result):
         '''
         Defines the section where the result of an attack will be.
-        
+
         For example, when performing an OS Commanding attack, the command response
         could be in the middle of some HTML text. This function defines the header
         and footer attributes that are used by _cut() in order to extract the
-        information from the HTML. 
-        
+        information from the HTML.
+
         @return: True if the cut could be defined
         '''
         if not expected_result in body:
             # I won't be able to define the cut
             return False
-        
+
         else:
 
             # Define the header
-            self._header_length = body.find( expected_result )
-            
+            self._header_length = body.find(expected_result)
+
             # Define the footer
-            self._footer_length = len(body) - self._header_length - len( expected_result )
-            
+            self._footer_length = len(
+                body) - self._header_length - len(expected_result)
+
             om.out.debug('Defined cut header and footer using exact match')
-            om.out.debug('Defined header length to %i' % self._header_length )
-            om.out.debug('Defined footer length to %i' % self._footer_length )
-            
+            om.out.debug('Defined header length to %i' % self._header_length)
+            om.out.debug('Defined footer length to %i' % self._footer_length)
+
             return True
-    
-    def _cut( self, body ):
+
+    def _cut(self, body):
         '''
         After defining a cut, I can cut parts of an HTML and return the important
         sections.
-        
+
         @param body: The HTML response that I need to cut to obtain the useful
                      information.
         '''
@@ -184,12 +190,12 @@ class CommonAttackMethods(object):
             msg = ('You need to call _define_exact_cut() or _guess_cut() before'
                    'calling _cut().')
             raise w3afException(msg)
-        
+
         if self._header_length + self._footer_length > len(body):
             # FIXME: I should handle this in some way.
             msg = ('Cut algorithm error: len(header+footer)>len(body).')
             raise w3afException(msg)
-        
+
         if body == '':
             om.out.debug('Called _cut() with an empty body to cut, returning an empty result.')
             return body
@@ -199,4 +205,3 @@ class CommonAttackMethods(object):
             return body
 
         return body[self._header_length:-self._footer_length]
-    

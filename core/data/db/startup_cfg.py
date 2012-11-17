@@ -32,25 +32,25 @@ class StartUpConfig(object):
     Holds the configuration for the VersionMgr update/commit process
     '''
     CFG_FILE = os.path.join(get_home_dir(), 'startup.conf')
-    
+
     ISO_DATE_FMT = '%Y-%m-%d'
     # Frequency constants
-    FREQ_DAILY = 'D' # [D]aily
-    FREQ_WEEKLY = 'W' # [W]eekly
-    FREQ_MONTHLY = 'M' # [M]onthly
+    FREQ_DAILY = 'D'  # [D]aily
+    FREQ_WEEKLY = 'W'  # [W]eekly
+    FREQ_MONTHLY = 'M'  # [M]onthly
     # DEFAULT VALUES
     DEFAULTS = {'auto-update': 'true', 'frequency': 'D',
                 'last-update': 'None', 'last-rev': 0,
                 'accepted-disclaimer': 'false'}
 
     def __init__(self, cfg_file=CFG_FILE):
-        
+
         self._start_cfg_file = cfg_file
         self._start_section = 'STARTUP_CONFIG'
-        
+
         self._config = ConfigParser.ConfigParser()
         configs = self._load_cfg()
-        
+
         (self._autoupd, self._freq, self._lastupd, self._lastrev,
          self._accepted_disclaimer) = configs
 
@@ -70,7 +70,7 @@ class StartUpConfig(object):
         self._lastupd = datevalue
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
-    
+
     @property
     def accepted_disclaimer(self):
         return self._accepted_disclaimer
@@ -81,14 +81,14 @@ class StartUpConfig(object):
         @param datevalue: datetime.date value
         '''
         self._accepted_disclaimer = accepted_decision
-        value = 'true' if accepted_decision else 'false' 
+        value = 'true' if accepted_decision else 'false'
         self._config.set(self._start_section, 'accepted-disclaimer',
                          value)
-    
+
     @property
     def last_rev(self):
         return self._lastrev
-    
+
     @last_rev.setter
     def last_rev(self, rev):
         self._lastrev = rev.number
@@ -117,7 +117,8 @@ class StartUpConfig(object):
             config.set(startsection, 'frequency', defaults['frequency'])
             config.set(startsection, 'last-update', defaults['last-update'])
             config.set(startsection, 'last-rev', defaults['last-rev'])
-            config.set(startsection, 'accepted-disclaimer', defaults['accepted-disclaimer'])
+            config.set(startsection, 'accepted-disclaimer',
+                       defaults['accepted-disclaimer'])
 
         # Read from file
         config.read(self._start_cfg_file)
@@ -128,8 +129,10 @@ class StartUpConfig(object):
         auto_upd = config.get(startsection, 'auto-update', raw=True)
         auto_upd = bool(boolvals.get(auto_upd.lower(), False))
 
-        accepted_disclaimer = config.get(startsection, 'accepted-disclaimer', raw=True)
-        accepted_disclaimer = bool(boolvals.get(accepted_disclaimer.lower(), False))
+        accepted_disclaimer = config.get(
+            startsection, 'accepted-disclaimer', raw=True)
+        accepted_disclaimer = bool(
+            boolvals.get(accepted_disclaimer.lower(), False))
 
         freq = config.get(startsection, 'frequency', raw=True).upper()
         if freq not in (StartUpConfig.FREQ_DAILY, StartUpConfig.FREQ_WEEKLY,

@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_os_fingerprint(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'os': 'Linux'}
 
     def test_os_fingerprint(self):
         result = exec_payload(self.shell, 'os_fingerprint', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

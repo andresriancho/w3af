@@ -31,33 +31,35 @@ from core.data.dc.headers import Headers
 from core.data.parsers.htmlParser import HTMLParser
 from core.data.parsers.pdf import PDFParser
 from core.controllers.exceptions import w3afException
- 
+
 
 def _build_http_response(body_content, content_type):
     headers = Headers()
     headers['content-type'] = content_type
-    
+
     url = URL('http://w3af.com')
-    
+
     return HTTPResponse(200, body_content, headers, url, url, charset='utf-8')
+
 
 class TestDocumentParserFactory(unittest.TestCase):
 
     def test_html(self):
         parser = document_parser_factory(_build_http_response('', 'text/html'))
-        
+
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, HTMLParser)
 
     def test_pdf(self):
         raise SkipTest('Need to define an example PDF file that doesnt break'
                        ' the pypdf parser.')
-        parser = document_parser_factory(_build_http_response('%PDF-\n1\n%%EOF',
-                                                              'application/pdf'))
-        
+        parser = document_parser_factory(
+            _build_http_response('%PDF-\n1\n%%EOF',
+                                 'application/pdf'))
+
         self.assertIsInstance(parser, DocumentParser)
         self.assertIsInstance(parser._parser, PDFParser)
 
     def test_no_parser(self):
         response = _build_http_response('%!23', 'application/bar')
-        self.assertRaises(w3afException, document_parser_factory, response) 
+        self.assertRaises(w3afException, document_parser_factory, response)

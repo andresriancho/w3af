@@ -32,7 +32,7 @@ from plugins.grep.oracle import oracle
 
 
 class test_oracle(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
         kb.kb.cleanup()
@@ -40,32 +40,32 @@ class test_oracle(unittest.TestCase):
 
     def tearDown(self):
         self.plugin.end()
-                
+
     def test_oracle_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
-    
+        self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
+
     def test_oracle_long(self):
         body = 'ABC ' * 10000
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 0 )
-    
+        self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
+
     def test_oracle_positive(self):
         body = 'ABC ' * 100
         body += '<!-- Created by Oracle '
         body += '</br> ' * 50
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('oracle', 'oracle')) , 1 )
+        self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 1)

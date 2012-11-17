@@ -38,9 +38,9 @@ from multiprocessing.dummy import Process
 # by <http://code.activestate.com/recipes/546532/>
 
 try:  # UGLY! private method __stop
-    _Thread_stop = Process._Thread__stop  #PYCHOK false
+    _Thread_stop = Process._Thread__stop  # PYCHOK false
 except AttributeError:  # _stop in Python 3.0
-    _Thread_stop = Process._stop  #PYCHOK expected
+    _Thread_stop = Process._stop  # PYCHOK expected
 
 
 class TimeLimitExpired(Exception):
@@ -68,14 +68,14 @@ def timelimited(timeout, function, *args, **kwds):
        passed along as-is.
     '''
     class _Timelimited(Process):
-        _error_  = TimeLimitExpired  # assume timeout
+        _error_ = TimeLimitExpired  # assume timeout
         _result_ = None
 
         def run(self):
             try:
                 self._result_ = function(*args, **kwds)
                 self._error_ = None
-            except Exception, e:  #XXX as for Python 3.0
+            except Exception, e:  # XXX as for Python 3.0
                 import traceback
                 e.orig_traceback_str = traceback.format_exc()
                 self._error_ = e
@@ -88,7 +88,7 @@ def timelimited(timeout, function, *args, **kwds):
             # <http://sebulba.wikispaces.com/recipe+thread2>
             if self.isAlive():
                 _Thread_stop(self)
-                
+
     if not hasattr(function, '__call__'):
         raise TypeError('function not callable: %s' % repr(function))
 
@@ -135,7 +135,7 @@ class TimeLimited(object):
            of the arguments.
         '''
         self._function = function
-        self._timeout  = timeout
+        self._timeout = timeout
 
     def __call__(self, *args, **kwds):
         '''See function  timelimited for a description
@@ -148,9 +148,8 @@ class TimeLimited(object):
 
     def _timeout_get(self):
         return self._timeout
+
     def _timeout_set(self, timeout):
         self._timeout = timeout
     timeout = property(_timeout_get, _timeout_set, None,
                        'Property to get and set the timeout value')
-
-

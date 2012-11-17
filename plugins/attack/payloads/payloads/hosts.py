@@ -19,21 +19,20 @@ class hosts(base_payload):
             if content:
                 result[file] = content
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result:
             return 'Hosts files not found.'
         else:
             rows = []
-            rows.append( ['Host file', 'Content'] )
-            rows.append( [] )
+            rows.append(['Host file', 'Content'])
+            rows.append([])
             for file in api_result:
-                rows.append( [file, api_result[file]] )
-                rows.append( [] )
-                    
-            result_table = table( rows[:-1] )
-            result_table.draw( 160 )
+                rows.append([file, api_result[file]])
+                rows.append([])
+
+            result_table = table(rows[:-1])
+            result_table.draw(160)
             return rows
-        

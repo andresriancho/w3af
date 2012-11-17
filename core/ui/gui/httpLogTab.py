@@ -40,7 +40,7 @@ class httpLogTab(entries.RememberingHPaned):
     '''
     def __init__(self, w3af, padding=10, time_refresh=False):
         """Init object."""
-        super(httpLogTab,self).__init__(w3af, "pane-httplogtab", 300)
+        super(httpLogTab, self).__init__(w3af, "pane-httplogtab", 300)
         self.w3af = w3af
         self._padding = padding
         self._lastId = 0
@@ -62,29 +62,30 @@ class httpLogTab(entries.RememberingHPaned):
     def _initReqResViewer(self, mainvbox):
         """Create the req/res viewer."""
         self._reqResViewer = reqResViewer.reqResViewer(self.w3af,
-                editableRequest=False, editableResponse=False)
+                                                       editableRequest=False, editableResponse=False)
         self._reqResViewer.set_sensitive(False)
-        # Create the req/res selector (when a search with more 
+        # Create the req/res selector (when a search with more
         # than one result is done, this window appears)
         self._sw = gtk.ScrolledWindow()
         self._sw.set_shadow_type(gtk.SHADOW_ETCHED_IN)
         self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self._lstore = gtk.ListStore(gobject.TYPE_UINT,gobject.TYPE_BOOLEAN,
-                gobject.TYPE_STRING,gobject.TYPE_STRING,gobject.TYPE_STRING,
-                gobject.TYPE_UINT, gobject.TYPE_STRING,
-                gobject.TYPE_UINT, gobject.TYPE_STRING,gobject.TYPE_FLOAT)
+        self._lstore = gtk.ListStore(gobject.TYPE_UINT, gobject.TYPE_BOOLEAN,
+                                     gobject.TYPE_STRING, gobject.TYPE_STRING, gobject.TYPE_STRING,
+                                     gobject.TYPE_UINT, gobject.TYPE_STRING,
+                                     gobject.TYPE_UINT, gobject.TYPE_STRING, gobject.TYPE_FLOAT)
         # Create tree view
         self._lstoreTreeview = gtk.TreeView(self._lstore)
         self._lstoreTreeview.set_rules_hint(True)
         self._lstoreTreeview.set_search_column(0)
-        self.__add_columns( self._lstoreTreeview )
+        self.__add_columns(self._lstoreTreeview)
         self._lstoreTreeview.show()
-        self._lstoreTreeview.connect('cursor-changed', self._viewInReqResViewer)
+        self._lstoreTreeview.connect(
+            'cursor-changed', self._viewInReqResViewer)
         # Popup menu
         self._rightButtonMenu = None
         self._lstoreTreeview.connect('button-press-event', self._popupMenu)
         #
-        # 
+        #
         # Selection
         #
         treeselection = self._lstoreTreeview.get_selection()
@@ -100,7 +101,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._vpan.show()
         mainvbox.pack_start(self._vpan)
 
-    def _popupMenu( self, tv, event ):
+    def _popupMenu(self, tv, event):
         '''Generate and show popup menu.'''
         if event.button != 3:
             return
@@ -115,7 +116,7 @@ class httpLogTab(entries.RememberingHPaned):
             gm.show_all()
         else:
             gm = self._rightButtonMenu
-        gm.popup( None, None, None, event.button, event.time)
+        gm.popup(None, None, None, event.button, event.time)
         return True
 
     def _deleteSelected(self, widg=None):
@@ -148,7 +149,7 @@ class httpLogTab(entries.RememberingHPaned):
         filterBtn.set_image(filterImg)
         # Clear button
         close = gtk.Image()
-        close.set_from_stock(gtk.STOCK_CLEAR , gtk.ICON_SIZE_MENU)
+        close.set_from_stock(gtk.STOCK_CLEAR, gtk.ICON_SIZE_MENU)
         clearBox = gtk.EventBox()
         clearBox.add(close)
         clearBox.connect("button-release-event", self._showAllRequestResponses)
@@ -169,12 +170,13 @@ class httpLogTab(entries.RememberingHPaned):
         self.pref = FilterOptions(self)
         # Filter options
         self._filterMethods = [
-                ('GET', 'GET', False),
-                ('POST', 'POST', False),
-                ]
+            ('GET', 'GET', False),
+            ('POST', 'POST', False),
+        ]
         filterMethods = OptionList()
         for method in self._filterMethods:
-            filterMethods.add(opt_factory(method[0], method[2], method[1], "boolean"))
+            filterMethods.add(
+                opt_factory(method[0], method[2], method[1], "boolean"))
         self.pref.addSection('methods', _('Request Method'), filterMethods)
         filterId = OptionList()
         filterId.add(opt_factory("min", "0", "Min ID", "string"))
@@ -182,30 +184,32 @@ class httpLogTab(entries.RememberingHPaned):
         self.pref.addSection('trans_id', _('Transaction ID'), filterId)
         filterCodes = OptionList()
         codes = [
-                ("1xx", "1xx", False),
-                ("2xx", "2xx", False),
-                ("3xx", "3xx", False),
-                ("4xx", "4xx", False),
-                ("5xx", "5xx", False),
-                ]
+            ("1xx", "1xx", False),
+            ("2xx", "2xx", False),
+            ("3xx", "3xx", False),
+            ("4xx", "4xx", False),
+            ("5xx", "5xx", False),
+        ]
         for code in codes:
             filterCodes.add(opt_factory(code[0], code[2], code[1], "boolean"))
         self.pref.addSection('codes', _('Response Code'), filterCodes)
         filterMisc = OptionList()
         filterMisc.add(opt_factory("tag", False, "Tag", "boolean"))
-        filterMisc.add(opt_factory("has_qs", False, "Request has Query String", "boolean"))
+        filterMisc.add(opt_factory(
+            "has_qs", False, "Request has Query String", "boolean"))
         self.pref.addSection('misc', _('Misc'), filterMisc)
         filterTypes = OptionList()
         self._filterTypes = [
-                ('html', 'HTML', False),
-                ('javascript', 'JavaScript', False),
-                ('image', 'Images', False),
-                ('flash', 'Flash', False),
-                ('css', 'CSS', False),
-                ('text', 'Text', False),
-                ]
+            ('html', 'HTML', False),
+            ('javascript', 'JavaScript', False),
+            ('image', 'Images', False),
+            ('flash', 'Flash', False),
+            ('css', 'CSS', False),
+            ('text', 'Text', False),
+        ]
         for filterType in self._filterTypes:
-            filterTypes.add(opt_factory(filterType[0], filterType[2], filterType[1], "boolean"))
+            filterTypes.add(opt_factory(
+                filterType[0], filterType[2], filterType[1], "boolean"))
         self.pref.addSection('types', _('Response Content Type'), filterTypes)
         filterSize = OptionList()
         filterSize.add(opt_factory("resp_size", False, "Not Null", "boolean"))
@@ -219,10 +223,10 @@ class httpLogTab(entries.RememberingHPaned):
         """Add columns to main log table."""
         model = treeview.get_model()
         # Column for id's
-        column = gtk.TreeViewColumn(_('ID'), gtk.CellRendererText(),text=0)
+        column = gtk.TreeViewColumn(_('ID'), gtk.CellRendererText(), text=0)
         column.set_sort_column_id(0)
         treeview.append_column(column)
-        
+
         # Column for bookmark
         #TODO: Find a better way to do this. The "B" and the checkbox aren't nice
         #what we aim for is something like the stars in gmail.
@@ -235,9 +239,10 @@ class httpLogTab(entries.RememberingHPaned):
         column.set_sort_column_id(1)
         treeview.append_column(column)
         '''
-        
+
         # Column for METHOD
-        column = gtk.TreeViewColumn(_('Method'), gtk.CellRendererText(),text=2)
+        column = gtk.TreeViewColumn(
+            _('Method'), gtk.CellRendererText(), text=2)
         column.set_sort_column_id(2)
         treeview.append_column(column)
         # Column for URI
@@ -259,14 +264,14 @@ class httpLogTab(entries.RememberingHPaned):
         column.set_sizing(gtk.TREE_VIEW_COLUMN_GROW_ONLY)
         treeview.append_column(column)
         extColumns = [
-                (5, _('Code')),
-                (6, _('Message')),
-                (7, _('Content-Length')),
-                (8, _('Content-Type')),
-                (9, _('Time (ms)')),
-                ]
+            (5, _('Code')),
+            (6, _('Message')),
+            (7, _('Content-Length')),
+            (8, _('Content-Type')),
+            (9, _('Time (ms)')),
+        ]
         for n, title in extColumns:
-            column = gtk.TreeViewColumn(title, gtk.CellRendererText(),text=n)
+            column = gtk.TreeViewColumn(title, gtk.CellRendererText(), text=n)
             column.set_sort_column_id(n)
             treeview.append_column(column)
 
@@ -311,15 +316,15 @@ class httpLogTab(entries.RememberingHPaned):
         searchText = self._searchText.get_text()
         searchText = searchText.strip()
         searchData = []
-        #  
+        #
         #  Search part
         #
         if searchText:
             likePieces = []
-            likePieces.append(('url', "%"+searchText+"%", 'like'))
-            likePieces.append(('tag', "%"+searchText+"%", 'like'))
+            likePieces.append(('url', "%" + searchText + "%", 'like'))
+            likePieces.append(('tag', "%" + searchText + "%", 'like'))
             searchData.append((likePieces, 'OR'))
-        # 
+        #
         # Filter part
         #
         # Codes
@@ -358,7 +363,8 @@ class httpLogTab(entries.RememberingHPaned):
         filterTypes = []
         for filterType in self._filterTypes:
             if self.pref.get_value('types', filterType[0]):
-                filterTypes.append(('content_type', "%"+filterType[0]+"%", 'like'))
+                filterTypes.append(
+                    ('content_type', "%" + filterType[0] + "%", 'like'))
         searchData.append((filterTypes, 'OR'))
         # Method
         filterMethods = []
@@ -370,7 +376,7 @@ class httpLogTab(entries.RememberingHPaned):
         try:
             # Please see the 5000 below
             searchResultObjects = self._historyItem.find(searchData,
-                    result_limit=5001, orderData=[("id","")])
+                                                         result_limit=5001, orderData=[("id", "")])
         except w3afException, w3:
             self._emptyResults()
             return
@@ -382,12 +388,12 @@ class httpLogTab(entries.RememberingHPaned):
         elif len(searchResultObjects) > 5000:
             self._emptyResults()
             msg = _('The search you performed returned too many results (') +\
-                    str(len(searchResultObjects)) + ').\n'
+                str(len(searchResultObjects)) + ').\n'
             msg += _('Please refine your search and try again.')
             self._showMessage('Too many results', msg)
             return
         else:
-            # show the results in the list view (when first row is selected 
+            # show the results in the list view (when first row is selected
             # that just triggers the req/resp filling.
             lastItem = searchResultObjects[-1]
             self._lastId = int(lastItem.id)
@@ -413,8 +419,8 @@ class httpLogTab(entries.RememberingHPaned):
             self._lstore.clear()
         for item in results:
             self._lstore.append([item.id, item.mark, item.method, item.url,
-                item.tag, item.code, item.msg, item.response_size,item.content_type,
-                item.time])
+                                 item.tag, item.code, item.msg, item.response_size, item.content_type,
+                                 item.time])
         # Size search results
         if len(results) < 10:
             position = 13 + 48 * len(results)
@@ -426,7 +432,8 @@ class httpLogTab(entries.RememberingHPaned):
 
     def _showMessage(self, title, msg, gtkLook=gtk.MESSAGE_INFO):
         """Show message to user as GTK dialog."""
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
+        dlg = gtk.MessageDialog(
+            None, gtk.DIALOG_MODAL, gtkLook, gtk.BUTTONS_OK, msg)
         dlg.set_title(title)
         dlg.run()
         dlg.destroy()
@@ -435,7 +442,7 @@ class httpLogTab(entries.RememberingHPaned):
         """Action for "onselect" event of the main listview."""
         (path, column) = widget.get_cursor()
         itemNumber = path[0]
-        # Now I have the item number in the lstore, 
+        # Now I have the item number in the lstore,
         # the next step is to get the id of that item in the lstore
         iid = self._lstore[itemNumber][0]
         self.showReqResById(iid)
@@ -457,8 +464,9 @@ class httpLogTab(entries.RememberingHPaned):
                 self._reqResViewer.info.hide()
             self._reqResViewer.set_sensitive(True)
         else:
-            self._showMessage(_('Error'), _('The id ') + str(search_id) +\
-                    _('is not inside the database.'))
+            self._showMessage(_('Error'), _('The id ') + str(search_id) +
+                              _('is not inside the database.'))
+
 
 class FilterOptions(gtk.HBox, Preferences):
     def __init__(self, parentWidg):
@@ -470,7 +478,7 @@ class FilterOptions(gtk.HBox, Preferences):
     def show(self):
         # Init options
         self._initOptionsView()
-        super(FilterOptions,self).show()
+        super(FilterOptions, self).show()
 
     def _initOptionsView(self):
         for section, optList in self.options.items():
@@ -485,11 +493,12 @@ class FilterOptions(gtk.HBox, Preferences):
             for i, opt in enumerate(optList):
                 titl = gtk.Label(opt.get_desc())
                 titl.set_alignment(xalign=0.0, yalign=0.5)
-                input_widget_klass = wrapperWidgets.get(opt.get_type(), TextInput)
+                input_widget_klass = wrapperWidgets.get(
+                    opt.get_type(), TextInput)
                 widg = input_widget_klass(self._changedWidget, opt)
                 titl.set_mnemonic_widget(widg)
                 opt.widg = widg
-                widg.set_tooltip_text( opt.get_help() )
+                widg.set_tooltip_text(opt.get_help())
                 table.autoAddRow(titl, widg)
                 table.show()
             frame.add(table)
@@ -506,7 +515,8 @@ class FilterOptions(gtk.HBox, Preferences):
         if invalid:
             msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
             msg += "\n-".join(invalid)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             dlg.set_title(_('Configuration error'))
             dlg.run()
             dlg.destroy()

@@ -20,23 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+
 class config(dict):
     '''
     This class saves config parameters sent by the user.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-        
+
     def save(self, variable_name, value):
         '''
         This method saves the variable_name value to a dict.
         '''
         self[variable_name] = value
-        
+
     def cleanup(self):
         '''
         Cleanup internal data.
         '''
-        self.clear()    
-        
+        self.clear()
+
 cf = config()

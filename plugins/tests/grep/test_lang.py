@@ -22,9 +22,9 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestLang(PluginTest):
-    
+
     langs_url = 'http://moth/w3af/grep/lang/%s.html'
-    
+
     _run_configs = {
         'direct': {
             'target': None,
@@ -32,7 +32,7 @@ class TestLang(PluginTest):
                 'grep': (PluginConfig('lang'),),
             }
         },
-                    
+
         'crawl': {
             'target': 'http://moth/w3af/grep/',
             'plugins': {
@@ -40,29 +40,29 @@ class TestLang(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
-        }        
+        }
     }
-    
+
     def test_id_es(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'es', cfg['plugins'])
         lang = self.kb.get('lang', 'lang')
-        
+
         self.assertEquals('es', lang)
 
     def test_id_en(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'en', cfg['plugins'])
         lang = self.kb.get('lang', 'lang')
-        
+
         self.assertEquals('en', lang)
 
     def test_id_en_crawl(self):
         cfg = self._run_configs['crawl']
         self._scan(self.langs_url % 'en', cfg['plugins'])
         lang = self.kb.get('lang', 'lang')
-        
+
         self.assertEquals('en', lang)

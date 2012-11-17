@@ -31,17 +31,17 @@ class HTTPPostDataRequest(FuzzableRequest):
     '''
     This class represents a fuzzable request that sends all variables in the
     POSTDATA. This is typically used for POST requests.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, uri, method='POST', headers=Headers(),
                  cookie=None, dc=None):
-        
+
         if dc is not None and not isinstance(dc, Form):
             msg = 'The dc parameter for forms needs to be a Form instance,'\
                   'got %s instead.' % type(dc)
             TypeError(msg)
-        
+
         FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
 
     def getData(self):
@@ -57,17 +57,17 @@ class HTTPPostDataRequest(FuzzableRequest):
         # If it contains a file then we are not interested in returning
         # its string representation
         for value in self._dc.itervalues():
-            
+
             if isinstance(value, basestring):
                 continue
-            elif is_file_like(value) or (hasattr(value, "__iter__") and \
-                   any(imap(is_file_like, value))):
+            elif is_file_like(value) or (hasattr(value, "__iter__") and
+                                         any(imap(is_file_like, value))):
                 return self._dc
-        
+
         # Ok, no file was found; return the string representation
         return str(self._dc)
-        
-    def get_file_vars( self ):
+
+    def get_file_vars(self):
         '''
         @return: A list of postdata parameters that contain a file
         '''
@@ -75,8 +75,7 @@ class HTTPPostDataRequest(FuzzableRequest):
             return self._dc.get_file_vars()
         else:
             return []
-    
-    def __repr__( self ):
+
+    def __repr__(self):
         return '<postdata fuzzable request | %s | %s>' % \
-                    (self.get_method(), self.getURI())
-    
+            (self.get_method(), self.getURI())

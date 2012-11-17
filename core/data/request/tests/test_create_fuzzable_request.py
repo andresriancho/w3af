@@ -40,123 +40,123 @@ class TestCreateFuzzableRequest(unittest.TestCase):
 
     def setUp(self):
         self.url = URL('http://www.w3af.com/')
-    
+
     def test_simplest(self):
         fr = create_fuzzable_request(self.url)
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), Headers() )
-        self.assertEqual( fr.get_method(), 'GET' )
-        
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), Headers())
+        self.assertEqual(fr.get_method(), 'GET')
+
     def test_headers(self):
         hdr = Headers([('foo', 'bar')])
         fr = create_fuzzable_request(self.url, add_headers=hdr)
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), hdr )
-        self.assertEqual( fr.get_method(), 'GET' )
-        
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_method(), 'GET')
+
     def test_headers_method(self):
         hdr = Headers([('foo', 'bar')])
-        fr = create_fuzzable_request(self.url, method='PUT', 
+        fr = create_fuzzable_request(self.url, method='PUT',
                                      add_headers=hdr)
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), hdr )
-        self.assertEqual( fr.get_method(), 'PUT' )
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_method(), 'PUT')
 
     def test_from_HTTPRequest(self):
         request = HTTPRequest(self.url)
         fr = create_fuzzable_request(request)
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.get_method(), 'GET' )
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.get_method(), 'GET')
 
     def test_from_HTTPRequest_headers(self):
         hdr = Headers([('Foo', 'bar')])
         request = HTTPRequest(self.url, headers=hdr)
         fr = create_fuzzable_request(request)
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), hdr )
-        self.assertEqual( fr.get_method(), 'GET' )
-        self.assertIsInstance( fr, HTTPQSRequest)
-        
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_method(), 'GET')
+        self.assertIsInstance(fr, HTTPQSRequest)
+
     def test_simple_post(self):
         post_data = 'a=b&d=3'
         hdr = Headers([('content-length', str(len(post_data)))])
-        
-        fr = create_fuzzable_request(self.url, add_headers=hdr, 
+
+        fr = create_fuzzable_request(self.url, add_headers=hdr,
                                      post_data=post_data, method='POST')
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), hdr )
-        self.assertEqual( fr.get_method(), 'POST' )
-        self.assertFalse( 'content-type' in fr.getHeaders() )        
-        self.assertIsInstance( fr, HTTPPostDataRequest)
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_method(), 'POST')
+        self.assertFalse('content-type' in fr.getHeaders())
+        self.assertIsInstance(fr, HTTPPostDataRequest)
 
     def test_json_post(self):
         post_data = '{"1":"2"}'
         hdr = Headers([('content-length', str(len(post_data)))])
-        
-        fr = create_fuzzable_request(self.url, add_headers=hdr, 
+
+        fr = create_fuzzable_request(self.url, add_headers=hdr,
                                      post_data=post_data, method='POST')
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), hdr )
-        self.assertEqual( fr.get_method(), 'POST' )
-        self.assertIsInstance( fr, JSONPostDataRequest)
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_method(), 'POST')
+        self.assertIsInstance(fr, JSONPostDataRequest)
 
     def test_xmlrpc_post(self):
         post_data = '''<methodCall>
             <methodName>system.listMethods</methodName>
             <params></params>
         </methodCall>'''
-        
+
         headers = Headers([('content-length', str(len(post_data)))])
-        
-        fr = create_fuzzable_request(self.url, add_headers=headers, 
+
+        fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), headers )
-        self.assertEqual( fr.get_method(), 'POST' )
-        self.assertIsInstance( fr, XMLRPCRequest)
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), headers)
+        self.assertEqual(fr.get_method(), 'POST')
+        self.assertIsInstance(fr, XMLRPCRequest)
 
     def test_multipart_post(self):
-        boundary, post_data = multipart_encode( [('a', 'bcd'), ], []  )
+        boundary, post_data = multipart_encode([('a', 'bcd'), ], [])
 
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', 'multipart/form-data; boundary=%s' % boundary)])
-        
-        fr = create_fuzzable_request(self.url, add_headers=headers, 
+
+        fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), headers )
-        self.assertTrue( 'multipart/form-data' in fr.getHeaders()['content-type'])
-        self.assertEqual( fr.get_method(), 'POST' )
-        self.assertEqual( fr.get_dc(), {'a': ['bcd',]})
-        self.assertIsInstance( fr, HTTPPostDataRequest)
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), headers)
+        self.assertTrue(
+            'multipart/form-data' in fr.getHeaders()['content-type'])
+        self.assertEqual(fr.get_method(), 'POST')
+        self.assertEqual(fr.get_dc(), {'a': ['bcd', ]})
+        self.assertIsInstance(fr, HTTPPostDataRequest)
 
     def test_invalid_multipart_post(self):
-        _, post_data = multipart_encode( [('a', 'bcd'), ], []  )
+        _, post_data = multipart_encode([('a', 'bcd'), ], [])
 
         # It is invalid because there is a missing boundary parameter in the
         # content-type header
         headers = Headers([('content-length', str(len(post_data))),
                            ('content-type', 'multipart/form-data')])
-        
-        fr = create_fuzzable_request(self.url, add_headers=headers, 
+
+        fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
-        
-        self.assertEqual( fr.getURL(), self.url )
-        self.assertEqual( fr.getHeaders(), headers )
-        self.assertEqual( fr.get_method(), 'POST' )
-        
+
+        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.getHeaders(), headers)
+        self.assertEqual(fr.get_method(), 'POST')
+
         # And this is how it affects the result:
-        self.assertEqual( fr.getData(), '')
-        self.assertEqual( fr.get_dc(), {})
-        
-        self.assertIsInstance( fr, HTTPPostDataRequest)
-        
+        self.assertEqual(fr.getData(), '')
+        self.assertEqual(fr.get_dc(), {})
+
+        self.assertIsInstance(fr, HTTPPostDataRequest)

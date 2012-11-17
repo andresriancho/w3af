@@ -24,49 +24,49 @@ from nose.plugins.skip import SkipTest
 
 
 class TestAllFP(PluginTest):
-    
+
     target_url = 'http://moth/w3af/core/base_false_positive/'
-    
-   
+
     def test_false_positive(self):
         raise SkipTest('FIXME: This test takes too long to run.')
-    
+
         audit_plugin_names = self.w3afcore.plugins.get_plugin_list('audit')
 
         for audit_plugin in audit_plugin_names:
             run_config = {
                 'target': self.target_url,
                 'plugins': {
-                     'audit': (PluginConfig(audit_plugin),),
-                     'crawl': (
-                         PluginConfig(
-                             'web_spider',
+                    'audit': (PluginConfig(audit_plugin),),
+                    'crawl': (
+                        PluginConfig(
+                            'web_spider',
                              ('onlyForward', True, PluginConfig.BOOL)),
-                     )                 
-                     }
+                    )
                 }
-            
+            }
+
             # I tried to do this in the right way, with nosetest test generators,
             # but they have a bug with unittest.TestCase
             self.setUp()
-            
+
             target = run_config['target']
             plugins = run_config['plugins']
             self._scan(target, plugins)
-    
+
             vulns = self.kb.getAllVulns()
             infos = self.kb.getAllInfos()
-            
+
             vulns = [str(v) for v in vulns]
             infos = [str(i) for i in infos]
-            
-            msg_v = 'audit.%s found a vulnerability in "%s"' % (audit_plugin, ','.join(vulns) )
-            msg_i = 'audit.%s found a vulnerability in "%s"' % (audit_plugin, ','.join(infos) )
-            
-            self.assertEquals( len(vulns) , 0, msg_v)
-            self.assertEquals( len(infos) , 0, msg_i)
-            
+
+            msg_v = 'audit.%s found a vulnerability in "%s"' % (
+                audit_plugin, ','.join(vulns))
+            msg_i = 'audit.%s found a vulnerability in "%s"' % (
+                audit_plugin, ','.join(infos))
+
+            self.assertEquals(len(vulns), 0, msg_v)
+            self.assertEquals(len(infos), 0, msg_i)
+
             # I tried to do this in the right way, with nosetest test generators,
             # but they have a bug with unittest.TestCase
             self.tearDown()
-            

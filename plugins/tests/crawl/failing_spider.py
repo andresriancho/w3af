@@ -26,13 +26,13 @@ class failing_spider(web_spider):
     '''
     This is a test plugin that will raise exceptions.
     Only useful for testing, see test_discover_exception_handling.py
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         web_spider.__init__(self)
-        
+
         self.blacklist = ('2.html',)
 
     def crawl(self, fuzzable_req):
@@ -42,6 +42,5 @@ class failing_spider(web_spider):
         for ending in self.blacklist:
             if fuzzable_req.getURL().url_string.endswith(ending):
                 raise Exception('Test')
-        
-        return super(failing_spider, self).discover(fuzzable_req)
 
+        return super(failing_spider, self).discover(fuzzable_req)

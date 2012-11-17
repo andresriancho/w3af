@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestPasswordProfiling(PluginTest):
-    
+
     password_profiling_url = 'https://moth/w3af/grep/password_profiling/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': password_profiling_url,
@@ -35,24 +35,23 @@ class TestPasswordProfiling(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_collected_passwords(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        collected_passwords = self.kb.get('password_profiling', 'password_profiling')
-        
+        collected_passwords = self.kb.get(
+            'password_profiling', 'password_profiling')
+
         def sortfunc(x_obj, y_obj):
             return cmp(x_obj[1], y_obj[1])
-        
+
         collected_passwords = collected_passwords.keys()
         collected_passwords.sort(sortfunc)
-        
-        self.assertEquals( collected_passwords[0], 'Password' )
-        self.assertTrue( 'repeat' in collected_passwords )
-        
-         
+
+        self.assertEquals(collected_passwords[0], 'Password')
+        self.assertTrue('repeat' in collected_passwords)

@@ -31,7 +31,8 @@ from core.data.parsers.url import URL
 REPP = re.compile("\$.*?\$")
 
 
-class FuzzyError(w3afException): pass
+class FuzzyError(w3afException):
+    pass
 
 # Syntax rules:
 #
@@ -42,6 +43,7 @@ class FuzzyError(w3afException): pass
 # - if you write "$something$", the "something" will be evaluated with
 #   eval, having the "string" module already imported (eg:
 #   "$range(1,5,2)$", "$string.lowercase$").
+
 
 class FuzzyGenerator(object):
     '''Handles two texts with the fuzzy syntax.
@@ -59,7 +61,7 @@ class FuzzyGenerator(object):
     def calculateQuantity(self):
         combin = 1
         genr1, genr2 = self._genGenerators()
-        for elem in genr1+genr2:
+        for elem in genr1 + genr2:
             if elem:
                 combin *= len(elem)
         return combin
@@ -78,18 +80,18 @@ class FuzzyGenerator(object):
 
     def _genIterator(self, text):
         '''Generates the iterator from the text.'''
-        namespace = {"string":__import__("string")}
+        namespace = {"string": __import__("string")}
         try:
             it = eval(text, namespace)
         except Exception, e:
             msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e,
-                                                                        text)
+                                                     text)
             raise FuzzyError(msg)
 
         try:
             iter(it)
         except TypeError:
-            msg = _("%r is not iterable! (generated from %r)") % (it,text)
+            msg = _("%r is not iterable! (generated from %r)") % (it, text)
             raise FuzzyError(msg)
         return it
 
@@ -104,14 +106,14 @@ class FuzzyGenerator(object):
         try:
             header = txt.split('\n')[0]
             url_string = header.split(' ')[1]
-            replaced_url_string = url_string.replace('%24','$')
-            txt = txt.replace(url_string,replaced_url_string)
+            replaced_url_string = url_string.replace('%24', '$')
+            txt = txt.replace(url_string, replaced_url_string)
         except:
             pass
         #
         #    /fix for bug #164086
         #
-        
+
         # remove the \$
         txt = txt.replace("\$", "\x00")
 
@@ -120,10 +122,10 @@ class FuzzyGenerator(object):
         saneparts = REPP.split(txt)
 
         # transform \$ for $
-        for i,part in enumerate(toreplace):
+        for i, part in enumerate(toreplace):
             if "\x00" in part:
                 toreplace[i] = part.replace("\x00", "$")
-        for i,part in enumerate(saneparts):
+        for i, part in enumerate(saneparts):
             if "\x00" in part:
                 saneparts[i] = part.replace("\x00", "$")
 
@@ -146,7 +148,7 @@ class FuzzyGenerator(object):
         if vals is None:
             return sane[0]
         full = []
-        for x,y in zip(sane, vals):
+        for x, y in zip(sane, vals):
             full.append(str(x))
             full.append(str(y))
         full.append(str(sane[-1]))
@@ -160,8 +162,8 @@ class FuzzyGenerator(object):
         if not generat[pos]:
             yield None
         for elem in generat[pos]:
-            if pos+1 == len(generat):
-                yield constr+[elem]
+            if pos + 1 == len(generat):
+                yield constr + [elem]
             else:
-                for val in self._possib(generat, constr+[elem]):
+                for val in self._possib(generat, constr + [elem]):
                     yield val

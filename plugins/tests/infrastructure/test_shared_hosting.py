@@ -23,27 +23,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestSharedHosting(PluginTest):
-    
+
     base_url = 'http://www.cybsec.com/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': base_url,
-                'plugins': {'infrastructure': (PluginConfig('shared_hosting'),)}
-                }
+        'target': base_url,
+        'plugins': {'infrastructure': (PluginConfig('shared_hosting'),)}
         }
-    
+    }
+
     def test_shared_hosting(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         domains = self.kb.get('shared_hosting', 'domains')
-        self.assertGreater( len(domains), 30, len(domains))
-        
+        self.assertGreater(len(domains), 30, len(domains))
+
         infos = self.kb.get('shared_hosting', 'shared_hosting')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        self.assertEqual('Shared hosting', info.get_name() )
-        
-        
+        self.assertEqual('Shared hosting', info.get_name())

@@ -31,74 +31,77 @@ from core.data.parsers.url import URL
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
-cf.cf.save('targets', [] )
-cf.cf.save('targetDomains', set() )
-cf.cf.save('baseURLs', [] )
+cf.cf.save('targets', [])
+cf.cf.save('targetDomains', set())
+cf.cf.save('baseURLs', [])
 
 
 class w3af_core_target(Configurable):
     '''
-    A class that acts as an interface for the user interfaces, so they can 
+    A class that acts as an interface for the user interfaces, so they can
     configure the target settings using get_options and SetOptions.
     '''
-    
-    def __init__( self ):
+
+    def __init__(self):
         # Set defaults for user configured variables
         self.clear()
-        
+
         # Some internal variables
-        self._operating_systems = ['unknown','unix','windows']
-        self._programming_frameworks = ['unknown', 'php','asp','asp.net','java',
-                                       'jsp','cfm','ruby','perl']
+        self._operating_systems = ['unknown', 'unix', 'windows']
+        self._programming_frameworks = ['unknown', 'php', 'asp', 'asp.net', 'java',
+                                        'jsp', 'cfm', 'ruby', 'perl']
 
     def clear(self):
-        cf.cf.save('targets', [] )
-        cf.cf.save('targetOS', 'unknown' )
-        cf.cf.save('targetFramework', 'unknown' )
-        cf.cf.save('targetDomains', set() )
-        cf.cf.save('baseURLs', [] )
-        cf.cf.save('session_name', 'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
-                
-    def get_options( self ):
+        cf.cf.save('targets', [])
+        cf.cf.save('targetOS', 'unknown')
+        cf.cf.save('targetFramework', 'unknown')
+        cf.cf.save('targetDomains', set())
+        cf.cf.save('baseURLs', [])
+        cf.cf.save('session_name', 'defaultSession' + '-' +
+                   time.strftime('%Y-%b-%d_%H-%M-%S'))
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''        
+        '''
         ol = OptionList()
-        
+
         targets = ','.join(str(tar) for tar in cf.cf.get('targets'))
         d = 'A comma separated list of URLs'
         o = opt_factory('target', targets, d, 'list')
         ol.add(o)
-        
-        d = 'Target operating system ('+ '/'.join(self._operating_systems) +')'
+
+        d = 'Target operating system (' + '/'.join(
+            self._operating_systems) + ')'
         h = 'This setting is here to enhance w3af performance.'
-        
+
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
         tmp_list = self._operating_systems[:]
-        tmp_list.remove( cf.cf.get('targetOS') )
-        tmp_list.insert(0, cf.cf.get('targetOS') )
+        tmp_list.remove(cf.cf.get('targetOS'))
+        tmp_list.insert(0, cf.cf.get('targetOS'))
         o = opt_factory('targetOS', tmp_list, d, 'combo', help=h)
         ol.add(o)
-        
-        d = 'Target programming framework ('+ '/'.join(self._programming_frameworks) +')'
+
+        d = 'Target programming framework (' + '/'.join(
+            self._programming_frameworks) + ')'
         h = 'This setting is here to enhance w3af performance.'
         # This list "hack" has to be done because the default value is the one
         # in the first position on the list
         tmp_list = self._programming_frameworks[:]
-        tmp_list.remove( cf.cf.get('targetFramework') )
-        tmp_list.insert(0, cf.cf.get('targetFramework') )
+        tmp_list.remove(cf.cf.get('targetFramework'))
+        tmp_list.insert(0, cf.cf.get('targetFramework'))
         o = opt_factory('targetFramework', tmp_list, d, 'combo', help=h)
         ol.add(o)
-        
+
         return ol
-    
+
     def _verifyURL(self, target_url, fileTarget=True):
         '''
         Verify if the URL is valid and raise an exception if w3af doesn't
         support it.
-        
-        >>> ts = w3af_core_target()        
+
+        >>> ts = w3af_core_target()
         >>> ts._verifyURL('ftp://www.google.com/')
         Traceback (most recent call last):
           ...
@@ -106,7 +109,7 @@ class w3af_core_target(Configurable):
         >>> ts._verifyURL('http://www.google.com/')
         >>> ts._verifyURL('http://www.google.com:39/') is None
         True
-        
+
         @param target_url: The target URL object to check if its valid or not.
         @return: None. A w3afException is raised on error.
         '''
@@ -117,31 +120,31 @@ class w3af_core_target(Configurable):
         else:
             protocol = target_url.getProtocol()
             aFile = fileTarget and protocol == 'file' and \
-                                                target_url.getDomain() or ''
+                target_url.getDomain() or ''
             aHTTP = protocol in ('http', 'https') and \
-                                                target_url.is_valid_domain()
+                target_url.is_valid_domain()
             is_invalid = not (aFile or aHTTP)
 
         if is_invalid:
             msg = ('Invalid format for target URL "%s", you have to specify '
-            'the protocol (http/https/file) and a domain or IP address. '
-            'Examples: http://host.tld/ ; https://127.0.0.1/ .' % target_url)
+                   'the protocol (http/https/file) and a domain or IP address. '
+                   'Examples: http://host.tld/ ; https://127.0.0.1/ .' % target_url)
             raise w3afException(msg)
-    
+
     def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
         target_urls_strings = options_list['target'].get_value() or []
 
         for target_url_string in target_urls_strings:
-            
+
             self._verifyURL(target_url_string)
-            
+
             if target_url_string.count('file://'):
                 try:
                     f = urllib2.urlopen(target_url_string)
@@ -154,48 +157,52 @@ class w3af_core_target(Configurable):
                         self._verifyURL(target_in_file, fileTarget=False)
                         target_urls_strings.append(target_in_file)
                     f.close()
-                target_urls_strings.remove( target_url_string )
-        
+                target_urls_strings.remove(target_url_string)
+
         # Convert to objects
         target_url_objects = [URL(u) for u in target_urls_strings]
-        
+
         # Now we perform a check to see if the user has specified more than one target
         # domain, for example: "http://google.com, http://yahoo.com".
-        domain_list = [target_url.getNetLocation() for target_url in target_url_objects]
-        domain_list = list( set(domain_list) )
-        if len( domain_list ) > 1:
-            msg = 'You specified more than one target domain: ' + ','.join(domain_list)
+        domain_list = [target_url.getNetLocation(
+        ) for target_url in target_url_objects]
+        domain_list = list(set(domain_list))
+        if len(domain_list) > 1:
+            msg = 'You specified more than one target domain: ' + \
+                ','.join(domain_list)
             msg += ' . And w3af only supports one target domain at the time.'
             raise w3afException(msg)
-        
+
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', target_url_objects)
-        cf.cf.save('targetDomains', set([ u.getDomain() for u in target_url_objects ]) )
-        cf.cf.save('baseURLs', [ i.baseUrl() for i in target_url_objects ] )
-        
+        cf.cf.save('targetDomains', set([u.getDomain()
+                   for u in target_url_objects]))
+        cf.cf.save('baseURLs', [i.baseUrl() for i in target_url_objects])
+
         if target_url_objects:
-            sessName = [ x.getNetLocation() for x in target_url_objects ]
+            sessName = [x.getNetLocation() for x in target_url_objects]
             sessName = '-'.join(sessName)
         else:
             sessName = 'noTarget'
 
-        cf.cf.save('session_name', sessName + '-' + time.strftime('%Y-%b-%d_%H-%M-%S') )
-        
+        cf.cf.save('session_name', sessName + '-' + time.strftime(
+            '%Y-%b-%d_%H-%M-%S'))
+
         # Advanced target selection
         os = options_list['targetOS'].get_value_str()
         if os.lower() in self._operating_systems:
-            cf.cf.save('targetOS', os.lower() )
+            cf.cf.save('targetOS', os.lower())
         else:
             raise w3afException('Unknown target operating system: ' + os)
-        
+
         pf = options_list['targetFramework'].get_value_str()
         if pf.lower() in self._programming_frameworks:
-            cf.cf.save('targetFramework', pf.lower() )
+            cf.cf.save('targetFramework', pf.lower())
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
 
-    def get_name( self ):
+    def get_name(self):
         return 'targetSettings'
-        
-    def get_desc( self ):
+
+    def get_desc(self):
         return 'Configure target URLs'

@@ -21,24 +21,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestOSCommanding(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/os_commanding/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('os_commanding'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 }
+                'audit': (PluginConfig('os_commanding'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
             }
         }
-    
+    }
+
     def test_found_osc(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -47,7 +48,8 @@ class TestOSCommanding(PluginTest):
         # Assert the general results
         vulns = self.kb.get('os_commanding', 'os_commanding')
         self.assertEquals(4, len(vulns))
-        self.assertTrue(all(["OS commanding vulnerability" == v.get_name() for v in vulns ]))
+        self.assertTrue(all(
+            ["OS commanding vulnerability" == v.get_name() for v in vulns]))
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
@@ -57,10 +59,9 @@ class TestOSCommanding(PluginTest):
             ('blind_osc.php', 'cmd')
         ]
 
-        found_vulns = [ (v.getURL().getFileName() , v.get_mutant().get_var()) for v in vulns]
-        
-        self.assertEquals( set(EXPECTED),
-                           set(found_vulns)
-                          )
+        found_vulns = [(v.getURL(
+        ).getFileName(), v.get_mutant().get_var()) for v in vulns]
 
-        
+        self.assertEquals(set(EXPECTED),
+                          set(found_vulns)
+                          )

@@ -31,23 +31,22 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class hash_analysis(GrepPlugin):
     '''
     Identify hashes in HTTP responses.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._already_reported = ScalableBloomFilter()
-        
+
         # regex to split between words
         self._split_re = re.compile('[^\w]')
-        
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point, identify hashes in the HTTP response.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
@@ -55,39 +54,42 @@ class hash_analysis(GrepPlugin):
         # I know that by doing this I loose the chance of finding hashes in PDF files, but...
         # This is much faster
         if response.is_text_or_html():
-            
+
             body = response.getBody()
             splitted_body = self._split_re.split(body)
             for possible_hash in splitted_body:
-                
+
                 #    This is a performance enhancement that cuts the execution
                 #    time of this plugin in half.
                 if len(possible_hash) > 31:
-                
-                    hash_type = self._get_hash_type( possible_hash )
+
+                    hash_type = self._get_hash_type(possible_hash)
                     if hash_type:
-                        
+
                         possible_hash = possible_hash.lower()
-                        if self._has_hash_distribution( possible_hash ):
+                        if self._has_hash_distribution(possible_hash):
                             if (possible_hash, response.getURL()) not in self._already_reported:
                                 i = info.info()
                                 i.set_plugin_name(self.get_name())
-                                i.set_name( hash_type + 'hash in HTML content')
-                                i.setURL( response.getURL() )
+                                i.set_name(hash_type + 'hash in HTML content')
+                                i.setURL(response.getURL())
                                 i.addToHighlight(possible_hash)
-                                i.set_id( response.id )
-                                msg = 'The URL: "'+ response.getURL()  + '" returned a response that may'
-                                msg += ' contain a "' + hash_type + '" hash. The hash is: "'+ possible_hash
+                                i.set_id(response.id)
+                                msg = 'The URL: "' + response.getURL(
+                                ) + '" returned a response that may'
+                                msg += ' contain a "' + hash_type + \
+                                    '" hash. The hash is: "' + possible_hash
                                 msg += '". This is uncommon and requires human verification.'
-                                i.set_desc( msg )
-                                kb.kb.append( self, 'hash_analysis', i )
-                                
-                                self._already_reported.add( (possible_hash, response.getURL()) )
-    
-    def _has_hash_distribution( self, possible_hash ):
+                                i.set_desc(msg)
+                                kb.kb.append(self, 'hash_analysis', i)
+
+                                self._already_reported.add(
+                                    (possible_hash, response.getURL()))
+
+    def _has_hash_distribution(self, possible_hash):
         '''
         @param possible_hash: A string that may be a hash.
-        @return: True if the possible_hash has an equal (aprox.) distribution 
+        @return: True if the possible_hash has an equal (aprox.) distribution
         of numbers and letters and only has hex characters (0-9, a-f)
         '''
         numbers = 0
@@ -99,8 +101,8 @@ class hash_analysis(GrepPlugin):
                 letters += 1
             else:
                 return False
-        
-        if numbers in range( letters - len(possible_hash) / 2 , letters + len(possible_hash) / 2 ):
+
+        if numbers in range(letters - len(possible_hash) / 2, letters + len(possible_hash) / 2):
             # Seems to be a hash, let's make a final test to avoid false positives with
             # strings like:
             # 2222222222222222222aaaaaaaaaaaaa
@@ -110,31 +112,31 @@ class hash_analysis(GrepPlugin):
                     is_hash = False
                     break
             return is_hash
-            
+
         else:
             return False
-        
-    def _get_hash_type( self, possible_hash ):
+
+    def _get_hash_type(self, possible_hash):
         '''
         @param possible_hash: A string that may be a hash.
         @return: The hash type if the string seems to be a md5 / sha1 hash.
         None otherwise.
         '''
         # FIXME: Add more here!
-        if len( possible_hash ) == 32:
+        if len(possible_hash) == 32:
             return 'MD5'
-        elif len( possible_hash ) == 40:
+        elif len(possible_hash) == 40:
             return 'SHA1'
         else:
             return None
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'hash_analysis', 'hash_analysis' ), None )
-    
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('hash_analysis', 'hash_analysis'), None)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

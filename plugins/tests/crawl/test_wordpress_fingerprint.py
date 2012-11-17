@@ -24,66 +24,67 @@ from core.data.misc.file_utils import days_since_file_update
 
 
 class Testwordpress_fingerprint(PluginTest):
-    
+
     wordpress_url = 'http://wordpress/'
     moth_url = 'http://moth/w3af/audit/'
-        
+
     _run_configs = {
         'direct': {
             'target': wordpress_url,
             'plugins': {
-                        'crawl': (PluginConfig('wordpress_fingerprint',),)
-                        },
-                },
+        'crawl': (PluginConfig('wordpress_fingerprint',),)
+            },
+        },
         'crawl': {
             'target': moth_url,
             'plugins': {
-                        'crawl': (PluginConfig('wordpress_fingerprint',),
-                                  PluginConfig('web_spider',
-                                               ('onlyForward', True, PluginConfig.BOOL)))
-                        
-                        },
-                }
+        'crawl': (PluginConfig('wordpress_fingerprint',),
+                  PluginConfig('web_spider',
+                               ('onlyForward', True, PluginConfig.BOOL)))
+
+            },
+        }
     }
-    
+
     def test_find_version(self):
         cfg = self._run_configs['direct']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('wordpress_fingerprint', 'info')
-        
-        self.assertEqual( len(infos), 4)
-        
+
+        self.assertEqual(len(infos), 4)
+
         for i in infos:
             self.assertEqual('WordPress version', i.get_name())
-        
+
         descriptions = set([i.get_desc(with_id=False) for i in infos])
-        expected_descriptions = set(['WordPress version "3.4.1" found in the index header.',
-                                     
-                                     'WordPress version "3.4.1" found in the readme.html file.',
-                                     
-                                     'WordPress version "2.7.1" found from data.',
-                                     
-                                     'The sysadmin used WordPress version "3.4.1.tar.gz"'\
-                                     ' during the installation, which was found by matching'\
-                                     ' the contents of "http://wordpress/latest.tar.gz"'\
-                                     ' with the hashes of known releases. If the sysadmin'\
-                                     ' did not update wordpress, the current version will'\
-                                     ' still be the same.',])
+        expected_descriptions = set(
+            ['WordPress version "3.4.1" found in the index header.',
+
+             'WordPress version "3.4.1" found in the readme.html file.',
+
+             'WordPress version "2.7.1" found from data.',
+
+             'The sysadmin used WordPress version "3.4.1.tar.gz"'
+             ' during the installation, which was found by matching'
+             ' the contents of "http://wordpress/latest.tar.gz"'
+             ' with the hashes of known releases. If the sysadmin'
+             ' did not update wordpress, the current version will'
+             ' still be the same.', ])
         self.assertEqual(descriptions, expected_descriptions)
-    
+
     def test_todo(self):
         '''
         Please note that the version found by the data is 2.7.1 , this is because
         of an outdated data in wordpress_fingerprint.py , more specifically the
         WP_FINGERPRINT attribute.
-        
+
         I should modify the plugin in order to use the XML file provided by the
         guys at wpscan.org:
         https://github.com/wpscanteam/wpscan/blob/master/data/wp_versions.xml
         '''
         self.assertTrue(False)
-    
+
     def test_updated_release_db(self):
 
         wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
@@ -91,7 +92,7 @@ class Testwordpress_fingerprint(PluginTest):
 
         wp_releases_file = wpfp_inst._release_db
         is_older = days_since_file_update(wp_releases_file, 30)
-        
+
         msg = 'The releases.db database is too old. The following commands need'\
               ' to be run in order to update it:\n'\
               'cd plugins/crawl/wordpress_fingerprint/\n'\

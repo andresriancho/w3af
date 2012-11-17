@@ -45,7 +45,7 @@ class mx_injection(AuditPlugin):
         'Invalid mailbox name',
         'To check for outside changes to the folder list go to the folders page'
     )
-    _multi_in = multi_in( MX_ERRORS )
+    _multi_in = multi_in(MX_ERRORS)
 
     def __init__(self):
         '''
@@ -55,51 +55,53 @@ class mx_injection(AuditPlugin):
         done :P
         '''
         AuditPlugin.__init__(self)
-        
-    def audit(self, freq ):
+
+    def audit(self, freq):
         '''
         Tests an URL for mx injection vulnerabilities.
-        
+
         @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         mx_injection_strings = self._get_MX_injection_strings()
-        mutants = create_mutants( freq , mx_injection_strings, orig_resp=orig_resp )
-        
+        mutants = create_mutants(
+            freq, mx_injection_strings, orig_resp=orig_resp)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-            
-    def _analyze_result( self, mutant, response ):
+
+    def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
         # I will only report the vulnerability once.
         if self._has_no_bug(mutant):
-            
-            mx_error_list = self._multi_in.query( response.body )
+
+            mx_error_list = self._multi_in.query(response.body)
             for mx_error in mx_error_list:
                 if mx_error not in mutant.get_original_response_body():
-                    v = vuln.vuln( mutant )
+                    v = vuln.vuln(mutant)
                     v.set_plugin_name(self.get_name())
-                    v.set_name( 'MX injection vulnerability' )
+                    v.set_name('MX injection vulnerability')
                     v.set_severity(severity.MEDIUM)
-                    v.set_desc( 'MX injection was found at: ' + mutant.found_at() )
-                    v.set_id( response.id )
-                    v.addToHighlight( mx_error )
-                    kb.kb.append_uniq( self, 'mx_injection', v )
+                    v.set_desc(
+                        'MX injection was found at: ' + mutant.found_at())
+                    v.set_id(response.id)
+                    v.addToHighlight(mx_error)
+                    kb.kb.append_uniq(self, 'mx_injection', v)
                     break
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'mx_injection', 'mx_injection' ), 'VAR' )
-    
-    def _get_MX_injection_strings( self ):
+        self.print_uniq(kb.kb.get('mx_injection', 'mx_injection'), 'VAR')
+
+    def _get_MX_injection_strings(self):
         '''
         Gets a list of strings to test against the web app.
-        
+
         @return: A list with all mx_injection strings to test. Example: [ '\"','f00000']
         '''
         mx_injection_strings = []
@@ -107,14 +109,14 @@ class mx_injection(AuditPlugin):
         mx_injection_strings.append('iDontExist')
         mx_injection_strings.append('')
         return mx_injection_strings
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin will find MX injections. This kind of web application errors
-        are mostly seen in webmail software. The tests are simple, for every 
+        are mostly seen in webmail software. The tests are simple, for every
         injectable parameter a string with special meaning in the mail server is
         sent, and if in the response I find a mail server error, a vulnerability
         was found.

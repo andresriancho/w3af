@@ -37,12 +37,12 @@ PyGTK version:%s\n\n
 %s
 ''' % \
     (sys.version,
-    ".".join(str(x) for x in gtk.gtk_version),
-    ".".join(str(x) for x in gtk.pygtk_version),
-    get_w3af_version())
-    
+     ".".join(str(x) for x in gtk.gtk_version),
+     ".".join(str(x) for x in gtk.pygtk_version),
+     get_w3af_version())
 
-def pprint_plugins( w3af_core ):
+
+def pprint_plugins(w3af_core):
     # Return a pretty-printed string from the plugins dicts
     import copy
     from itertools import chain
@@ -51,20 +51,22 @@ def pprint_plugins( w3af_core ):
 
     for ptype, plist in plugs.iteritems():
         for p in plist:
-            if p not in chain(*(pt.keys() for pt in \
-                                    plugs_opts.itervalues())):
+            if p not in chain(*(pt.keys() for pt in
+                                plugs_opts.itervalues())):
                 plugs_opts[ptype][p] = {}
-    
+
     plugins = StringIO.StringIO()
     pprint.pprint(plugs_opts, plugins)
     return  plugins.getvalue()
 
+
 def gettempdir():
     return tempfile.gettempdir()
 
+
 def create_crash_file(exception):
     filename = "w3af_crash-" + rand_alnum(5) + ".txt"
-    filename = os.path.join( gettempdir() , filename ) 
+    filename = os.path.join(gettempdir(), filename)
     crash_dump = file(filename, "w")
     crash_dump.write(_('Submit this bug here: https://sourceforge.net/apps/trac/w3af/newticket \n'))
     crash_dump.write(VERSIONS)

@@ -24,18 +24,18 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class PayloadTestHelperExec(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/rfi/vulnerable.php?file=section.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('rfi'),),
-                 }
+                'audit': (PluginConfig('rfi'),),
             }
         }
-    
+    }
+
     def _scan_wrapper(self):
         '''
         @return: Run the scan and return the vulnerability itself and the vuln_id.
@@ -47,30 +47,27 @@ class PayloadTestHelperExec(PluginTest):
         # Assert the general results
         vulns = self.kb.get('rfi', 'rfi')
         self.assertEquals(1, len(vulns))
-        
+
         vuln = vulns[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         return vuln, vuln_to_exploit_id
-    
+
     def _get_shell(self):
         vuln, vuln_to_exploit_id = self._scan_wrapper()
 
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack','rfi' )
-        
-        self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
-        
-        exploit_result = plugin.exploit( vuln_to_exploit_id )
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'rfi')
+
+        self.assertTrue(plugin.canExploit(vuln_to_exploit_id))
+
+        exploit_result = plugin.exploit(vuln_to_exploit_id)
 
         self.assertGreaterEqual(len(exploit_result), 1)
-        
+
         shell = exploit_result[0]
         return shell
-    
+
     def setUp(self):
         super(PayloadTestHelperExec, self).setUp()
         cf.cf.save('targetOS', 'unix')
         self.shell = self._get_shell()
-
-        
-        

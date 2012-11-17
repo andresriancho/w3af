@@ -41,7 +41,7 @@ counter = 0
 release_db = file('release.db', 'w')
 
 for i, version in enumerate(extracted_links):
-    version_md5_url = release_md5_fmt % version          
+    version_md5_url = release_md5_fmt % version
     try:
         version_md5 = urllib2.urlopen(version_md5_url).read().strip()
     except KeyboardInterrupt:
@@ -52,9 +52,9 @@ for i, version in enumerate(extracted_links):
             print '%s is a 404' % version_md5_url
     else:
         if i % 15 == 0:
-            print '[%s/%s] %s %s' % (i, len(extracted_links), version_md5, version) 
-        release_db.write('%s,%s\n' % (version_md5, version) )
-    
+            print '[%s/%s] %s %s' % (i, len(extracted_links), version_md5, version)
+        release_db.write('%s,%s\n' % (version_md5, version))
+
     if errors > 10:
         print 'Found too many errors. Potential scrapping error. Stopping.'
         break

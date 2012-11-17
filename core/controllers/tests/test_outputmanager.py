@@ -31,29 +31,29 @@ from core.controllers.w3afCore import w3afCore
 
 @attr('smoke')
 class TestOutputManager(unittest.TestCase):
-    
+
     OUTPUT_PLUGIN_ACTIONS = ('debug', 'information', 'error',
                              'console', 'vulnerability')
 
     def test_output_plugins_actions(self):
         '''Call all actions on output plugins'''
-        
+
         msg = '<< SOME OUTPUT MESS@GE!! <<'
-        
+
         for action in TestOutputManager.OUTPUT_PLUGIN_ACTIONS:
             plugin = Mock()
             plugin_action = MagicMock()
             setattr(plugin, action, plugin_action)
-            
+
             # Invoke action
-            om.out._output_plugin_list = [plugin,]
+            om.out._output_plugin_list = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
-            
+
             om.out.process_all_messages()
-            
+
             plugin_action.assert_called_once_with(msg, True)
-            
+
     def test_output_plugins_actions_with_unicode_message(self):
         '''Call all actions on output plugins using a unicode message'''
         msg = u'<< ÑñçÇyruZZ!! <<'
@@ -63,16 +63,16 @@ class TestOutputManager(unittest.TestCase):
             plugin = Mock()
             plugin_action = MagicMock()
             setattr(plugin, action, plugin_action)
-            
+
             # Invoke action
-            om.out._output_plugin_list = [plugin,]
+            om.out._output_plugin_list = [plugin, ]
             om_action = getattr(om.out, action)
             om_action(msg, True)
-            
+
             om.out.process_all_messages()
-            
-            plugin_action.assert_called_once_with(msg, True)     
-    
+
+            plugin_action.assert_called_once_with(msg, True)
+
     def test_method_that_not_exists(self):
         '''The output manager implements __getattr__ and we don't want it to
         catch-all, just the ones I define!'''
@@ -90,39 +90,37 @@ class TestOutputManager(unittest.TestCase):
         plugin = Mock()
         plugin_action = MagicMock()
         setattr(plugin, action, plugin_action)
-        
+
         # Invoke action
-        om.out._output_plugin_list = [plugin,]
+        om.out._output_plugin_list = [plugin, ]
         om_action = getattr(om.out, action)
         om_action(msg, False)
-        
+
         om.out.process_all_messages()
-        
+
         plugin_action.assert_called_once_with(msg, False)
-            
+
     def test_error_handling(self):
         class InvalidPlugin(object):
             def information(self, msg, newLine=True):
                 raise Exception('Test')
-            
+
             def error(self, msg, newLine=True):
                 pass
-            
+
             def get_name(self):
                 return 'InvalidPlugin'
-        
-        invalid_plugin = InvalidPlugin() 
-        
+
+        invalid_plugin = InvalidPlugin()
+
         w3af_core = w3afCore()
-        
-        om.out._output_plugin_list = [invalid_plugin,]
+
+        om.out._output_plugin_list = [invalid_plugin, ]
         om.out.information('abc')
         om.out.process_all_messages()
-        
+
         exc_list = w3af_core.exception_handler.get_all_exceptions()
         self.assertEqual(len(exc_list), 1, exc_list)
-        
+
         edata = exc_list[0]
-        self.assertEqual( str(edata.exception) , 'Test' )
-        
-        
+        self.assertEqual(str(edata.exception), 'Test')

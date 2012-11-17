@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import gtk, gobject
+import gtk
+import gobject
 import os
 
 from core.ui.gui import confpanel, entries, helpers
@@ -44,24 +45,23 @@ class OptionsPanel(gtk.VBox):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, plugin_tree, plugin, title, longdesc):
-        super(OptionsPanel,self).__init__()
+        super(OptionsPanel, self).__init__()
         self.set_spacing(5)
         self.plugin_tree = plugin_tree
-        
+
         # initial title
         titl = gtk.Label()
-        titl.set_markup( title )
+        titl.set_markup(title)
         titl.set_alignment(0.0, 0.5)
         titl.show()
         self.pack_start(titl)
-        
+
         # The long description of the plugin
         longLabel = gtk.Label()
-        longLabel.set_text( longdesc )
+        longLabel.set_text(longdesc)
         longLabel.set_alignment(0.0, 0.5)
         longLabel.show()
         self.pack_start(longLabel)
-        
 
         # last row buttons
         hbox = gtk.HBox()
@@ -75,7 +75,8 @@ class OptionsPanel(gtk.VBox):
         self.pack_end(hbox, expand=False, fill=False)
 
         # middle (the heart of the panel)
-        self.options = confpanel.OnlyOptions(self, self.plugin_tree.w3af, plugin, save_btn, rvrt_btn)
+        self.options = confpanel.OnlyOptions(
+            self, self.plugin_tree.w3af, plugin, save_btn, rvrt_btn)
         self.pack_start(self.options, expand=True, fill=False)
 
         self.show()
@@ -88,7 +89,6 @@ class OptionsPanel(gtk.VBox):
         self.plugin_tree.configChanged(like_initial)
 
 
-
 class ConfigPanel(gtk.VBox):
     '''Configuration panel administrator.
 
@@ -99,8 +99,8 @@ class ConfigPanel(gtk.VBox):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, profileDescription=None):
-        super(ConfigPanel,self).__init__(False, 0)
-        
+        super(ConfigPanel, self).__init__(False, 0)
+
         if profileDescription is not None:
             # put the description
             lab = gtk.Label(profileDescription)
@@ -121,14 +121,14 @@ class ConfigPanel(gtk.VBox):
 
     def config(self, plugin_tree, plugin, longdesc):
         '''Creates and shows the configuration panel.
-        
+
         @param plugin: the plugin to configure
         @param xmloptions: the options in xml
         @param longdesc: the long description of the plugin
         '''
         # A title with the name of the plugin in bold and with a bigger font
-        title = "<b><big>"+plugin.get_name()+"</big></b>\n\n"
-        
+        title = "<b><big>" + plugin.get_name() + "</big></b>\n\n"
+
         idplugin = id(plugin)
         try:
             newwidg = self.created_panels[idplugin]
@@ -174,7 +174,7 @@ class ConfigPanel(gtk.VBox):
         labl = gtk.Label(label)
         labl.show()
         vbox.pack_start(labl)
-        
+
         vbox.show()
         if self.widg is not None:
             self.remove(self.widg)
@@ -192,7 +192,7 @@ class PluginTree(gtk.TreeView):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, style, config_panel):
-        self.mainwin = w3af.mainwin 
+        self.mainwin = w3af.mainwin
         self.w3af = w3af
         self.config_panel = config_panel
 
@@ -206,7 +206,8 @@ class PluginTree(gtk.TreeView):
 
         # decide which type in function of style
         if style == "standard":
-            plugins_toshow = sorted(x for x in w3af.plugins.get_plugin_types() if x != "output")
+            plugins_toshow = sorted(
+                x for x in w3af.plugins.get_plugin_types() if x != "output")
             col_title = _("Plugin")
         elif style == "output":
             plugins_toshow = ("output",)
@@ -232,7 +233,8 @@ class PluginTree(gtk.TreeView):
             else:
                 activ = 0
                 incons = 1
-            father = self.treestore.append(None, [plugintype, activ, incons, plugintype, None])
+            father = self.treestore.append(
+                None, [plugintype, activ, incons, plugintype, None])
 
             dlg = gtk.Dialog()
             editpixbuf = dlg.render_icon(gtk.STOCK_EDIT, gtk.ICON_SIZE_MENU)
@@ -242,7 +244,8 @@ class PluginTree(gtk.TreeView):
                     thispixbuf = editpixbuf
                 else:
                     thispixbuf = None
-                self.treestore.append(father, [plugin, activ, 0, plugin, thispixbuf])
+                self.treestore.append(
+                    father, [plugin, activ, 0, plugin, thispixbuf])
 
         # we will not ask for the plugin instances until needed, we'll
         # keep them here:
@@ -253,9 +256,9 @@ class PluginTree(gtk.TreeView):
         self.config_status = {}
 
         # create the TreeView using treestore
-        super(PluginTree,self).__init__(self.treestore)
+        super(PluginTree, self).__init__(self.treestore)
         self.connect('cursor-changed', self.configure_plugin)
-        
+
         # button events
         self.connect('button-release-event', self.popup_menu)
         self.connect('button-press-event', self._doubleClick)
@@ -301,7 +304,7 @@ class PluginTree(gtk.TreeView):
         '''Shows in the tree when a plugin configuration changed.
 
         @param like_initial: if some of the configuration changed
-        
+
         If changed, puts the plugin name in bold. If any of the plugin in a
         type is bold, the type name is also bold.
         '''
@@ -329,7 +332,8 @@ class PluginTree(gtk.TreeView):
             father[0] = "<b>%s</b>" % father[3]
 
         # if anything is changed, you can not start scanning
-        isallok = all([all(children.values()) for children in self.config_status.values()])
+        isallok = all([all(
+            children.values()) for children in self.config_status.values()])
         self.mainwin.scanok.change(self, isallok)
 
     def _get_plugin_inst(self, path):
@@ -356,11 +360,11 @@ class PluginTree(gtk.TreeView):
         self.plugin_instances[path] = plugin
         return plugin
 
-    def popup_menu( self, tv, event ):
+    def popup_menu(self, tv, event):
         '''Shows a menu when you right click on a plugin.
-        
+
         @param tv: the treeview.
-        @param event: The GTK event 
+        @param event: The GTK event
         '''
         if event.button == 3:
             # It's a right click !
@@ -371,29 +375,31 @@ class PluginTree(gtk.TreeView):
                 # Get the information about the click
                 pname = self.treestore[path][3]
                 ptype = self.treestore[path[:1]][3]
-                
+
                 # Ok, now I show the popup menu !
                 # Create the popup menu
                 gm = gtk.Menu()
-                
+
                 # And the items
                 e = gtk.MenuItem(_("Edit plugin..."))
-                e.connect('activate', self._handleEditPluginEvent, pname, ptype, path)
+                e.connect('activate',
+                          self._handleEditPluginEvent, pname, ptype, path)
                 f = gtk.MenuItem(_("Reload plugin"))
-                f.connect('activate', self._handleReloadPluginEvent,pname, ptype, path)
-                gm.append( e )
-                gm.append( f )
+                f.connect('activate',
+                          self._handleReloadPluginEvent, pname, ptype, path)
+                gm.append(e)
+                gm.append(f)
                 gm.show_all()
-                
-                gm.popup( None, None, None, event.button, _time)
-    
+
+                gm.popup(None, None, None, event.button, _time)
+
     def _handleReloadPluginEvent(self, widget, plugin_name, plugin_type, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Reload plugin"
         This method calls the plugin editor with the corresponding parameters.
         '''
         self._finishedEditingPlugin(path, plugin_type, plugin_name)
-       
+
     def _handleEditPluginEvent(self, widget, plugin_name, plugin_type, path):
         '''
         I get here when the user right clicks on a plugin name, then he clicks on "Edit..."
@@ -401,7 +407,7 @@ class PluginTree(gtk.TreeView):
         '''
         def f(t, n):
             self._finishedEditingPlugin(path, plugin_type, plugin_name)
-        pluginEditor(plugin_type,  plugin_name,  f)
+        pluginEditor(plugin_type, plugin_name, f)
 
     def _finishedEditingPlugin(self, path, plugin_type, plugin_name):
         '''
@@ -409,17 +415,18 @@ class PluginTree(gtk.TreeView):
         '''
         # remove the edited plugin from cache
         del self.plugin_instances[path]
-        
+
         # Reload the plugin
         try:
-            self.w3af.plugins.reload_modified_plugin(plugin_type,  plugin_name)
+            self.w3af.plugins.reload_modified_plugin(plugin_type, plugin_name)
         except Exception, e:
             msg = 'The plugin you modified raised the following exception'
             msg += ' while trying to reload it: "%s",' % str(e)
             msg += ' please fix this issue before continuing or w3af will crash.'
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(
+                None, gtk.DIALOG_MODAL, gtk.MESSAGE_INFO, gtk.BUTTONS_OK, msg)
             dlg.run()
-            dlg.destroy()            
+            dlg.destroy()
         else:
             # if we still are in the same tree position, refresh the config
             (newpath, column) = self.get_cursor()
@@ -437,9 +444,9 @@ class PluginTree(gtk.TreeView):
 
         if len(path) == 1:
             plugin_type = self.treestore[path][3]
-            desc = self.w3af.plugins.get_plugin_type_desc( plugin_type )
-            label = helpers.clean_description( desc )
-            self.config_panel.clear(label=label )
+            desc = self.w3af.plugins.get_plugin_type_desc(plugin_type)
+            label = helpers.clean_description(desc)
+            self.config_panel.clear(label=label)
         else:
             plugin = self._get_plugin_inst(path)
             longdesc = plugin.get_long_desc()
@@ -468,7 +475,7 @@ class PluginTree(gtk.TreeView):
         @param path: the path that clicked the user.
 
         When a child gets activated/deactivated, the father is also refreshed
-        to show if it's full/partially/not activated. 
+        to show if it's full/partially/not activated.
 
         If the father gets activated/deactivated, all the children follow the
         same fate.
@@ -477,7 +484,7 @@ class PluginTree(gtk.TreeView):
         treerow = self.treestore[path]
         plugin_fam = treerow[0]
         banned_fams = ('crawl', 'evasion')
-        
+
         if plugin_fam == "gtk_output":
             return
 
@@ -485,23 +492,23 @@ class PluginTree(gtk.TreeView):
         newvalue = not treerow[1]
         treerow[1] = newvalue
         treerow[2] = False
-    
+
         # path can be "?" if it's a father or "?:?" if it's a child
         if ":" not in path:
             # father, lets check if it's the crawl/evasion plugin type
             # if yes, ask for confirmation
             user_response = gtk.RESPONSE_YES
-            
+
             if plugin_fam in banned_fams and treerow[1] == True:
                 # The crawl/evasion family is enabled, and the user is
                 # disabling it we shouldn't ask this when disabling all the family
                 if plugin_fam == 'crawl':
-                    msg = _("Enabling all crawl plugins will result in a scan process of several" \
-                    " hours, and sometimes days. Are you sure that you want to do enable ALL" \
-                    " crawl plugins?")
-                else: # evasion family
-                    msg = _("Using any of the evasion plugins is highly " \
-                            "discouraged in our current version. Are you " \
+                    msg = _("Enabling all crawl plugins will result in a scan process of several"
+                            " hours, and sometimes days. Are you sure that you want to do enable ALL"
+                            " crawl plugins?")
+                else:  # evasion family
+                    msg = _("Using any of the evasion plugins is highly "
+                            "discouraged in our current version. Are you "
                             "sure that you want to enable ALL of them?")
 
                 # If the user says NO, then remove the checkbox that was added when the
@@ -525,14 +532,14 @@ class PluginTree(gtk.TreeView):
             pathfather = path.split(":")[0]
             father = self.treestore[pathfather]
             plugin_fam = father[0]
-            
+
             if plugin_fam == 'evasion' and treerow[1] == True:
-                msg = _("Using any of the evasion plugins is highly " \
-                        "discouraged in our current version. Are you sure " \
+                msg = _("Using any of the evasion plugins is highly "
+                        "discouraged in our current version. Are you sure "
                         "that you want to enable this plugin?")
                 if self._askUser(msg) != gtk.RESPONSE_YES:
                     treerow[1] = False
-                
+
             # child: let's change the father status
             vals = []
             for treerow in self._getChildren(pathfather):
@@ -565,7 +572,7 @@ class PluginTree(gtk.TreeView):
             if plugins:
                 result.append((ptype, plugins))
         return result
-    
+
     def _askUser(self, msg):
         '''Displays `msg` on a modal dialog and returns the user's reponse
         '''
@@ -574,18 +581,18 @@ class PluginTree(gtk.TreeView):
         user_response = dlg.run()
         dlg.destroy()
         return user_response
-        
+
 
 class PluginConfigBody(gtk.VBox):
     '''The main Plugin Configuration Body.
-    
+
     @param mainwin: the tab of the main notepad
     @param w3af: the main core class
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, mainwin, w3af):
-        super(PluginConfigBody,self).__init__()
+        super(PluginConfigBody, self).__init__()
         self.w3af = w3af
         targetbox = gtk.HBox()
 
@@ -594,15 +601,16 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(lab, expand=False, fill=False, padding=5)
 
         # entry
-        histfile = os.path.join(get_home_dir(),  "urlhistory.pkl")
-        self.target = entries.AdvisedEntry(_("Insert the target URL here"), 
-                mainwin.scanok.change, histfile, alertmodif=mainwin.profileChanged)
+        histfile = os.path.join(get_home_dir(), "urlhistory.pkl")
+        self.target = entries.AdvisedEntry(_("Insert the target URL here"),
+                                           mainwin.scanok.change, histfile, alertmodif=mainwin.profileChanged)
         self.target.connect("activate", mainwin._scan_director)
         self.target.connect("activate", self.target.insertURL)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
 
         # start/stop button
-        startstop = entries.SemiStockButton(_("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
+        startstop = entries.SemiStockButton(
+            _("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         startstop.set_sensitive(False)
         startstop.connect("clicked", mainwin._scan_director)
         startstop.connect("clicked", self.target.insertURL)
@@ -610,7 +618,8 @@ class PluginConfigBody(gtk.VBox):
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
 
         # advanced config
-        advbut = entries.SemiStockButton("", gtk.STOCK_PREFERENCES, _("Advanced Target URL configuration"))
+        advbut = entries.SemiStockButton(
+            "", gtk.STOCK_PREFERENCES, _("Advanced Target URL configuration"))
         advbut.connect("clicked", self._advancedTarget)
         targetbox.pack_start(advbut, expand=False, fill=False, padding=5)
         targetbox.show_all()
@@ -629,20 +638,23 @@ class PluginConfigBody(gtk.VBox):
     def _buildpan(self, profileDescription=None):
         '''Builds the panel.'''
         pan = entries.RememberingHPaned(self.w3af, "pane-plugconfigbody", 250)
-        leftpan = entries.RememberingVPaned(self.w3af, "pane-plugconfigleft", 280)
+        leftpan = entries.RememberingVPaned(
+            self.w3af, "pane-plugconfigleft", 280)
         self.config_panel = ConfigPanel(profileDescription)
-        
+
         # upper left
         scrollwin1u = gtk.ScrolledWindow()
         scrollwin1u.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.std_plugin_tree = PluginTree(self.w3af, "standard", self.config_panel)
+        self.std_plugin_tree = PluginTree(
+            self.w3af, "standard", self.config_panel)
         scrollwin1u.add(self.std_plugin_tree)
         scrollwin1u.show()
 
         # lower left
         scrollwin1l = gtk.ScrolledWindow()
         scrollwin1l.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        self.out_plugin_tree = PluginTree(self.w3af, "output", self.config_panel)
+        self.out_plugin_tree = PluginTree(
+            self.w3af, "output", self.config_panel)
         scrollwin1l.add(self.out_plugin_tree)
         scrollwin1l.show()
 
@@ -672,7 +684,7 @@ class PluginConfigBody(gtk.VBox):
         # open config
         confpanel.AdvancedTargetConfigDialog(_("Advanced target settings"),
                                              self.w3af, configurable_target,
-                                             {"target":url})
+                                             {"target": url})
 
         # update the Entry with plugin info
         options = configurable_target.get_options()
@@ -704,7 +716,7 @@ class PluginConfigBody(gtk.VBox):
             ptype = treeToUse.treestore[path[:1]][3]
             # Launch the editor
             treeToUse._handleEditPluginEvent(None, pname, ptype, path)
-        
+
     def reload(self, profileDescription):
         '''Reloads all the configurations.'''
         # target url

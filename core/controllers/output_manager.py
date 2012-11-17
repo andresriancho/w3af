@@ -37,7 +37,7 @@ def start_thread_on_demand(func):
     the messages that are sent to it are added to a Queue and printed "at a random time".
     The issue with this is that NOT EVERYTHING YOU SEE IN THE CONSOLE is printed
     using the om (see functions below), which ends up with unordered messages printed
-    to the console. 
+    to the console.
     '''
     def od_wrapper(*args, **kwds):
         if not out.is_alive():
@@ -48,51 +48,51 @@ def start_thread_on_demand(func):
 
 class output_manager(Process):
     '''
-    This class manages output. It has a list of output plugins and sends the 
+    This class manages output. It has a list of output plugins and sends the
     messages to every plugin on that list.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     METHODS = (
-               'debug',
-               'information',
-               'error',
-               'vulnerability',
-               'console',
-               'log_http',
-              )
-        
+        'debug',
+        'information',
+        'error',
+        'vulnerability',
+        'console',
+        'log_http',
+    )
+
     def __init__(self):
         super(output_manager, self).__init__()
         self.daemon = True
         self.name = 'OutputManager'
-        
+
         # User configured options
         self._output_plugin_list = []
         self._output_plugins = []
         self._plugins_options = {}
-        
+
         # Internal variables
         self.in_queue = Queue.Queue()
         self._w3af_core = None
-    
+
     def set_w3af_core(self, w3af_core):
         self._w3af_core = w3af_core
-    
+
     def run(self):
         '''
         This method is one of the most important ones in the class, since it will
         consume the work units from the queue and send them to the plugins
-        
+
         '''
         while True:
             work_unit = self.in_queue.get()
-            
+
             if work_unit == POISON_PILL:
-                
+
                 break
-            
+
             else:
                 args, kwds = work_unit
                 #
@@ -100,19 +100,19 @@ class output_manager(Process):
                 #        _call_output_plugins_action
                 #
                 apply(self._call_output_plugins_action, args, kwds)
-                
+
                 self.in_queue.task_done()
-    
+
     def end_output_plugins(self):
         self.process_all_messages()
         self.__end_output_plugins_impl()
-    
+
     def process_all_messages(self):
         '''Blocks until all messages are processed'''
         self.in_queue.join()
-    
+
     def _add_to_queue(self, *args, **kwds):
-        self.in_queue.put( (args, kwds) )
+        self.in_queue.put((args, kwds))
 
     def __end_output_plugins_impl(self):
         for o_plugin in self._output_plugin_list:
@@ -127,41 +127,41 @@ class output_manager(Process):
         # since I don't want to loose the capability of seeing my log messages
         # in the linux console or the message box in the GTK ui.
         currently_enabled_plugins = self.get_output_plugins()
-        keep_enabled = [pname for pname in currently_enabled_plugins 
+        keep_enabled = [pname for pname in currently_enabled_plugins
                         if pname in ('console', 'gtk_output')]
-        self.set_output_plugins( keep_enabled )
-            
+        self.set_output_plugins(keep_enabled)
+
     @start_thread_on_demand
     def log_enabled_plugins(self, enabled_plugins, plugins_options):
         '''
         This method logs to the output plugins the enabled plugins and their
         configuration.
-        
+
         @param enabled_plugins: As returned by w3afCore's
                                 get_all_enabled_plugins() looks similar to:
                    {'audit':[],'grep':[],'bruteforce':[],'crawl':[],...}
-        
-        @param plugins_options: As defined in the w3afCore, looks similar to: 
+
+        @param plugins_options: As defined in the w3afCore, looks similar to:
                    {'audit':{},'grep':{},'bruteforce':{},'crawl':{},...}
         '''
         for o_plugin in self._output_plugin_list:
             o_plugin.log_enabled_plugins(enabled_plugins, plugins_options)
-    
+
     def _call_output_plugins_action(self, actionname, *args, **kwds):
         '''
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
         '''
         encoded_params = []
-        
+
         for arg in args:
             if isinstance(arg, unicode):
                 arg = arg.encode(UTF8, 'replace')
-            
-            encoded_params.append( arg )
-        
+
+            encoded_params.append(arg)
+
         args = tuple(encoded_params)
-          
+
         for o_plugin in self._output_plugin_list:
             try:
                 opl_func_ptr = getattr(o_plugin, actionname)
@@ -171,92 +171,92 @@ class output_manager(Process):
                     # Smart error handling, much better than just crashing.
                     # Doing this here and not with something similar to:
                     # sys.excepthook = handle_crash because we want to handle
-                    # plugin exceptions in this way, and not framework 
+                    # plugin exceptions in this way, and not framework
                     # exceptions
                     #
                     # FIXME: I need to import this here because of the awful
                     #        singletons I use all over the framework. If imported
                     #        at the top, they will generate circular import errors
                     from core.controllers.core_helpers.status import w3af_core_status
-                    
+
                     class fake_status(w3af_core_status):
                         pass
-        
+
                     status = fake_status()
-                    status.set_running_plugin( o_plugin.get_name(), log=False )
-                    status.set_phase( 'output' )
-                    status.set_current_fuzzable_request( 'n/a' )
-                    
+                    status.set_running_plugin(o_plugin.get_name(), log=False)
+                    status.set_phase('output')
+                    status.set_current_fuzzable_request('n/a')
+
                     exec_info = sys.exc_info()
                     enabled_plugins = 'n/a'
-                    self._w3af_core.exception_handler.handle( status, e , 
-                                                              exec_info, enabled_plugins )
-    
+                    self._w3af_core.exception_handler.handle(status, e,
+                                                             exec_info, enabled_plugins)
+
     def set_output_plugins(self, outputPlugins):
         '''
         @param outputPlugins: A list with the names of Output Plugins that
                                   will be used.
         @return: No value is returned.
-        '''     
+        '''
         self._output_plugin_list = []
         self._output_plugins = outputPlugins
-        
+
         for plugin_name in self._output_plugins:
-            out._add_output_plugin(plugin_name)  
-    
+            out._add_output_plugin(plugin_name)
+
     def get_output_plugins(self):
         return self._output_plugins
-    
+
     def set_plugin_options(self, plugin_name, PluginsOptions):
         '''
         @param PluginsOptions: A tuple with a string and a dictionary
                                    with the options for a plugin. For example:\
                                    { console:{'verbose': True} }
-            
+
         @return: No value is returned.
         '''
         self._plugins_options[plugin_name] = PluginsOptions
-        
+
     def _add_output_plugin(self, OutputPluginName):
         '''
         Takes a string with the OutputPluginName, creates the object and
         adds it to the OutputPluginName
-        
+
         @param OutputPluginName: The name of the plugin to add to the list.
         @return: No value is returned.
         '''
         if OutputPluginName == 'all':
-            fileList = os.listdir(os.path.join('plugins', 'output'))    
+            fileList = os.listdir(os.path.join('plugins', 'output'))
             strReqPlugins = [os.path.splitext(f)[0] for f in fileList
-                                            if os.path.splitext(f)[1] == '.py']
-            strReqPlugins.remove ('__init__')
-            
+                             if os.path.splitext(f)[1] == '.py']
+            strReqPlugins.remove('__init__')
+
             for plugin_name in strReqPlugins:
                 plugin = factory('plugins.output.' + plugin_name)
-                
+
                 if plugin_name in self._plugins_options.keys():
                     plugin.set_options(self._plugins_options[plugin_name])
-                
+
                 # Append the plugin to the list
                 self._output_plugin_list.append(plugin)
-        
+
         else:
             plugin = factory('plugins.output.' + OutputPluginName)
             if OutputPluginName in self._plugins_options.keys():
                 plugin.set_options(self._plugins_options[OutputPluginName])
 
                 # Append the plugin to the list
-            self._output_plugin_list.append(plugin)    
-    
+            self._output_plugin_list.append(plugin)
+
     @start_thread_on_demand
     def __getattr__(self, name):
         '''
         This magic method replaces all the previous debug/information/error... ones.
         It will basically return a func pointer to self.add_to_queue('debug', ...)
         where ... is completed later by the caller.
-        
+
         @see: http://docs.python.org/library/functools.html for help on partial.
-        @see: METHODS defined at the top of this class 
+        @see: METHODS defined at the top of this class
         '''
         if name in self.METHODS:
             return functools.partial(self._add_to_queue, name)

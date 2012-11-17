@@ -23,7 +23,7 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_read_mail(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'/var/mail/moth': 'Yes',
                        '/var/mail/www-data': 'Yes',
                        '/var/spool/mail/moth': 'Yes',
@@ -32,4 +32,3 @@ class test_read_mail(PayloadTestHelper):
     def test_read_mail(self):
         result = exec_payload(self.shell, 'read_mail', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

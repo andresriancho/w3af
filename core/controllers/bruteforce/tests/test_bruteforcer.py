@@ -35,13 +35,13 @@ class test_password_bruteforcer(unittest.TestCase):
     @attr('smoke')
     def test_contains(self):
         url = URL('http://www.w3af.org/')
-        
+
         pwd_bf = password_bruteforcer(url)
-        
-        self.assertTrue( 'password' in pwd_bf.generator() )
-        self.assertTrue( '123456' in pwd_bf.generator() )
-        self.assertTrue( '12345' in pwd_bf.generator() )
-        
+
+        self.assertTrue('password' in pwd_bf.generator())
+        self.assertTrue('123456' in pwd_bf.generator())
+        self.assertTrue('12345' in pwd_bf.generator())
+
 
 class test_user_password_bruteforcer(unittest.TestCase):
 
@@ -51,54 +51,55 @@ class test_user_password_bruteforcer(unittest.TestCase):
     @attr('smoke')
     def test_bruteforcer_default(self):
         url = URL('http://www.w3af.org/')
-        
+
         bf = user_password_bruteforcer(url)
-        
+
         expected_combinations = [
-                                 ('prueba1', '123abc'),
-                                 ('test', 'freedom'),
-                                 ('user', 'letmein'),
-                                 ('www.w3af.org', 'master'),    # URL feature
-                                 ('admin', '7emp7emp'),         # l337 feature
-                                 ('user1', ''),                 # No password
-                                 ('user1', 'user1')             # User eq password
-                                ]
+            ('prueba1', '123abc'),
+            ('test', 'freedom'),
+            ('user', 'letmein'),
+            ('www.w3af.org', 'master'),    # URL feature
+            ('admin', '7emp7emp'),         # l337 feature
+            ('user1', ''),                 # No password
+            ('user1',
+             'user1')             # User eq password
+        ]
         generated = []
-        
+
         for (user, pwd) in bf.generator():
-            generated.append( (user, pwd) )
+            generated.append((user, pwd))
 
         for expected_comb in expected_combinations:
-            self.assertTrue( expected_comb in generated )
+            self.assertTrue(expected_comb in generated)
 
     @attr('smoke')
     def test_bruteforcer_combo(self):
 
         expected_combinations = [
-                                 ('test', 'unittest'),
-                                 ('123', 'unittest'),
-                                 ('unittest', 'w00tw00t!'),
-                                 ('unittest', 'unittest') 
-                                ]
+            ('test', 'unittest'),
+            ('123', 'unittest'),
+            ('unittest', 'w00tw00t!'),
+            ('unittest', 'unittest')
+        ]
 
-        combo_filename = os.path.join(self.temp_dir, 'combo.txt' )
-        combo_fd = file( combo_filename, 'w')
-        
+        combo_filename = os.path.join(self.temp_dir, 'combo.txt')
+        combo_fd = file(combo_filename, 'w')
+
         for user, password in expected_combinations:
             combo_fd.write('%s:%s\n' % (user, password))
-            
+
         combo_fd.close()
-        
+
         url = URL('http://www.w3af.org/')
-        
+
         bf = user_password_bruteforcer(url)
         bf.combo_file = combo_filename
         bf.combo_separator = ':'
-        
+
         generated = []
-        
+
         for (user, pwd) in bf.generator():
-            generated.append( (user, pwd) )
+            generated.append((user, pwd))
 
         for expected_comb in expected_combinations:
-            self.assertTrue( expected_comb in generated )
+            self.assertTrue(expected_comb in generated)

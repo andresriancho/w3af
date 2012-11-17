@@ -25,26 +25,27 @@ from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 
 
 class TestSourceforge(unittest.TestCase):
-    
+
     def test_login(self):
-        sf = SourceforgeXMLRPC('fake','12345')
-        self.assertFalse( sf.login() )
-        
-        sf = SourceforgeXMLRPC('unittest','unittest12345')
-        self.assertTrue( sf.login() )
+        sf = SourceforgeXMLRPC('fake', '12345')
+        self.assertFalse(sf.login())
+
+        sf = SourceforgeXMLRPC('unittest', 'unittest12345')
+        self.assertTrue(sf.login())
 
     def test_report_bug_no_login(self):
-        sf = SourceforgeXMLRPC('unittest','unittest12345')
+        sf = SourceforgeXMLRPC('unittest', 'unittest12345')
         summary = 'Unittest bug report'
-        userdesc = 'Please mark this ticket as invalid' 
-        self.assertRaises(AssertionError, sf.report_bug, summary,userdesc)
-    
+        userdesc = 'Please mark this ticket as invalid'
+        self.assertRaises(AssertionError, sf.report_bug, summary, userdesc)
+
     def test_report_bug_login(self):
-        sf = SourceforgeXMLRPC('unittest','unittest12345')
+        sf = SourceforgeXMLRPC('unittest', 'unittest12345')
         summary = 'Unittest bug report'
-        userdesc = 'Please mark this ticket as invalid' 
-        self.assertTrue( sf.login() )
-        
-        ticket_id, ticket_url = sf.report_bug(summary,userdesc)
-        self.assertTrue( ticket_id.isdigit() )
-        self.assertTrue( ticket_url.startswith('http://sourceforge.net/apps/trac/w3af/ticket/1') )
+        userdesc = 'Please mark this ticket as invalid'
+        self.assertTrue(sf.login())
+
+        ticket_id, ticket_url = sf.report_bug(summary, userdesc)
+        self.assertTrue(ticket_id.isdigit())
+        self.assertTrue(ticket_url.startswith(
+            'http://sourceforge.net/apps/trac/w3af/ticket/1'))

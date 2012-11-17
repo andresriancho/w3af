@@ -24,19 +24,19 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestEmailReport(PluginTest):
-    
+
     xss_url = 'http://moth/w3af/audit/xss/'
-    
+
     _run_configs = {
         'cfg': {
             'target': xss_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
-                         'xss',
+                        'xss',
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                ),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -45,46 +45,47 @@ class TestEmailReport(PluginTest):
                 'output': (
                     PluginConfig(
                         'email_report',
-                        ('smtpServer', 'smtp.mailinator.com', PluginConfig.STR),
+                        ('smtpServer',
+                         'smtp.mailinator.com', PluginConfig.STR),
                         ('smtpPort', 25, PluginConfig.INT),
                         ('toAddrs', 'w3af@mailinator.com', PluginConfig.LIST),
                         ('fromAddr', 'w3af@gmail.com', PluginConfig.STR),
-                        ),
-                )         
+                    ),
+                )
             },
         }
     }
-    
+
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         xss_count = self._from_pop3_get_vulns()
-        
+
         self.assertGreaterEqual(len(xss_vulns), 3)
-        self.assertEqual( len(xss_vulns), xss_count)
-        
+        self.assertEqual(len(xss_vulns), xss_count)
+
     def _from_pop3_get_vulns(self):
         subject = None
         xss_count = 0
-        
+
         pop_conn = poplib.POP3('pop.mailinator.com')
         pop_conn.user('w3af')
         pop_conn.pass_('somerand')
 
         num_messages = len(pop_conn.list()[1])
         for email_id in range(num_messages):
-            for email_line in pop_conn.retr(email_id+1)[1]:
+            for email_line in pop_conn.retr(email_id + 1)[1]:
                 if email_line.startswith('Subject: '):
                     subject = email_line
                 elif 'Cross Site Scripting was found at:' in email_line:
                     xss_count += 1
-            
-            pop_conn.dele(email_id+1)
-        
+
+            pop_conn.dele(email_id + 1)
+
         pop_conn.quit()
-        
-        self.assertEqual( subject, 'Subject: [MAILINATOR] w3af report on http://moth/w3af/audit/xss/')
-        
+
+        self.assertEqual(subject, 'Subject: [MAILINATOR] w3af report on http://moth/w3af/audit/xss/')
+
         return xss_count

@@ -45,7 +45,7 @@ class phishtank(CrawlPlugin):
     '''
     Search the phishtank.com database to determine if your server is (or was)
     being used in phishing scams.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Special thanks to http://www.phishtank.com/ !
     '''
@@ -57,52 +57,52 @@ class phishtank(CrawlPlugin):
         self._phishtank_DB = os.path.join('plugins', 'crawl', 'phishtank',
                                           'index.xml')
         self._update_DB = False
-    
+
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         Plugin entry point, perform all the work.
         '''
         if self._update_DB:
             self._do_update()
-        
-        to_check = self._get_to_check( fuzzable_request.getURL() )
-        
+
+        to_check = self._get_to_check(fuzzable_request.getURL())
+
         # I found some URLs, create fuzzable requests
-        phishtank_matches = self._is_in_phishtank( to_check )
+        phishtank_matches = self._is_in_phishtank(to_check)
         for ptm in phishtank_matches:
-            response = self._uri_opener.GET( ptm.url )
-            for fr in self._create_fuzzable_requests( response ):
+            response = self._uri_opener.GET(ptm.url)
+            for fr in self._create_fuzzable_requests(response):
                 self.output_queue.put(fr)
-        
+
         # Only create the vuln object once
         if phishtank_matches:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL( ptm.url )
-            v.set_id( response.id )
-            v.set_name( 'Phishing scam' )
+            v.setURL(ptm.url)
+            v.set_id(response.id)
+            v.set_name('Phishing scam')
             v.set_severity(severity.MEDIUM)
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
             v.set_desc(desc % (ptm.url, ptm.more_info_URL))
-            kb.kb.append( self, 'phishtank', v )
-            om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
-        
-    def _get_to_check( self, target_url ):
+            kb.kb.append(self, 'phishtank', v)
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
+    def _get_to_check(self, target_url):
         '''
         @param target_url: The url object we can use to extract some information.
         @return: From the domain, get a list of FQDN, rootDomain and IP address.
         '''
         def addrinfo(url):
             return [x[4][0] for x in socket.getaddrinfo(url.getDomain(), 0)]
-        
+
         def getfqdn(url):
-            return [socket.getfqdn(url.getDomain()),]
-        
+            return [socket.getfqdn(url.getDomain()), ]
+
         def root_domain(url):
-            return [url.getRootDomain(),]
-        
+            return [url.getRootDomain(), ]
+
         res = set()
         for func in (addrinfo, getfqdn, root_domain):
             try:
@@ -112,14 +112,14 @@ class phishtank(CrawlPlugin):
             else:
                 for data in data_lst:
                     res.add(data)
-        
+
         return res
-        
+
     def _is_in_phishtank(self, to_check):
         '''
         Reads the phishtank db and tries to match the entries on that db with
         the to_check
-        
+
         @return: A list with the sites to match against the phishtank db
         '''
         class PhishTankMatch(object):
@@ -127,10 +127,10 @@ class phishtank(CrawlPlugin):
             Represents a phishtank match between the site I'm scanning and
             something in the index.xml file.
             '''
-            def __init__( self, url, more_info_URL ):
+            def __init__(self, url, more_info_URL):
                 self.url = url
                 self.more_info_URL = more_info_URL
-        
+
         class PhishTankHandler(ContentHandler):
             '''
             <entry>
@@ -151,13 +151,13 @@ class phishtank(CrawlPlugin):
                 </status>
             </entry>
             '''
-            def __init__ (self, to_check):
+            def __init__(self, to_check):
                 self._to_check = to_check
                 self.inside_entry = False
                 self.inside_URL = False
                 self.inside_detail = False
                 self.matches = []
-        
+
             def startElement(self, name, attrs):
                 if name == 'entry':
                     self.inside_entry = True
@@ -168,13 +168,13 @@ class phishtank(CrawlPlugin):
                     self.inside_detail = True
                     self.phish_detail_url = ""
                 return
-            
+
             def characters(self, ch):
                 if self.inside_URL:
                     self.url += ch
                 if self.inside_detail:
                     self.phish_detail_url += ch
-            
+
             def endElement(self, name):
                 if name == 'phish_detail_url':
                     self.inside_detail = False
@@ -188,58 +188,59 @@ class phishtank(CrawlPlugin):
                     #
                     for target_host in self._to_check:
                         if target_host in self.url:
-                            phish_url = URL( self.url )
-                            target_host_url = URL( target_host )
-                            
+                            phish_url = URL(self.url)
+                            target_host_url = URL(target_host)
+
                             if target_host_url.getDomain() == phish_url.getDomain() or \
-                            phish_url.getDomain().endswith('.' + target_host_url.getDomain() ):
-                            
-                                phish_detail_url = URL( self.phish_detail_url )
-                                ptm = PhishTankMatch( phish_url, phish_detail_url )
-                                self.matches.append( ptm )
-        
+                                    phish_url.getDomain().endswith('.' + target_host_url.getDomain()):
+
+                                phish_detail_url = URL(self.phish_detail_url)
+                                ptm = PhishTankMatch(
+                                    phish_url, phish_detail_url)
+                                self.matches.append(ptm)
+
         try:
             phishtank_db_fd = codecs.open(self._phishtank_DB, 'r', 'utf-8',
                                           errors='ignore')
         except Exception, e:
             msg = 'Failed to open phishtank database file: "%s", exception: "%s".'
             raise w3afException(msg % (self._phishtank_DB, e))
-        
-        parser = make_parser()   
+
+        parser = make_parser()
         pt_handler = PhishTankHandler(to_check)
-        parser.setContentHandler( pt_handler )
-        om.out.debug( 'Starting the phishtank xml parsing. ' )
-        
+        parser.setContentHandler(pt_handler)
+        om.out.debug('Starting the phishtank xml parsing. ')
+
         try:
-            parser.parse( phishtank_db_fd )
+            parser.parse(phishtank_db_fd)
         except Exception, e:
             msg = 'XML parsing error in phishtank DB, exception: "%s".'
             raise w3afException(msg % e)
-        
-        om.out.debug( 'Finished xml parsing. ' )
-        
+
+        om.out.debug('Finished xml parsing. ')
+
         return pt_handler.matches
 
-    def set_options( self, option_list ):
+    def set_options(self, option_list):
         self._phishtank_DB = option_list['db_file'].get_value()
         self._update_DB = option_list['update_db'].get_value()
-    
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = OptionList()
-        
+
         d = 'The path to the phishtank database file.'
         o = opt_factory('db_file', self._phishtank_DB, d, INPUT_FILE)
         ol.add(o)
-        
+
         d = 'Update the local phishtank database.'
         h = 'If True, the plugin will download the phishtank database'\
             ' from http://www.phishtank.com/ .'
         o = opt_factory('update_db', self._update_DB, d, BOOL, help=h)
         ol.add(o)
-        
+
         return ol
 
     def _do_update(self):
@@ -247,29 +248,29 @@ class phishtank(CrawlPlugin):
         This method is called to update the database.
         '''
         try:
-            file_handler = codecs.open( self._phishtank_DB, 'w', 'utf-8' )
+            file_handler = codecs.open(self._phishtank_DB, 'w', 'utf-8')
         except Exception, e:
             msg = 'Failed to open file: "%s", error: "%s".'
-            raise w3afException(msg % (self._phishtank_DB,e))
-        
+            raise w3afException(msg % (self._phishtank_DB, e))
+
         msg = 'Updating the phishtank database, this will take some minutes'\
               ' ( almost 7MB to download ).'
-        om.out.information( msg )
-        
+        om.out.information(msg)
+
         update_url = URL('http://data.phishtank.com/data/online-valid/')
-        res = self._uri_opener.GET( update_url )
+        res = self._uri_opener.GET(update_url)
         om.out.information('Download complete, writing to the database file.')
-        
+
         try:
             file_handler.write(res.getBody())
             file_handler.close()
         except Exception, e:
             msg = 'Failed to write to file: "%s", error: "%s".'
-            raise w3afException(msg % (self._phishtank_DB,e))
+            raise w3afException(msg % (self._phishtank_DB, e))
         else:
             return True
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -277,7 +278,7 @@ class phishtank(CrawlPlugin):
         This plugin searches the domain being tested in the phishtank database.
         If your site is in this database the chances are that you were hacked
         and your server is now being used in phishing attacks.
-        
+
         Two configurable parameters exist:
             - db_file
             - update_db

@@ -23,9 +23,9 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFormAutocomplete(PluginTest):
-    
+
     target_url = 'http://moth/w3af/grep/form_autocomplete/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': target_url,
@@ -33,26 +33,25 @@ class TestFormAutocomplete(PluginTest):
                 'grep': (PluginConfig('form_autocomplete'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                             ('onlyForward', True, PluginConfig.BOOL)),
-                )         
+                                 ('onlyForward', True, PluginConfig.BOOL)),
+                )
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('form_autocomplete', 'form_autocomplete')
-        
-        expected_results = [ "index-form-default.html",
-                             "index-form-on.html",
-                             "index-form-on-field-on.html"]
+
+        expected_results = ["index-form-default.html",
+                            "index-form-on.html",
+                            "index-form-on-field-on.html"]
 
         self.assertEquals(3, len(vulns))
-        
+
         filenames = [vuln.getURL().getFileName() for vuln in vulns]
         filenames.sort()
         expected_results.sort()
-        
-        self.assertEquals(expected_results, filenames)
 
+        self.assertEquals(expected_results, filenames)

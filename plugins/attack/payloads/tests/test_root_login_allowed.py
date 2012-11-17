@@ -23,10 +23,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_root_login_allowed(PayloadTestHelper):
-    
-    EXPECTED_RESULT = {'securetty_root_login': False, 'ssh_root_bruteforce': True}
+
+    EXPECTED_RESULT = {'securetty_root_login': False,
+                       'ssh_root_bruteforce': True}
 
     def test_root_login_allowed(self):
         result = exec_payload(self.shell, 'root_login_allowed', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

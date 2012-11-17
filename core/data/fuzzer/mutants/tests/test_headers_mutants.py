@@ -36,15 +36,15 @@ class TestHeadersMutant(unittest.TestCase):
         self.fuzzer_config['fuzzable_headers'] = ['Referer']
 
     def test_basic(self):
-        freq = FuzzableRequest( URL('http://www.w3af.com/') )
+        freq = FuzzableRequest(URL('http://www.w3af.com/'))
         fake_ref = 'http://w3af.org/'
-        
-        mutant = HeadersMutant( freq.copy() )
+
+        mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
         original_referer = freq.getReferer()
         mutant.set_original_value(original_referer)
         mutant.set_mod_value(fake_ref)
-        
+
         self.assertEqual(mutant.getHeaders()['Referer'], fake_ref)
         self.assertEqual(mutant.get_original_value(), original_referer)
 
@@ -52,34 +52,35 @@ class TestHeadersMutant(unittest.TestCase):
         headers = Headers([('Referer', 'http://moth/')])
         freq = FuzzableRequest(URL('http://www.w3af.com/?id=3'),
                                headers=headers)
-        m = HeadersMutant( freq )
+        m = HeadersMutant(freq)
         m.set_var('Referer')
         m.set_mod_value('foo')
-        
+
         expected = '"http://www.w3af.com/", using HTTP method GET. The modified'\
                    ' header was: "Referer" and it\'s value was: "foo".'
         self.assertEqual(m.found_at(), expected)
-            
+
     def test_mutant_creation(self):
         url = URL('http://moth/?a=1&b=2')
         headers = Headers([('Referer', 'http://moth/')])
         freq = HTTPQSRequest(url, headers=headers)
-        
+
         created_mutants = HeadersMutant.create_mutants(freq, self.payloads, [],
                                                        False, self.fuzzer_config)
-        
+
         expected_dc_lst = [Headers([('Referer', 'abc')]),
                            Headers([('Referer', 'def')])]
-                
+
         created_dc_lst = [i.get_dc() for i in created_mutants]
-        
+
         self.assertEqual(created_dc_lst, expected_dc_lst)
-        
+
         self.assertEqual(created_mutants[0].get_var(), 'Referer')
         self.assertEqual(created_mutants[0].get_var_index(), 0)
         self.assertEqual(created_mutants[0].get_original_value(), '')
         self.assertEqual(created_mutants[1].get_var(), 'Referer')
         self.assertEqual(created_mutants[1].get_var_index(), 0)
         self.assertEqual(created_mutants[1].get_original_value(), '')
-        
-        self.assertTrue(all(isinstance(m, HeadersMutant) for m in created_mutants))
+
+        self.assertTrue(
+            all(isinstance(m, HeadersMutant) for m in created_mutants))

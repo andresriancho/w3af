@@ -20,10 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+
 def get_long_description():
     '''
     @return: The description for the plugin type.
-    '''    
+    '''
     return '''Infrastructure plugins use different techniques to identify the
     remote operating system, HTTP daemon, Web Application Firewalls, remote users
     and any other information that is related to the target web application but

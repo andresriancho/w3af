@@ -28,98 +28,102 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.esmre.multi_in import multi_in
 
+
 def whole_words(l):
-    return [' %s ' % w for w in l ]
+    return [' %s ' % w for w in l]
+
 
 class lang(GrepPlugin):
     '''
     Read N pages and determines the language the site is written in.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    PREPOSITIONS = { 'en': multi_in(whole_words(['aboard', 'about', 'above',
-                                     'absent', 'across', 'after', 'against', 'along',
-                                     'alongside', 'amid', 'amidst', 'among',
-                                     'amongst', 'around', 'as', 'astride', 'at',
-                                     'atop', 'before', 'behind', 'below',
-                                     'beneath', 'beside', 'besides', 'between',
-                                     'beyond', 'but', 'by', 'despite', 'down',
-                                     'during', 'except', 'following', 'for', 
-                                     'from', 'in', 'inside', 'into', 'like',
-                                     'mid', 'minus', 'near', 'nearest', 'notwithstanding',
-                                     'of', 'off', 'on', 'onto', 'opposite', 'out',
-                                     'outside', 'over', 'past', 're', 'round',
-                                     'save', 'since', 'than', 'through', 'throughout',
-                                     'till', 'to', 'toward', 'towards', 'under',
-                                     'underneath', 'unlike', 'until', 'up', 
-                                     'upon', 'via', 'with', 'within', 'without'])),
-                    
+    PREPOSITIONS = {'en': multi_in(whole_words(['aboard', 'about', 'above',
+                                                'absent', 'across', 'after', 'against', 'along',
+                                                'alongside', 'amid', 'amidst', 'among',
+                                                'amongst', 'around', 'as', 'astride', 'at',
+                                                'atop', 'before', 'behind', 'below',
+                                                'beneath', 'beside', 'besides', 'between',
+                                                'beyond', 'but', 'by', 'despite', 'down',
+                                                'during', 'except', 'following', 'for',
+                                                'from', 'in', 'inside', 'into', 'like',
+                                                'mid', 'minus', 'near', 'nearest', 'notwithstanding',
+                                                'of', 'off', 'on', 'onto', 'opposite', 'out',
+                                                'outside', 'over', 'past', 're', 'round',
+                                                'save', 'since', 'than', 'through', 'throughout',
+                                                'till', 'to', 'toward', 'towards', 'under',
+                                                'underneath', 'unlike', 'until', 'up',
+                                                'upon', 'via', 'with', 'within', 'without'])),
+
                     # The 'a' preposition was removed, cause its also used in english
-                     'es': multi_in(whole_words(['ante', 'bajo', 'cabe', 'con' , 
-                                     'contra', 'de', 'desde', 'en', 'entre', 'hacia',
-                                     'hasta', 'para', 'por' , 'segun', 'si',
-                                     'so', 'sobre', 'tras'])),
-                    
+                    'es': multi_in(whole_words(['ante', 'bajo', 'cabe', 'con',
+                                                'contra', 'de', 'desde', 'en', 'entre', 'hacia',
+                                                'hasta', 'para', 'por', 'segun', 'si',
+                                                'so', 'sobre', 'tras'])),
+
                     # Turkish
                     # Sertan Kolat <sertan@gmail.com>
-                     'tr': multi_in(whole_words(['ancak', 'burada', 'duyuru', 'evet', 
-                                     'fakat', 'gibi', 'haber', 'kadar', 'karar', 'kaynak',
-                                     'olarak', 'sayfa', 'siteye', 'sorumlu', 
-                                     'tamam', 'yasak', 'zorunlu'])),
-                     }
+                    'tr': multi_in(whole_words(['ancak', 'burada', 'duyuru', 'evet',
+                                                'fakat', 'gibi', 'haber', 'kadar', 'karar', 'kaynak',
+                                                'olarak', 'sayfa', 'siteye', 'sorumlu',
+                                                'tamam', 'yasak', 'zorunlu'])),
+                    }
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Internal variables
         self._exec = True
-        
+
     def grep(self, request, response):
         '''
         Get the page indicated by the fuzzable_request and determine the language
         using the preposition list.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         '''
         with self._plugin_lock:
-            if self._exec and not is_404( response ) and response.is_text_or_html():
-                kb.kb.save( self, 'lang', 'unknown' )
-                
+            if self._exec and not is_404(response) and response.is_text_or_html():
+                kb.kb.save(self, 'lang', 'unknown')
+
                 matches = {}
                 body = response.getClearTextBody().lower()
-                
+
                 for lang_string, m_in_obj in self.PREPOSITIONS.iteritems():
-                    matches[ lang_string ] = len( m_in_obj.query(body) )
-                            
+                    matches[lang_string] = len(m_in_obj.query(body))
+
                 # Determine who is the winner
-                def sortfunc(x,y):
-                    return cmp(y[1],x[1])
-                    
+                def sortfunc(x, y):
+                    return cmp(y[1], x[1])
+
                 items = matches.items()
-                items.sort( sortfunc )
-                
+                items.sort(sortfunc)
+
                 if items[0][1] > items[1][1] * 2:
                     # Only run once
                     self._exec = False
                     identified_lang = items[0][0]
-                    om.out.information('The page is written in: "%s".' % identified_lang )
-                    kb.kb.save( self, 'lang', identified_lang )
-                
+                    om.out.information(
+                        'The page is written in: "%s".' % identified_lang)
+                    kb.kb.save(self, 'lang', identified_lang)
+
                 else:
-                    msg = 'Could not determine the page language using ' + response.getURL() 
+                    msg = 'Could not determine the page language using ' + \
+                        response.getURL()
                     msg += ', not enough text to make a good analysis.'
                     om.out.debug(msg)
                     # Keep running until giving a good response...
                     self._exec = True
-    
-    def end( self ):
+
+    def end(self):
         if self._exec:
             # I never got executed !
             om.out.information('Could not determine the language of the site.')
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

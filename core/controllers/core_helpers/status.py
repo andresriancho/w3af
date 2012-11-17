@@ -26,7 +26,7 @@ class w3af_core_status(object):
     '''
     This class maintains the status of the w3afCore. During scan the different
     phases of the process will change the status (set) and the UI will be calling
-    the different methods to (get) the information required. 
+    the different methods to (get) the information required.
     '''
     def __init__(self):
         # Init some internal values
@@ -40,31 +40,31 @@ class w3af_core_status(object):
         self._runningPlugin = ''
         # The current fuzzable request that the core is analyzing
         self._current_fuzzable_request = ''
-    
+
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
         self._is_running = not pause_yes_no
         self._stopped = False
         om.out.debug('The user paused/unpaused the scan.')
-    
+
     def start(self):
         self._is_running = True
         self._stopped = False
-    
+
     def stop(self):
         # Now I'm definitely not running:
         self._is_running = False
         self._stopped = True
-    
+
     def is_stopped(self):
         return self._stopped
-        
-    def get_status( self ):
+
+    def get_status(self):
         '''
         @return: A string representing the current w3af core status.
-        
+
         >>> s = w3af_core_status()
-        
+
         >>> s.get_status()
         'Not running.'
         >>> s.start()
@@ -75,7 +75,7 @@ class w3af_core_status(object):
         >>> s.set_current_fuzzable_request('doctest_request')
         >>> s.get_status()
         'Running crawl.doctest_plugin on doctest_request.'
-        
+
         '''
         if self._paused:
             return 'Paused.'
@@ -84,58 +84,59 @@ class w3af_core_status(object):
         else:
             if self.get_phase() != '' and self.get_running_plugin() != '':
                 running = 'Running %s.%s on %s.'
-                fr_str = str(self.get_current_fuzzable_request()).replace('\x00', '')
-                return running % ( self.get_phase(), self.get_running_plugin(), fr_str )
+                fr_str = str(
+                    self.get_current_fuzzable_request()).replace('\x00', '')
+                return running % (self.get_phase(), self.get_running_plugin(), fr_str)
             else:
                 return 'Starting scan.'
-    
-    def get_phase( self ):
+
+    def get_phase(self):
         '''
         @return: The phase which the core is running.
         '''
         return self._currentPhase
-        
-    def set_phase( self, phase ):
+
+    def set_phase(self, phase):
         '''
         This method saves the phase (discovery/audit/exploit), so in the future
         the UI can use the getPhase() method to show it.
-        
+
         @param phase: The phase which the w3afCore is running in a given moment
         '''
         self._currentPhase = phase
-    
-    def set_running_plugin( self, plugin_name, log=True ):
+
+    def set_running_plugin(self, plugin_name, log=True):
         '''
-        This method saves the phase, so in the future the UI can use the 
+        This method saves the phase, so in the future the UI can use the
         getPhase() method to show it.
-        
+
         @param plugin_name: The plugin_name which the w3afCore is running in
         a given moment
         '''
         if log:
-            om.out.debug('Starting plugin: ' + plugin_name )
+            om.out.debug('Starting plugin: ' + plugin_name)
         self._runningPlugin = plugin_name
-        
-    def get_running_plugin( self ):
+
+    def get_running_plugin(self):
         '''
         @return: The plugin that the core is running when the method is called.
         '''
         return self._runningPlugin
-    
-    def is_running( self ):
+
+    def is_running(self):
         '''
         @return: If the user has called start, and then wants to know if the
         core is still working, it should call is_running() to know that.
         '''
         return self._is_running
-    
-    def get_current_fuzzable_request( self ):
+
+    def get_current_fuzzable_request(self):
         '''
         @return: The current fuzzable request that the w3afCore is working on.
         '''
         return self._current_fuzzable_request
-        
-    def set_current_fuzzable_request( self, fuzzable_request ):
+
+    def set_current_fuzzable_request(self, fuzzable_request):
         '''
         @param fuzzable_request: The FuzzableRequest that the w3afCore is
         working on right now.

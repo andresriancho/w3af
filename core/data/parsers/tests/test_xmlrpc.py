@@ -29,8 +29,8 @@ from core.data.parsers.xmlrpc import xmlrpc_read_handler, xmlrpc_write_handler
 class TestXMLRPC(unittest.TestCase):
 
     def test_reader(self):
-        handler = xmlrpc_read_handler() 
-    
+        handler = xmlrpc_read_handler()
+
         s = '''
          <array>
            <data>
@@ -40,20 +40,21 @@ class TestXMLRPC(unittest.TestCase):
              <value><string>Spam eggs</string></value>
            </data>
          </array>'''
-    
+
         xml.sax.parseString(s, handler)
-    
+
         EXPECTED = [[u'string', u'Foo bar'], [u'string', u'Spam eggs']]
-        
-        self.assertEqual( handler.fuzzable_parameters, EXPECTED )
-    
+
+        self.assertEqual(handler.fuzzable_parameters, EXPECTED)
+
     def test_writer(self):
-        fuzzable_parameters = [[u'string', u'Foo bar'], [u'string', u'Spam eggs']]
+        fuzzable_parameters = [[u'string', u'Foo bar'], [u'string',
+                                                         u'Spam eggs']]
         fuzzable_parameters = copy.deepcopy(fuzzable_parameters)
         fuzzable_parameters[0][1] = '<script>alert(1)</script>'
-    
-        handler = xmlrpc_write_handler(fuzzable_parameters) 
-    
+
+        handler = xmlrpc_write_handler(fuzzable_parameters)
+
         original = '''<array>
            <data>
              <value a="ab"><i4>1404</i4></value>
@@ -62,7 +63,6 @@ class TestXMLRPC(unittest.TestCase):
              <value><string>Spam eggs</string></value>
            </data>
          </array>'''
-        
 
         fuzzed = '''<array>
            <data>
@@ -72,7 +72,6 @@ class TestXMLRPC(unittest.TestCase):
              <value><string>Spam eggs</string></value>
            </data>
          </array>'''
-        
+
         xml.sax.parseString(original, handler)
-        self.assertEqual( handler.fuzzed_xml_string, fuzzed )
-    
+        self.assertEqual(handler.fuzzed_xml_string, fuzzed)

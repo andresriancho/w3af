@@ -23,15 +23,14 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_tcp(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = set(['127.0.0.1:3306', '0.0.0.0:80', '0.0.0.0:22'])
 
     def test_tcp(self):
         result = exec_payload(self.shell, 'tcp', use_api=True)
-        
+
         local_addresses = []
         for key, conn_data in result.iteritems():
-            local_addresses.append( conn_data['local_address'] )
-        
-        self.assertTrue( set(local_addresses).issuperset(self.EXPECTED_RESULT))
-        
+            local_addresses.append(conn_data['local_address'])
+
+        self.assertTrue(set(local_addresses).issuperset(self.EXPECTED_RESULT))

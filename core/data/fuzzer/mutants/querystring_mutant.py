@@ -27,15 +27,15 @@ class QSMutant(Mutant):
     '''
     This class is a query string mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         Mutant.__init__(self, freq)
-    
-    def get_mutant_type( self ):
+
+    def get_mutant_type(self):
         return 'query string'
-    
-    def print_mod_value( self ):
-        return 'The sent URI was '+ self.getURI() +' .'
-    
+
+    def print_mod_value(self):
+        return 'The sent URI was ' + self.getURI() + ' .'
+
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
@@ -45,7 +45,7 @@ class QSMutant(Mutant):
         '''
         if not isinstance(freq, HTTPQSRequest):
             return []
-                
+
         return Mutant._create_mutants_worker(freq, QSMutant, mutant_str_list,
                                              fuzzable_param_list,
                                              append, fuzzer_config)

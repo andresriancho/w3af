@@ -26,39 +26,38 @@ from core.controllers.misc.levenshtein import relative_distance_boolean, relativ
 
 
 class TestLevenshtein(unittest.TestCase):
-    
+
     def test_all(self):
         acceptance_tests = []
         acceptance_tests.append(('a', 'a', 1.0))
         acceptance_tests.append(('a', 'a', 0.1))
         acceptance_tests.append(('a', 'a', 0.0))
-    
+
         acceptance_tests.append(('a', 'b', 1.0))
         acceptance_tests.append(('a', 'b', 0.1))
         acceptance_tests.append(('a', 'b', 0.0))
-    
+
         acceptance_tests.append(('a', 'ab', 1.0))
         acceptance_tests.append(('a', 'ab', 0.1))
-    
+
         acceptance_tests.append(('a', 'b', 0.0000000000000000001))
         acceptance_tests.append(('a', 'b' * 100, 1.0))
-    
+
         acceptance_tests.append(('a', 'ab', 0.66666666666))
         acceptance_tests.append(('a', 'aab', 0.5))
         acceptance_tests.append(('a', 'aaab', 0.4))
         acceptance_tests.append(('a', 'aaaab', 0.33333333333333333333333333333333333333333333333333333333))
-    
+
         acceptance_tests.append(('a' * 25, 'a', 1.0))
         acceptance_tests.append(('aaa', 'aa', 1.0))
         acceptance_tests.append(('a', 'a', 1.0))
-    
+
         acceptance_tests.append(('a' * 25, 'a', 0.076923076923076927))
         acceptance_tests.append(('aaa', 'aa', 0.8))
-    
+
         acceptance_tests.append(('a', 'a', 0.0))
-    
+
         for e, d, f in acceptance_tests:
             res1 = relative_distance_boolean(e, d, f)
             res2 = relative_distance(e, d) >= f
-            self.assertEqual( res1, res2 )
-            
+            self.assertEqual(res1, res2)

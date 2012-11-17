@@ -50,7 +50,7 @@ class HistoryItem(object):
     _db = None
     _DATA_TABLE = 'data_table'
     _COLUMNS = [
-        ('id','integer'), ('url', 'text'), ('code', 'integer'),
+        ('id', 'integer'), ('url', 'text'), ('code', 'integer'),
         ('tag', 'text'), ('mark', 'integer'), ('info', 'text'),
         ('time', 'float'), ('msg', 'text'), ('content_type', 'text'),
         ('charset', 'text'), ('method', 'text'), ('response_size', 'integer'),
@@ -58,16 +58,16 @@ class HistoryItem(object):
     ]
     _PRIMARY_KEY_COLUMNS = ('id',)
     _INDEX_COLUMNS = ('alias',)
-    
+
     _EXTENSION = '.trace'
-    
+
     id = None
     _request = None
     _response = None
     info = None
     mark = False
     tag = ''
-    contentType= ''
+    contentType = ''
     responseSize = 0
     method = 'GET'
     msg = 'OK'
@@ -91,11 +91,11 @@ class HistoryItem(object):
             self._request, resp = self._loadFromFile(self.id)
             self._response = resp
         return resp
-    
+
     @response.setter
     def response(self, resp):
         self._response = resp
-    
+
     @property
     def request(self):
         req = self._request
@@ -103,11 +103,11 @@ class HistoryItem(object):
             req, self._response = self._loadFromFile(self.id)
             self._request = req
         return req
-    
+
     @request.setter
     def request(self, req):
-        self._request = req    
-    
+        self._request = req
+
     def init_structure(self):
         '''Init history structure.'''
         session_name = cf.cf.get('session_name')
@@ -116,16 +116,16 @@ class HistoryItem(object):
             # cf variables. Because I don't want to set the session name in all
             # unittests, I do it here.
             session_name = 'unittest-'
-            
+
         db_name = os.path.join(get_temp_dir(), 'db_' + session_name)
-        
+
         # Find one database file that does NOT exist
         for i in xrange(100):
             newdb_name = db_name + '-' + str(i)
             if not os.path.exists(newdb_name):
                 db_name = newdb_name
                 break
-                
+
         self._db = DB(db_name)
 
         self._session_dir = os.path.join(get_temp_dir(),
@@ -159,7 +159,7 @@ class HistoryItem(object):
         where = WhereHelper(searchData)
         sql += where.sql()
         orderby = ""
-        # 
+        #
         # TODO we need to move SQL code to parent class
         #
         for item in orderData:
@@ -169,14 +169,15 @@ class HistoryItem(object):
         if orderby:
             sql += " ORDER BY " + orderby
 
-        sql += ' LIMIT '  + str(result_limit)
+        sql += ' LIMIT ' + str(result_limit)
         try:
             for row in self._db.select(sql, where.values()):
                 item = self.__class__()
                 item._loadFromRow(row, full)
                 result.append(item)
         except w3afException:
-            raise w3afException('You performed an invalid search. Please verify your syntax.')
+            raise w3afException(
+                'You performed an invalid search. Please verify your syntax.')
         return result
 
     def _loadFromRow(self, row, full=True):
@@ -195,15 +196,15 @@ class HistoryItem(object):
         self.responseSize = int(row[11])
 
     def _loadFromFile(self, id):
-        
+
         fname = os.path.join(self._session_dir, str(id) + self._EXTENSION)
         #
         #    Due to some concurrency issues, we need to perform this check
         #    before we try to read the .trace file.
         #
         if not os.path.exists(fname):
-            
-            for _ in xrange( 1 / 0.05 ):
+
+            for _ in xrange(1 / 0.05):
                 time.sleep(0.05)
                 if os.path.exists(fname):
                     break
@@ -212,10 +213,10 @@ class HistoryItem(object):
                 raise IOError(msg)
 
         #
-        #    Ok... the file exists, but it might still be being written 
+        #    Ok... the file exists, but it might still be being written
         #
         with FileLockRead(fname, timeout=1):
-            rrfile = open( fname, 'rb')
+            rrfile = open(fname, 'rb')
             req, res = Unpickler(rrfile).load()
             rrfile.close()
             return (req, res)
@@ -228,7 +229,7 @@ class HistoryItem(object):
             id = self.id
         sql = 'DELETE FROM ' + self._DATA_TABLE + ' WHERE id = ? '
         self._db.execute(sql, (id,))
-        # FIXME 
+        # FIXME
         # don't forget about files!
 
     def load(self, id=None, full=True, retry=True):
@@ -246,19 +247,19 @@ class HistoryItem(object):
             msg = 'An unexpected error occurred while searching for id "%s".'
             msg += ' Original exception: "%s".'
             msg = msg % (id, e)
-            raise w3afException( msg )
+            raise w3afException(msg)
         else:
             if row is not None:
                 self._loadFromRow(row, full)
             else:
                 # The request/response with 'id' == id is not in the DB!
                 # Lets do some "error handling" and try again!
-                
+
                 if retry:
                     #    TODO:
                     #    According to sqlite3 documentation this db.commit()
                     #    might fix errors like
-                    #    https://sourceforge.net/apps/trac/w3af/ticket/164352 , 
+                    #    https://sourceforge.net/apps/trac/w3af/ticket/164352 ,
                     #    but it can degrade performance due to disk IO
                     #
                     self._db.commit()
@@ -269,7 +270,7 @@ class HistoryItem(object):
                     msg = ('An internal error occurred while searching for '
                            'id "%s", even after commit/retry' % id)
                     raise w3afException(msg)
-        
+
         return True
 
     def read(self, id, full=True):
@@ -304,28 +305,28 @@ class HistoryItem(object):
 
         if not self.id:
             sql = ('INSERT INTO %s '
-            '(id, url, code, tag, mark, info, time, msg, content_type, '
-                    'charset, method, response_size, codef, alias, has_qs) '
-            'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._DATA_TABLE)
+                   '(id, url, code, tag, mark, info, time, msg, content_type, '
+                   'charset, method, response_size, codef, alias, has_qs) '
+                   'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)' % self._DATA_TABLE)
             self._db.execute(sql, values)
             self.id = self.response.get_id()
         else:
             values.append(self.id)
-            sql = ('UPDATE %s' 
-            ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, '
-                        'time = ?, msg = ?, content_type = ?, charset = ?, '
-            'method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
-            ' WHERE id = ?' % self._DATA_TABLE)
+            sql = ('UPDATE %s'
+                   ' SET id = ?, url = ?, code = ?, tag = ?, mark = ?, info = ?, '
+                   'time = ?, msg = ?, content_type = ?, charset = ?, '
+                   'method = ?, response_size = ?, codef = ?, alias = ?, has_qs = ? '
+                   ' WHERE id = ?' % self._DATA_TABLE)
             self._db.execute(sql, values)
-        
-        # 
+
+        #
         # Save raw data to file
         #
         fname = os.path.join(self._session_dir,
                              str(self.response.id) + self._EXTENSION)
 
         with FileLock(fname, timeout=1):
-        
+
             rrfile = open(fname, 'wb')
             p = Pickler(rrfile)
             p.dump((self.request, self.response))
@@ -340,7 +341,7 @@ class HistoryItem(object):
 
     def getPrimaryKeyColumns(self):
         return self._PRIMARY_KEY_COLUMNS
-    
+
     def getIndexColumns(self):
         return self._INDEX_COLUMNS
 

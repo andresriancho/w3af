@@ -24,43 +24,50 @@ from core.data.parsers.url import URL
 
 
 class TestDetailed(PluginTest):
-    
+
     base_url = 'http://moth/w3af/auth/detailed/'
-    
+
     _run_config = {
-            'target': base_url,
-            'plugins': {
-                'crawl': (
-                    PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL),
-                                 ('ignoreRegex', '.*logout.*', PluginConfig.STR)),
-                              
-                ),
-                'audit': (PluginConfig('xss',),),
-                'auth':  (PluginConfig('detailed',
+        'target': base_url,
+        'plugins': {
+        'crawl': (
+        PluginConfig('web_spider',
+                     ('onlyForward', True, PluginConfig.BOOL),
+                     (
+        'ignoreRegex', '.*logout.*', PluginConfig.STR)),
+
+        ),
+            'audit': (PluginConfig('xss',),),
+            'auth': (PluginConfig('detailed',
                                  ('username', 'admin', PluginConfig.STR),
                                  ('password', 'admin', PluginConfig.STR),
-                                 ('username_field', 'username', PluginConfig.STR),
-                                 ('password_field', 'password', PluginConfig.STR),
-                                 ('data_format','%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85',
-                                                PluginConfig.STR),
-                                 ('auth_url', URL(base_url + 'auth.php') , PluginConfig.URL),
-                                 ('method', 'POST' , PluginConfig.STR),
-                                 ('check_url', URL(base_url + 'home.php') , PluginConfig.URL),
-                                 ('check_string', '<title>Home page</title>', PluginConfig.STR),
-                            ),
+                                 ('username_field',
+                                  'username', PluginConfig.STR),
+                                 ('password_field',
+                                  'password', PluginConfig.STR),
+                                 (
+                                     'data_format', '%u=%U&%p=%P&fixed_value=366951344defc44d40d10b73ce711f85',
+                                  PluginConfig.STR),
+                                 ('auth_url', URL(base_url +
+                                  'auth.php'), PluginConfig.URL),
+                                 ('method', 'POST', PluginConfig.STR),
+                                 ('check_url', URL(base_url +
+                                  'home.php'), PluginConfig.URL),
+                                 ('check_string', '<title>Home page</title>',
+                                  PluginConfig.STR),
+                                  ),
                          ),
-             }
         }
-    
+    }
+
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
         vulns = self.kb.get('xss', 'xss')
-        
-        self.assertEquals( len(vulns), 1, vulns)
-        
+
+        self.assertEquals(len(vulns), 1, vulns)
+
         vuln = vulns[0]
-        self.assertEquals( vuln.get_name(), 'Cross site scripting vulnerability', vuln.get_name() )
-        self.assertEquals( vuln.get_var(), 'section', vuln.get_var() )
-        
+        self.assertEquals(vuln.get_name(
+        ), 'Cross site scripting vulnerability', vuln.get_name())
+        self.assertEquals(vuln.get_var(), 'section', vuln.get_var())

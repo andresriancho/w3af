@@ -27,93 +27,95 @@ from nose.plugins.attrib import attr
 from core.controllers.w3afCore import w3afCore
 from core.controllers.exceptions import w3afException
 
+
 class Test_w3afCore_profiles(unittest.TestCase):
 
     @attr('smoke')
     def test_useProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
-        
+
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
-        
-        self.assertTrue( 'sqli' in enabled_plugins['audit'])
-        self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
-        self.assertTrue( 'private_ip' in enabled_plugins['grep'])
-        self.assertTrue( 'dns_wildcard' in enabled_plugins['infrastructure'])
-        self.assertTrue( 'web_spider' in enabled_plugins['crawl'])
-    
+
+        self.assertTrue('sqli' in enabled_plugins['audit'])
+        self.assertTrue('credit_cards' in enabled_plugins['grep'])
+        self.assertTrue('private_ip' in enabled_plugins['grep'])
+        self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
+        self.assertTrue('web_spider' in enabled_plugins['crawl'])
+
     def test_saveCurrentToNewProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
-        
+
         audit = w3af_core.plugins.get_enabled_plugins('audit')
         disabled_plugin = audit[-1]
         audit = audit[:-1]
-        w3af_core.plugins.set_plugins(audit,'audit')
+        w3af_core.plugins.set_plugins(audit, 'audit')
         enabled = w3af_core.plugins.get_enabled_plugins('audit')
         self.assertEquals(set(enabled), set(audit))
         self.assertTrue(disabled_plugin not in enabled)
 
         w3af_core.profiles.saveCurrentToNewProfile('unittest-OWASP_TOP10')
-        
+
         # Get a new, clean instance of the core.
         w3af_core = w3afCore()
         audit = w3af_core.plugins.get_enabled_plugins('audit')
-        self.assertEquals( audit, [])
+        self.assertEquals(audit, [])
 
         w3af_core.profiles.useProfile('unittest-OWASP_TOP10')
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
-        
-        self.assertTrue( disabled_plugin not in enabled_plugins['audit'])
-        self.assertTrue( 'credit_cards' in enabled_plugins['grep'])
-        self.assertTrue( 'private_ip' in enabled_plugins['grep'])
-        self.assertTrue( 'dns_wildcard' in enabled_plugins['infrastructure'])
-        self.assertTrue( 'web_spider' in enabled_plugins['crawl'])
-        
+
+        self.assertTrue(disabled_plugin not in enabled_plugins['audit'])
+        self.assertTrue('credit_cards' in enabled_plugins['grep'])
+        self.assertTrue('private_ip' in enabled_plugins['grep'])
+        self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
+        self.assertTrue('web_spider' in enabled_plugins['crawl'])
+
         w3af_core.profiles.removeProfile('unittest-OWASP_TOP10')
 
     def test_removeProfile(self):
         w3af_core = w3afCore()
         w3af_core.profiles.saveCurrentToNewProfile('unittest-remove')
         w3af_core.profiles.removeProfile('unittest-remove')
-        
-        self.assertRaises(w3afException, w3af_core.profiles.useProfile,'unittest-remove')
-    
+
+        self.assertRaises(
+            w3afException, w3af_core.profiles.useProfile, 'unittest-remove')
+
     def test_removeProfile_not_exists(self):
         w3af_core = w3afCore()
-        self.assertRaises(w3afException, w3af_core.profiles.removeProfile,'not-exists')
-    
+        self.assertRaises(
+            w3afException, w3af_core.profiles.removeProfile, 'not-exists')
+
     @attr('smoke')
     def test_use_all_profiles(self):
         '''
         This test catches the errors in my profiles that generate these messages:
-        
+
         ***************************************************************************
         The profile you are trying to load (web_infrastructure) seems to be outdated,
         this is a common issue which happens when the framework is updated and one of
         its plugins adds/removes one of the configuration parameters referenced by a
         profile, or the plugin is removed all together.
-   
-        The profile was loaded but some of your settings might have been lost. 
+
+        The profile was loaded but some of your settings might have been lost.
         This is the list of issues that were found:
-   
+
         - Setting the options for plugin "infrastructure.server_header" raised
         an exception due to unknown configuration parameters.
-   
+
         We recommend you review the specific plugin configurations, apply the
         required changes and save the profile in order to update it and avoid
         this message. If this warning does not disappear you can manually edit
         the profile file to fix it.
-        ***************************************************************************        
+        ***************************************************************************
         '''
         w3af_core = w3afCore()
         valid, invalid = w3af_core.profiles.getProfileList('.')
-        
-        self.assertTrue( len(valid) > 5 )
-        self.assertEqual( len(invalid) , 0 )
-        
+
+        self.assertTrue(len(valid) > 5)
+        self.assertEqual(len(invalid), 0)
+
         for profile_inst in valid:
             profile_name = profile_inst.get_name()
-            
+
             w3af_core.profiles.useProfile(profile_name, workdir='.')
-            

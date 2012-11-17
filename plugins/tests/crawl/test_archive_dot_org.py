@@ -29,29 +29,29 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestArchiveDotOrg(PluginTest):
-    
+
     archive_url = 'http://w3af.sourceforge.net/'
-    
+
     _run_config = {
-            'target': None,
-            'plugins': {'crawl': (PluginConfig('archive_dot_org',),)}
-        }
-    
-    
+        'target': None,
+        'plugins': {'crawl': (PluginConfig('archive_dot_org',),)}
+    }
+
     def test_found_urls(self):
         self._scan(self.archive_url, self._run_config['plugins'])
         urls = self.kb.get('urls', 'url_objects')
-        
-        EXPECTED_URLS = ('oss.php', 'objectives.php', 'plugin-descriptions.php',
-                         'videos/video-demos.php', 'videos/w3af-vs-wivet/w3af-vs-wivet.htm', 
-                         'documentation/epydoc/core.data.kb-module.html')        
-        
+
+        EXPECTED_URLS = (
+            'oss.php', 'objectives.php', 'plugin-descriptions.php',
+            'videos/video-demos.php', 'videos/w3af-vs-wivet/w3af-vs-wivet.htm',
+            'documentation/epydoc/core.data.kb-module.html')
+
         expected_set = set((self.archive_url + end) for end in EXPECTED_URLS)
         urls_as_strings = set([u.url_string for u in urls])
-        
-        self.assertTrue( urls_as_strings.issuperset(expected_set) )
+
+        self.assertTrue(urls_as_strings.issuperset(expected_set))
         self.assertGreater(len(urls), 50)
-    
+
     def test_raise_on_local_domain(self):
         url = URL('http://moth/')
         fr = FuzzableRequest(url, method='GET')
@@ -61,9 +61,9 @@ class TestArchiveDotOrg(PluginTest):
     def test_raise_on_domain_not_in_archive(self):
         url = URL('http://www.w3af.org/')
         fr = FuzzableRequest(url, method='GET')
-        
+
         ado = archive_dot_org()
         uri_opener = xUrllib()
-        ado.set_url_opener( uri_opener )
-        
+        ado.set_url_opener(uri_opener)
+
         self.assertRaises(w3afRunOnce, ado.crawl_wrapper, fr)

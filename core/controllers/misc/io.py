@@ -27,11 +27,11 @@ class NamedStringIO(StringIO, str):
     '''
     def __new__(cls, *args, **kwargs):
         return super(NamedStringIO, cls).__new__(cls, args[0])
-    
+
     def __init__(self, thestr, name):
         super(NamedStringIO, self).__init__(thestr)
         self._name = name
-    
+
     @property
     def name(self):
         return self._name
@@ -39,9 +39,9 @@ class NamedStringIO(StringIO, str):
 
 FILE_ATTRS = ('read', 'write', 'name', 'seek', 'closed')
 
+
 def is_file_like(f):
     # TODO: When w3af migrates to Python 3k this function will likely
     # disappear as it'll be possible to do this check:
     # >>> isinstance(f, io.IOBase)
     return all(hasattr(f, at) for at in FILE_ATTRS)
-

@@ -40,44 +40,44 @@ class ssn(GrepPlugin):
     # match numbers of the form: 'nnn-nn-nnnn' with some extra restrictions
     regex = '(?:^|[^\d-])(?!(000|666))([0-6]\d{2}|7([0-6]\d|7[012])) ?-? ?(?!00)(\d{2}) ?-? ?(?!0000)(\d{4})(?:^|[^\d-])'
     ssn_regex = re.compile(regex)
-    
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._already_inspected = ScalableBloomFilter()
-                
+
     def grep(self, request, response):
         '''
         Plugin entry point, find the SSN numbers.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None.
         '''
         uri = response.getURI()
-        
+
         if response.is_text_or_html() and response.getCode() == 200 \
-        and response.getClearTextBody() is not None \
-        and uri not in self._already_inspected:
-            
+            and response.getClearTextBody() is not None \
+                and uri not in self._already_inspected:
+
             # Don't repeat URLs
             self._already_inspected.add(uri)
-            
-            found_ssn, validated_ssn = self._find_SSN(response.getClearTextBody())
+
+            found_ssn, validated_ssn = self._find_SSN(
+                response.getClearTextBody())
             if validated_ssn:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURI( uri )
-                v.set_id( response.id )
+                v.setURI(uri)
+                v.set_id(response.id)
                 v.set_severity(severity.LOW)
-                v.set_name( 'US Social Security Number disclosure' )
+                v.set_name('US Social Security Number disclosure')
                 msg = 'The URL: "' + uri + '" possibly discloses a US '
-                msg += 'Social Security Number: "'+ validated_ssn +'"'
-                v.set_desc( msg )
-                v.addToHighlight( found_ssn )
-                kb.kb.append( self, 'ssn', v )
-     
+                msg += 'Social Security Number: "' + validated_ssn + '"'
+                v.set_desc(msg)
+                v.addToHighlight(found_ssn)
+                kb.kb.append(self, 'ssn', v)
+
     def _find_SSN(self, body_without_tags):
         '''
         @return: SSN as found in the text and SSN in its regular format if the
@@ -93,13 +93,12 @@ class ssn(GrepPlugin):
                 break
 
         return ssn, validated_ssn
-    
-    
+
     def _validate_SSN(self, potential_ssn):
         '''
         This method is called to validate the digits of the 9-digit number
         found, to confirm that it is a valid SSN. All the publicly available SSN
-        checks are performed. The number is an SSN if: 
+        checks are performed. The number is an SSN if:
         1. the first three digits <= 772
         2. the number does not have all zeros in any digit group 3+2+4 i.e. 000-xx-####,
         ###-00-#### or ###-xx-0000 are not allowed
@@ -121,17 +120,17 @@ class ssn(GrepPlugin):
         if not serial_number:
             return False
 
-        group = areas_groups_map.get(area_number)        
+        group = areas_groups_map.get(area_number)
         if not group:
             return False
-        
+
         odd_one = xrange(1, 11, 2)
-        even_two = xrange(10, 100, 2) # (10-98 even only)
+        even_two = xrange(10, 100, 2)  # (10-98 even only)
         even_three = xrange(2, 10, 2)
-        odd_four = xrange(11, 100, 2) # (11-99 odd only)
+        odd_four = xrange(11, 100, 2)  # (11-99 odd only)
         le_group = lambda x: x <= group
         isSSN = False
-    
+
         # For little odds (odds between 1 and 9)
         if group in odd_one:
             if group_number <= group:
@@ -139,7 +138,7 @@ class ssn(GrepPlugin):
 
         # For big evens (evens between 10 and 98)
         elif group in even_two:
-            if group_number in itertools.chain(odd_one, 
+            if group_number in itertools.chain(odd_one,
                                                filter(le_group, even_two)):
                 isSSN = True
 
@@ -154,10 +153,10 @@ class ssn(GrepPlugin):
             if group_number in itertools.chain(odd_one, even_two, even_three,
                                                filter(le_group, odd_four)):
                 isSSN = True
-        
+
         if isSSN:
             return '%s-%s-%s' % (area_number, group_number, serial_number)
-        
+
         return None
 
     def end(self):
@@ -165,7 +164,7 @@ class ssn(GrepPlugin):
         This method is called when the plugin won't be used anymore.
         '''
         # Print results
-        self.print_uniq( kb.kb.get( 'ssn', 'ssn' ), 'URL' )
+        self.print_uniq(kb.kb.get('ssn', 'ssn'), 'URL')
 
     def get_long_desc(self):
         '''
@@ -173,5 +172,5 @@ class ssn(GrepPlugin):
         '''
         return '''
         This plugins scans every response page to find the strings that are likely
-        to be the US social security numbers. 
+        to be the US social security numbers.
         '''

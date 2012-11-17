@@ -20,12 +20,20 @@
 #  You can reach me at <leed@cs.ucdavis.edu>
 ######################################################################
 
-import sys,pprint,glob,getopt,re,time
-import socket, urlparse, select
+import sys
+import pprint
+import glob
+import getopt
+import re
+import time
+import socket
+import urlparse
+import select
 import core.controllers.output_manager as om
 from core.controllers.exceptions import w3afException
 import core.data.kb.config as cf
 import os
+
 
 class request:
     """Collect elements needed to send a Request to an HTTP server"""
@@ -42,21 +50,23 @@ class request:
     def __str__(self):
         method_line = self.adhoc_method_line
         if not method_line:
-            method_line = '%s %s HTTP/%s'%(self.method, self.local_uri, self.version)
+            method_line = '%s %s HTTP/%s' % (
+                self.method, self.local_uri, self.version)
 
-        return self.line_joiner.join([method_line] + \
-                                     ['%s: %s'%(x,y) for x,y in self.headers]) + \
-                                     (2*self.line_joiner) + self.body
+        return self.line_joiner.join([method_line] +
+                                     ['%s: %s' % (x, y) for x, y in self.headers]) + \
+                                    (2 * self.line_joiner) + self.body
 
     def submit(self):
-        om.out.debug('hmap is sending: ' + str(self) )
+        om.out.debug('hmap is sending: ' + str(self))
         # Echo client program
         HOST = self.url
 
         tries = 3
         wait_time = 1
         while tries != 0:
-            if tries < 3 and VERBOSE: print '!!! TRIES =', tries
+            if tries < 3 and VERBOSE:
+                print '!!! TRIES =', tries
             # Added by Andres Riancho to get SSL support !
             try:
                 si = socket.getaddrinfo(HOST, PORT)
@@ -66,44 +76,46 @@ class request:
                     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((HOST, PORT))
             except:
-                raise w3afException('Connection failed to ' + str(HOST) + ':' + str(PORT) )
+                raise w3afException(
+                    'Connection failed to ' + str(HOST) + ':' + str(PORT))
             else:
-                
+
                 if useSSL:
                     try:
-                        s2 = socket.ssl( s )
+                        s2 = socket.ssl(s)
                     except:
-                        raise w3afException('SSL Connection failed to ' + str(HOST) + ':' + str(PORT) )
+                        raise w3afException('SSL Connection failed to ' +
+                                            str(HOST) + ':' + str(PORT))
                     else:
                         s.recv = s2.read
                         s.send = s2.write
-                
+
                 data = ''
-                
+
                 try:
                     s.send(str(self))
                 except:
-                    om.out.debug('Failed to send data to socket.' )
+                    om.out.debug('Failed to send data to socket.')
                     # Try again
                     tries -= 1
                     time.sleep(wait_time)
                     wait_time *= 2
                     s.close()
-                    continue                    
-                
-                
+                    continue
+
                 ss = s
                 try:
-                    while 1:
-                        ss = select.select([s],[],[],10)[0]
+                    while True:
+                        ss = select.select([s], [], [], 10)[0]
                         if not ss:
                             break
-                        ss = ss[0] 
+                        ss = ss[0]
                         temp = ss.recv(1024)
-                        if not temp: break
-                        data += temp # TODO:  more efficient to append to list
+                        if not temp:
+                            break
+                        data += temp  # TODO:  more efficient to append to list
                     s.close()
-                except KeyboardInterrupt,e:
+                except KeyboardInterrupt, e:
                     raise e
                 except socket.sslerror, sslerr:
                     # When the remote server has no more data to send
@@ -118,7 +130,7 @@ class request:
                         wait_time *= 2
                         s.close()
                         continue
-                        
+
                 except Exception:
                     # Try again.
                     tries -= 1
@@ -130,9 +142,10 @@ class request:
         return response(data)
 
     def add_header(self, name, data):
-        self.headers.append([name,data])
+        self.headers.append([name, data])
 
 ######################################################################
+
 
 class response:
     """Read in Response from HTTP server and parse out elements of interest"""
@@ -142,14 +155,14 @@ class response:
         self.body = ''
         self.__parse(raw_text)
 
-    def __parse(self,text):
+    def __parse(self, text):
         if not text:
             self.response_code = 'NO_RESPONSE'
             self.response_text = 'NONE'
             return
 
         if not re.search('^HTTP/1\.[01] [0-9]{3} [A-Z]{,10}', text):
-            self.response_code = 'NO_RESPONSE_CODE' # HTTP/0.9 like
+            self.response_code = 'NO_RESPONSE_CODE'  # HTTP/0.9 like
             self.response_text = 'NONE'
             self.body = text
             return
@@ -160,13 +173,15 @@ class response:
         line_splitter = '\r\n'
 
         # TODO: is this sufficient???
-        if crlf_index == -1 or cr_index  < crlf_index:
+        if crlf_index == -1 or cr_index < crlf_index:
             line_splitter = '\n'
 
         response_lines = text.split(line_splitter)
         self.response_line = response_lines[0]
-        response_line_match = re.search('(HTTP/1\.[01]) ([0-9]{3}) ([^\r\n]*)', text)
-        self.response_code, self.response_text = response_line_match.groups()[1:]
+        response_line_match = re.search(
+            '(HTTP/1\.[01]) ([0-9]{3}) ([^\r\n]*)', text)
+        self.response_code, self.response_text = response_line_match.groups(
+        )[1:]
 
         blank_index = response_lines[:].index('')
         if blank_index == -1:
@@ -177,22 +192,21 @@ class response:
         #         really care at this point ...
         self.body = response_lines[blank_index:]
 
-        
     def return_code(self):
         return self.response_code, self.response_text
 
     def describe(self):
-        print '-'*70
+        print '-' * 70
         print 'RESPONSE LINE:'
-        if hasattr(self,'response_line'):
+        if hasattr(self, 'response_line'):
             print self.response_line
-        print '-'*70
+        print '-' * 70
         print 'HEADERS:'
-        if hasattr(self,'headers'):
+        if hasattr(self, 'headers'):
             print self.headers
-        print '-'*70
+        print '-' * 70
         print 'BODY:'
-        if hasattr(self,'body'):
+        if hasattr(self, 'body'):
             print self.body
 
     def has_header(self, name):
@@ -201,16 +215,16 @@ class response:
                 return 1
         return 0
 
-    def header_data(self,name):
+    def header_data(self, name):
         assert(self.has_header(name))
         for h in self.headers:
             if h.startswith(name):
-                return h.split(': ',1)[-1]
+                return h.split(': ', 1)[-1]
 
     def header_names(self):
         result = []
         for h in self.headers:
-            name = h.split(':',1)[0]
+            name = h.split(':', 1)[0]
             result.append(name)
         return result
 
@@ -222,8 +236,9 @@ class response:
 ######################################################################
 # Functions for probing server and collecting characteristics
 
+
 def get_fingerprint(url):
-    basic_get(url) # TODO: this is redundant with later test...
+    basic_get(url)  # TODO: this is redundant with later test...
     basic_options(url)
     unknown_method(url)
     unauthorized_activity(url)
@@ -241,7 +256,8 @@ def get_fingerprint(url):
     # require_host
     # unmodified_since  # also with sending bad date
 
-    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(fingerprint['SYNTACTIC']['HEADER_ORDER'])
+    fingerprint['SYNTACTIC']['HEADER_ORDER'] = winnow_ordered_list(
+        fingerprint['SYNTACTIC']['HEADER_ORDER'])
     return fingerprint
 
 
@@ -255,32 +271,36 @@ def basic_get(url):
     res = req.submit()
     get_characteristics('basic_get', res)
 
+
 def basic_options(url):
-    req = request(url,method='OPTIONS')
+    req = request(url, method='OPTIONS')
     res = req.submit()
     get_characteristics('basic_options', res)
 
+
 def unknown_method(url):
-    req = request(url,method='QWERTY')
+    req = request(url, method='QWERTY')
     res = req.submit()
     get_characteristics('unknown_method', res)
 
+
 def unauthorized_activity(url):
-    
+
     # Removed the DELETE method so we don't remove a whole site without wanting to :)
-    unauthorized_activities = ('OPTIONS', 'TRACE', 'GET', 'HEAD', 
-                               'PUT', 'POST', 'COPY', 'MOVE', 'MKCOL', 
-                               'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK', 
+    unauthorized_activities = ('OPTIONS', 'TRACE', 'GET', 'HEAD',
+                               'PUT', 'POST', 'COPY', 'MOVE', 'MKCOL',
+                               'PROPFIND', 'PROPPATCH', 'LOCK', 'UNLOCK',
                                'SEARCH')
     for ua in unauthorized_activities:
-        req = request(url,method=ua)
+        req = request(url, method=ua)
         res = req.submit()
         get_characteristics('unauthorized_activity', res)
 
+
 def nonexistant_object(url):
-    req = request(url,local_uri='/asdfg.hjkl')
+    req = request(url, local_uri='/asdfg.hjkl')
     res = req.submit()
-    get_characteristics('nonexistant_object', res)  
+    get_characteristics('nonexistant_object', res)
 
 # ways to mess up the method line
 # (nothing)METHOD(space)RELATIVE-URI(space)VERSION(line-sep)
@@ -294,49 +314,52 @@ def nonexistant_object(url):
 #   - url encoding (hex, unicode, invalid of each)
 #   - something instead of nothing and vice versa
 #   - uppercase/lowercase
+
+
 def malformed_method_line(url):
-    malformed_methods = ( 'GET', #0 TODO: repeat all these with HEAD and OTHER
-                          'GET /',#1
-                          'GET / HTTP/999.99',
-                          'GET / HHTP/1.0',
-                          'GET / HTP/1.0',
-                          'GET / HHTP/999.99',
-                          #'GET / HHTP/1.0',
-                          'GET / hhtp/999.99',
-                          'GET / http/999.99',
-                          'GET / HTTP/Q.9',
-                          'GET / HTTP/9.Q',
-                          'GET / HTTP/Q.Q', #10 
-                          'GET / HTTP/1.X',
-                          'GET / HTTP/1.10',
-                          'GET / HTTP/1.1.0',
-                          'GET / HTTP/1.2',
-                          'GET / HTTP/2.1',
-                          'GET / HTTP/1,0',
-                          #r'\GET / HTTP/1.0' or '\\GET / HTTP/1.0'
-                          #'GET / HTTP\1.0',
-                          #'GET / HTTP-1.0',
-                          #'GET / HTTP 1.0',
-                          'GET / HTTP/1.0X',
-                          'GET / HTTP/',
-                          #'get / http/1.0',
-                          #'qwerty / HTTP/1.0'
-                          #'GETX / HTTP/1.0'
-                          #' GET/HTTP/1.0',
-                          'GET/HTTP/1.0' ,
-                          'GET/ HTTP/1.0' ,#20
-                          'GET /HTTP/1.0' ,
-                          'GET/HTTP /1.0' ,
-                          'GET/HTTP/1 .0' ,
-                          'GET/HTTP/1. 0' ,
-                          'GET/HTTP/1.0 ' ,
-                          'GET / HTTP /1.0', #etc.... 
-                          'HEAD /.\\ HTTP/1.0', # indicates windows??
-                          'HEAD /asdfasdfasdfasdfasdf/../ HTTP/1.0',
-                          'HEAD /asdfasdfasdfasdfasdf/.. HTTP/1.0',
-                          'HEAD /./././././././././././././././ HTTP/1.0',#30
-                          'HEAD /././././././qwerty/.././././././././ HTTP/1.0',
-                          #'HEAD ../ HTTP/1.0',
+    malformed_methods = ('GET',  # 0 TODO: repeat all these with HEAD and OTHER
+                         'GET /',  # 1
+                         'GET / HTTP/999.99',
+                         'GET / HHTP/1.0',
+                         'GET / HTP/1.0',
+                         'GET / HHTP/999.99',
+                         #'GET / HHTP/1.0',
+                         'GET / hhtp/999.99',
+                         'GET / http/999.99',
+                         'GET / HTTP/Q.9',
+                         'GET / HTTP/9.Q',
+                         'GET / HTTP/Q.Q',  # 10
+                         'GET / HTTP/1.X',
+                         'GET / HTTP/1.10',
+                         'GET / HTTP/1.1.0',
+                         'GET / HTTP/1.2',
+                         'GET / HTTP/2.1',
+                         'GET / HTTP/1,0',
+                         #r'\GET / HTTP/1.0' or '\\GET / HTTP/1.0'
+                         #'GET / HTTP\1.0',
+                         #'GET / HTTP-1.0',
+                         #'GET / HTTP 1.0',
+                         'GET / HTTP/1.0X',
+                         'GET / HTTP/',
+                         #'get / http/1.0',
+                         #'qwerty / HTTP/1.0'
+                         #'GETX / HTTP/1.0'
+                         #' GET/HTTP/1.0',
+                         'GET/HTTP/1.0',
+                         'GET/ HTTP/1.0',  # 20
+                         'GET /HTTP/1.0',
+                         'GET/HTTP /1.0',
+                         'GET/HTTP/1 .0',
+                         'GET/HTTP/1. 0',
+                         'GET/HTTP/1.0 ',
+                         'GET / HTTP /1.0',  # etc....
+                         'HEAD /.\\ HTTP/1.0',  # indicates windows??
+                         'HEAD /asdfasdfasdfasdfasdf/../ HTTP/1.0',
+                         'HEAD /asdfasdfasdfasdfasdf/.. HTTP/1.0',
+                         'HEAD /./././././././././././././././ HTTP/1.0',
+                         # 30
+                         'HEAD /././././././qwerty/.././././././././ HTTP/1.0',
+                         #'HEAD ../ HTTP/1.0',
                           'HEAD /.. HTTP/1.0',
                           'HEAD /../ HTTP/1.0',
                           'HEAD /../../../../../ HTTP/1.0',
@@ -346,9 +369,9 @@ def malformed_method_line(url):
                           'HEAD ///////////// HTTP/1.0',
                           'Head / HTTP/1.0',
                           '\nHEAD / HTTP/1.0',
-                          ' \nHEAD / HTTP/1.0',#40
+                          ' \nHEAD / HTTP/1.0',  # 40
                           ' HEAD / HTTP/1.0',
-                          'HEAD / HQWERTY/1.0', 
+                          'HEAD / HQWERTY/1.0',
                           #      'HEAD http://some.host.com/ HTTP/1.0',
                           #      'HEAD hTTP://some.host.com/ HTTP/1.0',
                           #      'HEAD http://some.host.com HTTP/1.0',
@@ -363,7 +386,7 @@ def malformed_method_line(url):
                           'HEAD h HTTP/1.0',
                           #      'HEAD HTTP://some.host.com/ HTTP/1.0',
                           #'HEAD HTTP://$url/ HTTP/1.0',
-                          'HEAD HTTP://qwerty.asdfg.com/ HTTP/1.0', #50
+                          'HEAD HTTP://qwerty.asdfg.com/ HTTP/1.0',  # 50
                           'GET GET GET',
                           'HELLO',
                           #      'HEAD%00 / HTTP/1.0',
@@ -372,62 +395,62 @@ def malformed_method_line(url):
                           'GET / HTTP/1.0\0',
                           'GET / H',
                           ' GET / HTTP/1.0',
-                          ' '*1000 + 'GET / HTTP/1.0',
-                          'GET'+' '*1000+'/ HTTP/1.0',
-                          'GET '+'/'*1000+' HTTP/1.0', #60
-                          'GET /'+' '*1000+'HTTP/1.0',
-                          'GET / '+'H'*1000+'TTP/1.0',
-                          'GET / '+'HTTP'+'/'*1000+'1.0',
-                          'GET / '+'HTTP/'+'1'*1000+'.0',
-                          'GET / '+'HTTP/1'+'.'*1000+'0',
-                          'GET / '+'HTTP/1.'+'0'*1000,
+                          ' ' * 1000 + 'GET / HTTP/1.0',
+                          'GET' + ' ' * 1000 + '/ HTTP/1.0',
+                          'GET ' + '/' * 1000 + ' HTTP/1.0',  # 60
+                          'GET /' + ' ' * 1000 + 'HTTP/1.0',
+                          'GET / ' + 'H' * 1000 + 'TTP/1.0',
+                          'GET / ' + 'HTTP' + '/' * 1000 + '1.0',
+                          'GET / ' + 'HTTP/' + '1' * 1000 + '.0',
+                          'GET / ' + 'HTTP/1' + '.' * 1000 + '0',
+                          'GET / ' + 'HTTP/1.' + '0' * 1000,
                           'GET / HTTP/1.0' + ' ' * 1000,
                           '12345 GET / HTTP/1.0',
                           '12345 / HTTP/1.0',
                           # check if \0 is really a null
-                          '\0',#70
-                          '\0'*1000,
-                          '\0'+'GET / HTTP/1.0',
-                          '\0'*1000+'GET / HTTP/1.0',
-                          '\r\n'*1000+'GET / HTTP/1.0',
+                          '\0',  # 70
+                          '\0' * 1000,
+                          '\0' + 'GET / HTTP/1.0',
+                          '\0' * 1000 + 'GET / HTTP/1.0',
+                          '\r\n' * 1000 + 'GET / HTTP/1.0',
                           'Get / HTTP/1.0',
-                          'GET\0/\0HTTP/1.0', 
+                          'GET\0/\0HTTP/1.0',
                           'GET . HTTP/1.0',
-                          'GET index.html HTTP/1.0', # is this legal?
+                          'GET index.html HTTP/1.0',  # is this legal?
                           'GET / HTTP/1.',
-                          '', #80
+                          '',  # 80
                           ' ',
-                          ' '*1000,
+                          ' ' * 1000,
                           '/',
                           '/' * 1000,
                           'GET FTP://asdfasdf HTTP/1.0',
-                          'GET / HTTP/1.0 X', 
+                          'GET / HTTP/1.0 X',
                           # any or all parts or request URL encoded
                           #>>> [hex(ord(x)) for x in "GET / HTTP/1.0"]
                           #['0x47', '0x45', '0x54', '0x20', '0x2f', '0x20', '0x48', '0x54', '0x54', '0x50', '0x2f', '0x31', '0x2e', '0x30']
                           '%47ET / HTTP/1.0',
                           '%47%45%54 / HTTP/1.0',
                           'GET %2f HTTP/1.0',
-                          'GET %2F HTTP/1.0', #90
+                          'GET %2F HTTP/1.0',  # 90
                           'GET%20/ HTTP/1.0',
                           'GET / FTP/1.0',
-                          'GET \ HTTP/1.0', # windows style
+                          'GET \ HTTP/1.0',  # windows style
                           #'GET \./',
                           #'GET \.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\.\. HTTP/1.0'
                           'GET C:\ HTTP/1.0',
-                          'HTTP/1.0 / GET', # and other permutations
+                          'HTTP/1.0 / GET',  # and other permutations
                           # try various escape sequences from c etal
                           # \a = bell
                           # \b = back space?
-                          'ALL YOUR BASE ARE BELONG TO US', 
+                          'ALL YOUR BASE ARE BELONG TO US',
                           'GET "/" HTTP/1.0',
                           "GET '/' HTTP/1.0",
-                          'GET `/` HTTP/1.0', 
-                          '"GET / HTTP/1.0"', #100
+                          'GET `/` HTTP/1.0',
+                          '"GET / HTTP/1.0"',  # 100
                           '"GET / HTTP/1.0',
                           '"GET" / HTTP/1.0',
                           '""GET / HTTP/1.0',
-                          'GEX\bT / HTTP/1.0', # espace characters
+                          'GEX\bT / HTTP/1.0',  # espace characters
                           )
 
     #print len(malformed_methods)
@@ -435,12 +458,13 @@ def malformed_method_line(url):
         req = request(url)
         req.adhoc_method_line = mm
         res = req.submit()
-        get_characteristics('MALFORMED_'+('000'+str(index))[-3:], res)
+        get_characteristics('MALFORMED_' + ('000' + str(index))[-3:], res)
+
 
 def large_binary_searcher(url, large_helper, largest, guesses=[]):
-    ranges = [(x,large_helper(url, x)) for x in [1]+guesses+[largest]]
-    
-    while 1:
+    ranges = [(x, large_helper(url, x)) for x in [1] + guesses + [largest]]
+
+    while True:
         halfways = find_halfways(ranges)
         if not halfways:
             break
@@ -449,8 +473,9 @@ def large_binary_searcher(url, large_helper, largest, guesses=[]):
         ranges.sort()
 
     ranges = minimize_ranges(ranges)
-    
+
     return ranges
+
 
 def find_halfways(ranges):
     # assumes they are sorted
@@ -467,15 +492,18 @@ def find_halfways(ranges):
     halfways = []
     for i in range(len(grouped_ranges) - 1):
         largest_previous = grouped_ranges[i][-1]
-        smallest_next = grouped_ranges[i+1][0]
+        smallest_next = grouped_ranges[i + 1][0]
 
         if (smallest_next[0] - largest_previous[0]) == 1:
             continue
-        hw = ((smallest_next[0] - largest_previous[0]) / 2) + largest_previous[0]
-        if VERBOSE: print largest_previous, hw, smallest_next
+        hw = ((
+            smallest_next[0] - largest_previous[0]) / 2) + largest_previous[0]
+        if VERBOSE:
+            print largest_previous, hw, smallest_next
         halfways.append(hw)
 
     return halfways
+
 
 def minimize_ranges(ranges):
     # assumes they are sorted
@@ -500,67 +528,82 @@ def minimize_ranges(ranges):
 
 # TODO: maybe do this recursively????
 # TODO: remember that header size et all are configurable in apache
-def long_url_helper(url,size):
+
+
+def long_url_helper(url, size):
     #long_name = 'a'*size
-    req = request(url,local_uri=('/'+('a'*size)))
+    req = request(url, local_uri=('/' + ('a' * size)))
     res = req.submit()
     get_characteristics('LONG_URL_RANGES', res)
     return res.response_code
 
 # TODO: note that don't call get_characteristics
 #      since don't have a response to deal with here
+
+
 def long_url_ranges(url):
     # TODO: base these on "best guess" of what talking to
     #      e.g. if think it's apache 1.3.9 then use those to avoid
     #      so many long requests
-    initial_guesses = [99,100,201,202,208,209,210,211,254,255,256,
-                       765,766,
-                       8079,8080,8176,8177]
-    ranges = large_binary_searcher(url, long_url_helper, 10000, guesses=initial_guesses)
-    add_characteristic('SEMANTIC','LONG_URL_RANGES', ranges)    
+    initial_guesses = [99, 100, 201, 202, 208, 209, 210, 211, 254, 255, 256,
+                       765, 766,
+                       8079, 8080, 8176, 8177]
+    ranges = large_binary_searcher(
+        url, long_url_helper, 10000, guesses=initial_guesses)
+    add_characteristic('SEMANTIC', 'LONG_URL_RANGES', ranges)
 
-def long_default_helper(url,size):
-    req = request(url,local_uri=('/'*size))
+
+def long_default_helper(url, size):
+    req = request(url, local_uri=('/' * size))
     res = req.submit()
     get_characteristics('LONG_DEFAULT_RANGES', res)
     return res.response_code
 
+
 def long_default_ranges(url):
     ranges = large_binary_searcher(url, long_default_helper, 10000)
-    add_characteristic('SEMANTIC','LONG_DEFAULT_RANGES', ranges)    
+    add_characteristic('SEMANTIC', 'LONG_DEFAULT_RANGES', ranges)
 
-def many_header_helper(url,size):
+
+def many_header_helper(url, size):
     req = request(url)
     for i in range(size):
-        req.add_header('HEADER'+('0000000000'+str(i)[-10:]), ('0000000000'+str(i))[-10:] )
+        req.add_header('HEADER' + (
+            '0000000000' + str(i)[-10:]), ('0000000000' + str(i))[-10:])
     res = req.submit()
     get_characteristics('MANY_HEADER_RANGES', res)
     return res.response_code
 
+
 def many_header_ranges(url):
-    initial_guesses = [99,100,228,229,]
-    ranges = large_binary_searcher(url, many_header_helper, 10000, guesses=initial_guesses)
-    add_characteristic('SEMANTIC','MANY_HEADER_RANGES', ranges) 
-    
-def large_header_helper(url,size):
+    initial_guesses = [99, 100, 228, 229, ]
+    ranges = large_binary_searcher(
+        url, many_header_helper, 10000, guesses=initial_guesses)
+    add_characteristic('SEMANTIC', 'MANY_HEADER_RANGES', ranges)
+
+
+def large_header_helper(url, size):
     req = request(url)
-    req.add_header('LARGE_HEADER', 'a'*size )
+    req.add_header('LARGE_HEADER', 'a' * size)
     res = req.submit()
     get_characteristics('LARGE_HEADER_RANGES', res)
     return res.response_code
 
+
 def large_header_ranges(url):
-    initial_guesses = [8176,8177,]
-    ranges = large_binary_searcher(url, large_header_helper, 10000, guesses=initial_guesses)
-    add_characteristic('SEMANTIC','LARGE_HEADER_RANGES', ranges)    
-    
+    initial_guesses = [8176, 8177, ]
+    ranges = large_binary_searcher(
+        url, large_header_helper, 10000, guesses=initial_guesses)
+    add_characteristic('SEMANTIC', 'LARGE_HEADER_RANGES', ranges)
+
 
 def unavailable_accept(url):
     req = request(url)
     req.add_header('Accept', 'qwer/asdf')
     res = req.submit()
     get_characteristics('unavailable_accept', res)
-    
+
+
 def fake_content_length(url):
     req = request(url)
     req.add_header('Content-Length', '1000000000')
@@ -569,13 +612,14 @@ def fake_content_length(url):
     get_characteristics('fake_content_length', res)
 
 # TODO: put this global declaration somewhere easier to find....
-fingerprint = {'LEXICAL' : {},
-               'SYNTACTIC' : {},
-               'SEMANTIC' : {},}
+fingerprint = {'LEXICAL': {},
+               'SYNTACTIC': {},
+               'SEMANTIC': {}, }
 
-def add_characteristic(category,name,value,data_type=None):
+
+def add_characteristic(category, name, value, data_type=None):
     # just add if not already in there
-    if not fingerprint[category].has_key(name):
+    if name not in fingerprint[category]:
         # TODO: probably don't need a data type just look at data...
         if data_type == 'LIST':
             value = [value]
@@ -585,46 +629,49 @@ def add_characteristic(category,name,value,data_type=None):
     if fingerprint[category][name] == value:
         return
     # create or add to list as necessary
-    if type(fingerprint[category][name]) != type([]):
-        fingerprint[category][name] = [fingerprint[category][name],value]
+    if not isinstance(fingerprint[category][name], type([])):
+        fingerprint[category][name] = [fingerprint[category][name], value]
     elif value not in fingerprint[category][name]:
         fingerprint[category][name].append(value)
 
+
 def get_characteristics(test_name, res):
-    if VERBOSE: print 'processing', test_name
-    
+    if VERBOSE:
+        print 'processing', test_name
+
     response_code, response_text = res.return_code()
     claimed_servername = res.servername()
 
     if response_code not in ['NO_RESPONSE_CODE', 'NO_RESPONSE']:
-        add_characteristic('LEXICAL',response_code,response_text)
-        add_characteristic('LEXICAL','SERVER_NAME', claimed_servername)
+        add_characteristic('LEXICAL', response_code, response_text)
+        add_characteristic('LEXICAL', 'SERVER_NAME', claimed_servername)
 
     if test_name.endswith('RANGES'):
-        return # only need the code and text
+        return  # only need the code and text
 
     if res.has_header('Allow'):
         data = res.header_data('Allow')
-        add_characteristic('SYNTACTIC','ALLOW_ORDER',data)
+        add_characteristic('SYNTACTIC', 'ALLOW_ORDER', data)
 
     if res.has_header('Public'):
         data = res.header_data('Public')
-        add_characteristic('SYNTACTIC','PUBLIC_ORDER',data)
+        add_characteristic('SYNTACTIC', 'PUBLIC_ORDER', data)
 
     if res.has_header('Vary'):
         data = res.header_data('Vary')
-        add_characteristic('SYNTACTIC','VARY_ORDER',data)
+        add_characteristic('SYNTACTIC', 'VARY_ORDER', data)
 
     if test_name.startswith('MALFORMED_'):
-        add_characteristic('SEMANTIC',test_name, response_code)
+        add_characteristic('SEMANTIC', test_name, response_code)
 
     if response_code not in ['NO_RESPONSE_CODE', 'NO_RESPONSE']:
         header_names = res.header_names()
-        add_characteristic('SYNTACTIC', 'HEADER_ORDER', header_names, data_type='LIST')
+        add_characteristic(
+            'SYNTACTIC', 'HEADER_ORDER', header_names, data_type='LIST')
     else:
         ### Added by APR to solve a wierd exception....
         add_characteristic('SYNTACTIC', 'HEADER_ORDER', [], data_type='LIST')
-        
+
     if res.has_header('ETag'):
         data = res.header_data('ETag')
         add_characteristic('SYNTACTIC', 'ETag', data)
@@ -661,20 +708,22 @@ def get_characteristics(test_name, res):
 #                        'TCN',
 #                        'Connection']],
 # clean up redundancies in lists of lists
+
+
 def winnow_ordered_list(ordered_list):
     #print ordered_list
     if len(ordered_list) < 2:
         #print 'ordered_list too small to look at'
         return
-    
-    ordered_list.sort(lambda a,b: cmp(len(a), len(b)))
+
+    ordered_list.sort(lambda a, b: cmp(len(a), len(b)))
     #print 'sorted order', ordered_list
 
     index = 0
     result = []
-    for (index, elem) in zip(range(len(ordered_list) - 1),ordered_list):
+    for (index, elem) in zip(range(len(ordered_list) - 1), ordered_list):
         is_ok = 1
-        for other in ordered_list[index+1:]:
+        for other in ordered_list[index + 1:]:
             if is_partial_ordered_sublist(elem, other):
                 #print elem,'is sublist of', other
                 is_ok = 0
@@ -684,8 +733,9 @@ def winnow_ordered_list(ordered_list):
     result.append(ordered_list[-1])
     #print result
     return result
-        
-def is_partial_ordered_sublist(small,large):
+
+
+def is_partial_ordered_sublist(small, large):
     if len(small) > len(large):
         return 0
     if small == large:
@@ -695,8 +745,7 @@ def is_partial_ordered_sublist(small,large):
         presort = [large.index(x) for x in small]
     except ValueError:
         return 0
-    postsort = presort[:]
-    postsort.sort()
+    postsort = sorted(presort[:])
     #print presort, postsort
     if -1 in presort or presort != postsort:
         return 0
@@ -705,6 +754,8 @@ def is_partial_ordered_sublist(small,large):
 ######################################################################
 # Functions for comparing to known profiles
 #
+
+
 def find_most_similar(known_servers, subject):
 
     scores = []
@@ -715,7 +766,7 @@ def find_most_similar(known_servers, subject):
         matches = 0
         mismatches = 0
         unknowns = 0
-        
+
         # LEXICAL
         codes = ('200', '207',
                  '301', '302',
@@ -724,9 +775,9 @@ def find_most_similar(known_servers, subject):
         for code in codes:
             known_server_text = ''
             subject_server_text = ''
-            if server['LEXICAL'].has_key(code):
+            if code in server['LEXICAL']:
                 known_server_text = server['LEXICAL'][code]
-            if subject['LEXICAL'].has_key(code):
+            if code in subject['LEXICAL']:
                 subject_server_text = subject['LEXICAL'][code]
 
             if known_server_text == '' or subject_server_text == '':
@@ -740,9 +791,9 @@ def find_most_similar(known_servers, subject):
         # allow order
         known_server_allows = ''
         subject_server_allows = ''
-        if server['SYNTACTIC'].has_key('ALLOW_ORDER'):
+        if 'ALLOW_ORDER' in server['SYNTACTIC']:
             known_server_allows = server['SYNTACTIC']['ALLOW_ORDER']
-        if subject['SYNTACTIC'].has_key('ALLOW_ORDER'):
+        if 'ALLOW_ORDER' in subject['SYNTACTIC']:
             subject_server_allows = subject['SYNTACTIC']['ALLOW_ORDER']
 
         if known_server_allows and subject_server_allows:
@@ -752,7 +803,7 @@ def find_most_similar(known_servers, subject):
                 mismatches += 1
         else:
             unknowns += 1
-    
+
         ## etag match
         #check if server has ETag and subject has ETag
         #   if either not then unknonw
@@ -760,14 +811,14 @@ def find_most_similar(known_servers, subject):
         #   matches += 1
         #else
         #   mismatches += 1
-        
+
         # SEMANTIC
         # malformed_???
         for num in range(105):
-            malformed = 'MALFORMED_' + ('000'+str(num))[-3:]
+            malformed = 'MALFORMED_' + ('000' + str(num))[-3:]
             known_server_mal = server['SEMANTIC'][malformed]
             subject_server_mal = subject['SEMANTIC'][malformed]
-            
+
             if known_server_mal == subject_server_mal:
                 matches += 1
             else:
@@ -785,7 +836,8 @@ def find_most_similar(known_servers, subject):
 
         # long default "/" ranges
         known_server_long_default = server['SEMANTIC']['LONG_DEFAULT_RANGES']
-        subject_server_long_default = subject['SEMANTIC']['LONG_DEFAULT_RANGES']
+        subject_server_long_default = subject['SEMANTIC'][
+            'LONG_DEFAULT_RANGES']
         if known_server_long_default == subject_server_long_default:
             matches += 1
             #print 'LONG_URL_DEFAULT_RANGES match', server['LEXICAL']['SERVER_NAME']
@@ -795,33 +847,35 @@ def find_most_similar(known_servers, subject):
 
         # unique header exists
         # e.g. X-Pad, etc - or just do ALL known headers....
-        
-        scores.append([server, (matches,mismatches,unknowns)])
+
+        scores.append([server, (matches, mismatches, unknowns)])
 
     return scores
 
 # [a,b,c,e,f] and [a,c,d,f,g] are both ordered the same.....
 # -1/0/1 = no/maybe/yes
 # TODO: get this working....
+
+
 def partial_same_order(list1, list2):
     common = {}
     #print 'comparing lists: ',list1,list2
-    for x in list1+list2:
+    for x in list1 + list2:
         if x not in common:
             common[x] = 0
         common[x] += 1
     common_items = {}
     #common_items = [common_items[k] = v for k,v in common if v == 2]
-    for k,v in common:
+    for k, v in common:
         if v == 2:
             common[k] = v
-    common1 = [] # is there a simple way??
+    common1 = []  # is there a simple way??
     common2 = []
     for i in list1:
-        if common_items.has_key(i):
+        if i in common_items:
             common1.append(i)
     for i in list2:
-        if common_items.has_key(i):
+        if i in common_items:
             common2.append(i)
 
     #print common1,common2
@@ -831,6 +885,7 @@ def partial_same_order(list1, list2):
         return 1
     else:
         return -1
+
 
 def usage():
     print """
@@ -851,70 +906,74 @@ e.g.
 """
     sys.exit()
 
-###################################################################### 
+######################################################################
 # This was added by Andres Riancho to make hmap work inside w3af
 # it is a "copy" of the "main" with a lot of default parameters :P
 VERBOSE = 0
 PORT = 80
 useSSL = False
 
-def testServer( ssl, server, port, matchCount, generateFP ):
+
+def testServer(ssl, server, port, matchCount, generateFP):
     global VERBOSE
-    global PORT 
+    global PORT
     global useSSL
     VERBOSE = 0
     PORT = port
     useSSL = ssl
-    
+
     MATCH_COUNT = matchCount
-    fingerprintDir = 'plugins'+os.path.sep+'infrastructure'+os.path.sep+'oHmap'+os.path.sep+'known.servers'+os.path.sep
-    
+    fingerprintDir = 'plugins' + os.path.sep + 'infrastructure' + \
+        os.path.sep + 'oHmap' + os.path.sep + 'known.servers' + os.path.sep
+
     # Get the fingerprint
     target_url = server
     fp = get_fingerprint(target_url)
 
     # Read the fingerprint db
     known_servers = []
-    for f in glob.glob(fingerprintDir+'*'):
+    for f in glob.glob(fingerprintDir + '*'):
         ksf = file(f)
         try:
             ### FIXME: This eval is awful, I should change it to pickle.
             ks = eval(ksf.read())
-        except Exception,  e:
-            raise w3afException('The signature file "' + f + '" has an invalid syntax.')
+        except Exception, e:
+            raise w3afException(
+                'The signature file "' + f + '" has an invalid syntax.')
         else:
             known_servers.append(ks)
             ksf.close()
-    
+
     # Generate the fingerprint file
     if generateFP:
         for i in xrange(10):
             try:
-                fd = open( 'hmap-fingerprint-' + server + '-'+ str(i), 'w' )
-            except Exception,  e:
-                raise w3afException('Cannot open fingerprint file. Error:' + str(e))
+                fd = open('hmap-fingerprint-' + server + '-' + str(i), 'w')
+            except Exception, e:
+                raise w3afException(
+                    'Cannot open fingerprint file. Error:' + str(e))
             else:
                 import pprint
                 pp = pprint.PrettyPrinter(indent=4)
                 pprint.PrettyPrinter(stream=fd).pprint(fp)
                 fd.close()
                 break
-    
+
     # Compare
     scores = find_most_similar(known_servers, fp)
-    def score_cmp(score1,score2):
-        (server1, (matches1,mismatches1,unknowns1)) = score1
-        (server2, (matches2,mismatches2,unknowns2)) = score2
-    
-        if -cmp(matches1,matches2) != 0:
-            return -cmp(matches1,matches2)
-    
-        return cmp (server1,server2)
+
+    def score_cmp(score1, score2):
+        (server1, (matches1, mismatches1, unknowns1)) = score1
+        (server2, (matches2, mismatches2, unknowns2)) = score2
+
+        if -cmp(matches1, matches2) != 0:
+            return -cmp(matches1, matches2)
+
+        return cmp(server1, server2)
     scores.sort(score_cmp)
-    
+
     res = []
-    for (server, (matches,mismatches,unknowns)) in scores[:MATCH_COUNT]:
+    for (server, (matches, mismatches, unknowns)) in scores[:MATCH_COUNT]:
         res.append(server['LEXICAL']['SERVER_NAME'])
 
     return res
-

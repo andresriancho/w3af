@@ -24,8 +24,8 @@ from core.data.bloomfilter.bloomfilter import BloomFilter
 
 
 class ScalableBloomFilter(object):
-    SMALL_SET_GROWTH = 2 # slower, but takes up less memory
-    LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
+    SMALL_SET_GROWTH = 2  # slower, but takes up less memory
+    LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
 
     def __init__(self, initial_capacity=10000, error_rate=0.001,
                  mode=SMALL_SET_GROWTH, filter_impl=BloomFilter):
@@ -56,7 +56,7 @@ class ScalableBloomFilter(object):
         False
         >>> unicode_string in b
         True
-        
+
         >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
         >>> count = 10000
         >>> for i in xrange(0, count):
@@ -71,7 +71,7 @@ class ScalableBloomFilter(object):
         """
         if not error_rate or error_rate < 0:
             raise ValueError("Error_Rate must be a decimal less than 0.")
-        
+
         self.filter_impl = filter_impl
         self.scale = mode
         self.ratio = 0.9
@@ -110,17 +110,17 @@ class ScalableBloomFilter(object):
         """
         if key in self:
             return True
-        
+
         _filter = self.filters[-1] if self.filters else None
         if _filter is None or len(_filter) >= _filter.capacity:
             num_filters = len(self.filters)
-            
+
             new_capacity = self.initial_capacity * (self.scale ** num_filters)
             new_error_rate = self.error_rate * (self.ratio ** num_filters)
-            
+
             _filter = self.filter_impl(capacity=new_capacity,
                                        error_rate=new_error_rate)
-            
+
             self.filters.append(_filter)
         _filter.add(key)
         return False

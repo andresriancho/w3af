@@ -34,7 +34,7 @@ def html_export(request_string):
     request_lines = request_string.split('\n\n')
     header = request_lines[0]
     body = '\n\n'.join(request_lines[1:])
-    http_request = HTTPRequestParser( header, body)
+    http_request = HTTPRequestParser(header, body)
     res = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
     <html>
     <head>
@@ -42,15 +42,17 @@ def html_export(request_string):
         <title>Exported HTTP Request from w3af</title>
     </head>
     <body>\n'''
-    res += '<form action="' + cgi.escape(http_request.getURI().url_string, True)
+    res += '<form action="' + cgi.escape(http_request.getURI()
+                                         .url_string, True)
     res += '" method="' + cgi.escape(http_request.get_method(), True) + '">\n'
     if http_request.getData() and http_request.getData() != '\n':
         post_data = http_request.get_dc()
         for param_name in post_data:
             for value in post_data[param_name]:
                 res += '<label>' + cgi.escape(param_name) + '</label>\n'
-                res += '<input type="text" name="' + cgi.escape(param_name.strip(), True)
-                res += '" value="' + cgi.escape(value,True) + '">\n'
+                res += '<input type="text" name="' + \
+                    cgi.escape(param_name.strip(), True)
+                res += '" value="' + cgi.escape(value, True) + '">\n'
     res += '<input type="submit">\n'
     res += '</form>\n'
     res += '''</body>\n</html>'''

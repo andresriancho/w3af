@@ -45,21 +45,21 @@ def create_mutants(freq, mutant_str_list, append=False,
     '''
     result = []
     fuzzer_config = _get_fuzzer_config(freq)
-    
+
     mutant_tuple = (QSMutant, PostDataMutant, FileNameMutant, URLPartsMutant,
                     HeadersMutant, JSONMutant, CookieMutant, FileContentMutant)
-    
+
     for mutant_kls in mutant_tuple:
         new_mutants = mutant_kls.create_mutants(freq, mutant_str_list,
                                                 fuzzable_param_list, append,
                                                 fuzzer_config)
-                                                
+
         om.out.debug('"%s" created %s new mutants for "%s".' % (mutant_kls,
                                                                 len(new_mutants),
-                                                                freq) )
-        
-        result.extend( new_mutants )
-        
+                                                                freq))
+
+        result.extend(new_mutants)
+
     #
     # Improvement to reduce false positives with a double check:
     #    Get the original response and link it to each mutant.
@@ -77,19 +77,20 @@ def create_mutants(freq, mutant_str_list, append=False,
     # added some code to his PHP to do it).
     #
     if orig_resp is not None:
-        
+
         headers = orig_resp.getHeaders()
         etag = headers.get('ETag', None)
-        
+
         for m in result:
-            m.set_original_response_body( orig_resp.getBody() )
-            
+            m.set_original_response_body(orig_resp.getBody())
+
             if etag is not None:
                 orig_headers = m.getHeaders()
                 orig_headers['If-None-Match'] = etag
-                m.setHeaders(orig_headers) 
-        
+                m.setHeaders(orig_headers)
+
     return result
+
 
 def _get_fuzzer_config(freq):
     '''
@@ -97,14 +98,16 @@ def _get_fuzzer_config(freq):
              things that can be fuzzed.
     '''
     config = cf.cf
-    
+
     fuzzer_config = {}
-    
+
     fuzzer_config['fuzzable_headers'] = config.get('fuzzable_headers')
     fuzzer_config['fuzz_cookies'] = config.get('fuzz_cookies', False)
-    fuzzer_config['fuzz_url_filenames'] = config.get('fuzz_url_filenames', False)
-    fuzzer_config['fuzzed_files_extension'] = config.get('fuzzed_files_extension', 'gif')
+    fuzzer_config['fuzz_url_filenames'] = config.get(
+        'fuzz_url_filenames', False)
+    fuzzer_config['fuzzed_files_extension'] = config.get(
+        'fuzzed_files_extension', 'gif')
     fuzzer_config['fuzz_form_files'] = config.get('fuzz_form_files', False)
     fuzzer_config['fuzz_url_parts'] = config.get('fuzz_url_parts', False)
-    
+
     return fuzzer_config

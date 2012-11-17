@@ -10,18 +10,18 @@ class cpu_info(base_payload):
     def api_read(self):
         result = {}
 
-        def parse_cpu_info( cpu_info ):
+        def parse_cpu_info(cpu_info):
             processor = re.search('(?<=model name\t: )(.*)', cpu_info)
             if processor:
                 processor_string = processor.group(1)
                 splitted = processor_string.split(' ')
-                splitted = [ i for i in splitted if i != '']
+                splitted = [i for i in splitted if i != '']
                 processor_string = ' '.join(splitted)
                 return processor_string
             else:
                 return ''
 
-        def parse_cpu_cores( cpu_info ):
+        def parse_cpu_cores(cpu_info):
             cores = re.search('(?<=cpu cores\t: )(.*)', cpu_info)
             if cores:
                 return cores.group(1)
@@ -34,37 +34,36 @@ class cpu_info(base_payload):
             result['cpu_cores'] = parse_cpu_cores(content)
 
         return result
-    
+
     def api_win_read(self):
         result = {}
-        
-        def parse_cpu_cores( iis6log ):
+
+        def parse_cpu_cores(iis6log):
             cores = re.search('(?<=m_dwNumberOfProcessors=)(.*)', iis6log)
             if cores:
                 return cores.group(1)
             else:
                 return ''
-        
+
         def parse_arch(iis6log):
             arch = re.search('(?<=m_csPlatform=)(.*)', iis6log)
             if arch:
                 return arch.group(1)
             else:
                 return ''
-    
+
     def run_read(self):
         api_result = self.api_read()
-                
+
         if not api_result:
             return 'No CPU information found.'
         else:
             rows = []
-            rows.append( ['Description','Value'] )
-            rows.append( [] )
+            rows.append(['Description', 'Value'])
+            rows.append([])
             for name in api_result:
-                rows.append( [name, api_result[name] ] )
-                    
-            result_table = table( rows )
-            result_table.draw( 80 )
+                rows.append([name, api_result[name]])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows
-        

@@ -17,16 +17,15 @@ class os_fingerprint(base_payload):
             result['os'] = 'Windows'
 
         return result
-    
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result['os']:
             return 'Remote OS not identified.'
         else:
             rows = []
-            rows.append( ['Remote OS', api_result['os'] ] ) 
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+            rows.append(['Remote OS', api_result['os']])
+            result_table = table(rows)
+            result_table.draw(80)
             return rows
-

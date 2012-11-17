@@ -63,7 +63,7 @@ def diff_fields(clues):
         for tag, alo, ahi, blo, bhi in matcher.get_opcodes():
             if tag == 'equal':
                 continue
-                
+
             for name, value in one[alo:ahi] + other[blo:bhi]:
                 different.append(name)
 
@@ -71,6 +71,7 @@ def diff_fields(clues):
     different.reverse()
 
     return different
+
 
 def ignore_changing_fields(clues):
     """Tries to detect and ignore MIME fields with ever changing content.
@@ -120,6 +121,7 @@ def get_digest(clue):
     """
     return clue.info['digest']
 
+
 def clusters(clues, step=3):
     """Finds clusters of clues.
 
@@ -168,11 +170,12 @@ def clusters(clues, step=3):
                 start = i
                 break
 
+
 def merge(clues):
     """Merges a sequence of clues into one.
 
     A new clue will store the total count of the clues.
-    
+
     Note that each L{Clue} has a starting count of 1
 
     >>> a, b, c = Clue(), Clue(), Clue()
@@ -196,6 +199,7 @@ def merge(clues):
     for clue in clues[1:]:
         merged.incCount(clue.getCount())
     return merged
+
 
 def classify(seq, *classifiers):
     """Classify a sequence according to one or several criteria.
@@ -257,6 +261,7 @@ def classify(seq, *classifiers):
 
     return classified
 
+
 def sections(classified, sects=None):
     """Returns sections (and their items) from a nested dict.
 
@@ -282,6 +287,7 @@ def sections(classified, sects=None):
 
     return sects
 
+
 def deltas(xs):
     """Computes the differences between the elements of a sequence of integers.
 
@@ -301,13 +307,14 @@ def deltas(xs):
     else:
         return [xs[1] - xs[0]] + deltas(xs[1:])
 
+
 def slices(start, xs):
     """Returns slices of a given sequence separated by the specified indices.
 
     If we wanted to get the slices necessary to split range(20) in
     sub-sequences of 5 items each we'd do:
 
-    >>> seq = range(20) 
+    >>> seq = range(20)
     >>> indices = [5, 10, 15]
     >>> for piece in slices(0, indices):
     ...     print seq[piece]
@@ -331,6 +338,7 @@ def slices(start, xs):
         # The last slice includes all the remaining items in the sequence.
         return [slice(start, None)]
     return [slice(start, xs[0])] + slices(xs[0], xs[1:])
+
 
 def sort_clues(clues):
     """Sorts clues according to their time difference.
@@ -375,7 +383,7 @@ def filter_proxies(clues, maxdelta=3):
         # We find the indices of those clues which differ from the rest in
         # more than maxdelta seconds.
         indices = [idx for idx, delta in enumerate(deltas(diffs))
-                       if abs(delta) > maxdelta]
+                   if abs(delta) > maxdelta]
 
         for piece in slices(0, indices):
             if cur_clues[piece] == []:
@@ -383,6 +391,7 @@ def filter_proxies(clues, maxdelta=3):
             results.append(merge(cur_clues[piece]))
 
     return results
+
 
 def uniq(clues):
     """Return a list of unique clues.
@@ -408,6 +417,7 @@ def uniq(clues):
 
     return results
 
+
 def hits(clues):
     """Compute the total number of hits in a sequence of clues.
 
@@ -418,6 +428,7 @@ def hits(clues):
     @rtype: C{int}
     """
     return sum([clue.getCount() for clue in clues])
+
 
 def analyze(clues):
     """Draw conclusions from the clues obtained during the scanning phase.
@@ -443,6 +454,8 @@ def analyze(clues):
     return results
 
 # TODO - reanalyze should be called from this module and not from Halberd.shell.
+
+
 def reanalyze(clues, analyzed, threshold):
     """Identify and ignore changing header fields.
 
@@ -480,7 +493,7 @@ def reanalyze(clues, analyzed, threshold):
     # there's a significant amount of evidence.
     if ratio() >= threshold and len(clues) > 10:
         logger.warn(
-'''The following results might be incorrect.  It could be because the remote
+            '''The following results might be incorrect.  It could be because the remote
 host keeps changing its server version string or because halberd didn't have
 enough samples.''')
 

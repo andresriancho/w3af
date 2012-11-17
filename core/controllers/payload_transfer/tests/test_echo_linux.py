@@ -27,21 +27,20 @@ from core.controllers.payload_transfer.echo_linux import EchoLinux
 
 
 class TestEchoLinux(unittest.TestCase):
-    
+
     def test_upload_file(self):
         exec_method = commands.getoutput
         os = 'linux'
         echo_linux = EchoLinux(exec_method, os)
-        
-        self.assertTrue( echo_linux.can_transfer() )
-        
-        file_len = 8195 
+
+        self.assertTrue(echo_linux.can_transfer())
+
+        file_len = 8195
         file_content = 'A' * file_len
         echo_linux.estimate_transfer_time(file_len)
-        
+
         temp_file_inst = tempfile.NamedTemporaryFile()
         temp_fname = temp_file_inst.name
-        upload_success = echo_linux.transfer( file_content, temp_fname)
-        
-        self.assertTrue( upload_success )
-        
+        upload_success = echo_linux.transfer(file_content, temp_fname)
+
+        self.assertTrue(upload_success)

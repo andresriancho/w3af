@@ -19,15 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+
+
 def mapDict(fun, dct):
     for p in dct:
         fun(p, dct[p])
 
+
 def commonPrefix(completions):
-    ''' 
+    '''
     Utility function which is used by console to extract the string to be
     suggested as autocompletion.
-    @param completions: [(part, completion)] where part is a prefix of completion 
+    @param completions: [(part, completion)] where part is a prefix of completion
     (see core.ui.console.menu)
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
@@ -37,22 +40,22 @@ def commonPrefix(completions):
         @return: the longest common prefix for 2 strings.
         '''
         ls2 = len(str2)
-        j=1
+        j = 1
         for i in range(len(str1)):
-            if i>=ls2 or str1[i]!=str2[i]:
-                j=0
+            if i >= ls2 or str1[i] != str2[i]:
+                j = 0
                 break
 
-        result = str1[:i+j]
+        result = str1[:i + j]
         return result
 
     # cut the prefix
-    strs =[v[len(p):] for (p,v) in completions]
+    strs = [v[len(p):] for (p, v) in completions]
 
-    if len(strs)==0:
+    if len(strs) == 0:
         return ''
-    
-    if len(strs)==1:
+
+    if len(strs) == 1:
         return strs[0]
 
     result, tail = strs[0], strs[1:]
@@ -62,7 +65,7 @@ def commonPrefix(completions):
             break
 
     return result
-        
+
 
 def splitPath(path, sep='/'):
     '''
@@ -74,7 +77,8 @@ def splitPath(path, sep='/'):
     if sepIdx < 0:
         return (path, None)
 
-    return path[:sepIdx] , path[sepIdx+1:]
+    return path[:sepIdx], path[sepIdx + 1:]
+
 
 def removePrefix(s, prefix='!'):
     '''
@@ -91,7 +95,7 @@ def suggest(tree, part, skipList=[]):
     The basic autocompletion logic.
     @param tree: dict of list to take possible completions from.
     @part: the prefix for the completions.
-    @allowSet: if True, it allows to autocomplete expressions 
+    @allowSet: if True, it allows to autocomplete expressions
     like "dog,!cat,gira" into dog,!cat,giraffee' (useful for plugins)
     @return: list of (p, c) where p is the prefix of the completion c and suffix of part.
         (currently, only lengths of p's are used).
@@ -103,7 +107,7 @@ def suggest(tree, part, skipList=[]):
     except:
         dir = False
         list = tree
-    
+
 #    skipList = []
 #    if allowSet:
 #        chunks = [removePrefix(s) for s in part.split(',')]
@@ -122,11 +126,11 @@ def suggest(tree, part, skipList=[]):
     #       hint = ','
     #   else:
     #       hint = ' '
-       
 
     lp = len(part)
-    completions += [(part, v) for v in map(str, list) if v.startswith(part) and v not in skipList and lp!=len(v)]
-    
+    completions += [(part, v) for v in map(str, list) if v.startswith(
+        part) and v not in skipList and lp != len(v)]
+
 #    suffix = allowSet and ',' or ' '
     suffix = ' '
 
@@ -136,19 +140,21 @@ def suggest(tree, part, skipList=[]):
     if part in list:
         completions.append((part, part + suffix))
     else:
-        if len(completions)==1: # and not allowSet:
+        if len(completions) == 1:  # and not allowSet:
             theOption = completions[0]
-            completions=[(theOption[0], theOption[1]+' ')]
- 
+            completions = [(theOption[0], theOption[1] + ' ')]
+
     return completions
+
 
 def formatParagraph(text, width):
     lines = text.split('\n')
-    formatedLines = [formatParagraphLine(l,width) for l in lines]
+    formatedLines = [formatParagraphLine(l, width) for l in lines]
     result = []
     for fl in formatedLines:
         result.extend(fl)
     return result
+
 
 def formatParagraphLine(text, width):
     '''
@@ -160,7 +166,7 @@ def formatParagraphLine(text, width):
     buf = ''
 
     while len(tail):
-        curWord, tail = tail[0],tail[1:]
+        curWord, tail = tail[0], tail[1:]
         if len(buf) + len(curWord) + 1 > width:
             if buf == '':
                 row = curWord
@@ -175,7 +181,7 @@ def formatParagraphLine(text, width):
             if len(buf):
                 buf += ' '
             buf += curWord
-   
+
     if len(buf):
         result.append(buf + ' ' * (width - len(buf)))
     return result
@@ -191,9 +197,7 @@ def groupBy(array, fun):
         else:
             dest = []
             result[tag] = dest
-        
+
         dest.append(a)
 
     return result
-
-            

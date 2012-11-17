@@ -33,4 +33,3 @@ class CookieHandler(urllib2.HTTPCookieProcessor):
         if request.cookies:
             self.cookiejar.add_cookie_header(request)
         return request
-

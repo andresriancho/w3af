@@ -25,7 +25,7 @@ TOP_N_FUNCTIONS = 50
 
 if DEBUG_CPU_USAGE:
     import core.controllers.output_manager as om
-    
+
     try:
         import yappi
     except:
@@ -34,7 +34,8 @@ if DEBUG_CPU_USAGE:
         DEBUG_CPU_USAGE = True
         import pprint
         yappi.start()
-    
+
+
 def dump_cpu_usage():
     '''
     This is a function that prints the memory usage of w3af in real time.
@@ -43,32 +44,31 @@ def dump_cpu_usage():
     if not DEBUG_CPU_USAGE:
         return
     else:
-        
+
         # Where data is stored, entries look like:
-        # ('/home/dz0/workspace/w3af/plugins/infrastructure/afd.py.get_options:183', 
+        # ('/home/dz0/workspace/w3af/plugins/infrastructure/afd.py.get_options:183',
         #  1, 3.1150000000000002e-06, 2.4320000000000002e-06)
         entries = []
-        
+
         # Load the data into entries
         yappi.enum_stats(entries.append)
-        
+
         # Order it, put the function that takes more time in the first
         # position so we can understand why it is consuming so much time
         def sort_tsub(a, b):
             return cmp(a[2], b[2])
-        
+
         entries.sort(sort_tsub)
         entries.reverse()
-        
+
         # Print the information in an "easy to read" way
         pp = pprint.PrettyPrinter(indent=4)
-        data = pp.pformat( entries[:TOP_N_FUNCTIONS] )
-        om.out.debug( 'CPU usage information:\n' + data )
-        
+        data = pp.pformat(entries[:TOP_N_FUNCTIONS])
+        om.out.debug('CPU usage information:\n' + data)
+
         # Filtered information example
         filter_string = 'sqli.py'
         filtered = [x for x in entries if filter_string in x[0]]
-        data = pp.pformat( filtered )
+        data = pp.pformat(filtered)
         fmt = 'CPU usage for "%s":\n%s'
-        om.out.debug( fmt % (filter_string, data) )
-        
+        om.out.debug(fmt % (filter_string, data))

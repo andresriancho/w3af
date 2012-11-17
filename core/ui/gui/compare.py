@@ -44,6 +44,7 @@ ui_menu = """
 </ui>
 """
 
+
 class Compare(entries.RememberingWindow):
     '''Compares two texts.
 
@@ -64,34 +65,47 @@ class Compare(entries.RememberingWindow):
         self.add_accel_group(accelgroup)
         actiongroup = gtk.ActionGroup('UIManager')
         actiongroup.add_actions([
-            ('Help', gtk.STOCK_HELP, '_Help', None, 'Help regarding this window', self._help),
-            ('ClearAll', gtk.STOCK_CLEAR, '_Clear All', None, 'Clear all the texts', self._clearAll),
+            ('Help', gtk.STOCK_HELP, '_Help', None,
+             'Help regarding this window', self._help),
+            ('ClearAll', gtk.STOCK_CLEAR, '_Clear All', None,
+             'Clear all the texts', self._clearAll),
         ])
-
 
         iconfactory = gtk.IconFactory()
         iconfactory.add_default()
+
         def make_iconset(path):
             return gtk.IconSet(gtk.gdk.pixbuf_new_from_file(path))
 
-        iconfactory.add('req_head', make_iconset('core/ui/gui/data/request-headers.png'))
-        iconfactory.add('req_body', make_iconset('core/ui/gui/data/request-body.png'))
-        iconfactory.add('res_head', make_iconset('core/ui/gui/data/response-headers.png'))
-        iconfactory.add('res_body', make_iconset('core/ui/gui/data/response-body.png'))
+        iconfactory.add(
+            'req_head', make_iconset('core/ui/gui/data/request-headers.png'))
+        iconfactory.add(
+            'req_body', make_iconset('core/ui/gui/data/request-body.png'))
+        iconfactory.add(
+            'res_head', make_iconset('core/ui/gui/data/response-headers.png'))
+        iconfactory.add(
+            'res_body', make_iconset('core/ui/gui/data/response-body.png'))
 
         gtk.stock_add((
-            ('req_head', "Show Request Headers", 0, gtk.gdk.keyval_from_name('1'), 'w3af'),
-            ('req_body', "Show Request Body", 0, gtk.gdk.keyval_from_name('2'), 'w3af'),
-            ('res_head', "Show Response Headers", 0, gtk.gdk.keyval_from_name('3'), 'w3af'),
-            ('res_body', "Show Response Body", 0, gtk.gdk.keyval_from_name('4'), 'w3af'),
+            ('req_head', "Show Request Headers", 0,
+             gtk.gdk.keyval_from_name('1'), 'w3af'),
+            ('req_body', "Show Request Body", 0,
+             gtk.gdk.keyval_from_name('2'), 'w3af'),
+            ('res_head', "Show Response Headers", 0,
+             gtk.gdk.keyval_from_name('3'), 'w3af'),
+            ('res_body', "Show Response Body", 0,
+             gtk.gdk.keyval_from_name('4'), 'w3af'),
         ))
 
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('ReqHeaders', 'req_head', '_Request Headers', None, 'Show/Hide the request headers', self._toggle_reqhead, False),
-            ('ReqBody',    'req_body',    '_Request Body',    None, 'Show/Hide the request body',    self._toggle_reqbody, False),
-            ('RespHeaders', 'res_head',     '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
-            ('RespBody',    'res_body', '_Response Body',    None, 'Show/Hide the response body',    self._toggle_respbody, True),
+            ('ReqHeaders', 'req_head', '_Request Headers', None,
+             'Show/Hide the request headers', self._toggle_reqhead, False),
+            ('ReqBody', 'req_body', '_Request Body', None,
+             'Show/Hide the request body', self._toggle_reqbody, False),
+            ('RespHeaders', 'res_head', '_Response Headers', None, 'Show/Hide the response headers', self._toggle_resphead, True),
+            ('RespBody', 'res_body', '_Response Body', None,
+             'Show/Hide the response body', self._toggle_respbody, True),
         ])
 
         # finish the toolbar
@@ -115,7 +129,8 @@ class Compare(entries.RememberingWindow):
         hbox.pack_start(b, False, False, padding=2)
 
         image = gtk.Image()
-        image.set_from_file( os.path.join( os.path.split(__file__)[0] ,'data','cluster_data.png'))
+        image.set_from_file(os.path.join(
+            os.path.split(__file__)[0], 'data', 'cluster_data.png'))
         image.show()
         self.clusterbut = gtk.Button("")
         self.clusterbut.set_tooltip_text("Send all to Cluster Responses")
@@ -138,19 +153,20 @@ class Compare(entries.RememberingWindow):
         # the page control
         box = gtk.HBox()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange)
-        box.pack_start(self.pagesControl, False, False, padding=5) 
+        box.pack_start(self.pagesControl, False, False, padding=5)
         self.delbut = gtk.Button("Delete")
         self.delbut.connect("clicked", self._delete)
         self.delbut.set_sensitive(False)
-        box.pack_start(self.delbut, False, False, padding=10) 
+        box.pack_start(self.delbut, False, False, padding=10)
         self.comp.rightBaseBox.pack_start(box, True, False)
 
         # the send to left button
         box = gtk.HBox()
         but = gtk.Button("Set text to compare")
-        but.set_tooltip_text("Sets the text of the right pane into the left one")
+        but.set_tooltip_text(
+            "Sets the text of the right pane into the left one")
         but.connect("clicked", self._rightToLeft)
-        box.pack_start(but, True, False) 
+        box.pack_start(but, True, False)
         self.comp.leftBaseBox.pack_start(box, True, False)
 
         # this four bool list indicates which texts to show
@@ -172,7 +188,7 @@ class Compare(entries.RememberingWindow):
         for widg in self.tbarwidgets:
             widg.set_sensitive(how)
         self.sendto_box.set_sensitive(how)
-        
+
     def addElement(self, element):
         '''Adds an element to the comparison.
 
@@ -180,7 +196,7 @@ class Compare(entries.RememberingWindow):
         '''
         self.elements.append(element)
         newlen = len(self.elements)
-        self.showingPage = newlen-1
+        self.showingPage = newlen - 1
         title, realtext = self._getElementText()
 
         # acciones especiales
@@ -196,7 +212,7 @@ class Compare(entries.RememberingWindow):
         if len([r[2] for r in self.elements if r[2] is not None]) >= 3:
             self.clusterbut.set_sensitive(True)
 
-        # put the text in the right and adjust the page selector 
+        # put the text in the right and adjust the page selector
         self.comp.setRightPane(title, realtext)
         self.pagesControl.activate(newlen)
         self.pagesControl.setPage(newlen)
@@ -213,7 +229,7 @@ class Compare(entries.RememberingWindow):
         # if we have only one left, no delete is allowed
         if len(self.elements) == 1:
             self.delbut.set_sensitive(False)
-            
+
         if not any(r[2] for r in self.elements):
             self.clusterbut.set_sensitive(False)
 
@@ -234,7 +250,8 @@ class Compare(entries.RememberingWindow):
             resphead = ""
             respbody = ""
         alltexts = (reqhead, reqbody, resphead, respbody)
-        realtext = "\n".join(x for x,y in zip(alltexts, self.showText) if y) + "\n"
+        realtext = "\n".join(
+            x for x, y in zip(alltexts, self.showText) if y) + "\n"
         return title, realtext
 
     def _rightToLeft(self, widg):
@@ -251,10 +268,13 @@ class Compare(entries.RememberingWindow):
 
     def _toggle_reqhead(self, action):
         self._toggle_show(0)
+
     def _toggle_reqbody(self, action):
         self._toggle_show(1)
+
     def _toggle_resphead(self, action):
         self._toggle_show(2)
+
     def _toggle_respbody(self, action):
         self._toggle_show(3)
 
@@ -265,7 +285,7 @@ class Compare(entries.RememberingWindow):
 
     def _help(self, action):
         html_file = "readme/EN/guiHTML/guiUsersGuide.html#Comparing_HTTP_traffic"
-        helpfile = os.path.join(os.getcwd(),html_file)
+        helpfile = os.path.join(os.getcwd(), html_file)
         webbrowser.open("file://" + helpfile)
 
     def _clearAll(self, action):
@@ -293,13 +313,14 @@ class Compare(entries.RememberingWindow):
     def _sendCluster(self, widg):
         '''Send the request to the cluster window.'''
         data = [r[2] for r in self.elements if r[2] is not None]
-        
+
         if data:
             distance_function_selector(self.w3af, data)
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                                    gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(
+                None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
+                gtk.BUTTONS_OK, msg)
             opt = dlg.run()
-            dlg.destroy()        
+            dlg.destroy()

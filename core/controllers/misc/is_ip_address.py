@@ -20,16 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
+
 def is_ip_address(address):
     parts = address.split(".")
     if len(parts) != 4:
         return False
-        
+
     for item in parts:
         try:
             if not 0 <= int(item) <= 255:
                 return False
         except:
             return False
-            
+
     return True

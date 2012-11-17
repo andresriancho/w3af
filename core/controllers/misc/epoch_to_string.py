@@ -27,19 +27,19 @@ def epoch_to_string(start_time):
         '''
         @return: A string that represents in weeks/days/hours/minutes/seconds
         how much time the scan lasted.
-        
+
         >>> import time
         >>> now = time.time()
-        
+
         >>> epoch_to_string(now - 1)
         '1 second.'
-        
+
         >>> epoch_to_string(now - 60)
         '1 minute .'
-        
+
         >>> epoch_to_string(now - 61)
         '1 minute 1 second.'
- 
+
         '''
         time_diff = time.time() - start_time
         time_delta = datetime.timedelta(seconds=time_diff)
@@ -61,10 +61,11 @@ def epoch_to_string(start_time):
             if hours:
                 msg += str(hours) + ' hour%s ' % ('s' if hours > 1 else '')
             if minutes:
-                msg += str(minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
+                msg += str(
+                    minutes) + ' minute%s ' % ('s' if minutes > 1 else '')
             if seconds:
-                msg += str(seconds) + ' second%s' % ('s' if seconds > 1 else '')
+                msg += str(
+                    seconds) + ' second%s' % ('s' if seconds > 1 else '')
             msg += '.'
-        
-        return msg
 
+        return msg

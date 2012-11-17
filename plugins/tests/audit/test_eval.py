@@ -23,53 +23,54 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestEval(PluginTest):
-    
+
     target_echo = 'http://moth/w3af/audit/eval/eval.php'
     target_delay = 'http://moth/w3af/audit/eval/eval-blind.php'
-    
+
     _run_configs = {
         'echo': {
             'target': target_echo + '?c=',
             'plugins': {
-                 'audit': (PluginConfig('eval',
-                                        ('useEcho', True, PluginConfig.BOOL)),
-                            ),
-                 }
-            },
+                'audit': (PluginConfig('eval',
+                                       ('useEcho', True, PluginConfig.BOOL)),
+                          ),
+            }
+        },
 
         'delay': {
             'target': target_delay + '?c=',
             'plugins': {
-                 'audit': (PluginConfig('eval',
-                                        ('useEcho', False, PluginConfig.BOOL)),
-                            ),
-                 }
-            }                    
+                'audit': (PluginConfig('eval',
+                                       ('useEcho', False, PluginConfig.BOOL)),
+                          ),
+            }
         }
-    
+    }
+
     def test_found_eval_echo(self):
         cfg = self._run_configs['echo']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         vulns = self.kb.get('eval', 'eval')
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('eval() input injection vulnerability', vuln.get_name())
+        self.assertEquals(
+            'eval() input injection vulnerability', vuln.get_name())
         self.assertEquals("c", vuln.get_var())
-        self.assertEquals(self.target_echo, str(vuln.getURL() ))
-    
+        self.assertEquals(self.target_echo, str(vuln.getURL()))
+
     def test_found_eval_delay(self):
         cfg = self._run_configs['delay']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         vulns = self.kb.get('eval', 'eval')
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('eval() input injection vulnerability', vuln.get_name())
+        self.assertEquals(
+            'eval() input injection vulnerability', vuln.get_name())
         self.assertEquals("c", vuln.get_var())
-        self.assertEquals(self.target_delay, str(vuln.getURL() ))
-        
+        self.assertEquals(self.target_delay, str(vuln.getURL()))

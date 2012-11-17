@@ -25,53 +25,52 @@ from core.controllers.exceptions import w3afException
 class OptionList(object):
     '''
     This class represents a list of options.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
         self._internal_opt_list = []
-        
-    def add( self, option ):
-        self._internal_opt_list.append( option )
+
+    def add(self, option):
+        self._internal_opt_list.append(option)
     append = add
-    
-    def __len__( self ):
+
+    def __len__(self):
         return len(self._internal_opt_list)
-    
+
     def __repr__(self):
         '''
         A nice way of printing your object =)
         '''
-        return '<OptionList: '+ '|'.join([i.get_name() for i in self._internal_opt_list]) +'>'
+        return '<OptionList: ' + '|'.join([i.get_name() for i in self._internal_opt_list]) + '>'
 
     def __eq__(self, other):
         if not isinstance(other, OptionList):
             return False
-        
+
         return self._internal_opt_list == other._internal_opt_list
-            
-        
-    def __contains__( self, item_name ):
+
+    def __contains__(self, item_name):
         for o in self._internal_opt_list:
             if o.get_name() == item_name:
                 return True
         return False
-    
-    def __getitem__( self, item_name ):
+
+    def __getitem__(self, item_name):
         '''
         This method is used when on any configurable object the developer does something like:
-        
+
         def set_options( self, optionsList ):
             self._check_persistent = optionsList['check_persistent']
-            
+
         @return: The value of the item that was selected
-        
+
         >>> from core.data.options.opt_factory import opt_factory
         >>> opt_list = OptionList()
         >>> opt_list.add( opt_factory('name', True, 'desc', 'boolean') )
         >>> opt_list['name']
         <option name:name|type:boolean|value:True>
-        
+
         '''
         try:
             item_name = int(item_name)
@@ -85,4 +84,4 @@ class OptionList(object):
                 raise w3afException(msg % item_name)
         else:
             # An integer
-            return self._internal_opt_list[ item_name ]
+            return self._internal_opt_list[item_name]

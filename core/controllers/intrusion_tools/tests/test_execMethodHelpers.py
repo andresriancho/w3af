@@ -24,27 +24,29 @@ import commands
 from mock import MagicMock
 
 from core.controllers.exceptions import w3afException
-from core.controllers.intrusion_tools.execMethodHelpers import (os_detection_exec,
-                                                               get_remote_temp_file)
+from core.controllers.intrusion_tools.execMethodHelpers import (
+    os_detection_exec,
+    get_remote_temp_file)
 
 
 class TestExecHelpers(unittest.TestCase):
-    
+
     def test_os_detection_exec_linux(self):
         exec_method = commands.getoutput
         os = os_detection_exec(exec_method)
         self.assertEqual(os, 'linux')
-        
+
     def test_os_detection_exec_windows(self):
-        exec_method = MagicMock(side_effect=['Command not found', 'Command not found',
-                                             '[fonts]', 'ECHO'])
+        exec_method = MagicMock(
+            side_effect=['Command not found', 'Command not found',
+                         '[fonts]', 'ECHO'])
         os = os_detection_exec(exec_method)
         self.assertEqual(os, 'windows')
-    
+
     def test_os_detection_exec_unknown(self):
         def side_effect(cmd):
             return 'foobarspameggs'
-        
+
         exec_method = MagicMock(side_effect=side_effect)
         self.assertRaises(w3afException, os_detection_exec, exec_method)
 
@@ -52,18 +54,17 @@ class TestExecHelpers(unittest.TestCase):
         exec_method = commands.getoutput
         tempfile = get_remote_temp_file(exec_method)
         self.assertTrue(tempfile.startswith('/tmp/'))
-    
+
     def test_get_remote_temp_file_windows(self):
-        exec_method = MagicMock(side_effect=['Command not found', 'Command not found',
-                                             '[fonts]', 'ECHO', 'C:\\Windows\\Temp\\',
-                                             'File not found'])
+        exec_method = MagicMock(
+            side_effect=['Command not found', 'Command not found',
+                         '[fonts]', 'ECHO', 'C:\\Windows\\Temp\\',
+                         'File not found'])
         tempfile = get_remote_temp_file(exec_method)
         self.assertTrue(tempfile.startswith('C:\\Windows\\Temp\\'))
-    
+
     def test_get_remote_temp_file_unknown(self):
         def side_effect(cmd):
             return 'foobarspameggs'
-        exec_method = MagicMock(side_effect=side_effect)        
+        exec_method = MagicMock(side_effect=side_effect)
         self.assertRaises(w3afException, get_remote_temp_file, exec_method)
-        
-          

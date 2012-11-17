@@ -30,7 +30,7 @@ class GenericBloomFilter(object):
     '''
     A simple "interface like" class to define how a bloom filter should look
     like, methods, attributes, etc.
-    
+
     The idea is to give a consistent API to all the other sections of the code
     and allow the use of different bloom filter implementations.
     '''
@@ -38,19 +38,19 @@ class GenericBloomFilter(object):
         self.capacity = capacity
         self.error_rate = error_rate
         self.bf = None
-        
+
     def __contains__(self, key):
         return key in self.bf
-        
+
     def __len__(self):
         return len(self.bf)
-    
+
     def __repr__(self):
         return repr(self.bf)
 
     def __str__(self):
         return str(self.bf)
-    
+
     def add(self, key):
         return self.bf.add(key)
 
@@ -60,8 +60,8 @@ class GenericBloomFilter(object):
         #    Create the temp file
         #
         tempdir = get_temp_dir()
-        if not os.path.exists( tempdir ):
-            os.makedirs( tempdir )
+        if not os.path.exists(tempdir):
+            os.makedirs(tempdir)
         filename = ''.join([choice(string.letters) for _ in range(12)])
         temp_file = os.path.join(tempdir, filename + '-w3af.bloom')
         return temp_file

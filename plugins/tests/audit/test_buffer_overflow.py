@@ -23,26 +23,24 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestBufferOverflow(PluginTest):
-    
+
     target = 'http://moth/w3af/audit/buffer_overflow/index.php'
-    
+
     _run_config = {
         'target': target + '?buf=',
         'plugins': {
-             'audit': (PluginConfig('buffer_overflow',),),
-             }
+            'audit': (PluginConfig('buffer_overflow',),),
         }
+    }
 
-    
     def test_found_bo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
-        
+
         vulns = self.kb.get('buffer_overflow', 'buffer_overflow')
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Buffer overflow vulnerability', vuln.get_name())
         self.assertEquals("buf", vuln.get_var())
-        self.assertEquals(self.target, str(vuln.getURL() ))
-        
+        self.assertEquals(self.target, str(vuln.getURL()))

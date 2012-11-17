@@ -10,6 +10,7 @@ import gtk
 BLOCK_SIZE = 2048
 RESPONSE_FORWARD = 1
 
+
 class EditWindow(gtk.Window):
     def __init__(self, quit_cb=None):
         gtk.Window.__init__(self, gtk.WINDOW_TOPLEVEL)
@@ -42,6 +43,7 @@ class EditWindow(gtk.Window):
         self.search_string = None
         self.last_search_iter = None
         return
+
     def load_file(self, fname):
         try:
             fd = open(fname)
@@ -63,6 +65,7 @@ class EditWindow(gtk.Window):
             resp = dlg.run()
             dlg.hide()
         return
+
     def create_menu(self):
         ui_string = """<ui>
         <menubar>
@@ -120,7 +123,7 @@ class EditWindow(gtk.Window):
              self.edit_find_next),
             ('HelpMenu', gtk.STOCK_HELP),
             ('HelpAbout', None, _('A_bout'), None, None, self.help_about),
-            ]
+        ]
         self.ag = gtk.ActionGroup('edit')
         self.ag.add_actions(actions)
         self.ui = gtk.UIManager()
@@ -136,7 +139,7 @@ class EditWindow(gtk.Window):
                              (gtk.STOCK_YES, gtk.RESPONSE_YES,
                               gtk.STOCK_NO, gtk.RESPONSE_NO,
                               gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL))
-            lbl = gtk.Label((self.fname or _("Untitled"))+
+            lbl = gtk.Label((self.fname or _("Untitled")) +
                             _(" has not been saved\n") +
                             _("Do you want to save it?"))
             lbl.show()
@@ -152,19 +155,25 @@ class EditWindow(gtk.Window):
         return 0
 
     def file_new(self, mi=None):
-        if self.chk_save(): return
+        if self.chk_save():
+            return
         self.buffer.set_text('')
         self.buffer.set_modified(False)
         self.fname = None
         self.set_title(_("Untitled"))
         self.new = 1
         return
+
     def file_open(self, mi=None):
-        if self.chk_save(): return
-        fname = pluginEditorDialogs.OpenFile(_('Open File'), self, self.dirname, self.fname)
-        if not fname: return
+        if self.chk_save():
+            return
+        fname = pluginEditorDialogs.OpenFile(
+            _('Open File'), self, self.dirname, self.fname)
+        if not fname:
+            return
         self.load_file(fname)
         return
+
     def file_save(self, mi=None):
         if self.new:
             return self.file_saveas()
@@ -189,34 +198,45 @@ class EditWindow(gtk.Window):
             resp = dlg.run()
             dlg.hide()
         return ret
+
     def file_saveas(self, mi=None):
-        fname = pluginEditorDialogs.SaveFile(_('Save File As'), self, self.dirname,
-                                  self.fname)
-        if not fname: return False
+        fname = pluginEditorDialogs.SaveFile(
+            _('Save File As'), self, self.dirname,
+            self.fname)
+        if not fname:
+            return False
         self.fname = fname
         self.dirname = os.path.dirname(self.fname)
         self.set_title(os.path.basename(fname))
         self.new = 0
         return self.file_save()
+
     def file_exit(self, mi=None, event=None):
-        if self.chk_save(): return True
+        if self.chk_save():
+            return True
         self.hide()
         self.destroy()
-        if self.quit_cb: self.quit_cb(self)
+        if self.quit_cb:
+            self.quit_cb(self)
         return False
+
     def edit_cut(self, mi):
         self.buffer.cut_clipboard(self.clipboard, True)
         return
+
     def edit_copy(self, mi):
         self.buffer.copy_clipboard(self.clipboard)
         return
+
     def edit_paste(self, mi):
         self.buffer.paste_clipboard(self.clipboard, None, True)
         return
+
     def edit_clear(self, mi):
         self.buffer.delete_selection(True, True)
         return
-    def _search(self, search_string, iter = None):
+
+    def _search(self, search_string, iter=None):
         if iter is None:
             start = self.buffer.get_start_iter()
         else:
@@ -224,7 +244,8 @@ class EditWindow(gtk.Window):
         i = 0
         if search_string:
             self.search_string = search_string
-            res = start.forward_search(search_string, gtk.TEXT_SEARCH_TEXT_ONLY)
+            res = start.forward_search(
+                search_string, gtk.TEXT_SEARCH_TEXT_ONLY)
             if res:
                 match_start, match_end = res
                 self.buffer.place_cursor(match_start)
@@ -256,8 +277,10 @@ class EditWindow(gtk.Window):
         search_text.grab_focus()
         dialog.show_all()
         response_id = dialog.run()
+
     def edit_find_next(self, mi):
         self._search(self.search_string, self.last_search_iter)
+
     def help_about(self, mi):
         dlg = gtk.MessageDialog(self, gtk.DIALOG_DESTROY_WITH_PARENT,
                                 gtk.MESSAGE_INFO, gtk.BUTTONS_OK,
@@ -272,26 +295,27 @@ class EditWindow(gtk.Window):
 
 
 class pluginEditor:
-    def __init__(self,  plugin_type, plugin_name, finishEditCallback):
+    def __init__(self, plugin_type, plugin_name, finishEditCallback):
         self._finishEditCallback = finishEditCallback
         self._plugin_type = plugin_type
         self._plugin_name = plugin_name
-        
+
         # The filename to edit
-        self._filename = 'plugins' + os.path.sep + plugin_type + os.path.sep + plugin_name + '.py'
-        
+        self._filename = 'plugins' + os.path.sep + plugin_type + \
+            os.path.sep + plugin_name + '.py'
+
         # Create the window
         w = EditWindow(quit_cb=self._quit_cb)
         w.load_file(self._filename)
         w.show()
-        w.set_size_request(600,400)
-        
+        w.set_size_request(600, 400)
+
         gtk.main()
         return
 
-    def _quit_cb(self,  widget):
+    def _quit_cb(self, widget):
         '''
         The quit callback.
         '''
         gtk.main_quit()
-        self._finishEditCallback( self._plugin_type,  self._plugin_name)
+        self._finishEditCallback(self._plugin_type, self._plugin_name)

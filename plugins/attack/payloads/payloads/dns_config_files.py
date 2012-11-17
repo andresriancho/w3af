@@ -23,22 +23,21 @@ class dns_config_files(base_payload):
         for file in files:
             content = self.shell.read(file)
             if content:
-                result.update({file:content})
+                result.update({file: content})
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-                
+
         if not api_result:
             return 'DNS configuration files not found.'
         else:
             rows = []
-            rows.append( ['DNS configuration files',] )
-            rows.append( [] )
+            rows.append(['DNS configuration files', ])
+            rows.append([])
             for filename in api_result:
-                rows.append( [filename,] )
-                    
-            result_table = table( rows )
-            result_table.draw( 80 )
+                rows.append([filename, ])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows
-        

@@ -23,36 +23,37 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestDigitSum(PluginTest):
-    
+
     digit_sum_url = 'http://moth/w3af/crawl/digit_sum/'
-    
+
     _run_config = {
-            'target': None,
-            'plugins': {'crawl': (PluginConfig('digit_sum',),)}
-        }
-    
+        'target': None,
+        'plugins': {'crawl': (PluginConfig('digit_sum',),)}
+    }
+
     def test_found_fname(self):
-        self._scan(self.digit_sum_url + 'index-3-1.html', self._run_config['plugins'])
+        self._scan(self.digit_sum_url + 'index-3-1.html',
+                   self._run_config['plugins'])
         urls = self.kb.get('urls', 'url_objects')
-        
-        EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html')        
-        
+
+        EXPECTED_URLS = ('index-3-1.html', 'index-2-1.html')
+
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.digit_sum_url + end) for end in EXPECTED_URLS)
-                )
-    
+            set(str(u) for u in urls),
+            set((self.digit_sum_url + end) for end in EXPECTED_URLS)
+        )
+
     def test_found_qs(self):
-        self._scan(self.digit_sum_url + 'index1.php?id=22', self._run_config['plugins'])
+        self._scan(self.digit_sum_url + 'index1.php?id=22',
+                   self._run_config['plugins'])
         frs = self.kb.get('urls', 'fuzzable_requests')
-        
+
         EXPECTED_URLS = ('index1.php?id=22', 'index1.php?id=21',
                          # These last two look very uninteresting, but please take
                          # a look at the comment in digit_sum._do_request()
                          'index1.php?id=23', 'index1.php?id=20')
 
         self.assertEquals(
-                set(str(fr.getURI()) for fr in frs),
-                set((self.digit_sum_url + end) for end in EXPECTED_URLS)
-                )
-    
+            set(str(fr.getURI()) for fr in frs),
+            set((self.digit_sum_url + end) for end in EXPECTED_URLS)
+        )

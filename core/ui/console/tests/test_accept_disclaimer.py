@@ -25,27 +25,26 @@ from core.ui.console.console_ui import ConsoleUI
 
 
 class TestAcceptDisclaimer(unittest.TestCase):
-    
+
     def setUp(self):
         self.console_ui = ConsoleUI()
-    
+
     class dummy_true(Mock):
         accepted_disclaimer = True
 
     class dummy_false(Mock):
         accepted_disclaimer = False
-    
+
     @patch('core.ui.console.console_ui.StartUpConfig', new_callable=dummy_false)
     @patch('__builtin__.raw_input', return_value='')
     def test_not_saved_not_accepted(self, mocked_startup_cfg, mocked_input):
         self.assertFalse(self.console_ui.accept_disclaimer())
-        
+
     @patch('core.ui.console.console_ui.StartUpConfig', new_callable=dummy_false)
     @patch('__builtin__.raw_input', return_value='y')
     def test_not_saved_accepted(self, mocked_startup_cfg, mocked_input):
         self.assertTrue(self.console_ui.accept_disclaimer())
-    
+
     @patch('core.ui.console.console_ui.StartUpConfig', new_callable=dummy_true)
     def test_saved(self, mocked_startup_cfg):
         self.assertTrue(self.console_ui.accept_disclaimer())
-        

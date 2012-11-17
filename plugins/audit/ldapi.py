@@ -40,15 +40,15 @@ class ldapi(AuditPlugin):
     LDAP_ERRORS = (
         # Not sure which lang or LDAP engine
         'supplied argument is not a valid ldap',
-    
+
         # Java
         'javax.naming.NameNotFoundException',
         'LDAPException',
         'com.sun.jndi.ldap',
-        
+
         # PHP
         'Search: Bad search filter',
-        
+
         # http://support.microsoft.com/kb/218185
         'Protocol error occurred',
         'Size limit has exceeded',
@@ -67,7 +67,7 @@ class ldapi(AuditPlugin):
         'The search filter is incorrect',
         'The search filter is invalid',
         'The search filter cannot be recognized',
-        
+
         # OpenLDAP
         'Invalid DN syntax',
         'No Such Object',
@@ -79,29 +79,29 @@ class ldapi(AuditPlugin):
         # https://entrack.enfoldsystems.com/browse/SERVERPUB-350
         'Module Products.LDAPMultiPlugins'
     )
-            
-    _multi_in = multi_in( LDAP_ERRORS )
 
-    LDAPI_STRINGS = ["^(#$!@#$)(()))******",]
+    _multi_in = multi_in(LDAP_ERRORS)
 
+    LDAPI_STRINGS = ["^(#$!@#$)(()))******", ]
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
-    def audit(self, freq ):
+
+    def audit(self, freq):
         '''
         Tests an URL for LDAP injection vulnerabilities.
-        
+
         @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
-        mutants = create_mutants( freq , self.LDAPI_STRINGS, orig_resp=orig_resp )
-        
+        mutants = create_mutants(
+            freq, self.LDAPI_STRINGS, orig_resp=orig_resp)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-            
-    def _analyze_result( self, mutant, response ):
+
+    def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
@@ -109,55 +109,56 @@ class ldapi(AuditPlugin):
         #   I will only report the vulnerability once.
         #
         if self._has_no_bug(mutant):
-            
-            ldap_error_list = self._find_ldap_error( response )
+
+            ldap_error_list = self._find_ldap_error(response)
             for ldap_error_string in ldap_error_list:
                 if ldap_error_string not in mutant.get_original_response_body():
-                    v = vuln.vuln( mutant )
+                    v = vuln.vuln(mutant)
                     v.set_plugin_name(self.get_name())
-                    v.set_id( response.id )
+                    v.set_id(response.id)
                     v.set_severity(severity.HIGH)
-                    v.set_name( 'LDAP injection vulnerability' )
-                    v.set_desc( 'LDAP injection was found at: ' + mutant.found_at() )
-                    v.addToHighlight( ldap_error_string )
-                    kb.kb.append_uniq( self, 'ldapi', v )
+                    v.set_name('LDAP injection vulnerability')
+                    v.set_desc(
+                        'LDAP injection was found at: ' + mutant.found_at())
+                    v.addToHighlight(ldap_error_string)
+                    kb.kb.append_uniq(self, 'ldapi', v)
                     break
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'ldapi', 'ldapi' ), 'VAR' )
-        
-    def _find_ldap_error( self, response ):
+        self.print_uniq(kb.kb.get('ldapi', 'ldapi'), 'VAR')
+
+    def _find_ldap_error(self, response):
         '''
         This method searches for LDAP errors in html's.
-        
+
         @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []
-        for match_string in self._multi_in.query( response.body ):
+        for match_string in self._multi_in.query(response.body):
             msg = 'Found LDAP error string. The error returned by the web'
             msg += ' application is (only a fragment is shown): "'
             msg += match_string + '". The error was found on '
             msg += 'response with id ' + str(response.id) + '.'
             om.out.information(msg)
-            res.append( match_string )
+            res.append(match_string)
         return res
-        
-    def get_plugin_deps( self ):
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin will find LDAP injections by sending a specially crafted 
+        This plugin will find LDAP injections by sending a specially crafted
         string to every parameter and analyzing the response for LDAP errors.
         '''

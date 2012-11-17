@@ -25,9 +25,10 @@ from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
 
 original_display = os.environ['DISPLAY']
 
+
 def set_display_to_self():
     os.environ['DISPLAY'] = DISPLAY
 
+
 def restore_original_display():
     os.environ['DISPLAY'] = original_display
-        

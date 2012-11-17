@@ -40,23 +40,22 @@ class http_in_body (GrepPlugin):
     """
 
     HTTP = (
-            # GET / HTTP/1.0
-            ('[a-zA-Z]{3,6} .*? HTTP/1.[01]', 'REQUEST'),
-            # HTTP/1.1 200 OK
-            ('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*', 'RESPONSE')
+        # GET / HTTP/1.0
+        ('[a-zA-Z]{3,6} .*? HTTP/1.[01]', 'REQUEST'),
+        # HTTP/1.1 200 OK
+        ('HTTP/1.[01] [0-9][0-9][0-9] [a-zA-Z]*', 'RESPONSE')
     )
-    _multi_re = multi_re( HTTP )
-    
+    _multi_re = multi_re(HTTP)
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._already_inspected = ScalableBloomFilter()
-                        
+
     def grep(self, request, response):
         '''
         Plugin entry point.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
@@ -66,17 +65,17 @@ class http_in_body (GrepPlugin):
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
         if response.getCode() != 501 and uri not in self._already_inspected \
-        and response.is_text_or_html():
+                and response.is_text_or_html():
             # Don't repeat URLs
             self._already_inspected.add(uri)
 
             body_without_tags = response.getClearTextBody()
             if body_without_tags is None:
                 return
-            
-            for match, _, _, reqres in self._multi_re.query( body_without_tags ):
 
-                if reqres == 'REQUEST':            
+            for match, _, _, reqres in self._multi_re.query(body_without_tags):
+
+                if reqres == 'REQUEST':
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Request in HTTP body')
@@ -86,7 +85,7 @@ class http_in_body (GrepPlugin):
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'request', i)
 
-                if reqres == 'RESPONSE':                    
+                if reqres == 'RESPONSE':
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Response in HTTP body')
@@ -96,36 +95,38 @@ class http_in_body (GrepPlugin):
                     i.addToHighlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         pass
-            
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = OptionList()
         return ol
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         for info_type in ['request', 'response']:
-            
+
             if kb.kb.get('http_in_body', info_type):
-                msg = 'The following URLs have an HTTP '+ info_type +' in the HTTP response body:'
+                msg = 'The following URLs have an HTTP ' + \
+                    info_type + ' in the HTTP response body:'
                 om.out.information(msg)
                 for i in kb.kb.get('http_in_body', info_type):
-                    om.out.information('- ' + i.getURI() + '  (id:' + str(i.get_id()) + ')' )
-        
-    def get_plugin_deps( self ):
+                    om.out.information(
+                        '- ' + i.getURI() + '  (id:' + str(i.get_id()) + ')')
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return []
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -134,6 +135,6 @@ class http_in_body (GrepPlugin):
         in their response body. This situation is mostly seen when programmers enable
         some kind of debugging for the web application, and print the original request
         in the response HTML as a comment.
-        
+
         No configurable parameters exist.
         '''

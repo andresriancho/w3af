@@ -26,10 +26,9 @@ from plugins.tests.helper import onlyroot
 
 
 class test_w3af_agent(PayloadTestHelperExec):
-    
+
     @onlyroot
     def test_w3af_agent(self):
         result = exec_payload(self.shell, 'w3af_agent', args=(get_local_ip(),),
                               use_api=True)
         self.assertEquals('Successfully started the w3afAgent.', result)
-        

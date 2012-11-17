@@ -25,13 +25,12 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_iis_root_directory(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {}
 
     def test_iis_root_directory(self):
         result = exec_payload(self.shell, 'iis_root_directory', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        
+
     def test_a_positive_test(self):
         raise SkipTest('I need a positive test.')
-    

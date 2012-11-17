@@ -31,65 +31,64 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class feeds(GrepPlugin):
     '''
     Grep every page and finds rss, atom, opml feeds.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        self._feed_types = {'rss': 'RSS', # <rss version="...">
-                            'feed': 'OPML',# <feed version="..."
-                            'opml': 'OPML' # <opml version="...">
-                           }
+        self._feed_types = {'rss': 'RSS',  # <rss version="...">
+                            'feed': 'OPML',  # <feed version="..."
+                            'opml': 'OPML'  # <opml version="...">
+                            }
         self._already_inspected = ScalableBloomFilter()
-        
+
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//rss | //feed | //opml')
-                
-                
+
     def grep(self, request, response):
         '''
         Plugin entry point, find feeds.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         dom = response.getDOM()
         uri = response.getURI()
-        
+
         # In some strange cases, we fail to normalize the document
         if uri not in self._already_inspected and dom is not None:
 
             self._already_inspected.add(uri)
 
-            # Find all feed tags 
+            # Find all feed tags
             element_list = self._tag_xpath(dom)
-        
+
             for element in element_list:
-                
+
                 feed_tag = element.tag
-                feed_type = self._feed_types[ feed_tag.lower() ]
+                feed_type = self._feed_types[feed_tag.lower()]
                 version = element.attrib.get('version', 'unknown')
-                
+
                 i = info.info()
                 i.set_plugin_name(self.get_name())
-                i.set_name(feed_type +' feed')
+                i.set_name(feed_type + ' feed')
                 i.setURI(uri)
                 fmt = 'The URL "%s" is a %s version %s feed.'
-                msg = fmt % (uri, feed_type, version) 
-                i.set_desc( msg )
-                i.set_id( response.id )
-                i.addToHighlight( feed_type )
-                kb.kb.append( self, 'feeds', i )
-    
+                msg = fmt % (uri, feed_type, version)
+                i.set_desc(msg)
+                i.set_id(response.id)
+                i.addToHighlight(feed_type)
+                kb.kb.append(self, 'feeds', i)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'feeds', 'feeds' ), 'URL' )
+        self.print_uniq(kb.kb.get('feeds', 'feeds'), 'URL')
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

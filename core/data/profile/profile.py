@@ -34,25 +34,25 @@ from core.controllers.exceptions import w3afException
 class profile(object):
     '''
     This class represents a profile.
-    
-    @author: Andres Riancho (andres.riancho@gmail.com)    
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, profname='', workdir=None):
         '''
         Creating a profile instance like p = profile() is done in order to be
         able to create a new profile from scratch and then call
         save(profname).
-        
+
         When reading a profile, you should use p = profile(profname).
         '''
         # The default optionxform transforms the option to lower case;
         # w3af needs the value as it is
         optionxform = lambda opt: opt
-            
+
         self._config = ConfigParser.ConfigParser()
         # Set the new optionxform function
         self._config.optionxform = optionxform
-        
+
         if profname:
             # Get profile name's complete path
             profname = self._get_real_profile_path(profname, workdir)
@@ -61,45 +61,44 @@ class profile(object):
                     self._config.readfp(fp)
                 except ConfigParser.Error, cpe:
                     msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
-                    raise w3afException( msg % (profname, str(cpe)))
+                    raise w3afException(msg % (profname, str(cpe)))
                 except Exception, e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
-                    raise w3afException( msg % (profname, str(e)))
+                    raise w3afException(msg % (profname, str(e)))
 
-        
         # Save the profname variable
         self._profile_file_name = profname
-    
+
     def _get_real_profile_path(self, profilename, workdir):
         '''
         Return the complete path for `profilename`.
-        
+
         @raise w3afException: If no existing profile file is found this
                               exception is raised with the proper desc
                               message.
-        
+
         >>> p = profile()
         >>> p._get_real_profile_path('OWASP_TOP10', '.')
         './profiles/OWASP_TOP10.pw3af'
-        
+
         '''
         # Alias for os.path. Minor optimization
         ospath = os.path
         pathexists = os.path.exists
-        
+
         # Add extension if necessary
         if not profilename.endswith('.pw3af'):
             profilename += '.pw3af'
-        
+
         if pathexists(profilename):
             return profilename
-        
+
         # Let's try to find it in the workdir directory.
         if workdir is not None:
             tmp_path = ospath.join(workdir, profilename)
             if pathexists(tmp_path):
                 return tmp_path
-            
+
         # Let's try to find it in the "profiles" directory inside workdir
         if workdir is not None:
             tmp_path = ospath.join(workdir, 'profiles', profilename)
@@ -110,83 +109,83 @@ class profile(object):
             tmp_path = ospath.join(get_home_dir(), 'profiles', profilename)
             if pathexists(tmp_path):
                 return tmp_path
-                        
+
         raise w3afException('The profile "%s" wasn\'t found.' % profilename)
-    
 
     def get_profile_file(self):
         '''
         @return: The path and name of the file that contains the profile definition.
         '''
         return self._profile_file_name
-    
-    def remove( self ):
+
+    def remove(self):
         '''
         Removes the profile file which was used to create this instance.
         '''
         try:
-            os.unlink( self._profile_file_name )
+            os.unlink(self._profile_file_name)
         except Exception, e:
             msg = 'An exception occurred while removing the profile. Exception:'
             msg += ' "%s".' % e
-            raise w3afException( msg )
+            raise w3afException(msg)
         else:
             return True
-            
-    def copy( self, copyProfileName ):
+
+    def copy(self, copyProfileName):
         '''
-        Create a copy of the profile file into copyProfileName. The directory 
+        Create a copy of the profile file into copyProfileName. The directory
         of the profile is kept unless specified.
         '''
         newProfilePathAndName = copyProfileName
-        
+
         # Check path
         if os.path.sep not in copyProfileName:
-            dir = os.path.dirname( self._profile_file_name )
-            newProfilePathAndName = os.path.join( dir, copyProfileName )
-        
+            dir = os.path.dirname(self._profile_file_name)
+            newProfilePathAndName = os.path.join(dir, copyProfileName)
+
         # Check extension
         if not newProfilePathAndName.endswith('.pw3af'):
             newProfilePathAndName += '.pw3af'
-        
+
         try:
-            shutil.copyfile( self._profile_file_name, newProfilePathAndName )
+            shutil.copyfile(self._profile_file_name, newProfilePathAndName)
         except Exception, e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
-            raise w3afException( msg % e)
+            raise w3afException(msg % e)
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
-            pNew = profile( newProfilePathAndName )
-            pNew.set_name( copyProfileName )
-            pNew.save( newProfilePathAndName )
-            
+            pNew = profile(newProfilePathAndName)
+            pNew.set_name(copyProfileName)
+            pNew.save(newProfilePathAndName)
+
             return True
-    
-    def setEnabledPlugins( self, plugin_type, plugin_nameList ):
+
+    def setEnabledPlugins(self, plugin_type, plugin_nameList):
         '''
         Set the enabled plugins of type plugin_type.
-        
+
         @param plugin_type: 'audit', 'output', etc.
         @param plugin_nameList: ['xss', 'sqli'] ...
         @return: None
         '''
         # First, get the enabled plugins of the current profile
-        currentEnabledPlugins = self.get_enabled_plugins( plugin_type )
+        currentEnabledPlugins = self.get_enabled_plugins(plugin_type)
         for alreadyEnabledPlugin in currentEnabledPlugins:
             if alreadyEnabledPlugin not in plugin_nameList:
                 # The plugin was disabled!
                 # I should remove the section from the config
-                self._config.remove_section( plugin_type+'.'+ alreadyEnabledPlugin)
-                
+                self._config.remove_section(
+                    plugin_type + '.' + alreadyEnabledPlugin)
+
         # Now enable the plugins that the user wants to run
         for plugin in plugin_nameList:
             try:
-                self._config.add_section(plugin_type + "." + plugin )
+                self._config.add_section(plugin_type + "." + plugin)
             except ConfigParser.DuplicateSectionError, ds:
                 pass
-        
-    def get_enabled_plugins( self, plugin_type ):
+
+    def get_enabled_plugins(self, plugin_type):
         '''
         @return: A list of enabled plugins of type plugin_type
         '''
@@ -201,8 +200,8 @@ class profile(object):
                 if type == plugin_type:
                     res.append(name)
         return res
-    
-    def set_plugin_options( self, plugin_type, plugin_name, options ):
+
+    def set_plugin_options(self, plugin_type, plugin_name, options):
         '''
         Set the plugin options.
         @param plugin_type: 'audit', 'output', etc.
@@ -212,19 +211,21 @@ class profile(object):
         '''
         section = plugin_type + "." + plugin_name
         if section not in self._config.sections():
-            self._config.add_section( section )
-            
+            self._config.add_section(section)
+
         for option in options:
-            self._config.set( section, option.get_name(), option.get_value_str() )
-    
-    def get_plugin_options( self, plugin_type, plugin_name ):
+            self._config.set(
+                section, option.get_name(), option.get_value_str())
+
+    def get_plugin_options(self, plugin_type, plugin_name):
         '''
         @return: A dict with the options for a plugin. For example: { 'LICENSE_KEY':'AAAA' }
         '''
         # Get the plugin defaults with their types
-        plugin_instance = factory('plugins.' + plugin_type + '.' + plugin_name )
+        plugin_instance = factory(
+            'plugins.' + plugin_type + '.' + plugin_name)
         options_list = plugin_instance.get_options()
-        
+
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider
             try:
@@ -239,13 +240,13 @@ class profile(object):
                         except KeyError:
                             # We should never get here...
                             msg = 'The option "%s" is unknown for the "%s" plugin.'
-                            raise w3afException( msg % (option, plugin_name) )
+                            raise w3afException(msg % (option, plugin_name))
                         else:
                             options_list[option].set_value(value)
 
         return options_list
-        
-    def setMiscSettings( self, options ):
+
+    def setMiscSettings(self, options):
         '''
         Set the misc settings options.
         @param options: an OptionList
@@ -253,29 +254,30 @@ class profile(object):
         '''
         self._set_x_settings('misc-settings', options)
 
-    def setHttpSettings( self, options ):
+    def setHttpSettings(self, options):
         '''
         Set the http settings options.
         @param options: an OptionList
         @return: None
         '''
-        self._set_x_settings('http-settings', options)    
-        
-    def _set_x_settings( self, section, options ):
+        self._set_x_settings('http-settings', options)
+
+    def _set_x_settings(self, section, options):
         '''
         Set the section options.
-        
+
         @param section: The section name
         @param options: an OptionList
         @return: None
         '''
         if section not in self._config.sections():
-            self._config.add_section( section )
-            
-        for option in options:
-            self._config.set( section, option.get_name(), option.get_value_str() )
+            self._config.add_section(section)
 
-    def getMiscSettings( self ):
+        for option in options:
+            self._config.set(
+                section, option.get_name(), option.get_value_str())
+
+    def getMiscSettings(self):
         '''
         Get the misc settings options.
         @return: The misc settings in an OptionList
@@ -284,7 +286,7 @@ class profile(object):
         misc_settings = MiscSettings()
         return self._get_x_settings('misc-settings', misc_settings)
 
-    def getHttpSettings( self ):
+    def getHttpSettings(self):
         '''
         Get the http settings options.
         @return: The http settings in an OptionList
@@ -292,8 +294,8 @@ class profile(object):
         import core.data.url.opener_settings as opener_settings
         url_settings = opener_settings.OpenerSettings()
         return self._get_x_settings('http-settings', url_settings)
-        
-    def _get_x_settings( self, section, configurable_instance ):
+
+    def _get_x_settings(self, section, configurable_instance):
         '''
         @return: An OptionList with the options for a configurable object.
         '''
@@ -303,7 +305,7 @@ class profile(object):
             for option in self._config.options(section):
                 try:
                     value = self._config.get(section, option)
-                except KeyError,k:
+                except KeyError, k:
                     # We should never get here...
                     msg = 'The option "%s" is unknown for the "%s" section.' % (option, section)
                     raise w3afException(msg)
@@ -311,12 +313,12 @@ class profile(object):
                     options_list[option].set_value(value)
         except:
             # This is for back compatibility with old profiles
-            # that don't have a http-settings nor misc-settings section 
+            # that don't have a http-settings nor misc-settings section
             return options_list
 
         return options_list
 
-    def set_name( self, name ):
+    def set_name(self, name):
         '''
         Set the name of the profile.
         @param name: The description of the profile
@@ -324,10 +326,10 @@ class profile(object):
         '''
         section = 'profile'
         if section not in self._config.sections():
-            self._config.add_section( section )
-        self._config.set( section, 'name', name )
-        
-    def get_name( self ):
+            self._config.add_section(section)
+        self._config.set(section, 'name', name)
+
+    def get_name(self):
         '''
         @return: The profile name; as stated in the [profile] section
         '''
@@ -338,11 +340,11 @@ class profile(object):
                 for option in self._config.options(section):
                     if option == 'name':
                         return self._config.get(section, option)
-        
+
         # Something went wrong
         return None
-    
-    def setTarget( self, target ):
+
+    def setTarget(self, target):
         '''
         Set the target of the profile.
         @param target: The target URL of the profile
@@ -350,10 +352,10 @@ class profile(object):
         '''
         section = 'target'
         if section not in self._config.sections():
-            self._config.add_section( section )
-        self._config.set( section, 'target', target )
-        
-    def getTarget( self ):
+            self._config.add_section(section)
+        self._config.set(section, 'target', target)
+
+    def getTarget(self):
         '''
         @return: The profile target with the options (targetOS, targetFramework, etc.)
         '''
@@ -366,11 +368,12 @@ class profile(object):
             # or [profile] or [target]
             if section == 'target':
                 for option in self._config.options(section):
-                    options[option].set_value( self._config.get(section, option) )
-        
+                    options[option].set_value(
+                        self._config.get(section, option))
+
         return options
-    
-    def set_desc( self, desc ):
+
+    def set_desc(self, desc):
         '''
         Set the description of the profile.
         @param desc: The description of the profile
@@ -378,10 +381,10 @@ class profile(object):
         '''
         section = 'profile'
         if section not in self._config.sections():
-            self._config.add_section( section )
-        self._config.set( section, 'description', desc )
-            
-    def get_desc( self ):
+            self._config.add_section(section)
+        self._config.set(section, 'description', desc)
+
+    def get_desc(self):
         '''
         @return: The profile description; as stated in the [profile] section
         '''
@@ -392,31 +395,33 @@ class profile(object):
                 for option in self._config.options(section):
                     if option == 'description':
                         return self._config.get(section, option)
-        
+
         # Something went wrong
         return None
-    
+
     def save(self, file_name=''):
         '''
         Saves the profile to file_name.
-        
+
         @return: None
         '''
         if not self._profile_file_name:
             if not file_name:
                 raise w3afException('Error while saving profile, you didn\'t '
                                     'specified the file name.')
-            else: # The user's specified a file_name!
+            else:  # The user's specified a file_name!
                 if not file_name.endswith('.pw3af'):
                     file_name += '.pw3af'
-                
+
             if os.path.sep not in file_name:
-                file_name = os.path.join(get_home_dir(), 'profiles', file_name )
+                file_name = os.path.join(
+                    get_home_dir(), 'profiles', file_name)
             self._profile_file_name = file_name
-            
+
         try:
-            file_handler = open( self._profile_file_name, 'w')
+            file_handler = open(self._profile_file_name, 'w')
         except:
-            raise w3afException('Failed to open profile file: ' + self._profile_file_name)
+            raise w3afException(
+                'Failed to open profile file: ' + self._profile_file_name)
         else:
-            self._config.write( file_handler )
+            self._config.write(file_handler)

@@ -45,6 +45,7 @@ ui_proxy_menu = """
 </ui>
 """
 
+
 class ProxiedRequests(entries.RememberingWindow):
     """Proxies the HTTP requests, allowing modifications.
 
@@ -52,7 +53,7 @@ class ProxiedRequests(entries.RememberingWindow):
     """
     def __init__(self, w3af):
         '''Constructor.'''
-        super(ProxiedRequests,self).__init__(
+        super(ProxiedRequests, self).__init__(
             w3af, "proxytool", _("w3af - Proxy"), "Using_the_Proxy",
             onDestroy=self._close)
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
@@ -63,14 +64,20 @@ class ProxiedRequests(entries.RememberingWindow):
         self.add_accel_group(accelgroup)
         actiongroup = gtk.ActionGroup('UIManager')
         actiongroup.add_actions([
-            ('Help', gtk.STOCK_HELP, _('_Help'), None, _('Help regarding this window'), self._help),
-            ('Drop', gtk.STOCK_CANCEL, _('_Drop Request'), None, _('Drop request'), self._drop),
-            ('Send', gtk.STOCK_YES, _('_Send Request'), None, _('Send request'), self._send),
-            ('Next', gtk.STOCK_GO_FORWARD, _('_Next Request'), None, _('Move to the next request'), self._next),
+            ('Help', gtk.STOCK_HELP, _(
+                '_Help'), None, _('Help regarding this window'), self._help),
+            ('Drop', gtk.STOCK_CANCEL, _('_Drop Request'),
+             None, _('Drop request'), self._drop),
+            ('Send', gtk.STOCK_YES, _('_Send Request'), None,
+             _('Send request'), self._send),
+            ('Next', gtk.STOCK_GO_FORWARD, _('_Next Request'),
+             None, _('Move to the next request'), self._next),
         ])
         actiongroup.add_toggle_actions([
             # xml_name, icon, real_menu_text, accelerator, tooltip, callback, initial_flag
-            ('TrapReq', gtk.STOCK_JUMP_TO, _('_Trap Requests'), None, _('Trap the requests or not'),
+            (
+                'TrapReq', gtk.STOCK_JUMP_TO, _(
+                    '_Trap Requests'), None, _('Trap the requests or not'),
                 self._toggle_trap, False),
         ])
         # Finish the toolbar
@@ -95,8 +102,8 @@ class ProxiedRequests(entries.RememberingWindow):
         # We need to make widget (split or tabbed) firstly
         self._layout = self.pref.get_value('proxy', 'trap_view')
         self.reqresp = reqResViewer.reqResViewer(w3af,
-                [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
-                editableRequest=True, layout=self._layout)
+                                                 [self.bt_drop.set_sensitive, self.bt_send.set_sensitive],
+                                                 editableRequest=True, layout=self._layout)
         self.reqresp.set_sensitive(False)
         vbox = gtk.VBox()
         vbox.pack_start(self.reqresp, True, True)
@@ -123,7 +130,8 @@ class ProxiedRequests(entries.RememberingWindow):
         self.vbox.pack_start(self.nb, True, True, padding=self.def_padding)
         self.nb.show()
         # Go to Home Tab
-        self.nb.set_current_page(tabs.index(self.pref.get_value('proxy', 'home_tab')))
+        self.nb.set_current_page(
+            tabs.index(self.pref.get_value('proxy', 'home_tab')))
         # Status bar for messages
         self.status_bar = gtk.Statusbar()
         self.vbox.pack_start(self.status_bar, False, False)
@@ -143,21 +151,30 @@ class ProxiedRequests(entries.RememberingWindow):
         self.pref = ConfigOptions(self.w3af, self, 'proxy_options')
         # Proxy options
         proxyOptions = OptionList()
-        proxyOptions.add(opt_factory('ipport', "localhost:8080", "IP:port","ipport"))
+        proxyOptions.add(
+            opt_factory('ipport', "localhost:8080", "IP:port", "ipport"))
         proxyOptions.add(opt_factory('trap', ".*", _("URLs to trap"), "regex"))
-        proxyOptions.add(opt_factory('methodtrap', "GET,POST", _("Methods to trap"), "list"))
+        proxyOptions.add(opt_factory(
+            'methodtrap', "GET,POST", _("Methods to trap"), "list"))
         proxyOptions.add(opt_factory("notrap",
-            ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
-        proxyOptions.add(opt_factory("fixlength", True, _("Fix content length"), "boolean"))
-        proxyOptions.add(opt_factory("trap_view", ['Splitted', 'Tabbed'], _("View of Intercept tab"), "combo"))
-        proxyOptions.add(opt_factory("home_tab", ['Intercept', 'History', 'Options'], _("Home tab"), "combo"))
+                                     ".*\.(gif|jpg|png|css|js|ico|swf|axd|tif)$", _("URLs not to trap"), "regex"))
+        proxyOptions.add(opt_factory(
+            "fixlength", True, _("Fix content length"), "boolean"))
+        proxyOptions.add(opt_factory("trap_view", ['Splitted',
+                         'Tabbed'], _("View of Intercept tab"), "combo"))
+        proxyOptions.add(opt_factory("home_tab", ['Intercept',
+                         'History', 'Options'], _("Home tab"), "combo"))
         self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
         editorOptions = OptionList()
-        editorOptions.add(opt_factory("wrap", True, _("Wrap long lines"), "boolean"))
-        editorOptions.add(opt_factory("highlight_current_line", True, _("Highlight current line"), "boolean"))
-        editorOptions.add(opt_factory("highlight_syntax", True, _("Highlight syntax"), "boolean"))
-        editorOptions.add(opt_factory("display_line_num", True, _("Display line numbers"), "boolean"))
+        editorOptions.add(
+            opt_factory("wrap", True, _("Wrap long lines"), "boolean"))
+        editorOptions.add(opt_factory("highlight_current_line",
+                          True, _("Highlight current line"), "boolean"))
+        editorOptions.add(opt_factory(
+            "highlight_syntax", True, _("Highlight syntax"), "boolean"))
+        editorOptions.add(opt_factory(
+            "display_line_num", True, _("Display line numbers"), "boolean"))
         self.pref.addSection('editor', _('HTTP Editor Options'), editorOptions)
         # Load values from configfile
         self.pref.loadValues()
@@ -204,16 +221,21 @@ class ProxiedRequests(entries.RememberingWindow):
         try:
             self.proxy.setWhatToTrap(self.pref.get_value('proxy', 'trap'))
             self.proxy.setWhatNotToTrap(self.pref.get_value('proxy', 'notrap'))
-            self.proxy.set_methodsToTrap(self.pref.get_value('proxy', 'methodtrap'))
-            self.proxy.setFixContentLength(self.pref.get_value('proxy', 'fixlength'))
+            self.proxy.set_methodsToTrap(
+                self.pref.get_value('proxy', 'methodtrap'))
+            self.proxy.setFixContentLength(
+                self.pref.get_value('proxy', 'fixlength'))
         except w3afException, w3:
             self.showAlert(_("Invalid configuration!\n" + str(w3)))
 
         self._prevIpport = newPort
         httpeditor = self.reqresp.request.getViewById('HttpRawView')
-        httpeditor.set_show_line_numbers(self.pref.get_value('editor', 'display_line_num'))
-        httpeditor.set_highlight_current_line(self.pref.get_value('editor', 'highlight_current_line'))
-        httpeditor.set_highlight_syntax(self.pref.get_value('editor', 'highlight_syntax'))
+        httpeditor.set_show_line_numbers(
+            self.pref.get_value('editor', 'display_line_num'))
+        httpeditor.set_highlight_current_line(
+            self.pref.get_value('editor', 'highlight_current_line'))
+        httpeditor.set_highlight_syntax(
+            self.pref.get_value('editor', 'highlight_syntax'))
         httpeditor.set_wrap(self.pref.get_value('editor', 'wrap'))
         self.pref.save()
 
@@ -221,7 +243,8 @@ class ProxiedRequests(entries.RememberingWindow):
             self.showAlert(_("Some of options will take effect after you restart proxy tool"))
 
     def showAlert(self, msg):
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+        dlg = gtk.MessageDialog(
+            None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
         opt = dlg.run()
         dlg.destroy()
 
@@ -279,11 +302,12 @@ class ProxiedRequests(entries.RememberingWindow):
 
         headers = request.dumpRequestHead()
         data = request.getData()
-        
+
         if data:
             data = str(data)
         try:
-            httpResp = helpers.coreWrap(self.proxy.send_raw_request, self.fuzzable, headers, data)
+            httpResp = helpers.coreWrap(
+                self.proxy.send_raw_request, self.fuzzable, headers, data)
         except w3afException:
             return
         else:
@@ -315,7 +339,8 @@ class ProxiedRequests(entries.RememberingWindow):
         """Closes everything."""
         self.keepChecking = False
         msg = _("Do you want to quit and close the proxy?")
-        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
+        dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
         opt = dlg.run()
         dlg.destroy()
         if  opt != gtk.RESPONSE_YES:
@@ -328,7 +353,7 @@ class ProxiedRequests(entries.RememberingWindow):
         """Toggle the trap flag."""
         if self.proxy is None:
             return
-        
+
         trapactive = widget.get_active()
         self.proxy.setTrap(trapactive)
         # Send all requests in queue if Intercept is switched off
@@ -341,5 +366,6 @@ class ProxiedRequests(entries.RememberingWindow):
 
     def _help(self, action):
         """Shows the help."""
-        helpfile = os.path.join(os.getcwd(), "readme/EN/guiHTML/guiUsersGuide.html#Using_the_Proxy")
+        helpfile = os.path.join(os.getcwd(
+        ), "readme/EN/guiHTML/guiUsersGuide.html#Using_the_Proxy")
         webbrowser.open("file://" + helpfile)

@@ -43,8 +43,8 @@ HTTP_RESPONSE = 2
 SELECT_HELP = """\
 <b>Clustering method selection</b>
 
-The framework provides different clustering methods. Each method defines a way in which 
-the distance between two different HTTP responses is going to be calculated. The distance 
+The framework provides different clustering methods. Each method defines a way in which
+the distance between two different HTTP responses is going to be calculated. The distance
 between the HTTP responses is then used to group the responses and create the clusters.
 
 The customized clustering method allows you to write a function in python that will perform
@@ -70,19 +70,20 @@ EXAMPLE_FUNCTION = """def customized_distance(a, b):
     return 1
 """
 
+
 class distance_function_selector(entries.RememberingWindow):
     '''A small window to select which distance_function the w3afDotWindow
     will use to generate the graph.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, w3af, response_list):
-        super(distance_function_selector,self).__init__(
+        super(distance_function_selector, self).__init__(
             w3af, "distance_function_selector", "w3af - Select distance function",
             "select_distance_function")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
-        self.resize( 300, 200 )
-        
+        self.resize(300, 200)
+
         # Save for later usage
         self.w3af = w3af
         self.data = response_list
@@ -101,28 +102,32 @@ class distance_function_selector(entries.RememberingWindow):
         box2.show()
 
         # Adding the radio buttons
-        self._levenshtein_button = gtk.RadioButton(None, "Levenshtein distance of the HTTP bodies")
-        self._levenshtein_button.set_active(True) # This one is the default
+        self._levenshtein_button = gtk.RadioButton(
+            None, "Levenshtein distance of the HTTP bodies")
+        self._levenshtein_button.set_active(True)  # This one is the default
         box2.pack_start(self._levenshtein_button, True, True, 0)
         self._levenshtein_button.show()
 
-        self._cl_button = gtk.RadioButton(self._levenshtein_button, "Content Lengths")
+        self._cl_button = gtk.RadioButton(
+            self._levenshtein_button, "Content Lengths")
         box2.pack_start(self._cl_button, True, True, 0)
         self._cl_button.show()
 
-        self._http_res_button = gtk.RadioButton(self._cl_button, "HTTP response codes")
+        self._http_res_button = gtk.RadioButton(
+            self._cl_button, "HTTP response codes")
         box2.pack_start(self._http_res_button, True, True, 0)
         self._http_res_button.show()
 
-        self._custom_button = gtk.RadioButton(self._cl_button, "Customized distance function")
+        self._custom_button = gtk.RadioButton(
+            self._cl_button, "Customized distance function")
         box2.pack_start(self._custom_button, True, True, 0)
         self._custom_button.show()
 
         # The textview for writing the function
         self._function_tv = gtk.TextView()
         text_buffer = gtk.TextBuffer()
-        text_buffer.set_text( EXAMPLE_FUNCTION )
-        self._function_tv.set_buffer( text_buffer )
+        text_buffer.set_text(EXAMPLE_FUNCTION)
+        self._function_tv.set_buffer(text_buffer)
         box2.pack_start(self._function_tv, True, True, 0)
         self._function_tv.show()
 
@@ -141,18 +146,18 @@ class distance_function_selector(entries.RememberingWindow):
         box2.pack_start(button, True, True, 0)
         button.set_flags(gtk.CAN_DEFAULT)
         button.grab_default()
-        
+
         # Show!
         button.show()
-        
+
         # Show the window
         self.show()
-        
+
     def _launch_graph_generator(self, widget):
         '''
         The button action.
         Launch the graph window!
-        
+
         @return: None
         '''
         selected_function = None
@@ -168,28 +173,31 @@ class distance_function_selector(entries.RememberingWindow):
             start_iter = text_buffer.get_start_iter()
             end_iter = text_buffer.get_end_iter()
 
-            selected_function = text_buffer.get_text(start_iter, end_iter, \
-                                include_hidden_chars=True)
-        
+            selected_function = text_buffer.get_text(start_iter, end_iter,
+                                                     include_hidden_chars=True)
+
         # Create the new window, with the graph
         try:
-            window = clusterGraphWidget(self.w3af, self.data, distance_function=selected_function)
+            window = clusterGraphWidget(
+                self.w3af, self.data, distance_function=selected_function)
         except w3afException, w3:
             msg = str(w3)
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)
             opt = dlg.run()
             dlg.destroy()
         else:
             # Don't show me anymore
             self.hide()
-            
+
             # Start
             window.connect('destroy', gtk.main_quit)
             gtk.main()
-        
+
             # Quit myself, my job is done.
             self.quit(None, None)
-        
+
+
 class w3afDotWindow(xdot.DotWindow):
 
     ui = '''
@@ -206,7 +214,7 @@ class w3afDotWindow(xdot.DotWindow):
     def __init__(self):
         gtk.Window.__init__(self)
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
-        
+
         self.graph = xdot.Graph()
 
         window = self
@@ -231,10 +239,14 @@ class w3afDotWindow(xdot.DotWindow):
 
         # Create actions
         actiongroup.add_actions((
-            ('ZoomIn', gtk.STOCK_ZOOM_IN, None, None, None, self.widget.on_zoom_in),
-            ('ZoomOut', gtk.STOCK_ZOOM_OUT, None, None, None, self.widget.on_zoom_out),
-            ('ZoomFit', gtk.STOCK_ZOOM_FIT, None, None, None, self.widget.on_zoom_fit),
-            ('Zoom100', gtk.STOCK_ZOOM_100, None, None, None, self.widget.on_zoom_100),
+            ('ZoomIn', gtk.STOCK_ZOOM_IN, None, None, None,
+             self.widget.on_zoom_in),
+            ('ZoomOut', gtk.STOCK_ZOOM_OUT, None, None, None,
+             self.widget.on_zoom_out),
+            ('ZoomFit', gtk.STOCK_ZOOM_FIT, None, None, None,
+             self.widget.on_zoom_fit),
+            ('Zoom100', gtk.STOCK_ZOOM_100, None, None, None,
+             self.widget.on_zoom_100),
         ))
 
         # Add the actiongroup to the uimanager
@@ -260,6 +272,7 @@ class w3afDotWindow(xdot.DotWindow):
         if self.widget.set_dotcode(dotcode, filename):
             self.widget.zoom_to_fit()
 
+
 class clusterGraphWidget(w3afDotWindow):
     def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN):
         '''
@@ -268,76 +281,80 @@ class clusterGraphWidget(w3afDotWindow):
         self.w3af = w3af
         w3afDotWindow.__init__(self)
         self.widget.connect('clicked', self.on_url_clicked)
-        
+
         # Now I generate the dotcode based on the data
         if distance_function == LEVENSHTEIN:
-            dotcode = self._generateDotCode(response_list, distance_function=self._relative_distance)
+            dotcode = self._generateDotCode(
+                response_list, distance_function=self._relative_distance)
         elif distance_function == HTTP_RESPONSE:
-            dotcode = self._generateDotCode(response_list, distance_function=self._http_code_distance)
+            dotcode = self._generateDotCode(
+                response_list, distance_function=self._http_code_distance)
         elif distance_function == CONTENT_LENGTH:
             dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
         elif distance_function.startswith('def customized_distance'):
             try:
-                callable_object = self._create_callable_object( distance_function )
+                callable_object = self._create_callable_object(
+                    distance_function)
             except Exception, e:
                 # TODO: instead of hiding..., which may consume memory... why don't killing?
                 self.hide()
                 msg = 'Please review your customized code. An error was raised while compiling: "'
                 msg += str(e) + '"'
-                raise w3afException( msg )
+                raise w3afException(msg)
 
             try:
-                dotcode = self._generateDotCode(response_list, distance_function=callable_object)
+                dotcode = self._generateDotCode(
+                    response_list, distance_function=callable_object)
             except Exception, e:
                 # TODO: instead of hiding..., which may consume memory... why don't killing?
                 self.hide()
                 msg = 'Please review your customized code. An error was raised on run time: "'
                 msg += str(e) + '"'
-                raise w3afException( msg )
+                raise w3afException(msg)
 
         else:
             raise Exception('Please review your buggy code ;)')
-        
+
         self.set_filter('neato')
-        
+
         # The problem with the delay is HERE ! The self._generateDotCode method is FAST.
         # The real problem is inside "tokens = graphparser.parseString(data)" (dot_parser.py)
         # which is called inside set_dotcode
         self.set_dotcode(dotcode)
 
-    def _create_callable_object( self, code):
+    def _create_callable_object(self, code):
         '''
         Convert the code (which is a string) into a callable object.
         '''
         class code_wrapper:
-            def __init__( self, code):
+            def __init__(self, code):
                 code += '\n\nres = customized_distance(a,b)\n'
                 self._compiled_code = compile(code, '<string>', 'exec')
 
-            def __call__( self, a, b ):
-                globals_eval = {'a':a, 'b':b, 'res': None }
-                eval( self._compiled_code, globals_eval )
+            def __call__(self, a, b):
+                globals_eval = {'a': a, 'b': b, 'res': None}
+                eval(self._compiled_code, globals_eval)
                 return globals_eval['res']
 
-        return code_wrapper( code )
+        return code_wrapper(code)
 
     def _relative_distance(self, a, b):
         '''
         Calculates the distance between two responses based on the levenshtein distance
-        
+
         @return: The distance
         '''
         return 1 - relative_distance(a.getBody(), b.getBody())
-        
+
     def _http_code_distance(self, a, b):
         '''
         Calculates the distance between two responses based on the HTTP response code
-        
+
         @return: The distance
         '''
         distance = 0.1
         for i in [100, 200, 300, 400, 500]:
-            if a.getCode() in xrange(i, i+100) and not b.getCode() in xrange(i, i+100):
+            if a.getCode() in xrange(i, i + 100) and not b.getCode() in xrange(i, i + 100):
                 distance = 1
                 return distance
         return distance
@@ -345,48 +362,51 @@ class clusterGraphWidget(w3afDotWindow):
     def _response_length_distance(self, a, b):
         '''
         Calculates the distance between two responses based on the length of the response body
-        
+
         @return: The distance
         '''
         distance = abs(len(b.getBody()) - len(a.getBody()))
         distance = distance % 100
         distance = distance / 100.0
-        
+
         return distance
 
     def _xunique_combinations(self, items, n):
-        if n==0: yield []
+        if n == 0:
+            yield []
         else:
             for i in xrange(len(items)):
-                for cc in self._xunique_combinations(items[i+1:],n-1):
-                    yield [items[i]]+cc
+                for cc in self._xunique_combinations(items[i + 1:], n - 1):
+                    yield [items[i]] + cc
 
     def _generateDotCode(self, response_list, distance_function=relative_distance):
         '''
         Generate the dotcode for the current window, based on all the responses.
-        
+
         @param response_list: A list with the responses.
         '''
         dotcode = 'graph G {graph [ overlap="scale" ]\n'
         # Write the URLs
         for response in response_list:
-            dotcode += str(response.get_id()) + ' [URL="'+ str(response.get_id()) +'"];\n'
-        
+            dotcode += str(response.get_id(
+            )) + ' [URL="' + str(response.get_id()) + '"];\n'
+
         # Calculate the distances
         dist_dict = {}
         for r1, r2 in self._xunique_combinations(response_list, 2):
             dist_dict[(r1, r2)] = distance_function(r1, r2)
-            
+
         # Normalize
         dist_dict = self._normalize_distances(dist_dict)
-        
+
         # Write the links between them
         for r1, r2 in dist_dict:
             distance = dist_dict[(r1, r2)]
-            dotcode += str(r1.get_id()) + ' -- ' + str(r2.get_id()) + ' [len='+str(distance)+', style=invis];\n'
-        
+            dotcode += str(r1.get_id()) + ' -- ' + str(
+                r2.get_id()) + ' [len=' + str(distance) + ', style=invis];\n'
+
         dotcode += '}'
-        
+
         return dotcode
 
     def _normalize_distances(self, dist_dict):
@@ -399,7 +419,7 @@ class clusterGraphWidget(w3afDotWindow):
         for d in dist_dict.values():
             if d > max:
                 max = d
-                
+
         # Find min
         min = dist_dict.values()[0]
         for d in dist_dict.values():
@@ -411,7 +431,7 @@ class clusterGraphWidget(w3afDotWindow):
         for d in dist_dict.values():
             sum += d
         avg = sum / len(dist_dict)
-        
+
         # Normalize
         res = {}
         for r1, r2 in dist_dict:
@@ -420,14 +440,13 @@ class clusterGraphWidget(w3afDotWindow):
                 new_value = avg
             else:
                 new_value = actual_value
-            
+
             if actual_value < 0.1:
                 new_value = min + avg / 3
-            
+
             res[(r1, r2)] = new_value
-        
+
         return res
-        
 
     def on_url_clicked(self, widget, id, event):
         '''

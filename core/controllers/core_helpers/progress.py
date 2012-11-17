@@ -23,11 +23,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.output_manager as om
 import time
 
+
 class progress:
     """
     This class keeps track of the progress of something. Mostly used to keeps
     track of the progress of the w3afCore tests (discovery/audit/etc).
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     """
 
@@ -44,7 +45,7 @@ class progress:
         self._max_value = value
         self._current_value = 0.0
         self._first_amount_change_time = None
-        
+
     def inc(self):
         '''
         Add 1 unit to the current value.
@@ -53,7 +54,7 @@ class progress:
         >>> p.inc()
         >>> p.get_progress()
         0.01
-                
+
         '''
         if self._current_value == self._max_value:
             om.out.error('Current value can never be greater than max value!')
@@ -61,7 +62,7 @@ class progress:
             # inc the counter
             self._current_value += 1
             self._update_eta()
-            
+
     def _update_eta(self):
         # handle the time stuff
         if not self._first_amount_change_time:
@@ -72,25 +73,26 @@ class progress:
             # Simple calculation to find out how much time it is going to take
             #
             try:
-                time_for_all_requests = ( self._max_value * time_already_elapsed ) / self._current_value
+                time_for_all_requests = (self._max_value * time_already_elapsed) / self._current_value
             except ZeroDivisionError:
                 # I should never get here...
-                time_for_all_requests = time_already_elapsed * self._max_value * 2
+                time_for_all_requests = time_already_elapsed * \
+                    self._max_value * 2
             else:
                 self._eta = time_for_all_requests - time_already_elapsed
 
     def get_progress(self):
         '''
         @return: The % done.
-        
+
         >>> p = progress()
         >>> p.get_progress()
         0.0
-        
+
         >>> p.set_total_amount(10)
         >>> p.get_progress()
         0.0
-        
+
         >>> p.stop()
         >>> p.get_progress()
         0.0
@@ -98,7 +100,7 @@ class progress:
         # This if is to avoid division by zero
         if self._max_value == 0:
             return 0.0
-        
+
         # This returns the %
         return self._current_value / self._max_value
 
@@ -121,14 +123,14 @@ class progress:
         else:
             # recalculate the value
             self._update_eta()
-            
+
             temp = float()
-            temp = float(self._eta) / (60*60*24)
-            d    = int(temp)
+            temp = float(self._eta) / (60 * 60 * 24)
+            d = int(temp)
             temp = (temp - d) * 24
             h = int(temp)
             temp = (temp - h) * 60
             m = int(temp)
             temp = (temp - m) * 60
             sec = temp
-            return d,h,m,sec
+            return d, h, m, sec

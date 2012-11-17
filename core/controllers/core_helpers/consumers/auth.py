@@ -31,7 +31,7 @@ class auth(BaseConsumer):
     '''
     Thread that logins into the application every N seconds.
     '''
-    
+
     def __init__(self, auth_plugins, w3af_core, timeout):
         '''
         @param in_queue: A queue that's used to communicate with the thread. Items
@@ -42,39 +42,40 @@ class auth(BaseConsumer):
         @param w3af_core: The w3af core that we'll use for status reporting
         @param timeout: The time to wait between each login check
         '''
-        super(auth, self).__init__(auth_plugins, w3af_core, thread_name='Authenticator')
-        
+        super(auth, self).__init__(
+            auth_plugins, w3af_core, thread_name='Authenticator')
+
         self._timeout = timeout
-    
+
     def run(self):
         '''
         Consume the queue items
         '''
         while True:
-           
+
             try:
-                action = self.in_queue.get( timeout=self._timeout )
+                action = self.in_queue.get(timeout=self._timeout)
             except Queue.Empty:
                 self._login()
             else:
-                
+
                 if action == POISON_PILL:
-                    
+
                     for plugin in self._consumer_plugins:
                         plugin.end()
-                    
+
                     self.in_queue.task_done()
                     break
-                    
+
                 elif action == FORCE_LOGIN:
-                    
+
                     self._login()
                     self.in_queue.task_done()
 
     def _login(self):
         '''
         This is the method that actually calls the plugins in order to login
-        to the web application.        
+        to the web application.
         '''
         # Adding task here because we want to let the rest of the world know
         # that we're still doing something. The _task_done below will "undo"
@@ -87,16 +88,15 @@ class auth(BaseConsumer):
                     plugin.login()
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
-                                
+
             finally:
                 tm.join(plugin)
-        
+
         # See comment above in _add_task
         self._task_done(None)
-    
+
     def async_force_login(self):
-        self.in_queue_put( FORCE_LOGIN )
-    
+        self.in_queue_put(FORCE_LOGIN)
+
     def force_login(self):
         self._login()
-        

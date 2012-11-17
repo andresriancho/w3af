@@ -25,7 +25,8 @@ import re
 import socket
 import string
 import time
-import urllib2, urllib
+import urllib2
+import urllib
 import xmlrpclib
 
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
@@ -36,14 +37,14 @@ from core.controllers.exception_handling.helpers import VERSIONS
 #
 DEFAULT_USER_NAME = 'w3afbugsreport'
 DEFAULT_PASSWD = 'w3afs1nce2006'
-    
+
 
 class Sourceforge(object):
-    
+
     CREATED_TKT = 'http://sourceforge.net/apps/trac/w3af/ticket/'
     # Error report body
     WIKI_DETAILS_TEMPLATE = string.Template(
-'''== User description: ==
+        '''== User description: ==
 $user_desc
 [[BR]][[BR]]
 == Version Information: ==
@@ -59,19 +60,19 @@ $t_back
 {{{
 $plugins
 }}}''')
-    
+
     def __init__(self, username=None, passwd=None):
         self.username = username or ''
         self.passwd = passwd or ''
         self.logged_in = False
-    
+
     def login(self):
         raise NotImplementedError
-    
+
     def report_bug(self, summary, userdesc, tback='',
                    fname=None, plugins='', autogen=True):
         raise NotImplementedError
-    
+
     def _build_summary_and_desc(self, summary, desc, tback,
                                 fname, plugins, autogen, email):
         '''
@@ -93,12 +94,12 @@ $plugins
                 m.update(time.ctime())
                 bug_summary = m.hexdigest()
 
-        # Generate the summary string. Concat 'user_title'. If empty, append a 
+        # Generate the summary string. Concat 'user_title'. If empty, append a
         # random token to avoid the double click protection added by sourceforge.
         summary = '%sBug Report - %s' % (
-                    autogen and '[Auto-Generated] ' or '',
-                    bug_summary)
-        
+            autogen and '[Auto-Generated] ' or '',
+            bug_summary)
+
         #
         #    Define which description to use (depending on the availability of an
         #    email provided by the user or not).
@@ -106,32 +107,31 @@ $plugins
         if email is not None:
             email_fmt = '\n\nThe user provided the following email address for contact: %s'
             desc += email_fmt % email
-            
+
         #
         #    Apply all the info
         #
         bdata = {'plugins': plugins, 't_back': tback,
                  'user_desc': desc, 'w3af_v': VERSIONS}
 
-       
         # Build details string
         details = self.WIKI_DETAILS_TEMPLATE.safe_substitute(bdata)
-        
+
         return summary, details
-        
+
 
 class SourceforgeXMLRPC(Sourceforge):
-    
+
     LOGIN_URL = "https://%s:%s@sourceforge.net/apps/trac/w3af/login/xmlrpc"
-        
+
     def __init__(self, username, passwd):
         Sourceforge.__init__(self, username, passwd)
         self._proxy = None
-    
+
     def login(self):
         self._proxy = xmlrpclib.ServerProxy(
-                    SourceforgeXMLRPC.LOGIN_URL % (self.username, self.passwd)
-                    )
+            SourceforgeXMLRPC.LOGIN_URL % (self.username, self.passwd)
+        )
         # Test if the login was successful
         try:
             self._proxy.system.listMethods()
@@ -146,75 +146,74 @@ class SourceforgeXMLRPC(Sourceforge):
     def report_bug(self, summary, userdesc, tback='',
                    fname=None, plugins='', autogen=True, email=None):
         assert self.logged_in, "You should login first"
-        
+
         summary, desc = self._build_summary_and_desc(
-                            summary, userdesc, tback, fname, plugins,
-                            autogen, email)
-        
+            summary, userdesc, tback, fname, plugins,
+            autogen, email)
+
         values = {
             'type': 'defect',
             'status': 'new',
             'component': 'automatic-bug-report',
             'milestone': '',
             'priority': 'major',
-            }
+        }
         try:
             newticket = self._proxy.ticket.create(summary, desc,
                                                   values, True)
             return str(newticket), self.CREATED_TKT + str(newticket)
         except xmlrpclib.ProtocolError:
             return None
-        
 
 
 class SourceforgeHTTP(Sourceforge):
-    
+
     # URLs
     LOGGED_IN_PROTOCOL = 'https'
     ANON_PROTOCOL = 'http'
-    
+
     LOGIN_PAGE = 'https://sourceforge.net/account/login.php'
     NEW_TKT_URL = '://sourceforge.net/apps/trac/w3af/newticket'
-    
+
     # Form token regex
     FORM_TOKEN_RE = 'name="__FORM_TOKEN"\svalue="(\w*?)"'
     # Created ticket regex
     NEW_TICKET_RE = '://sourceforge.net/apps/trac/w3af/attachment/ticket/(\d*?)\?action=new'
     NEW_ATTACHMENT_URL_FORMAT = 'http://sourceforge.net/apps/trac/w3af/attachment/ticket/%s/?action=new&attachfilebutton=Attach+file'
-    
+
     def __init__(self, username, passwd):
         '''
         This class is a wrapper for reporting bugs to sourceforge's TRAC
         using python.
-        
+
         @author: Andres Riancho (andres.riancho@gmail.com)
         '''
         Sourceforge.__init__(self, username, passwd)
-        
+
         # Init the urllib2 module
         self._init_urllib2_handlers()
-    
+
     def get_new_ticket_url(self):
         if self.logged_in:
             return self.LOGGED_IN_PROTOCOL + self.NEW_TKT_URL
         else:
             return self.ANON_PROTOCOL + self.NEW_TKT_URL
-    
+
     def get_ticket_re(self):
         if self.logged_in:
             return self.LOGGED_IN_PROTOCOL + self.NEW_TICKET_RE
         else:
             return self.ANON_PROTOCOL + self.NEW_TICKET_RE
-    
+
     def _init_urllib2_handlers(self):
         # Build the cookie handler
         cj = cookielib.LWPCookieJar()
         cookie_handler = urllib2.HTTPCookieProcessor(cj)
-        
+
         # Build the multipart post handler
         multi_handler = MultipartPostHandler.MultipartPostHandler()
         redir_handler = urllib2.HTTPRedirectHandler()
-        
+
         self.opener = urllib2.build_opener(multi_handler,
                                            cookie_handler,
                                            redir_handler)
@@ -222,20 +221,20 @@ class SourceforgeHTTP(Sourceforge):
     def login(self):
         '''
         Perform a login to the sourceforge page using the provided user and password.
-        
+
         Once the user has logged in, the session is kept using the urllib2 cookie handler,
         nothing special has to be done regarding that.
-        
+
         @param user: The user
         @param passwd: The password
-        
+
         @return: True if successful login, false otherwise.
         '''
         values = {'return_to': '',
-            'ssl_status': '',
-            'form_loginname': self.username, 
-            'form_pw': self.passwd,
-            'login': 'Log in'}
+                  'ssl_status': '',
+                  'form_loginname': self.username,
+                  'form_pw': self.passwd,
+                  'login': 'Log in'}
         try:
             resp = self._do_request(self.LOGIN_PAGE, values)
         except:
@@ -243,13 +242,12 @@ class SourceforgeHTTP(Sourceforge):
         else:
             self.logged_in = 'Invalid username or password' not in resp.read()
             return self.logged_in
-        
-            
+
     def report_bug(self, summary, userdesc, tback='', fname=None,
                    plugins='', autogen=True, user=None):
         '''
         I use urllib2 instead of the w3af wrapper, because the error may be in there!
-        
+
         @param summary: The title that the user wants to use in the bug report
         @param userdesc: The description for the bug that was provided by the
             user
@@ -259,20 +257,20 @@ class SourceforgeHTTP(Sourceforge):
         @param plugins: Formatted string with the activated plugins.
         @param autogen: Whether this bug was automatically generated, i.e.,
             w3af crashed.
-        
+
         @return: The new ticket URL if the bug report was successful, or None
             if something failed.
-        
-        '''
-        
-        summary, details = self._build_summary_and_desc(
-                    summary, userdesc, tback, fname, plugins, autogen
-                    )
 
-        resp = self._do_request( self.get_new_ticket_url() )
+        '''
+
+        summary, details = self._build_summary_and_desc(
+            summary, userdesc, tback, fname, plugins, autogen
+        )
+
+        resp = self._do_request(self.get_new_ticket_url())
         form_token = self._get_match_from_response(
-                                        resp.read(), self.FORM_TOKEN_RE) or ''
-        
+            resp.read(), self.FORM_TOKEN_RE) or ''
+
         values = {
             'field_component': 'automatic-bug-report',
             'field_milestone': '',
@@ -287,21 +285,22 @@ class SourceforgeHTTP(Sourceforge):
             'attachment': 'off',
             'submit': 'Create ticket'}
 
-        resp = self._do_request( self.get_new_ticket_url(), values)
-        
+        resp = self._do_request(self.get_new_ticket_url(), values)
+
         # If everything went well a ticket_id must be present
-        match = re.search( self.get_ticket_re(), resp.geturl() )
+        match = re.search(self.get_ticket_re(), resp.geturl())
         if match:
             ticket_id = match.group(1)
 
             if fname:
                 NEW_ATTACHMENT_URL = self.NEW_ATTACHMENT_URL_FORMAT % ticket_id
-                self._attach_file(NEW_ATTACHMENT_URL, ticket_id, fname, form_token)
-                
+                self._attach_file(
+                    NEW_ATTACHMENT_URL, ticket_id, fname, form_token)
+
             return ticket_id, self.CREATED_TKT + ticket_id
-        
+
         return None, None
-        
+
     def _attach_file(self, url, ticket_id, filename, form_token):
         '''
         Attach file to ticket <ticket_id>
@@ -315,14 +314,13 @@ class SourceforgeHTTP(Sourceforge):
             'id': [ticket_id],
             'author': [getattr(self, 'logged_in_user', 'anonymous')],
             'submit': ['Add attachment']}
-        
+
         req = urllib2.Request(url, values)
-        req.add_header( 'Referer', url )
+        req.add_header('Referer', url)
         self.opener.open(req)
-        
-    
+
     def _get_match_from_response(self, response_body, pattern):
-        '''Try to match <pattern> in the response's body. Return the 
+        '''Try to match <pattern> in the response's body. Return the
         matched string. If no match is found return None.
         '''
         mo = re.search(pattern, response_body)

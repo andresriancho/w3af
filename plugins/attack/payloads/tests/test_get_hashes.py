@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_get_hashes(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {}
 
     def test_get_hashes(self):
         result = exec_payload(self.shell, 'get_hashes', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

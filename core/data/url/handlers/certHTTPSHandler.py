@@ -24,61 +24,63 @@ import urllib2
 import httplib
 import core.controllers.output_manager as om
 
-class certHTTPSConnection( httplib.HTTPSConnection ):
+
+class certHTTPSConnection(httplib.HTTPSConnection):
     '''
     An HTTPSConnection abstraction for easy integration with urllib2.
-    
+
     #FIXME: This file ain't used, because it wasn't actually working!
     '''
     key_file = None
     cert_file = None
-    
-    def __init__( self, host, port=None, strict=None ):
-        httplib.HTTPSConnection.__init__( self, host, port, self.key_file, self.cert_file, strict)
+
+    def __init__(self, host, port=None, strict=None):
+        httplib.HTTPSConnection.__init__(
+            self, host, port, self.key_file, self.cert_file, strict)
         #om.out.debug('Called __init__ of certHTTPSConnection.')
 
-class certHTTPSHandler( urllib2.HTTPSHandler ):
+
+class certHTTPSHandler(urllib2.HTTPSHandler):
     '''
     An https handler for urllib2 that knows what to do with cert and key files.
     '''
-    def __init__( self, debuglevel = 0 ):
-        urllib2.HTTPSHandler.__init__( self, debuglevel )
+    def __init__(self, debuglevel=0):
+        urllib2.HTTPSHandler.__init__(self, debuglevel)
         self._sslCertFile = None
         self._sslKeyFile = None
         om.out.debug('Called __init__ of certHTTPSHandler.')
-        
-    def getSSLKeyFile( self ):
+
+    def getSSLKeyFile(self):
         '''
         @return: A string with the SSL key path and filename.
         '''
         return self._sslKeyFile
-        
-    def setSSLKeyFile( self, keyFile ):
+
+    def setSSLKeyFile(self, keyFile):
         '''
         @param keyFile: A string with the SSL key path and filename.
         @return: None
-        ''' 
+        '''
         self._sslKeyFile = keyFile
-        
-    def getSSLCertFile( self ):
+
+    def getSSLCertFile(self):
         '''
         @return: A string with the SSL cert path and filename.
         '''
         return self._sslCertFile
-        
-    def setSSLCertFile( self, file ):
+
+    def setSSLCertFile(self, file):
         '''
         @param file: A string with the SSL cert path and filename.
         @return: None
-        '''     
+        '''
         self._sslCertFile = file
-        
+
     def https_open(self, req):
         # Original
         #return self.do_open(httplib.HTTPSConnection, req)
-        
+
         # My version :P
         certHTTPSConnection.cert_file = self.getSSLCertFile()
         certHTTPSConnection.key_file = self.getSSLKeyFile()
         return self.do_open(certHTTPSConnection, req)
-

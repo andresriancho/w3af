@@ -27,29 +27,29 @@ import core.data.parsers.document_parser as DocumentParser
 from core.controllers.misc.lru import LRU
 
 DEBUG = False
-    
+
 
 class dpCache(object):
     '''
     This class is a document parser cache.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     LRU_LENGTH = 40
-    
+
     def __init__(self):
         self._cache = LRU(self.LRU_LENGTH)
         self._LRULock = threading.RLock()
-        
+
         # These are here for debugging:
         self._archive = set()
         self._from_LRU = 0.0
         self._calculated_more_than_once = 0.0
         self._total = 0.0
-                
+
     def get_document_parser_for(self, HTTPResponse):
         res = None
-        
+
         #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with
         #   python's hash functions and this is what I got:
         #
@@ -69,38 +69,37 @@ class dpCache(object):
         #
         self._total += 1
         hash_string = hash(HTTPResponse.body)
-        
+
         with self._LRULock:
             if hash_string in self._cache:
-                res = self._cache[ hash_string ]
+                res = self._cache[hash_string]
                 self._debug_in_cache(hash_string)
             else:
                 # Create a new instance of dp, add it to the cache
                 res = DocumentParser.DocumentParser(HTTPResponse)
-                self._cache[ hash_string ] = res
+                self._cache[hash_string] = res
                 self._debug_not_in_cache(hash_string)
             return res
-    
+
     def _debug_not_in_cache(self, hash_string):
         if DEBUG:
             if hash_string in self._archive:
-                print hash_string,'calculated and was in archive. (harmful)'
+                print hash_string, 'calculated and was in archive. (harmful)'
                 self._calculated_more_than_once += 1
             else:
-                print hash_string,'calculated for the first time and cached. (good)'
+                print hash_string, 'calculated for the first time and cached. (good)'
                 self._archive.add(hash_string)
-                
+
     def _debug_in_cache(self, hash_string):
         if DEBUG:
             if hash_string in self._archive:
-                print hash_string,'return from LRU and was in archive. (good)'
+                print hash_string, 'return from LRU and was in archive. (good)'
                 self._from_LRU += 1
-        
-    
+
     def __del__(self):
         if DEBUG:
-            print 'dpCache LRU rate: %s' % (self._from_LRU/self._total)
-            print 'dpCache re-calculation rate: %s' % (self._calculated_more_than_once/self._total)
+            print 'dpCache LRU rate: %s' % (self._from_LRU / self._total)
+            print 'dpCache re-calculation rate: %s' % (self._calculated_more_than_once / self._total)
             print 'dpCache size: %s' % self.LRU_LENGTH
-    
+
 dpc = dpCache()

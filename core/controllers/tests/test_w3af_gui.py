@@ -29,4 +29,3 @@ class TestW3afGUI(unittest.TestCase):
             compiler.compile(file('w3af_gui').read(), '/tmp/foo.tmp', 'exec')
         except SyntaxError, se:
             self.assertTrue(False, 'Error in w3af_gui code "%s"' % se)
-        

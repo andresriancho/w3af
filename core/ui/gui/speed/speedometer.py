@@ -1,5 +1,7 @@
 import pygtk
-import gtk, gobject, cairo
+import gtk
+import gobject
+import cairo
 from gtk import gdk
 import pango
 import random
@@ -7,10 +9,11 @@ import random
 MIN_SPEED = 0
 MAX_SPEED = 400
 
-class speedometer( gtk.DrawingArea ):
+
+class speedometer(gtk.DrawingArea):
     def __init__(self):
-        super(speedometer,self).__init__()
-        self.connect ( "expose_event", self.do_expose_event )
+        super(speedometer, self).__init__()
+        self.connect("expose_event", self.do_expose_event)
 
         # x,y is where I'm at
         self.x, self.y = -13, -9
@@ -25,23 +28,24 @@ class speedometer( gtk.DrawingArea ):
         self._current_speed = self._old_speed = 0
 
         # This is what gives the animation life!
-        gobject.timeout_add( 2000, self.tick )
+        gobject.timeout_add(2000, self.tick)
 
-    def tick ( self ):
+    def tick(self):
         # First I get a new speed from the "core"
         self._old_speed = self._current_speed
 
-        self._current_speed = random.randint(MIN_SPEED,MAX_SPEED)
+        self._current_speed = random.randint(MIN_SPEED, MAX_SPEED)
 
         # This invalidates the screen, causing the expose event to fire.
-        self.alloc = self.get_allocation ( )
-        rect = gtk.gdk.Rectangle ( self.alloc.x, self.alloc.y, self.alloc.width, self.alloc.height )
-        self.window.invalidate_rect ( rect, True )
+        self.alloc = self.get_allocation()
+        rect = gtk.gdk.Rectangle(
+            self.alloc.x, self.alloc.y, self.alloc.width, self.alloc.height)
+        self.window.invalidate_rect(rect, True)
 
-        return True # Causes timeout to tick again.
+        return True  # Causes timeout to tick again.
 
     # When expose event fires, this is run
-    def do_expose_event( self, widget, event ):
+    def do_expose_event(self, widget, event):
 
         # Create a context for the arrow
         self.arrow_ctx = self.window.cairo_create()
@@ -53,13 +57,14 @@ class speedometer( gtk.DrawingArea ):
         self.text_ctx = self.window.cairo_create()
 
         # Call our draw function to do stuff.
-        self.draw( *self.window.get_size( ) )
+        self.draw(*self.window.get_size())
 
-    def draw( self, width, height ):
+    def draw(self, width, height):
         # First we draw the background
-        matrix = cairo.Matrix ( 1, 0, 0, 1, width/2 - 126, height/2 - 126) #126 is image width/2
-        self.background_ctx.transform ( matrix ) # Make it so...
-        self.draw_image( self.background_ctx, 0, 0, 'speedometer.png' )
+        matrix = cairo.Matrix(1, 0, 0, 1, width / 2 - 126,
+                              height / 2 - 126)  # 126 is image width/2
+        self.background_ctx.transform(matrix)  # Make it so...
+        self.draw_image(self.background_ctx, 0, 0, 'speedometer.png')
 
         # Now we draw the requests per second
         self.draw_text()
@@ -75,40 +80,42 @@ class speedometer( gtk.DrawingArea ):
         #  -x | +x
         #  +y | +y
 
-        matrix = cairo.Matrix ( 1, 0, 0, 1, width/2, height/2 )
-        cr.transform ( matrix ) # Make it so...
+        matrix = cairo.Matrix(1, 0, 0, 1, width / 2, height / 2)
+        cr.transform(matrix)  # Make it so...
 
         # Now save that situation so that we can mess with it.
         # This preserves the last context ( the one at 0,0)
         # and let's us do new stuff.
-        cr.save ( )
+        cr.save()
 
         # Now attempt to rotate something around a point
         # Use a matrix to change the shape's position and rotation.
 
         # First, make a matrix. Don't look at me, I only use this stuff :)
-        ThingMatrix = cairo.Matrix ( 1, 0, 0, 1, 0, 0 )
+        ThingMatrix = cairo.Matrix(1, 0, 0, 1, 0, 0)
 
         # Next, move the drawing to it's x,y
-        cairo.Matrix.translate ( ThingMatrix, self.x, self.y )
-        cr.transform ( ThingMatrix ) # Changes the context to reflect that
+        cairo.Matrix.translate(ThingMatrix, self.x, self.y)
+        cr.transform(ThingMatrix)  # Changes the context to reflect that
 
         # Now, change the matrix again to:
-        cairo.Matrix.translate( ThingMatrix, self.rx, self.ry ) # move it all to point of rotation
-        cairo.Matrix.rotate( ThingMatrix, self.rot ) # Do the rotation
-        cairo.Matrix.translate( ThingMatrix, -self.rx, -self.ry ) # move it back again
-        cairo.Matrix.scale( ThingMatrix, self.sx, self.sy ) # Now scale it all
-        cr.transform ( ThingMatrix ) # and commit it to the context
+        cairo.Matrix.translate(
+            ThingMatrix, self.rx, self.ry)  # move it all to point of rotation
+        cairo.Matrix.rotate(ThingMatrix, self.rot)  # Do the rotation
+        cairo.Matrix.translate(
+            ThingMatrix, -self.rx, -self.ry)  # move it back again
+        cairo.Matrix.scale(ThingMatrix, self.sx, self.sy)  # Now scale it all
+        cr.transform(ThingMatrix)  # and commit it to the context
 
-        # Now, whatever is draw is "under the influence" of the 
+        # Now, whatever is draw is "under the influence" of the
         # context and all that matrix magix we just did.
-        self.draw_image( cr, 0, 0, 'arrow.png' )
+        self.draw_image(cr, 0, 0, 'arrow.png')
 
         # Based on the current speed, and the current angle of the arrow I have to calculate
         # the angle to rotate (positive or negative).
 
         # I know that from min to max, we have 4.2.
-        # I know that 
+        # I know that
         step = 4.2 / MAX_SPEED
         if self._current_speed >= self._old_speed:
             # I have to rotate right (+)
@@ -120,26 +127,27 @@ class speedometer( gtk.DrawingArea ):
         print self.rot
 
         # Now mess with scale too
-        self.sx += 0 # Change to 0 to see if rotation is working...
-        if self.sx > 4: self.sx=0.5
+        self.sx += 0  # Change to 0 to see if rotation is working...
+        if self.sx > 4:
+            self.sx = 0.5
         self.sy = self.sx
 
         # We restore to a clean context, to undo all that hocus-pocus
-        cr.restore ( )
+        cr.restore()
 
-    def draw_text( self ):
-        self._layout = self.create_pango_layout( str(self._current_speed) + ' req/second')
+    def draw_text(self):
+        self._layout = self.create_pango_layout(
+            str(self._current_speed) + ' req/second')
         self._layout.set_font_description(pango.FontDescription("Arial 13"))
         fontw, fonth = self._layout.get_pixel_size()
         self.text_ctx.move_to(150, 243)
-        self.text_ctx.set_source_color(gtk.gdk.Color(255,255,255)) 
+        self.text_ctx.set_source_color(gtk.gdk.Color(255, 255, 255))
         self.text_ctx.update_layout(self._layout)
         self.text_ctx.show_layout(self._layout)
 
-
-    def draw_image( self, ctx, x, y, image_file ):
+    def draw_image(self, ctx, x, y, image_file):
         ctx.save()
-        ctx.translate(x, y)	
+        ctx.translate(x, y)
         pixbuf = gtk.gdk.pixbuf_new_from_file(image_file)
         format = cairo.FORMAT_RGB24
         if pixbuf.get_has_alpha():
@@ -157,15 +165,14 @@ class speedometer( gtk.DrawingArea ):
         ctx.clip()
 
 
-def run( Widget ):
-    window = gtk.Window( )
-    window.connect( "delete-event", gtk.main_quit )
-    window.set_size_request ( 400, 400 )
-    widget = Widget( )
-    widget.show( )
-    window.add( widget )
-    window.present( )
-    gtk.main( )
+def run(Widget):
+    window = gtk.Window()
+    window.connect("delete-event", gtk.main_quit)
+    window.set_size_request(400, 400)
+    widget = Widget()
+    widget.show()
+    window.add(widget)
+    window.present()
+    gtk.main()
 
-run( speedometer )
-
+run(speedometer)

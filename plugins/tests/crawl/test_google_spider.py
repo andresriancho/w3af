@@ -23,29 +23,29 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGoogleSpider(PluginTest):
-    
+
     base_url = 'http://www.bonsai-sec.com/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('google_spider'),)}
-            }
         }
-    
+    }
+
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         EXPECTED_URLS = (
             'es/education/', 'en/clients/', 'es/', 'services/',
             'research/', 'blog/', 'education/', 'es/research/',
             'blog', 'es/clients/',
-                        )
-        
+        )
+
         urls = self.kb.get('urls', 'url_objects')
-        
+
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.base_url + end) for end in EXPECTED_URLS)
-                )
+            set(str(u) for u in urls),
+            set((self.base_url + end) for end in EXPECTED_URLS)
+        )

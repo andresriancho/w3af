@@ -45,6 +45,6 @@ class TestAll(unittest.TestCase):
         self.assertEqual(OK, OK)
         self.assertEqual(HIGH, HIGH)
         self.assertEqual(IGNORED_PARAMETERS, IGNORED_PARAMETERS)
-        
+
         self.assertIn('ar', GTOP_LEVEL_DOMAINS)
         self.assertIn('py', GTOP_LEVEL_DOMAINS)

@@ -36,8 +36,9 @@ def _return_html_encoded(encodingexc):
     st = encodingexc.start
     en = encodingexc.end
     hex_encoded = "".join(hex(ord(c))[2:] for c in encodingexc.object[st:en])
-    
-    return (unicode('&#x' + hex_encoded ), en)
+
+    return (unicode('&#x' + hex_encoded), en)
+
 
 def _return_escaped_char(encodingexc):
     '''
@@ -49,13 +50,14 @@ def _return_escaped_char(encodingexc):
     slash_x_XX = repr(encodingexc.object[st:en])[1:-1]
     return (unicode(slash_x_XX), en)
 
+
 def _percent_encode(encodingexc):
     if not isinstance(encodingexc, UnicodeEncodeError):
         raise encodingexc
-    
+
     st = encodingexc.start
     en = encodingexc.end
-    
+
     return (
         u'%s' % (urllib.quote(encodingexc.object[st:en].encode('utf8')),),
         en
@@ -103,10 +105,10 @@ def smart_str(s, encoding='utf-8', errors='strict'):
     return s
 
 
-def is_known_encoding( encoding ):
+def is_known_encoding(encoding):
     '''
     @return: True if the encoding name is known.
-    
+
     >>> is_known_encoding( 'foo' )
     False
     >>> is_known_encoding( 'utf-8' )
@@ -118,4 +120,3 @@ def is_known_encoding( encoding ):
         return False
     else:
         return True
-        

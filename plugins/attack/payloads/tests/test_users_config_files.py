@@ -23,11 +23,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_users_config_files(PayloadTestHelper):
-    
-    EXPECTED_RESULT = set([u'/home/moth/.profile', u'/home/moth/.bashrc', 
+
+    EXPECTED_RESULT = set([u'/home/moth/.profile', u'/home/moth/.bashrc',
                            u'/home/moth/.bash_logout'])
 
     def test_users_config_files(self):
         result = exec_payload(self.shell, 'users_config_files', use_api=True)
-        self.assertEquals(self.EXPECTED_RESULT, set(result.keys()) )
-        
+        self.assertEquals(self.EXPECTED_RESULT, set(result.keys()))

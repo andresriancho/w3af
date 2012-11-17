@@ -35,7 +35,7 @@ class bing(SearchEngine):
     '''
     BLACKLISTED_DOMAINS = set(['cc.bingj.com', 'www.microsofttranslator.com',
                                'onlinehelp.microsoft.com', 'go.microsoft.com'])
-    
+
     def __init__(self, urlOpener):
         SearchEngine.__init__(self)
         self._uri_opener = urlOpener
@@ -51,38 +51,38 @@ class bing(SearchEngine):
             '''
             Dummy class that represents the search result.
             '''
-            def __init__( self, url ):
+            def __init__(self, url):
                 if not isinstance(url, URL):
                     msg = 'The url __init__ parameter of a BingResult object must'
                     msg += ' be of url.URL type.'
-                    raise ValueError( msg )
+                    raise ValueError(msg)
 
                 self.URL = url
-            
+
             def __repr__(self):
                 return '<bing result %s>' % self.URL
 
         url = 'http://www.bing.com/search?'
-        query = urllib.urlencode({'q':query, 'first':start+1, 'FORM':'PERE'})
-        url_instance = URL(url+query)
-        response = self._uri_opener.GET( url_instance, headers=self._headers,
-                                         cache=True, grep=False)
-        
+        query = urllib.urlencode(
+            {'q': query, 'first': start + 1, 'FORM': 'PERE'})
+        url_instance = URL(url + query)
+        response = self._uri_opener.GET(url_instance, headers=self._headers,
+                                        cache=True, grep=False)
 
         # This regex might become outdated, but the good thing is that we have
         # test_bing.py which is going to fail and tell us that it's outdated
-        re_match = re.findall('<a href="((http|https)(.*?))" h="ID=SERP,', 
+        re_match = re.findall('<a href="((http|https)(.*?))" h="ID=SERP,',
                               response.getBody())
-        
+
         results = []
-        
-        for url, _,_ in re_match:
+
+        for url, _, _ in re_match:
             try:
                 url = URL(url)
             except:
                 pass
             else:
                 if url.getDomain() not in self.BLACKLISTED_DOMAINS:
-                    results.append(BingResult( url ))
+                    results.append(BingResult(url))
 
         return results

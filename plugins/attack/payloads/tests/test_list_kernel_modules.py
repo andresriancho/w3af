@@ -23,10 +23,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_list_kernel_modules(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = set(['ext2', 'lp', 'snd', 'parport_pc', 'vesafb'])
-    
+
     def test_list_kernel_modules(self):
         result = exec_payload(self.shell, 'list_kernel_modules', use_api=True)
-        self.assertTrue( set(result.keys()).issuperset(self.EXPECTED_RESULT), result.keys() )
-        
+        self.assertTrue(set(
+            result.keys()).issuperset(self.EXPECTED_RESULT), result.keys())

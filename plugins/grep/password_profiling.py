@@ -32,96 +32,94 @@ from core.controllers.misc.factory import factory
 class password_profiling(GrepPlugin):
     '''
     Create a list of possible passwords by reading HTTP response bodies.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    COMMON_WORDS = {'en': set([ 'type', 'that', 'from', 'this', 'been', 'there',
-                                'which', 'line', 'error', 'warning', 'file',
-                                'fatal', 'failed', 'open', 'such', 'required', 
-                                'directory', 'valid', 'result', 'argument',
-                                'there', 'some']),
-                    
-                    'es': set([ 'otro', 'otra', 'para', 'pero', 'hacia', 'algo',
-                                'poder','error']),
-                    
+    COMMON_WORDS = {'en': set(['type', 'that', 'from', 'this', 'been', 'there',
+                               'which', 'line', 'error', 'warning', 'file',
+                               'fatal', 'failed', 'open', 'such', 'required',
+                               'directory', 'valid', 'result', 'argument',
+                               'there', 'some']),
+
+                    'es': set(['otro', 'otra', 'para', 'pero', 'hacia', 'algo',
+                               'poder', 'error']),
+
                     }
     COMMON_WORDS['unknown'] = COMMON_WORDS['en']
-    
+
     BANNED_WORDS = set(['forbidden', 'browsing', 'index'])
-    
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        kb.kb.save( self, 'password_profiling', {} )
-        
+        kb.kb.save(self, 'password_profiling', {})
+
         #TODO: develop more plugins, there is a, pure-python metadata reader named
         #      hachoir-metadata it will be useful for writing A LOT of plugins
-        
+
         # Plugins to run
         self._plugins_names_dict = ['html', 'pdf']
         self._plugins = []
-        
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point. Get responses, analyze words, create dictionary.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None.
         '''
         # Initial setup
-        lang = kb.kb.get( 'lang', 'lang' ) or 'unknown'
+        lang = kb.kb.get('lang', 'lang') or 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
         if response.getCode() not in [500, 401, 403, 404] \
-        and not is_404(response) \
-        and request.get_method() in ['POST', 'GET']:
-            
+            and not is_404(response) \
+                and request.get_method() in ['POST', 'GET']:
+
             # Run the plugins
             data = self._run_plugins(response)
-            
+
             with self._plugin_lock:
-                old_data = kb.kb.get( 'password_profiling', 'password_profiling' )
-                
+                old_data = kb.kb.get(
+                    'password_profiling', 'password_profiling')
+
                 # "merge" both maps and update the repetitions
                 for d in data:
-                    
+
                     if len(d) >= 4 and d.isalnum() and \
                         not d.isdigit() and \
                         d.lower() not in self.BANNED_WORDS and \
                         d.lower() not in self.COMMON_WORDS[lang] and \
-                        not request.sent( d ):
-                        
+                            not request.sent(d):
+
                         if d in old_data:
-                            old_data[ d ] += data[ d ]
+                            old_data[d] += data[d]
                         else:
-                            old_data[ d ] = data[ d ]
-                
-                #   If the dict grows a lot, I want to trim it. Basically, if 
+                            old_data[d] = data[d]
+
+                #   If the dict grows a lot, I want to trim it. Basically, if
                 #   it grows to a length of more than 2000 keys, I'll trim it
                 #   to 1000 keys.
-                if len( old_data ) > 2000:
+                if len(old_data) > 2000:
                     def sortfunc(x_obj, y_obj):
                         return cmp(y_obj[1], x_obj[1])
-                
+
                     items = old_data.items()
                     items.sort(sortfunc)
-                    
+
                     items = items[:1000]
-                    
+
                     new_data = {}
                     for key, value in items:
                         new_data[key] = value
-                        
+
                 else:
                     new_data = old_data
-                
+
                 # save the updated map
                 kb.kb.save(self, 'password_profiling', new_data)
 
-    
-    def _run_plugins( self, response ):
+    def _run_plugins(self, response):
         '''
         Runs password profiling plugins to collect data from HTML, TXT, PDF, etc files.
         @param response: A HTTPResponse object
@@ -131,61 +129,61 @@ class password_profiling(GrepPlugin):
         if not self._plugins:
             for plugin_name in self._plugins_names_dict:
                 plugin_klass = 'plugins.grep.password_profiling_plugins.%s'
-                plugin_instance = factory( plugin_klass % plugin_name )
-                self._plugins.append( plugin_instance )
-        
+                plugin_instance = factory(plugin_klass % plugin_name)
+                self._plugins.append(plugin_instance)
+
         res = {}
         for plugin in self._plugins:
-            wordMap = plugin.getWords( response )
+            wordMap = plugin.getWords(response)
             if wordMap is not None:
                 # If a plugin returned something thats not None, then we are done.
-                # this plugins only return a something different of None of they 
+                # this plugins only return a something different of None of they
                 # found something
                 res = wordMap
                 break
-        
+
         return res
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         def sortfunc(x_obj, y_obj):
             return cmp(y_obj[1], x_obj[1])
-        
-        profiling_data = kb.kb.get( 'password_profiling', 'password_profiling' )
-        
-        # This fixes a very strange bug where for some reason the kb doesn't 
+
+        profiling_data = kb.kb.get('password_profiling', 'password_profiling')
+
+        # This fixes a very strange bug where for some reason the kb doesn't
         # have a dict anymore (threading issue most likely) Seen here:
         # https://sourceforge.net/apps/trac/w3af/ticket/171745
         if isinstance(profiling_data, dict):
 
             items = profiling_data.items()
-            if len( items ) != 0:
-            
+            if len(items) != 0:
+
                 items.sort(sortfunc)
                 om.out.information('Password profiling TOP 100:')
-                
+
                 list_length = len(items)
                 if list_length > 100:
                     xLen = 100
                 else:
                     xLen = list_length
-                
-                for i in xrange(xLen):
-                    msg = '- [' + str(i + 1) + '] ' + items[i][0] + ' with ' + str(items[i][1]) 
-                    msg += ' repetitions.'
-                    om.out.information( msg )
-            
 
-    def get_plugin_deps( self ):
+                for i in xrange(xLen):
+                    msg = '- [' + str(i + 1) + '] ' + items[
+                        i][0] + ' with ' + str(items[i][1])
+                    msg += ' repetitions.'
+                    om.out.information(msg)
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.lang']
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

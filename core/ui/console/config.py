@@ -26,7 +26,7 @@ from core.ui.console.util import suggest
 from core.controllers.plugins.plugin import Plugin
 from core.controllers.exceptions import w3afException
 
-        
+
 class configMenu(menu):
     '''
     Generic menu for configuring the configurable items.
@@ -49,7 +49,6 @@ class configMenu(menu):
             self._optDict[k] = o
         self._groupOptionsByTabId()
         self._loadHelp('config')
-      
 
     def _cmd_view(self, params):
         #col1Len = max([len(o) for o in self._options.keys()]) + 4
@@ -57,14 +56,14 @@ class configMenu(menu):
         table = [['Setting', 'Value', 'Description']]
         for tabid in self._tabbedOptions.keys():
             tabOpts = self._tabbedOptions[tabid]
-            table += [[o, tabOpts[o].get_value_str(), tabOpts[o].get_desc()] \
-                for o in tabOpts ]           
+            table += [[o, tabOpts[o].get_value_str(), tabOpts[o].get_desc()]
+                      for o in tabOpts]
             table.append([])
         if len(table) > 1:
             table.pop()
         self._console.drawTable(table, True)
 
-    def _groupOptionsByTabId(self):      
+    def _groupOptionsByTabId(self):
         self._tabbedOptions = {}
         for opt in self._options:
             tabid = opt.get_tabid()
@@ -74,7 +73,7 @@ class configMenu(menu):
                 self._tabbedOptions[tabid] = target
             else:
                 target = self._tabbedOptions[tabid]
-            
+
             target[opt.get_name()] = opt
 
     def _cmd_set(self, params):
@@ -87,27 +86,27 @@ class configMenu(menu):
             name = params[0]
             value = ''.join(params[1:])
 
-            self._options[name].set_value( value )
+            self._options[name].set_value(value)
             self._plainOptions[name] = value
-                            
-            if isinstance( self._configurable, Plugin ):
-                self._w3af.plugins.set_plugin_options( self._configurable.get_type(),
-                                                     self._configurable.get_name(),
-                                                     self._options )
+
+            if isinstance(self._configurable, Plugin):
+                self._w3af.plugins.set_plugin_options(
+                    self._configurable.get_type(),
+                    self._configurable.get_name(),
+                    self._options)
                 if value not in self._memory[name]:
-                    self._memory[name].append(value)                
+                    self._memory[name].append(value)
             else:
                 try:
-                    self._configurable.set_options( self._options )
+                    self._configurable.set_options(self._options)
                     if value not in self._memory[name]:
-                        self._memory[name].append(value)                    
+                        self._memory[name].append(value)
                 except w3afException, w3:
-                    om.out.error( str(w3) )
-
+                    om.out.error(str(w3))
 
     def _para_set(self, params, part):
         if len(params) == 0:
-            result = suggest( [ i.get_name() for i in self._options] , part)
+            result = suggest([i.get_name() for i in self._options], part)
             return result
         elif len(params) == 1:
             paramName = params[0]
@@ -117,24 +116,24 @@ class configMenu(menu):
             opt = self._options[paramName]
             paramType = opt.get_type()
             if paramType == 'boolean':
-                values = [ opt.get_default_value() == 'True' and 'False' or 'True']
+                values = [opt.get_default_value(
+                ) == 'True' and 'False' or 'True']
             else:
                 values = self._memory[paramName]
-
 
             return suggest(values, part)
         else:
             return []
 
-
     def _cmd_help(self, params):
-        if len(params)==1:
+        if len(params) == 1:
             optName = params[0]
             if optName in self._optDict:
                 opt = self._optDict[optName]
                 om.out.console(opt.get_desc())
                 om.out.console("Type: %s" % opt.get_type())
-                om.out.console("Current value is: %s" % opt.get_default_value())
+                om.out.console(
+                    "Current value is: %s" % opt.get_default_value())
                 return
 
         menu._cmd_help(self, params)

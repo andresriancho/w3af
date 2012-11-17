@@ -28,33 +28,35 @@ from core.data.parsers.url import URL
 class TestVariantIdentification(unittest.TestCase):
 
     def test_eq(self):
-        self.assertTrue( are_variants(URL('http://w3af.com/foo.php'),
-                                      URL('http://w3af.com/foo.php')))
-    
+        self.assertTrue(are_variants(URL('http://w3af.com/foo.php'),
+                                     URL('http://w3af.com/foo.php')))
+
     def test_diff_params(self):
-        self.assertFalse( are_variants(URL('http://w3af.com/foo.php?x=1'),
-                                       URL('http://w3af.com/foo.php?y=1')))
+        self.assertFalse(are_variants(URL('http://w3af.com/foo.php?x=1'),
+                                      URL('http://w3af.com/foo.php?y=1')))
 
     def test_diff_file_param(self):
-        self.assertFalse( are_variants(URL('http://w3af.com/bar.php?id=1'),
-                                       URL('http://w3af.com/foo.php?foo=1')))
-    
+        self.assertFalse(are_variants(URL('http://w3af.com/bar.php?id=1'),
+                                      URL('http://w3af.com/foo.php?foo=1')))
+
     def test_diff_domain(self):
-        self.assertFalse( are_variants(URL('http://w3af.com/foo.php?id=1'),
-                                       URL('http://bonsai-sec.com/foo.php?id=1')))
-    
+        self.assertFalse(are_variants(URL('http://w3af.com/foo.php?id=1'),
+                                      URL('http://bonsai-sec.com/foo.php?id=1')))
+
     def test_diff_domain_params(self):
-        self.assertFalse( are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
-                                       URL('http://rapid7.com/foo.php?id=1')))
-    
+        self.assertFalse(
+            are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
+                         URL('http://rapid7.com/foo.php?id=1')))
+
     def test_same_params_diff_values(self):
-        self.assertTrue( are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
-                                      URL('http://w3af.com/foo.php?id=333&foo=spam')))
-    
+        self.assertTrue(
+            are_variants(URL('http://w3af.com/foo.php?id=1&foo=bar'),
+                         URL('http://w3af.com/foo.php?id=333&foo=spam')))
+
     def test_same_param_diff_value_type(self):
-        self.assertFalse( are_variants(URL('http://w3af.com/foo.php?id=1111'),
-                                       URL('http://w3af.com/foo.php?id=spam')))
-    
+        self.assertFalse(are_variants(URL('http://w3af.com/foo.php?id=1111'),
+                                      URL('http://w3af.com/foo.php?id=spam')))
+
     def test_raises(self):
         self.assertRaises(AttributeError, are_variants,
                           'http://w3af.com/foo.php?id=1',

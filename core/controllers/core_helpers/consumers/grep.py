@@ -29,39 +29,41 @@ class grep(BaseConsumer):
     Consumer thread that takes requests and responses from the queue and
     analyzes them using the user-enabled grep plugins.
     '''
-    
+
     def __init__(self, grep_plugins, w3af_core):
         '''
         @param in_queue: The input queue that will feed the grep plugins
         @param grep_plugins: Instances of grep plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(grep, self).__init__(grep_plugins, w3af_core, thread_name='Greper')
-            
+        super(grep, self).__init__(grep_plugins, w3af_core,
+                                   thread_name='Greper')
+
     def run(self):
         '''
         Consume the queue items
         '''
         while True:
-           
+
             work_unit = self.in_queue.get()
 
             if work_unit == POISON_PILL:
-                
+
                 for plugin in self._consumer_plugins:
                     plugin.end()
-                
+
                 self.in_queue.task_done()
-                
+
                 break
-                
+
             else:
                 request, response = work_unit
 
                 for grep_plugin in self._consumer_plugins:
                     try:
-                        grep_plugin.grep_wrapper( request, response )
+                        grep_plugin.grep_wrapper(request, response)
                     except Exception, e:
-                        self.handle_exception('grep', plugin.get_name(), request, e)
-                
+                        self.handle_exception(
+                            'grep', plugin.get_name(), request, e)
+
                 self.in_queue.task_done()

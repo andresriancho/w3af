@@ -35,27 +35,26 @@ except ImportError:
         print 'It seems that your python installation doesn\'t have element tree',
         print 'installed. Please install it and run w3af again.'
         sys.exit(-9)
-    
+
 
 class helpRepository(object):
     '''
     This class wraps a help file and allows to extract context-related help objects
-    
+
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-    def __init__(self, path=os.path.join('core','ui','console','help.xml') ):
+    def __init__(self, path=os.path.join('core', 'ui', 'console', 'help.xml')):
         self.__doc = ET.parse(path)
         self.__map = {}
         topics = self.__doc.findall('.//topic')
         for t in topics:
             self.__map[str(t.attrib['name'])] = t
 
-
     def loadHelp(self, topic, obj=None, vars=None):
         '''
         Loads an object from the repository.
         @param topic: the name of a context (for example, menu)
-        @param obj: the help object where to load the help data 
+        @param obj: the help object where to load the help data
         (if None, a new one is created)
         @param vars: a dict of variables to replace in the help text
         '''
@@ -70,40 +69,40 @@ class helpRepository(object):
             obj = HelpContainer()
         elt = self.__map[topic]
         for catElt in elt.findall('category'):
-            catName = 'name' in catElt.attrib and catElt.attrib['name'] or 'default'
+            catName = 'name' in catElt.attrib and catElt.attrib[
+                'name'] or 'default'
             catName = str(catName)
 
             for itemElt in catElt.findall('item'):
-                itemName = str( itemElt.attrib['name'] )
+                itemName = str(itemElt.attrib['name'])
                 itemName = subst(itemName)
 
                 short = itemElt.findtext('head')
                 full = itemElt.findtext('body')
-                
+
                 if not short:
                     short = itemElt.text
 
                 short = subst(short)
                 if full:
                     full = subst(full)
-                
+
                 #    The help.xml file is in unix format, meaning that it only
                 #    has \n for new lines. This will bring some issues when
                 #    printing the data to the console since the \r is required
                 #    there, so I simply add the \r here.
-                short = short.replace('\n','\r\n')
+                short = short.replace('\n', '\r\n')
                 if full:
-                    full = full.replace('\n','\r\n')
-                    
-                obj.addHelpEntry(itemName, (short, full), catName)
+                    full = full.replace('\n', '\r\n')
 
+                obj.addHelpEntry(itemName, (short, full), catName)
 
         return obj
 
 # main repository
 helpMainRepository = helpRepository()
 
-    
+
 class HelpContainer(object):
     '''
     Container for help items.
@@ -113,16 +112,15 @@ class HelpContainer(object):
         self._subj2Gat = {}
         self._cat2Subj = {}
 
-
     def addHelpEntry(self, subj, content, cat=''):
         '''
         Adds the help entry.
         @param content: usually a tuple like (head, body)
-        @param cat: a name of the category. 
+        @param cat: a name of the category.
         If the item exists in an other category, it will be replaced.
         '''
 
-        if type(content) not in (tuple, list): 
+        if type(content) not in (tuple, list):
             content = (content, None)
 
         self._table[subj] = content
@@ -135,7 +133,6 @@ class HelpContainer(object):
 
         d.append(subj)
 
-
     def getCategories(self):
         return self._subj2Gat.keys()
 
@@ -143,29 +140,26 @@ class HelpContainer(object):
         for subj in table:
             self.addHelpEntry(subj, table[subj], cat)
 
-
     def get_help(self, subj):
         if subj not in self._table:
             return (None, None)
 
         return self._table[subj]
 
-
     def getItems(self):
         return self._table.keys()
 
-
     def getPlainHelpTable(self, separators=True, cat=None):
         '''
-        Returns a table of format 'subject -> head' 
+        Returns a table of format 'subject -> head'
         to display with the table.py module
-        @param separators: if True, the categories are separated 
+        @param separators: if True, the categories are separated
         by extra line.
-        @param cat: category to include into the page. 
+        @param cat: category to include into the page.
         If None, all are included.
         '''
         result = []
-        
+
         if cat is not None:
             self._appendHelpTable(result, cat)
         else:
@@ -179,10 +173,8 @@ class HelpContainer(object):
 
         return result
 
-
     def _appendHelpTable(self, result, cat):
         items = cat in self._cat2Subj and self._cat2Subj[cat] or self._table
-           
+
         for subj in items:
             result.append([subj, self.get_help(subj)[0]])
-        

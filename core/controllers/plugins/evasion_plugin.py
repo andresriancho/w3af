@@ -25,7 +25,7 @@ from core.controllers.exceptions import w3afException
 
 class EvasionPlugin(Plugin):
     '''
-    This is the base class for evasion plugins, all evasion plugins should inherit from it 
+    This is the base class for evasion plugins, all evasion plugins should inherit from it
     and implement the following methods :
         1. modifyRequest(...)
         2. set_options( OptionList )
@@ -35,30 +35,32 @@ class EvasionPlugin(Plugin):
     '''
 
     def __init__(self):
-        Plugin.__init__( self )
+        Plugin.__init__(self)
 
-    def modifyRequest(self, request ):
+    def modifyRequest(self, request):
         '''
         This method mangles the request in order to evade simple IDSs.
-        
+
         This method MUST be implemented on every plugin.
-        
+
         @param request: urllib2.Request instance that is going to be modified by the evasion plugin
         @return: A fuzzed version of the Request.
         '''
-        raise w3afException('Plugin is not implementing required method modifyRequest' )
+        raise w3afException(
+            'Plugin is not implementing required method modifyRequest')
 
     def set_url_opener(self, foo):
         pass
-        
-    def getPriority( self ):
+
+    def getPriority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
-        
+
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        raise w3afException('Plugin is not implementing required method getPriority' )
-    
-    def get_type( self ):
+        raise w3afException(
+            'Plugin is not implementing required method getPriority')
+
+    def get_type(self):
         return 'evasion'

@@ -23,38 +23,38 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestURLListTxt(PluginTest):
-    
+
     base_url = 'http://moth/w3af/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('urllist_txt'),)}
-            }
         }
-    
+    }
+
     def test_urllist_txt(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('urllist_txt', 'urllist.txt')
-        
-        self.assertEqual( len(infos), 1, infos )
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
-        self.assertTrue( info.get_name().startswith('urllist.txt file') )
-        self.assertEquals( info.getURL().url_string, 'http://moth/urllist.txt' )
-        
+
+        self.assertTrue(info.get_name().startswith('urllist.txt file'))
+        self.assertEquals(info.getURL().url_string, 'http://moth/urllist.txt')
+
         urls = self.kb.get('urls', 'url_objects')
-        
-        self.assertEqual( len(urls), 2, urls )
-        
+
+        self.assertEqual(len(urls), 2, urls)
+
         hidden_url = 'http://moth/hidden/'
-        
+
         for url in urls:
             if url.url_string == hidden_url:
-                self.assertTrue( True )
+                self.assertTrue(True)
                 break
         else:
-            self.assertTrue( False )
+            self.assertTrue(False)

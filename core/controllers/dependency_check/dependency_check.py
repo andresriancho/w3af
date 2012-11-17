@@ -35,7 +35,7 @@ def dependency_check():
     '''
     #mem_test('at start')
     om.out.debug('Checking core dependencies')
-    
+
     # Check python version
     major, minor, micro, releaselevel, serial = sys.version_info
     if major == 2:
@@ -46,15 +46,15 @@ def dependency_check():
         msg = 'It seems that you are running Python 3k, please let us know if'
         msg += ' w3af works as expected at w3af-develop@lists.sourceforge.net !'
         print msg
-        sys.exit( 1 )
-        
+        sys.exit(1)
+
     reason_for_exit = False
     packages = []
     packages_debian = []
     packages_mac_ports = []
     packages_openbsd = []
     additional_information = []
-    
+
     if platform.system() != 'Windows':
         try:
             from pybloomfilter import BloomFilter as mmap_filter
@@ -80,20 +80,20 @@ def dependency_check():
         msg += ' can download it from http://code.google.com/p/esmre/ or run'
         msg += ' the following command to install it:\n'
         msg += '        sudo easy_install esmre\n'
-        
+
         #packages_debian.append('python-setuptools')
         #packages_openbsd.append('py-setuptools')
         #packages.append('esmre')
         #packages.append('esm')
         #additional_information.append(msg)
-    
+
     # nltk raises a warning... which I want to ignore...
     # This is the original warning:
     #
     # /usr/lib/python2.5/site-packages/nltk/__init__.py:117: UserWarning: draw module, ...
     # warnings.warn("draw module, app module, and gui downloader not loaded "
     #
-    
+
     warnings.filterwarnings('ignore', '.*',)
     #mem_test('after esmre import')
     if not lazy_load('nltk'):
@@ -102,7 +102,7 @@ def dependency_check():
         packages_openbsd.append('py-nltk')
         #TODO
         #packages_mac_port.append()
-        msg  = '    If you can not install nltk with the system package manager, try the following:\n'
+        msg = '    If you can not install nltk with the system package manager, try the following:\n'
         msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n'
         msg += '        tar -xzvf PyYAML-3.09.tar.gz\n'
         msg += '        cd PyYAML-3.09\n'
@@ -115,7 +115,7 @@ def dependency_check():
         additional_information.append(msg)
         reason_for_exit = True
     #mem_test('after nltk import')
-    
+
     if not lazy_load('extlib.SOAPpy.SOAPpy'):
         if not lazy_load('SOAPpy'):
             packages.append('SOAPpy')
@@ -136,7 +136,7 @@ def dependency_check():
             #TODO
             #packages_mac_port.append()
             reason_for_exit = True
-    #mem_test('after pypdf import')   
+    #mem_test('after pypdf import')
     try:
         from OpenSSL import SSL
     except:
@@ -160,16 +160,16 @@ def dependency_check():
         import pysvn
     except Exception, e:
         if e.message.startswith('pysvn was built'):
-            msg  = '    It looks like your pysvn library installation is broken\n'
+            msg = '    It looks like your pysvn library installation is broken\n'
             msg += '    (are you using BT4 R2?). The error we get when importing\n'
             msg += '    the pysvn library is "%s". \n\n' % e.message
-            
+
             msg += '    This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)\n'
             msg += '    that was fixed by them in their devel repositories, in order to\n'
             msg += '    enable them you need to follow these steps:\n'
             msg += '        1. vim /etc/apt/sources.list\n'
             msg += '        2. Un-comment the BackTrack Devel Repository line ' \
-                            '(deb http://archive.offensive-security.com/repotest/ ./)'
+                '(deb http://archive.offensive-security.com/repotest/ ./)'
             msg += '        3. apt-get update && apt-get dist-upgrade'
 
             additional_information.append(msg)
@@ -179,9 +179,9 @@ def dependency_check():
         packages_openbsd.append('py-pysvn')
         #TODO
         #packages_mac_port.append()
-        reason_for_exit = True       
+        reason_for_exit = True
     #mem_test('after pysvn import')
-    
+
     if not lazy_load('scapy'):
         packages.append('scapy')
         packages_debian.append('python-scapy')
@@ -193,7 +193,7 @@ def dependency_check():
         try:
             import scapy.config
         except:
-            msg  = '    Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
+            msg = '    Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
             msg += '    You may issue the following commands in order to install the latest version of scapy in your system:\n'
             msg += '        cd /tmp\n'
             msg += '        wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n'
@@ -211,43 +211,44 @@ def dependency_check():
     #mem_test('after scapy import')
     # Now output the results of the dependency check
     curr_platform = platform.system().lower()
-    
+
     if packages:
         msg = 'Your python installation needs the following packages:\n'
-        msg += '    '+' '.join(packages)
+        msg += '    ' + ' '.join(packages)
         print msg, '\n'
     if packages_debian and 'linux' in curr_platform:
         msg = 'On Debian based systems:\n'
-        msg += '    sudo apt-get install '+' '.join(packages_debian)
+        msg += '    sudo apt-get install ' + ' '.join(packages_debian)
         print msg, '\n'
     if packages_mac_ports and is_mac(curr_platform):
         msg = 'On Mac OSX with mac ports installed:\n'
-        msg += '    sudo port install '+' '.join(packages_mac_ports)
+        msg += '    sudo port install ' + ' '.join(packages_mac_ports)
         print msg, '\n'
     if packages_openbsd and 'openbsd' in curr_platform:
         msg = 'On OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
-        msg += '    pkg_add -v  '+' '.join(packages_openbsd)
+        msg += '    pkg_add -v  ' + ' '.join(packages_openbsd)
         print msg, '\n'
     if additional_information:
         msg = 'Additional information:\n'
         msg += '\n'.join(additional_information)
         print msg
-    
+
     #Now exit if necessary
     if reason_for_exit:
         exit(1)
-        
+
 
 def mem_test(when):
     from core.controllers.profiling.ps_mem import get_memory_usage, human
-    sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True )
+    sorted_cmds, shareds, _, _ = get_memory_usage(None, True, True, True)
     cmd = sorted_cmds[0]
-    msg = "%8sB Private + %8sB Shared = %8sB" % ( human(cmd[1]-shareds[cmd[0]]),
-                                                  human(shareds[cmd[0]]), human(cmd[1])
-                                                )
-    print 'Total memory usage %s: %s' % (when,msg)
+    msg = "%8sB Private + %8sB Shared = %8sB" % (human(cmd[1] - shareds[cmd[0]]),
+                                                 human(shareds[cmd[
+                                                               0]]), human(cmd[1])
+                                                 )
+    print 'Total memory usage %s: %s' % (when, msg)
+
 
 def is_mac(curr_platform):
     return 'darwin' in curr_platform or 'mac' in curr_platform
-

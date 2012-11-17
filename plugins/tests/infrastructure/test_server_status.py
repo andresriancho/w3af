@@ -23,22 +23,23 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestServerStatus(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': base_url,
-                'plugins': {'infrastructure': (PluginConfig('server_status'),)}
-                }
+        'target': base_url,
+        'plugins': {'infrastructure': (PluginConfig('server_status'),)}
         }
-    
+    }
+
     def test_find_server(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         server = self.kb.get('server_status', 'server')
-        
-        self.assertEqual( len(server), 1, server)
-        self.assertTrue( 'remote server version: "Apache/2.' in server[0].get_desc(), 
-                         server[0].get_desc())
+
+        self.assertEqual(len(server), 1, server)
+        self.assertTrue(
+            'remote server version: "Apache/2.' in server[0].get_desc(),
+            server[0].get_desc())

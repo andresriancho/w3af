@@ -24,26 +24,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestStrategy(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/sql_injection/select/'\
                  'sql_injection_string.php?name=xxx'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('sqli'),),
-                 }
+                'audit': (PluginConfig('sqli'),),
             }
         }
-    
+    }
+
     @attr('smoke')
     def test_same_fr_set_object(self):
         cfg = self._run_configs['cfg']
-        
+
         id_before = id(self.w3afcore.strategy._fuzzable_request_set)
         self._scan(cfg['target'], cfg['plugins'])
         id_after = id(self.w3afcore.strategy._fuzzable_request_set)
-        
+
         self.assertEquals(id_before, id_after)
-        

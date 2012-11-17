@@ -61,6 +61,7 @@ def hostname(url):
 
     return netloc.split(':', 1)[0]
 
+
 def addresses(host):
     """Get the network addresses to which a given host resolves to.
 

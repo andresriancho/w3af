@@ -49,22 +49,22 @@ class rootMenu(menu):
 
     def __init__(self, name, console, core, parent=None):
         menu.__init__(self, name, console, core, parent)
-        self._loadHelp( 'root' )
-        
+        self._loadHelp('root')
+
         #   At first, there is no scan thread
         self._scan_thread = None
-        
+
         mapDict(self.addChild, {
             'plugins': pluginsMenu,
-            'target' : (configMenu, self._w3af.target),
-            'misc-settings' : (configMenu, MiscSettings()),
-            'http-settings' : (configMenu, self._w3af.uri_opener.settings),
-            'profiles' : profilesMenu,
-            'bug-report' : bug_report_menu,
-            'exploit' : exploit,
+            'target': (configMenu, self._w3af.target),
+            'misc-settings': (configMenu, MiscSettings()),
+            'http-settings': (configMenu, self._w3af.uri_opener.settings),
+            'profiles': profilesMenu,
+            'bug-report': bug_report_menu,
+            'exploit': exploit,
             'kb': kbMenu
         })
-       
+
     def _cmd_start(self, params):
         '''
         Start the core in a different thread, monitor keystrokes in the main thread.
@@ -79,7 +79,7 @@ class rootMenu(menu):
                   " one output plugin in order to be able to actually see the"\
                   " the scan output."
             print msg
-        
+
         # Note that I'm NOT starting this in a new multiprocess Process
         # please note the multiprocessing.dummy , this is required because
         # I want to start new threads inside this thread and there is a bug
@@ -97,16 +97,16 @@ class rootMenu(menu):
             om.out.console('User hit Ctrl+C, stopping scan.')
             time.sleep(1)
             self._w3af.stop()
-            
+
     def _cmd_cleanup(self, params):
         '''
         The user runs this command, when he has finished a scan, and wants to
         cleanup everything to start a new scan to another target.
-        
+
         @return: None
         '''
         self._w3af.cleanup()
- 
+
     def _real_start(self):
         '''
         Actually run core.start()
@@ -123,13 +123,13 @@ class rootMenu(menu):
         except Exception:
             self._w3af.stop()
             raise
-     
+
     def show_progress_on_request(self):
         '''
         When the user hits enter, show the progress
         '''
         while self._w3af.status.is_running():
-            
+
             # Define some variables...
             rfds = []
             wfds = []
@@ -140,7 +140,7 @@ class rootMenu(menu):
             # read from sys.stdin with a 0.5 second timeout
             if sys.platform != 'win32':
                 # linux
-                rfds, wfds, efds = select.select( [sys.stdin], [], [], 0.5)
+                rfds, wfds, efds = select.select([sys.stdin], [], [], 0.5)
                 if rfds:
                     if len(sys.stdin.readline()):
                         hitted_enter = True
@@ -151,31 +151,32 @@ class rootMenu(menu):
                 if msvcrt.kbhit():
                     if term.read(1) in ['\n', '\r', '\r\n', '\n\r']:
                         hitted_enter = True
-            
+
             # If something was written to sys.stdin, read it
             if hitted_enter:
-                
+
                 # change back to the previous state
                 hitted_enter = False
-                
+
                 # Get the information
                 progress = self._w3af.progress.get_progress()
                 eta = self._w3af.progress.get_eta()
-                
+
                 # Create the message to print
                 progress = str(progress * 100)
                 progress = progress[:5] + ' ' + '%'
                 msg = 'Status: ' + self._w3af.status.get_status() + '\n'
-                msg += 'Current phase status: ' + progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
-                
+                msg += 'Current phase status: ' + \
+                    progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
+
                 # Print
-                om.out.console( msg , newLine=True)
-        
+                om.out.console(msg, newLine=True)
+
     def _cmd_version(self, params):
         '''
         Show the w3af version and exit
         '''
-        om.out.console( get_w3af_version() )
+        om.out.console(get_w3af_version())
 
     def join(self):
         '''
@@ -185,4 +186,3 @@ class rootMenu(menu):
             self._scan_thread.join()
             #   After the scan finishes, there is no scan thread
             self._scan_thread = None
-            

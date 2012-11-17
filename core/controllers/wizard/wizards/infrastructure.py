@@ -23,25 +23,25 @@ from core.controllers.wizard.wizard import wizard
 
 
 class infrastructure(wizard):
-    
-    def __init__( self, w3af_core ):
+
+    def __init__(self, w3af_core):
         '''
-        This method should be overwritten by the actual wizards, so they can 
+        This method should be overwritten by the actual wizards, so they can
         define what questions they are going to ask.
         '''
-        wizard.__init__( self, w3af_core )
+        wizard.__init__(self, w3af_core)
 
-        self._question_lst = self._get_instances( ['infrastructure_1',
-                                                   'infrastructure_2',
-                                                   'infrastructure_3',
-                                                   'infrastructure_4',
-                                                   'infrastructure_internet_1'],
-                                                  w3af_core )
-        
+        self._question_lst = self._get_instances(['infrastructure_1',
+                                                  'infrastructure_2',
+                                                  'infrastructure_3',
+                                                  'infrastructure_4',
+                                                  'infrastructure_internet_1'],
+                                                 w3af_core)
+
     def getWizardDescription(self):
         '''
         This method should be overwritten by the actual wizards.
-        
+
         @return: A string that describes what the wizard will let you configure.
         '''
         return '''This wizard creates a scan profile that aims to identify the
@@ -52,4 +52,3 @@ class infrastructure(wizard):
         @return: The name of the wizard.
         '''
         return 'Infrastructure wizard'
-

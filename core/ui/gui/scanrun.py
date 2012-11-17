@@ -50,7 +50,8 @@ class FullKBTree(kbtree.KBTree):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, kbbrowser, ifilter):
-        super(FullKBTree,self).__init__(w3af, ifilter, 'Knowledge Base', strict=False)
+        super(FullKBTree, self).__init__(w3af, ifilter,
+                                         'Knowledge Base', strict=False)
         self._historyItem = HistoryItem()
         self.kbbrowser = kbbrowser
         self.connect('cursor-changed', self._showDesc)
@@ -73,7 +74,7 @@ class FullKBTree(kbtree.KBTree):
         self.kbbrowser.explanation.set_text(longdesc)
 
         success = False
-        if hasattr(instance, "get_id" ):
+        if hasattr(instance, "get_id"):
             if instance.get_id() is not None:
                 #
                 # We have two different cases:
@@ -86,7 +87,7 @@ class FullKBTree(kbtree.KBTree):
                 #
                 # Work:
                 #
-                if len( instance.get_id() ) == 1:
+                if len(instance.get_id()) == 1:
                     # There is ONLY ONE id related to the object
                     # This is 1)
                     self.kbbrowser.pagesControl.deactivate()
@@ -101,19 +102,23 @@ class FullKBTree(kbtree.KBTree):
                         success = False
                     else:
                         # ok, we don't have None in the id:
-                        historyItem = self._historyItem.read(instance.get_id()[0])
+                        historyItem = self._historyItem.read(
+                            instance.get_id()[0])
                         if historyItem:
-                            self.kbbrowser.rrV.request.showObject(historyItem.request)
-                            self.kbbrowser.rrV.response.showObject(historyItem.response)
-                            
+                            self.kbbrowser.rrV.request.showObject(
+                                historyItem.request)
+                            self.kbbrowser.rrV.response.showObject(
+                                historyItem.response)
+
                             # Don't forget to highlight if neccesary
                             severity = instance.get_severity()
                             for s in instance.getToHighlight():
-                                self.kbbrowser.rrV.response.highlight( s, severity )
-                            
+                                self.kbbrowser.rrV.response.highlight(
+                                    s, severity)
+
                             success = True
                         else:
-                            om.out.error(_('Failed to find request/response with id: ') + str(instance.get_id()) + _(' in the database.') )
+                            om.out.error(_('Failed to find request/response with id: ') + str(instance.get_id()) + _(' in the database.'))
                 else:
                     # There are MORE THAN ONE ids related to the object
                     # This is 2)
@@ -121,7 +126,8 @@ class FullKBTree(kbtree.KBTree):
                     self.kbbrowser.title0.show()
 
                     self.kbbrowser.req_res_ids = instance.get_id()
-                    self.kbbrowser.pagesControl.activate(len(instance.get_id()))
+                    self.kbbrowser.pagesControl.activate(
+                        len(instance.get_id()))
                     self.kbbrowser._pageChange(0)
                     success = True
 
@@ -139,7 +145,7 @@ class KBBrowser(entries.RememberingHPaned):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(KBBrowser,self).__init__(w3af, "pane-kbbrowser", 250)
+        super(KBBrowser, self).__init__(w3af, "pane-kbbrowser", 250)
 
         # Internal variables:
         #
@@ -152,6 +158,7 @@ class KBBrowser(entries.RememberingHPaned):
         # the filter to the tree
         filterbox = gtk.HBox()
         self.filters = {}
+
         def makeBut(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
@@ -210,8 +217,8 @@ class KBBrowser(entries.RememberingHPaned):
         # Add everything to a vbox
         vbox_rrv_centerbox = gtk.VBox()
         vbox_rrv_centerbox.pack_start(self.title0, False, True)
-        vbox_rrv_centerbox.pack_start(self.rrV,  True,  True)
-        vbox_rrv_centerbox.pack_start(centerbox,  False,  False)
+        vbox_rrv_centerbox.pack_start(self.rrV, True, True)
+        vbox_rrv_centerbox.pack_start(centerbox, False, False)
 
         # and show
         vbox_rrv_centerbox.show()
@@ -219,9 +226,10 @@ class KBBrowser(entries.RememberingHPaned):
         centerbox.show()
 
         # And now put everything inside the vpaned
-        vpanedExplainAndView = entries.RememberingVPaned(w3af, "pane-kbbexplainview", 100)
-        vpanedExplainAndView.pack1( scrollwin22 )
-        vpanedExplainAndView.pack2( vbox_rrv_centerbox )
+        vpanedExplainAndView = entries.RememberingVPaned(
+            w3af, "pane-kbbexplainview", 100)
+        vpanedExplainAndView.pack1(scrollwin22)
+        vpanedExplainAndView.pack2(vbox_rrv_centerbox)
         vpanedExplainAndView.show()
 
         # pack & show
@@ -248,11 +256,11 @@ class KBBrowser(entries.RememberingHPaned):
                 self.rrV.request.clearPanes()
                 self.rrV.response.clearPanes()
                 self.rrV.set_sensitive(False)
-                self.title0.set_markup( "<b>Error</b>")
+                self.title0.set_markup("<b>Error</b>")
             else:
-                self.title0.set_markup( "<b>Id: %d</b>" % request_id )
-                self.rrV.request.showObject( historyItem.request )
-                self.rrV.response.showObject( historyItem.response )
+                self.title0.set_markup("<b>Id: %d</b>" % request_id)
+                self.rrV.request.showObject(historyItem.request)
+                self.rrV.response.showObject(historyItem.response)
                 self.rrV.set_sensitive(True)
 
 
@@ -262,7 +270,7 @@ class URLsGraph(gtk.VBox):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(URLsGraph,self).__init__()
+        super(URLsGraph, self).__init__()
         self.w3af = w3af
 
         self.toolbox = gtk.HBox()
@@ -293,7 +301,7 @@ class URLsGraph(gtk.VBox):
         gobject.timeout_add(500, self._draw_start)
 
     def _zoom(self, widg, what):
-        f = getattr(self.widget, "on_zoom_"+what)
+        f = getattr(self.widget, "on_zoom_" + what)
         f(None)
 
     def _draw_start(self):
@@ -303,7 +311,7 @@ class URLsGraph(gtk.VBox):
         # let's draw!
         q = Queue.Queue()
         evt = Event()
-        th = Process(target=self._draw_real, args=(q,evt), name='GTKDraw')
+        th = Process(target=self._draw_real, args=(q, evt), name='GTKDraw')
         th.start()
         gobject.timeout_add(500, self._draw_end, q, evt)
         return False
@@ -332,14 +340,13 @@ class URLsGraph(gtk.VBox):
 
         gobject.timeout_add(500, self._draw_start)
 
-
     def limitNode(self, parent, node, name):
         # I have to escape the quotes, because I don't want a "dot code injection"
         # This was bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
         node = str(node).replace('"', '\\"')
         name = str(name).replace('"', '\\"')
-        
+
         self.nodos_code.append('"%s" [label="%s"]' % (node, name))
         if parent:
             parent = str(parent).replace('"', '\\"')
@@ -364,12 +371,12 @@ class URLsGraph(gtk.VBox):
         self._somethingnew = True
 
 
-
 HEAD_TO_SEND = """\
 GET %s HTTP/1.0
 Host: %s
 User-Agent: w3af.sf.net
 """
+
 
 class URLsTree(gtk.TreeView):
     '''Show the URLs that the system discovers.
@@ -423,7 +430,7 @@ class URLsTree(gtk.TreeView):
             if url is None:
                 yield True
                 continue
-            
+
             path = url.getPath()
             params = url.getParamsString()
             query = str(url.querystring)
@@ -440,21 +447,21 @@ class URLsTree(gtk.TreeView):
             if fragment:
                 end += "#" + fragment
 
-            splittedPath = re.split('(\\\\|/)', path )
+            splittedPath = re.split('(\\\\|/)', path)
             nodes = []
             for i in splittedPath:
-                if i not in ['\\','/']:
+                if i not in ['\\', '/']:
                     nodes.append(i)
 
             nodes.insert(0, ini)
             nodes.append(end)
             parts = [x for x in nodes if x]
             self._insertNodes(None, parts, self.treeholder, 1)
-            
+
             # TODO: Automatically sort after each insertion
             # Order the treeview
             self.treestore.sort_column_changed()
-            
+
         yield False
 
     def _insertNodes(self, parent, parts, holder, rec_cntr):
@@ -484,16 +491,16 @@ class URLsTree(gtk.TreeView):
         if node in holder:
             # already exists, use it if have more nodes
             (treenode, children) = holder[node]
-            return self._insertNodes(treenode, rest, children, rec_cntr+1)
+            return self._insertNodes(treenode, rest, children, rec_cntr + 1)
 
         # does not exist, create it
         newtreenode = self.treestore.append(parent, [node])
         self.grapher.newNode(parent, newtreenode, node, not rest)
-        newholdnode = self._insertNodes(newtreenode, rest, {}, rec_cntr+1)
+        newholdnode = self._insertNodes(newtreenode, rest, {}, rec_cntr + 1)
         holder[node] = (newtreenode, newholdnode)
         return holder
 
-    def popup_menu( self, tv, event ):
+    def popup_menu(self, tv, event):
         '''Shows a menu when you right click on a URL in the treeview.
 
         @param tv: the treeview.
@@ -508,7 +515,8 @@ class URLsTree(gtk.TreeView):
             return
 
         # Get the information about the click
-        fullurl = "/".join(self.treestore[path[:i+1]][0] for i in range(len(path)))
+        fullurl = "/".join(
+            self.treestore[path[:i + 1]][0] for i in range(len(path)))
         host = urllib2.urlparse.urlparse(fullurl)[1]
         sendtext = HEAD_TO_SEND % (fullurl, host)
 
@@ -516,31 +524,34 @@ class URLsTree(gtk.TreeView):
 
         e = gtk.ImageMenuItem(_("Open with Manual Request Editor..."))
         image = gtk.Image()
-        image.set_from_stock(gtk.STOCK_INDEX,  gtk.ICON_SIZE_MENU)
+        image.set_from_stock(gtk.STOCK_INDEX, gtk.ICON_SIZE_MENU)
         e.set_image(image)
-        e.connect('activate', self._send_request, sendtext, craftedRequests.ManualRequests)
-        gm.append( e )
+        e.connect('activate', self._send_request, sendtext,
+                  craftedRequests.ManualRequests)
+        gm.append(e)
 
         image = gtk.Image()
-        image.set_from_stock(gtk.STOCK_PROPERTIES,  gtk.ICON_SIZE_MENU)
+        image.set_from_stock(gtk.STOCK_PROPERTIES, gtk.ICON_SIZE_MENU)
         e = gtk.ImageMenuItem(_("Open with Fuzzy Request Editor..."))
         e.set_image(image)
-        e.connect('activate', self._send_request, sendtext, craftedRequests.FuzzyRequests)
-        gm.append( e )
+        e.connect('activate', self._send_request, sendtext,
+                  craftedRequests.FuzzyRequests)
+        gm.append(e)
 
         e = gtk.ImageMenuItem(_("Open with default browser..."))
         e.connect('activate', self._openBrowser, fullurl)
-        gm.append( e )
+        gm.append(e)
 
         gm.show_all()
-        gm.popup( None, None, None, event.button, event.time)
+        gm.popup(None, None, None, event.button, event.time)
 
-    def _openBrowser( self, widg, text):
+    def _openBrowser(self, widg, text):
         '''Opens the text with an external browser.'''
         webbrowser.open_new_tab(text)
 
     def _send_request(self, widg, text, func):
-        func(self.w3af, (text,""))
+        func(self.w3af, (text, ""))
+
 
 class ScanRunBody(gtk.Notebook):
     '''The whole body of scan run.
@@ -548,9 +559,10 @@ class ScanRunBody(gtk.Notebook):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(ScanRunBody,self).__init__()
+        super(ScanRunBody, self).__init__()
         self.w3af = w3af
-        self.helpChapter = ("Browsing_the_Knowledge_Base", "Site_structure", "Requests_and_Responses")
+        self.helpChapter = ("Browsing_the_Knowledge_Base",
+                            "Site_structure", "Requests_and_Responses")
         self.connect("switch-page", self.changedPage)
 
         # KB Browser
@@ -585,11 +597,12 @@ class ScanRunBody(gtk.Notebook):
         '''Changed the page in the Notebook.'''
         self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]
 
+
 class IteratedURLList(object):
     '''
     Simply provide a way to access the kb.kb.get('urls', 'url_objects')
     in an iterated manner!
-     
+
     @author: Andres Riancho < andres.riancho @ gmail.com >
     '''
     def __init__(self):
@@ -599,13 +612,12 @@ class IteratedURLList(object):
         '''Serves the elements taken from the list.'''
         while True:
             llist = kb.kb.get('urls', 'url_objects')
-            
+
             if self._index < len(llist):
-                msg = llist[ self._index ]
+                msg = llist[self._index]
                 self._index += 1
                 data = msg
             else:
                 data = None
-            
-            yield data
 
+            yield data

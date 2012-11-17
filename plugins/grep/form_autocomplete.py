@@ -33,7 +33,7 @@ from core.data.kb.info import info
 # otherwise (if included) not equals 'off'
 AUTOCOMPLETE_FORMS_XPATH = ("//form[not(@autocomplete) or "
                             "translate(@autocomplete,'OF','of')!='off']")
-# Find all input elements which type's lower-case value 
+# Find all input elements which type's lower-case value
 # equals-case-sensitive 'password'
 PWD_INPUT_XPATH = "//input[translate(@type,'PASWORD','pasword')='password']"
 # All 'text' input elements
@@ -42,72 +42,72 @@ TEXT_INPUT_XPATH = "//input[translate(@type,'TEXT','text')='text']"
 
 class form_autocomplete(GrepPlugin):
     '''
-    Grep every page for detection of forms with 'autocomplete' capabilities 
+    Grep every page for detection of forms with 'autocomplete' capabilities
     containing password-type inputs.
-      
+
     @author: Javier Andalia (jandalia =at= gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Internal variables
         self._already_inspected = ScalableBloomFilter()
-        self._autocomplete_forms_xpath = etree.XPath( AUTOCOMPLETE_FORMS_XPATH )
-        self._pwd_input_xpath = etree.XPath( PWD_INPUT_XPATH )
-        self._text_input_xpath =  etree.XPath( TEXT_INPUT_XPATH )
+        self._autocomplete_forms_xpath = etree.XPath(AUTOCOMPLETE_FORMS_XPATH)
+        self._pwd_input_xpath = etree.XPath(PWD_INPUT_XPATH)
+        self._text_input_xpath = etree.XPath(TEXT_INPUT_XPATH)
 
     def grep(self, request, response):
         '''
         Plugin entry point, test existance of HTML auto-completable forms
         containing password-type inputs. Either form's <autocomplete> attribute
         is not present or is 'off'.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         url = response.getURL()
         dom = response.getDOM()
-        
+
         if response.is_text_or_html() and dom is not None \
-        and not url in self._already_inspected:
+                and not url in self._already_inspected:
 
             self._already_inspected.add(url)
 
-            autocompletable = lambda inp: inp.get('autocomplete', 'on').lower() != 'off'
+            autocompletable = lambda inp: inp.get(
+                'autocomplete', 'on').lower() != 'off'
 
             # Loop through "auto-completable" forms
-            for form in self._autocomplete_forms_xpath( dom ):
+            for form in self._autocomplete_forms_xpath(dom):
 
-                passwd_inputs = self._pwd_input_xpath( form )
+                passwd_inputs = self._pwd_input_xpath(form)
 
                 # Test existence of password-type inputs and verify that
                 # all inputs are autocompletable
                 if passwd_inputs and all(map(autocompletable,
-                chain(passwd_inputs, self._text_input_xpath(form) ))):
-                    
+                                             chain(passwd_inputs, self._text_input_xpath(form)))):
+
                     i = info()
                     i.set_name('Auto-completable form')
                     i.setURL(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has a "<form>" element with ' \
-                    'auto-complete enabled.' % url
+                        'auto-complete enabled.' % url
                     i.set_desc(msg)
                     form_str = etree.tostring(form)
                     to_highlight = form_str[:(form_str).find('>') + 1]
                     i.addToHighlight(to_highlight)
-                    
+
                     # Store and print
                     kb.kb.append(self, 'form_autocomplete', i)
                     om.out.information(msg)
-                    
-                    break
 
+                    break
 
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return "This plugin greps every page for autocomplete-able forms " \
-        "containing password-type inputs."
+            "containing password-type inputs."

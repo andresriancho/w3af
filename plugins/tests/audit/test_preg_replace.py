@@ -21,24 +21,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestPreg(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/preg_replace/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('preg_replace'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 }
+                'audit': (PluginConfig('preg_replace'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
             }
         }
-    
+    }
+
     def test_found_preg(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -47,19 +48,21 @@ class TestPreg(PluginTest):
         # Assert the general results
         vulns = self.kb.get('preg_replace', 'preg_replace')
         self.assertEquals(len(vulns), 2)
-        
-        titles = all(['Unsafe usage of preg_replace' == vuln.get_name() for vuln in vulns ])
-        self.assertEquals( titles , True)
+
+        titles = all(['Unsafe usage of preg_replace' == vuln.get_name(
+        ) for vuln in vulns])
+        self.assertEquals(titles, True)
 
         expected_results = (
-                                ('preg_all_regex.php', 'regex'),
-                                ('preg_section_regex.php','search')
-                            )
-        
-        found = [ (str(v.getURL()), v.get_var()) for v in vulns]
-        expected = [ ((self.target_url + end), param) for (end, param) in expected_results ]
-        
+            ('preg_all_regex.php', 'regex'),
+            ('preg_section_regex.php', 'search')
+        )
+
+        found = [(str(v.getURL()), v.get_var()) for v in vulns]
+        expected = [((self.target_url + end), param) for (end,
+                    param) in expected_results]
+
         self.assertEquals(
-                set( found ),
-                set( expected )
-                )
+            set(found),
+            set(expected)
+        )

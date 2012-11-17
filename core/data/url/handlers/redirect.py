@@ -23,32 +23,32 @@ import urllib2
 import urlparse
 
 from core.controllers.misc.number_generator import \
-                            consecutive_number_generator as core_num_gen
+    consecutive_number_generator as core_num_gen
 from core.data.parsers.url import URL
 from core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 
 
 class HTTP30XHandler(urllib2.HTTPRedirectHandler):
-    
+
     def _inc_counter(self, step=1):
         '''
         @return: The next number to use in the request/response ID.
         '''
         return core_num_gen.inc()
-            
+
     def _get_counter(self):
         '''
         @return: The current counter number to assign as the id for responses.
         '''
         return core_num_gen.get()
-    
+
     def http_error_302(self, req, fp, code, msg, headers):
         '''
         This is a http_error_302 wrapper to add an id attr to loop errors.
         '''
         if not req.follow_redir:
             return None
-        
+
         try:
             return self._http_error_302(req, fp, code, msg, headers)
         except urllib2.HTTPError, e:
@@ -56,9 +56,9 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             #             'loop when requesting: %s' % e.geturl())
             e.id = self._get_counter()
             raise e
-    
+
     http_error_301 = http_error_303 = http_error_307 = http_error_302
-    
+
     # FIXME: A duplicated and slightly modified (see comment below)
     # version of urllib2.HTTPRedirectHandler.http_error_302 method. This
     # code duplication must be removed once the cause disappears (in py2.6.5
@@ -81,7 +81,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         newurl = urlparse.urlunparse(urlparts)
 
         newurl = urlparse.urljoin(req.get_full_url(), newurl)
-        
+
         # XXX HACK! The reason for overriding (and also duplicating content)
         # this method was to fix a bug in the urllib2 handler where you might
         # end up being redirected to some "strange" location if for some
@@ -90,10 +90,10 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         # C:\boot.ini. When the urllib2 library opens that, it will open a
         # local file. Verifying that the protocol of the newurl is 'http[s]'
         # was the implemented solution.
-        correct_protocol = (newurl.startswith('http://') or 
-                            newurl.startswith('https://')) 
+        correct_protocol = (newurl.startswith('http://') or
+                            newurl.startswith('https://'))
         if not correct_protocol:
-            return 
+            return
 
         # XXX Probably want to forget about the state of the current
         # request, although that might interact poorly with other
@@ -107,7 +107,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         if hasattr(req, 'redirect_dict'):
             visited = new.redirect_dict = req.redirect_dict
             if (visited.get(newurl, 0) >= self.max_repeats or
-                len(visited) >= self.max_redirections):
+                    len(visited) >= self.max_redirections):
                 raise urllib2.HTTPError(req.get_full_url(), code,
                                         self.inf_msg + msg, headers, fp)
         else:
@@ -120,8 +120,8 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         fp.close()
 
         return self.parent.open(new, timeout=req.timeout)
-    
-    # This was added for some special cases where the redirect 
+
+    # This was added for some special cases where the redirect
     # handler cries a lot... Again, pretty much code duplication
     # from parent class
     def redirect_request(self, req, resp, code, msg, headers, newurl):
@@ -137,26 +137,27 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
         '''
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
-            or code in (301, 302, 303) and m == "POST"):
+                or code in (301, 302, 303) and m == "POST"):
             # Strictly (according to RFC 2616), 301 or 302 in response
             # to a POST MUST NOT cause a redirection without confirmation
             # from the user (of urllib2, in this case).  In practice,
             # essentially all clients do redirect in this case, so we
             # do the same.
-            
+
             # This path correctly assigns an id for the request/response
             if 'Content-length' in req.headers:
                 req.headers.pop('Content-length')
-            
+
             enc = req.url_object.encoding
-            
+
             new_request = HTTPRequest(
-                                URL(newurl.decode(enc, 'ignore'), encoding=enc),
-                                headers=req.headers,
-                                origin_req_host=req.get_origin_req_host(),
-                                unverifiable=True
-                                )
-            
+                URL(newurl.decode(
+                    enc, 'ignore'), encoding=enc),
+                headers=req.headers,
+                origin_req_host=req.get_origin_req_host(),
+                unverifiable=True
+            )
+
             return new_request
         else:
             err = urllib2.HTTPError(req.get_full_url(),
@@ -166,11 +167,11 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
 
 
 class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
-    
+
     def http_error_default(self, req, resp, code, msg, hdrs):
         m = req.get_method()
         if (code in (301, 302, 303, 307) and m in ("GET", "HEAD")
-            or code in (301, 302, 303) and m == "POST"):
+                or code in (301, 302, 303) and m == "POST"):
             _30X_resp = urllib2.addinfourl(resp, msg, req.get_full_url())
             _30X_resp.code = code
             _30X_resp.msg = msg
@@ -178,7 +179,7 @@ class HTTPErrorHandler(urllib2.HTTPDefaultErrorHandler):
             _30X_resp.id = req.id
             _30X_resp.encoding = getattr(resp, 'encoding', None)
             return _30X_resp
-        
+
         err = urllib2.HTTPError(req.get_full_url(), code, msg, hdrs, resp)
         err.id = req.id
         raise err

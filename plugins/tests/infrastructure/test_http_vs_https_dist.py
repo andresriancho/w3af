@@ -39,28 +39,28 @@ class test_http_vs_https_dist(unittest.TestCase):
     '''
     @author: Javier Andalia <jandalia =at= gmail.com>
     '''
-    
+
     test_url = URL('http://host.tld')
     tracedict = {'localhost': {1: ('192.168.1.1', False),
                                3: ('200.115.195.33', False),
                                5: ('207.46.47.14', True)}}
-    
+
     def setUp(self):
         kb.kb.cleanup()
-        
+
     def test_discover_override_port(self):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
-        
+
         url = URL('https://host.tld:4444/')
         fuzz_req = FuzzableRequest(url)
-        
+
         # HTTPS and HTTP responses, with one different hop
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
         tracedict2['localhost'][3] = ('200.200.0.0', False)
         self._mock_traceroute(tracedict1, tracedict2)
-        
+
         # Mock output manager. Ensure that is called with the proper desc.
         om.out.information = MagicMock(return_value=True)
         plugininst.discover(fuzz_req)
@@ -69,43 +69,44 @@ class test_http_vs_https_dist(unittest.TestCase):
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'
                   '  TCP trace to host.tld:4444\n    0 192.168.1.1\n    1 200.115.195.33\n    2 207.46.47.14')
         om.out.information.assert_called_once_with(result)
-    
+
     def test_discover_eq_routes(self):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
-        
+
         url = URL('https://host.tld:80/')
         fuzz_req = FuzzableRequest(url)
-        
+
         # HTTPS and HTTP responses, with the same hops
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
         self._mock_traceroute(tracedict1, tracedict2)
-        
+
         # Mock output manager. Ensure that is called with the proper desc.
-        om.out.information = MagicMock(side_effect=ValueError('Unexpected call.'))
+        om.out.information = MagicMock(
+            side_effect=ValueError('Unexpected call.'))
         plugininst.discover(fuzz_req)
-        
+
         infos = kb.kb.get('http_vs_https_dist', 'http_vs_https_dist')
         self.assertEqual(len(infos), 1)
-        
+
         info = infos[0]
         self.assertEqual('HTTP traceroute', info.get_name())
         self.assertTrue('are the same' in info.get_desc())
-        
+
     def test_discover_diff_routes(self):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
-        
+
         url = URL('https://host.tld/')
         fuzz_req = FuzzableRequest(url)
-        
+
         # HTTPS and HTTP responses, with one different hop
         tracedict1 = copy.deepcopy(self.tracedict)
         tracedict2 = copy.deepcopy(self.tracedict)
         tracedict2['localhost'][3] = ('200.200.0.0', False)
         self._mock_traceroute(tracedict1, tracedict2)
-        
+
         # Mock output manager. Ensure that is called with the proper desc.
         om.out.information = MagicMock(return_value=True)
         plugininst.discover(fuzz_req)
@@ -114,29 +115,29 @@ class test_http_vs_https_dist(unittest.TestCase):
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'
                   '  TCP trace to host.tld:443\n    0 192.168.1.1\n    1 200.115.195.33\n    2 207.46.47.14')
         om.out.information.assert_called_once_with(result)
-    
+
     def test_discover_runonce(self):
         ''' Discovery routine must be executed only once. Upcoming calls should
         fail'''
         url = URL('https://host.tld/')
         fuzz_req = FuzzableRequest(url)
-        
+
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(side_effect=[True, True])
-        
+
         plugininst.discover(fuzz_req)
         self.assertRaises(w3afRunOnce, plugininst.discover, fuzz_req)
-    
+
     def test_not_root_user(self):
         plugininst = hvshsdist.http_vs_https_dist()
-        
-        plugininst._has_permission = MagicMock(return_value=False)        
-        
+
+        plugininst._has_permission = MagicMock(return_value=False)
+
         with patch('plugins.infrastructure.http_vs_https_dist.om.out') as om_mock:
             plugininst.discover(None)
             ecall = call.error(hvshsdist.PERM_ERROR_MSG)
             self.assertIn(ecall, om_mock.mock_calls)
-        
+
     def _mock_traceroute(self, trace_resp_1, trace_resp_2):
         '''
         Helper method: Mocks scapy 'traceroute' function
@@ -144,35 +145,34 @@ class test_http_vs_https_dist(unittest.TestCase):
         https_tracerout_obj_1 = Mock()
         https_tracerout_obj_1.get_trace = MagicMock(return_value=trace_resp_1)
         resp_tuple_1 = (https_tracerout_obj_1, None)
-        
+
         https_tracerout_obj_2 = Mock()
         https_tracerout_obj_2.get_trace = MagicMock(return_value=trace_resp_2)
         resp_tuple_2 = (https_tracerout_obj_2, None)
-        
+
         hvshsdist.traceroute = create_autospec(hvshsdist.traceroute,
                                                side_effect=[resp_tuple_1, resp_tuple_2])
 
 
 class TestHTTPvsHTTPS(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': base_url,
-                'plugins': {'infrastructure': (PluginConfig('http_vs_https_dist'),)}
-                }
+        'target': base_url,
+        'plugins': {'infrastructure': (PluginConfig('http_vs_https_dist'),)}
         }
-    
+    }
+
     @onlyroot
     def test_trace(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('http_vs_https_dist', 'http_vs_https_dist')
-        
-        self.assertEqual( len(infos), 1, infos)
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        self.assertEqual( 'HTTP traceroute', info.get_name() )
-        
+        self.assertEqual('HTTP traceroute', info.get_name())

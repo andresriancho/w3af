@@ -25,9 +25,9 @@ from core.data.options.option_types import PORT
 
 
 class PortOption(BaseOption):
-    
+
     _type = PORT
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -37,7 +37,7 @@ class PortOption(BaseOption):
         looking object like True or ['a','b','c'].
         '''
         self._value = self.validate(value)
-    
+
     def validate(self, value):
         try:
             port = int(value)
@@ -47,5 +47,5 @@ class PortOption(BaseOption):
             msg = 'Invalid port specified, it needs to be a number between'\
                   ' 1 and 65535.'
             raise w3afException(msg)
-        else:        
+        else:
             return port

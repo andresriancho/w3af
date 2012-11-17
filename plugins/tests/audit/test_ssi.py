@@ -22,33 +22,33 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestSSI(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/ssi/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('ssi'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 }
+                'audit': (PluginConfig('ssi'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
             }
         }
-    
+    }
+
     def test_found_ssi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('ssi', 'ssi')
-        
+
         self.assertEquals(1, len(vulns), vulns)
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Persistent server side include vulnerability', vuln.get_name())
+        self.assertEquals(
+            'Persistent server side include vulnerability', vuln.get_name())
         self.assertEquals("message", vuln.get_var())
         self.assertEquals(self.target_url + 'ssi-lfr.php', str(vuln.getURL()))
-        

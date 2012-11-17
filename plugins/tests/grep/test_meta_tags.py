@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestMetaTags(PluginTest):
-    
+
     meta_tags_url = 'https://moth/w3af/grep/meta_tags/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': meta_tags_url,
@@ -35,27 +35,26 @@ class TestMetaTags(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('meta_tags', 'meta_tags')
-        
+
         self.assertEquals(2, len(vulns))
-        
-        self.assertEquals( set([severity.INFORMATION] * 2), 
-                           set([v.get_severity() for v in vulns]))
-        
-        self.assertEquals( set(['Interesting META tag'] * 2),
-                           set([v.get_name() for v in vulns]))
-        
+
+        self.assertEquals(set([severity.INFORMATION] * 2),
+                          set([v.get_severity() for v in vulns]))
+
+        self.assertEquals(set(['Interesting META tag'] * 2),
+                          set([v.get_name() for v in vulns]))
+
         joined_desc = ''.join([v.get_desc() for v in vulns])
-        
-        self.assertTrue( 'linux' in joined_desc)
-        self.assertTrue( 'Google Sitemap' in joined_desc)
-        
+
+        self.assertTrue('linux' in joined_desc)
+        self.assertTrue('Google Sitemap' in joined_desc)

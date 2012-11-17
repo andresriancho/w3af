@@ -23,31 +23,32 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGlobalRedirect(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/global_redirect/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('global_redirect'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 
-                 }
-            },
-        }
-    
+                'audit': (PluginConfig('global_redirect'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        },
+    }
+
     def test_found_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('global_redirect', 'global_redirect')
-        
-        self.assertEquals(all(['Insecure redirection' == vuln.get_name() for vuln in vulns ]) , True)
+
+        self.assertEquals(all(['Insecure redirection' == vuln.get_name(
+        ) for vuln in vulns]), True)
 
         # Verify the specifics about the vulnerabilities
         EXPECTED = [
@@ -58,10 +59,11 @@ class TestGlobalRedirect(PluginTest):
             ('302-filtered.php', 'url')
         ]
 
-        found = [ (str(v.getURL()), v.get_var()) for v in vulns]
-        expected = [ ((self.target_url + end), param) for (end, param) in EXPECTED ]
-        
+        found = [(str(v.getURL()), v.get_var()) for v in vulns]
+        expected = [((self.target_url + end), param) for (end,
+                    param) in EXPECTED]
+
         self.assertEquals(
-                set( found ),
-                set( expected )
-                )
+            set(found),
+            set(expected)
+        )

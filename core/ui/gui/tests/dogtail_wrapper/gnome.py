@@ -23,7 +23,7 @@ import tempfile
 import commands
 
 from core.ui.gui.tests.dogtail_wrapper.xvfb_server import XVFBServer
-from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY 
+from core.ui.gui.tests.dogtail_wrapper.constants import DISPLAY
 
 
 class Gnome(XVFBServer):
@@ -31,27 +31,25 @@ class Gnome(XVFBServer):
     This class runs all the required commands to have a working Gnome
     environment within a Xvfb; which is required to be able to have a11y
     features, which are needed for LDTP to work.
-    
+
     Lots of tricks seen in this code were taken from mago's documentation
     on how to run Mago on Hudson and from dogtail's run headless script:
-    
+
         * http://mago.ubuntu.com/Documentation/RunningOnHudson
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless?rev=099577f6152ebd229eae530fff6b2221f72f05ae
         * https://fedorahosted.org/dogtail/browser/scripts/dogtail-run-headless
     '''
-    XINITRC = os.path.join( os.getcwd(), 'core', 'ui', 'gui', 'tests',
-                            'dogtail_wrapper', 'dogtail.xinitrc')
-    
+    XINITRC = os.path.join(os.getcwd(), 'core', 'ui', 'gui', 'tests',
+                           'dogtail_wrapper', 'dogtail.xinitrc')
+
     START_CMD = 'xinit %s -- %s %s -screen 0 %sx%sx16 -ac -noreset -shmem -fbdir %s'
     START_CMD = START_CMD % (XINITRC, XVFBServer.XVFB_BIN, DISPLAY,
                              XVFBServer.WIDTH, XVFBServer.HEIGTH,
                              tempfile.gettempdir())
 
     def start_sync(self):
-        # Kill all previously running instances of "gnome" 
-        # TODO: This is a little bit rough, huh?        
+        # Kill all previously running instances of "gnome"
+        # TODO: This is a little bit rough, huh?
         commands.getoutput("pkill -f %s" % self.XINITRC)
-        
-        super(Gnome, self).start_sync()
 
-    
+        super(Gnome, self).start_sync()

@@ -33,23 +33,24 @@ class exec_shell(shell):
     '''
     This class represents a shell where users can execute commands in the remote
     operating system and get the output back.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, v):
         shell.__init__(self, v)
-        
+
         # For writing files to the remote server
         self._transfer_handler = None
 
-    def help( self, command ):
+    def help(self, command):
         '''
         Handle the help command.
         '''
         result = []
         result.append('Available commands:')
-        result.append('    help                            Display this information')
+        result.append(
+            '    help                            Display this information')
         result.append('    lsp                             List payloads')
         result.append('    payload <payload>               Execute "payload" and get the result')
         result.append('    read <file>                     Read the remote server <file> and echo to this console')
@@ -57,10 +58,12 @@ class exec_shell(shell):
         result.append('    upload <local> <remote>         Upload <local> file to <remote> location')
         result.append('    execute <cmd>                   ')
         result.append('    exec <cmd>                      ')
-        result.append('    e <cmd>                         Run <cmd> on the remote operating system')                
-        result.append('    exit                            Exit this shell session')
+        result.append('    e <cmd>                         Run <cmd> on the remote operating system')
+        result.append(
+            '    exit                            Exit this shell session')
         result.append('')
-        result.append('All the other commands are executed on the remote server.')
+        result.append(
+            'All the other commands are executed on the remote server.')
         return '\n'.join(result)
 
     @download_debug
@@ -68,13 +71,13 @@ class exec_shell(shell):
         '''
         This is a wrapper around "read" that will write the results
         to a local file.
-        
+
         @param remote_filename: The remote file to download.
         @param local_filename: The local file where to write the contents of the remote file.
         @return: The message to show to the user.
         '''
-        remote_content = self.read( remote_filename )
-        
+        remote_content = self.read(remote_filename)
+
         if not remote_content:
             return 'Remote file does not exist.'
         else:
@@ -87,14 +90,14 @@ class exec_shell(shell):
                 fh.close()
                 return 'Success.'
 
-    def upload(self, local_filename, remote_filename ):
+    def upload(self, local_filename, remote_filename):
         '''
         This is a wrapper around "write" that will upload a local file
         to the remote filesystem.
-        
+
         @param local_filename: The local file to read and then upload to the remote system.
         @param remote_filename: The remote file to create and write contents to.
-        
+
         @return: The message to show to the user.
         '''
         try:
@@ -104,37 +107,38 @@ class exec_shell(shell):
         else:
             file_content = fh.read()
             fh.close()
-            self.write( remote_filename, file_content )
+            self.write(remote_filename, file_content)
             return 'Success.'
 
     def write(self, remote_filename, file_content):
         '''
         Write a the contents of the parameter "file_content" to the "remote_filename"
         file in the remote filesystem.
-        
+
         @param remote_filename: The filename where to write the file_content
         @param file_content: The string to write in the remote file
-        
+
         @return: The message to show to the user.
         '''
         if not self._transfer_handler:
             # Get the fastest transfer method
-            ptf = payload_transfer_factory( self.execute )
+            ptf = payload_transfer_factory(self.execute)
             self._transfer_handler = ptf.getTransferHandler()
 
         if not self._transfer_handler.can_transfer():
             return 'Failed to transfer, the transfer handler failed.'
         else:
-            estimatedTime = self._transfer_handler.estimate_transfer_time( len(file_content) )
-            om.out.debug('The file transfer will take "' + str(estimatedTime) + '" seconds.')
-            
-            self._transfer_handler.transfer( file_content, remote_filename )
+            estimatedTime = self._transfer_handler.estimate_transfer_time(
+                len(file_content))
+            om.out.debug('The file transfer will take "' + str(
+                estimatedTime) + '" seconds.')
+
+            self._transfer_handler.transfer(file_content, remote_filename)
             om.out.debug('Finished file transfer.')
-            
+
             return 'File upload was successful.'
 
-        
-    def specific_user_input( self, command, parameters ):
+    def specific_user_input(self, command, parameters):
         '''
         This is the method that is called when a user wants to execute something
         in the shell and is called from shell.generic_user_input() which
@@ -150,7 +154,7 @@ class exec_shell(shell):
         if command == 'read':
             if len(parameters) == 1:
                 filename = parameters[0]
-                return self.read( filename )
+                return self.read(filename)
             else:
                 return 'Only one parameter is expected. Usage examples: ' \
                        '"read /etc/passwd", "read \'/var/foo bar/spam.eggs\'"'
@@ -161,7 +165,7 @@ class exec_shell(shell):
         elif command == 'write' and len(parameters) == 2:
             filename = parameters[0]
             content = parameters[1]
-            return self.write( filename, content )
+            return self.write(filename, content)
 
         #
         #    Upload local files to the remote system
@@ -170,20 +174,20 @@ class exec_shell(shell):
             remote_filename = parameters[1]
             local_filename = parameters[0]
             return self.upload(local_filename, remote_filename)
-            
+
         #
         #    Commands that are common to shells that can EXECUTE commands:
         #
 
         #
-        #    Execute the command in the remote host 
+        #    Execute the command in the remote host
         #
         elif command in ['e', 'exec', 'execute']:
-            return self.execute( ' '.join(parameters) )
-                    
+            return self.execute(' '.join(parameters))
+
         else:
             return 'Command "%s" not found. Please type "help".' % command
-    
+
     def get_unlink_command(self):
         '''
         @return: The command to be used to remove files in the remote operating system.
@@ -203,13 +207,13 @@ class exec_shell(shell):
         '''
         unlink_command_format = self.get_unlink_command()
         unlink_command = unlink_command_format % (filename,)
-        return self.execute( unlink_command )
+        return self.execute(unlink_command)
 
     def get_read_command(self, filename):
         '''
         @param filename: Need the filename to determine if we need to put quotes
                          around it (because of spaces in the filename) or not.
-        
+
         @return: The command to be used to read files in the remote operating system.
         Examples:
             - cat %s
@@ -220,10 +224,10 @@ class exec_shell(shell):
             command = 'type %s'
         else:
             command = 'cat %s'
-        
+
         if ' ' in filename:
             return command.replace('%s', '"%s"')
-        
+
         return command
 
     @read_debug
@@ -234,67 +238,68 @@ class exec_shell(shell):
         '''
         read_command_format = self.get_read_command(filename)
         read_command = read_command_format % (filename,)
-        return self.execute( read_command )
-        
+        return self.execute(read_command)
+
     def end_interaction(self):
         '''
         When the user executes "exit" in the console, this method is called.
         Basically, here we handle WHAT TO DO in that case. In most cases (and this is
         why we implemented it this way here) the response is "yes, do it end me" that
         equals to "return True".
-        
+
         In some other cases, the shell prints something to the console and then exists,
         or maybe some other, more complex, thing.
         '''
         return True
-        
+
     def _print_runnable_payloads(self):
         '''
         Print the payloads that can be run using this exploit.
-        
+
         @return: A list with all runnable payloads.
         '''
-        payloads = payload_handler.runnable_payloads( self )
+        payloads = payload_handler.runnable_payloads(self)
         payloads.sort()
-        return '\n'.join( payloads )
-        
-    def end( self ):
+        return '\n'.join(payloads)
+
+    def end(self):
         '''
         This method is called when the shell is not going to be used anymore.
         It should be used to remove the auxiliary files (local and remote)
         generated by the shell.
-        
+
         @return: None
         '''
         pass
 
-    def get_name( self ):
+    def get_name(self):
         '''
         This method is called when the shell is used, in order to create a
         prompt for the user.
-        
+
         @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
         raise NotImplementedError
-        
-    def _identifyOs( self ):
+
+    def _identifyOs(self):
         '''
         Identify the remote operating system and get some remote variables to show to the user.
         '''
-        self._rOS = os_detection_exec( self.execute ) 
-        
+        self._rOS = os_detection_exec(self.execute)
+
         if self._rOS == 'linux':
             self._rUser = self.execute('whoami').strip()
             self._rSystem = self.execute('uname -o -r -n -m -s').strip()
             self._rSystemName = self.execute('uname -n').strip()
         elif self._rOS == 'windows':
             self._rUser = self.execute('echo %USERDOMAIN%\%USERNAME%').strip()
-            self._rSystem = self.execute('echo %COMPUTERNAME% - %OS% - %PROCESSOR_IDENTIFIER%').strip()
+            self._rSystem = self.execute(
+                'echo %COMPUTERNAME% - %OS% - %PROCESSOR_IDENTIFIER%').strip()
             self._rSystemName = self.execute('echo %COMPUTERNAME%').strip()
-                            
-    def __repr__( self ):
+
+    def __repr__(self):
         if not self._rOS:
             self._identifyOs()
-        return '<'+self.get_name()+' object (ruser: "'+self.getRemoteUser()+'" | rsystem: "'+self.getRemoteSystem()+'")>'
-        
+        return '<' + self.get_name() + ' object (ruser: "' + self.getRemoteUser() + '" | rsystem: "' + self.getRemoteSystem() + '")>'
+
     __str__ = __repr__

@@ -39,66 +39,68 @@ class TestGnome(DogtailUnittest):
 
     def get_screenshot(self):
         raise SkipTest('Remove me later.')
-        
+
         self.assertTrue(self.gnome.is_running())
-                
+
         output_file = self.gnome.get_screenshot()
-        
+
         screenshot_img = Image.open(output_file)
         img_width, img_height = screenshot_img.size
-        
+
         self.assertEqual(img_width, Gnome.WIDTH)
         self.assertEqual(img_height, Gnome.HEIGTH)
-        
+
         # It shouldn't be black since it should have the background set by the
         # user running the test in his Gnome desktop
-        self.assertFalse( is_black_image(screenshot_img))
-        
+        self.assertFalse(is_black_image(screenshot_img))
+
         os.remove(output_file)
-        
+
     def test_run_hello_world_find_window_with_dogtail(self):
         self.assertTrue(self.gnome.is_running())
-        
+
         # Start the hello world in gnome
         #run_result = self.gnome.run_x_process(self.X_TEST_COMMAND, block=False)
         #self.assertTrue(run_result)
-        
+
         # Let the window appear in the xvfb, note that block is False above
         self.gnome.start_vnc_client()
-        
+
         try:
             try:
                 os.remove('/tmp/demo-output.txt')
-            except: pass
-            
+            except:
+                pass
+
             # Start gedit.
             self.dogtail.utils.run("gedit")
-            
+
             # Get a handle to gedit's application object.
             gedit = self.dogtail.tree.root.application('gedit')
-            
+
             # Get a handle to gedit's text object.
             # Last text object is the gedit's text field
-            textbuffer = gedit.findChildren(self.dogtail.predicate.GenericPredicate(roleName='text'))[-1]
-            
+            textbuffer = gedit.findChildren(
+                self.dogtail.predicate.GenericPredicate(roleName='text'))[-1]
+
             # This will work only if 'File Browser panel' plugin is disabled
             #textbuffer = gedit.child(roleName = 'text')
-            
+
             # Load the UTF-8 demo file.
             utfdemo = file('/tmp/demo.txt')
-            
+
             # Load the UTF-8 demo file into gedit's text buffer.
             textbuffer.text = utfdemo.read()
 
             # Get a handle to gedit's File menu.
             filemenu = gedit.menu('File')
-            
+
             # Get a handle to gedit's Save button.
             savebutton = gedit.button('Save')
-            
+
             # Click the button
             savebutton.click()
-            
+
             # Get a handle to gedit's Save As... dialog.
             try:
                 saveas = gedit.child(roleName='file chooser')
@@ -109,16 +111,16 @@ class TestGnome(DogtailUnittest):
                     saveas = gedit.dialog('Save as...')
 
             # We want to save to the file name 'UTF8demo.txt'.
-            saveas.child(roleName = 'text').text = 'demo-output.txt'
-            
+            saveas.child(roleName='text').text = 'demo-output.txt'
+
             # Save the file on the Desktop
-            
+
             # Don't make the mistake of only searching by name, there are multiple
             # "Desktop" entires in the Save As dialog - you have to query for the
             # roleName too - see the on-line help for the Dogtail "tree" class for
             # details
             saveas.child('tmp', roleName='table cell').click()
-            
+
             #  Click the Save button.
             saveas.button('Save').click()
 
@@ -130,17 +132,15 @@ class TestGnome(DogtailUnittest):
             raise
         finally:
             self.assertTrue(os.path.exists('/tmp/demo-output.txt'))
-    
+
     def logout(self):
         raise SkipTest('Remove me later.')
-        
+
         self.assertTrue(self.gnome.is_running())
-        
+
         self.gnome.start_vnc_client()
         time.sleep(2)
-        
-        self.logout()
-        
-        self.assertTrue(False)
 
-                
+        self.logout()
+
+        self.assertTrue(False)

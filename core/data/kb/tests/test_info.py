@@ -25,35 +25,36 @@ from nose.plugins.attrib import attr
 
 from core.data.kb.info import info
 
+
 @attr('smoke')
 class TestInfo(unittest.TestCase):
     '''
     Simplest tests for info. Mainly started because of incompatibilities between
     nosetests, doctest and "_".
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def test_convert_to_range(self):
         inf = info()
-        
+
         res = inf._convert_to_range_wrapper([1, 2, 3, 4, 5, 6])
         self.assertEquals('1 to 6', res)
-        
+
         res = inf._convert_to_range_wrapper([1, 2, 3, 6])
         self.assertEquals('1 to 3 and 6', res)
-        
+
         res = inf._convert_to_range_wrapper([1, 2, 3, 6, 7, 8])
         self.assertEquals('1 to 3, 6 to 8', res)
-        
+
         res = inf._convert_to_range_wrapper([1, 2, 3, 6, 7, 8, 10])
         self.assertEquals('1 to 3, 6 to 8 and 10', res)
-        
+
         res = inf._convert_to_range_wrapper([1, 2, 3, 10, 20, 30])
         self.assertEquals('1 to 3, 10, 20 and 30', res)
-        
+
         res = inf._convert_to_range_wrapper([1, 3, 10, 20, 30])
         self.assertEquals('1, 3, 10, 20 and 30', res)
-        
+
         res = len(inf._convert_to_range_wrapper(range(0, 30000, 2)).split())
         self.assertEquals(15001, res)

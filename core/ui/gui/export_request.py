@@ -46,18 +46,18 @@ class export_request(entries.RememberingWindow):
     @author: Andres Riancho < andres.riancho | gmail.com >
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(export_request,self).__init__(
+        super(export_request, self).__init__(
             w3af, "exportreq", "w3af - Export Requests", "Export_Requests")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
 
         # different ways of exporting data
         self._exporters = [
-                ('HTML', html_export),
-                ('Ajax', ajax_export),
-                ('Python', python_export),
-                ('Ruby', ruby_export)
-                ]
+            ('HTML', html_export),
+            ('Ajax', ajax_export),
+            ('Python', python_export),
+            ('Ruby', ruby_export)
+        ]
 
         # splitted panes
         vpan = entries.RememberingVPaned(w3af, "pane-exportrequests")
@@ -79,7 +79,8 @@ class export_request(entries.RememberingWindow):
             b = gtk.Button(lab)
         cb.set_active(0)
         table.attach(cb, 2, 3, 0, 1)
-        b = entries.SemiStockButton("Export", gtk.STOCK_GO_DOWN, _("Export the request"))
+        b = entries.SemiStockButton(
+            "Export", gtk.STOCK_GO_DOWN, _("Export the request"))
         b.connect("clicked", self._export, cb)
         table.attach(b, 3, 4, 0, 1)
         vbox.pack_start(table, False, False, padding=5)
@@ -92,46 +93,48 @@ class export_request(entries.RememberingWindow):
         sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         self.exported_text = SimpleTextView()
         sw.add(self.exported_text)
-        vbox.pack_start( sw, True, True, padding=5)
-        
-        b = entries.SemiStockButton("Save request as...", gtk.STOCK_SAVE_AS, _("Save request as..."))
+        vbox.pack_start(sw, True, True, padding=5)
+
+        b = entries.SemiStockButton(
+            "Save request as...", gtk.STOCK_SAVE_AS, _("Save request as..."))
         b.connect("clicked", self._save_as)
-        vbox.pack_start( b, False, False, padding=5)
-        
+        vbox.pack_start(b, False, False, padding=5)
+
         vpan.pack2(vbox)
-        
+
         # Show the data
         if initialRequest is None:
-            self.http_request.setText( export_request_example )
+            self.http_request.setText(export_request_example)
         else:
             (request_header, request_body) = initialRequest
-            self.http_request.setText(request_header + '\n\n' + request_body )
+            self.http_request.setText(request_header + '\n\n' + request_body)
         func = self._exporters[0][1]
         self.exported_text.setText(func(self.http_request.getText()))
 
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
-        
+
     def _export(self, widg, combo):
         '''Exports the upper text.'''
         opc = combo.get_active()
         func = self._exporters[opc][1]
-        
+
         try:
             exported_request = func(self.http_request.getText())
         except w3afException, w3:
             error_msg = str(w3)
-            self.exported_text.setText( error_msg )
+            self.exported_text.setText(error_msg)
         else:
-            self.exported_text.setText( exported_request )
-        
+            self.exported_text.setText(exported_request)
+
     def _save_as(self, widg):
         '''
         Save the exported data to a file using a file chooser.
         '''
-        chooser = gtk.FileChooserDialog(title='Save as...',action=gtk.FILE_CHOOSER_ACTION_SAVE,
-                        buttons=(gtk.STOCK_CANCEL,gtk.RESPONSE_CANCEL,gtk.STOCK_OPEN,gtk.RESPONSE_OK))
-        
+        chooser = gtk.FileChooserDialog(
+            title='Save as...', action=gtk.FILE_CHOOSER_ACTION_SAVE,
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+
         response = chooser.run()
         if response == gtk.RESPONSE_OK:
             # Save the contents of the self.exported_text to the selected file
@@ -147,4 +150,3 @@ class export_request(entries.RememberingWindow):
         elif response == gtk.RESPONSE_CANCEL:
             pass
         chooser.destroy()
-

@@ -25,69 +25,68 @@ from core.data.dc.headers import Headers
 
 
 class TestHeaders(unittest.TestCase):
-    
+
     def test_empty(self):
         self.assertEquals(Headers([]), {})
-    
+
     def test_simple(self):
-        headers = Headers([('a','b')])
-        
-        self.assertIn('a', headers)    
+        headers = Headers([('a', 'b')])
+
+        self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
     def test_str(self):
-        headers = Headers([('a','b')])
-        
+        headers = Headers([('a', 'b')])
+
         self.assertEqual(str(headers), 'a: b\n')
-        
+
     def test_str_multi(self):
-        headers = Headers([('a','b'), ('1','2')])
-        
+        headers = Headers([('a', 'b'), ('1', '2')])
+
         self.assertEqual(str(headers), 'a: b\n1: 2\n')
-        
+
     def test_unicode(self):
-        headers = Headers([('a','b')])
-        
+        headers = Headers([('a', 'b')])
+
         self.assertEqual(unicode(headers), 'a: b\n')
-        
+
     def test_repeated_overwrite(self):
-        headers = Headers([('a','b'), ('a','3')])
-        
-        self.assertIn('a', headers)    
+        headers = Headers([('a', 'b'), ('a', '3')])
+
+        self.assertIn('a', headers)
         self.assertEqual(headers['a'], '3')
 
     def test_special_chars(self):
-        headers = Headers([('á','ç')])
-        
-        self.assertIn('á', headers)    
+        headers = Headers([('á', 'ç')])
+
+        self.assertIn('á', headers)
         self.assertEqual(headers['á'], 'ç')
 
     def test_add_later(self):
-        headers = Headers([('a','b')])
+        headers = Headers([('a', 'b')])
         headers['c'] = '2'
-        
-        self.assertIn('a', headers)    
+
+        self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
-        self.assertIn('c', headers)    
+        self.assertIn('c', headers)
         self.assertEqual(headers['c'], '2')
 
     def test_overwrite(self):
-        headers = Headers([('a','b')])
+        headers = Headers([('a', 'b')])
         headers['a'] = '2'
-        
-        self.assertIn('a', headers)    
+
+        self.assertIn('a', headers)
         self.assertEqual(headers['a'], '2')
 
     def test_headers_case_sensitive(self):
-        upper_headers = Headers([('Abc','b')])
-        lower_headers = Headers([('abc','b')])
-        
+        upper_headers = Headers([('Abc', 'b')])
+        lower_headers = Headers([('abc', 'b')])
+
         self.assertNotEqual(upper_headers, lower_headers)
 
     def test_clone_with_list_values(self):
-        headers = Headers([('a','b') , ('c','d')])
+        headers = Headers([('a', 'b'), ('c', 'd')])
         cloned = headers.clone_with_list_values()
-        
+
         self.assertEqual(cloned['a'], ['b'])
         self.assertEqual(cloned['c'], ['d'])
-        

@@ -31,57 +31,56 @@ from core.data.dc.headers import Headers
 
 
 class test_objects(unittest.TestCase):
-    
+
     def setUp(self):
         self.plugin = objects()
         kb.kb.save('objects', 'objects', [])
 
     def tearDown(self):
         self.plugin.end()
-                
+
     def test_object(self):
         body = '''header
-        <OBJECT 
+        <OBJECT
           classid="clsid:8AD9C840-044E-11D1-B3E9-00805F499D93"
           width="200" height="200">
           <PARAM name="code" value="Applet1.class">
-        </OBJECT>        
+        </OBJECT>
         footer'''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        
-        self.assertEquals( len(kb.kb.get('objects', 'object')), 1 )
+
+        self.assertEquals(len(kb.kb.get('objects', 'object')), 1)
         i = kb.kb.get('objects', 'object')[0]
-        self.assertTrue( '"object"' in i.get_desc() )
-            
+        self.assertTrue('"object"' in i.get_desc())
+
     def test_applet(self):
         body = '''header
         <APPLET code="XYZApp.class" codebase="html/" align="baseline"
             width="200" height="200">
             <PARAM name="model" value="models/HyaluronicAcid.xyz">
             No Java 2 SDK, Standard Edition v 1.4.2 support for APPLET!!
-        </APPLET>        
+        </APPLET>
         footer'''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        
-        self.assertEquals( len(kb.kb.get('objects', 'applet')), 1 )
+
+        self.assertEquals(len(kb.kb.get('objects', 'applet')), 1)
         i = kb.kb.get('objects', 'applet')[0]
-        self.assertTrue( '"applet"' in i.get_desc() )
+        self.assertTrue('"applet"' in i.get_desc())
 
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        
-        self.assertEquals( len(kb.kb.get('objects', 'objects')), 0 )
-    
+
+        self.assertEquals(len(kb.kb.get('objects', 'objects')), 0)

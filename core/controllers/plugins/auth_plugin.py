@@ -23,13 +23,13 @@ from core.controllers.plugins.plugin import Plugin
 
 
 class AuthPlugin(Plugin):
-    '''  
-    This is the base class for auth plugins, all auth plugins should inherit from it    
+    '''
+    This is the base class for auth plugins, all auth plugins should inherit from it
     and implement the following methods:
         1. login(...)
         2. logout(...)
         2. is_logged(...)
-        
+
     @author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
     '''
 
@@ -43,26 +43,29 @@ class AuthPlugin(Plugin):
 
         It is called in the begging of w3afCore::_discover_and_bruteforce() method
         if current user session is not valid.
-        
+
         '''
-        raise NotImplementedError('Plugin is not implementing required method login')
+        raise NotImplementedError(
+            'Plugin is not implementing required method login')
 
     def logout(self):
         '''
         Logout user from web application.
-        
+
         TODO: need to add calling of this method to w3afCore::_end()
-        
+
         '''
-        raise NotImplementedError('Plugin is not implementing required method logout')
-        
+        raise NotImplementedError(
+            'Plugin is not implementing required method logout')
+
     def is_logged(self):
         '''
         Check if current session is still valid.
-        
+
         It is called in the begging of w3afCore::_discover_and_bruteforce() method.
         '''
-        raise NotImplementedError('Plugin is not implementing required method isLogged')
+        raise NotImplementedError(
+            'Plugin is not implementing required method isLogged')
 
     def get_type(self):
         return 'auth'

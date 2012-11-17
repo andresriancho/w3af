@@ -27,10 +27,10 @@ class PostDataMutant(Mutant):
     '''
     This class is a post data mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type( self ):
+    def get_mutant_type(self):
         return 'post data'
 
     def found_at(self):
@@ -39,17 +39,17 @@ class PostDataMutant(Mutant):
         '''
         res = '"' + self.getURI() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
-        
+
         # Depending on the data container, print different things:
         dc_length = len(str(self.get_dc()))
-        
+
         if dc_length > 65:
-            res += '...' + self.get_var()  + '=' + self.get_mod_value() + '...'
+            res += '...' + self.get_var() + '=' + self.get_mod_value() + '...'
         else:
             res += str(self.get_dc())
-        
+
         res += '" which modifies the "%s" parameter.' % self.get_var()
-        
+
         return res
 
     @staticmethod
@@ -61,7 +61,7 @@ class PostDataMutant(Mutant):
         '''
         if not isinstance(freq, HTTPPostDataRequest):
             return []
-                
+
         return Mutant._create_mutants_worker(freq, PostDataMutant,
                                              mutant_str_list,
                                              fuzzable_param_list,

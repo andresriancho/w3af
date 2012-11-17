@@ -23,9 +23,8 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_svn_config_files(PayloadTestHelper):
-    
+
     def test_svn_config_files(self):
         result = exec_payload(self.shell, 'svn_config_files', use_api=True)
         self.assertTrue('/home/moth/.subversion/config' in result)
         self.assertTrue('props' in result['/home/moth/.subversion/config'])
-        

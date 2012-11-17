@@ -36,52 +36,53 @@ from core.data.parsers.url import URL
 class xssed_dot_com(InfrastructurePlugin):
     '''
     Search in xssed.com to find xssed pages.
-    
+
     @author: Nicolas Crocfer (shatter@shatter-blog.net)
     @author: Fix: Set "." in front of the root domain to limit the search - Raul Siles
-    '''    
+    '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         #
         #   Could change in time,
         #
         self._xssed_url = URL("http://www.xssed.com")
         self._fixed = "<img src='http://data.xssed.org/images/fixed.gif'>&nbsp;FIXED</th>"
-    
+
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         Search in xssed.com and parse the output.
-        
-        @param fuzzable_request: A fuzzable_request instance that contains 
+
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.getURL().getRootDomain()
 
         try:
-            check_url = self._xssed_url.urlJoin("/search?key=." + target_domain)
-            response = self._uri_opener.GET( check_url )
+            check_url = self._xssed_url.urlJoin(
+                "/search?key=." + target_domain)
+            response = self._uri_opener.GET(check_url)
         except w3afException, e:
             msg = 'An exception was raised while running xssed_dot_com plugin.'
             msg += 'Exception: "%s".' % e
-            om.out.debug( msg )
+            om.out.debug(msg)
         else:
             #
             #   Only parse the xssed result if we have it,
             #
             try:
-                return self._parse_xssed_result( response )
+                return self._parse_xssed_result(response)
             except w3afException, e:
                 self._exec = True
                 msg = 'An exception was raised while running xssed_dot_com plugin. '
                 msg += 'Exception: "%s".' % e
-                om.out.debug( msg )
+                om.out.debug(msg)
 
     def _decode_xssed_url(self, url):
         '''
         Replace the URL in the good format.
-        
+
         @return: None
         '''
         url = url.replace('<br>', '')
@@ -93,50 +94,54 @@ class xssed_dot_com(InfrastructurePlugin):
         url = url.replace('&quot;', '\'')
         url = url.replace('&amp;', '&')
         return urllib2.unquote(url)
-    
+
     def _parse_xssed_result(self, response):
         '''
         Parse the result from the xssed site and create the corresponding info
         objects.
-        
+
         @return: Fuzzable requests pointing to the XSS (if any)
         '''
         html_body = response.getBody()
-        
+
         if "<b>XSS:</b>" in html_body:
             #
             #   Work!
             #
-            regex_many_vulns = re.findall("<a href='(/mirror/\d*/)' target='_blank'>", html_body)
+            regex_many_vulns = re.findall(
+                "<a href='(/mirror/\d*/)' target='_blank'>", html_body)
             for mirror_relative_link in regex_many_vulns:
-                
-                mirror_url = self._xssed_url.urlJoin( mirror_relative_link )
-                xss_report_response = self._uri_opener.GET( mirror_url )
+
+                mirror_url = self._xssed_url.urlJoin(mirror_relative_link)
+                xss_report_response = self._uri_opener.GET(mirror_url)
                 matches = re.findall("URL:.+", xss_report_response.getBody())
-                
+
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.set_name('Possible XSS vulnerability')
-                v.setURL( mirror_url )
-                
-                if self._fixed in xss_report_response.getBody():
-                    v.set_severity( severity.LOW )
-                    msg = 'This script contained a XSS vulnerability: "'
-                    msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
-                else:
-                    v.set_severity( severity.HIGH )
-                    msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
-                    msg += self._decode_xssed_url( self._decode_xssed_url(matches[0]) ) +'".'
+                v.setURL(mirror_url)
 
-                v.set_desc( msg )
-                kb.kb.append( self, 'xss', v )
-                om.out.information( v.get_desc() )
-                
+                if self._fixed in xss_report_response.getBody():
+                    v.set_severity(severity.LOW)
+                    msg = 'This script contained a XSS vulnerability: "'
+                    msg += self._decode_xssed_url(
+                        self._decode_xssed_url(matches[0])) + '".'
+                else:
+                    v.set_severity(severity.HIGH)
+                    msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
+                    msg += self._decode_xssed_url(
+                        self._decode_xssed_url(matches[0])) + '".'
+
+                v.set_desc(msg)
+                kb.kb.append(self, 'xss', v)
+                om.out.information(v.get_desc())
+
                 #
                 #   Add the fuzzable request, this is useful if I have the XSS plugin enabled
                 #   because it will re-test this and possibly confirm the vulnerability
                 #
-                fuzzable_request_list = self._create_fuzzable_requests( xss_report_response )
+                fuzzable_request_list = self._create_fuzzable_requests(
+                    xss_report_response)
                 return fuzzable_request_list
         else:
             #   Nothing to see here...
@@ -144,8 +149,7 @@ class xssed_dot_com(InfrastructurePlugin):
 
         return []
 
-                
-    def get_long_desc( self ):
+    def get_long_desc(self):
         return '''
         This plugin searches the xssed.com database and parses the result. The
         information stored in that database is useful to know about previous XSS

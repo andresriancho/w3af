@@ -23,21 +23,19 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFingerprintWAF(PluginTest):
-    
+
     target_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': target_url,
-                'plugins': {'infrastructure': (PluginConfig('fingerprint_WAF'),)}
-                }
+        'target': target_url,
+        'plugins': {'infrastructure': (PluginConfig('fingerprint_WAF'),)}
         }
-    
+    }
+
     def test_fingerprint_WAF(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        infos = self.kb.get('fingerprint_WAF', 'fingerprint_WAF')
-        self.assertEqual( len(infos), 0, infos)
-        
 
+        infos = self.kb.get('fingerprint_WAF', 'fingerprint_WAF')
+        self.assertEqual(len(infos), 0, infos)

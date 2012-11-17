@@ -27,7 +27,7 @@ EXPECTED_SIMPLE = '''require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = nil
-headers = { 
+headers = {
     "Host" => "www.w3af.org",
     "Foo" => "bar"
 }
@@ -43,7 +43,7 @@ EXPECTED_POST = '''require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = "a=1"
-headers = { 
+headers = {
     "Host" => "www.w3af.org"
 }
 res = Net::HTTP.start(url.host, url.port) do |http|
@@ -58,7 +58,7 @@ EXPECTED_POST_REPEATED = '''require 'net/https'
 
 url = URI.parse("http://www.w3af.org/")
 data = "a=1&a=2"
-headers = { 
+headers = {
     "Host" => "www.w3af.org",
     "Foo" => "spam, eggs"
 }
@@ -69,6 +69,7 @@ end
 
 puts res.body
 '''
+
 
 class TestRubyExport(unittest.TestCase):
 
@@ -88,7 +89,7 @@ class TestRubyExport(unittest.TestCase):
                        'a=1'
         ruby_code = ruby_export(http_request)
         self.assertEquals(ruby_code, EXPECTED_POST)
-    
+
     def test_export_POST_repeated(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
@@ -99,7 +100,7 @@ class TestRubyExport(unittest.TestCase):
                        'a=1&a=2'
         ruby_code = ruby_export(http_request)
         self.assertEquals(ruby_code, EXPECTED_POST_REPEATED)
-    
+
     def test_export_inject(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
@@ -109,6 +110,5 @@ class TestRubyExport(unittest.TestCase):
                        '\n' \
                        'a=1&a=2"3'
         ruby_code = ruby_export(http_request)
-        self.assertIn( 'a=1&a=2%223', ruby_code)
-        self.assertIn( "sp\\\"am", ruby_code)
-        
+        self.assertIn('a=1&a=2%223', ruby_code)
+        self.assertIn("sp\\\"am", ruby_code)

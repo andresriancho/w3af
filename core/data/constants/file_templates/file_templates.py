@@ -29,7 +29,7 @@ TEMPLATE_DIR = os.path.join('core', 'data', 'constants', 'file_templates')
 
 def get_file_from_template(extension):
     file_name = "%s.%s" % (rand_alpha(7), extension)
-    
+
     template_file = os.path.join(TEMPLATE_DIR, 'template.%s' % extension)
     if os.path.exists(template_file):
         file_content = file(template_file).read()
@@ -37,5 +37,5 @@ def get_file_from_template(extension):
     else:
         file_content = rand_alnum(64)
         success = False
-        
+
     return success, file_content, file_name

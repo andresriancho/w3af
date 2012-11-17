@@ -28,42 +28,42 @@ from core.data.dc.data_container import DataContainer
 class Cookie(DataContainer):
     '''
     This class represents a cookie.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
-        
+
         super(Cookie, self).__init__(encoding=encoding)
-        
-        for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';' ):
+
+        for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';'):
             k = k.strip()
             v = v.strip()
-            
+
             # This was added to support repeated parameter names
             if k in self:
-                self[ k ].append( v )
+                self[k].append(v)
             else:
-                self[ k ] = [ v, ]
-            
-    def _sanitize( self, value ):
-        value = value.replace('\n','%0a')
-        value = value.replace('\r','%0d')
+                self[k] = [v, ]
+
+    def _sanitize(self, value):
+        value = value.replace('\n', '%0a')
+        value = value.replace('\r', '%0d')
         return value
-        
-    def __str__( self ):
+
+    def __str__(self):
         '''
         This method returns a string representation of the cookie Object.
-        
+
         @return: string representation of the cookie object.
         '''
         res = ''
         for parameter_name in self:
             for element_index in xrange(len(self[parameter_name])):
-                ks = self._sanitize( parameter_name )
-                vs = self._sanitize( self[parameter_name][element_index] )
+                ks = self._sanitize(parameter_name)
+                vs = self._sanitize(self[parameter_name][element_index])
                 res += ks + '=' + vs + '; '
         return res[:-1]
-    
+
     def __reduce__(self):
         r = list(super(Cookie, self).__reduce__())
         r[1] = (str(self),)

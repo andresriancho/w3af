@@ -27,36 +27,37 @@ class TestAllowedMethods(PluginTest):
     '''
     Note that this is a smoke test because the code in allowed_methods calls
     custom/special methods on the remote server using xUrllib and that's something
-    we want to make sure works. 
+    we want to make sure works.
     '''
     modsecurity_url = 'http://modsecurity/'
     moth_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('allowed_methods'),)}
-            }
         }
-    
+    }
+
     def test_moth(self):
         '''
         test_moth in test_allowed_methods, test the "default" configuration for Apache+PHP.
         '''
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
-        
+
         infos = self.kb.get('allowed_methods', 'custom-configuration')
-        
-        self.assertEqual( len(infos), 1, infos )
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
+
         msg = 'The remote Web server has a custom configuration, in which any'
         msg += ' not implemented'
-        self.assertTrue( info.get_desc().startswith(msg))
-        self.assertEqual( info.get_name(), 'Non existent methods default to GET')
-    
+        self.assertTrue(info.get_desc().startswith(msg))
+        self.assertEqual(
+            info.get_name(), 'Non existent methods default to GET')
+
     def test_modsecurity(self):
         '''
         test_modsecurity in test_allowed_methods, test a different configuration:
@@ -66,9 +67,7 @@ class TestAllowedMethods(PluginTest):
         '''
         cfg = self._run_configs['cfg']
         self._scan(self.modsecurity_url, cfg['plugins'])
-        
+
         infos = self.kb.get('allowed_methods', 'custom-configuration')
 
-        self.assertEqual( len(infos), 0, infos )
-        
-        
+        self.assertEqual(len(infos), 0, infos)

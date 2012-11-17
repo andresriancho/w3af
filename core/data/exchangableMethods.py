@@ -27,38 +27,37 @@ def isExchangable(uri_opener, freq):
     '''
     @param uri_opener: The URI opener to use in order to verify if methods can
                        be exchanged for this fuzzable request.
-                       
+
     @param freq: The fuzzable request you want to test if sending using
                  querystring or postdata is the same.
-                   
+
     @return: [True|False]
     '''
     if not (isinstance(freq, HTTPQSRequest) or
-             isinstance(freq, HTTPPostDataRequest)) :
+            isinstance(freq, HTTPPostDataRequest)):
         return False
-        
+
     response = uri_opener.send_mutant(freq)
-    
+
     if freq.get_method() == 'GET':
         # I have to create a HTTPPostDataRequest and set all
         # the parameters to it.
         pdr = HTTPPostDataRequest(
-                          freq.getURL(),
-                          headers=freq.getHeaders(),
-                          cookie=freq.get_cookie(),
-                          dc=freq.get_dc()
-                          )
+            freq.getURL(),
+            headers=freq.getHeaders(),
+            cookie=freq.get_cookie(),
+            dc=freq.get_dc()
+        )
         response2 = uri_opener.send_mutant(pdr)
-    
+
     elif freq.get_method() == 'POST':
         # I have to create a HTTPQSRequest and set all the parameters to it.
         qsr = HTTPQSRequest(
-                    freq.getURL(),
-                    headers=freq.getHeaders(),
-                    cookie=freq.get_cookie()
-                    )
+            freq.getURL(),
+            headers=freq.getHeaders(),
+            cookie=freq.get_cookie()
+        )
         qsr.set_dc(freq.get_dc())
         response2 = uri_opener.send_mutant(qsr)
-        
-    return response2.getBody() == response.getBody()
 
+    return response2.getBody() == response.getBody()

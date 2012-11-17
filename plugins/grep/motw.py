@@ -52,14 +52,14 @@ class motw (GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point, search for motw.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html():
 
-            if not is_404( response ):
+            if not is_404(response):
                 motw_match = self._motw_re.search(response.getBody())
 
                 # Create the info object
@@ -67,10 +67,10 @@ class motw (GrepPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Mark of the web')
-                    i.setURL( response.getURL() )
-                    i.set_id( response.id )
+                    i.setURL(response.getURL())
+                    i.set_id(response.id)
                     i.addToHighlight(motw_match.group(0))
-                
+
                 # Act based on finding/non-finding
                 if motw_match:
 
@@ -79,39 +79,40 @@ class motw (GrepPlugin):
                     url_length_indicated = int(motw_match.group(1))
                     url_length_actual = len(motw_match.group(2))
                     if (url_length_indicated <= url_length_actual):
-                        msg = 'The  URL: "'  + response.getURL() + '"'
+                        msg = 'The  URL: "' + response.getURL() + '"'
                         msg += ' contains a  valid Mark of the Web.'
-                        i.set_desc( msg )
-                        kb.kb.append( self, 'motw', i )
+                        i.set_desc(msg)
+                        kb.kb.append(self, 'motw', i)
                     else:
-                        msg = 'The URL: "' + response.getURL() + '" will be executed in Local '
+                        msg = 'The URL: "' + \
+                            response.getURL() + '" will be executed in Local '
                         msg += 'Machine Zone security context because the indicated length is '
                         msg += 'greater than the actual URL length.'
                         i['localMachine'] = True
-                        i.set_desc( msg )
-                        kb.kb.append( self, 'motw', i )
-              
+                        i.set_desc(msg)
+                        kb.kb.append(self, 'motw', i)
+
                 elif self._withoutMOTW:
                     msg = 'The URL: "' + response.getURL()
                     msg += '" doesn\'t contain a Mark of the Web.'
-                    i.set_desc( msg )
-                    kb.kb.append( self, 'no_motw', i )
+                    i.set_desc(msg)
+                    kb.kb.append(self, 'no_motw', i)
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         self._withoutMOTW = options_list['withoutMOTW'].get_value()
-        
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d1 = 'List the pages that don\'t have a MOTW'
         o1 = opt_factory('withoutMOTW', self._withoutMOTW, d1, 'boolean')
         ol.add(o1)
-        
+
         return ol
-            
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -122,19 +123,20 @@ class motw (GrepPlugin):
         pretty_msg['no_motw'] = 'The following URLs don\'t contain a MOTW:'
         for motw_type in pretty_msg:
             inform = []
-            for i in kb.kb.get( 'motw', motw_type ):
-                inform.append( i )
-        
-            if len( inform ):
-                om.out.information( pretty_msg[ motw_type ] )
+            for i in kb.kb.get('motw', motw_type):
+                inform.append(i)
+
+            if len(inform):
+                om.out.information(pretty_msg[motw_type])
                 for i in inform:
                     if 'localMachine' not in i:
-                        om.out.information( '- ' + i.getURL() )
+                        om.out.information('- ' + i.getURL())
                     else:
-                        msg = '- ' + i.getURL() + ' [Executed in Local machine context]'
-                        om.out.information( msg )
-    
-    def get_long_desc( self ):
+                        msg = '- ' + i.getURL(
+                        ) + ' [Executed in Local machine context]'
+                        om.out.information(msg)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -142,14 +144,14 @@ class motw (GrepPlugin):
         This plugin will specify whether the page is compliant against the MOTW
         standard. The standard is explained in:
             - http://msdn2.microsoft.com/en-us/library/ms537628.aspx
-            
+
         This plugin tests if the length of the URL specified by "(XYZW)" is
         lower, equal or greater than the length of the URL; and also reports the
         existence of this tag in the body of all analyzed pages.
-        
+
         One configurable parameter exists:
             - withoutMOTW
-            
+
         If "withoutMOTW" is enabled, the plugin will show all URLs that don't
         contain a MOTW.
         '''

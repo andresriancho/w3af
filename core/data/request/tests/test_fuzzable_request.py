@@ -32,7 +32,7 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def setUp(self):
         self.url = URL('http://w3af.com/a/b/c.php')
-    
+
     def test_variants_commutative(self):
         # 'is_variant_of' is commutative
         fr = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
@@ -45,25 +45,28 @@ class TestFuzzableRequest(unittest.TestCase):
         fr_get = FuzzableRequest(self.url, method='GET', dc={'a': ['1']})
         fr_post = FuzzableRequest(self.url, method='POST', dc={'a': ['1']})
         self.assertFalse(fr_get.is_variant_of(fr_post))
-    
+
     def test_variants_false_diff_params_type(self):
-        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
-        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+        fr = FuzzableRequest(
+            self.url, method='GET', dc={'a': ['1'], 'b': ['1']})
+        fr_other = FuzzableRequest(
+            self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertFalse(fr.is_variant_of(fr_other))
-    
+
     def test_variants_false_nonetype_in_params(self):
         fr = FuzzableRequest(self.url, method='GET', dc={'a': [None]})
         fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['s']})
         self.assertFalse(fr.is_variant_of(fr_other))
-    
+
     def test_variants_true_similar_params(self):
         # change the url by adding a querystring. shouldn't affect anything.
         url = self.url.urlJoin('?a=z')
         fr = FuzzableRequest(url, method='GET', dc={'a': ['1'], 'b': ['bb']})
-        fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
+        fr_other = FuzzableRequest(
+            self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})
         self.assertTrue(fr.is_variant_of(fr_other))
-    
+
     def test_variants_true_similar_params_two(self):
-        fr = FuzzableRequest(self.url, method='GET', dc={'a':['b']})
+        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']})
         fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['']})
         self.assertTrue(fr.is_variant_of(fr_other))

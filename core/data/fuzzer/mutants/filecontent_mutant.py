@@ -29,13 +29,13 @@ class FileContentMutant(Mutant):
     '''
     This class is a filename mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type( self ):
+    def get_mutant_type(self):
         return 'file content'
-    
-    def getData( self ):
+
+    def getData(self):
         '''
         Override the default getData() of the fuzzable request that contains a
         str(self._dc) <<---- that kills the file I contain in my DC.
@@ -48,39 +48,39 @@ class FileContentMutant(Mutant):
         '''
         res = '"' + self.getURI() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
-        
+
         # Depending on the data container, print different things:
         dc_length = len(str(self.get_dc()))
-        
+
         if dc_length > 65:
-            res += '...' + self.get_var()  + '=' + self.get_mod_value() + '...'
+            res += '...' + self.get_var() + '=' + self.get_mod_value() + '...'
         else:
             res += str(self.get_dc())
-        
+
         res += '" which modifies the uploaded file content.'
-        
+
         return res
-    
+
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config):
         '''
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
-        '''        
+        '''
         if not 'fuzz_form_files' in fuzzer_config:
             return []
-        
+
         if not isinstance(freq, HTTPPostDataRequest):
             return []
-        
+
         file_vars = freq.get_file_vars()
         if not file_vars:
             return []
-        
+
         fake_file_objs = []
         ext = fuzzer_config['fuzzed_files_extension']
-        
+
         for mutant_str in mutant_str_list:
             if isinstance(mutant_str, basestring):
                 # I have to create the NamedStringIO with a "name".
@@ -88,9 +88,9 @@ class FileContentMutant(Mutant):
                 fname = "%s.%s" % (rand_alpha(7), ext)
                 str_file = NamedStringIO(mutant_str, name=fname)
                 fake_file_objs.append(str_file)
-        
+
         res = Mutant._create_mutants_worker(freq, FileContentMutant,
                                             fake_file_objs,
                                             file_vars,
-                                            append, fuzzer_config)            
+                                            append, fuzzer_config)
         return res

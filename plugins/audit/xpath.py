@@ -64,46 +64,46 @@ class xpath(AuditPlugin):
         "Expected token ']'",
         "<p>msxml4.dll</font>",
         "<p>msxml3.dll</font>",
-            
+
         # Put this here cause i did not know if it was a sql injection
         # This error appears when you put wierd chars in a lotus notes document
         # search ( nsf files ).
         '4005 Notes error: Query is not understandable',
     )
-    _multi_in = multi_in( XPATH_PATTERNS )
+    _multi_in = multi_in(XPATH_PATTERNS)
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
-    def audit(self, freq ):
+
+    def audit(self, freq):
         '''
         Tests an URL for xpath injection vulnerabilities.
-        
+
         @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         xpath_strings = self._get_xpath_strings()
-        mutants = create_mutants( freq , xpath_strings, orig_resp=orig_resp )
-            
+        mutants = create_mutants(freq, xpath_strings, orig_resp=orig_resp)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-        
-    def _get_xpath_strings( self ):
+
+    def _get_xpath_strings(self):
         '''
         Gets a list of strings to test against the web app.
-        
+
         @return: A list with all xpath strings to test.
         '''
         xpath_strings = []
         xpath_strings.append("d'z\"0")
-        
+
         # http://www.owasp.org/index.php/Testing_for_XML_Injection
         xpath_strings.append("<!--")
-        
+
         return xpath_strings
-    
-    def _analyze_result( self, mutant, response ):
+
+    def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
@@ -111,56 +111,58 @@ class xpath(AuditPlugin):
         #   I will only report the vulnerability once.
         #
         if self._has_no_bug(mutant):
-            
-            xpath_error_list = self._find_xpath_error( response )
+
+            xpath_error_list = self._find_xpath_error(response)
             for xpath_error in xpath_error_list:
                 if xpath_error not in mutant.get_original_response_body():
-                    v = vuln.vuln( mutant )
+                    v = vuln.vuln(mutant)
                     v.set_plugin_name(self.get_name())
-                    v.set_name( 'XPATH injection vulnerability' )
+                    v.set_name('XPATH injection vulnerability')
                     v.set_severity(severity.MEDIUM)
-                    v.set_desc( 'XPATH injection was found at: ' + mutant.found_at() )
-                    v.set_id( response.id )
-                    v.addToHighlight( xpath_error )
-                    kb.kb.append( self, 'xpath', v )
+                    v.set_desc(
+                        'XPATH injection was found at: ' + mutant.found_at())
+                    v.set_id(response.id)
+                    v.addToHighlight(xpath_error)
+                    kb.kb.append(self, 'xpath', v)
                     break
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'xpath', 'xpath' ), 'VAR' )
-    
-    def _find_xpath_error( self, response ):
+        self.print_uniq(kb.kb.get('xpath', 'xpath'), 'VAR')
+
+    def _find_xpath_error(self, response):
         '''
         This method searches for xpath errors in html's.
-        
+
         @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []
-        for xpath_error_match in self._multi_in.query( response.body ):
+        for xpath_error_match in self._multi_in.query(response.body):
             msg = 'Found XPATH injection. The error showed by the web application'
-            msg +=' is (only a fragment is shown): "' + xpath_error_match
-            msg += '". The error was found on response with id ' + str(response.id) + '.'
-            om.out.information( msg )
-            res.append( xpath_error_match )
+            msg += ' is (only a fragment is shown): "' + xpath_error_match
+            msg += '". The error was found on response with id ' + \
+                str(response.id) + '.'
+            om.out.information(msg)
+            res.append(xpath_error_match)
         return res
-                
-    def get_plugin_deps( self ):
+
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['grep.error_500']
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds XPATH injections.
-        
+
         To find this vulnerabilities the plugin sends the string "d'z'0" to
         every injection point, and searches the response for XPATH errors.
         '''

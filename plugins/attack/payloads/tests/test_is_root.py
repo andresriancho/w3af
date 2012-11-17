@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_is_root(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = False
 
     def test_is_root(self):
         result = exec_payload(self.shell, 'is_root', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

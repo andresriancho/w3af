@@ -29,34 +29,34 @@ class TestProfilesConsoleUI(ConsoleTestHelper):
     '''
     Load profiles from the console UI.
     '''
-    
+
     def test_load_profile_exists(self):
         commands_to_run = ['profiles',
                            'help',
                            'use OWASP_TOP10',
                            'exit']
-        
-        expected = ('The plugins configured by the scan profile have been enabled',
-                    'Please set the target URL',
-                    '| use                            | Use a profile.')
-        
+
+        expected = (
+            'The plugins configured by the scan profile have been enabled',
+            'Please set the target URL',
+            '| use                            | Use a profile.')
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        self.assertTrue( self.startswith_expected_in_output(expected), 
-                         self._mock_stdout.messages )
+
+        self.assertTrue(self.startswith_expected_in_output(expected),
+                        self._mock_stdout.messages)
 
     def test_load_profile_not_exists(self):
         commands_to_run = ['profiles',
                            'help',
                            'use do_not_exist',
                            'exit']
-        
+
         expected = ('Unknown profile name: "do_not_exist"',)
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        self.assertTrue( self.startswith_expected_in_output(expected), 
-                         self._mock_stdout.messages )
-        
+
+        self.assertTrue(self.startswith_expected_in_output(expected),
+                        self._mock_stdout.messages)

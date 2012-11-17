@@ -42,78 +42,80 @@ class global_redirect(AuditPlugin):
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
-        # Internal variables
-        self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>', 
-                                     re.IGNORECASE | re.DOTALL )
-        self._meta_url_re = re.compile('.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
 
-    def audit(self, freq ):
+        # Internal variables
+        self._script_re = re.compile('< *?script.*?>(.*?)< *?/ *?script *?>',
+                                     re.IGNORECASE | re.DOTALL)
+        self._meta_url_re = re.compile(
+            '.*?;URL=(.*)', re.IGNORECASE | re.DOTALL)
+
+    def audit(self, freq):
         '''
         Tests an URL for global redirect vulnerabilities.
-        
+
         @param freq: A FuzzableRequest object
         '''
-        mutants = create_mutants( freq , self.TEST_URLS )
-        
-        send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(m, follow_redir=False)
-        
+        mutants = create_mutants(freq, self.TEST_URLS)
+
+        send_mutant_no_follow = lambda m: self._uri_opener.send_mutant(
+            m, follow_redir=False)
+
         self._send_mutants_in_threads(send_mutant_no_follow,
                                       mutants,
-                                      self._analyze_result)            
+                                      self._analyze_result)
 
-
-    def _analyze_result( self, mutant, response ):
+    def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         '''
-        if self._find_redirect( response ):
-            v = vuln.vuln( mutant )
+        if self._find_redirect(response):
+            v = vuln.vuln(mutant)
             v.set_plugin_name(self.get_name())
-            v.set_id( response.id )
-            v.set_name( 'Insecure redirection' )
+            v.set_id(response.id)
+            v.set_name('Insecure redirection')
             v.set_severity(severity.MEDIUM)
-            v.set_desc( 'Global redirect was found at: ' + mutant.found_at() )
-            kb.kb.append_uniq( self, 'global_redirect', v )
-    
+            v.set_desc('Global redirect was found at: ' + mutant.found_at())
+            kb.kb.append_uniq(self, 'global_redirect', v)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'global_redirect', 'global_redirect' ), 'VAR' )
-        
-    def _find_redirect( self, response ):
+        self.print_uniq(
+            kb.kb.get('global_redirect', 'global_redirect'), 'VAR')
+
+    def _find_redirect(self, response):
         '''
-        This method checks if the browser was redirected (using a 302 code) 
+        This method checks if the browser was redirected (using a 302 code)
         or is being told to be redirected by javascript or <meta http-equiv="refresh"
-        
+
         One day we should be able to identify all redirect methods:
         http://code.google.com/p/html5security/wiki/RedirectionMethods
         '''
         lheaders = response.getLowerCaseHeaders()
-        
+
         response = self._30x_code_redirect(response, lheaders) or \
-                   self._refresh_redirect(response, lheaders) or \
-                   self._meta_redirect(response) or \
-                   self._javascript_redirect(response)
-                           
+            self._refresh_redirect(response, lheaders) or \
+            self._meta_redirect(response) or \
+            self._javascript_redirect(response)
+
         return response
-    
+
     def _30x_code_redirect(self, response, lheaders):
         '''Test for 302 header redirects'''
-        
+
         for header_name in ('location', 'uri'):
             if header_name in lheaders:
                 header_value = lheaders[header_name]
                 for test_url in self.TEST_URLS:
-                    if header_value.startswith( test_url ):
+                    if header_value.startswith(test_url):
                         # The script sent a 302, and w3af followed the redirection
                         # so the URL is now the test site
                         return True
-        
+
         return False
 
-    def _refresh_redirect(self, response, lheaders):        
+    def _refresh_redirect(self, response, lheaders):
         '''Check for the *very strange* Refresh HTTP header, which looks like a
         <meta refresh> in the header context!
         http://stackoverflow.com/questions/283752/refresh-http-header
@@ -121,21 +123,21 @@ class global_redirect(AuditPlugin):
         if 'refresh' in lheaders:
             refresh = lheaders['refresh']
             # Format is 0;url=my_view_page.php
-            splitted_refresh = refresh.split('=',1)
+            splitted_refresh = refresh.split('=', 1)
             if len(splitted_refresh) == 2:
                 _, url = splitted_refresh
                 for test_url in self.TEST_URLS:
-                    if url.startswith( test_url ):
+                    if url.startswith(test_url):
                         return True
-        
+
         return False
-    
+
     def _meta_redirect(self, response):
         '''
         Test for meta redirects
         '''
         try:
-            dp = dpCache.dpc.get_document_parser_for( response )
+            dp = dpCache.dpc.get_document_parser_for(response)
         except w3afException:
             # Failed to find a suitable parser for the document
             return False
@@ -145,10 +147,10 @@ class global_redirect(AuditPlugin):
                 if match_url:
                     url = match_url.group(1)
                     for test_url in self.TEST_URLS:
-                        if url.startswith( test_url ):
+                        if url.startswith(test_url):
                             return True
-        
-        return False             
+
+        return False
 
     def _javascript_redirect(self, response):
         '''Test for JavaScript redirects, these are some common redirects:
@@ -157,34 +159,34 @@ class global_redirect(AuditPlugin):
              window.location.href="http://www.w3af.com/";
              location.replace('http://www.w3af.com/');
             '''
-        res = self._script_re.search( response.getBody() )
+        res = self._script_re.search(response.getBody())
         if res:
-            
+
             url_group_re = '(%s)' % '|'.join(self.TEST_URLS)
-            
+
             for script_code in res.groups():
                 script_code = script_code.split('\n')
                 code = []
                 for i in script_code:
-                    code.extend( i.split(';') )
-                    
+                    code.extend(i.split(';'))
+
                 for line in code:
-                    if re.search( '(window\.location|location\.).*' + url_group_re, line ):
+                    if re.search('(window\.location|location\.).*' + url_group_re, line):
                         return True
-        
+
         return False
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds global redirection vulnerabilities. This kind of bugs
         are used for phishing and other identity theft attacks. A common example
-        of a global redirection would be a script that takes a "url" parameter 
+        of a global redirection would be a script that takes a "url" parameter
         and when requesting this page, a HTTP 302 message with the location header
         to the value of the url parameter is sent in the response.
-        
+
         Global redirection vulnerabilities can be found in javascript, META tags
         and 302 / 301 HTTP return codes.
         '''

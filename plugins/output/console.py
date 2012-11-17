@@ -40,7 +40,7 @@ def catch_ioerror(meth):
         except IOError as (errno, strerror):
             if errno == ENOSPC:
                 msg = 'No space left on device'
-                raise w3afMustStopByKnownReasonExc( msg )
+                raise w3afMustStopByKnownReasonExc(msg)
 
     return wrapper
 
@@ -48,30 +48,30 @@ def catch_ioerror(meth):
 class console(OutputPlugin):
     '''
     Print messages to the console.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         OutputPlugin.__init__(self)
-        
+
         # User configured setting
         self.verbose = False
 
     def _make_printable(self, a_string):
-        a_string = str( a_string )
+        a_string = str(a_string)
         a_string = a_string.replace('\n', '\n\r')
         return ''.join(ch for ch in a_string if ch in string.printable)
 
     def _print_to_stdout(self, message, newline):
-        to_print = self._make_printable( message )
+        to_print = self._make_printable(message)
         if newline:
             to_print += '\r\n'
-        sys.stdout.write( to_print )
+        sys.stdout.write(to_print)
         sys.stdout.flush()
-        
+
     @catch_ioerror
-    def debug(self, message, newLine=True ):
+    def debug(self, message, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
@@ -79,42 +79,42 @@ class console(OutputPlugin):
         '''
         if self.verbose:
             self._print_to_stdout(message, newLine)
-            
+
     @catch_ioerror
-    def _generic(self, message , newLine=True, severity=None ):
+    def _generic(self, message, newLine=True, severity=None):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for all messages except from debug ones.
-        ''' 
+        '''
         self._print_to_stdout(message, newLine)
-        
+
     error = console = vulnerability = information = _generic
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to the console.
-        
+
         One configurable parameter exists:
             - verbose
         '''
 
-    def set_options( self, option_list ):
+    def set_options(self, option_list):
         '''
         Sets the Options given on the OptionList to self. The options are the
-        result of a user entering some data on a window that was constructed 
+        result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using get_options()
-        
-        This method MUST be implemented on every plugin. 
-        
+
+        This method MUST be implemented on every plugin.
+
         @return: No value is returned.
-        ''' 
+        '''
         self.verbose = option_list['verbose'].get_value()
 
-    def get_options( self ):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
@@ -122,5 +122,5 @@ class console(OutputPlugin):
         d = 'Enables verbose output for the console'
         o = opt_factory('verbose', self.verbose, d, 'boolean')
         ol.add(o)
-        
+
         return ol

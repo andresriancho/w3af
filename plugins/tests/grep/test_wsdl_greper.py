@@ -43,36 +43,36 @@ class test_wsdl_greper(unittest.TestCase):
 
     def tearDown(self):
         self.plugin.end()
-    
+
     def test_wsdl_greper_empty(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )
-    
+        self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
+
     def test_wsdl_greper_long(self):
         body = 'ABC ' * 10000
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )
-    
+        self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
+
     def test_wsdl_greper_positive(self):
         body = 'ABC ' * 100
         body += '/s:sequence'
         body += '</br> ' * 50
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 1 )
+        self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 1)
 
     def test_wsdl_greper_positive_disco(self):
         body = 'ABC ' * 100
         body += 'disco:discovery '
         body += '</br> ' * 50
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.get('wsdl_greper', 'disco')), 1 )
-        self.assertEqual( len(kb.kb.get('wsdl_greper', 'wsdl')), 0 )
+        self.assertEqual(len(kb.kb.get('wsdl_greper', 'disco')), 1)
+        self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)

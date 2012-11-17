@@ -29,20 +29,20 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestHTMLOutput(PluginTest):
-    
+
     xss_url = 'http://moth/w3af/audit/xss/'
     OUTPUT_FILE = 'output-unittest.html'
-    
+
     _run_configs = {
         'cfg': {
             'target': xss_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
-                         'xss',
+                        'xss',
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                ),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -52,44 +52,43 @@ class TestHTMLOutput(PluginTest):
                     PluginConfig(
                         'html_file',
                         ('output_file', OUTPUT_FILE, PluginConfig.STR)),
-                )         
+                )
             },
         }
     }
-    
+
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_html_get_vulns()
-        
+
         self.assertGreaterEqual(len(xss_vulns), 3)
-        
+
         self.assertEquals(
             set(sorted([v.getURL() for v in xss_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
-        
+
     def _from_html_get_vulns(self):
         vuln_url_re = re.compile('<b>URL:</b> (.*?)<br />')
         vulns = []
-        
+
         for line in file(self.OUTPUT_FILE):
-            
-            mo = vuln_url_re.search( line )
+
+            mo = vuln_url_re.search(line)
             if mo:
-                url = URL( mo.group(1) )
+                url = URL(mo.group(1))
                 v = vuln.vuln()
-                v.setURL( url )
+                v.setURL(url)
                 vulns.append(v)
-                
+
         return vulns
-        
+
     def tearDown(self):
         super(TestHTMLOutput, self).tearDown()
         try:
             os.remove(self.OUTPUT_FILE)
         except:
             pass
-

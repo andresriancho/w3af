@@ -44,7 +44,7 @@ class TestHistoryItem(unittest.TestCase):
         kb.kb.cleanup()
         cf.cf.cleanup()
         cf.cf.save('session_name',
-                'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
+                   'defaultSession' + '-' + time.strftime('%Y-%b-%d_%H-%M-%S'))
         create_temp_dir()
 
     def tearDown(self):
@@ -56,14 +56,14 @@ class TestHistoryItem(unittest.TestCase):
         h1 = HistoryItem()
         h2 = HistoryItem()
         self.assertEqual(h1._db, h2._db)
-    
+
     def test_special_chars_in_db_filename(self):
         kb.kb.cleanup()
         cf.cf.cleanup()
         cf.cf.save('session_name', 'db_foo-:3128!.db')
         create_temp_dir()
         h1 = HistoryItem()
-    
+
     def test_find(self):
         find_id = random.randint(1, 499)
         url = URL('http://w3af.org/a/b/foobar.php?foo=123')
@@ -73,9 +73,9 @@ class TestHistoryItem(unittest.TestCase):
             code = 200
             if i == find_id:
                 code = 302
-            
+
             hdr = Headers([('Content-Type', 'text/html')])
-            res = HTTPResponse(code, '<html>',hdr, url, url)
+            res = HTTPResponse(code, '<html>', hdr, url, url)
             h1 = HistoryItem()
             h1.request = fr
             res.set_id(i)
@@ -85,12 +85,15 @@ class TestHistoryItem(unittest.TestCase):
                 h1.updateTag(tag_value)
             h1.save()
         h2 = HistoryItem()
-        self.assertEqual(len(h2.find([('tag', "%"+tag_value+"%", 'like')])), 1)
+        self.assertEqual(
+            len(h2.find([('tag', "%" + tag_value + "%", 'like')])), 1)
         self.assertEqual(len(h2.find([('code', 302, '=')])), 1)
         self.assertEqual(len(h2.find([('mark', 1, '=')])), 1)
         self.assertEqual(len(h2.find([('has_qs', 1, '=')])), 500)
-        self.assertEqual(len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
-        results = h2.find([('has_qs', 1, '=')], result_limit=1, orderData=[('id','desc')])
+        self.assertEqual(
+            len(h2.find([('has_qs', 1, '=')], result_limit=10)), 10)
+        results = h2.find(
+            [('has_qs', 1, '=')], result_limit=1, orderData=[('id', 'desc')])
         self.assertEqual(results[0].id, 499)
         search_data = []
         search_data.append(('id', find_id + 1, "<"))
@@ -120,7 +123,7 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
-        res = HTTPResponse(200, '<html>',hdr, url, url)
+        res = HTTPResponse(200, '<html>', hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -136,7 +139,7 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
-        res = HTTPResponse(200, '<html>',hdr, url, url)
+        res = HTTPResponse(200, '<html>', hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -154,7 +157,7 @@ class TestHistoryItem(unittest.TestCase):
         url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
-        res = HTTPResponse(200, '<html>',hdr, url, url)
+        res = HTTPResponse(200, '<html>', hdr, url, url)
         h1 = HistoryItem()
         h1.request = fr
         res.set_id(i)
@@ -176,7 +179,7 @@ class TestHistoryItem(unittest.TestCase):
         for i in xrange(501, 1000):
             fr = FuzzReq(url, dc={'a': ['1']})
             hdr = Headers([('Content-Type', 'text/html')])
-            res = HTTPResponse(200, '<html>',hdr, url, url)
+            res = HTTPResponse(200, '<html>', hdr, url, url)
             h1 = HistoryItem()
             h1.request = fr
             res.set_id(i)
@@ -188,5 +191,3 @@ class TestHistoryItem(unittest.TestCase):
         h2 = HistoryItem()
         h2.load(tag_id)
         self.assertEqual(h2.tag, tag_value)
-
-        

@@ -25,9 +25,9 @@ from core.data.constants.common_directories import get_common_directories
 
 
 class TestCommonDirectories(unittest.TestCase):
-    
+
     def test_windows(self):
         self.assertIn('C:\\\\', get_common_directories('windows'))
-        
+
     def test_linux(self):
         self.assertIn('/etc/', get_common_directories('linux'))

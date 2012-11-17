@@ -28,17 +28,17 @@ class JSONPostDataRequest(HTTPPostDataRequest):
     '''
     This class represents a fuzzable request for a http request that contains
     JSON postdata.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def getData( self ):
+    def getData(self):
         '''
         @return: A string that represents the JSON data saved in the dc.
         '''
         return json.dumps(self._dc)
-        
-    def __str__( self ):
+
+    def __str__(self):
         '''
         Return a str representation of this fuzzable request.
         '''
@@ -49,9 +49,9 @@ class JSONPostDataRequest(HTTPPostDataRequest):
         str_res += json.dumps(self._dc)
         str_res += ')'
         return str_res
-    
-    def set_dc( self , data_cont ):
+
+    def set_dc(self, data_cont):
         self._dc = data_cont
-            
-    def __repr__( self ):
-        return '<JSON fuzzable request | '+ self.get_method() +' | '+ self.getURI() +' >'
+
+    def __repr__(self):
+        return '<JSON fuzzable request | ' + self.get_method() + ' | ' + self.getURI() + ' >'

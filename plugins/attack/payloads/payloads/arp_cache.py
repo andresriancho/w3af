@@ -8,7 +8,7 @@ class arp_cache(base_payload):
     '''
     def api_read(self):
         result = {}
-        
+
         files = []
         files.append('/proc/net/arp')
 
@@ -17,31 +17,31 @@ class arp_cache(base_payload):
             if content != '':
                 for line in content.split('\n')[1:]:
                     splitted_line = line.split(' ')
-                    splitted_line = [ i for i in splitted_line if i != '']
-                    
+                    splitted_line = [i for i in splitted_line if i != '']
+
                     try:
-                        ip_address = splitted_line[0] 
+                        ip_address = splitted_line[0]
                         hw_address = splitted_line[3]
                         device = splitted_line[5]
                     except:
                         pass
                     else:
-                        result[ ip_address ] = (hw_address,device)
-        
+                        result[ip_address] = (hw_address, device)
+
         return result
-    
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result:
             return 'ARP cache not found.'
         else:
             rows = []
-            rows.append( ['IP address', 'HW address', 'Device'] ) 
-            rows.append( [] )
+            rows.append(['IP address', 'HW address', 'Device'])
+            rows.append([])
             for ip_address in api_result:
                 hw_addr, device = api_result[ip_address]
-                rows.append( [ip_address, hw_addr, device] )
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+                rows.append([ip_address, hw_addr, device])
+            result_table = table(rows)
+            result_table.draw(80)
             return rows

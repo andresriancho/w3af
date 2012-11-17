@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_hostname(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'hostname': [u'moth3']}
 
     def test_hostname(self):
         result = exec_payload(self.shell, 'hostname', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

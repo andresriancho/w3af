@@ -52,8 +52,9 @@ class HistorySuggestion(object):
 
         @return: a generator with the texts
         '''
-        info = sorted(self.history.items(), key=operator.itemgetter(1), reverse=True)
-        return [k for k,v in info]
+        info = sorted(
+            self.history.items(), key=operator.itemgetter(1), reverse=True)
+        return [k for k, v in info]
 
     def insert(self, newtext):
         '''Inserts new text to the history.'''
@@ -66,7 +67,9 @@ class HistorySuggestion(object):
         fileh.close()
 
 if __name__ == "__main__":
-    import random, string, time
+    import random
+    import string
+    import time
 
     QUANT = 5000
     LENGTH = 50
@@ -77,7 +80,8 @@ if __name__ == "__main__":
         os.remove(arch)
     his = HistorySuggestion(arch)
 
-    texts = ["".join(random.choice(string.letters) for x in xrange(LENGTH)) for y in xrange(QUANT)]
+    texts = ["".join(random.choice(
+        string.letters) for x in xrange(LENGTH)) for y in xrange(QUANT)]
 
     print "Storing the elements:",
     tini = time.time()

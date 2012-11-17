@@ -33,6 +33,7 @@ import core.data.parsers.encode_decode as encode_decode
 from core.controllers.exceptions import w3afException
 from core.ui.gui import entries
 
+
 class SimpleTextView(gtk.TextView):
     '''Simple abstraction of the text view.'''
     def __init__(self):
@@ -60,11 +61,11 @@ class SimpleTextView(gtk.TextView):
 
     def setText(self, newtext, use_repr=False):
         '''Sets a new text in the pane, repr'ing it if needed.
-        
+
         @param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
         escapes new lines, and tabs, but we would like to keep those as they can be represented
         properly in a textview.
-        
+
         @param newtext: the new text of the pane.
         '''
         self.clear()
@@ -77,15 +78,14 @@ class SimpleTextView(gtk.TextView):
             #    when decoding stuff that can NOT be represented in unicode. Example:
             #    base64 decode /w== returns \xff which raises an exception here if we
             #    use unicode(newtext)
-            
-            newtext = newtext.replace('\0','\\x00')
-            
+
+            newtext = newtext.replace('\0', '\\x00')
+
             try:
                 newtext = unicode(newtext)
             except:
                 newtext = repr(newtext)[1:-1]
-            
-                    
+
         self.buffer.insert(iterl, newtext)
 
     def getText(self):
@@ -96,13 +96,14 @@ class SimpleTextView(gtk.TextView):
         start, end = self.buffer.get_bounds()
         return self.buffer.get_text(start, end)
 
+
 class EncodeDecode(entries.RememberingWindow):
     '''Tool to encode and decode strings in different ways.
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(EncodeDecode,self).__init__(
+        super(EncodeDecode, self).__init__(
             w3af, "encodedecode", _("w3af - Encode / Decode"),
             "Encode_and_Decode")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
@@ -125,7 +126,8 @@ class EncodeDecode(entries.RememberingWindow):
             b = gtk.Button(lab)
         cb.set_active(0)
         hbox.pack_start(cb, False, False, padding=10)
-        b = entries.SemiStockButton("Encode", gtk.STOCK_GO_DOWN, _("Encode the upper text"))
+        b = entries.SemiStockButton(
+            "Encode", gtk.STOCK_GO_DOWN, _("Encode the upper text"))
         b.connect("clicked", self._encode, cb)
         hbox.pack_start(b, False, False)
         # Middle buttons, rigth
@@ -134,7 +136,8 @@ class EncodeDecode(entries.RememberingWindow):
             cb.append_text(lab)
             b = gtk.Button(lab)
         cb.set_active(0)
-        b = entries.SemiStockButton("Decode", gtk.STOCK_GO_UP, _("Decode the lower text"))
+        b = entries.SemiStockButton(
+            "Decode", gtk.STOCK_GO_UP, _("Decode the lower text"))
         hbox.pack_end(b, False, False, padding=10)
         b.connect("clicked", self._decode, cb)
         hbox.pack_end(cb, False, False)
@@ -162,7 +165,7 @@ class EncodeDecode(entries.RememberingWindow):
         out.setText(u"")
         # go busy
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
-                gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
+                              gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
         while gtk.events_pending():
@@ -183,25 +186,25 @@ class EncodeDecode(entries.RememberingWindow):
                 msg = _("An error was generated during the execution:\n\t\t- Invalid input for that operation.\n\n")
                 msg += _("The string that you are trying to encode/decode can\'t be encoded/decoded using this algorithm.")
                 msg += _(" A detailed error follows:\n\t\t- ")
-                out.setText( msg + str(proc.exception), use_repr=False)
+                out.setText(msg + str(proc.exception), use_repr=False)
                 self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
 
         proc.start()
         gobject.timeout_add(200, procDone)
-        
+
     def _encode(self, widg, combo):
         '''Encodes the upper text.'''
         opc = combo.get_active()
         func = _butNameFunc_enc[opc][1]
         self._proc(self.paneup, self.panedn, func)
-        
+
     def _decode(self, widg, combo):
         '''Decodes the lower text.'''
         opc = combo.get_active()
         func = _butNameFunc_dec[opc][1]
         self._proc(self.panedn, self.paneup, func)
-        
+
 
 class ThreadedProc(threading.Thread):
     '''Encodes or decodes the text in a different thread.'''
@@ -221,7 +224,7 @@ class ThreadedProc(threading.Thread):
             self.ok = False
         finally:
             self.event.set()
-            
+
 
 # A helper function for the decoding functions
 
@@ -230,7 +233,7 @@ def _get_nibbles(char):
     @return: The first ans second nibble of the ascii value of the char
     '''
     try:
-        x,y = hex(ord(char))[2:]
+        x, y = hex(ord(char))[2:]
     except:
         # We get here with chars like \t
         # that translate to 0x9 (they "don't have" first and second nibble")
@@ -239,6 +242,7 @@ def _get_nibbles(char):
     return x, y
 
 # These are the encoding and decoding functions:
+
 
 def sha_encode(t):
     '''Encoder using SHA1.
@@ -249,6 +253,7 @@ def sha_encode(t):
     s = hashlib.sha1(t)
     return s.hexdigest()
 
+
 def md5_encode(t):
     '''Encoder using MD5.
 
@@ -258,6 +263,7 @@ def md5_encode(t):
     m = hashlib.md5(t)
     return m.hexdigest()
 
+
 def b64encode(t):
     '''Encoder using Base64.
 
@@ -265,6 +271,7 @@ def b64encode(t):
     'SG9sYSBtdW5kbw=='
     '''
     return base64.b64encode(t)
+
 
 def b64decode(t):
     '''Decoder using Base64.
@@ -281,6 +288,7 @@ def b64decode(t):
         raise w3afException(msg)
     return result
 
+
 def urlencode(t):
     '''Encoder doing URL Encode.
 
@@ -288,6 +296,7 @@ def urlencode(t):
     'Hola%20mundo'
     '''
     return urllib.quote(t)
+
 
 def urldecode(t):
     '''Decoder doing URL Encode.
@@ -297,31 +306,34 @@ def urldecode(t):
     '''
     return urllib.unquote(t)
 
+
 def html_escape(t):
     """Convert special HTML characters ('&', '<', '>', '"', "'") in string to HTML-safe sequences.
 
     >>> html_escape('<>"&')
     '&lt;&gt;&quot;&amp;'
-    >>> 
+    >>>
     """
     html_escape_table = {
-            "&": "&amp;",
-            '"': "&quot;",
-            "'": "&#039;",
-            ">": "&gt;",
-            "<": "&lt;",
-            }
+        "&": "&amp;",
+        '"': "&quot;",
+        "'": "&#039;",
+        ">": "&gt;",
+        "<": "&lt;",
+    }
 
-    return "".join(html_escape_table.get(c,c) for c in t)
+    return "".join(html_escape_table.get(c, c) for c in t)
+
 
 def html_unescape(t):
     '''Decoder doing HTML unescaping.
 
     >>> encode_decode.htmldecode('&lt;script&gt;')
     u'<script>'
-    >>> 
+    >>>
     '''
     return encode_decode.htmldecode(t)
+
 
 def double_urlencode(t):
     '''Encoder doing Double URL Encode.
@@ -331,6 +343,7 @@ def double_urlencode(t):
     '''
     return urllib.quote(urllib.quote(t))
 
+
 def double_urldecode(t):
     '''Decoder doing Double URL Encode.
 
@@ -339,9 +352,10 @@ def double_urldecode(t):
     '''
     return urllib.unquote(urllib.unquote(t))
 
+
 def hex_encoding(t):
     '''Hex encoding method.
-    
+
     This is one of the RFC compliant ways for encoding a URL.  It is also the
     simplest method of encoding a URL. The encoding method consists of
     escaping a hexadecimal byte value for the encoded character with a '%'
@@ -353,19 +367,21 @@ def hex_encoding(t):
     '''
     return "%" + "%".join(hex(ord(c))[2:] for c in t)
 
+
 def zero_x_encoding(t):
     '''0x encoding method.
-    
+
     >>> zero_x_encoding("A")
     '0x41'
     >>> zero_x_encoding("ABC")
     '0x414243'
     '''
     return "0x" + "".join(hex(ord(c))[2:] for c in t)
- 
+
+
 def hex_decoding(t):
     '''Hex decoding method.
-    
+
     The reverse of Hex Encoding.
 
     >>> hex_decoding("%41")
@@ -374,14 +390,15 @@ def hex_decoding(t):
     'ABC'
     '''
     nums = t[1:].split("%")
-    return "".join(chr(int(n,16)) for n in nums)
- 
+    return "".join(chr(int(n, 16)) for n in nums)
+
+
 def double_percent_hex_encoding(t):
     '''Double Percent Hex encoding method.
-    
+
     This is based on the normal method of hex encoding.  The percent
-    is encoded using hex encoding followed by the hexadecimal byte 
-    value to be encoded. 
+    is encoded using hex encoding followed by the hexadecimal byte
+    value to be encoded.
 
     >>> double_percent_hex_encoding("A")
     '%2541'
@@ -389,11 +406,12 @@ def double_percent_hex_encoding(t):
     '%2541%2542%2543'
     '''
     return "%25" + "%25".join(hex(ord(c))[2:] for c in t)
- 
+
+
 def double_nibble_hex_encoding(t):
     '''Double Nibble Hex encoding method.
-    
-    This is based on the standard hex encoding method.  Each hexadecimal 
+
+    This is based on the standard hex encoding method.  Each hexadecimal
     nibble value is encoded using the standard hex encoding.
 
     >>> double_nibble_hex_encoding("A")
@@ -403,14 +421,15 @@ def double_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = _get_nibbles(c)
+        x, y = _get_nibbles(c)
         parts.append("%%%X%%%X" % (ord(x), ord(y)))
-    return "%" + "%".join(parts) 
+    return "%" + "%".join(parts)
+
 
 def first_nibble_hex_encoding(t):
     '''First Nibble Hex encoding method.
-    
-    This is very similar to double nibble hex encoding.  The difference is 
+
+    This is very similar to double nibble hex encoding.  The difference is
     that only the first nibble is encoded.
 
     >>> first_nibble_hex_encoding("A")
@@ -420,14 +439,15 @@ def first_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = _get_nibbles(c)
+        x, y = _get_nibbles(c)
         parts.append("%%%X%s" % (ord(x), y))
-    return "%" + "%".join(parts) 
+    return "%" + "%".join(parts)
+
 
 def second_nibble_hex_encoding(t):
     '''Second Nibble Hex encoding method.
-    
-    This is very similar to double nibble hex encoding.  The difference is 
+
+    This is very similar to double nibble hex encoding.  The difference is
     that only the second nibble is encoded.
 
     >>> second_nibble_hex_encoding("A")
@@ -437,9 +457,10 @@ def second_nibble_hex_encoding(t):
     '''
     parts = []
     for c in t:
-        x,y = _get_nibbles(c)
+        x, y = _get_nibbles(c)
         parts.append("%s%%%X" % (x, ord(y)))
-    return "%" + "%".join(parts) 
+    return "%" + "%".join(parts)
+
 
 def utf8_barebyte_encoding(t):
     '''UTF-8 Bare byte Encoding, just a normal UTF-8 encoding.
@@ -451,6 +472,7 @@ def utf8_barebyte_encoding(t):
     '''
     return t.encode("utf8")
 
+
 def utf8_encoding(t):
     '''UTF-8 Encoding. Note that the exa values are shown with a '%'.
 
@@ -459,11 +481,12 @@ def utf8_encoding(t):
     >>> utf8_encoding("Año")
     'A%C3%B1o'
     '''
-    return "".join("%%%X"%ord(x) if ord(x)>127 else x for x in t)
+    return "".join("%%%X" % ord(x) if ord(x) > 127 else x for x in t)
+
 
 def msu_encoding(t):
     '''Microsoft %U Encoding.
-    
+
     This presents a different way to encode Unicode code point values
     up to 65535 (or two bytes).  The format is simple; %U precedes 4
     hexadecimal nibble values that represent the Unicode code point value.
@@ -477,19 +500,22 @@ def msu_encoding(t):
     uppr = (x.upper() for x in full)
     return "%U" + "%U".join(uppr)
 
+
 def random_upper(t):
     '''Change random chars of the string to upper case.
 
     This function has no tests, because its random nature.
     '''
-    return "".join((c.upper() if random.random()>.5 else c) for c in t)
+    return "".join((c.upper() if random.random() > .5 else c) for c in t)
+
 
 def random_lower(t):
     '''Change random chars of the string to lower case.
 
     This function has no tests, because its random nature.
     '''
-    return "".join((c.lower() if random.random()>.5 else c) for c in t)
+    return "".join((c.lower() if random.random() > .5 else c) for c in t)
+
 
 def mysql_encode(t):
     '''Convert the text to a CHAR-like MySQL command.
@@ -498,6 +524,7 @@ def mysql_encode(t):
     'CHAR(72,111,108,97,32,109,117,110,100,111)'
     '''
     return "CHAR(%s)" % ",".join(str(ord(c)) for c in t)
+
 
 def mssql_encode(t):
     '''Convert the text to a CHAR-like MS SQL command.
@@ -509,34 +536,34 @@ def mssql_encode(t):
 
 
 _butNameFunc_enc = [
-    (_("URL Encode"),                   urlencode),
-    (_("HTML Special Chars Escape"),    html_escape),
-    (_("Double URL Encode"),            double_urlencode),
-    (_("Base64 Encode"),                b64encode), 
-    (_("SHA1 Hash"),                    sha_encode),
-    (_("MD5 Hash"),                     md5_encode),
-    (_("Hex Encoding"),                 hex_encoding),
-    (_("0xFFFF Encoding"),              zero_x_encoding),
-    (_("Double Percent Hex Encoding"),  double_percent_hex_encoding),
-    (_("Double Nibble Hex Encoding"),   double_nibble_hex_encoding),
-    (_("First Nibble Hex Encoding"),    first_nibble_hex_encoding),
-    (_("Second Nibble Hex Encoding"),   second_nibble_hex_encoding),
-    (_("UTF-8 Bare byte Encoding"),      utf8_barebyte_encoding),
-    (_("UTF-8 Encoding"),               utf8_encoding),
-    (_("Microsoft %U Encoding"),        msu_encoding),
-    (_("Random Uppercase"),             random_upper),
-    (_("Random Lowercase"),             random_lower),
-    (_("MySQL Encode"),                 mysql_encode),
-    (_("MS SQL Encode"),                mssql_encode),
+    (_("URL Encode"), urlencode),
+    (_("HTML Special Chars Escape"), html_escape),
+    (_("Double URL Encode"), double_urlencode),
+    (_("Base64 Encode"), b64encode),
+    (_("SHA1 Hash"), sha_encode),
+    (_("MD5 Hash"), md5_encode),
+    (_("Hex Encoding"), hex_encoding),
+    (_("0xFFFF Encoding"), zero_x_encoding),
+    (_("Double Percent Hex Encoding"), double_percent_hex_encoding),
+    (_("Double Nibble Hex Encoding"), double_nibble_hex_encoding),
+    (_("First Nibble Hex Encoding"), first_nibble_hex_encoding),
+    (_("Second Nibble Hex Encoding"), second_nibble_hex_encoding),
+    (_("UTF-8 Bare byte Encoding"), utf8_barebyte_encoding),
+    (_("UTF-8 Encoding"), utf8_encoding),
+    (_("Microsoft %U Encoding"), msu_encoding),
+    (_("Random Uppercase"), random_upper),
+    (_("Random Lowercase"), random_lower),
+    (_("MySQL Encode"), mysql_encode),
+    (_("MS SQL Encode"), mssql_encode),
 ]
 
 _butNameFunc_dec = [
-    (_("URL Decode"),                   urldecode), 
-    (_("HTML unescape"),                html_unescape), 
-    (_("Double URL Decode"),            double_urldecode), 
-    (_("Base64 Decode"),                b64decode),
-    (_("Hex Decoding"),                 hex_decoding),
-] 
+    (_("URL Decode"), urldecode),
+    (_("HTML unescape"), html_unescape),
+    (_("Double URL Decode"), double_urldecode),
+    (_("Base64 Decode"), b64decode),
+    (_("Hex Decoding"), hex_decoding),
+]
 
 
 def _test_all():
@@ -547,5 +574,5 @@ def _test_all():
     '''
     import doctest
     glob = globals()
-    for func in (x[1] for x in _butNameFunc_enc+_butNameFunc_dec):
+    for func in (x[1] for x in _butNameFunc_enc + _butNameFunc_dec):
         doctest.run_docstring_examples(func, glob)

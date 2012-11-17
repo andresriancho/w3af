@@ -32,29 +32,30 @@ from core.data.options.combo_option import ComboOption
 from core.data.options.input_file_option import InputFileOption
 from core.data.options.output_file_option import OutputFileOption
 
-from core.data.options.option_types import (BOOL,INT,FLOAT,STRING,URL,IPPORT,
-                                            LIST,REGEX,COMBO,INPUT_FILE,
-                                            OUTPUT_FILE,PORT)
+from core.data.options.option_types import (
+    BOOL, INT, FLOAT, STRING, URL, IPPORT,
+    LIST, REGEX, COMBO, INPUT_FILE,
+    OUTPUT_FILE, PORT)
 
-        
+
 def opt_factory(name, default_value, desc, _type, help='', tabid=''):
     '''
     A factory function which will generate one of the Option objects based
     on the _type passed as parameter.
     '''
     option_klasses = {
-                      BOOL: BoolOption,
-                      INT: IntegerOption,
-                      FLOAT: FloatOption,
-                      STRING: StringOption,
-                      URL: URLOption,
-                      IPPORT: IPPortOption,
-                      LIST: ListOption,
-                      REGEX: RegexOption,
-                      COMBO: ComboOption,
-                      INPUT_FILE: InputFileOption,
-                      OUTPUT_FILE: OutputFileOption,
-                      PORT: PortOption,
-                      }
-    
+        BOOL: BoolOption,
+        INT: IntegerOption,
+        FLOAT: FloatOption,
+        STRING: StringOption,
+        URL: URLOption,
+        IPPORT: IPPortOption,
+        LIST: ListOption,
+        REGEX: RegexOption,
+        COMBO: ComboOption,
+        INPUT_FILE: InputFileOption,
+        OUTPUT_FILE: OutputFileOption,
+        PORT: PortOption,
+    }
+
     return option_klasses[_type](name, default_value, desc, _help='', tabid='')

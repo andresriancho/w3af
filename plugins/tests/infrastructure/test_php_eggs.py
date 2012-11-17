@@ -24,30 +24,28 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestPHPEggs(PluginTest):
-    
+
     moth_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('php_eggs'),)}
-            }
         }
-    
+    }
+
     def test_php_eggs_fingerprinted(self):
         cfg = self._run_configs['cfg']
         self._scan(self.moth_url, cfg['plugins'])
-        
+
         eggs = self.kb.get('php_eggs', 'eggs')
-        self.assertEqual( len(eggs), 4, eggs )
-        
+        self.assertEqual(len(eggs), 4, eggs)
+
         for egg in eggs:
-            self.assertTrue( egg.get_name().startswith('PHP Egg - ') )
-                    
+            self.assertTrue(egg.get_name().startswith('PHP Egg - '))
+
         php_version = self.kb.get('php_eggs', 'version')
-        self.assertEqual( len(php_version), 1, php_version )
-        
+        self.assertEqual(len(php_version), 1, php_version)
+
         php_version = php_version[0]
-        self.assertEqual( php_version['version'], ['5.3.10'] )
-    
-        
+        self.assertEqual(php_version['version'], ['5.3.10'])

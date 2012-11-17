@@ -42,38 +42,38 @@ class generic(AuditPlugin):
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         #   Internal variables
         self._already_reported = []
-        
+
         #   User configured variables
         self._diff_ratio = 0.30
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Find all kind of bugs without using a fixed database of errors.
-        
+
         @param freq: A FuzzableRequest
         '''
         # First, get the original response and create the mutants
         orig_resp = self._uri_opener.send_mutant(freq)
-        mutants = create_mutants( freq , ['', ] , orig_resp=orig_resp )
-        
+        mutants = create_mutants(freq, ['', ], orig_resp=orig_resp)
+
         for m in mutants:
-            
+
             # First I check that the current modified parameter in the mutant
             # doesn't have an already reported vulnerability. I don't want to
             # report vulnerabilities more than once.
             if (m.getURL(), m.get_var()) in self._already_reported:
                 continue
-            
+
             # Now, we request the limit (something that doesn't exist)
             # If http://localhost/a.php?b=1 ; then I should request b=12938795
             #                                                       (random number)
             # If http://localhost/a.php?b=abc ; then I should request b=hnv98yks
             #                                                         (random alnum)
-            limit_response = self._get_limit_response( m )
-            
+            limit_response = self._get_limit_response(m)
+
             # Now I request something that could generate an error
             #     If http://localhost/a.php?b=1 ; then I should request b=d'kcz'gj'"**5*(((*)
             #     If http://localhost/a.php?b=abc ; then I should request b=d'kcz'gj'"**5*(((*)
@@ -82,134 +82,141 @@ class generic(AuditPlugin):
             #     If http://localhost/a.php?b=1 ; then I should request b=
             #     If http://localhost/a.php?b=abc ; then I should request b=
             for error_string in self._get_error_strings():
-                
+
                 if self._has_no_bug(m):
-                    
-                    m.set_mod_value( error_string )
+
+                    m.set_mod_value(error_string)
                     error_response = self._uri_opener.send_mutant(m)
-                
+
                     # Now I compare all responses
-                    self._analyze_responses( orig_resp, limit_response, error_response, m )
-          
-    def _get_error_strings( self ):
+                    self._analyze_responses(
+                        orig_resp, limit_response, error_response, m)
+
+    def _get_error_strings(self):
         '''
         @return: A list of strings that could generate errors. Please note that
                  an empty string is something that, in most cases, is not tested.
                  Although, I have found that it could trigger some errors.
         '''
         return ['d\'kc"z\'gj\'\"**5*(((;-*`)', '']
-       
-    def _analyze_responses( self, orig_resp, limit_response, error_response, mutant ):
+
+    def _analyze_responses(self, orig_resp, limit_response, error_response, mutant):
         '''
         Analyze responses; if error_response doesn't look like orig_resp nor
         limit_response, then we have a vuln.
-        
+
         @return: None
         '''
-        original_to_error = relative_distance(orig_resp.getBody(), error_response.getBody() )
-        limit_to_error = relative_distance( limit_response.getBody(), error_response.getBody() )
-        original_to_limit = relative_distance( limit_response.getBody(), orig_resp.getBody() )
-        
-        ratio = self._diff_ratio + ( 1 - original_to_limit )
-        
+        original_to_error = relative_distance(
+            orig_resp.getBody(), error_response.getBody())
+        limit_to_error = relative_distance(
+            limit_response.getBody(), error_response.getBody())
+        original_to_limit = relative_distance(
+            limit_response.getBody(), orig_resp.getBody())
+
+        ratio = self._diff_ratio + (1 - original_to_limit)
+
         #om.out.debug('original_to_error: ' +  str(original_to_error) )
         #om.out.debug('limit_to_error: ' +  str(limit_to_error) )
         #om.out.debug('original_to_limit: ' +  str(original_to_limit) )
         #om.out.debug('ratio: ' +  str(ratio) )
-        
+
         if original_to_error < ratio and limit_to_error < ratio:
             # Maybe the limit I requested wasn't really a non-existant one
-            # (and the error page really found the limit), 
+            # (and the error page really found the limit),
             # let's request a new limit (one that hopefully doesn't exist)
             # in order to remove some false positives
-            limit_response2 = self._get_limit_response( mutant )
-            
+            limit_response2 = self._get_limit_response(mutant)
+
             id_list = [orig_resp.id, limit_response.id, error_response.id]
-            
-            if relative_distance( limit_response2.getBody(), limit_response.getBody() ) > \
-            1 - self._diff_ratio:
+
+            if relative_distance(limit_response2.getBody(), limit_response.getBody()) > \
+                    1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
-                v = vuln.vuln( mutant )
+                v = vuln.vuln(mutant)
                 v.set_plugin_name(self.get_name())
-                v.set_id( id_list )
+                v.set_id(id_list)
                 v.set_severity(severity.MEDIUM)
-                v.set_name( 'Unidentified vulnerability' )
-                v.set_desc( 'An unidentified vulnerability was found at: ' + mutant.found_at() )
-                kb.kb.append( self, 'generic', v )
-                self._already_reported.append( (mutant.getURL(), mutant.get_var()) )
+                v.set_name('Unidentified vulnerability')
+                v.set_desc('An unidentified vulnerability was found at: ' +
+                           mutant.found_at())
+                kb.kb.append(self, 'generic', v)
+                self._already_reported.append(
+                    (mutant.getURL(), mutant.get_var()))
             else:
                 # *maybe* and just *maybe* this is a vulnerability
-                i = info.info( mutant )
+                i = info.info(mutant)
                 i.set_plugin_name(self.get_name())
-                i.set_id( id_list )
-                i.set_name( 'Possible unidentified vulnerability' )
+                i.set_id(id_list)
+                i.set_name('Possible unidentified vulnerability')
                 msg = '[Manual verification required] A possible vulnerability was found at: '
                 msg += mutant.found_at()
-                i.set_desc( msg )
-                kb.kb.append( self, 'generic', i )
-                self._already_reported.append( (mutant.getURL(), mutant.get_var()) )
-    
-    def _get_limit_response( self, m ):
+                i.set_desc(msg)
+                kb.kb.append(self, 'generic', i)
+                self._already_reported.append(
+                    (mutant.getURL(), mutant.get_var()))
+
+    def _get_limit_response(self, m):
         '''
         We request the limit (something that doesn't exist)
             - If http://localhost/a.php?b=1 ; then I should request b=12938795
                                                                  (random number)
             - If http://localhost/a.php?b=abc ; then I should request b=hnv98yks
                                                                     (random alnum)
-        
+
         @return: The limit response object
         '''
         # Copy the dc, needed to make a good vuln report
         dc = copy.deepcopy(m.get_dc())
-        
+
         if m.get_original_value().isdigit():
-            m.set_mod_value( rand_number(length=8) )
+            m.set_mod_value(rand_number(length=8))
         else:
-            m.set_mod_value( rand_alnum(length=8) )
+            m.set_mod_value(rand_alnum(length=8))
         limit_response = self._uri_opener.send_mutant(m)
-        
+
         # restore the dc
-        m.set_dc( dc )
+        m.set_dc(dc)
         return limit_response
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         vulnsAndInfos = kb.kb.getAllVulns()
-        vulnsAndInfos.extend( kb.kb.getAllInfos() )
-        self.print_uniq( vulnsAndInfos, 'VAR' )
+        vulnsAndInfos.extend(kb.kb.getAllInfos())
+        self.print_uniq(vulnsAndInfos, 'VAR')
 
-    def get_options( self ):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'If two strings have a diff ratio less than diffRatio, then they are '
         d += '*really* different'
         o = opt_factory('diffRatio', self._diff_ratio, d, 'float')
         ol.add(o)
-        
+
         return ol
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._diff_ratio = options_list['diffRatio'].get_value()
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds all kind of bugs without using a fixed database of
         errors. This is a new kind of methodology that solves the main problem
-        of most web application security scanners.        
+        of most web application security scanners.
         '''

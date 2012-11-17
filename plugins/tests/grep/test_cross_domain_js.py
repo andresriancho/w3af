@@ -25,33 +25,32 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestErrorPages(PluginTest):
-    
+
     target_url = 'http://moth/w3af/grep/cross_domain_js/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
                 'grep': (PluginConfig('cross_domain_js'),),
                 'crawl': (
-                          PluginConfig('web_spider',
-                                       ('onlyForward', True, PluginConfig.BOOL)),)
+                    PluginConfig('web_spider',
+                                 ('onlyForward', True, PluginConfig.BOOL)),)
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         infos = self.kb.get('cross_domain_js', 'cross_domain_js')
         self.assertEquals(3, len(infos))
-        
+
         EXPECTED = set(['cross_domain_script_mixed.html',
                         'cross_domain_script_with_type.html',
                         'cross_domain_script.html'])
         found_fnames = set([i.getURL().getFileName() for i in infos])
-        
+
         self.assertEquals(EXPECTED,
                           found_fnames)
-

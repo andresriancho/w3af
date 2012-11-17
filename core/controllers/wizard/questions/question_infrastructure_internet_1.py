@@ -33,35 +33,35 @@ class question_infrastructure_internet_1(question):
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self, w3af_core):
-        question.__init__( self, w3af_core )
-    
+        question.__init__(self, w3af_core)
+
         self._question_id = 'infrastructure_internet_1'
 
         self._question_title = 'Plugin selection'
-        
+
         self._question_str = 'Please choose from the options below:'
-        
+
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
         self._d1 = 'Find other virtual hosts using MSN search'
         o1 = opt_factory(self._d1, False, self._d1, 'boolean')
-    
+
         ol = OptionList()
         ol.add(o1)
 
         return ol
-        
-    def getNextQuestionId(self,  options_list ):
+
+    def getNextQuestionId(self, options_list):
         plugin_list = []
-        
+
         if options_list[self._d1].get_value():
             plugin_list.append('shared_hosting')
-        
+
         # Set the plugins to be run
-        old_discovery = self.w3af_core.plugins.get_enabled_plugins( 'crawl' )
+        old_discovery = self.w3af_core.plugins.get_enabled_plugins('crawl')
         plugin_list.extend(old_discovery)
-        self.w3af_core.plugins.set_plugins( plugin_list, 'crawl' )
-        
+        self.w3af_core.plugins.set_plugins(plugin_list, 'crawl')
+
         return None

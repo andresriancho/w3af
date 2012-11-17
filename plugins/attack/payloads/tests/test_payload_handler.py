@@ -33,53 +33,55 @@ from core.data.kb.read_shell import read_shell
 
 
 class TestPayloadHandler(unittest.TestCase):
-    
+
     def test_get_payload_list(self):
         payload_list = get_payload_list()
-        
+
         KNOWN_NAMES = (
-                       'cpu_info',
-                       'arp_cache',
-                       'current_user',
-                       'users',
-                       'udp',
-                       )
-        
+            'cpu_info',
+            'arp_cache',
+            'current_user',
+            'users',
+            'udp',
+        )
+
         for known_name in KNOWN_NAMES:
-            self.assertTrue( known_name in payload_list, 
-                             '%s not in %s' % (known_name, payload_list) )
-        
-        self.assertTrue( len(payload_list), len(set(payload_list)))
-        
-        self.assertFalse( '__init__' in payload_list )
-        self.assertFalse( '__init__.py' in payload_list )
-        
+            self.assertTrue(known_name in payload_list,
+                            '%s not in %s' % (known_name, payload_list))
+
+        self.assertTrue(len(payload_list), len(set(payload_list)))
+
+        self.assertFalse('__init__' in payload_list)
+        self.assertFalse('__init__.py' in payload_list)
+
     def test_get_payload_instance(self):
         for payload_name in get_payload_list():
             payload_inst = get_payload_instance(payload_name, None)
-            
-            self.assertTrue( payload_inst.require() in ('linux', 'windows') )
-    
+
+            self.assertTrue(payload_inst.require() in ('linux', 'windows'))
+
     def test_runnable_payloads_exec(self):
-        shell = FakeExecShell( None )
+        shell = FakeExecShell(None)
         runnable = runnable_payloads(shell)
-        
-        EXCEPTIONS = set(['portscan',])
+
+        EXCEPTIONS = set(['portscan', ])
         all = get_payload_list()
         all_but_exceptions = set(all) - EXCEPTIONS
-        
+
         self.assertEquals(
-                          set(runnable),
-                          all_but_exceptions
-                          )
-    
+            set(runnable),
+            all_but_exceptions
+        )
+
     def test_runnable_payloads_read(self):
-        shell = FakeReadShell( None )
+        shell = FakeReadShell(None)
         runnable = runnable_payloads(shell)
-        
-        EXPECTED = ('apache_run_user','cpu_info','firefox_stealer','get_hashes')
-        NOT_EXPECTED = ('msf_linux_x86_meterpreter_reverse_tcp','portscan','w3af_agent')
-        
+
+        EXPECTED = (
+            'apache_run_user', 'cpu_info', 'firefox_stealer', 'get_hashes')
+        NOT_EXPECTED = (
+            'msf_linux_x86_meterpreter_reverse_tcp', 'portscan', 'w3af_agent')
+
         for name in EXPECTED:
             self.assertTrue(name in runnable)
 
@@ -90,7 +92,7 @@ class TestPayloadHandler(unittest.TestCase):
         shell = FakeExecShell(None)
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
-        
+
     def test_exec_payload_read(self):
         shell = FakeReadShell(None)
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
@@ -105,32 +107,33 @@ class TestPayloadHandler(unittest.TestCase):
         # strict
         self.assertTrue('cpu_info' in result)
         self.assertTrue('cpu_cores' in result)
-        self.assertGreater( int(result['cpu_cores']) , 0 )
-        self.assertLess( int(result['cpu_cores']) , 12 )
+        self.assertGreater(int(result['cpu_cores']), 0)
+        self.assertLess(int(result['cpu_cores']), 12)
 
     def test_is_payload(self):
-        self.assertTrue( is_payload('cpu_info') )
-        self.assertFalse( is_payload('andres_riancho') )
-            
+        self.assertTrue(is_payload('cpu_info'))
+        self.assertFalse(is_payload('andres_riancho'))
+
 
 class FakeExecShell(exec_shell):
- 
+
     def execute(self, command):
         return commands.getoutput(command)
-    
-    def end( self ):
+
+    def end(self):
         pass
-        
-    def get_name( self ):
+
+    def get_name(self):
         return 'FakeExecShell'
-    
+
+
 class FakeReadShell(read_shell):
- 
+
     def read(self, filename):
         return file(filename).read()
-    
-    def end( self ):
+
+    def end(self):
         pass
-        
-    def get_name( self ):
-        return 'FakeReadShell'   
+
+    def get_name(self):
+        return 'FakeReadShell'

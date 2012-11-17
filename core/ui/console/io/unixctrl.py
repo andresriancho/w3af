@@ -23,7 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import sys
 from core.ui.console.io.common import *
 import core.controllers.output_manager as om
-import termios, tty
+import termios
+import tty
 
 LONGEST_SEQUENCE = 5
 
@@ -44,11 +45,14 @@ CSI_CUB = CSI + '%iD'
 
 SEQ_PREFIX = '\x1B'
 
-def read( amt ):
-    return sys.stdin.read( amt )
+
+def read(amt):
+    return sys.stdin.read(amt)
 
 oldSettings = None
-def setRawInputMode( raw ):
+
+
+def setRawInputMode(raw):
     '''
     Sets the raw input mode, in linux.
     '''
@@ -59,39 +63,45 @@ def setRawInputMode( raw ):
             oldSettings = termios.tcgetattr(fd)
             tty.setraw(sys.stdin.fileno())
         except Exception, e:
-            om.out.console('termios error: ' + str(e) )
+            om.out.console('termios error: ' + str(e))
     elif not (raw or oldSettings is None):
         try:
-            termios.tcsetattr( sys.stdin.fileno() , termios.TCSADRAIN, oldSettings )
+            termios.tcsetattr(
+                sys.stdin.fileno(), termios.TCSADRAIN, oldSettings)
             oldSettings = None
         except Exception, e:
-            om.out.console('termios error: ' + str(e) )
+            om.out.console('termios error: ' + str(e))
 
 
 def normalizeSequence(sequence):
     if sequence in (KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT):
         return sequence
-    map = { '\x1B[7~': KEY_HOME, '\x1B[8~': KEY_END } 
+    map = {'\x1B[7~': KEY_HOME, '\x1B[8~': KEY_END}
     if sequence in map:
         return map[sequence]
     return None
 
+
 def _moveDelta(delta, pos_code, neg_code):
-	if delta != 0:
-		code = delta > 0 and pos_code or neg_code
-		sys.stdout.write (code % abs(delta))
+    if delta != 0:
+        code = delta > 0 and pos_code or neg_code
+        sys.stdout.write(code % abs(delta))
+
 
 def moveDelta(dx=1, dy=0):
-	_moveDelta(dx, CSI_CUF, CSI_CUB)
-	_moveDelta(dy, CSI_CUD, CSI_CUU)
+    _moveDelta(dx, CSI_CUF, CSI_CUB)
+    _moveDelta(dy, CSI_CUD, CSI_CUU)
+
 
 def moveBack(steps=1):
-    if steps>0:
-    	sys.stdout.write(CSI_CUB % steps)
+    if steps > 0:
+        sys.stdout.write(CSI_CUB % steps)
+
 
 def moveForward(steps=1):
-    if steps>0:
-    	sys.stdout.write(CSI_CUF % steps)
+    if steps > 0:
+        sys.stdout.write(CSI_CUF % steps)
+
 
 def clearScreen():
     """Clears the screen"""

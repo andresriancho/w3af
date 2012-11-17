@@ -23,35 +23,35 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFindVhosts(PluginTest):
-    
+
     dead_link_url = 'http://moth/w3af/infrastructure/find_vhost/internal_domain.html'
     simple_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': None,
-                'plugins': {'infrastructure': (PluginConfig('find_vhosts'),)}
-                }
+        'target': None,
+        'plugins': {'infrastructure': (PluginConfig('find_vhosts'),)}
         }
-    
+    }
+
     def test_find_vhosts(self):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
-        
+
         infos = self.kb.get('find_vhosts', 'find_vhosts')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        self.assertEqual('Shared hosting', info.get_name() )
-        self.assertTrue('the virtual host name is: "intranet"' in info.get_desc(), info.get_desc() )
-    
+        self.assertEqual('Shared hosting', info.get_name())
+        self.assertTrue('the virtual host name is: "intranet"' in info.get_desc(), info.get_desc())
+
     def test_find_vhost_dead_link(self):
         cfg = self._run_configs['cfg']
         self._scan(self.dead_link_url, cfg['plugins'])
-        
+
         infos = self.kb.get('find_vhosts', 'find_vhosts')
-        self.assertEqual( len(infos), 2, infos)
-        
+        self.assertEqual(len(infos), 2, infos)
+
         expected = set(['Internal hostname in HTML link', 'Shared hosting'])
-        self.assertEqual( expected,
-                          set([i.get_name() for i in infos]))
+        self.assertEqual(expected,
+                         set([i.get_name() for i in infos]))

@@ -20,52 +20,54 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import os
-import socket, ssl
+import socket
+import ssl
 import threading
 import random
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
-PORT = random.randint(4443,4599)
+PORT = random.randint(4443, 4599)
 
-       
+
 class TestSSLCertificate(PluginTest):
-    
+
     target_url = 'https://localhost:%s/' % PORT
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('ssl_certificate'),),
-                 }
+                'audit': (PluginConfig('ssl_certificate'),),
             }
         }
-    
+    }
+
     def test_ssl_certificate(self):
         # Start the HTTPS server
-        certfile = os.path.join('plugins','tests','audit', 'certs', 'invalid_cert.pem')
+        certfile = os.path.join(
+            'plugins', 'tests', 'audit', 'certs', 'invalid_cert.pem')
         s = ssl_server('localhost', PORT, certfile)
         s.start()
-        
+
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         s.stop()
-                
+
         vulns = self.kb.get('ssl_certificate', 'invalid_ssl_cert')
 
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Invalid SSL certificate',vuln.get_name())
+        self.assertEquals('Invalid SSL certificate', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.getURL()))
 
 
-
 HTTP_RESPONSE = '''HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: 3\r\n\r\nabc'''
-        
+
+
 class ssl_server(threading.Thread):
 
     def __init__(self, listen, port, certfile, proto=ssl.PROTOCOL_SSLv3):
@@ -83,7 +85,7 @@ class ssl_server(threading.Thread):
                                     server_side=True,
                                     certfile=self.cert,
                                     cert_reqs=ssl.CERT_NONE,
-                                    ssl_version= self.proto,
+                                    ssl_version=self.proto,
                                     do_handshake_on_connect=False,
                                     suppress_ragged_eofs=True)
 
@@ -114,7 +116,7 @@ class ssl_server(threading.Thread):
         self.should_stop = True
         try:
             self.sock.close()
-    
+
             # Connection to force stop,
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((self.listen, self.port))

@@ -23,57 +23,58 @@ import xml.sax
 import cgi
 import base64
 
-from xml.sax.handler import ContentHandler 
+from xml.sax.handler import ContentHandler
 
 
-class xmlrpc_read_handler(ContentHandler): 
+class xmlrpc_read_handler(ContentHandler):
     '''
     Parse a XMLRPC request and save the fuzzable parameters in
     self.fuzzable_parameters.
-    
+
     The user should call this function parse_xmlrpc and build_xmlrpc.
     The rest if for internal use.
     '''
-    def __init__ (self):
+    def __init__(self):
 
         # The result
-        self.fuzzable_parameters = [];
-        self.all_parameters = [];
+        self.fuzzable_parameters = []
+        self.all_parameters = []
 
         # Internal constants
         self._fuzzable_types = ['base64', 'string', 'name']
-        self._all_types = ['i4', 'int', 'boolean', 'dateTime.iso8601', 'double']
+        self._all_types = ['i4', 'int', 'boolean',
+                           'dateTime.iso8601', 'double']
 
         # Internal variables
         self._inside_fuzzable = False
-    
-    def startElement(self, name, attrs): 
+
+    def startElement(self, name, attrs):
 
         if name in self._fuzzable_types:
             self._inside_fuzzable = True
-            self.fuzzable_parameters.append( [name.lower(),''] )
+            self.fuzzable_parameters.append([name.lower(), ''])
         else:
-            self.all_parameters.append( [name.lower(),''] )
-        return 
+            self.all_parameters.append([name.lower(), ''])
+        return
 
-    def characters(self, ch): 
+    def characters(self, ch):
         if self._inside_fuzzable:
             self.fuzzable_parameters[-1][1] += ch
 
     def endElement(self, name):
         self._inside_fuzzable = False
-        
-        
-class xmlrpc_write_handler(ContentHandler): 
+
+
+class xmlrpc_write_handler(ContentHandler):
     '''
     Parse a XMLRPC request and save the fuzzable parameters in self.fuzzable_parameters.
-    
+
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
     '''
-    def __init__ (self, fuzzed_parameters):
+    def __init__(self, fuzzed_parameters):
 
         # The resulting XML string
-        self.fuzzed_xml_string = '';
+        self.fuzzed_xml_string = ''
 
         # Internal constants
         self._fuzzable_types = ['base64', 'string', 'name']
@@ -82,44 +83,46 @@ class xmlrpc_write_handler(ContentHandler):
         self._inside_fuzzable = False
         self._fuzzable_number = -1
         self._fuzzed_parameters = fuzzed_parameters
-    
-    def startElement(self, name, attrs): 
+
+    def startElement(self, name, attrs):
         if name in self._fuzzable_types:
             self._inside_fuzzable = True
             self._fuzzable_number += 1
 
         self.fuzzed_xml_string += '<' + name
         for attr_name in attrs.getNames():
-            self.fuzzed_xml_string += ' ' + str(attr_name) + '="' + str(attrs.getValue(attr_name)) + '"'
+            self.fuzzed_xml_string += ' ' + str(
+                attr_name) + '="' + str(attrs.getValue(attr_name)) + '"'
         self.fuzzed_xml_string += '>'
-        return 
+        return
 
-    def characters(self, ch): 
+    def characters(self, ch):
         if self._inside_fuzzable:
 
             modified_value = self._fuzzed_parameters[self._fuzzable_number][1]
 
             if self._fuzzed_parameters[self._fuzzable_number][0] == 'base64':
-                encoded_value = base64.b64encode( modified_value )
+                encoded_value = base64.b64encode(modified_value)
             else:
-                encoded_value = cgi.escape(modified_value).encode("ascii", "xmlcharrefreplace")
+                encoded_value = cgi.escape(
+                    modified_value).encode("ascii", "xmlcharrefreplace")
 
             self.fuzzed_xml_string += encoded_value
-            
+
         else:
             self.fuzzed_xml_string += ch
 
     def endElement(self, name):
         self._inside_fuzzable = False
-        self.fuzzed_xml_string += '</' + name + '>' 
-        
-        
+        self.fuzzed_xml_string += '</' + name + '>'
+
+
 def parse_xmlrpc(xml_string):
     '''
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
-    
+
     @param xml_string: The original XML string that we got from the browser.
-    
+
     @return: A handler that can then be used to access the result information from:
         - handler.fuzzable_parameters
         - handler.all_parameters
@@ -127,20 +130,19 @@ def parse_xmlrpc(xml_string):
     handler = xmlrpc_read_handler()
     xml.sax.parseString(xml_string, handler)
     return handler
-    
+
+
 def build_xmlrpc(xml_string, fuzzed_parameters):
     '''
     The user should call this function parse_xmlrpc and build_xmlrpc. The rest if for internal use.
-    
+
     @param xml_string: The original XML string that we got from the browser.
-    
+
     @param fuzzed_parameters: The python list with the tuples that contain the fuzzed parameters.
     This list originally came from handler.fuzzable_parameters
-    
+
     @return: The string with the new XMLRPC call to be sent to the server.
     '''
-    handler = xmlrpc_write_handler(fuzzed_parameters) 
+    handler = xmlrpc_write_handler(fuzzed_parameters)
     xml.sax.parseString(xml_string, handler)
     return handler.fuzzed_xml_string
-    
-    

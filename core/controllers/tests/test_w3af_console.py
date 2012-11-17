@@ -26,7 +26,7 @@ import compiler
 class TestW3afConsole(unittest.TestCase):
     def test_compiles(self):
         try:
-            compiler.compile(file('w3af_console').read(), '/tmp/foo.tmp', 'exec')
+            compiler.compile(
+                file('w3af_console').read(), '/tmp/foo.tmp', 'exec')
         except SyntaxError, se:
             self.assertTrue(False, 'Error in w3af_console code "%s"' % se)
-        

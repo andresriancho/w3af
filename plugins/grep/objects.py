@@ -31,61 +31,60 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class objects(GrepPlugin):
     '''
     Grep every page for objects and applets.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Compile the XPATH
         self._tag_xpath = etree.XPath('//object | //applet')
         self._tag_names = ('object', 'applet')
         self._already_analyzed = ScalableBloomFilter()
-        
 
     def grep(self, request, response):
         '''
         Plugin entry point. Parse the object tags.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         url = response.getURL()
         dom = response.getDOM()
-        
+
         if response.is_text_or_html() and dom is not None \
-           and url not in self._already_analyzed:
+                and url not in self._already_analyzed:
 
             self._already_analyzed.add(url)
-            
-            elem_list = self._tag_xpath( dom )
+
+            elem_list = self._tag_xpath(dom)
             for element in elem_list:
 
                 tag_name = element.tag
-                
+
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name(tag_name.title() + ' tag')
                 i.setURL(url)
-                i.set_id( response.id )
+                i.set_id(response.id)
                 msg = 'The URL: "%s" has an "%s" tag. We recommend you download' \
                       ' the client side code and analyze it manually.'
                 msg = msg % (i.getURI(), tag_name)
-                i.set_desc( msg )
-                i.addToHighlight( tag_name )
+                i.set_desc(msg)
+                i.addToHighlight(tag_name)
 
-                kb.kb.append( self, tag_name, i )
-    
+                kb.kb.append(self, tag_name, i)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         for obj_type in self._tag_names:
-            self.print_uniq( kb.kb.get( 'objects', obj_type ), 'URL' )
-                
-    def get_long_desc( self ):
+            self.print_uniq(kb.kb.get('objects', obj_type), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

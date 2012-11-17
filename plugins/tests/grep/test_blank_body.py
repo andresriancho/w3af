@@ -42,35 +42,35 @@ class test_blank_body(unittest.TestCase):
 
     def tearDown(self):
         self.plugin.end()
-    
+
     def test_blank_body(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 1 )
-    
+        self.assertEqual(len(kb.kb.get('blank_body', 'blank_body')), 1)
+
     def test_blank_body_none(self):
         body = 'header body footer'
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         self.plugin.grep(self.request, response)
-        self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
-    
-    def test_blank_body_method(self): 
+        self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
+
+    def test_blank_body_method(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, self.url, self.url)
+        response = HTTPResponse(200, body, headers, self.url, self.url)
         request = FuzzableRequest(self.url, method='ARGENTINA')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('ssn', 'ssn')) , 0 )
-    
+        self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
+
     def test_blank_body_code(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(401, body , headers, self.url, self.url)
+        response = HTTPResponse(401, body, headers, self.url, self.url)
         request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('blank_body', 'blank_body')) , 0 )
+        self.assertEqual(len(kb.kb.get('blank_body', 'blank_body')), 0)

@@ -36,69 +36,68 @@ class oracle_discovery(CrawlPlugin):
     Find Oracle applications on the remote web server.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     ORACLE_DATA = (
         # Example string:
         # <html><head><title>PPE is working</title></head><body>
         # PPE version 1.3.4 is working.</body></html>
         ('/portal/page', '<html><head><title>PPE is working</title></head>' +
                          '<body>(PPE) version (.*?) is working.</body></html>'),
-        
+
         # Example strings:
         # Reports Servlet Omgevingsvariabelen 9.0.4.2.0
         # Reports Servlet Variables de Entorno 9.0.4.0.33
         ('/reports/rwservlet/showenv', '(Reports Servlet) [\w ]* ([\d\.]*)'),
     )
-    
+
     ORACLE_DATA = ((url, re.compile(re_str)) for url, re_str in ORACLE_DATA)
-    
 
     def __init__(self):
         CrawlPlugin.__init__(self)
 
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         GET some files and parse them.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
-        
+
         for url, re_obj in self.ORACLE_DATA:
 
-            oracle_discovery_URL = base_url.urlJoin( url )
-            response = self._uri_opener.GET( oracle_discovery_URL, cache=True )
-            
-            if not is_404( response ):
-                
+            oracle_discovery_URL = base_url.urlJoin(url)
+            response = self._uri_opener.GET(oracle_discovery_URL, cache=True)
+
+            if not is_404(response):
+
                 # Extract the links and send to core
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
-                    
-                mo = re_obj.search( response.getBody(), re.DOTALL)
-                
+
+                mo = re_obj.search(response.getBody(), re.DOTALL)
+
                 if mo:
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
-                    i.setURL( response.getURL() )
+                    i.setURL(response.getURL())
                     desc = '"%s" version "%s" was detected at "%s".'
                     desc = desc % (mo.group(1).title(), mo.group(2).title(),
                                    response.getURL())
                     i.set_desc(desc)
-                    i.set_id( response.id )
-                    kb.kb.append( self, 'oracle_discovery', i )
-                    om.out.information( i.get_desc() )
+                    i.set_id(response.id)
+                    kb.kb.append(self, 'oracle_discovery', i)
+                    om.out.information(i.get_desc())
                 else:
                     msg = 'oracle_discovery found the URL: "%s" but failed to'\
                           ' parse it as an Oracle page. The first 50 bytes of'\
                           ' the response body is: "%s".'
                     body_start = response.getBody()[:50]
-                    om.out.debug( msg % (response.getURL(), body_start))
-    
-    def get_long_desc( self ):
+                    om.out.debug(msg % (response.getURL(), body_start))
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

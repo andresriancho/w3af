@@ -28,25 +28,24 @@ try:
     import extlib.pyPdf.pyPdf as pyPdf
 except:
     import pyPdf
-    
-import StringIO
 
+import StringIO
 
 
 class pdf(basePpPlugin):
     '''
     This plugin creates a map of possible passwords by reading pdf documents.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         basePpPlugin.__init__(self)
-    
-    def _getPDFContent( self, documentString ):
+
+    def _getPDFContent(self, documentString):
         content = ""
         # Load PDF into pyPDF
-        pdf = pyPdf.PdfFileReader( StringIO.StringIO(documentString) )
+        pdf = pyPdf.PdfFileReader(StringIO.StringIO(documentString))
         # Iterate pages
         for i in range(0, pdf.getNumPages()):
             # Extract text from page and add to content
@@ -54,20 +53,20 @@ class pdf(basePpPlugin):
         # Collapse whitespace
         content = " ".join(content.replace("\xa0", " ").strip().split())
         return content.split()
-        
+
     def getWords(self, response):
         '''
         Get words from the pdf document.
-        
+
         @param response: In most common cases, an html. Could be almost anything, if we are lucky, it's a PDF file.
         @return: A map of strings:repetitions.
         '''
         res = None
         words = []
-        
-        if isPDF( response.getHeaders() ):
+
+        if isPDF(response.getHeaders()):
             try:
-                words = self._getPDFContent( response.getBody() )
+                words = self._getPDFContent(response.getBody())
             except:
                 return None
             else:
@@ -77,6 +76,5 @@ class pdf(basePpPlugin):
                         res[w] += 1
                     else:
                         res[w] = 1
-        
+
         return res
-        

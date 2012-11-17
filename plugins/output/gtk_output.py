@@ -31,19 +31,19 @@ from core.controllers.plugins.output_plugin import OutputPlugin
 class gtk_output(OutputPlugin):
     '''
     Saves messages to kb.kb.get('gtk_output', 'queue') to be displayed in the UI.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         OutputPlugin.__init__(self)
         if not kb.kb.get('gtk_output', 'queue') == []:
             self.queue = kb.kb.get('gtk_output', 'queue')
         else:
             self.queue = Queue.Queue(500)
-            kb.kb.save('gtk_output', 'queue' , self.queue)
+            kb.kb.save('gtk_output', 'queue', self.queue)
 
-    def debug(self, msg_string, newLine=True ):
+    def debug(self, msg_string, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
@@ -54,51 +54,51 @@ class gtk_output(OutputPlugin):
         #   in the time graph that's displayed under the log. In order to save some memory
         #   I'm only creating the object, but without any msg.
         #
-        m = message( 'debug', '', newLine )
-        self._addToQueue( m )
-    
-    def information(self, msg_string , newLine=True ):
+        m = message('debug', '', newLine)
+        self._addToQueue(m)
+
+    def information(self, msg_string, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for informational messages.
-        ''' 
-        m = message( 'information', self._clean_string(msg_string), newLine )
-        self._addToQueue( m )
+        '''
+        m = message('information', self._clean_string(msg_string), newLine)
+        self._addToQueue(m)
 
-    def error(self, msg_string , newLine=True ):
+    def error(self, msg_string, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
-        '''     
-        m = message( 'error', self._clean_string(msg_string), newLine )
-        self._addToQueue( m )
+        '''
+        m = message('error', self._clean_string(msg_string), newLine)
+        self._addToQueue(m)
 
-    def vulnerability(self, msg_string , newLine=True, severity=severity.MEDIUM ):
+    def vulnerability(self, msg_string, newLine=True, severity=severity.MEDIUM):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
-        '''     
-        m = message( 'vulnerability', self._clean_string(msg_string), newLine )
-        m.set_severity( severity )
-        self._addToQueue( m )
-        
-    def console( self, msg_string, newLine=True ):
+        '''
+        m = message('vulnerability', self._clean_string(msg_string), newLine)
+        m.set_severity(severity)
+        self._addToQueue(m)
+
+    def console(self, msg_string, newLine=True):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        m = message( 'console', self._clean_string(msg_string), newLine )
-        self._addToQueue( m )
-    
-    def _addToQueue( self, m ):
+        m = message('console', self._clean_string(msg_string), newLine)
+        self._addToQueue(m)
+
+    def _addToQueue(self, m):
         '''
         Adds a message object to the queue. If the queue isn't there, it creates one.
         '''
-        self.queue.put( m )
-        
-    def get_long_desc( self ):
+        self.queue.put(m)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -110,7 +110,7 @@ class gtk_output(OutputPlugin):
 
 
 class message:
-    def __init__( self, msg_type, msg, newLine=True ):
+    def __init__(self, msg_type, msg, newLine=True):
         '''
         @param msg_type: console, information, vulnerability, etc
         @param msg: The message itself
@@ -121,24 +121,24 @@ class message:
         self._newLine = newLine
         self._time = time.time()
         self._severity = None
-    
-    def get_severity( self ):
+
+    def get_severity(self):
         return self._severity
-        
-    def set_severity( self, the_severity ):
+
+    def set_severity(self, the_severity):
         self._severity = the_severity
-    
-    def getMsg( self ):
+
+    def getMsg(self):
         return self._msg
-    
-    def get_type( self ):
+
+    def get_type(self):
         return self._type
-        
-    def getNewLine( self ):
+
+    def getNewLine(self):
         return self._newLine
-        
-    def getRealTime( self ):
+
+    def getRealTime(self):
         return self._time
 
-    def getTime( self ):
+    def getTime(self):
         return time.strftime("%c", time.localtime(self._time))

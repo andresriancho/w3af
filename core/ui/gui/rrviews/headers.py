@@ -32,6 +32,7 @@ LF = '\n'
 CRLF = CR + LF
 SP = ' '
 
+
 class HttpHeadersView(RememberingVPaned):
     '''Headers + raw payload view.'''
     def __init__(self, w3af, parentView, editable=False):
@@ -43,7 +44,8 @@ class HttpHeadersView(RememberingVPaned):
         self.parentView = parentView
         self.is_request = True
         box = gtk.HBox()
-        self._headersStore = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
+        self._headersStore = gtk.ListStore(
+            gobject.TYPE_STRING, gobject.TYPE_STRING)
         self._headersTreeview = gtk.TreeView(self._headersStore)
         # Column for Name
         renderer = gtk.CellRendererText()
@@ -69,11 +71,11 @@ class HttpHeadersView(RememberingVPaned):
         box.pack_start(self._scrolled)
         # Buttons area
         buttons = [
-                (gtk.STOCK_GO_UP, self._moveHeaderUp),
-                (gtk.STOCK_GO_DOWN, self._moveHeaderDown),
-                (gtk.STOCK_ADD, self._addHeader),
-                (gtk.STOCK_DELETE, self._deleteHeader)
-                ]
+            (gtk.STOCK_GO_UP, self._moveHeaderUp),
+            (gtk.STOCK_GO_DOWN, self._moveHeaderDown),
+            (gtk.STOCK_ADD, self._addHeader),
+            (gtk.STOCK_DELETE, self._deleteHeader)
+        ]
 
         buttonBox = gtk.VBox()
         for button in buttons:
@@ -168,11 +170,11 @@ class HttpHeadersView(RememberingVPaned):
         self._headersStore.clear()
         self._raw.clear()
         self.startLine = ''
-    
+
     def highlight(self, text, tag):
         '''Highlight word in thetext.'''
         self._raw.highlight(text, tag)
-    
+
     def showObject(self, obj):
         '''Show object in view.'''
         if self.is_request:
@@ -189,7 +191,7 @@ class HttpHeadersView(RememberingVPaned):
 
     def getObject(self):
         '''Return object (request or resoponse).'''
-        head = self.startLine;
+        head = self.startLine
         for header in self._headersStore:
             head += header[0] + ':' + header[1] + CRLF
         if self.is_request:

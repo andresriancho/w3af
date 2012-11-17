@@ -34,24 +34,23 @@ class TestExtrusionScanner(unittest.TestCase):
     '''
     def test_basic(self):
         es = extrusionScanner(commands.getoutput)
-        
-        self.assertTrue( es.canScan() )
-        
-        self.assertTrue( es.estimateScanTime() >= 8 )
-        
-        self.assertTrue( es.isAvailable(54545, 'tcp') )
-    
-    
+
+        self.assertTrue(es.canScan())
+
+        self.assertTrue(es.estimateScanTime() >= 8)
+
+        self.assertTrue(es.isAvailable(54545, 'tcp'))
+
     @onlyroot
     def test_scan(self):
         # FIXME: This unittest will only work in Linux
-        cf.cf.save( 'interface', 'lo' )
-        cf.cf.save( 'local_ip_address', '127.0.0.1' )
+        cf.cf.save('interface', 'lo')
+        cf.cf.save('local_ip_address', '127.0.0.1')
         es = extrusionScanner(commands.getoutput)
-        
+
         inbound_port = es.get_inbound_port()
-        self.assertEquals( inbound_port , 8080 )
-    
+        self.assertEquals(inbound_port, 8080)
+
     def test_zzz(self):
         '''
         Can't stop finding nosetests errors! It looks like SkipTest works except

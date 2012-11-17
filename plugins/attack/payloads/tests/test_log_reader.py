@@ -23,15 +23,13 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_log_reader(PayloadTestHelper):
-    
-    EXPECTED_RESULT = set([ '/var/log/wtmp',
-                            '/var/log/dpkg.log',
-                            '/var/log/apt/term.log',
-                            '/var/log/boot.log',
-                            '/var/log/faillog'])
 
+    EXPECTED_RESULT = set(['/var/log/wtmp',
+                           '/var/log/dpkg.log',
+                           '/var/log/apt/term.log',
+                           '/var/log/boot.log',
+                           '/var/log/faillog'])
 
     def test_log_reader(self):
         result = exec_payload(self.shell, 'log_reader', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, set(result.keys()))
-        

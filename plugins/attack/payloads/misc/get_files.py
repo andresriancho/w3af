@@ -3,10 +3,11 @@ import re
 
 files = []
 
-def check_files( file_list ):
+
+def check_files(file_list):
     '''
     Verify if a list of files exist and have content.
-    
+
     @param file_list: The list of files to check.
     @return: The list of files that exist.
     '''
@@ -19,7 +20,8 @@ def check_files( file_list ):
             pass
     return checked
 
-def get_files( file_content ):
+
+def get_files(file_content):
     files = re.findall('.*', file_content, re.MULTILINE)
     if files:
         #files = check_files(files)
@@ -29,5 +31,3 @@ def get_files( file_content ):
         return files
     else:
         return ''
-
-

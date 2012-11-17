@@ -23,43 +23,42 @@ from core.data.misc.file_utils import days_since_file_update
 
 
 class TestPykto(PluginTest):
-    
+
     base_url = 'http://moth/w3af/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('pykto'),)}
-            }
         }
-    
+    }
+
     def test_basic_pykto(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         vulns = self.kb.get('pykto', 'vuln')
-        
-        self.assertTrue( len(vulns) > 10 , vulns )
-        
-        
+
+        self.assertTrue(len(vulns) > 10, vulns)
+
         urls = self.kb.get('urls', 'url_objects')
-        self.assertTrue( len(urls) > 5, urls )
-        
+        self.assertTrue(len(urls) > 5, urls)
+
         hidden_url = 'http://moth/hidden/'
-        
+
         for url in urls:
             if url.url_string == hidden_url:
-                self.assertTrue( True )
+                self.assertTrue(True)
                 break
         else:
-            self.assertTrue( False )
+            self.assertTrue(False)
 
     def test_updated_scan_db(self):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
 
         scan_db_file = pykto_inst._db_file
         is_older = days_since_file_update(scan_db_file, 30)
-        
+
         msg = 'The scan database file is too old. The following commands need'\
               ' to be run in order to update it:\n'\
               'cd plugins/crawl/pykto/\n'\

@@ -28,7 +28,7 @@ EXPECTED_SIMPLE = '''import urllib2
 
 url = "http://www.w3af.org/"
 data = None
-headers = { 
+headers = {
     "Host" : "www.w3af.org",
     "Foo" : "bar"
 }
@@ -43,7 +43,7 @@ EXPECTED_POST = '''import urllib2
 
 url = "http://www.w3af.org/"
 data = "a=1"
-headers = { 
+headers = {
     "Host" : "www.w3af.org"
 }
 
@@ -57,7 +57,7 @@ EXPECTED_POST_REPEATED = '''import urllib2
 
 url = "http://www.w3af.org/"
 data = "a=1&a=2"
-headers = { 
+headers = {
     "Host" : "www.w3af.org",
     "Foo" : "spam, eggs"
 }
@@ -68,6 +68,7 @@ response_body = response.read()
 print response_body
 '''
 
+
 class TestPythonExport(unittest.TestCase):
 
     def test_export_GET(self):
@@ -76,7 +77,8 @@ class TestPythonExport(unittest.TestCase):
                        'Foo: bar\n' \
                        '\n'
         python_code = python_export(http_request)
-        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
+        self.assertTrue(
+            compiler.compile(python_code, 'python_export.tmp', 'exec'))
         self.assertEquals(python_code, EXPECTED_SIMPLE)
 
     def test_export_POST(self):
@@ -86,9 +88,10 @@ class TestPythonExport(unittest.TestCase):
                        '\n' \
                        'a=1'
         python_code = python_export(http_request)
-        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
+        self.assertTrue(
+            compiler.compile(python_code, 'python_export.tmp', 'exec'))
         self.assertEquals(python_code, EXPECTED_POST)
-    
+
     def test_export_POST_repeated(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
@@ -98,9 +101,10 @@ class TestPythonExport(unittest.TestCase):
                        '\n' \
                        'a=1&a=2'
         python_code = python_export(http_request)
-        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
+        self.assertTrue(
+            compiler.compile(python_code, 'python_export.tmp', 'exec'))
         self.assertEquals(python_code, EXPECTED_POST_REPEATED)
-    
+
     def test_export_inject(self):
         http_request = 'POST http://www.w3af.org/ HTTP/1.1\n' \
                        'Host: www.w3af.org\n' \
@@ -110,7 +114,7 @@ class TestPythonExport(unittest.TestCase):
                        '\n' \
                        'a=1&a=2"3'
         python_code = python_export(http_request)
-        self.assertTrue( compiler.compile(python_code, 'python_export.tmp', 'exec') )
-        self.assertIn( 'a=1&a=2%223', python_code)
-        self.assertIn( "sp\\\"am", python_code)
-        
+        self.assertTrue(
+            compiler.compile(python_code, 'python_export.tmp', 'exec'))
+        self.assertIn('a=1&a=2%223', python_code)
+        self.assertIn("sp\\\"am", python_code)

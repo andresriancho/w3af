@@ -29,18 +29,18 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class oracle(GrepPlugin):
     '''
     Find Oracle applications.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_analyzed = ScalableBloomFilter()
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point. Grep for oracle applications.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
@@ -54,30 +54,30 @@ class oracle(GrepPlugin):
                 # the one in strings; so string in response.getBody() is slower than
                 # string in response
                 if msg in response:
-                    
+
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
                     i.setURL(url)
-                    i.set_id( response.id )
-                    i.addToHighlight( msg )
+                    i.set_id(response.id)
+                    i.addToHighlight(msg)
                     msg = 'The URL: "' + url + '" was created using Oracle'
                     msg += ' Application server.'
-                    i.set_desc( msg )
-                    kb.kb.append( self , 'oracle' , i )
+                    i.set_desc(msg)
+                    kb.kb.append(self, 'oracle', i)
 
-    def _get_descriptiveMessages( self ):
+    def _get_descriptiveMessages(self):
         res = []
         res.append('<!-- Created by Oracle ')
         return res
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'oracle', 'oracle' ), 'URL' )
+        self.print_uniq(kb.kb.get('oracle', 'oracle'), 'URL')
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

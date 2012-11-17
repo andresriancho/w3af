@@ -27,13 +27,13 @@ class HTTPQSRequest(FuzzableRequest):
     '''
     This class represents a fuzzable request that sends all variables
     in the querystring. This is tipically used for GET requests.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
         super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
-        
+
     def setURI(self, uri):
         '''
         >>> r = HTTPQSRequest('http://www.w3af.com/')
@@ -49,23 +49,23 @@ class HTTPQSRequest(FuzzableRequest):
         '''
         super(HTTPQSRequest, self).setURI(uri)
         self._dc = self._uri.querystring
-        
+
     def getURI(self):
         uri = self._url.copy()
         if self._dc:
             uri.querystring = self._dc
         return uri
-    
+
     def setData(self, d):
         pass
-    
+
     def set_method(self, meth):
         pass
-        
+
     def getData(self):
         # The postdata
         return None
-    
+
     def __repr__(self):
-        return ('<QS fuzzable request | %s | %s>' % 
+        return ('<QS fuzzable request | %s | %s>' %
                 (self.get_method(), self.getURI()))

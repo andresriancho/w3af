@@ -29,21 +29,22 @@ from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
 class TestCMmapBloomfilterLarge(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 20000
     ERROR_RATE = 0.001
-    
+
     def setUp(self):
         super(TestCMmapBloomfilterLarge, self).setUp()
         temp_file = GenericBloomFilter.get_temp_file()
         self.filter = CMmapFilter(self.CAPACITY, self.ERROR_RATE, temp_file)
 
+
 @attr('smoke')
 class TestCMmapBloomfilterSmall(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 500
     ERROR_RATE = 0.001
-    
+
     def setUp(self):
         super(TestCMmapBloomfilterSmall, self).setUp()
         temp_file = GenericBloomFilter.get_temp_file()

@@ -71,13 +71,13 @@ class Preferences(object):
             return self.options[section][option].get_value()
 
     def set(self, section, option):
-        '''If the given section exists, set the given option to the specified value; 
+        '''If the given section exists, set the given option to the specified value;
         otherwise raise NoSectionError.'''
         if self.hasSection(section):
             self.options[section][option.get_name()] = option
 
     def set_value(self, section, option, value):
-        '''If the given section exists, set the given option to the specified value; 
+        '''If the given section exists, set the given option to the specified value;
         otherwise raise NoSectionError.'''
         if self.hasSection(section):
             self.options[section][option].set_value(value)
@@ -85,13 +85,13 @@ class Preferences(object):
     def removeOption(self, section, option):
         '''Remove the specified option from the specified section.
         If the section does not exist, raise NoSectionError.'''
-        if self.sections.has_key(section):
+        if section in self.sections:
             del self.sections[section][option]
 
     def removeSection(self, section):
-        '''Remove the specified section from the configuration. 
+        '''Remove the specified section from the configuration.
         If the section in fact existed, return True. Otherwise return False.'''
-        if self.sections.has_key(section):
+        if section in self.sections:
             del self.sections[section]
             del self.options[section]
             return True
@@ -108,7 +108,8 @@ class Preferences(object):
                 options = config.options(section)
                 for option in options:
                     if self.hasOption(section, option):
-                        self.set_value(section, option, config.get(section, option))
+                        self.set_value(
+                            section, option, config.get(section, option))
 
     def save(self):
         '''Save values of options to file.'''

@@ -31,23 +31,24 @@ def enable_dns_cache():
     This will speed up all the test! Before this dns cache voodoo magic every request
     to the HTTP server required a DNS query, this is slow on some networks so I added
     this feature.
-    
+
     This method was taken from:
     # $Id: download.py,v 1.30 2004/05/13 09:55:30 torh Exp $
     That is part of :
     swup-0.0.20040519/
-    
+
     Developed by:
     #  Copyright 2001 - 2003 Trustix AS - <http://www.trustix.com>
     #  Copyright 2003 - 2004 Tor Hveem - <tor@bash.no>
     #  Copyright 2004 Omar Kilani for tinysofa - <http://www.tinysofa.org>
     '''
     om.out.debug('Enabling _dnsCache()')
-    
-    if not hasattr( socket, 'already_configured' ):
+
+    if not hasattr(socket, 'already_configured'):
         socket._getaddrinfo = socket.getaddrinfo
-    
+
     _dns_cache = LRU(200)
+
     def _caching_getaddrinfo(*args, **kwargs):
         try:
             query = (args)
@@ -58,9 +59,10 @@ def enable_dns_cache():
         except KeyError:
             res = socket._getaddrinfo(*args, **kwargs)
             _dns_cache[args] = res
-            om.out.debug('DNS response from DNS server for domain: ' + query[0] )
+            om.out.debug(
+                'DNS response from DNS server for domain: ' + query[0])
             return res
-    
-    if not hasattr( socket, 'already_configured' ):      
+
+    if not hasattr(socket, 'already_configured'):
         socket.getaddrinfo = _caching_getaddrinfo
         socket.already_configured = True

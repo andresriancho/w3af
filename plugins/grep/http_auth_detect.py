@@ -35,39 +35,38 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 class http_auth_detect(GrepPlugin):
     '''
     Find responses that indicate that the resource requires auth.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._auth_uri_regex = re.compile('.*://[\w%]*?:[\w%]*?@[\w\.]{3,40}')
 
     def grep(self, request, response):
         '''
         Finds 401 or authentication URIs like http://user:pass@domain.com/
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         # If I have a 401 code, and this URL wasn't already reported...
         if response.getCode() == 401:
-            
+
             # Doing this after the other if in order to be faster.
-            already_reported = [i.getURL().getDomainPath() for i in \
+            already_reported = [i.getURL().getDomainPath() for i in
                                 kb.kb.get('http_auth_detect', 'auth')]
             if response.getURL().getDomainPath() not in already_reported:
-            
+
                 # Perform all the work in this method
                 self._analyze_401(response)
-            
+
         else:
-            
+
             # I get here for "normal" HTTP 200 responses
             self._find_auth_uri(response)
-            
 
     def _find_auth_uri(self, response):
         '''
@@ -77,23 +76,22 @@ class http_auth_detect(GrepPlugin):
         #
         #   Analyze the HTTP URL
         #
-        if ('@' in response.getURI() and 
-               self._auth_uri_regex.match(response.getURI().url_string)):
+        if ('@' in response.getURI() and
+                self._auth_uri_regex.match(response.getURI().url_string)):
             # An authentication URI was found!
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
             v.setURL(response.getURL())
             v.set_id(response.id)
             desc = 'The resource: "%s" has a user and password in ' \
-            'the URI.' % response.getURI()
+                'the URI.' % response.getURI()
             v.set_desc(desc)
             v.set_severity(severity.HIGH)
             v.set_name('Basic HTTP credentials')
-            v.addToHighlight( response.getURI().url_string )
-            
+            v.addToHighlight(response.getURI().url_string)
+
             kb.kb.append(self, 'userPassUri', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-
 
         #
         #   Analyze the HTTP response body
@@ -103,7 +101,7 @@ class http_auth_detect(GrepPlugin):
             DocumentParser = dpCache.dpc.get_document_parser_for(response)
         except w3afException, w3:
             msg = 'Failed to find a suitable document parser. ' \
-            'Exception: ' + str(w3)
+                'Exception: ' + str(w3)
             om.out.debug(msg)
         else:
             parsed_references, re_references = DocumentParser.get_references()
@@ -111,24 +109,25 @@ class http_auth_detect(GrepPlugin):
             url_list.extend(re_references)
 
         for url in url_list:
-                
+
             if ('@' in url.url_string and
                     self._auth_uri_regex.match(url.url_string)):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.setURL(response.getURL())
-                v.set_id( response.id )
-                msg = 'The resource: "'+ response.getURL() + '" has a user and password in the'
+                v.set_id(response.id)
+                msg = 'The resource: "' + response.getURL(
+                ) + '" has a user and password in the'
                 msg += ' body. The offending URL is: "' + url + '".'
                 v.set_desc(msg)
-                
+
                 v.set_severity(severity.HIGH)
                 v.set_name('Basic HTTP credentials')
-                v.addToHighlight( url.url_string )
-                
+                v.addToHighlight(url.url_string)
+
                 kb.kb.append(self, 'userPassUri', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-                    
+
     def _analyze_401(self, response):
         '''
         Analyze a 401 response and report it.
@@ -138,22 +137,21 @@ class http_auth_detect(GrepPlugin):
         realm = None
         for key in response.getHeaders():
             if key.lower() == 'www-authenticate':
-                realm = response.getHeaders()[ key ]
+                realm = response.getHeaders()[key]
                 break
-        
-        
+
         if realm is None:
             # Report this strange case
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Authentication without www-authenticate header')
-            i.setURL( response.getURL() )
-            i.set_id( response.id )
-            i.set_desc( 'The resource: "'+ response.getURL() + '" requires authentication ' +
-            '(HTTP Code 401) but the www-authenticate header is not present. This requires ' + 
-            'human verification.')
-            kb.kb.append( self , 'non_rfc_auth' , i )
-        
+            i.setURL(response.getURL())
+            i.set_id(response.id)
+            i.set_desc('The resource: "' + response.getURL() + '" requires authentication ' +
+                       '(HTTP Code 401) but the www-authenticate header is not present. This requires ' +
+                       'human verification.')
+            kb.kb.append(self, 'non_rfc_auth', i)
+
         else:
             # Report the common case, were a realm is set.
             i = info.info()
@@ -162,18 +160,18 @@ class http_auth_detect(GrepPlugin):
                 i.set_name('NTLM authentication')
             else:
                 i.set_name('HTTP Basic authentication')
-            i.setURL( response.getURL() )
-            i.set_id( response.id )
-            i.set_desc( 'The resource: "'+ response.getURL() + '" requires authentication.' +
-            ' The realm is: "' + realm + '".')
+            i.setURL(response.getURL())
+            i.set_id(response.id)
+            i.set_desc('The resource: "' + response.getURL() + '" requires authentication.' +
+                       ' The realm is: "' + realm + '".')
             i['message'] = realm
-            i.addToHighlight( realm )
-            
-            kb.kb.append( self , 'auth' , i )
-            
-        om.out.information( i.get_desc() )
-        
-    def get_long_desc( self ):
+            i.addToHighlight(realm)
+
+            kb.kb.append(self, 'auth', i)
+
+        om.out.information(i.get_desc())
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -11,13 +11,12 @@ class apache_mod_security(base_payload):
         result = {}
         result['file'] = {}
         result['version'] = {}
-        
+
         modules = []
         files = []
 
         modules.append('mods-available/mod-security.load')
         modules.append('mods-available/mod-security2.load')
-
 
         def parse_version(binary):
             version = re.search('(?<=ModSecurity for Apache/)(.*?) ', binary)
@@ -34,54 +33,58 @@ class apache_mod_security(base_payload):
                 return ''
 
         bin_location = []
-        apache_config_files = self.exec_payload('apache_config_files')['apache_config']
-        apache_config_dir = self.exec_payload('apache_config_directory')['apache_directory']
+        apache_config_files = self.exec_payload(
+            'apache_config_files')['apache_config']
+        apache_config_dir = self.exec_payload(
+            'apache_config_directory')['apache_directory']
         if apache_config_files:
             for file in apache_config_files:
-                file_content =  self.shell.read(file)
+                file_content = self.shell.read(file)
                 if 'security2_module' in file_content or 'security_module' in file_content:
-                    bin_location.append(parse_binary_location(self.shell.read(file)))
-                
+                    bin_location.append(
+                        parse_binary_location(self.shell.read(file)))
+
         if bin_location == []:
             if apache_config_dir:
                 for dir in apache_config_dir:
                     for module in modules:
-                        dirmodule = self.shell.read(dir+module)
+                        dirmodule = self.shell.read(dir + module)
                         if dirmodule:
-                            bin_location.append(parse_binary_location(dirmodule))
+                            bin_location.append(
+                                parse_binary_location(dirmodule))
 
-        bin=[]
+        bin = []
         for location in bin_location:
             if location[0] != '/':
-                bin.append('/usr/lib/apache2/'+location)
-                bin.append('/usr/lib/httpd/'+location)
-                bin.append('/usr/local/'+location)
-                bin.append('/usr/lib/'+location)
+                bin.append('/usr/lib/apache2/' + location)
+                bin.append('/usr/lib/httpd/' + location)
+                bin.append('/usr/local/' + location)
+                bin.append('/usr/lib/' + location)
                 for item in bin:
                     version_item = parse_version(self.shell.read(item))
                     if version_item:
-                        result['version'][ version_item ] = 'Yes'
+                        result['version'][version_item] = 'Yes'
             else:
                 version_location = parse_version(self.shell.read(location))
                 if version_location:
-                    result['version'][ version_location ] = 'Yes'
+                    result['version'][version_location] = 'Yes'
 
-
-        files.append(dir+'conf/mod_security.conf')
-        files.append(dir+'conf.d/mod_security.conf')
-        files.append(dir+'mod_security.d/mod_security_crs_10_config.conf')
-        files.append(dir+'mod_security.d/mod_security_crs_10_global_config.conf')
-        files.append(dir+'mod_security.d/mod_security_localrules.conf')
-        files.append(dir+'conf/mod_security.conf')
-        files.append(dir+'mods-available/mod-security.conf')
+        files.append(dir + 'conf/mod_security.conf')
+        files.append(dir + 'conf.d/mod_security.conf')
+        files.append(dir + 'mod_security.d/mod_security_crs_10_config.conf')
+        files.append(
+            dir + 'mod_security.d/mod_security_crs_10_global_config.conf')
+        files.append(dir + 'mod_security.d/mod_security_localrules.conf')
+        files.append(dir + 'conf/mod_security.conf')
+        files.append(dir + 'mods-available/mod-security.conf')
 
         for file in files:
             file_content = self.shell.read(file)
             if file_content:
-                result['file'][ file ] = file_content
+                result['file'][file] = file_content
 
         return result
-    
+
     def run_read(self):
         api_result = self.api_read()
 
@@ -89,11 +92,11 @@ class apache_mod_security(base_payload):
             return 'Apache mod_security configuration files not found.'
         else:
             rows = []
-            rows.append( ['Description','Value'] ) 
-            rows.append( [] )
+            rows.append(['Description', 'Value'])
+            rows.append([])
             for key_name in api_result:
                 for k, v in api_result[key_name].items():
-                    rows.append( [key_name, k] )
-            result_table = table( rows )
-            result_table.draw( 90 )               
+                    rows.append([key_name, k])
+            result_table = table(rows)
+            result_table.draw(90)
             return rows

@@ -23,27 +23,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestUserDir(PluginTest):
-    
+
     base_url = 'http://moth/w3af/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('user_dir'),)}
-            }
         }
-    
+    }
+
     def test_fuzzer_user(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        users = self.kb.get('user_dir', 'users')
-        
-        self.assertEqual( len(users), 1, users )
-        
-        user = users[0]
-        
-        self.assertTrue( user.get_name().startswith('User directory:') )
-        self.assertEquals( user.getURL().url_string, 'http://moth/~www/' )
-        
 
+        users = self.kb.get('user_dir', 'users')
+
+        self.assertEqual(len(users), 1, users)
+
+        user = users[0]
+
+        self.assertTrue(user.get_name().startswith('User directory:'))
+        self.assertEquals(user.getURL().url_string, 'http://moth/~www/')

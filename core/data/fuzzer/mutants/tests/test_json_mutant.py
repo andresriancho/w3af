@@ -28,20 +28,20 @@ from core.data.fuzzer.mutants.json_mutant import (JSONMutant, is_json,
 
 
 class TestQSMutant(unittest.TestCase):
-    
+
     def setUp(self):
         self.fuzzer_config = {}
         self.payloads = ['abc', '53']
-    
+
     def test_is_json_int(self):
         self.assertTrue(is_json('1'))
-    
+
     def test_is_json_str(self):
         self.assertTrue(is_json('"a"'))
-    
+
     def test_is_json_lst(self):
         self.assertTrue(is_json('["a", "b"]'))
-        
+
     def test_is_json_dict(self):
         self.assertTrue(is_json('{"a": "b"}'))
 
@@ -50,7 +50,7 @@ class TestQSMutant(unittest.TestCase):
 
     def test_is_json_not_2(self):
         self.assertFalse(is_json('a=b&d=3'))
-        
+
     def test_fuzz_json_int(self):
         expected = [(53, 1)]
         generated = _fuzz_json(self.payloads, 1, False)
@@ -66,7 +66,7 @@ class TestQSMutant(unittest.TestCase):
                     ({'a': '53', 'c': 'd'}, 'b'),
                     ({'a': 'b', 'c': 'abc'}, 'd'),
                     ({'a': 'b', 'c': '53'}, 'd')]
-        generated = _fuzz_json(self.payloads, {"a":"b", "c":"d"}, False)
+        generated = _fuzz_json(self.payloads, {"a": "b", "c": "d"}, False)
         self.assertEqual(generated, expected)
 
     def test_fuzz_json_list(self):
@@ -76,15 +76,15 @@ class TestQSMutant(unittest.TestCase):
                     (['a', '53'], 'b')]
         generated = _fuzz_json(self.payloads, ['a', 'b'], False)
         self.assertEqual(generated, expected)
-    
+
     def test_make_json_mutants(self):
         freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
-        
+
         generated_mutants = _make_json_mutants(freq, self.payloads, [],
-                                               False, {"a":"b", "c":"d"})
-        
+                                               False, {"a": "b", "c": "d"})
+
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
-        
+
         m0 = generated_mutants[0]
         self.assertEqual(m0.getData(), '{"a": "abc", "c": "d"}')
 
@@ -96,16 +96,16 @@ class TestQSMutant(unittest.TestCase):
 
         m3 = generated_mutants[3]
         self.assertEqual(m3.getData(), '{"a": "b", "c": "53"}')
-    
+
     def test_json_mutant_create_mutants(self):
         freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
-        freq.set_dc({"a":"b", "c":"d"})
-        
+        freq.set_dc({"a": "b", "c": "d"})
+
         generated_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
                                                       False, self.fuzzer_config)
-        
+
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
-        
+
         m0 = generated_mutants[0]
         self.assertEqual(m0.getData(), '{"a": "abc", "c": "d"}')
 
@@ -121,9 +121,8 @@ class TestQSMutant(unittest.TestCase):
     def test_json_mutant_create_mutants_not(self):
         freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
         freq.set_dc('a=1&b=foo')
-        
+
         generated_mutants = JSONMutant.create_mutants(freq, self.payloads, [],
                                                       False, self.fuzzer_config)
-        
+
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
-        

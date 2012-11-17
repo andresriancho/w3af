@@ -23,27 +23,26 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFindBackdoor(PluginTest):
-    
+
     base_url = 'http://moth/w3af/crawl/find_backdoor/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('find_backdoors'),)}
-            }
         }
-    
+    }
+
     def test_find_backdoor(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        vulns = self.kb.get('find_backdoors', 'backdoors')
-        
-        self.assertEqual( len(vulns), 1, vulns )
-        
-        vuln = vulns[0]
-        
-        self.assertEqual( vuln.get_name(), 'Possible web backdoor' )
-        self.assertEqual( vuln.getURL().url_string, self.base_url + 'c99shell.php' )
-        
 
+        vulns = self.kb.get('find_backdoors', 'backdoors')
+
+        self.assertEqual(len(vulns), 1, vulns)
+
+        vuln = vulns[0]
+
+        self.assertEqual(vuln.get_name(), 'Possible web backdoor')
+        self.assertEqual(
+            vuln.getURL().url_string, self.base_url + 'c99shell.php')

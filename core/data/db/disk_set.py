@@ -27,21 +27,21 @@ from core.data.db.disk_list import disk_list
 class disk_set(disk_list):
     '''
     A disk_list that only allows to add/append unique items.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         super(disk_set, self).__init__()
         self.__append = super(disk_set, self).append
-        
+
         self.lock = threading.RLock()
-    
+
     def add(self, value):
         '''
         Append a value to the disk_set (only if the value is not already contained
         in this instance).
-        
+
         @param value: The value to append.
         @return: True if the value was added. False if it existed and was not added.
         '''
@@ -51,17 +51,17 @@ class disk_set(disk_list):
             else:
                 self.__append(value)
                 return True
-    
+
     def update(self, value_list):
         '''
         Extend the disk set with a list of items that is provided in @value_list
-        
+
         @return: None
         '''
         with self.lock:
             for value in value_list:
                 self.add(value)
-    
+
     def extend(self, _):
         raise Exception('Not a valid disk_set method.')
 

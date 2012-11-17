@@ -38,60 +38,60 @@ from core.data.options.option_list import OptionList
 class frontpage(AuditPlugin):
     '''
     Tries to upload a file using frontpage extensions (author.dll).
-    
+
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         # Internal variables
         self._already_tested = ScalableBloomFilter()
         self._stop_on_first = True
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Searches for file upload vulns using a POST to author.dll.
-        
+
         @param freq: A FuzzableRequest
         '''
         domain_path = freq.getURL().getDomainPath()
-        
+
         if self._stop_on_first and kb.kb.get(self, 'frontpage'):
             # Nothing to do, I have found vuln(s) and I should stop on first
             msg = 'Not verifying if I can upload files to: "' + domain_path
             msg += '" using author.dll. Because I already found one vulnerability.'
             om.out.debug(msg)
             return
-        
+
         # I haven't found any vulns yet, OR i'm trying to find every
         # directory where I can write a file.
         if domain_path not in self._already_tested:
-            self._already_tested.add( domain_path )
-            
+            self._already_tested.add(domain_path)
+
             # Find a file that doesn't exist and then try to upload it
             for _ in xrange(3):
-                rand_file = rand_alpha( 5 ) + '.html'
+                rand_file = rand_alpha(5) + '.html'
                 rand_path_file = domain_path.urlJoin(rand_file)
-                res = self._uri_opener.GET( rand_path_file )
-                if is_404( res ):
-                    upload_id = self._upload_file( domain_path,  rand_file )
-                    self._verify_upload( domain_path,  rand_file,  upload_id )
+                res = self._uri_opener.GET(rand_path_file)
+                if is_404(res):
+                    upload_id = self._upload_file(domain_path, rand_file)
+                    self._verify_upload(domain_path, rand_file, upload_id)
                     break
             else:
                 msg = 'frontpage plugin failed to find a 404 page. This is'
                 msg += ' mostly because of an error in 404 page detection.'
                 om.out.error(msg)
-            
-    def _upload_file( self, domain_path,  rand_file ):
+
+    def _upload_file(self, domain_path, rand_file):
         '''
         Upload the file using author.dll
-        
+
         @param domain_path: http://localhost/f00/
         @param rand_file: fj01afka.html
         '''
         file_path = domain_path.getPath() + rand_file
-        
+
         # TODO: The frontpage version should be obtained from the information saved in the kb
         # by the infrastructure.frontpage_version plugin!
         # The 4.0.2.4715 version should be dynamic!
@@ -103,95 +103,97 @@ class frontpage(AuditPlugin):
         content += '\n'
         # The content of the file I'm uploading is the file name reversed
         content += rand_file[::-1]
-        
+
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
         # inside the infrastructure.frontpage_version plugin, and then used here
-        target_url = domain_path.urlJoin( '_vti_bin/_vti_aut/author.dll' )
+        target_url = domain_path.urlJoin('_vti_bin/_vti_aut/author.dll')
 
         try:
-            res = self._uri_opener.POST( target_url , data=content )
-        except w3afException,  e:
-            om.out.debug('Exception while uploading file using author.dll: ' + str(e))
+            res = self._uri_opener.POST(target_url, data=content)
+        except w3afException, e:
+            om.out.debug(
+                'Exception while uploading file using author.dll: ' + str(e))
         else:
             if res.getCode() in [200]:
                 msg = 'frontpage plugin seems to have successfully uploaded a file to'
                 msg += ' the remote server.'
                 om.out.debug(msg)
             return res.id
-        
+
         return 200
-            
-    def _verify_upload(self,  domain_path,  rand_file,  upload_id):
+
+    def _verify_upload(self, domain_path, rand_file, upload_id):
         '''
         Verify if the file was uploaded.
-        
+
         @param domain_path: http://localhost/f00/
         @param rand_file: The filename that was supposingly uploaded
         @param upload_id: The id of the POST request to author.dll
-        '''        
-        target_url = domain_path.urlJoin( rand_file )
-        
+        '''
+        target_url = domain_path.urlJoin(rand_file)
+
         try:
-            res = self._uri_opener.GET( target_url )
-        except w3afException,  e:
+            res = self._uri_opener.GET(target_url)
+        except w3afException, e:
             msg = 'Exception while verifying if the file that was uploaded using'
             msg += ' author.dll was there: ' + str(e)
             om.out.debug(msg)
         else:
-            # The file we uploaded has the reversed filename as body 
-            if res.getBody() == rand_file[::-1] and not is_404( res ):
+            # The file we uploaded has the reversed filename as body
+            if res.getBody() == rand_file[::-1] and not is_404(res):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL( target_url )
-                v.set_id( [upload_id, res.id] )
+                v.setURL(target_url)
+                v.set_id([upload_id, res.id])
                 v.set_severity(severity.HIGH)
-                v.set_name( 'Insecure Frontpage extensions configuration' )
-                v.set_method( 'POST' )
+                v.set_name('Insecure Frontpage extensions configuration')
+                v.set_method('POST')
                 msg = 'An insecure configuration in the frontpage extensions'
                 msg += ' allows unauthenticated users to upload files to the'
-                msg += ' remote web server.' 
-                v.set_desc( msg )
+                msg += ' remote web server.'
+                v.set_desc(msg)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-                kb.kb.append( self, 'frontpage', v )
+                kb.kb.append(self, 'frontpage', v)
             else:
                 msg = 'The file that was uploaded using the POST method is not'
                 msg += ' present on the remote web server at %s' % target_url
-                om.out.debug( msg )
+                om.out.debug(msg)
 
-    def get_options( self ):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'Stop on the first successful file upload'
         h = 'The default value is usually a good idea, because if we can upload a file '
         h += 'to a directory, the chances are that we can upload to every directory;'
         h += ' and if this is the case, we would get a lot of vulnerabilities reported,'
         h += ' that are really only one.'
-        o = opt_factory('stopOnFirst', self._stop_on_first, d, 'boolean', help=h)
+        o = opt_factory(
+            'stopOnFirst', self._stop_on_first, d, 'boolean', help=h)
         ol.add(o)
-        
+
         return ol
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._stop_on_first = options_list['stopOnFirst'].get_value()
 
-    def get_plugin_deps( self ):
+    def get_plugin_deps(self):
         '''
         @return: A list with the names of the plugins that should be run before the
         current one.
         '''
         return ['infrastructure.frontpage_version']
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

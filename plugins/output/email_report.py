@@ -32,21 +32,21 @@ from core.data.options.option_list import OptionList
 
 class email_report(OutputPlugin):
     '''Email report to specified addresses.
-    
+
     @author: Taras (oxdef@oxdef.info)
     '''
-    
+
     MSG_TMPL = '''Hello!
     Target: %s has some vulnerabilities.
-    
+
     '''
-    
+
     def __init__(self):
         OutputPlugin.__init__(self)
-        
+
         self.targets = []
         self._exec = False
-        
+
         self.smtpServer = 'localhost'
         self.smtpPort = 25
         self.toAddrs = ''
@@ -63,23 +63,23 @@ class email_report(OutputPlugin):
 
     def get_options(self):
         ol = OptionList()
-        
+
         d = 'SMTP server ADDRESS to send notifications through, e.g. smtp.yourdomain.com'
         o = opt_factory('smtpServer', self.smtpServer, d, 'string')
         ol.add(o)
-        
+
         d = 'SMTP server PORT'
         o = opt_factory('smtpPort', self.smtpPort, d, 'integer')
         ol.add(o)
-        
+
         d = 'Recipient email address'
         o = opt_factory('toAddrs', self.toAddrs, d, 'list')
         ol.add(o)
-        
+
         d = '"From" email address'
         o = opt_factory('fromAddr', self.fromAddr, d, 'string')
         ol.add(o)
-        
+
         return ol
 
     def end(self):
@@ -105,7 +105,7 @@ class email_report(OutputPlugin):
         except Exception, e:
             msg = 'The SMTP settings in email_report plugin seem to be incorrect.'
             msg += ' Original error: "%s".' % e
-            om.out.error( msg )
+            om.out.error(msg)
 
     def get_long_desc(self):
         return '''
@@ -118,7 +118,8 @@ class email_report(OutputPlugin):
                 - toAddrs
                 - fromAddr
             '''
-    
-    def do_nothing(self, *args, **kwds): pass
-    
+
+    def do_nothing(self, *args, **kwds):
+        pass
+
     debug = information = error = vulnerability = console = do_nothing

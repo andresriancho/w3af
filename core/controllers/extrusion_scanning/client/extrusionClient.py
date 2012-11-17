@@ -23,38 +23,39 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 import sys
 
+
 class extrusionClient:
     '''
     This class defines a simple client, that connects to every port that is passed to it
     in the constructor and closes the connection afterwards.
-    
-    @author: Andres Riancho (andres.riancho@gmail.com)    
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__( self, host, tcpPorts, udpPorts ):
+    def __init__(self, host, tcpPorts, udpPorts):
         self._host = host
         self._tcpPorts = tcpPorts
         self._udpPorts = udpPorts
-        
-    def start( self ):
+
+    def start(self):
         '''
         Performs the connections.
         '''
-        def conn( sock, host, port ):
+        def conn(sock, host, port):
             try:
                 sock.connect((host, port))
                 sock.close()
             except:
                 pass
-        
+
         for port in self._tcpPorts:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn( s, self._host, int(port) )
-        
+            conn(s, self._host, int(port))
+
         for port in self._udpPorts:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM )
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
-                s.sendto( '', (self._host,int(port)) )
+                s.sendto('', (self._host, int(port)))
             except:
                 pass
 
@@ -67,7 +68,6 @@ if __name__ == "__main__":
     except:
         print 'Bad parameters.'
     else:
-        ec = extrusionClient( ipAddress, tcpPorts, udpPorts )
+        ec = extrusionClient(ipAddress, tcpPorts, udpPorts)
         ec.start()
         print 'OK.'
-    

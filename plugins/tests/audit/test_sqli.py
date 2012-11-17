@@ -25,18 +25,18 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestSQLI(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?name=xxx',
             'plugins': {
-                 'audit': (PluginConfig('sqli'),),
-                 }
+                'audit': (PluginConfig('sqli'),),
             }
         }
-    
+    }
+
     def test_found_sqli(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

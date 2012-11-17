@@ -28,12 +28,12 @@ from mock import MagicMock
 class mock_stdout(object):
     def __init__(self):
         self.messages = []
-    
+
     def write(self, msg):
-        self.messages.extend( msg.split('\n\r') )
-    
+        self.messages.extend(msg.split('\n\r'))
+
     flush = MagicMock()
-    
+
     def clear(self):
         self.messages = []
 
@@ -45,15 +45,15 @@ class ConsoleTestHelper(unittest.TestCase):
     console = None
     OUTPUT_FILE = 'output-w3af-unittest.txt'
     OUTPUT_HTTP_FILE = 'output-w3af-unittest-http.txt'
-    
+
     def setUp(self):
         self.mock_sys()
-        
+
     def tearDown(self):
-        #sys.exit.assert_called_once_with(0)        
+        #sys.exit.assert_called_once_with(0)
         self.restore_sys()
         self._mock_stdout.clear()
-        
+
         #
         # I want to make sure that we don't have *any hidden* exceptions
         # in our tests.
@@ -62,7 +62,7 @@ class ConsoleTestHelper(unittest.TestCase):
             caught_exceptions = self.console._w3af.exception_handler.get_all_exceptions()
             msg = [e.get_summary() for e in caught_exceptions]
             self.assertEqual(len(caught_exceptions), 0, msg)
-        
+
         # Remove all temp files
         for fname in (self.OUTPUT_FILE, self.OUTPUT_HTTP_FILE):
             if os.path.exists(fname):
@@ -72,7 +72,7 @@ class ConsoleTestHelper(unittest.TestCase):
         # backup
         self.old_stdout = sys.stdout
         self.old_exit = sys.exit
-        
+
         # assign new
         self._mock_stdout = mock_stdout()
         sys.stdout = self._mock_stdout
@@ -81,7 +81,7 @@ class ConsoleTestHelper(unittest.TestCase):
     def restore_sys(self):
         sys.stdout = self.old_stdout
         sys.exit = self.old_exit
-        
+
     def startswith_expected_in_output(self, expected):
         for line in expected:
             for sys_line in self._mock_stdout.messages:
@@ -91,19 +91,18 @@ class ConsoleTestHelper(unittest.TestCase):
                 return False
         else:
             return True
-            
+
     def all_expected_in_output(self, expected):
         for line in expected:
             if line not in self._mock_stdout.messages:
                 return False
         else:
             return True
-    
+
     def error_in_output(self, errors):
         for line in self._mock_stdout.messages:
             for error_str in errors:
                 if error_str in line:
                     return True
-        
+
         return False
-        

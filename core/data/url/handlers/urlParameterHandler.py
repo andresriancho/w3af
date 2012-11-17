@@ -29,23 +29,22 @@ class URLParameterHandler(urllib2.BaseHandler):
     '''
     Appends a user configured URL parameter to the request URL.
     e.g.: http://www.myserver.com/index.html;jsessionid=dd18fa45014ce4fc?id=5
-    
+
     See Section 2.1 URL Syntactic Components of RFC 1808
         <scheme>://<net_loc>/<path>;<params>?<query>#<fragment>
     See Section 3.2.2 of RFC 1738
-    
+
     @author: Kevin Denver ( muffysw@hotmail.com )
     '''
-    
-    def __init__( self, url_param ):
+
+    def __init__(self, url_param):
         self._url_parameter = url_param
-        
-    def http_request( self, req ):
-        url_instance = URL( req.get_full_url() )
-        url_instance.setParam( self._url_parameter )
-        
+
+    def http_request(self, req):
+        url_instance = URL(req.get_full_url())
+        url_instance.setParam(self._url_parameter)
+
         new_request = HTTPRequest(url_instance, headers=req.headers,
                                   origin_req_host=req.get_origin_req_host(),
                                   unverifiable=req.is_unverifiable())
         return new_request
-

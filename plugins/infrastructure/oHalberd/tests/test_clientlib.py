@@ -30,6 +30,7 @@ import Halberd.clientlib as clientlib
 # This HTTPServer must be bound only to localhost (for security reasons).
 # TODO - Think about something similar for HTTPS.
 
+
 class TestHTTPClient(unittest.TestCase):
 
     def setUp(self):
@@ -54,12 +55,12 @@ class TestHTTPClient(unittest.TestCase):
                                              params, query, fragment)
 
         req = get_request('http://www.example.com:23/test?blop=777')
-        self.failUnless(req.splitlines()[:2] == \
+        self.failUnless(req.splitlines()[:2] ==
                         ['GET /test?blop=777 HTTP/1.1',
                          'Host: www.example.com:23'])
 
         req = get_request('http://www.example.com/test;blop?q=something')
-        self.failUnless(req.splitlines()[:2] == \
+        self.failUnless(req.splitlines()[:2] ==
                         ['GET /test;blop?q=something HTTP/1.1',
                          'Host: www.example.com'])
 
@@ -68,7 +69,7 @@ class TestHTTPClient(unittest.TestCase):
 
     def testAntiCache(self):
         req = self.client._fillTemplate('localhost', 80, '/index.html')
-        self.failUnless(req.splitlines()[2:4] == \
+        self.failUnless(req.splitlines()[2:4] ==
                         ['Pragma: no-cache', 'Cache-control: no-cache'])
 
     def testSendRequestSanityCheck(self):
@@ -111,7 +112,7 @@ class TestHTTPSClient(unittest.TestCase):
 
     def setUp(self):
         self.client = clientlib.HTTPSClient()
-        
+
     def testGetHostAndPort(self):
         self.failUnlessEqual(self.client._getHostAndPort('secure'),
                              ('secure', self.client.default_port))

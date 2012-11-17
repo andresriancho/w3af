@@ -49,24 +49,25 @@ str = partial(smart_str, encoding='utf8', errors='xmlcharrefreplace')
 class xml_file(OutputPlugin):
     '''
     Print all messages to a xml file.
-    
+
     @author: Kevin Denver ( muffysw@hotmail.com )
     '''
     def __init__(self):
         OutputPlugin.__init__(self)
-        
+
         # These attributes hold the file pointers
         self._file = None
-        
+
         # User configured parameters
         self._file_name = 'report.xml'
         self._timeFormat = '%a %b %d %H:%M:%S %Y'
-        self._longTimestampString = str(time.strftime(self._timeFormat, time.localtime()))
-        self._timestampString = str(int(time.time())) 
+        self._longTimestampString = str(
+            time.strftime(self._timeFormat, time.localtime()))
+        self._timestampString = str(int(time.time()))
 
         # List with additional xml elements
         self._errorXML = []
-        
+
         # xml
         self._xmldoc = xml.dom.minidom.Document()
         self._topElement = self._xmldoc.createElement("w3afrun")
@@ -75,68 +76,69 @@ class xml_file(OutputPlugin):
         self._topElement.setAttribute("xmloutputversion", "2.0")
         # Add in the version details
         version_element = self._xmldoc.createElement("w3af-version")
-        version_data = self._xmldoc.createTextNode(str(get_w3af_version.get_w3af_version()))
+        version_data = self._xmldoc.createTextNode(
+            str(get_w3af_version.get_w3af_version()))
         version_element.appendChild(version_data)
         self._topElement.appendChild(version_element)
-        
+
         self._scanInfo = self._xmldoc.createElement("scaninfo")
-              
+
         # HistoryItem to get requests/responses
         self._history = HistoryItem()
 
-                                
-    def _init( self ):
+    def _init(self):
         try:
             self._file = open(self._file_name, "w")
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._file_name),
-                                        io.strerror))
+            raise w3afException(msg % (os.path.abspath(self._file_name),
+                                       io.strerror))
         except Exception, e:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._file_name), e))
+            raise w3afException(msg % (os.path.abspath(self._file_name), e))
 
-    def do_nothing(self, *args, **kwds): pass
+    def do_nothing(self, *args, **kwds):
+        pass
     debug = information = vulnerability = console = log_http = do_nothing
 
-    def error(self, message , newLine = True ):
+    def error(self, message, newLine=True):
         '''
         This method is called from the output object. The output object was called
         from a plugin or from the framework. This method should take an action
         for error messages.
-        '''     
+        '''
         messageNode = self._xmldoc.createElement("error")
         messageNode.setAttribute("caller", str(self.getCaller()))
         description = self._xmldoc.createTextNode(message)
         messageNode.appendChild(description)
-        
+
         self._errorXML.append(messageNode)
-        
-    def set_options( self, option_list ):
+
+    def set_options(self, option_list):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using
         get_options()
-        
-        This method MUST be implemented on every plugin. 
-        
+
+        This method MUST be implemented on every plugin.
+
         @return: No value is returned.
-        ''' 
+        '''
         self._file_name = option_list['output_file'].get_value()
-        
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'File name where this plugin will write to'
         o = opt_factory('output_file', self._file_name, d, OUTPUT_FILE)
         ol.add(o)
 
         return ol
-    
+
     def _buildPluginScanInfo(self, groupName, pluginList, optionsDict):
         '''
         This method builds the xml structure for the plugins
@@ -147,21 +149,23 @@ class xml_file(OutputPlugin):
             pluginNode = self._xmldoc.createElement("plugin")
             pluginNode.setAttribute("name", str(plugin_name))
 
-            if optionsDict.has_key(plugin_name):
+            if plugin_name in optionsDict:
                 for plugin_option in optionsDict[plugin_name]:
                     configNode = self._xmldoc.createElement("config")
-                    configNode.setAttribute("parameter", str(plugin_option.get_name()))
-                    configNode.setAttribute("value", str(plugin_option.get_value()))
+                    configNode.setAttribute(
+                        "parameter", str(plugin_option.get_name()))
+                    configNode.setAttribute(
+                        "value", str(plugin_option.get_value()))
                     pluginNode.appendChild(configNode)
-            node.appendChild(pluginNode)  
+            node.appendChild(pluginNode)
         self._scanInfo.appendChild(node)
-        
+
     def log_enabled_plugins(self, pluginsDict, optionsDict):
         '''
         This method is called from the output manager object. This method should
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
-        
+
         @param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
         @param optionsDict: A dict with the options for every plugin.
@@ -171,12 +175,12 @@ class xml_file(OutputPlugin):
         for url in cf.cf.get('targets'):
             strTargets += str(url) + ","
         self._scanInfo.setAttribute("target", strTargets[:-1])
-        
+
         # Add enabled plugins and their configuration to scaninfo
         for plugin_type in pluginsDict:
-            self._buildPluginScanInfo(plugin_type, pluginsDict[plugin_type], 
-                                                    optionsDict[plugin_type])
-        
+            self._buildPluginScanInfo(plugin_type, pluginsDict[plugin_type],
+                                      optionsDict[plugin_type])
+
         # Add scaninfo to the report
         self._topElement.appendChild(self._scanInfo)
 
@@ -184,7 +188,7 @@ class xml_file(OutputPlugin):
         """
         Write out the request/response in a more parseable XML format will factor
         anything with a content-type not prefixed with a text/ in a CDATA.
-        
+
         parent - the parent node (eg httprequest/httpresponse)
         action - either a details.request or details.response
         """
@@ -207,23 +211,24 @@ class xml_file(OutputPlugin):
         actionStatus = self._xmldoc.createTextNode(status.strip())
         actionStatusNode.appendChild(actionStatus)
         parentNode.appendChild(actionStatusNode)
-        
+
         # Put out the headers as XML entity
         actionHeadersNode = self._xmldoc.createElement("headers")
         for (header, header_content) in headers.iteritems():
             headerdetail = self._xmldoc.createElement("header")
-            headerdetail.setAttribute("content", str(header_content) )
-            headerdetail.setAttribute("field", str(header) )            
+            headerdetail.setAttribute("content", str(header_content))
+            headerdetail.setAttribute("field", str(header))
             actionHeadersNode.appendChild(headerdetail)
         parentNode.appendChild(actionHeadersNode)
-        
+
         # if the body is defined, put it out
         if body:
             actionBodyNode = self._xmldoc.createElement("body")
             actionBodyNode.setAttribute('content-encoding', 'text')
             if "\0" in body:
                 # irrespective of the mimetype; if the NULL char is present; then base64.encode it
-                actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
+                actionBodyContent = self._xmldoc.createTextNode(
+                    base64.encodestring(body))
                 actionBodyNode.setAttribute('content-encoding', 'base64')
             else:
                 # try and extract the Content-Type header
@@ -233,8 +238,10 @@ class xml_file(OutputPlugin):
                     (mime_type, sub_type) = content_type.split('/')
                     if mime_type in ['image', 'audio', 'video']:
                         # if one of image/, audio/, video/ put out base64encoded text
-                        actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
-                        actionBodyNode.setAttribute('content-encoding', 'base64')
+                        actionBodyContent = self._xmldoc.createTextNode(
+                            base64.encodestring(body))
+                        actionBodyNode.setAttribute(
+                            'content-encoding', 'base64')
                     elif mime_type == 'application':
                         if sub_type in NON_BIN:
                             # Textual type application, eg json, javascript which for readability we'd
@@ -242,8 +249,10 @@ class xml_file(OutputPlugin):
                             actionBodyContent = self._xmldoc.createCDATASection(body)
                         else:
                             # either known or unknown binary format
-                            actionBodyContent = self._xmldoc.createTextNode(base64.encodestring(body))
-                            actionBodyNode.setAttribute('content-encoding', 'base64')
+                            actionBodyContent = self._xmldoc.createTextNode(
+                                base64.encodestring(body))
+                            actionBodyNode.setAttribute(
+                                'content-encoding', 'base64')
                     else:
                         actionBodyContent = self._xmldoc.createTextNode(body)
                 except ValueError:
@@ -251,7 +260,7 @@ class xml_file(OutputPlugin):
                     actionBodyContent = self._xmldoc.createCDATASection(body)
             actionBodyNode.appendChild(actionBodyContent)
             parentNode.appendChild(actionBodyNode)
-    
+
     def end(self):
         '''
         This method is called when the scan has finished.
@@ -260,7 +269,7 @@ class xml_file(OutputPlugin):
         # removing null characters from the xml doc. Would this be a
         # significant loss of data for any scenario?
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
-        
+
         # Add the vulnerability results
         vulns = kb.kb.getAllVulns()
         for i in vulns:
@@ -280,7 +289,8 @@ class xml_file(OutputPlugin):
             if i.get_id():
                 messageNode.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement('http-transactions')
+                transaction_set = self._xmldoc.createElement(
+                    'http-transactions')
                 messageNode.appendChild(transaction_set)
                 for requestid in i.get_id():
                     details = self._history.read(requestid)
@@ -288,18 +298,17 @@ class xml_file(OutputPlugin):
                     actionset = self._xmldoc.createElement("http-transaction")
                     actionset.setAttribute("id", str(requestid))
                     transaction_set.appendChild(actionset)
-                    
+
                     requestNode = self._xmldoc.createElement("httprequest")
                     self.report_http_action(requestNode, details.request)
                     actionset.appendChild(requestNode)
-                    
+
                     responseNode = self._xmldoc.createElement("httpresponse")
                     self.report_http_action(responseNode, details.response)
                     actionset.appendChild(responseNode)
 
-            
             self._topElement.appendChild(messageNode)
-        
+
         # Add the information results
         infos = kb.kb.getAllInfos()
         for i in infos:
@@ -316,7 +325,8 @@ class xml_file(OutputPlugin):
             if i.get_id():
                 messageNode.setAttribute("id", str(i.get_id()))
                 # Wrap all transactions in a http-transactions node
-                transaction_set = self._xmldoc.createElement('http-transactions')
+                transaction_set = self._xmldoc.createElement(
+                    'http-transactions')
                 messageNode.appendChild(transaction_set)
                 for requestid in i.get_id():
                     details = self._history.read(requestid)
@@ -333,32 +343,31 @@ class xml_file(OutputPlugin):
                     responseNode.setAttribute("id", str(requestid))
                     self.report_http_action(responseNode, details.response)
                     actionset.appendChild(responseNode)
-            
-           
+
             self._topElement.appendChild(messageNode)
-        
+
         # Add additional information results
         for node in self._errorXML:
             self._topElement.appendChild(node)
-        
+
         # Write xml report
         self._init()
         self._xmldoc.appendChild(self._topElement)
 
         try:
-            self._xmldoc.writexml(self._file, addindent=" "*4,
-                                  newl="\n", encoding="UTF-8")  
+            self._xmldoc.writexml(self._file, addindent=" " * 4,
+                                  newl="\n", encoding="UTF-8")
             self._file.flush()
         finally:
             self._file.close()
-              
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to an XML report file.
-        
+
         One configurable parameter exists:
             - output_file
         '''

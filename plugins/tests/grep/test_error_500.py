@@ -23,29 +23,28 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestError500(PluginTest):
-    
+
     error_500_url = 'https://moth/w3af/grep/error_500/500.php?id=1'
-    
+
     _run_configs = {
         'cfg1': {
             'target': error_500_url,
             'plugins': {
                 'grep': (PluginConfig('error_500'),),
-                'audit': (PluginConfig('sqli'),),         
+                'audit': (PluginConfig('sqli'),),
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('error_500', 'error_500')
-        
-        self.assertEquals(1, len(vulns))
-        
-        vuln = vulns[0]
-        
-        self.assertEquals( vuln.get_name(), 'Unhandled error in web application')
-        self.assertEquals( vuln.getURL().getFileName(), '500.php')
 
-        
+        self.assertEquals(1, len(vulns))
+
+        vuln = vulns[0]
+
+        self.assertEquals(
+            vuln.get_name(), 'Unhandled error in web application')
+        self.assertEquals(vuln.getURL().getFileName(), '500.php')

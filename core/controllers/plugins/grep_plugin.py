@@ -39,10 +39,10 @@ class GrepPlugin(Plugin):
     def grep_wrapper(self, fuzzable_request, response):
         '''
         This method tries to find patterns on responses.
-        
+
         This method CAN be implemented on a plugin, but its better to
         do your searches in _testResponse().
-        
+
         @param response: This is the HTTPResponse object to test.
         @param fuzzable_request: This is the fuzzable request object that
             generated the current response being analyzed.
@@ -51,22 +51,22 @@ class GrepPlugin(Plugin):
         '''
         if response.getFromCache():
             return
-        
+
         if response.getURL().getDomain() in cf.cf.get('targetDomains'):
             self.grep(fuzzable_request, response)
-    
+
     def grep(self, fuzzable_request, response):
         '''
         Analyze the response.
-        
+
         @param fuzzable_request: The request that was sent
         @param response: The HTTP response obj
         '''
         raise NotImplementedError('Plugin "%s" must not implement required '
                                   'method grep' % self.__class__.__name__)
-                    
+
     def set_url_opener(self, foo):
         pass
-        
+
     def get_type(self):
         return 'grep'

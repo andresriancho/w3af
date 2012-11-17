@@ -40,12 +40,12 @@ def makeAESSocket( key , sock ):
     sock._original_recv = sock.recv
     sock._original_send = sock.send
     sock._key = key
-    
+
     def aes_recv( self, length ):
         crypt_data = self._original_recv( length )
         data = DecryptData( self._key, crypt_data )
         return data
-        
+
     def aes_send( self, data ):
         crypt_data = EncryptData( self._key, data )
         sentBytes = self._original_send( crypt_data )
@@ -54,9 +54,9 @@ def makeAESSocket( key , sock ):
         else:
             # Just to say "not all data was transfered"
             return len(data) - 1
-    
+
     sock.recv = aes_recv
     sock.send = aes_send
-    
+
     return sock
 """

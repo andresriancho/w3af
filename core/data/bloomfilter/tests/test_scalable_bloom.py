@@ -36,44 +36,50 @@ class WrappedFileSeekBloomFilter(GenericBloomFilter):
         @param error_rate: The acceptable false positive rate, eg. 0.001
         '''
         GenericBloomFilter.__init__(self, capacity, error_rate)
-        
+
         temp_file = self.get_temp_file()
         self.bf = FileSeekBloomFilter(capacity, error_rate, temp_file)
 
+
 @attr('smoke')
 class TestScalableBloomFilterLargeCmmap(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 20000
-        
+
     def setUp(self):
         super(TestScalableBloomFilterLargeCmmap, self).setUp()
-        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
+        self.filter = ScalableBloomFilter(
+            mode=ScalableBloomFilter.LARGE_SET_GROWTH)
+
 
 class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 500
-        
+
     def setUp(self):
         super(TestScalableBloomfilterSmallCmmap, self).setUp()
-        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH)
+        self.filter = ScalableBloomFilter(
+            mode=ScalableBloomFilter.LARGE_SET_GROWTH)
+
 
 class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 20000
-    
+
     def setUp(self):
         super(TestScalableBloomFilterLargeSeekFile, self).setUp()
-        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
-                                          filter_impl=WrappedFileSeekBloomFilter)
+        self.filter = ScalableBloomFilter(
+            mode=ScalableBloomFilter.LARGE_SET_GROWTH,
+            filter_impl=WrappedFileSeekBloomFilter)
+
 
 @attr('smoke')
 class TestScalableBloomfilterSmallSeekFile(unittest.TestCase, GenericFilterTest):
-    
+
     CAPACITY = 500
-        
+
     def setUp(self):
         super(TestScalableBloomfilterSmallSeekFile, self).setUp()
-        self.filter = ScalableBloomFilter(mode=ScalableBloomFilter.LARGE_SET_GROWTH,
-                                          filter_impl=WrappedFileSeekBloomFilter)
-        
-        
+        self.filter = ScalableBloomFilter(
+            mode=ScalableBloomFilter.LARGE_SET_GROWTH,
+            filter_impl=WrappedFileSeekBloomFilter)

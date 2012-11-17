@@ -27,54 +27,54 @@ class HeadersMutant(Mutant):
     '''
     This class is a headers mutant.
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         Mutant.__init__(self, freq)
 
-    def get_mutant_type( self ):
+    def get_mutant_type(self):
         return 'headers'
 
-    def get_dc( self ):
+    def get_dc(self):
         return self._headers
-        
-    def set_dc( self, dc ):
+
+    def set_dc(self, dc):
         # See comment below (search for __HERE__).
         fixed_headers = Headers()
-        
+
         for key, value in dc.iteritems():
             if isinstance(value, list):
                 value = value[0]
-        
+
             fixed_headers[key] = value
-        
+
         self._headers = fixed_headers
-    
+
     def found_at(self):
         '''
         @return: A string representing WHAT was fuzzed.
         '''
         fmt = '"%s", using HTTP method %s. The modified header was: "%s"'\
               ' and it\'s value was: "%s".'
-         
+
         return fmt % (self.getURL(), self.get_method(), self.get_var(),
                       self.get_mod_value())
 
-    def set_mod_value( self, val ):
+    def set_mod_value(self, val):
         '''
         Set the value of the variable that this mutant modifies.
         '''
         try:
-            self._freq._headers[ self.get_var() ] = val
+            self._freq._headers[self.get_var()] = val
         except:
             msg = 'The headers mutant object wasn\'t  correctly initialized.'
             raise ValueError(msg)
 
-    def get_mod_value( self ):
+    def get_mod_value(self):
         try:
-            return self._freq._headers[ self.get_var() ]
+            return self._freq._headers[self.get_var()]
         except:
             msg = 'The headers mutant object wasn\'t  correctly initialized.'
             raise ValueError(msg)
-    
+
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
                        append, fuzzer_config, data_container=None):
@@ -84,10 +84,11 @@ class HeadersMutant(Mutant):
         '''
         if not fuzzer_config['fuzzable_headers']:
             return []
-        
+
         # Generate a list with the headers we'll fuzz
-        fuzzable_param_list = fuzzable_param_list + fuzzer_config['fuzzable_headers']
-        
+        fuzzable_param_list = fuzzable_param_list + fuzzer_config[
+            'fuzzable_headers']
+
         # Generate a dummy object that we'll use for fixing the "impedance mismtach"
         # between the Headers() object that doesn't have the same form as a
         # generic DataContainer. Headers look like:
@@ -103,9 +104,9 @@ class HeadersMutant(Mutant):
         for header_name in fuzzer_config['fuzzable_headers']:
             headers_copy[header_name] = ''
         cloned_headers = headers_copy.clone_with_list_values()
-        
-        return Mutant._create_mutants_worker(freq, HeadersMutant, mutant_str_list,
-                                             fuzzable_param_list,
-                                             append, fuzzer_config,
-                                             data_container=cloned_headers)
 
+        return Mutant._create_mutants_worker(
+            freq, HeadersMutant, mutant_str_list,
+            fuzzable_param_list,
+            append, fuzzer_config,
+            data_container=cloned_headers)

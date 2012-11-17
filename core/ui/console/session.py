@@ -29,7 +29,7 @@ class sessionMenu(menu):
     Menu to control sessions.
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-    def _cmd_save(self, params):    
+    def _cmd_save(self, params):
         if len(params) != 1:
             om.out.console("Missing parameters")
             self._help_save()
@@ -39,7 +39,6 @@ class sessionMenu(menu):
             except Exception, e:
                 om.out.console(str(e))
 
-    
     def _cmd_resume(self, params):
         if len(params) != 1:
             om.out.console("Missing parameters")
@@ -50,13 +49,8 @@ class sessionMenu(menu):
             except Exception, e:
                 om.out.console(str(e))
 
-
-
     def _help_save(self):
         om.out.console("Usage: save <session_name>")
 
     def _help_resume(self):
         om.out.console("Usage: resume <session_name>")
-            
-
-       

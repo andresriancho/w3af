@@ -38,7 +38,7 @@ import Halberd.util
 
 
 class Clue:
-    """A clue is what we use to tell real servers behind a virtual IP. 
+    """A clue is what we use to tell real servers behind a virtual IP.
 
     Clues are gathered during several connections to a web server and they
     allow us to try to identify patterns in its responses. Those patterns could
@@ -70,7 +70,6 @@ class Clue:
         # Original MIME headers. They're useful during analysis and reporting.
         self.headers = None
 
-
     def parse(self, headers):
         """Extracts all relevant information from the MIME headers replied by
         the target.
@@ -86,13 +85,13 @@ class Clue:
             # tuples instead of a dictionary because with this approach we keep
             # the header's order as sent by the target, This is a relevant
             # piece of information we can't afford to miss.
-            self.headers = [tuple(line.split(':', 1)) \
+            self.headers = [tuple(line.split(':', 1))
                             for line in headers.splitlines() if line != '']
         elif isinstance(headers, types.ListType):
             self.headers = headers
         else:
-            raise TypeError, 'Unable to parse headers of type %s' \
-                             % type(headers).__name__
+            raise TypeError('Unable to parse headers of type %s'
+                            % type(headers).__name__)
 
         # We examine each MIME field and try to find an appropriate handler. If
         # there is none we simply digest the info it provides.
@@ -144,7 +143,6 @@ class Clue:
         """
         self.diff = int(self._local - self._remote)
 
-
     def incCount(self, num=1):
         """Increase the times this clue has been found.
 
@@ -165,7 +163,6 @@ class Clue:
         """
         return self._count
 
-
     def setTimestamp(self, timestamp):
         """Sets the local clock attribute.
 
@@ -174,7 +171,6 @@ class Clue:
         @type timestamp: C{int}
         """
         self._local = timestamp
-
 
     def __eq__(self, other):
         if self.diff != other.diff:
@@ -192,8 +188,8 @@ class Clue:
         if not (self.diff or self.info['digest']):
             return "<Clue at %x>" % id(self)
         return "<Clue at %x diff=%d found=%d digest='%s'>" \
-                % (id(self), self.diff, self._count,
-                   self.info['digest'][:4] + '...')
+            % (id(self), self.diff, self._count,
+               self.info['digest'][:4] + '...')
 
     # ==================================================================
     # The following methods extract relevant data from the MIME headers.

@@ -24,44 +24,46 @@ import sys
 import os
 from core.controllers.exceptions import *
 
+
 class pe:
     '''
-    This class represents a PE file. 
-    
+    This class represents a PE file.
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__( self, arch='32bit' ):
+    def __init__(self, arch='32bit'):
         self._arch = arch
         self._shellcode = '\x90'
         self._maxPayloadLen = 1024
-        self._templateFileName = 'core' + os.path.sep + 'controllers' + os.path.sep + 'vdaemon' + os.path.sep + 'peTemplate.dat'
-    
-    def setShellCode( self, sc ):
-        if len( sc ) > self._maxPayloadLen:
+        self._templateFileName = 'core' + os.path.sep + 'controllers' + \
+            os.path.sep + 'vdaemon' + os.path.sep + 'peTemplate.dat'
+
+    def setShellCode(self, sc):
+        if len(sc) > self._maxPayloadLen:
             raise w3afException('Payload to long!')
         self._shellcode = sc
-        
-    def getShellCode( self ):
+
+    def getShellCode(self):
         return self._shellcode
-        
-    def dump( self ):
+
+    def dump(self):
         '''
         @return: A string with the complete pe file.
         '''
         try:
-            template = file( self._templateFileName, 'r' ).read()
+            template = file(self._templateFileName, 'r').read()
         except Exception, e:
-            raise w3afException('Failed to open PE template file. Exception: ' + str(e) )
+            raise w3afException(
+                'Failed to open PE template file. Exception: ' + str(e))
         else:
             paddingLen = self._maxPayloadLen - len(self._shellcode)
-            executable = template.replace( '\x90' * self._maxPayloadLen, self._shellcode + '\x90' * paddingLen )
-            
+            executable = template.replace('\x90' * self._maxPayloadLen, self._shellcode + '\x90' * paddingLen)
+
         return executable
-        
+
 if __name__ == '__main__':
     e = pe()
     e._templateFileName = 'eggTemplate.dat'
-    f = file('genpe','w')
-    f.write( e.dump() )
+    f = file('genpe', 'w')
+    f.write(e.dump())
     f.close()
-    

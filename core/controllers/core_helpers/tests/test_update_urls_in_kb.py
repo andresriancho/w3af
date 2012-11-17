@@ -29,31 +29,29 @@ from core.controllers.core_helpers.update_urls_in_kb import update_kb
 
 
 class TestUpdateURLs(unittest.TestCase):
-    
+
     def setUp(self):
         kb.kb.save('urls', 'url_objects', list())
         kb.kb.save('urls', 'fuzzable_requests', set())
-    
+
     def test_basic(self):
         u1 = URL('http://w3af.org/')
         r1 = FuzzableRequest(u1, method='GET')
-        update_kb( r1 )
+        update_kb(r1)
         result = kb.kb.get('urls', 'url_objects')
         self.assertEquals(len(result), 1)
         self.assertEquals("http://w3af.org/", list(result)[0].url_string)
-        
+
         u2 = URL('http://w3af.org/blog/')
-        r2 = FuzzableRequest(u2, method='GET')    
+        r2 = FuzzableRequest(u2, method='GET')
         u3 = URL('http://w3af.org/')
-        r3 = FuzzableRequest(u3, method='GET')    
-        update_kb( r1 )
-        update_kb( r2 )
-        update_kb( r3 )
-        
+        r3 = FuzzableRequest(u3, method='GET')
+        update_kb(r1)
+        update_kb(r2)
+        update_kb(r3)
+
         result = kb.kb.get('urls', 'url_objects')
         self.assertEquals(len(result), 2)
         expected_set = set(["http://w3af.org/", "http://w3af.org/blog/"])
-        self.assertEqual( expected_set,
-                          set([u.url_string for u in result]))
-        
-    
+        self.assertEqual(expected_set,
+                         set([u.url_string for u in result]))

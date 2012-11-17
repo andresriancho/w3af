@@ -32,17 +32,17 @@ from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_r
 
 def handle_crash(w3af_core, _type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
-    if issubclass(_type, KeyboardInterrupt ):
+    if issubclass(_type, KeyboardInterrupt):
         helpers.endThreads()
         import core.controllers.output_manager as om
-        om.out.set_output_plugins( ['console'] )
+        om.out.set_output_plugins(['console'])
         om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af.'))
         om.out.console(_('Bye!'))
         om.out.process_all_messages()
-        sys.exit(0)        
+        sys.exit(0)
         return
-    
-    # Print the information to the console so everyone can see it 
+
+    # Print the information to the console so everyone can see it
     exception = traceback.format_exception(_type, value, tb)
     exception = "".join(exception)
     print exception
@@ -51,17 +51,17 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
     clean_exception = cleanup_bug_report(exception)
 
     # Save the info to a file for later analysis
-    filename = create_crash_file( clean_exception )
-    
+    filename = create_crash_file(clean_exception)
+
     # Create the dialog that allows the user to send the bug to Trac
-    bug_report_win = unhandled_bug_report.bug_report_window( w3af_core,
-                                                             _('Bug detected!'), 
-                                                             clean_exception,
-                                                             filename, plugins)
-    
+    bug_report_win = unhandled_bug_report.bug_report_window(w3af_core,
+                                                            _('Bug detected!'),
+                                                            clean_exception,
+                                                            filename, plugins)
+
     # Blocks waiting for user interaction
     bug_report_win.show()
 
+
 def set_except_hook(w3af_core):
     sys.excepthook = partial(handle_crash, w3af_core)
-    

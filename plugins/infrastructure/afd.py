@@ -38,7 +38,7 @@ class afd(InfrastructurePlugin):
     Find out if the remote web server has an active filter (IPS or WAF).
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
 
@@ -46,26 +46,26 @@ class afd(InfrastructurePlugin):
         #   Internal variables
         #
         self._not_filtered = []
-        self._filtered = []        
-    
+        self._filtered = []
+
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         Nothing strange, just do some GET requests to the first URL with an
         invented parameter and the custom payloads that are supposed to be
         filtered, and analyze the response.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         try:
-            filtered, not_filtered = self._send_requests( fuzzable_request )
+            filtered, not_filtered = self._send_requests(fuzzable_request)
         except w3afException, w3:
-            om.out.error( str(w3) )
+            om.out.error(str(w3))
         else:
-            self._analyze_results( filtered, not_filtered )
+            self._analyze_results(filtered, not_filtered)
 
-    def _send_requests( self, fuzzable_request ):
+    def _send_requests(self, fuzzable_request):
         '''
         Actually send the requests that might be blocked.
         @param fuzzable_request: The FuzzableRequest to modify in order to
@@ -74,9 +74,10 @@ class afd(InfrastructurePlugin):
         rnd_param = rand_alnum(7)
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
-        original_url_str = fmt % (fuzzable_request.getURL(), rnd_param, rnd_value)
+        original_url_str = fmt % (
+            fuzzable_request.getURL(), rnd_param, rnd_value)
         original_url = URL(original_url_str)
-        
+
         try:
             http_resp = self._uri_opener.GET(original_url, cache=True)
         except w3afException:
@@ -85,33 +86,36 @@ class afd(InfrastructurePlugin):
             om.out.error(msg)
         else:
             original_response_body = http_resp.getBody()
-            original_response_body = original_response_body.replace( rnd_param, '' )
-            original_response_body = original_response_body.replace( rnd_value, '' )
-            
+            original_response_body = original_response_body.replace(
+                rnd_param, '')
+            original_response_body = original_response_body.replace(
+                rnd_value, '')
+
             tests = []
             for offending_string in self._get_offending_strings():
                 offending_URL = fmt % (fuzzable_request.getURL(),
-                                       rnd_param, 
+                                       rnd_param,
                                        offending_string)
                 offending_URL = URL(offending_URL)
-                tests.append( (offending_string, offending_URL,
-                               original_response_body, rnd_param) )
-            
+                tests.append((offending_string, offending_URL,
+                              original_response_body, rnd_param))
+
             self._tm.threadpool.map_multi_args(self._send_and_analyze, tests)
-            
+
             # Analyze the results
             return self._filtered, self._not_filtered
-                
-    def _send_and_analyze(self, offending_string, offending_URL, 
-                                original_resp_body, rnd_param):
+
+    def _send_and_analyze(self, offending_string, offending_URL,
+                          original_resp_body, rnd_param):
         '''
         Actually send the HTTP request.
-        
-        @return: None, everything is saved to the self._filtered and 
+
+        @return: None, everything is saved to the self._filtered and
                  self._not_filtered lists.
         '''
         try:
-            resp_body = self._uri_opener.GET(offending_URL, cache=False).getBody()
+            resp_body = self._uri_opener.GET(
+                offending_URL, cache=False).getBody()
         except w3afException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
@@ -124,34 +128,34 @@ class afd(InfrastructurePlugin):
                 self._filtered.append(offending_URL)
             else:
                 self._not_filtered.append(offending_URL)
-            
-        
-    def _analyze_results( self, filtered, not_filtered ):
+
+    def _analyze_results(self, filtered, not_filtered):
         '''
         Analyze the test results and save the conclusion to the kb.
         '''
-        if len( filtered ) >= len(self._get_offending_strings()) / 5.0:
+        if len(filtered) >= len(self._get_offending_strings()) / 5.0:
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Active filter detected')
             msg = 'The remote network has an active filter. IMPORTANT: The result'
             msg += ' of all the other plugins will be unaccurate, web applications'
             msg += ' could be vulnerable but "protected" by the active filter.'
-            i.set_desc( msg )
+            i.set_desc(msg)
             i['filtered'] = filtered
-            kb.kb.append( self, 'afd', i )
-            om.out.information( i.get_desc() )
-            
+            kb.kb.append(self, 'afd', i)
+            om.out.information(i.get_desc())
+
             om.out.information('The following URLs were filtered:')
             for i in filtered:
-                om.out.information('- ' + i )
-            
+                om.out.information('- ' + i)
+
             if not_filtered:
-                om.out.information('The following URLs passed undetected by the filter:')
+                om.out.information(
+                    'The following URLs passed undetected by the filter:')
                 for i in not_filtered:
-                    om.out.information('- ' + i )
-    
-    def _get_offending_strings( self ):
+                    om.out.information('- ' + i)
+
+    def _get_offending_strings(self):
         '''
         @return: A list of strings that will be filtered by most IPS devices.
         '''
@@ -167,26 +171,26 @@ class afd(InfrastructurePlugin):
         res.append('SELECT TOP 1 name FROM sysusers')
         res.append('exec master..xp_cmdshell dir')
         res.append('exec xp_cmdshell dir')
-        
-        res = [ urllib.quote_plus(x) for x in res ]
-        
+
+        res = [urllib.quote_plus(x) for x in res]
+
         return res
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin sends custom requests to the remote web server in order to
-        verify if the remote network is protected by an IPS or WAF. 
-        
+        verify if the remote network is protected by an IPS or WAF.
+
         afd plugin detects both TCP-Connection-reset and HTTP level filters, the
         first one (usually implemented by IPS devices) is easy to verify: if afd
         requests the custom page and the GET method raises an exception, then its
-        being probably blocked by an active filter. The second one (usually 
-        implemented by Web Application Firewalls like mod_security) is a little 
+        being probably blocked by an active filter. The second one (usually
+        implemented by Web Application Firewalls like mod_security) is a little
         harder to verify: first afd requests a page without adding any offending
         parameters, afterwards it requests the same URL but with a faked parameter
-        and customized values; if the response bodies differ, then its safe to 
+        and customized values; if the response bodies differ, then its safe to
         say that the remote end has an active filter.
         '''

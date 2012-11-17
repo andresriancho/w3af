@@ -30,16 +30,16 @@ from plugins.attack.payloads.base_payload import base_payload
 
 
 class php_sca(base_payload):
-    
+
     KB_DATA = {
         'XSS': {'kb_key': ('xss', 'xss'), 'severity': severity.MEDIUM,
-            'name': 'Cross site scripting vulnerability'},
+                'name': 'Cross site scripting vulnerability'},
         'OS_COMMANDING': {'kb_key': ('os_commanding', 'os_commanding'),
-            'severity': severity.HIGH, 'name': 'OS commanding vulnerability'},
+                          'severity': severity.HIGH, 'name': 'OS commanding vulnerability'},
         'FILE_INCLUDE': {'kb_key': ('lfi', 'lfi'),
-            'severity': severity.MEDIUM, 'name': 'Local file inclusion vulnerability'},
-       }
-    
+                         'severity': severity.MEDIUM, 'name': 'Local file inclusion vulnerability'},
+    }
+
     def api_read(self, localtmpdir=None):
         '''
         @param localtmpdir: Local temporary directory where to save
@@ -52,9 +52,9 @@ class php_sca(base_payload):
         except ImportError, ie:
             import core.controllers.output_manager as om
             om.out.console('You have to install phply lib in order to use this'
-            ' payload. Download it from <https://github.com/ramen/phply>\n')
+                           ' payload. Download it from <https://github.com/ramen/phply>\n')
             return
-        
+
         def write_vuln_to_kb(vulnty, url, funcs):
             vulndata = php_sca.KB_DATA[vulnty]
             for f in funcs:
@@ -72,25 +72,25 @@ class php_sca(base_payload):
                 #     $_POST == POST
                 #     $_REQUEST == GET
                 v.set_method('GET')
-                
+
                 # TODO: Extract all the other variables that are
                 # present in the PHP file using the SCA
                 v.set_dc(DataContainer())
-                
+
                 #
                 # TODO: This needs to be checked! OS Commanding specific
                 #       attributes.
                 v['os'] = 'unix'
                 v['separator'] = ''
-                
+
                 kb.kb.append(*args)
-        
+
         if not localtmpdir:
             localtmpdir = tempfile.mkdtemp()
-        
+
         res = {}
         files = self.exec_payload('get_source_code', args=(localtmpdir,))
-        
+
         for url, file in files.iteritems():
             sca = PhpSCA(file=file[1])
             for vulnty, funcs in sca.get_vulns().iteritems():
@@ -107,12 +107,13 @@ class php_sca(base_payload):
         api_res = self.api_read()
         if not api_res:
             return 'No vulnerability was found.'
-        
+
         rows = [['Vuln Type', 'Remote Location', 'Vuln Param', 'Lineno'], []]
         for vulnty, files in api_res.iteritems():
             for f in files:
-                rows.append([vulnty, str( f['loc'] ), f['vulnsrc'], str(f['lineno'])])
-        
+                rows.append(
+                    [vulnty, str(f['loc']), f['vulnsrc'], str(f['lineno'])])
+
         restable = table(rows)
         restable.draw(100)
         return rows

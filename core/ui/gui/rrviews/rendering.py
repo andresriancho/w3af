@@ -38,7 +38,7 @@ except Exception, e:
 try:
     import gtkhtml2
     #   This brings crashes like:
-    #       HtmlView-ERROR **: file htmlview.c: line 1906 (html_view_insert_node): assertion 
+    #       HtmlView-ERROR **: file htmlview.c: line 1906 (html_view_insert_node): assertion
     #       failed: (node->style != NULL)
     #   TODO: Change this to True when gtkhtml2 is fixed
     RENDERING_ENGINES['gtkhtml2'] = False
@@ -47,6 +47,7 @@ except Exception, e:
 
 from core.controllers.exceptions import w3afException
 from core.data.constants.encodings import UTF8
+
 
 def getRenderingView(w3af, parentView):
     '''Return RenderingView with best web engine or raise exception.'''
@@ -59,6 +60,7 @@ def getRenderingView(w3af, parentView):
     raise w3afException('If you want to render HTML responses, you need to install at least one of rendering engines: \
                 python-webkit, python-gtkmozembed, python-gtkhtml2')
 
+
 class RenderingView(gtk.VBox):
     '''Rendering view.'''
     def __init__(self, w3af, parentView):
@@ -67,17 +69,22 @@ class RenderingView(gtk.VBox):
         self.id = 'RenderingView'
         self.label = 'Rendered'
         self.parentView = parentView
+
     def showObject(self, obj):
         '''Show object in view.'''
         raise w3afException('Child MUST implment a clear() method.')
+
     def clear(self):
         raise w3afException('Child MUST implment a clear() method.')
+
     def getObject(self):
         '''Return object (request or resoponse).'''
         pass
+
     def highlight(self, text, tag):
         '''Highlight word in the text.'''
         pass
+
 
 class GtkHtmlRenderingView(RenderingView):
     '''GtkHTML2 web engine view.'''
@@ -117,6 +124,8 @@ class GtkHtmlRenderingView(RenderingView):
     def clear(self):
         '''Clear view.'''
         pass
+
+
 class MozRenderingView(RenderingView):
     '''Gecko web engine view.'''
     def __init__(self, w3af, parentView):
@@ -134,11 +143,13 @@ class MozRenderingView(RenderingView):
         mimeType = 'text/html'
         # mimeType = obj.content_type
         if obj.is_text_or_html():
-            self._renderingWidget.render_data(obj.getBody(), long(len(obj.getBody())), str(obj.getURI()), mimeType)
+            self._renderingWidget.render_data(obj.getBody(
+            ), long(len(obj.getBody())), str(obj.getURI()), mimeType)
 
     def clear(self):
         '''Clear view.'''
         pass
+
 
 class WebKitRenderingView(RenderingView):
     '''WebKit web engine view.'''
@@ -159,17 +170,17 @@ class WebKitRenderingView(RenderingView):
         '''Show object in view.'''
         mimeType = 'text/html'
         load_string = self._renderingWidget.load_string
-        
+
         try:
             if obj.is_text_or_html():
-            
+
                 body = obj.getBody()
                 uri = obj.getURI().url_string
                 try:
                     load_string(body, mimeType, UTF8, uri)
                 except Exception:
                     load_string(repr(body), mimeType, UTF8, uri)
-            
+
             else:
                 raise Exception
         except Exception:

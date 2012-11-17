@@ -32,7 +32,7 @@ from core.data.dc.headers import Headers
 
 class xst(AuditPlugin):
     '''
-    Find Cross Site Tracing vulnerabilities. 
+    Find Cross Site Tracing vulnerabilities.
 
     @author: Josh Summitt (ascetik@gmail.com)
     @author: Andres Riancho (andres@gmail.com) - Rewrite 27 Jul 2012
@@ -40,22 +40,22 @@ class xst(AuditPlugin):
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         # Internal variables
         self._exec = True
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Verify xst vulns by sending a TRACE request and analyzing the response.
         '''
-    
+
         if not self._exec:
             # Do nothing
             return
         else:
             # Only run once
-            self._exec = False  
-            
+            self._exec = False
+
             uri = freq.getURL().getDomainPath()
             method = 'TRACE'
             headers = Headers()
@@ -68,32 +68,32 @@ class xst(AuditPlugin):
             # send the request to the server and receive the response
             response = self._uri_opener.send_mutant(fr)
 
-            # create a regex to test the response. 
+            # create a regex to test the response.
             regex = re.compile("FakeHeader: *?XST", re.IGNORECASE)
             if re.search(regex, response.getBody()):
                 # If vulnerable record it. This will now become visible on the KB Browser
-                v = vuln.vuln( freq )
+                v = vuln.vuln(freq)
                 v.set_plugin_name(self.get_name())
-                v.set_id( response.id )
+                v.set_id(response.id)
                 v.set_severity(severity.LOW)
-                v.set_name( 'Cross site tracing vulnerability' )
-                msg = 'The web server at "'+ response.getURL() +'" is vulnerable to'
+                v.set_name('Cross site tracing vulnerability')
+                msg = 'The web server at "' + \
+                    response.getURL() + '" is vulnerable to'
                 msg += ' Cross Site Tracing.'
-                v.set_desc( msg )
-                om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
-                kb.kb.append( self, 'xst', v )
-            
-    def get_long_desc( self ):
+                v.set_desc(msg)
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+                kb.kb.append(self, 'xst', v)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds the Cross Site Tracing (XST) vulnerability.
-        
+
         No configurable paramaters are available.
-            
-        The TRACE method echos back requests sent to it. This plugin sends a 
-        TRACE request to the server and if the request is echoed back then XST 
+
+        The TRACE method echos back requests sent to it. This plugin sends a
+        TRACE request to the server and if the request is echoed back then XST
         is confirmed.
         '''
-

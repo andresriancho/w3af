@@ -25,12 +25,13 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_current_user(PayloadTestHelper):
-    
-    EXPECTED_RESULT = { 'current': { }}
+
+    EXPECTED_RESULT = {'current': {}}
 
     def test_current_user(self):
         result = exec_payload(self.shell, 'current_user', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        
+
     def test_a_positive_test(self):
-        raise SkipTest('FIXME: I need a positive test where current user is found.')    
+        raise SkipTest(
+            'FIXME: I need a positive test where current user is found.')

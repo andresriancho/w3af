@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestMOTW(PluginTest):
-    
+
     motw_url = 'https://moth/w3af/grep/motw/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': motw_url,
@@ -35,22 +35,20 @@ class TestMOTW(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         infos = self.kb.get('motw', 'motw')
-        
+
         self.assertEquals(1, len(infos))
-        
-        self.assertEquals( set([severity.INFORMATION] * 2), 
-                           set([v.get_severity() for v in infos]))
-        
-        self.assertEqual( v.get_name(), 'Mark of the web')
-        
-        
+
+        self.assertEquals(set([severity.INFORMATION] * 2),
+                          set([v.get_severity() for v in infos]))
+
+        self.assertEqual(v.get_name(), 'Mark of the web')

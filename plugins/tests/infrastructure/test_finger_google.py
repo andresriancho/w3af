@@ -23,21 +23,20 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFingerGoogle(PluginTest):
-    
+
     base_url = 'http://www.w3af.org/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'infrastructure': (PluginConfig('finger_google'),)}
-            }
         }
-    
+    }
+
     def test_fuzzer_user(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        emails = self.kb.get('finger_google', 'emails')
-        
-        self.assertEqual( len(emails), 3, emails)
 
+        emails = self.kb.get('finger_google', 'emails')
+
+        self.assertEqual(len(emails), 3, emails)

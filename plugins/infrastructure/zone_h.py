@@ -36,43 +36,44 @@ from core.data.parsers.url import URL
 class zone_h(InfrastructurePlugin):
     '''
     Find out if the site was defaced in the past.
-    
+
     @author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
-    '''    
+    '''
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         Search zone_h and parse the output.
-        
-        @param fuzzable_request: A fuzzable_request instance that contains 
+
+        @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         target_domain = fuzzable_request.getURL().getRootDomain()
-        
+
         # Example URL:
         # http://www.zone-h.org/archive/domain=cyprus-stones.com
-    
+
         # TODO: Keep this URL updated!
-        zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + target_domain
-        zone_h_url = URL( zone_h_url_str )
+        zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + \
+            target_domain
+        zone_h_url = URL(zone_h_url_str)
 
         try:
-            response = self._uri_opener.GET( zone_h_url )
+            response = self._uri_opener.GET(zone_h_url)
         except w3afException, e:
             msg = 'An exception was raised while running zone-h plugin.'
             msg += ' Exception: "%s"' % e
-            om.out.debug( msg )
+            om.out.debug(msg)
         else:
-            self._parse_zone_h_result( response )
-    
+            self._parse_zone_h_result(response)
+
     def _parse_zone_h_result(self, response):
         '''
         Parse the result from the zone_h site and create the corresponding info
         objects.
-        
+
         @return: None
         '''
         #
@@ -81,44 +82,45 @@ class zone_h(InfrastructurePlugin):
         #       - The target site was hacked more than one time
         #       - The target site was hacked only one time
         #
-        
+
         # This is the string I have to parse:
         # in the zone_h response, they are two like this, the first has to be ignored!
         regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
-        regex_result = re.findall( regex, response.getBody() )
+        regex_result = re.findall(regex, response.getBody())
 
         try:
             total_attacks = int(regex_result[0][0])
         except IndexError:
             om.out.debug('An error was generated during the parsing of the zone_h website.')
         else:
-            
+
             # Do the if...
             if total_attacks > 1:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.set_name('Previous defacements')
-                v.setURL( response.getURL() )
-                v.set_severity( severity.MEDIUM )
+                v.setURL(response.getURL())
+                v.set_severity(severity.MEDIUM)
                 msg = 'The target site was defaced more than one time in the past. For more'
-                msg += ' information please visit the following URL: "' + response.getURL()
+                msg += ' information please visit the following URL: "' + \
+                    response.getURL()
                 msg += '".'
-                v.set_desc( msg )
-                kb.kb.append( self, 'defacements', v )
-                om.out.information( v.get_desc() )
+                v.set_desc(msg)
+                kb.kb.append(self, 'defacements', v)
+                om.out.information(v.get_desc())
             elif total_attacks == 1:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Previous defacement')
-                i.setURL( response.getURL() )
+                i.setURL(response.getURL())
                 msg = 'The target site was defaced in the past. For more information'
-                msg += ' please visit the following URL: "' + response.getURL() + '".'
-                i.set_desc( msg )
-                kb.kb.append( self, 'defacements', i )
-                om.out.information( i.get_desc() )
-                
+                msg += ' please visit the following URL: "' + \
+                    response.getURL() + '".'
+                i.set_desc(msg)
+                kb.kb.append(self, 'defacements', i)
+                om.out.information(i.get_desc())
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         return '''
         This plugin searches the zone-h.org defacement database and parses the
         result. The information stored in that database is useful to know about

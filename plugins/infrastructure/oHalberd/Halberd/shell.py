@@ -78,7 +78,8 @@ class BaseStrategy:
 
         self.task.analyzed = analysis.analyze(self.task.clues)
         self.task.analyzed = analysis.reanalyze(self.task.clues,
-                                self.task.analyzed, self.task.ratio_threshold)
+                                                self.task.analyzed, self.task.ratio_threshold)
+
 
 class UniScanStrategy(BaseStrategy):
     """Scan a single URL.
@@ -87,7 +88,7 @@ class UniScanStrategy(BaseStrategy):
         BaseStrategy.__init__(self, scantask)
 
         if not self.task.url:
-            raise ScanError, 'Didn\'t provide an URL to scan'
+            raise ScanError('Didn\'t provide an URL to scan')
 
         if self.task.addr:
             # The user passed a specific address as a parameter.
@@ -99,10 +100,10 @@ class UniScanStrategy(BaseStrategy):
             try:
                 self.addrs = Halberd.util.addresses(host)
             except KeyboardInterrupt:
-                raise ScanError, 'interrupted by the user'
+                raise ScanError('interrupted by the user')
 
             if not self.addrs:
-                raise ScanError, 'unable to resolve %s' % host
+                raise ScanError('unable to resolve %s' % host)
 
             self.addrs.sort()
             self.logger.info('host lookup done.')
@@ -130,6 +131,7 @@ class UniScanStrategy(BaseStrategy):
                              self.task.clues)
             return self.task
 
+
 class MultiScanStrategy(BaseStrategy):
     """Scan multiple URLs.
     """
@@ -137,7 +139,7 @@ class MultiScanStrategy(BaseStrategy):
         BaseStrategy.__init__(self, scantask)
 
         if not self.task.urlfile:
-            raise ScanError, 'An urlfile parameter must be provided'
+            raise ScanError('An urlfile parameter must be provided')
 
         self.urlfp = open(self.task.urlfile, 'r')
 
@@ -165,7 +167,7 @@ class MultiScanStrategy(BaseStrategy):
             try:
                 addrs = Halberd.util.addresses(host)
             except KeyboardInterrupt:
-                raise ScanError, 'interrupted by the user'
+                raise ScanError('interrupted by the user')
             self.logger.info('host lookup done.')
 
             for addr in addrs:
@@ -188,6 +190,7 @@ class MultiScanStrategy(BaseStrategy):
 
             Halberd.reportlib.report(self.task)
 
+
 class ClueReaderStrategy(BaseStrategy):
     """Clue reader strategy.
 
@@ -203,6 +206,6 @@ class ClueReaderStrategy(BaseStrategy):
         self._analyze()
         self.task.url = self.task.cluefile
         Halberd.reportlib.report(self.task)
-    
+
 
 # vim: ts=4 sw=4 et

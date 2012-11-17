@@ -27,7 +27,7 @@ import gobject
 import core.controllers.output_manager as om
 
 from core.controllers.exceptions import (w3afException, w3afMustStopException,
-                                            w3afMustStopOnUrlError)
+                                         w3afMustStopOnUrlError)
 
 from core.data.db.history import HistoryItem
 from core.data.constants import severity
@@ -53,7 +53,6 @@ def sigsegv_handler(signum, frame):
 signal.signal(signal.SIGSEGV, sigsegv_handler)
 
 
-
 class reqResViewer(gtk.VBox):
     '''
     A widget with the request and the response inside.
@@ -62,16 +61,19 @@ class reqResViewer(gtk.VBox):
     @author: Facundo Batista ( facundo@taniquetil.com.ar )
 
     '''
-    def __init__(self, w3af, enableWidget=None, withManual=True, withFuzzy=True,
-                        withCompare=True, withAudit=True, editableRequest=False,
-                        editableResponse=False, widgname="default", layout='Tabbed'):
-        super(reqResViewer,self).__init__()
+    def __init__(
+        self, w3af, enableWidget=None, withManual=True, withFuzzy=True,
+        withCompare=True, withAudit=True, editableRequest=False,
+            editableResponse=False, widgname="default", layout='Tabbed'):
+        super(reqResViewer, self).__init__()
         self.w3af = w3af
         # Request
-        self.request = requestPart(self, w3af, enableWidget, editableRequest, widgname=widgname)
+        self.request = requestPart(
+            self, w3af, enableWidget, editableRequest, widgname=widgname)
         self.request.show()
         # Response
-        self.response = responsePart(self, w3af, editableResponse, widgname=widgname)
+        self.response = responsePart(
+            self, w3af, editableResponse, widgname=widgname)
         self.response.show()
         self.layout = layout
         if layout == 'Tabbed':
@@ -114,27 +116,30 @@ class reqResViewer(gtk.VBox):
 
     def _initToolBox(self, withManual, withFuzzy, withCompare, withAudit):
         # Buttons
-        
+
         # This import needs to be here in order to avoid an import loop
         from core.ui.gui.craftedRequests import ManualRequests, FuzzyRequests
-        
+
         hbox = gtk.HBox()
         if withManual or withFuzzy or withCompare:
-            
+
             if withManual:
-                b = SemiStockButton("", gtk.STOCK_INDEX, _("Send Request to Manual Editor"))
+                b = SemiStockButton(
+                    "", gtk.STOCK_INDEX, _("Send Request to Manual Editor"))
                 b.connect("clicked", self._send_request, ManualRequests)
                 self.request.childButtons.append(b)
                 b.show()
                 hbox.pack_start(b, False, False, padding=2)
             if withFuzzy:
-                b = SemiStockButton("", gtk.STOCK_PROPERTIES, _("Send Request to Fuzzy Editor"))
+                b = SemiStockButton("", gtk.STOCK_PROPERTIES,
+                                    _("Send Request to Fuzzy Editor"))
                 b.connect("clicked", self._send_request, FuzzyRequests)
                 self.request.childButtons.append(b)
                 b.show()
                 hbox.pack_start(b, False, False, padding=2)
             if withCompare:
-                b = SemiStockButton("", gtk.STOCK_ZOOM_100, _("Send Request and Response to Compare Tool"))
+                b = SemiStockButton("", gtk.STOCK_ZOOM_100, _(
+                    "Send Request and Response to Compare Tool"))
                 b.connect("clicked", self._sendReqResp)
                 self.response.childButtons.append(b)
                 b.show()
@@ -151,7 +156,8 @@ class reqResViewer(gtk.VBox):
         if withAudit:
             # Add everything I need for the audit request thing:
             # The button that shows the menu
-            b = SemiStockButton("", gtk.STOCK_EXECUTE, _("Audit Request with..."))
+            b = SemiStockButton(
+                "", gtk.STOCK_EXECUTE, _("Audit Request with..."))
             b.connect("button-release-event", self._popupMenu)
             self.request.childButtons.append(b)
             b.show()
@@ -160,10 +166,10 @@ class reqResViewer(gtk.VBox):
         # The throbber (hidden!)
         self.throbber = helpers.Throbber()
         hbox.pack_start(self.throbber, True, True)
-        
+
         self.draw_area = helpers.DrawingAreaStringRepresentation()
         hbox.pack_end(self.draw_area, False, False)
-        
+
         self.pack_start(hbox, False, False, padding=5)
         hbox.show()
 
@@ -184,7 +190,7 @@ class reqResViewer(gtk.VBox):
         # Add a special item
         e = gtk.MenuItem('All audit plugins')
         e.connect('activate', self._auditRequest, 'All audit plugins',
-                'audit_all')
+                  'audit_all')
         gm.append(e)
         # show
         gm.show_all()
@@ -206,7 +212,8 @@ class reqResViewer(gtk.VBox):
         # Now I start the analysis of this request in a new thread,
         # threading game (copied from craftedRequests)
         event = threading.Event()
-        impact = ThreadedURLImpact(self.w3af, request, plugin_name, plugin_type, event)
+        impact = ThreadedURLImpact(
+            self.w3af, request, plugin_name, plugin_type, event)
         impact.start()
         gobject.timeout_add(200, self._impactDone, event, impact)
 
@@ -225,20 +232,22 @@ class reqResViewer(gtk.VBox):
             #               not just the ones with vulnerabilities.
             #
             for result in impact.result:
-                
+
                 # TODO: I'm not sure when this is None bug it appeared in Trac bug #167736
                 if result.get_id() is not None:
                     for itemId in result.get_id():
                         historyItem = HistoryItem()
                         historyItem.load(itemId)
-                        historyItem.updateTag(historyItem.tag + result.plugin_name)
+                        historyItem.updateTag(
+                            historyItem.tag + result.plugin_name)
                         historyItem.info = result.get_desc()
                         historyItem.save()
         else:
             if impact.exception.__class__ == w3afException:
                 msg = str(impact.exception)
             elif impact.exception.__class__ == w3afMustStopException:
-                msg = "Stopped sending requests because " + str(impact.exception)
+                msg = "Stopped sending requests because " + \
+                    str(impact.exception)
             elif impact.exception.__class__ == w3afMustStopOnUrlError:
                 msg = "Not sending requests because " + str(impact.exception)
             else:
@@ -256,23 +265,24 @@ class reqResViewer(gtk.VBox):
 
         @param func: where to send the request.
         """
-        headers,data = self.request.getBothTexts()
-        func(self.w3af, (headers,data))
+        headers, data = self.request.getBothTexts()
+        func(self.w3af, (headers, data))
 
     def _sendReqResp(self, widg):
         """Sends the texts to the compare tool."""
-        headers,data = self.request.getBothTexts()
-        self.w3af.mainwin.commCompareTool((headers, data,\
-            self.response.getObject()))
+        headers, data = self.request.getBothTexts()
+        self.w3af.mainwin.commCompareTool((headers, data,
+                                           self.response.getObject()))
 
     def set_sensitive(self, how):
         """Sets the pane on/off."""
         self.request.set_sensitive(how)
         self.response.set_sensitive(how)
 
+
 class requestResponsePart(gtk.Notebook):
     """Request/response common class."""
-    
+
     def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
         super(requestResponsePart, self).__init__()
         self._parent = parent
@@ -284,7 +294,7 @@ class requestResponsePart(gtk.Notebook):
         self.childButtons = []
         self._views = []
         self.enableWidget = enableWidget
-        
+
     def addView(self, view):
         self._views.append(view)
         self.append_page(view, gtk.Label(view.label))
@@ -335,13 +345,13 @@ class requestResponsePart(gtk.Notebook):
         # String representation
         if hasattr(obj, 'getBody'):
             str_repr_inst = StringRepresentation(
-                                                 obj.getBody(),
-                                                 self._parent.draw_area.width,
-                                                 self._parent.draw_area.height
-                                                 )
+                obj.getBody(),
+                self._parent.draw_area.width,
+                self._parent.draw_area.height
+            )
             str_repr_dict = str_repr_inst.get_representation()
-            self._parent.draw_area.set_string_representation( str_repr_dict )
-        
+            self._parent.draw_area.set_string_representation(str_repr_dict)
+
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
         #######################
@@ -352,7 +362,7 @@ class requestResponsePart(gtk.Notebook):
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
         #######################
-        
+
     def getObject(self):
         return self._obj
 
@@ -360,36 +370,39 @@ class requestResponsePart(gtk.Notebook):
         for view in self._views:
             view.highlight(text, sev)
 
+
 class requestPart(requestResponsePart):
-    
+
     def __init__(self, parent, w3af, enableWidget=[], editable=False, widgname="default"):
-        requestResponsePart.__init__(self, parent, w3af, enableWidget,editable,
-                                     widgname=widgname+"request")
+        requestResponsePart.__init__(
+            self, parent, w3af, enableWidget, editable,
+            widgname=widgname + "request")
         self.addView(HttpRawView(w3af, self, editable))
         self.addView(HttpHeadersView(w3af, self, editable))
-        
+
     def getBothTexts(self):
         try:
             data = ''
             if self._obj.getData():
                 data = str(self._obj.getData())
             return (self._obj.dumpRequestHead(), data)
-        except AttributeError, ae: ### FIXME: REMOVE ME ###
+        except AttributeError, ae:  # FIXME: REMOVE ME ###
             msg = ("DEBUG_EXCEPTION: %s. Actions were: %s" %
                    (ae, self._set_vals))
-            raise AttributeError, msg
-    
+            raise AttributeError(msg)
+
     def showRaw(self, head, body):
         self._obj = HTTPRequestParser(head, body)
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
-        #######################        
+        #######################
         self.synchronize()
 
 
 class responsePart(requestResponsePart):
     def __init__(self, parent, w3af, editable, widgname="default"):
-        requestResponsePart.__init__(self, parent, w3af, editable=editable, widgname=widgname+"response")
+        requestResponsePart.__init__(self, parent, w3af, editable=editable,
+                                     widgname=widgname + "response")
         http = HttpRawView(w3af, self, editable)
         http.is_request = False
         self.addView(http)
@@ -405,6 +418,7 @@ class responsePart(requestResponsePart):
     def getBothTexts(self):
         return (self._obj.dumpResponseHead(), str(self._obj.getBody()))
 
+
 class reqResWindow(RememberingWindow):
     """
     A window to show a request/response pair.
@@ -412,14 +426,14 @@ class reqResWindow(RememberingWindow):
     def __init__(self, w3af, request_id, enableWidget=None, withManual=True,
                  withFuzzy=True, withCompare=True, withAudit=True, editableRequest=False,
                  editableResponse=False, widgname="default"):
-        
+
         # Create the window
-        RememberingWindow.__init__( self, w3af, "reqResWin", 
-                                    _("w3af - HTTP Request/Response"),
-                                    "Browsing_the_Knowledge_Base")
+        RememberingWindow.__init__(self, w3af, "reqResWin",
+                                   _("w3af - HTTP Request/Response"),
+                                   "Browsing_the_Knowledge_Base")
 
         # Create the request response viewer
-        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy, 
+        rrViewer = reqResViewer(w3af, enableWidget, withManual, withFuzzy,
                                 withCompare, withAudit, editableRequest,
                                 editableResponse, widgname)
 
@@ -427,13 +441,14 @@ class reqResWindow(RememberingWindow):
         historyItem = HistoryItem()
         historyItem.load(request_id)
         # Set
-        rrViewer.request.showObject( historyItem.request )
-        rrViewer.response.showObject( historyItem.response )
+        rrViewer.request.showObject(historyItem.request)
+        rrViewer.response.showObject(historyItem.response)
         rrViewer.show()
         self.vbox.pack_start(rrViewer)
 
         # Show the window
         self.show()
+
 
 class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
@@ -441,7 +456,7 @@ class ThreadedURLImpact(threading.Thread):
         '''Init ThreadedURLImpact.'''
         threading.Thread.__init__(self)
         self.name = 'ThreadedURLImpact'
-        
+
         self.w3af = w3af
         self.request = request
         self.plugin_name = plugin_name
@@ -449,19 +464,19 @@ class ThreadedURLImpact(threading.Thread):
         self.event = event
         self.result = []
         self.ok = False
-        
 
     def run(self):
         '''Start the thread.'''
         try:
             # First, we check if the user choosed 'All audit plugins'
             if self.plugin_type == 'audit_all':
-                
+
                 #
                 #   Get all the plugins and work with that list
                 #
                 for plugin_name in self.w3af.plugins.get_plugin_list('audit'):
-                    plugin = self.w3af.plugins.get_plugin_inst('audit', plugin_name)
+                    plugin = self.w3af.plugins.get_plugin_inst(
+                        'audit', plugin_name)
                     tmp_result = []
                     try:
                         tmp_result = plugin.audit_wrapper(self.request)
@@ -476,12 +491,12 @@ class ThreadedURLImpact(threading.Thread):
                             r.plugin_name = plugin_name
                         self.result.extend(tmp_result)
 
-                
             else:
                 #
                 #   Only one plugin was enabled
                 #
-                plugin = self.w3af.plugins.get_plugin_inst(self.plugin_type, self.plugin_name)
+                plugin = self.w3af.plugins.get_plugin_inst(
+                    self.plugin_type, self.plugin_name)
                 try:
                     self.result = plugin.audit_wrapper(self.request)
                     plugin.end()
@@ -493,10 +508,10 @@ class ThreadedURLImpact(threading.Thread):
                     #
                     for r in self.result:
                         r.plugin_name = self.plugin_name
-            
+
             #   We got here, everything is OK!
             self.ok = True
-            
+
         except Exception, e:
             self.exception = e
             #

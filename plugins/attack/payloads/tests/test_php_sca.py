@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_php_sca(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = 'XSS'
 
     def test_php_sca(self):
         result = exec_payload(self.shell, 'php_sca', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result.keys()[0])
-        

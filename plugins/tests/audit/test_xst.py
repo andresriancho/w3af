@@ -21,23 +21,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestXST(PluginTest):
-    
+
     target_url = 'http://moth/w3af/'
-    
+
     _run_config = {
-            'target': target_url,
-            'plugins': {
-                 'audit': (PluginConfig('xst'),),
-                 }
-            }
-    
+        'target': target_url,
+        'plugins': {
+            'audit': (PluginConfig('xst'),),
+        }
+    }
+
     def test_found_xst(self):
 
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
         vulns = self.kb.get('xst', 'xst')
-        self.assertEquals( len(vulns), 1)
-        
-        self.assertEquals(all(['Cross site tracing vulnerability' == vuln.get_name() for vuln in vulns ]) , True)
+        self.assertEquals(len(vulns), 1)
 
+        self.assertEquals(all(['Cross site tracing vulnerability' == vuln.get_name() for vuln in vulns]), True)

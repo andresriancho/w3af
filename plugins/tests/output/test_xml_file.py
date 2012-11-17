@@ -32,12 +32,12 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestXMLOutput(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-    
+
     FILENAME = 'output-unittest.xml'
     XSD = os.path.join('plugins', 'output', 'xml_file', 'report.xsd')
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?name=xxx',
@@ -52,44 +52,44 @@ class TestXMLOutput(PluginTest):
                     PluginConfig(
                         'xml_file',
                         ('output_file', FILENAME, PluginConfig.STR)),
-                )         
+                )
             },
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         kb_vulns = self.kb.get('sqli', 'sqli')
         file_vulns = self._from_xml_get_vulns()
-        
+
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
-        
+
         self.assertEquals(
             set(sorted([v.getURL() for v in kb_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
-        
+
         self.assertEquals(
             set(sorted([v.get_name() for v in kb_vulns])),
             set(sorted([v.get_name() for v in file_vulns]))
         )
-            
+
         self.assertEquals(
             set(sorted([v.get_plugin_name() for v in kb_vulns])),
             set(sorted([v.get_plugin_name() for v in file_vulns]))
         )
-        
-        self.assertEqual( validate_XML(file(self.FILENAME).read(), self.XSD) ,
-                          '')
+
+        self.assertEqual(validate_XML(file(self.FILENAME).read(), self.XSD),
+                         '')
 
     def _from_xml_get_vulns(self):
         xp = XMLParser()
         parser = etree.XMLParser(target=xp)
         vulns = etree.fromstring(file(self.FILENAME).read(), parser)
         return vulns
-        
+
     def tearDown(self):
         super(TestXMLOutput, self).tearDown()
         try:
@@ -97,35 +97,38 @@ class TestXMLOutput(PluginTest):
         except:
             pass
 
+
 class XMLParser:
     vulns = []
+
     def start(self, tag, attrib):
         '''
-        <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability" 
+        <vulnerability id="[87]" method="GET" name="Cross site scripting vulnerability"
                        plugin="xss" severity="Medium" url="http://moth/w3af/audit/xss/simple_xss_no_script_2.php"
-                       var="text">        
-        '''        
+                       var="text">
+        '''
         if tag == 'vulnerability':
             v = vuln.vuln()
             v.set_plugin_name(attrib['plugin'])
             v.set_name(attrib['name'])
-            v.setURL( URL(attrib['url']) )
+            v.setURL(URL(attrib['url']))
             self.vulns.append(v)
-    
+
     def close(self):
-        return self.vulns     
+        return self.vulns
+
 
 def validate_XML(content, schema_content):
     '''
     Validate an XML against an XSD.
-    
+
     @return: The validation error log as a string, an empty string is returned
              when there are no errors.
     '''
-    xml_schema_doc = etree.parse(schema_content);
-    xml_schema = etree.XMLSchema(xml_schema_doc);
-    xml = etree.parse(StringIO.StringIO(content));
-    
+    xml_schema_doc = etree.parse(schema_content)
+    xml_schema = etree.XMLSchema(xml_schema_doc)
+    xml = etree.parse(StringIO.StringIO(content))
+
     # Validate the content against the schema.
     try:
         xml_schema.assertValid(xml)

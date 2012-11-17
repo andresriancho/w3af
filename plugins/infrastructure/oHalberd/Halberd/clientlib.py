@@ -72,17 +72,22 @@ class HTTPError(Exception):
     def __deepcopy__(self, memo):
         return self
 
+
 class HTTPSError(HTTPError):
     """Generic HTTPS exception"""
+
 
 class InvalidURL(HTTPError):
     """Invalid or unsupported URL"""
 
+
 class TimedOut(HTTPError):
     """Operation timed out"""
 
+
 class ConnectionRefused(HTTPError):
     """Unable to reach webserver"""
+
 
 class UnknownReply(HTTPError):
     """The remote host didn't return an HTTP reply"""
@@ -166,15 +171,16 @@ class HTTPClient:
         @raise ConnectionRefused: If it can't reach the target webserver.
         @raise TimedOut: If we cannot send the data within the specified time.
         """
-        scheme, netloc, url, params, query, fragment = urlparse.urlparse(urlstr)
+        scheme, netloc, url, params, query, fragment = urlparse.urlparse(
+            urlstr)
 
         if scheme not in self.schemes:
-            raise InvalidURL, '%s is not a supported protocol' % scheme
+            raise InvalidURL('%s is not a supported protocol' % scheme)
 
         hostname, port = self._getHostAndPort(netloc)
         # NOTE: address and hostname may not be the same. The caller is
         # responsible for checking that.
-            
+
         req = self._fillTemplate(hostname, port, url, params, query, fragment)
 
         self._connect((address, port))
@@ -198,7 +204,7 @@ class HTTPClient:
             if portnum.isdigit():
                 port = int(portnum)
             else:
-                raise InvalidURL, '%s is not a valid port number' % portnum
+                raise InvalidURL('%s is not a valid port number' % portnum)
 
         return hostname, port
 
@@ -245,7 +251,7 @@ class HTTPClient:
         try:
             self._sock.connect(addr)
         except socket.error:
-            raise ConnectionRefused, 'Connection refused'
+            raise ConnectionRefused('Connection refused')
 
     def _sendAll(self, data):
         """Sends a string to the socket.
@@ -253,7 +259,7 @@ class HTTPClient:
         try:
             self._sock.sendall(data)
         except socket.timeout:
-            raise TimedOut, 'timed out while writing to the network'
+            raise TimedOut('timed out while writing to the network')
 
     def _getReply(self):
         """Read a reply from the server.
@@ -272,8 +278,8 @@ class HTTPClient:
             try:
                 chunk = self._recv(self.bufsize)
             except tuple(self._timeout_exceptions), msg:
-                raise TimedOut, msg
-    
+                raise TimedOut(msg)
+
             if not chunk:
                 # The remote end closed the connection.
                 break
@@ -288,7 +294,7 @@ class HTTPClient:
                 break
 
         if not data.startswith('HTTP/'):
-            raise UnknownReply, 'Invalid protocol'
+            raise UnknownReply('Invalid protocol')
 
         return timestamp, data
 
@@ -329,7 +335,7 @@ class HTTPSClient(HTTPClient):
         try:
             self._sslsock = socket.ssl(self._sock, self.keyfile, self.certfile)
         except socket.sslerror, msg:
-            raise HTTPSError, msg
+            raise HTTPSError(msg)
 
         self._recv = self._sslsock.read
 
@@ -338,7 +344,7 @@ class HTTPSClient(HTTPClient):
         """
         # xxx - currently we don't make sure everything is sent.
         self._sslsock.write(data)
-        
+
 
 def clientFactory(scantask):
     """HTTP/HTTPS client factory.

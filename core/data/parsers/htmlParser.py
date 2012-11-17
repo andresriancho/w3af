@@ -28,13 +28,13 @@ from core.data.parsers.sgmlParser import SGMLParser
 class HTMLParser(SGMLParser):
     '''
     This class parses HTML's.
-    
+
     @authors: Andres Riancho (andres.riancho@gmail.com)
               Javier Andalia (jandalia =AT= GMAIL.COM)
     '''
-    
+
     def __init__(self, http_resp):
-        
+
         # An internal list to be used to save input tags found
         # outside of the scope of a form tag.
         self._saved_inputs = []
@@ -47,7 +47,7 @@ class HTMLParser(SGMLParser):
         self._source_url = http_resp.getURL()
         # Call parent's __init__
         SGMLParser.__init__(self, http_resp)
-    
+
     def data(self, data):
         '''
         Overriding parent's. Called by the main parser when a text node
@@ -55,7 +55,7 @@ class HTMLParser(SGMLParser):
         '''
         if self._inside_textarea:
             self._textarea_data = data.strip()
-    
+
     def _pre_parse(self, http_resp):
         '''
         @param http_resp: The HTTP response document that contains the
@@ -63,11 +63,12 @@ class HTMLParser(SGMLParser):
         '''
         SGMLParser._pre_parse(self, http_resp)
         assert self._baseUrl, 'The base URL must be set.'
-    
+
     def _form_elems_generic_handler(self, tag, attrs):
         side = 'inside' if self._inside_form else 'outside'
         default = lambda *args: None
-        meth = getattr(self, '_handle_'+ tag +'_tag_'+ side +'_form', default)
+        meth = getattr(
+            self, '_handle_' + tag + '_tag_' + side + '_form', default)
         meth(tag, attrs)
 
     ## <form> handler methods
@@ -75,11 +76,11 @@ class HTMLParser(SGMLParser):
         '''
         Handle the form tags.
 
-        This method also looks if there are "pending inputs" in the 
+        This method also looks if there are "pending inputs" in the
         self._saved_inputs list and parses them.
         '''
         SGMLParser._handle_form_tag_start(self, tag, attrs)
-        
+
         # Get the 'method'
         method = attrs.get('method', 'GET').upper()
 
@@ -95,12 +96,12 @@ class HTMLParser(SGMLParser):
                 missing_or_invalid_action = True
         if missing_or_invalid_action:
             msg = ('HTMLParser found a form without an action attribute. '
-            'Javascript may be used... but another option (mozilla does '
-            'this) is that the form is expected to be  posted back to the'
-            ' same URL (the one that returned the HTML that we are  parsing).')
+                   'Javascript may be used... but another option (mozilla does '
+                   'this) is that the form is expected to be  posted back to the'
+                   ' same URL (the one that returned the HTML that we are  parsing).')
             om.out.debug(msg)
             action = self._source_url
-        
+
         # Create the form object and store everything for later use
         form_obj = form.Form(encoding=self._encoding)
         form_obj.set_method(method)
@@ -114,20 +115,20 @@ class HTMLParser(SGMLParser):
             # form tag opening
             if isinstance(inputattrs, dict):
                 self._handle_input_tag_inside_form('input', inputattrs)
-        
+
         # All parsed, remove them.
         self._saved_inputs = []
-    
+
     ## <input> handler methods
     _handle_input_tag_start = _form_elems_generic_handler
 
     def _handle_input_tag_inside_form(self, tag, attrs):
-        
+
         # We are working with the last form
         form_obj = self._forms[-1]
         _type = attrs.get('type', '').lower()
         items = attrs.items()
-        
+
         if _type == 'file':
             # Let the form know, that this is a file input
             form_obj.hasFileInput = True
@@ -146,17 +147,17 @@ class HTMLParser(SGMLParser):
         #   no form in self._forms then I'm going to "save" the input
         #   tag until I find a form, and then I'll put it there.
         #
-        # - If there is an input tag outside a form, and there IS a 
-        #   form in self._forms then I'm going to append the input 
+        # - If there is an input tag outside a form, and there IS a
+        #   form in self._forms then I'm going to append the input
         #   tag to that form
         if not self._forms:
             self._saved_inputs.append(attrs)
         else:
             self._handle_input_tag_inside_form(tag, attrs)
-    
+
     ## <textarea> handler methods
     _handle_textarea_tag_start = _form_elems_generic_handler
-    
+
     def _handle_textarea_tag_inside_form(self, tag, attrs):
         """
         Handler for textarea tag inside a form
@@ -165,9 +166,9 @@ class HTMLParser(SGMLParser):
         self._textarea_data = ""
         # Get the name
         self._textarea_tag_name = attrs.get('name', '') or \
-                                    attrs.get('id', '')
-            
-        if not self._textarea_tag_name:    
+            attrs.get('id', '')
+
+        if not self._textarea_tag_name:
             om.out.debug('HTMLParser found a textarea tag without a '
                          'name attr, IGNORING!')
             self._inside_textarea = False
@@ -175,7 +176,7 @@ class HTMLParser(SGMLParser):
             self._inside_textarea = True
 
     _handle_textarea_tag_outside_form = _handle_textarea_tag_inside_form
-    
+
     def _handle_textarea_tag_end(self, tag):
         """
         Handler for textarea end tag
@@ -203,17 +204,17 @@ class HTMLParser(SGMLParser):
                 # First convert  to list of tuples before passing it as arg
                 optvalues = [tuple(attrs.items()) for attrs in optvalues]
                 form_obj.addSelect(sel_name, optvalues)
-            
+
             # Reset selects container
             self._selects = []
-    
+
     def _handle_select_tag_inside_form(self, tag, attrs):
         """
         Handler for select tag inside a form
         """
         # Get the name
         select_name = attrs.get('name', '') or attrs.get('id', '')
-            
+
         if not select_name:
             om.out.debug('HTMLParser found a select tag without a '
                          'name attr, IGNORING!')
@@ -221,7 +222,7 @@ class HTMLParser(SGMLParser):
         else:
             self._selects.append((select_name, []))
             self._inside_select = True
-    
+
     _handle_select_tag_outside_form = _handle_select_tag_inside_form
 
     ## <option> handler methods
@@ -233,5 +234,5 @@ class HTMLParser(SGMLParser):
         """
         if self._inside_select:
             self._selects[-1][1].append(attrs)
-    
+
     _handle_option_tag_outside_form = _handle_option_tag_inside_form

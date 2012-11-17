@@ -27,46 +27,47 @@ from core.data.parsers.url import URL
 
 
 class TestExportRequests(PluginTest):
-    
+
     follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/1.html'
-    
+
     _run_configs = {
         'cfg': {
             'target': follow_links_url,
             'plugins': {
                 'crawl': (
                     PluginConfig('web_spider',
-                             ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('onlyForward', True, PluginConfig.BOOL)),
                 ),
                 'output': (
                     PluginConfig('export_requests',
-                             ('output_file', 'output-fr.csv', PluginConfig.STR)),
+                                 (
+                                 'output_file', 'output-fr.csv', PluginConfig.STR)),
                 )
-             }
-         },
+            }
+        },
     }
-    
+
     def test_export_requests(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         urls = self.kb.get('urls', 'url_objects')
         freq = self.kb.get('urls', 'fuzzable_requests')
 
         self.assertTrue(os.path.exists('output-fr.csv'))
-        
+
         file_urls = self._get_urls_from_file()
-        
+
         self.assertEquals(
-                set(sorted(file_urls)),
-                set(sorted(urls))
-                )
-        
+            set(sorted(file_urls)),
+            set(sorted(urls))
+        )
+
         self.assertEquals(
-                set(sorted(file_urls)),
-                set(sorted([fr.getURL() for fr in freq]))
-                )        
-    
+            set(sorted(file_urls)),
+            set(sorted([fr.getURL() for fr in freq]))
+        )
+
     def _get_urls_from_file(self):
         # Get the contents of the output file
         file_urls = []
@@ -79,11 +80,10 @@ class TestExportRequests(PluginTest):
                 url = URL(url_str)
                 file_urls.append(url)
         return file_urls
-    
+
     def tearDown(self):
         super(TestExportRequests, self).tearDown()
         try:
             os.remove('output-fr.csv')
         except:
             pass
-    

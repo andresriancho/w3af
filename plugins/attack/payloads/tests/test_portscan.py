@@ -23,17 +23,17 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_portscan(PayloadTestHelperExec):
-    
+
     RESULT_22 = {'localhost': ['22']}
     RESULT_23 = {'localhost': []}
 
     def test_portscan(self):
-        result = exec_payload(self.shell, 'portscan', 
-                              args=('localhost', '22'), 
+        result = exec_payload(self.shell, 'portscan',
+                              args=('localhost', '22'),
                               use_api=True)
         self.assertEquals(self.RESULT_22, result)
-        
-        result = exec_payload(self.shell, 'portscan', 
-                              args=('localhost', '23'), 
+
+        result = exec_payload(self.shell, 'portscan',
+                              args=('localhost', '23'),
                               use_api=True)
         self.assertEquals(self.RESULT_23, result)

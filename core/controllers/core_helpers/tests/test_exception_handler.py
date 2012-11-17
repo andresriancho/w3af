@@ -34,65 +34,69 @@ class TestExceptionHandler(unittest.TestCase):
     def setUp(self):
         self.exception_handler = ExceptionHandler()
         self.exception_handler.clear()
-        
+
         self.status = fake_status()
-        self.status.set_running_plugin( 'plugin' )
-        self.status.set_phase( 'phase' )
-        self.status.set_current_fuzzable_request( 'http://www.w3af.org/' )        
-    
+        self.status.set_running_plugin('plugin')
+        self.status.set_phase('phase')
+        self.status.set_current_fuzzable_request('http://www.w3af.org/')
+
     @attr('smoke')
     def test_handle_one(self):
-        
+
         try:
             raise Exception('unittest')
         except Exception, e:
             exec_info = sys.exc_info()
             enabled_plugins = ''
-            self.exception_handler.handle( self.status, e , exec_info, enabled_plugins )
-        
+            self.exception_handler.handle(
+                self.status, e, exec_info, enabled_plugins)
+
         scan_id = self.exception_handler.get_scan_id()
-        self.assertTrue( scan_id )
-        
+        self.assertTrue(scan_id)
+
         all_edata = self.exception_handler.get_all_exceptions()
-        
+
         self.assertEqual(1, len(all_edata))
-        
+
         edata = all_edata[0]
-        
-        self.assertTrue( edata.get_summary().startswith('An exception was found') )
-        self.assertTrue( 'traceback' in edata.get_details() )
-        self.assertEquals( edata.plugin, 'plugin' )
-        self.assertEquals( edata.phase, 'phase' )
-        self.assertEquals( edata.fuzzable_request, 'http://www.w3af.org/' )
-        self.assertEquals( edata.filename, 'test_exception_handler.py' )
-        self.assertEquals( edata.exception, e )
-    
+
+        self.assertTrue(
+            edata.get_summary().startswith('An exception was found'))
+        self.assertTrue('traceback' in edata.get_details())
+        self.assertEquals(edata.plugin, 'plugin')
+        self.assertEquals(edata.phase, 'phase')
+        self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
+        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.exception, e)
+
     @attr('smoke')
     def test_handle_multiple(self):
-        
+
         for i in xrange(10):
             try:
                 raise Exception('unittest')
             except Exception, e:
                 exec_info = sys.exc_info()
                 enabled_plugins = ''
-                self.exception_handler.handle( self.status, e , exec_info, enabled_plugins )
-        
+                self.exception_handler.handle(
+                    self.status, e, exec_info, enabled_plugins)
+
         self.exception_handler.get_scan_id()
         all_edata = self.exception_handler.get_all_exceptions()
-        
-        self.assertEqual(self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN, len(all_edata))
-        
+
+        self.assertEqual(
+            self.exception_handler.MAX_EXCEPTIONS_PER_PLUGIN, len(all_edata))
+
         edata = all_edata[0]
-        
-        self.assertTrue( edata.get_summary().startswith('An exception was found') )
-        self.assertTrue( 'traceback' in edata.get_details() )
-        self.assertEquals( edata.plugin, 'plugin' )
-        self.assertEquals( edata.phase, 'phase' )
-        self.assertEquals( edata.fuzzable_request, 'http://www.w3af.org/' )
-        self.assertEquals( edata.filename, 'test_exception_handler.py' )
-    
-           
+
+        self.assertTrue(
+            edata.get_summary().startswith('An exception was found'))
+        self.assertTrue('traceback' in edata.get_details())
+        self.assertEquals(edata.plugin, 'plugin')
+        self.assertEquals(edata.phase, 'phase')
+        self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
+        self.assertEquals(edata.filename, 'test_exception_handler.py')
+
+
 class fake_status(w3af_core_status):
     pass
-

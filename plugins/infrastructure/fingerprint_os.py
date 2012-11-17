@@ -34,44 +34,44 @@ class fingerprint_os(InfrastructurePlugin):
     Fingerprint the remote operating system using the HTTP protocol.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         self._exec = True
-        
-    def discover(self, fuzzable_request ):
+
+    def discover(self, fuzzable_request):
         '''
         It calls the "main" and writes the results to the kb.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         if not self._exec:
             raise w3afRunOnce()
-        
+
         self._exec = not self._find_OS(fuzzable_request)
-    
+
     def _find_OS(self, fuzzable_request):
         '''
         Analyze responses and determine if remote web server runs on windows
         or *nix.
-        
+
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
         found_os = False
-        freq_url = fuzzable_request.getURL() 
+        freq_url = fuzzable_request.getURL()
         filename = freq_url.getFileName()
-        dirs = freq_url.getDirectories()[:-1] # Skipping "domain level" dir.
-        
+        dirs = freq_url.getDirectories()[:-1]  # Skipping "domain level" dir.
+
         if dirs and filename:
-            
+
             last_url = dirs[-1]
             last_url = last_url.url_string
-            
+
             windows_url = URL(last_url[0:-1] + '\\' + filename)
             windows_response = self._uri_opener.GET(windows_url)
-            
+
             original_response = self._uri_opener.GET(freq_url)
             found_os = True
 
@@ -80,30 +80,31 @@ class fingerprint_os(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
-                i.setURL( windows_response.getURL() )
-                i.set_method( 'GET' )
-                i.set_desc('Fingerprinted this host as a Microsoft Windows system.' )
-                i.set_id( [windows_response.id, original_response.id] )
-                kb.kb.save( self, 'operating_system_str', 'windows' )
-                kb.kb.append( self, 'operating_system', i )
-                om.out.information( i.get_desc() )
+                i.setURL(windows_response.getURL())
+                i.set_method('GET')
+                i.set_desc(
+                    'Fingerprinted this host as a Microsoft Windows system.')
+                i.set_id([windows_response.id, original_response.id])
+                kb.kb.save(self, 'operating_system_str', 'windows')
+                kb.kb.append(self, 'operating_system', i)
+                om.out.information(i.get_desc())
             else:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
-                i.setURL( original_response.getURL() )
-                i.set_method( 'GET' )
+                i.setURL(original_response.getURL())
+                i.set_method('GET')
                 msg = 'Fingerprinted this host as a *nix system. Detection for'
                 msg += '  this operating system is weak, "if not windows: is linux".'
-                i.set_desc( msg )
-                i.set_id( [original_response.id, windows_response.id] )
-                kb.kb.save( self, 'operating_system_str', 'unix' )
-                kb.kb.append( self, 'operating_system', i )
-                om.out.information( i.get_desc() )
-        
+                i.set_desc(msg)
+                i.set_id([original_response.id, windows_response.id])
+                kb.kb.save(self, 'operating_system_str', 'unix')
+                kb.kb.append(self, 'operating_system', i)
+                om.out.information(i.get_desc())
+
         return found_os
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

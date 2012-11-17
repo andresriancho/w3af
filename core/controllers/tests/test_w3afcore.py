@@ -24,13 +24,13 @@ from nose.plugins.attrib import attr
 
 from core.controllers.w3afCore import w3afCore
 
+
 @attr('smoke')
 class TestW3afCore(unittest.TestCase):
-    
+
     def test_multiple_instances(self):
         '''Just making sure nothing crashes if I have more than 1 instance
         of w3afCore'''
         instances = []
         for _ in xrange(5):
-            instances.append( w3afCore() )
-
+            instances.append(w3afCore())

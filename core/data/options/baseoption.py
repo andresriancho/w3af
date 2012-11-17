@@ -26,7 +26,7 @@ import cgi
 class BaseOption(object):
     '''
     This class represents an option.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, name, default_value, desc, _help='', tabid=''):
@@ -40,38 +40,55 @@ class BaseOption(object):
         '''
         self.set_value(default_value)
         self._default_value = self._value
-        
+
         self._name = name
         self._desc = desc
         self._help = _help
         self._tabid = tabid
-    
-    def get_name( self ): return self._name
-    def get_desc( self ): return self._desc
 
-    def get_default_value( self ):
+    def get_name(self):
+        return self._name
+
+    def get_desc(self):
+        return self._desc
+
+    def get_default_value(self):
         '''
-        @return: The object, as it was set using set_default_value / set_value 
+        @return: The object, as it was set using set_default_value / set_value
                  or the __init__
         '''
         return self._default_value
-    
-    def get_value( self ): return self._value
+
+    def get_value(self):
+        return self._value
 
     # And the string versions of the above methods...
     def _get_str(self, value):
         return str(value)
 
-    def get_default_value_str( self ): return self._get_str(self._default_value)
-    def get_value_str( self ): return self._get_str(self._value)
-    
-    def get_type( self ): return self._type
-    def get_help( self ): return self._help
-    def get_tabid( self ): return self._tabid
-    
-    def set_name( self, v ): self._name = v
-    def set_desc( self, v ): self._desc = v
-    def set_default_value( self, v ): self._default_value = v
+    def get_default_value_str(self):
+        return self._get_str(self._default_value)
+
+    def get_value_str(self):
+        return self._get_str(self._value)
+
+    def get_type(self):
+        return self._type
+
+    def get_help(self):
+        return self._help
+
+    def get_tabid(self):
+        return self._tabid
+
+    def set_name(self, v):
+        self._name = v
+
+    def set_desc(self, v):
+        self._desc = v
+
+    def set_default_value(self, v):
+        self._default_value = v
 
     def set_value(self, value):
         '''
@@ -83,7 +100,7 @@ class BaseOption(object):
         parseOptions.
         '''
         raise NotImplementedError
-    
+
     def validate(self, value):
         '''
         Convenient method for GUI to call for each change in the input text to
@@ -91,19 +108,24 @@ class BaseOption(object):
         refactoring to reduce duplicated code for each option type where the
         validation code was in ipport_option.py and in entries.py and in some
         cases they differ.
-    
+
         Each option type should implement this.
-        
+
         @return: The validated value (which in the GUI can be ignored) or a
                  w3afException when the value is invalid.
         '''
         raise NotImplementedError
-    
-    def set_type( self, v ): self._type = v
-    def set_help( self, v ): self._help = v
-    def set_tabid( self, v ): self._tabid = v
-    
-    def _sanitize( self, value ):
+
+    def set_type(self, v):
+        self._type = v
+
+    def set_help(self, v):
+        self._help = v
+
+    def set_tabid(self, v):
+        self._tabid = v
+
+    def _sanitize(self, value):
         '''
         Encode some values that can't be used in XML
         '''
@@ -113,27 +135,27 @@ class BaseOption(object):
         value = cgi.escape(value)
         value = value.replace('"', '&quot;')
         return value
-        
+
     def __repr__(self):
         '''
-        A nice way of printing your object =)        
+        A nice way of printing your object =)
         '''
         fmt = '<option name:%s|type:%s|value:%s>'
         return fmt % (self._name, self._type, self._value)
-    
+
     def __eq__(self, other):
         if not isinstance(other, BaseOption):
             return False
-        
+
         name = self._name == other._name
         _type = self._type == other._type
         value = self._value == other._value
-        return name and _type and value 
-        
+        return name and _type and value
+
     def copy(self):
         '''
         This method returns a copy of the option Object.
-        
+
         @return: A copy of myself.
         '''
-        return copy.deepcopy( self )
+        return copy.deepcopy(self)

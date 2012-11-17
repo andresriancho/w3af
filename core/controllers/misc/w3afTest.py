@@ -43,11 +43,12 @@ def get_scripts():
                 res.append(SCRIPT_DIR + f)
             else:
                 withOutAssert.append(f)
-    
+
     res.sort()
     withOutAssert.sort()
-    
+
     return (res, withOutAssert)
+
 
 def run_script(scriptName):
     '''
@@ -60,7 +61,7 @@ def run_script(scriptName):
         output = Popen(args, stdout=PIPE, stderr=STDOUT).communicate()[0]
     except KeyboardInterrupt, k:
         msg = ('User cancelled the script. Hit Ctrl+C again to cancel all '
-           'the test or wait two seconds to continue with the next script.')
+               'the test or wait two seconds to continue with the next script.')
         om.out.information(msg)
         try:
             time.sleep(2)
@@ -69,34 +70,36 @@ def run_script(scriptName):
             raise k
         else:
             om.out.information(
-                        'Continuing with the next script... please wait.')
+                'Continuing with the next script... please wait.')
             return (None, now() - start_time)
 
     took = now() - start_time
     return (output, took)
-    
+
+
 def analyze_result(res_str):
-    
+
     if res_str is None:
         res_code = SKIP
         msg = "Skipped by user: KeyboardInterrupt"
     else:
         res_code = SUCC
         msg = ""
-    
+
     lines = res_str.split('\n') if res_str else []
     for num, line in enumerate(lines):
         if 'Traceback (most recent call last):' in line:
             res_code = ERROR
             msg = "\n".join(lines[num:])
-            break        
+            break
         elif 'Assert **FAILED**' in line:
             res_code = FAIL
             msg = "Assert failed:\n%s\nAssertionError" % (line)
             break
 
     return (res_code, msg)
-    
+
+
 def w3afTest():
     '''
     Test all scripts that have an assert call.
@@ -105,9 +108,9 @@ def w3afTest():
     xunit_gen = XunitGen()
     bad_list = []
     ok_list = []
-    
+
     om.out.console('Going to test %s scripts.' % len(with_assert))
-    
+
     for script in with_assert:
         try:
             sep = os.path.sep
@@ -115,57 +118,57 @@ def w3afTest():
             om.out.information(short_script + '...', newLine=False)
             result, took = run_script(script)
             res_code, msg = analyze_result(result)
-            
+
             # Notify the user
             output_msg = ' %s' % res_code
             if res_code == SUCC and took > 10:
                 output_msg += ' (Took %.2f seconds!)' % took
             om.out.information(output_msg)
-            
+
             # Get qualified name for test case
             test_qname = '.'.join([
-                               SCRIPT_DIR[:-1].replace(sep, '.'),
-                               short_script,
-                               'test_' + short_script.split('-')[-1]
-                               ])
+                                  SCRIPT_DIR[:-1].replace(sep, '.'),
+                                  short_script,
+                                  'test_' + short_script.split('-')[-1]
+                                  ])
 
             if res_code == SUCC:
                 ok_list.append(script)
                 xunit_gen.add_success(test_qname, took)
-                
+
             elif res_code == FAIL:
                 bad_list.append(script)
                 xunit_gen.add_failure(test_qname, msg, took)
-                
+
             elif res_code in (ERROR, SKIP):
                 bad_list.append(script)
                 xunit_gen.add_error(test_qname, msg, took,
-                                    skipped=(res_code==SKIP))
+                                    skipped=(res_code == SKIP))
 
         except KeyboardInterrupt:
             break
-    
+
     # Generate xunit file
     xunit_gen.genfile()
-    
+
     om.out.console('')
     om.out.console('Results:')
     om.out.console('========')
-    
+
     # Summary
-    msg = '- ' + str(len(ok_list) + len(bad_list)) + ' / ' 
+    msg = '- ' + str(len(ok_list) + len(bad_list)) + ' / '
     msg += str(len(with_assert)) + ' scripts have been tested.'
     om.out.console(msg)
-    
+
     # Ok
     om.out.console('- ' + str(len(ok_list)) + ' OK.')
-    
+
     # Without assert
     without_assert.sort()
     msg = '- ' + str(len(without_assert)) + ' scripts don\'t have'
     msg += ' assert statements. This is the list of scripts without assert statements:\n    - '
-    msg += '\n    - '.join(without_assert)   
-    
+    msg += '\n    - '.join(without_assert)
+
     om.out.console(msg)
 
     # Failed

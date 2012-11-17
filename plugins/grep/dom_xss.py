@@ -31,10 +31,10 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 class dom_xss(GrepPlugin):
     '''
     Grep every page for traces of DOM XSS.
-      
+
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
-    
+
     JS_FUNCTIONS = ('document.write',
                     'document.writeln',
                     'document.execCommand',
@@ -42,21 +42,23 @@ class dom_xss(GrepPlugin):
                     'window.open',
                     'eval',
                     'window.execScript')
-    JS_FUNCTIONS = [re.compile(js_f+ ' *\((.*?)\)', re.IGNORECASE) for js_f in JS_FUNCTIONS]
-    
+    JS_FUNCTIONS = [re.compile(
+        js_f + ' *\((.*?)\)', re.IGNORECASE) for js_f in JS_FUNCTIONS]
+
     DOM_USER_CONTROLLED = ('document.URL',
                            'document.URLUnencoded',
                            'document.location',
                            'document.referrer',
                            'window.location',
-                          )
-    
+                           )
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Compile the regular expressions
-        self._scriptRe = re.compile('< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
-        
+        self._scriptRe = re.compile(
+            '< *script *>(.*?)</ *script *>', re.IGNORECASE | re.DOTALL)
+
     def grep(self, request, response):
         '''
         Plugin entry point, search for the DOM XSS vulns.
@@ -75,8 +77,9 @@ class dom_xss(GrepPlugin):
             v.set_id(response.id)
             v.set_severity(severity.LOW)
             v.set_name('DOM Cross site scripting (Risky JavaScript Code)')
-            msg = 'The URL: "' + v.getURL() + '" has a DOM XSS (Risky JavaScript Code) '
-            msg += 'bug using: "'+ vuln_code + '".'
+            msg = 'The URL: "' + v.getURL(
+            ) + '" has a DOM XSS (Risky JavaScript Code) '
+            msg += 'bug using: "' + vuln_code + '".'
             v.set_desc(msg)
             kb.kb.append(self, 'dom_xss', v)
 
@@ -106,18 +109,18 @@ class dom_xss(GrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq(kb.kb.get('dom_xss', 'dom_xss'), None)
-            
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for traces of DOM XSS. 
-        
+        This plugin greps every page for traces of DOM XSS.
+
         Two configurable parameters exist:
             - simpleGrep
             - smartGrep
-        
+
         An interesting paper about DOM XSS
         can be found here:
             - http://www.webappsec.org/projects/articles/071105.shtml

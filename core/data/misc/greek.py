@@ -21,13 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 _abbrevs = [
-    (1<<50L, 'P'),
-    (1<<40L, 'T'), 
-    (1<<30L, 'G'), 
-    (1<<20L, 'M'), 
-    (1<<10L, 'k'),
+    (1 << 50L, 'P'),
+    (1 << 40L, 'T'),
+    (1 << 30L, 'G'),
+    (1 << 20L, 'M'),
+    (1 << 10L, 'k'),
     (1, '')
-    ]
+]
+
 
 def greek(size):
     """
@@ -36,5 +37,4 @@ def greek(size):
     for factor, suffix in _abbrevs:
         if size > factor:
             break
-    return str( int(size/factor) ) + suffix
-    
+    return str(int(size / factor)) + suffix

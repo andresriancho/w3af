@@ -34,38 +34,38 @@ class ManglePlugin(Plugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def get_type( self ):
+    def get_type(self):
         return 'mangle'
 
     def __init__(self):
-        Plugin.__init__( self )
+        Plugin.__init__(self)
 
-    def mangle_request(self, request ):
+    def mangle_request(self, request):
         '''
         This method mangles the request.
-        
+
         This method MUST be implemented on every plugin.
-        
+
         @param request: This is the request to mangle.
         @return: A mangled version of the request.
         '''
         raise NotImplementedError
-    
-    def mangle_response(self, response ):
+
+    def mangle_response(self, response):
         '''
         This method mangles the response.
-        
+
         This method MUST be implemented on every plugin.
-        
+
         @param response: This is the response to mangle.
         @return: A mangled version of the response.
         '''
         raise NotImplementedError
-        
+
     def set_url_opener(self, foo):
         pass
-        
-    def __gt__( self, other ):
+
+    def __gt__(self, other):
         '''
         This function is called when sorting mangle plugins.
         '''
@@ -73,14 +73,14 @@ class ManglePlugin(Plugin):
             return True
         else:
             return False
-        
-    def __lt__( self, other ):
+
+    def __lt__(self, other):
         '''
         This function is called when sorting evasion plugins.
         '''
-        return not self.__gt__( other )
-    
-    def __eq__( self, other ):
+        return not self.__gt__(other)
+
+    def __eq__(self, other):
         '''
         This function is called when sorting mangle plugins.
         '''
@@ -88,19 +88,19 @@ class ManglePlugin(Plugin):
             return True
         else:
             return False
-        
-    def getPriority( self ):
+
+    def getPriority(self):
         '''
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.
-        
+
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         raise NotImplementedError
-    
-    def _fixContentLen( self, response ):
+
+    def _fixContentLen(self, response):
         '''
-        If the content-length header is present, calculate the new len and 
+        If the content-length header is present, calculate the new len and
         update the header.
         '''
         cl = 'Content-Length'
@@ -108,13 +108,14 @@ class ManglePlugin(Plugin):
             if i.lower() == 'Content-length'.lower():
                 cl = i
                 break
-        
+
         headers = response.getHeaders()
-        headers[ cl ] = str( len( response.getBody() ) )
-        response.setHeaders( headers )
+        headers[cl] = str(len(response.getBody()))
+        response.setHeaders(headers)
         return response
-    
-def headers_to_string( header_dict ):
+
+
+def headers_to_string(header_dict):
     '''
     @param header_dict: The header dictionary of the request
     @return: A string representation of the dictionary
@@ -123,8 +124,9 @@ def headers_to_string( header_dict ):
     for key in header_dict:
         res += key + ': ' + header_dict[key] + '\r\n'
     return res
-    
-def string_to_headers( header_str ):
+
+
+def string_to_headers(header_str):
     '''
     The reverse of headers_to_string
     '''
@@ -134,12 +136,12 @@ def string_to_headers( header_str ):
         if s != '':
             try:
                 name = s.split(':')[0]
-                value = ':'.join( s.split(':')[1:] )
+                value = ':'.join(s.split(':')[1:])
             except:
                 msg = 'You "over-mangled" the header! Now the headers are'\
                       ' invalid, ignoring: "%s".' % s
                 om.out.error(msg)
             else:
                 # Escape the space after the ":"
-                res[ name ] = value[1:]
+                res[name] = value[1:]
     return res

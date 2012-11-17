@@ -23,37 +23,37 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestGetEmails(PluginTest):
-    
+
     get_emails_url = 'https://moth/w3af/grep/get_emails/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': get_emails_url,
             'plugins': {
                 'grep': (PluginConfig('get_emails',
-                                      ('onlyTargetDomain', False, PluginConfig.BOOL)),),
+                                      (
+                                          'onlyTargetDomain', False, PluginConfig.BOOL)),),
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_emails(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         target_emails = self.kb.get('emails', 'emails')
-        self.assertEqual( len(target_emails), 0)
-        
+        self.assertEqual(len(target_emails), 0)
+
         all_email_infos = self.kb.get('emails', 'external_emails')
-        all_emails = set([ i['mail'] for i in all_email_infos ])
-        
+        all_emails = set([i['mail'] for i in all_email_infos])
+
         EXPECTED = set([u'f00@moth.com', u'bar@moth.com', u'hello@world.com',
                         u'world@f00.net', u'planer@moth.com', u'pp@moth.com',
                         u'notme@gmail.com'])
-        
-        self.assertEqual( all_emails, EXPECTED)
-        
+
+        self.assertEqual(all_emails, EXPECTED)

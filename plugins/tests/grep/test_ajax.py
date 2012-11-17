@@ -32,68 +32,68 @@ from plugins.grep.ajax import ajax
 
 
 class test_ajax(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = ajax()
         self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
-        kb.kb.save('ajax','ajax',[])
+        kb.kb.save('ajax', 'ajax', [])
 
     def tearDown(self):
         self.plugin.end()
-        
+
     def test_ajax_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 0 )
-    
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 0)
+
     def test_ajax_find(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
+
     def test_ajax_broken_html(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
+
     def test_ajax_broken_2(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
+
     def test_ajax_find_2(self):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
+
     def test_ajax_two(self):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('ajax', 'ajax')) , 1 )
+        self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)

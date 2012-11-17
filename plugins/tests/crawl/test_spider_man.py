@@ -27,90 +27,93 @@ from nose.plugins.skip import SkipTest
 from plugins.tests.helper import PluginTest, PluginConfig
 
 BROWSE_URLS = (
-               ('GET', 'http://moth/w3af/crawl/spider_man/javascriptredirect.html', None),
-               ('GET', 'http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php', 'id=1'),
-               ('POST', 'http://moth/w3af/crawl/spider_man/data_receptor_js.php', 'user=abc'),
-              )
+    ('GET', 'http://moth/w3af/crawl/spider_man/javascriptredirect.html', None),
+    ('GET', 'http://moth/w3af/audit/sql_injection/select/sql_injection_integer.php', 'id=1'),
+    ('POST', 'http://moth/w3af/crawl/spider_man/data_receptor_js.php',
+     'user=abc'),
+)
 
 TERMINATE_URL = (
-                 ('GET', 'http://127.7.7.7/spider_man', 'terminate'),
-                 )
+    ('GET', 'http://127.7.7.7/spider_man', 'terminate'),
+)
+
 
 class BrowserThread(threading.Thread):
-    
+
     def __init__(self):
         super(BrowserThread, self).__init__()
         self.responses = []
-        
+
     def run(self):
         '''
         @see: Comment in test_spiderman_basic
         '''
         time.sleep(5.0)
-        
-        proxy_support = urllib2.ProxyHandler({'http': 'http://127.0.0.1:44444/'})
+
+        proxy_support = urllib2.ProxyHandler(
+            {'http': 'http://127.0.0.1:44444/'})
         opener = urllib2.build_opener(proxy_support)
         # Avoid this, it might influence other tests!
         #urllib2.install_opener(opener)
-        
+
         all_urls = BROWSE_URLS + TERMINATE_URL
-        
+
         for method, url, payload in all_urls:
             if method == 'POST':
                 req = urllib2.Request(url, payload)
-                response = opener.open(req)           
+                response = opener.open(req)
             else:
                 if payload is None:
                     full_url = url
                 else:
                     full_url = url + '?' + payload
                 response = opener.open(full_url)
-            
+
             self.responses.append(response.read())
-            
-        
+
+
 class TestSpiderman(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('spider_man'),)}
-            }
         }
-    
+    }
+
     def test_spiderman_basic(self):
         '''
         The difficult thing with this test is that the scan will block until
         we browse through the spider_man proxy to the spider_man.TERMINATE_URL,
         so we need to start a "browser thread" that will sleep for a couple
         of seconds before browsing through the proxy.
-        
-        The first assert will be performed between the links that we browse 
+
+        The first assert will be performed between the links that we browse
         and the ones returned by the plugin to the core.
-        
+
         The second assert will check that the proxy actually returned the expected
         HTTP response body to the browser.
         '''
         bt = BrowserThread()
         bt.start()
-        
+
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         # Fetch all the results
         bt.join()
         kb_urls = self.kb.get('urls', 'url_objects')
         responses = bt.responses
-        
+
         EXPECTED_RESPONSE_CONTENTS = (
-                                      '<title>Test spider_man features</title>',
-                                      '<b>Phone:</b> 47789900',
-                                      'Welcome, abc!',
-                                      'spider_man plugin finished its execution.',
-                                      )
-        
+            '<title>Test spider_man features</title>',
+            '<b>Phone:</b> 47789900',
+            'Welcome, abc!',
+            'spider_man plugin finished its execution.',
+        )
+
         #
         #    First set of assertions
         #
@@ -119,7 +122,7 @@ class TestSpiderman(PluginTest):
 
         #
         #    Second set of assertions
-        #        
+        #
         kb_urls = [u.uri2url().url_string for u in kb_urls]
         for _, e_url, _ in BROWSE_URLS:
             self.assertTrue(e_url in kb_urls)

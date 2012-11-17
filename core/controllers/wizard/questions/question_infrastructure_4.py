@@ -31,16 +31,16 @@ class question_infrastructure_4(question):
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self, w3af_core):
-        question.__init__( self, w3af_core )
-    
+        question.__init__(self, w3af_core)
+
         self._question_id = 'infrastructure_4'
 
         self._question_title = 'Plugin selection'
-        
+
         self._question_str = 'w3af has a group of plugins that fetch information about the target'
         self._question_str += ' application using Internet search engines. In order to enable or'
         self._question_str += ' disable those plugins, we need to know the following:'
-        
+
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
@@ -48,15 +48,16 @@ class question_infrastructure_4(question):
 
         self._d1 = 'Is the target web application reachable from the Internet?'
         o1 = opt_factory(self._d1, True, self._d1, 'boolean')
-    
+
         ol = OptionList()
         ol.add(o1)
 
         return ol
-        
-    def getNextQuestionId(self,  options_list ):
-        cf.cf.save('reachable_from_internet', options_list[self._d1].get_value())
-       
+
+    def getNextQuestionId(self, options_list):
+        cf.cf.save(
+            'reachable_from_internet', options_list[self._d1].get_value())
+
         # The next question
         if cf.cf.get('reachable_from_internet'):
             return 'infrastructure_internet_1'

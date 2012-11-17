@@ -23,27 +23,28 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFrontpageVersion(PluginTest):
-    
+
     base_url = 'http://moth'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'infrastructure': (PluginConfig('frontpage_version'),)}
-            }
         }
-    
+    }
+
     def test_find_version(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('frontpage_version', 'frontpage_version')
-        
+
         EXPECTED = ('/_vti_inf.html',
                     '/_vti_bin/_vti_adm/admin.exe',
                     '/_vti_bin/_vti_aut/author.exe')
-        
-        self.assertEqual( len(infos), len(EXPECTED), infos )
-        
-        self.assertEqual( set([self.base_url + path_file for path_file in EXPECTED]),
-                          set([i.getURL().url_string for i in infos]))
+
+        self.assertEqual(len(infos), len(EXPECTED), infos)
+
+        self.assertEqual(
+            set([self.base_url + path_file for path_file in EXPECTED]),
+            set([i.getURL().url_string for i in infos]))

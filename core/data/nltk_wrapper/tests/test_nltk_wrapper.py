@@ -22,14 +22,15 @@ import unittest
 
 from core.data.nltk_wrapper.nltk_wrapper import wn
 
+
 class TestNLTKWrapper(unittest.TestCase):
 
     def test_simple(self):
         wn_res = wn.synsets('blue')[0].hypernyms()[0].hyponyms()
-        wn_words = set([ i.name.split('.')[0] for i in wn_res])
-        
+        wn_words = set([i.name.split('.')[0] for i in wn_res])
+
         EXPECTED = set(['orange', 'brown', 'green', 'salmon', 'pink',
                         'red', 'blue', 'blond', 'purple', 'olive', 'yellow',
                         'pastel', 'complementary_color'])
-        
+
         self.assertEqual(wn_words, EXPECTED)

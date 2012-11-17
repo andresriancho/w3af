@@ -34,13 +34,13 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class private_ip(GrepPlugin):
     '''
     Find private IP addresses on the response body and headers.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # For more info regarding this regular expression, please see:
         # https://sourceforge.net/mailarchive/forum.php?thread_name=1955593874.20090122023644%40
         #mlists.olympos.org&forum_name=w3af-develop
@@ -52,22 +52,23 @@ class private_ip(GrepPlugin):
 
         self._already_inspected = ScalableBloomFilter()
         self._ignore_if_match = None
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point. Search for private IPs in the header and the body.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, results are saved to the kb.
         '''
         if self._ignore_if_match is None:
-            self._generate_ignores( response )
-        
-        if not ( request.getURL() , request.getData() ) in self._already_inspected:
+            self._generate_ignores(response)
+
+        if not (request.getURL(), request.getData()) in self._already_inspected:
 
             #   Only run this once for each combination of URL and data sent to that URL
-            self._already_inspected.add( ( request.getURL() , request.getData() ) )
+            self._already_inspected.add(
+                (request.getURL(), request.getData()))
 
             #
             #   Search for IP addresses in HTTP headers
@@ -84,28 +85,29 @@ class private_ip(GrepPlugin):
                     if match not in self._ignore_if_match:
                         v = vuln.vuln()
                         v.set_plugin_name(self.get_name())
-                        v.setURL( response.getURL() )
-                        v.set_id( response.id )
+                        v.setURL(response.getURL())
+                        v.set_id(response.id)
                         v.set_severity(severity.LOW)
-                        v.set_name( 'Private IP disclosure vulnerability' )
-                        
-                        msg = 'The URL: "' + v.getURL() + '" returned an HTTP header '
-                        msg += 'with an IP address: "' +  match + '".'
-                        v.set_desc( msg )
-                        v['IP'] = match                            
-                        v.addToHighlight( match )
-                        kb.kb.append( self, 'header', v )       
+                        v.set_name('Private IP disclosure vulnerability')
+
+                        msg = 'The URL: "' + \
+                            v.getURL() + '" returned an HTTP header '
+                        msg += 'with an IP address: "' + match + '".'
+                        v.set_desc(msg)
+                        v['IP'] = match
+                        v.addToHighlight(match)
+                        kb.kb.append(self, 'header', v)
 
             #
             #   Search for IP addresses in the HTML
             #
             if response.is_text_or_html():
-                
+
                 # Performance improvement!
-                if not (('10.' in response) or ('172.' in response) or \
-                    ('192.168.' in response) or ('169.254.' in response)):
+                if not (('10.' in response) or ('172.' in response) or
+                       ('192.168.' in response) or ('169.254.' in response)):
                     return
-                
+
                 for regex in self._regex_list:
                     for match in regex.findall(response.getBody()):
                         match = match.strip()
@@ -117,49 +119,50 @@ class private_ip(GrepPlugin):
 
                         # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
                         if match not in self._ignore_if_match and \
-                        not request.sent( match ):
+                                not request.sent(match):
                             v = vuln.vuln()
                             v.set_plugin_name(self.get_name())
-                            v.setURL( response.getURL() )
-                            v.set_id( response.id )
+                            v.setURL(response.getURL())
+                            v.set_id(response.id)
                             v.set_severity(severity.LOW)
-                            v.set_name( 'Private IP disclosure vulnerability' )
-                            
-                            msg = 'The URL: "' + v.getURL() + '" returned an HTML document '
-                            msg += 'with an IP address: "' +  match + '".'
-                            v.set_desc( msg )
+                            v.set_name('Private IP disclosure vulnerability')
+
+                            msg = 'The URL: "' + \
+                                v.getURL() + '" returned an HTML document '
+                            msg += 'with an IP address: "' + match + '".'
+                            v.set_desc(msg)
                             v['IP'] = match
-                            v.addToHighlight( match )
-                            kb.kb.append( self, 'HTML', v )     
+                            v.addToHighlight(match)
+                            kb.kb.append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
         '''
         Generate the list of strings we want to ignore as private IP addresses
         '''
-        if self._ignore_if_match is None: 
+        if self._ignore_if_match is None:
             self._ignore_if_match = set()
-            
+
             requested_domain = response.getURL().getDomain()
-            self._ignore_if_match.add( requested_domain )
-            
-            self._ignore_if_match.add( get_local_ip(requested_domain) )
-            self._ignore_if_match.add( get_local_ip() )
-            
+            self._ignore_if_match.add(requested_domain)
+
+            self._ignore_if_match.add(get_local_ip(requested_domain))
+            self._ignore_if_match.add(get_local_ip())
+
             try:
                 ip_address = socket.gethostbyname(requested_domain)
             except:
                 pass
             else:
-                self._ignore_if_match.add( ip_address )
-        
+                self._ignore_if_match.add(ip_address)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'private_ip', 'header' ), None )
-        self.print_uniq( kb.kb.get( 'private_ip', 'HTML' ), None )
-            
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('private_ip', 'header'), None)
+        self.print_uniq(kb.kb.get('private_ip', 'HTML'), None)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

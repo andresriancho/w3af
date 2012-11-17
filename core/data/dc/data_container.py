@@ -34,14 +34,14 @@ class DataContainer(OrderedDict):
     '''
     This class represents a data container. It's basically the way
     query-string and post-data are stored when using url-encoding.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
-        
+
         super(DataContainer, self).__init__()
         self.encoding = encoding
-        
+
         if isinstance(init_val, DataContainer):
             self.update(init_val)
         elif isinstance(init_val, dict):
@@ -53,26 +53,26 @@ class DataContainer(OrderedDict):
                     key, val = item
                 except TypeError:
                     raise TypeError('key, val = item')
-                
+
                 if key in self:
                     msg = 'Not supported init_val, the way of using repeated parameter' \
                           ' names is [(u"b", [u"2", u"3"])]'
                     TypeError(msg)
-                    
+
                 self[key] = val
-    
+
     def copy(self):
         '''
         This method returns a copy of the DataContainer Object.
-        
+
         @return: A copy of myself.
         '''
         return copy.deepcopy(self)
-       
+
     def __str__(self):
         '''
         Return string representation.
-        
+
         >>> str(DataContainer([(u'a','1'), (u'b', ['2','3'])]))
         'a=1&b=2&b=3'
         >>> str(DataContainer([(u'aaa', None)]))
@@ -89,11 +89,11 @@ class DataContainer(OrderedDict):
         @return: string representation of the DataContainer Object.
         '''
         return enc_dec.urlencode(self, encoding=self.encoding)
-    
+
     def __unicode__(self):
         '''
         Return unicode representation
-        
+
         >>> unicode(DataContainer([(u'a', u'1'), (u'b', [u'2', u'3'])]))
         u'a=1&b=2&b=3'
         >>> unicode(DataContainer([(u'aaa', None)]))
@@ -102,7 +102,7 @@ class DataContainer(OrderedDict):
         u'aaa='
         '''
         return self._to_str_with_separators(u'=', u'&')
-    
+
     def _to_str_with_separators(self, key_val_sep, pair_sep):
         lst = []
         for k, v in self.items():
@@ -111,7 +111,7 @@ class DataContainer(OrderedDict):
             else:
                 if not isinstance(v, Iterable):
                     v = [(v if v is None else unicode(v, UTF8))]
-                    
+
             for ele in v:
                 if not ele:
                     toapp = k + key_val_sep
@@ -119,4 +119,3 @@ class DataContainer(OrderedDict):
                     toapp = k + key_val_sep + ele
                 lst.append(toapp)
         return pair_sep.join(lst)
-        

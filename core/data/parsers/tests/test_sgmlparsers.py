@@ -127,6 +127,7 @@ BODY_FRAGMENT_WITH_EMAILS = u'''===>jandalia@bing.com%^&1!
 
 URL_INST = URL('http://w3af.com')
 
+
 def _build_http_response(url, body_content, headers=Headers()):
     if 'content-type' not in headers:
         headers['content-type'] = 'text/html'
@@ -134,8 +135,10 @@ def _build_http_response(url, body_content, headers=Headers()):
 
 # We subclass SGMLParser to prevent that the parsing process
 # while init'ing the parser instance
+
+
 class _SGMLParser(SGMLParser):
-    
+
     def __init__(self, http_resp):
         # Save "_parse" reference
         orig_parse = self._parse
@@ -145,20 +148,21 @@ class _SGMLParser(SGMLParser):
         SGMLParser.__init__(self, http_resp)
         # Restore it
         self._parse = orig_parse
-        
+
+
 @attr('smoke')
 class TestSGMLParser(unittest.TestCase):
 
     def test_parser_attrs(self):
-        body_content = HTML_DOC % {'head':'', 'body':''}
+        body_content = HTML_DOC % {'head': '', 'body': ''}
         p = _SGMLParser(_build_http_response(URL_INST, body_content))
-        
+
         # Assert parser has these attrs correctly initialized
         self.assertFalse(getattr(p, '_inside_form'))
         self.assertFalse(getattr(p, '_inside_select'))
         self.assertFalse(getattr(p, '_inside_textarea'))
         self.assertFalse(getattr(p, '_inside_script'))
-        
+
         self.assertEquals(set(), getattr(p, '_tag_and_url'))
         self.assertEquals(set(), getattr(p, '_parsed_urls'))
         self.assertEquals([], getattr(p, '_forms'))
@@ -173,7 +177,7 @@ class TestSGMLParser(unittest.TestCase):
         p = _SGMLParser(resp)
         p._parse(resp)
         self.assertEquals(URL('http://www.w3afbase.com/'), p._baseUrl)
-        
+
     def test_regex_urls(self):
         u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
         u2 = u'http://w3af.com/tésoro.php?id=GÓLD'
@@ -191,11 +195,11 @@ class TestSGMLParser(unittest.TestCase):
         self.assertTrue(u1 in urls)
         self.assertTrue(u2 in urls)
         self.assertTrue(u3 in urls)
-    
+
     def test_meta_tags(self):
         body = HTML_DOC % \
             {'head': META_REFRESH + META_REFRESH_WITH_URL,
-            'body': ''}
+             'body': ''}
         resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         p._parse(resp)
@@ -203,7 +207,7 @@ class TestSGMLParser(unittest.TestCase):
         self.assertTrue("2;url=http://crawler.w3af.com/" in p.meta_redirs)
         self.assertTrue("600" in p.meta_redirs)
         self.assertEquals([URL('http://crawler.w3af.com/')], p.references[0])
-    
+
     def test_case_sensitivity(self):
         '''
         Ensure handler methods are *always* called with lowered-cased
@@ -215,28 +219,28 @@ class TestSGMLParser(unittest.TestCase):
                 il = s.islower()
             else:
                 il = all(k.islower() for k in s)
-            assert il, "'%s' is not lowered-case" % s 
+            assert il, "'%s' is not lowered-case" % s
             return il
-        
+
         def start_wrapper(orig_start, tag, attrs):
             islower(tag)
             islower(attrs)
             return orig_start(tag, attrs)
-        
+
         tags = (A_LINK_ABSOLUTE, INPUT_CHECKBOX_WITH_NAME, SELECT_WITH_NAME,
                 TEXTAREA_WITH_ID_AND_DATA, INPUT_HIDDEN)
         ops = "lower", "upper", "title"
-        
+
         for indexes in combinations(range(len(tags)), 2):
-            
+
             body_elems = []
-            
+
             for index, tag in enumerate(tags):
                 ele = tag
                 if index in indexes:
                     ele = getattr(tag, choice(ops))()
                 body_elems.append(ele)
-            
+
             body = HTML_DOC % {'head': '', 'body': ''.join(body_elems)}
             resp = _build_http_response(URL_INST, body)
             p = _SGMLParser(resp)
@@ -244,7 +248,7 @@ class TestSGMLParser(unittest.TestCase):
             wrapped_start = partial(start_wrapper, orig_start)
             p.start = wrapped_start
             p._parse(resp)
-    
+
     def test_find_emails(self):
         body = HTML_DOC % {'head': '', 'body': BODY_FRAGMENT_WITH_EMAILS}
         p = _SGMLParser(_build_http_response(URL_INST, body))
@@ -267,8 +271,9 @@ class TestSGMLParser(unittest.TestCase):
         p._parse(r)
         parsed_refs = p.references[0]
         self.assertEquals(1, len(parsed_refs))
-        self.assertEquals('http://w3af.com/x.py?a=1', parsed_refs[0].url_string)
-    
+        self.assertEquals(
+            'http://w3af.com/x.py?a=1', parsed_refs[0].url_string)
+
     def test_reference_with_colon(self):
         body = '''
         <html>
@@ -282,13 +287,13 @@ class TestSGMLParser(unittest.TestCase):
         #    Finding zero URLs is the correct behavior based on what
         #    I've seen in Opera and Chrome.
         #
-        self.assertEquals(0, len(parsed_refs))         
-        
+        self.assertEquals(0, len(parsed_refs))
+
 
 # We subclass HTMLParser to prevent that the parsing process
 # while init'ing the parser instance
 class _HTMLParser(HTMLParser):
-    
+
     def __init__(self, http_resp):
         # Save "_parse" reference
         orig_parse = self._parse
@@ -299,6 +304,7 @@ class _HTMLParser(HTMLParser):
         # Restore it
         self._parse = orig_parse
 
+
 @attr('smoke')
 class TestHTMLParser(unittest.TestCase):
 
@@ -307,12 +313,12 @@ class TestHTMLParser(unittest.TestCase):
             {'head': '',
              'body': FORM_METHOD_GET % {'form_content': ''} +
                      FORM_WITHOUT_ACTION % {'form_content': ''}
-            }
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals(2, len(p.forms))
-    
+
     def test_no_forms(self):
         # No form should be parsed
         body = HTML_DOC % \
@@ -324,33 +330,33 @@ class TestHTMLParser(unittest.TestCase):
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals(0, len(p.forms))
-    
+
     def test_form_without_meth(self):
         '''
-        When the form has no 'method' => 'GET' will be used 
+        When the form has no 'method' => 'GET' will be used
         '''
         body = HTML_DOC % \
-                    {'head': '',
+            {'head': '',
                      'body': FORM_WITHOUT_METHOD % {'form_content': ''}
-                    }
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals('GET', p.forms[0].get_method())
-    
+
     def test_form_without_action(self):
         '''
         If the form has no 'content' => HTTPResponse's url will be used
         '''
         body = HTML_DOC % \
-                    {'head': '',
+            {'head': '',
                      'body': FORM_WITHOUT_ACTION % {'form_content': ''}
-                    }
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
         self.assertEquals(URL_INST, p.forms[0].getAction())
-    
+
     def test_form_with_invalid_url_in_action(self):
         '''
         If an invalid url is detected in the form's action then use baseUrl
@@ -364,94 +370,94 @@ class TestHTMLParser(unittest.TestCase):
         p = _HTMLParser(r)
         p._parse(r)
         self.assertEquals(URL_INST, p.forms[0].getAction())
-    
+
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared
-        # before and after). Also it must be equal to a form that includes 
+        # before and after). Also it must be equal to a form that includes
         # those same inputs but declared before them
-        
+
         # 1st body
         body = HTML_DOC % \
             {'head': '',
              'body': (INPUT_TEXT_WITH_NAME + INPUT_TEXT_WITH_ID +
-                  INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
-                  (FORM_WITHOUT_METHOD % {'form_content': ''}) + # form in the middle
-                  INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
-                  INPUT_HIDDEN)
-            }
+                      INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
+                      (FORM_WITHOUT_METHOD % {'form_content': ''}) +  # form in the middle
+                      INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
+                      INPUT_HIDDEN)
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        
+
         # 2nd body
         body2 = HTML_DOC % \
             {'head': '',
-             'body': FORM_WITHOUT_METHOD % 
-                      {'form_content': 
-                        INPUT_TEXT_WITH_NAME + INPUT_TEXT_WITH_ID +
-                        INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
-                        INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
-                        INPUT_HIDDEN
-                      }
-            }
+             'body': FORM_WITHOUT_METHOD %
+            {'form_content':
+             INPUT_TEXT_WITH_NAME + INPUT_TEXT_WITH_ID +
+             INPUT_FILE_WITH_NAME + INPUT_SUBMIT_WITH_NAME +
+             INPUT_RADIO_WITH_NAME + INPUT_CHECKBOX_WITH_NAME +
+             INPUT_HIDDEN
+             }
+             }
         resp2 = _build_http_response(URL_INST, body2)
         p2 = _HTMLParser(resp2)
         p2._parse(resp2)
-        
+
         # Only one form
         self.assertTrue(len(p.forms) == 1)
         # Ensure that parsed inputs actually belongs to the form and
         # have the expected values
         f = p.forms[0]
-        self.assertEquals(['bar'], f['foo1']) # text input
-        self.assertEquals(['bar'], f['foo2']) # text input
-        self.assertEquals([''], f['foo3']) # file input
-        self.assertEquals([''], f['foo5']) # radio input
-        self.assertEquals([''], f['foo6']) # checkbox input
-        self.assertEquals(['bar'], f['foo7']) # hidden input
-        self.assertEquals('', f._submit_map['foo4']) # submit input
-        
+        self.assertEquals(['bar'], f['foo1'])  # text input
+        self.assertEquals(['bar'], f['foo2'])  # text input
+        self.assertEquals([''], f['foo3'])  # file input
+        self.assertEquals([''], f['foo5'])  # radio input
+        self.assertEquals([''], f['foo6'])  # checkbox input
+        self.assertEquals(['bar'], f['foo7'])  # hidden input
+        self.assertEquals('', f._submit_map['foo4'])  # submit input
+
         # Finally assert that the parsed forms are equals
         self.assertEquals(f, p2.forms[0])
-    
+
     def test_textareas_in_out_form(self):
         body = HTML_DOC % \
             {'head': '',
              'body': (
-                  TEXTAREA_WITH_ID_AND_DATA +
-                  FORM_WITHOUT_METHOD % 
-                    {'form_content': TEXTAREA_WITH_NAME_AND_DATA} +
-                  TEXTAREA_WITH_NAME_EMPTY)
-            }
+                 TEXTAREA_WITH_ID_AND_DATA +
+                 FORM_WITHOUT_METHOD %
+                 {'form_content': TEXTAREA_WITH_NAME_AND_DATA} +
+                 TEXTAREA_WITH_NAME_EMPTY)
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        
+
         # textarea are parsed as regular inputs
         f = p.forms[0]
-        self.assertTrue(f.get('sample_id') == f.get('sample_name') == 
+        self.assertTrue(f.get('sample_id') == f.get('sample_name') ==
                         ['sample_value'])
         # Last <textarea> with empty name wasn't parsed
         self.assertEquals(2, len(f))
-        
+
     def test_selects_in_out_form(self):
-        # Both <select> are expected to be parsed inside the form. Because 
+        # Both <select> are expected to be parsed inside the form. Because
         # they have the same name/id the same entry will be used in the form
         # although the values will be duplicated when applies.
         body = HTML_DOC % \
             {'head': '',
              'body': (
-                  SELECT_WITH_NAME +
-                  FORM_WITHOUT_METHOD % {'form_content': SELECT_WITH_ID} +
-                  '<select><option value="xxx"/><option value="yyy"/></select>')
-            }
+                 SELECT_WITH_NAME +
+                 FORM_WITHOUT_METHOD % {'form_content': SELECT_WITH_ID} +
+                 '<select><option value="xxx"/><option value="yyy"/></select>')
+             }
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        
+
         # No pending parsed selects
         self.assertEquals(0, len(p._selects))
-        
+
         # Only 1 select (2 have the same name); the last one is not parsed as
         # it has no name/id
         f = p.forms[0]
@@ -459,9 +465,7 @@ class TestHTMLParser(unittest.TestCase):
         vehicles = f._selects['vehicle']
         self.assertTrue(vehicles.count("car") == vehicles.count("plane") ==
                         vehicles.count("bike") == 2)
-        
+
         # "xxx" and "yyy" options were not parsed
         self.assertFalse("xxx" in f._selects.values())
         self.assertFalse("yyy" in f._selects.values())
-        
-        

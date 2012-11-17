@@ -25,18 +25,18 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestDAVShell(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/dav/write-all/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('dav',),),                 
-                 }
-            },
-        }
-    
+                'audit': (PluginConfig('dav',),),
+            }
+        },
+    }
+
     def test_found_exploit_dav(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -45,32 +45,31 @@ class TestDAVShell(PluginTest):
         # Assert the general results
         vulns = self.kb.get('dav', 'dav')
         self.assertEquals(len(vulns), 2, vulns)
-        
+
         vuln = vulns[0]
         self.assertEquals('Insecure DAV configuration', vuln.get_name())
 
         vuln_to_exploit_id = vuln.get_id()
-        
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack','dav' )
-        
-        self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
-        
-        exploit_result = plugin.exploit( vuln_to_exploit_id )
+
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'dav')
+
+        self.assertTrue(plugin.canExploit(vuln_to_exploit_id))
+
+        exploit_result = plugin.exploit(vuln_to_exploit_id)
 
         self.assertEqual(len(exploit_result), 1, exploit_result)
-        
+
         #
         # Now I start testing the shell itself!
         #
         shell = exploit_result[0]
-        etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'] )
-        
-        self.assertTrue( 'root' in etc_passwd )
-        
+        etc_passwd = shell.generic_user_input('exec', ['cat', '/etc/passwd'])
+
+        self.assertTrue('root' in etc_passwd)
+
         lsp = shell.generic_user_input('lsp', [])
-        self.assertTrue( 'apache_config_directory' in lsp )
-        
-        payload = shell.generic_user_input('payload', ['apache_config_directory'])
-        self.assertTrue( payload is None )
-        
-        
+        self.assertTrue('apache_config_directory' in lsp)
+
+        payload = shell.generic_user_input(
+            'payload', ['apache_config_directory'])
+        self.assertTrue(payload is None)

@@ -23,31 +23,29 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestContentNegotiation(PluginTest):
-    
+
     base_url = 'http://moth/w3af/crawl/content_negotiation/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('content_negotiation'),
                                   PluginConfig('web_spider',
                                                ('onlyForward', True, PluginConfig.BOOL)))}
-            }
         }
-    
+    }
+
     def test_content_negotiation_find_urls(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        infos = self.kb.get('content_negotiation', 'content_negotiation')
-        self.assertEqual( len(infos), 1, infos )
-        info = infos[0]
-        self.assertEqual( info.get_name(), 'HTTP Content Negotiation enabled' )
-        
-        urls = self.kb.get('urls', 'url_objects')
-        expected_fnames = set(['backup.zip', 'backup.php', 'backup.gz', 
-                               'backup.tar', ''])
-        self.assertEqual( expected_fnames,
-                          set([u.getFileName() for u in urls]) )
-        
 
+        infos = self.kb.get('content_negotiation', 'content_negotiation')
+        self.assertEqual(len(infos), 1, infos)
+        info = infos[0]
+        self.assertEqual(info.get_name(), 'HTTP Content Negotiation enabled')
+
+        urls = self.kb.get('urls', 'url_objects')
+        expected_fnames = set(['backup.zip', 'backup.php', 'backup.gz',
+                               'backup.tar', ''])
+        self.assertEqual(expected_fnames,
+                         set([u.getFileName() for u in urls]))

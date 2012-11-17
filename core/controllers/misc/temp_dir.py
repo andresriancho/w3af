@@ -27,11 +27,13 @@ from core.controllers.misc.homeDir import get_home_dir
 
 TEMP_DIR = os.path.join(get_home_dir(), 'tmp', str(os.getpid()))
 
+
 def get_temp_dir():
     '''
     @return: The path where we should create the dir.
     '''
     return TEMP_DIR
+
 
 def create_temp_dir():
     '''
@@ -44,6 +46,7 @@ def create_temp_dir():
         os.makedirs(complete_dir)
         os.chmod(complete_dir, stat.S_IRWXU)
     return complete_dir
+
 
 def remove_temp_dir():
     '''

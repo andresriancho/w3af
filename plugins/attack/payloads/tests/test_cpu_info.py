@@ -26,11 +26,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 @attr('smoke')
 class test_cpu_info(PayloadTestHelper):
-    
-    EXPECTED_RESULT = {'cpu_cores': '1', 
+
+    EXPECTED_RESULT = {'cpu_cores': '1',
                        'cpu_info': u'AMD Phenom(tm) II X4 945 Processor'}
 
     def test_cpu_info(self):
         result = exec_payload(self.shell, 'cpu_info', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

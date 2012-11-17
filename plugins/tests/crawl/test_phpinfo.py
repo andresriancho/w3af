@@ -23,40 +23,38 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestPHPInfo(PluginTest):
-    
-    base_url = 'https://moth/'
-    
-    _run_config = {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('phpinfo'),)}
-        }
 
-    @attr('smoke')    
+    base_url = 'https://moth/'
+
+    _run_config = {
+        'target': base_url,
+        'plugins': {'crawl': (PluginConfig('phpinfo'),)}
+    }
+
+    @attr('smoke')
     def test_phpinfo(self):
-        self._scan( self._run_config['target'], self._run_config['plugins'] )
-        
+        self._scan(self._run_config['target'], self._run_config['plugins'])
+
         urls = self.kb.get('urls', 'url_objects')
-        urls = [ url.url_string for url in urls ]
-        
-        self.assertTrue( self.base_url + 'phpinfo.php' in urls )
-        
-        
+        urls = [url.url_string for url in urls]
+
+        self.assertTrue(self.base_url + 'phpinfo.php' in urls)
+
         infos = self.kb.get('phpinfo', 'phpinfo')
-        self.assertTrue( len(infos) > 5, infos)
-        
+        self.assertTrue(len(infos) > 5, infos)
+
         EXPECTED_INFOS = (
-                          'register_globals: Off',
-                          'expose_php: On',
-                          'session.hash_function:md5',
-                         )
-        
-        info_urls = [ i.getURL().url_string for i in infos ]
-        self.assertTrue( self.base_url + 'phpinfo.php' in info_urls )
-        
+            'register_globals: Off',
+            'expose_php: On',
+            'session.hash_function:md5',
+        )
+
+        info_urls = [i.getURL().url_string for i in infos]
+        self.assertTrue(self.base_url + 'phpinfo.php' in info_urls)
+
         for e_info_name in EXPECTED_INFOS:
             for info in infos:
                 if info.get_name() == e_info_name:
                     break
             else:
                 self.assertTrue(False, e_info_name)
-        

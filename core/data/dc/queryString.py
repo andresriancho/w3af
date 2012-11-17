@@ -28,7 +28,7 @@ from core.data.dc.data_container import DataContainer
 class QueryString(DataContainer):
     '''
     This class represents a Query String.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=DEFAULT_ENCODING):
@@ -40,7 +40,7 @@ class QueryString(DataContainer):
         'a=%3E&b=a%3D%3D1%20%26%26%20z%20%3E%3D%202&b=3%3E2'
         >>> str(QueryString([('a', 'x=/etc/passwd')]))
         'a=x%3D%2Fetc%2Fpasswd'
-    
+
         @return: string representation of the QueryString object.
         '''
         return enc_dec.urlencode(self, encoding=self.encoding, safe='')

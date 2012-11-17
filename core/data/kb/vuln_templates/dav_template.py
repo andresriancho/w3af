@@ -31,7 +31,7 @@ class DAVTemplate(BaseTemplate):
     def __init__(self):
         self.name = ''
         self.url = 'http://host.tld/'
-        
+
     def get_options(self):
         '''
         In this case we provide a sample implementation since most vulnerabilities
@@ -43,34 +43,34 @@ class DAVTemplate(BaseTemplate):
         d = 'Vulnerability name (eg. %s)' % self.get_vulnerability_name()
         o = opt_factory('name', self.name, d, 'string')
         ol.add(o)
-        
+
         d = 'URL pointing to the path that is vulnerable to file uploads via'\
             ' misconfigured DAV module (HTTP PUT method).'
         o = opt_factory('url', self.url, d, 'url')
         ol.add(o)
-        
+
         return ol
-    
+
     def set_options(self, options_list):
         self.name = options_list['name'].get_value()
         self.url = options_list['url'].get_value()
-    
+
     def create_vuln(self):
         v = self.create_base_vuln()
-        
+
         # User configured
         v.set_name(self.name)
         v.setURL(self.url)
-        
-        return v        
-        
+
+        return v
+
     def get_kb_location(self):
         '''
         @return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         '''
         raise ('dav', 'dav')
-    
+
     def get_vulnerability_name(self):
         '''
         @return: A string containing the name of the vulnerability to be added
@@ -79,7 +79,7 @@ class DAVTemplate(BaseTemplate):
                  strict matching of vulns before exploiting.
         '''
         raise 'DAV Misconfiguration'
-    
+
     def get_vulnerability_desc(self):
         return 'DAV misconfiguration which allows file uploads using the HTTP'\
                ' PUT method'

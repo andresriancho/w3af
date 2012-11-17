@@ -27,10 +27,10 @@ from core.data.parsers.url import URL
 
 
 class TestBaseConsumer(unittest.TestCase):
-    
+
     def setUp(self):
         self.bc = BaseConsumer([], w3afCore())
-        
+
     def test_handle_exception(self):
         url = URL('http://moth/')
         fr = FuzzableRequest(url)
@@ -38,11 +38,10 @@ class TestBaseConsumer(unittest.TestCase):
             raise Exception()
         except Exception, e:
             self.bc.handle_exception('audit', 'sqli', fr, e)
-        
+
         exception_data = self.bc.out_queue.get()
-        
-        self.assertTrue(exception_data.traceback is not None) 
+
+        self.assertTrue(exception_data.traceback is not None)
         self.assertEqual(exception_data.phase, 'audit')
         self.assertEqual(exception_data.plugin, 'sqli')
         self.assertEqual(exception_data.exception, e)
-        

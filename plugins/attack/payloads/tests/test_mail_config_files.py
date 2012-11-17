@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_mail_config_files(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = set(['/etc/postfix/main.cf', '/etc/postfix/master.cf'])
 
     def test_mail_config_files(self):
         result = exec_payload(self.shell, 'mail_config_files', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, set(result.keys()))
-        

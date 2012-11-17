@@ -23,34 +23,32 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestHmap(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': base_url,
-                'plugins': {'infrastructure': (PluginConfig('hmap'),)}
-                }
+        'target': base_url,
+        'plugins': {'infrastructure': (PluginConfig('hmap'),)}
         }
-    
+    }
+
     def test_hmap_http(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('hmap', 'server')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
         self.assertTrue('Apache/2' in info.get_desc(), info.get_desc())
-        
+
     def test_hmap_https(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'].replace('http', 'https'), cfg['plugins'])
-        
+
         infos = self.kb.get('hmap', 'server')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
         self.assertTrue('Apache/2' in info.get_desc(), info.get_desc())
-        
-        

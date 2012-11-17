@@ -1,5 +1,5 @@
 '''
-IMPORTANT: 
+IMPORTANT:
     This file was taken from the great sqlmap project. Only some lines were changed to adapt the code to w3af.
 
 Copyright 2007 Andres Riancho
@@ -27,7 +27,7 @@ import core.controllers.output_manager as om
 class progress_bar(object):
     """
     This class defines methods to update and draw a progress bar.
-    
+
     @author: Bernardo Damele from the sqlmap project.
     """
 
@@ -44,7 +44,6 @@ class progress_bar(object):
         if self.__max > self.__min:
             self.update()
 
-
     def __convertSeconds(self, value):
         seconds = value
         minutes = seconds / 60
@@ -52,16 +51,17 @@ class progress_bar(object):
 
         return "%.2d:%.2d" % (minutes, seconds)
 
-    def inc( self ):
+    def inc(self):
         self.__amount += 1
         if not self.__firstAmountChangeTime:
             self.__firstAmountChangeTime = time.time()
         else:
-            timeForAllRequests = ( self.__max * ( time.time() - self.__firstAmountChangeTime ) ) / self.__amount
+            timeForAllRequests = (self.__max * (
+                time.time() - self.__firstAmountChangeTime)) / self.__amount
             timeAlreadyElapsed = time.time() - self.__firstAmountChangeTime
             self._eta = timeForAllRequests - timeAlreadyElapsed
-        self.update( self.__amount )
-        self.draw( self._eta )
+        self.update(self.__amount)
+        self.draw(self._eta)
 
     def update(self, newAmount=0):
         """
@@ -101,7 +101,7 @@ class progress_bar(object):
             percentString += "%"
         else:
             percentString += "% "
-            
+
         self.__progBar = "%s %s" % (percentString, self.__progBar)
 
     def draw(self, eta=0):
@@ -113,11 +113,13 @@ class progress_bar(object):
             self.__oldProgBar = self.__progBar
 
             if eta and self.__amount < self.__max:
-                om.out.console("\r%s %d/%d  ETA %s" % (self.__progBar, self.__amount, self.__max, self.__convertSeconds(int(eta))) ,newLine=False )
+                om.out.console("\r%s %d/%d  ETA %s" % (self.__progBar, self.__amount, self.__max, self.__convertSeconds(int(eta))), newLine=False)
             else:
-                blank = " " * (80 - len("\r%s %d/%d" % (self.__progBar, self.__amount, self.__max)))
-                om.out.console("\r%s %d/%d%s" % (self.__progBar, self.__amount, self.__max, blank) ,newLine=False)
-            
+                blank = " " * (80 - len("\r%s %d/%d" % (
+                    self.__progBar, self.__amount, self.__max)))
+                om.out.console("\r%s %d/%d%s" % (self.__progBar, self.__amount,
+                               self.__max, blank), newLine=False)
+
             if self.__amount == self.__max:
                 om.out.console("")
 

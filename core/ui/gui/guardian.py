@@ -19,14 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import gtk, gobject
+import gtk
+import gobject
 import core.data.kb.knowledge_base as kb
 import core.data.kb
 
 from core.ui.gui import helpers
 
 from core.ui.gui.exception_handling import handled
-        
+
 
 class _Guarded(object):
     '''Helper for the guardian.'''
@@ -39,7 +40,7 @@ class _Guarded(object):
         self._quant = newval
         self.label.set_text(str(newval).ljust(5))
     quant = property(lambda s: s._quant, _qset)
-        
+
 
 class FoundObjectsGuardian(gtk.HBox):
     '''Shows the objects found by the core.
@@ -49,12 +50,13 @@ class FoundObjectsGuardian(gtk.HBox):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(FoundObjectsGuardian,self).__init__()
+        super(FoundObjectsGuardian, self).__init__()
         self.w3af = w3af
-    
+
         # tooltip
-        self.set_tooltip_text(_("Amount of discovered vulnerabilities and generated shells"))
-    
+        self.set_tooltip_text(
+            _("Amount of discovered vulnerabilities and generated shells"))
+
         # what to show
         self.info = _Guarded("info")
         self.vuln = _Guarded("vuln")
@@ -99,26 +101,26 @@ class FoundExceptionsStatusBar(gtk.EventBox):
     @author: Andres Riancho <andres.riancho =at= gmail.com>
     '''
     def __init__(self, w3af):
-        super(FoundExceptionsStatusBar,self).__init__()
+        super(FoundExceptionsStatusBar, self).__init__()
         self.w3af = w3af
-        
+
         self.hbox = gtk.HBox()
-        
+
         self.set_tooltip_text(_("Exceptions were raised during the scan"))
-    
+
         self.exceptions = _Guarded("excp")
         self.hbox.pack_start(self.exceptions.icon, False, False, padding=2)
         self.hbox.pack_start(self.exceptions.label, False, False, padding=2)
 
         self.add(self.hbox)
-        self.add_events( gtk.gdk.BUTTON_PRESS_MASK )
+        self.add_events(gtk.gdk.BUTTON_PRESS_MASK)
 
         self.connect("button-press-event", self._report_bug)
 
     def show_all(self, num):
         '''Updates the object and shows all.'''
         self.exceptions.quant = num
-        super(FoundExceptionsStatusBar,self).show_all()
+        super(FoundExceptionsStatusBar, self).show_all()
 
     def _report_bug(self, widg, evt):
         '''User clicked on me, he wants to report a bug'''

@@ -23,15 +23,14 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_udp(PayloadTestHelper):
-    
-    EXPECTED_RESULT = set(['0.0.0.0:68',])
+
+    EXPECTED_RESULT = set(['0.0.0.0:68', ])
 
     def test_udp(self):
         result = exec_payload(self.shell, 'udp', use_api=True)
 
         local_addresses = []
         for key, conn_data in result.iteritems():
-            local_addresses.append( conn_data['local_address'] )
-        
-        self.assertTrue( set(local_addresses).issuperset(self.EXPECTED_RESULT))
-        
+            local_addresses.append(conn_data['local_address'])
+
+        self.assertTrue(set(local_addresses).issuperset(self.EXPECTED_RESULT))

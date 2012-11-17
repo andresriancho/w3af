@@ -29,25 +29,26 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestWebSpider(PluginTest):
-    
+
     follow_links_url = 'http://moth/w3af/crawl/web_spider/follow_links/'
     dir_get_url = 'http://moth/w3af/crawl/web_spider/a/b/c/d/'
     encoding_url = 'http://moth/w3af/core/encoding/'
     relative_url = 'http://moth/w3af/crawl/web_spider/relativeRegex.html'
-    
-    wivet  = 'http://wivet/'
-    
+
+    wivet = 'http://wivet/'
+
     _run_configs = {
         'basic': {
             'target': None,
             'plugins': {
                 'crawl': (
                     PluginConfig('web_spider',
-                             ('onlyForward', True, PluginConfig.BOOL),
-                             ('ignoreRegex', '.*pages/100.php.*', PluginConfig.STR)),
+                                 ('onlyForward', True, PluginConfig.BOOL),
+                                 (
+                                 'ignoreRegex', '.*pages/100.php.*', PluginConfig.STR)),
                 )
-             }
-         },
+            }
+        },
     }
 
     @attr('smoke')
@@ -55,16 +56,16 @@ class TestWebSpider(PluginTest):
         cfg = self._run_configs['basic']
         self._scan(self.follow_links_url + '1.html', cfg['plugins'])
         expected_urls = (
-             '3.html', '4.html', '',
-             'd%20f/index.html', '2.html', 'a%20b.html',
-             'a.gif', 'd%20f/', '1.html'
-             )
+            '3.html', '4.html', '',
+            'd%20f/index.html', '2.html', 'a%20b.html',
+            'a.gif', 'd%20f/', '1.html'
+        )
         urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.follow_links_url + end) for end in expected_urls)
-                )
-    
+            set(str(u) for u in urls),
+            set((self.follow_links_url + end) for end in expected_urls)
+        )
+
     @attr('smoke')
     def test_spider_urls_with_strange_charsets(self):
         cfg = self._run_configs['basic']
@@ -84,26 +85,26 @@ class TestWebSpider(PluginTest):
             'spaces/form_input_plus_POST.html', 'spaces/queryxpath.php',
             'spaces/', 'spaces/start end.html', 'spaces/form_input_plus_GET.html',
             'spaces/foo.html'
-        ) 
+        )
         self.assertEquals(
             set([(self.encoding_url + u) for u in expected]),
             set([u.url_string for u in urls])
         )
-    
+
     def test_spider_relative_urls_found_with_regex(self):
         raise SkipTest('FIXME: Need to test this feature!')
         self.relative_url
-        
+
     def test_spider_traverse_directories(self):
         raise SkipTest('FIXME: Need to test this feature!')
         self.dir_get_url
 
     def test_wivet(self):
         clear_wivet()
-        
+
         cfg = self._run_configs['basic']
         self._scan(self.wivet, cfg['plugins'])
-        
+
         #
         #    First, check that w3af identified all the URLs we want:
         #
@@ -124,8 +125,8 @@ class TestWebSpider(PluginTest):
             '9_26dd2e.php', '9_2ff21.php', '9_3a2b7.php', '9_4b82d.php',
             '9_5ee31.php', '9_6ee31.php', '9_7ee31.php', '9_8ee31.php',
             '9_9ee31.php', '12_1a2cf.php'
-                    ))
-        
+        ))
+
         #
         #    FIXME: At some point this should be reduced to an empty set()
         #
@@ -137,28 +138,30 @@ class TestWebSpider(PluginTest):
             '9_12ee31.php', '9_5ee31.php', '9_6ee31.php', '9_22ee31.php',
             '11_2d3ff.php', '17_2da76.php', '18_1a2f3.php', '9_24ee31.php',
             '9_7ee31.php', '9_10ee31.php', '9_21ee31.php', '2_2b7a3.php',
-                      ))
-        
+        ))
+
         EXPECTED_URLS = ALL_WIVET_URLS - W3AF_FAILS
-        
+
         inner_pages = 'innerpages/'
-        
+
         urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
-                set(str(u) for u in urls if inner_pages in str(u) and str(u).endswith('.php')),
-                set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)
-                )
-        
+            set(str(u) for u in urls if inner_pages in str(
+                u) and str(u).endswith('.php')),
+            set((self.wivet + inner_pages + end) for end in EXPECTED_URLS)
+        )
+
         #
         #    And now, verify that w3af used only one session to identify these
         #    wivet links.
         #
         stats = extract_all_stats()
-        self.assertEquals( len(stats), 1, stats )
-        
-        coverage = get_coverage_for_scan_id( stats[0][0] )
-        self.assertEqual( coverage, 50 )
-        
+        self.assertEquals(len(stats), 1, stats)
+
+        coverage = get_coverage_for_scan_id(stats[0][0])
+        self.assertEqual(coverage, 50)
+
+
 def clear_wivet():
     '''
     Utility function that will clear all the previous stats from my wivet
@@ -166,11 +169,12 @@ def clear_wivet():
     scan ends.
     '''
     clear_url = 'http://wivet/offscanpages/remove-all-stats.php?sure=yes'
-    
+
     response = urllib2.urlopen(clear_url)
     html = response.read()
-    
+
     assert 'Done!' == html, html
+
 
 def extract_all_stats():
     '''
@@ -178,29 +182,28 @@ def extract_all_stats():
     '''
     stats_url = 'http://wivet/offscanpages/statistics/'
     response = urllib2.urlopen(stats_url)
-    
+
     index_page = response.read()
-    
+
     result = []
-    
+
     for match_str in re.findall('<a href="(.*?).dat">', index_page):
         scan_stat_url = 'http://wivet/offscanpages/statistics/'
         scan_stat_url += match_str + '.dat'
         response = urllib2.urlopen(scan_stat_url)
-        result.append( (match_str, response.read()) )
-    
+        result.append((match_str, response.read()))
+
     return result
+
 
 def get_coverage_for_scan_id(scan_id):
     specific_stats_url = 'http://wivet/offscanpages/statistics.php?id=%s'
 
     response = urllib2.urlopen(specific_stats_url % scan_id)
     html = response.read()
-    
+
     match_obj = re.search('<span id="coverage">%(.*?)</span>', html)
     if match_obj is not None:
         return int(match_obj.group(1))
-    
-    return None
 
-    
+    return None

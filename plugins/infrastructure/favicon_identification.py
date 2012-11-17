@@ -45,67 +45,67 @@ class favicon_identification(InfrastructurePlugin):
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         # Internal variables
         self._version = None
 
         # User configured parameters
-        self._db_file = os.path.join('plugins', 'infrastructure', 'favicon', 
+        self._db_file = os.path.join('plugins', 'infrastructure', 'favicon',
                                      'favicon-md5')
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
-        Identify server software using favicon.   
-        
-        @param fuzzable_request: A fuzzable_request instance that contains 
+        Identify server software using favicon.
+
+        @param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.getURL().getDomainPath()
-        
+
         # TODO: Maybe I should also parse the html to extract the favicon location?
-        favicon_url = domain_path.urlJoin('favicon.ico' )
-        response = self._uri_opener.GET( favicon_url, cache=True )
+        favicon_url = domain_path.urlJoin('favicon.ico')
+        response = self._uri_opener.GET(favicon_url, cache=True)
         remote_fav_md5 = hashlib.md5(response.getBody()).hexdigest()
 
         if not is_404(response):
-        
+
             # check if MD5 is matched in database/list
             for md5part, favicon_desc in self._read_favicon_db():
-                
+
                 if md5part == remote_fav_md5:
                     # Save it to the kb!
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Favicon identification')
-                    i.setURL( favicon_url )
-                    i.set_id( response.id )
+                    i.setURL(favicon_url)
+                    i.set_id(response.id)
                     desc = 'Favicon.ico file was identified as "%s".' % favicon_desc
-                    i.set_desc( desc )
-                    kb.kb.append( self, 'info', i )
-                    om.out.information( i.get_desc() )
+                    i.set_desc(desc)
+                    kb.kb.append(self, 'info', i)
+                    om.out.information(i.get_desc())
                     break
             else:
                 #
-                #   Report to the kb that we failed to ID this favicon.ico 
+                #   Report to the kb that we failed to ID this favicon.ico
                 #   and that the md5 should be sent to the developers.
                 #
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Favicon identification failed')
-                i.setURL( favicon_url )
-                i.set_id( response.id )
+                i.setURL(favicon_url)
+                i.set_id(response.id)
                 desc = 'Favicon identification failed. If the remote site is'  \
                        ' using framework that is being exposed by its favicon,'\
                        ' please send an email to w3af-develop@lists.sourceforge.net'\
-                       ' including this md5 hash "'+remote_fav_md5+'" and the' \
+                       ' including this md5 hash "' + remote_fav_md5 + '" and the' \
                        ' name of the server or Web application it represents.' \
                        ' New fingerprints make this plugin more powerful and ' \
                        ' accurate.'
-                i.set_desc( desc )
-                kb.kb.append( self, 'info', i )
-                om.out.information( i.get_desc() )
-    
+                i.set_desc(desc)
+                kb.kb.append(self, 'info', i)
+                om.out.information(i.get_desc())
+
     def _read_favicon_db(self):
         try:
             # read MD5 database.
@@ -116,17 +116,17 @@ class favicon_identification(InfrastructurePlugin):
         else:
             for line in db_file:
                 line = line.strip()
-                md5part, favicon_desc = line.split( ":", 1 )
+                md5part, favicon_desc = line.split(":", 1)
                 yield md5part, favicon_desc
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin identifies software version using favicon.ico file.
 
-        It checks MD5 of favicon against the MD5 database of favicons. See also: 
+        It checks MD5 of favicon against the MD5 database of favicons. See also:
             http://www.owasp.org/index.php/Category:OWASP_Favicon_Database_Project
             http://kost.com.hr/favicon.php
         '''

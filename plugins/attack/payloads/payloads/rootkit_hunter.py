@@ -11,33 +11,33 @@ from plugins.attack.payloads.base_payload import base_payload
 
 class rootkit_hunter(base_payload):
     '''
-    This payload checks for current rootkits, trojans, backdoors and local 
+    This payload checks for current rootkits, trojans, backdoors and local
     xploits installed on system.
     '''
     def _read_with_progress(self, filename):
-        #   "progress bar"  
+        #   "progress bar"
         self.k -= 1
         if self.k == 0:
             om.out.console('.', newLine=False)
-            self.k=400
+            self.k = 400
         #   end "progress bar"
-        
+
         content = self.shell.read(filename)
-        
+
         return content
-    
+
     def fname_generator(self):
         #    Rootkit information taken from:
         #    Rootkit Hunter Shell Script by Michael Boelen
         #
         #    TODO: Find a way to keep the DB updated!
-        for fname in file(os.path.join('plugins', 'attack','payloads',
-                                       'payloads','rootkit_hunter',
-                                       'rootkit_hunter_files.db') ):
+        for fname in file(os.path.join('plugins', 'attack', 'payloads',
+                                       'payloads', 'rootkit_hunter',
+                                       'rootkit_hunter_files.db')):
             fname = fname.strip()
             if fname and not fname.startswith('#'):
                 yield fname
-    
+
     def _check_kernel_modules(self):
         # Known bad Linux kernel modules
         bad_kernel_modules = []
@@ -64,12 +64,12 @@ class rootkit_hunter(base_payload):
         bad_kernel_modules.append('rpldev_mod')
         bad_kernel_modules.append('spapem_core')
         bad_kernel_modules.append('spapem_genr00t')
-        
+
         kernel_modules = self.exec_payload('list_kernel_modules')
         for module in bad_kernel_modules:
             if module in kernel_modules:
                 self.result['bad_kernel_modules'].append(module)
-                    
+
     def api_read(self):
         self.result = {}
         self.result['bad_kernel_modules'] = []
@@ -82,23 +82,23 @@ class rootkit_hunter(base_payload):
         fname_iter = self.fname_generator()
         for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
             if content:
-                self.result['backdoor_files'].append( file_name )
+                self.result['backdoor_files'].append(file_name)
 
         return self.result
-    
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result:
             return 'Rootkit hunter failed to run.'
         else:
             rows = []
-            rows.append( ['Description', 'Value'] ) 
-            rows.append( [] )
+            rows.append(['Description', 'Value'])
+            rows.append([])
             for key in api_result:
                 for value in api_result[key]:
-                    rows.append( [key, value] )
-                              
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+                    rows.append([key, value])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows

@@ -26,7 +26,7 @@ from core.data.dc.headers import Headers
 
 
 class HTTPRequest(urllib2.Request):
-    
+
     def __init__(self, url, data=None, headers=Headers(),
                  origin_req_host=None, unverifiable=False,
                  follow_redir=True, cookies=True, cache=False):
@@ -37,7 +37,7 @@ class HTTPRequest(urllib2.Request):
         >>> req = HTTPRequest(u)
         >>> req.get_full_url()
         'http://www.w3af.com/'
-        
+
         '''
         #
         # Save some information for later access in an easier way
@@ -46,9 +46,9 @@ class HTTPRequest(urllib2.Request):
         self.follow_redir = follow_redir
         self.cookies = cookies
         self.get_from_cache = cache
-        
+
         headers = dict(headers)
-        
+
         # Call the base class
         urllib2.Request.__init__(self, url.urlEncode(), data,
                                  headers, origin_req_host, unverifiable)

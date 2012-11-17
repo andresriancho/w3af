@@ -25,46 +25,45 @@ class running_honeypot(base_payload):
         files.append('/var/run/honeyd.pid')
         files.append('/etc/nepenthes/nepenthes.conf')
 
-        def parse_cpu_info( cpu_info ):
+        def parse_cpu_info(cpu_info):
             processor = re.search('(?<=model name\t: )(.*)', cpu_info)
             if processor:
                 return processor.group(1)
             else:
                 return ''
-        
+
         for file in files:
             if self.shell.read(file):
                 result['running_honeypot'] = True
-        
 
         if parse_cpu_info(self.shell.read('/proc/cpuinfo')) == 'UML':
-            result['is_a_honeypot']  = True
+            result['is_a_honeypot'] = True
         devices = self.shell.read('/proc/devices')
         if '60 cow' in devices or '90 ubd' in devices:
             result['is_a_honeypot'] = True
         if 'nodev\thostfs' in self.shell.read('/proc/filesystems'):
             result['is_a_honeypot'] = True
-        
+
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result:
             msg = 'Failed to verify if the remote host is running a honeypot.'
             return msg
         else:
-            
+
             rows = []
-            rows.append( ['Honeypot',] ) 
-            rows.append( [] )
+            rows.append(['Honeypot', ])
+            rows.append([])
             if api_result['running_honeypot']:
-                rows.append( [ 'Is running a Honeypot!',] )
+                rows.append(['Is running a Honeypot!', ])
             if api_result['is_a_honeypot']:
-                rows.append( ['Is a Honeypot!',] )
+                rows.append(['Is a Honeypot!', ])
             if not api_result['running_honeypot'] and not api_result['is_a_honeypot']:
-                rows.append( ['No honeypot detected.',] )
-                
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+                rows.append(['No honeypot detected.', ])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows

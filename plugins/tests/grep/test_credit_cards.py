@@ -31,46 +31,48 @@ from core.data.parsers.url import URL
 
 
 class test_credit_cards(unittest.TestCase):
-    
+
     def setUp(self):
         self.plugin = credit_cards()
         kb.kb.save('credit_cards', 'credit_cards', [])
-    
+
     def tearDown(self):
         self.plugin.end()
-        
+
     def test_find_credit_card(self):
         body = '378282246310005'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
+        self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
     def test_find_credit_card_spaces(self):
         body = '3566 0020 2036 0505'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
+        self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
     def test_find_credit_card_html(self):
         body = '<a> 378282246310005</a>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 1 )
+        self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
 
     def test_not_find_credit_cards(self):
-        invalid_cards = ('b71449635402848', # Start with a letter
-                         '356 600 20203605 05', # Spaces in incorrect locations
-                         '35660020203605054', # Extra number added at the end
-                         '13566002020360505', # Extra number added at the beginning 
+        invalid_cards = ('b71449635402848',  # Start with a letter
+                         '356 600 20203605 05',
+                         # Spaces in incorrect locations
+                         '35660020203605054',  # Extra number added at the end
+                         '13566002020360505',
+                         # Extra number added at the beginning
                          # Not a credit card at all
                          '_c3E6E547C-BFB7-4897-86EA-882A04BDE274_kDF867BE9-DEC5-0FFF-6629-127552370B17',
                          )
@@ -78,17 +80,18 @@ class test_credit_cards(unittest.TestCase):
             body = '<A href="#123">%s</A>' % card
             url = URL('http://www.w3af.com/')
             headers = Headers([('content-type', 'text/html')])
-            response = HTTPResponse(200, body , headers, url, url)
+            response = HTTPResponse(200, body, headers, url, url)
             request = FuzzableRequest(url, method='GET')
             self.plugin.grep(request, response)
-            self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 0 )
+            self.assertEquals(
+                len(kb.kb.get('credit_cards', 'credit_cards')), 0)
             kb.kb.save('credit_cards', 'credit_cards', [])
-    
+
     def test_invalid_check_not_find_credit_card_spaces(self):
         body = '3566 0020 2036 0705'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('credit_cards', 'credit_cards')) , 0 )
+        self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 0)

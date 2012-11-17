@@ -35,7 +35,7 @@ class sqli(AuditPlugin):
     Find SQL injection bugs.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     SQL_ERRORS = (
         # ASP / MSSQL
         (r'System\.Data\.OleDb\.OleDbException', dbms.MSSQL),
@@ -125,22 +125,22 @@ class sqli(AuditPlugin):
         (r'where clause', dbms.UNKNOWN),
         (r'SqlServer', dbms.UNKNOWN)
     )
-    _multi_re = multi_re( SQL_ERRORS )
-    
+    _multi_re = multi_re(SQL_ERRORS)
+
     SQLI_STRINGS = (u"d'z\"0",)
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
     def audit(self, freq):
         '''
         Tests an URL for SQL injection vulnerabilities.
-        
+
         @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
         mutants = create_mutants(freq, self.SQLI_STRINGS, orig_resp=orig_resp)
-        
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result)
@@ -168,31 +168,31 @@ class sqli(AuditPlugin):
                               (v['db'], mutant.found_at()))
                     kb.kb.append_uniq(self, 'sqli', v)
                     break
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq(kb.kb.get('sqli', 'sqli'), 'VAR')
-    
+
     def _findsql_error(self, response):
         '''
         This method searches for SQL errors in html's.
-        
+
         @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []
-        
-        for match, _, regex_comp, dbms_type in self._multi_re.query( response.body ):
+
+        for match, _, regex_comp, dbms_type in self._multi_re.query(response.body):
             msg = (u'A SQL error was found in the response supplied by '
-               'the web application, the error is (only a fragment is '
-               'shown): "%s". The error was found on response with id %s.'
-               % (match.group(0), response.id))
+                   'the web application, the error is (only a fragment is '
+                   'shown): "%s". The error was found on response with id %s.'
+                   % (match.group(0), response.id))
             om.out.information(msg)
             res.append((regex_comp, match.group(0), dbms_type))
         return res
-        
+
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.

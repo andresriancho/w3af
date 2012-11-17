@@ -32,40 +32,40 @@ from plugins.grep.strange_headers import strange_headers
 
 
 class test_strange_headers(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
         self.plugin = strange_headers()
 
     def tearDown(self):
         self.plugin.end()
-    
+
     def test_strange_headers_positive(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('hello-world', 'yes!')])
         request = FuzzableRequest(url, method='GET')
-        
-        resp_positive = HTTPResponse(200, body , headers, url, url)
+
+        resp_positive = HTTPResponse(200, body, headers, url, url)
         self.plugin.grep(request, resp_positive)
-        
+
         infos = kb.kb.get('strange_headers', 'strange_headers')
-        self.assertEquals( len(infos), 1)
-        
+        self.assertEquals(len(infos), 1)
+
         info = infos[0]
-        self.assertEqual( info.get_name(), 'Strange header')
-        self.assertEqual( info.getURL(), url)
-    
+        self.assertEqual(info.get_name(), 'Strange header')
+        self.assertEqual(info.getURL(), url)
+
     def test_strange_headers_negative(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-pad', 'yes!')])
         request = FuzzableRequest(url, method='GET')
-        
-        resp_positive = HTTPResponse(200, body , headers, url, url)
+
+        resp_positive = HTTPResponse(200, body, headers, url, url)
         self.plugin.grep(request, resp_positive)
-        
+
         infos = kb.kb.get('strange_headers', 'strange_headers')
-        self.assertEquals( len(infos), 0)
+        self.assertEquals(len(infos), 0)

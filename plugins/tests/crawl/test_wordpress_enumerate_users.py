@@ -25,29 +25,29 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestWordpressEnumerateUsers(PluginTest):
-    
+
     wordpress_url = 'http://wordpress/'
-        
+
     _run_configs = {
         'direct': {
             'target': wordpress_url,
             'plugins': {
-                        'crawl': (PluginConfig('wordpress_enumerate_users',),)
-                        },
-                },
+        'crawl': (PluginConfig('wordpress_enumerate_users',),)
+            },
+        },
     }
-    
+
     def test_enumerate_users(self):
         cfg = self._run_configs['direct']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('wordpress_enumerate_users', 'users')
-        
+
         EXPECTED = set(['admin', 'andres'])
-        
-        self.assertEqual( len(infos), len(EXPECTED), infos)
-        
+
+        self.assertEqual(len(infos), len(EXPECTED), infos)
+
         user_re = re.compile('WordPress user "(.*?)" found')
         enum_users = set([user_re.match(i.get_name()).group(1) for i in infos])
-        
+
         self.assertEquals(enum_users, EXPECTED)

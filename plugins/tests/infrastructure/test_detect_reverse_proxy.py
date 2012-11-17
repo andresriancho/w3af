@@ -23,32 +23,30 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestDetectReverseProxy(PluginTest):
-    
+
     proxied_url = 'http://moth/w3af/infrastructure/detect_reverse_proxy/'
     simple_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': None,
-                'plugins': {'infrastructure': (PluginConfig('detect_reverse_proxy'),)}
-                }
+        'target': None,
+        'plugins': {'infrastructure': (PluginConfig('detect_reverse_proxy'),)}
         }
-    
+    }
+
     def test_detect_reverse_proxy(self):
         cfg = self._run_configs['cfg']
         self._scan(self.proxied_url, cfg['plugins'])
-        
+
         infos = self.kb.get('detect_reverse_proxy', 'detect_reverse_proxy')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        self.assertEqual('Found reverse proxy', info.get_name() )
-        
+        self.assertEqual('Found reverse proxy', info.get_name())
+
     def test_not_detect_reverse_proxy(self):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
-        
+
         infos = self.kb.get('detect_reverse_proxy', 'detect_reverse_proxy')
-        self.assertEqual( len(infos), 0, infos)
-        
-        
+        self.assertEqual(len(infos), 0, infos)

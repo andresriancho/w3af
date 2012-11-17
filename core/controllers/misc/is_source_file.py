@@ -23,25 +23,25 @@ import re
 from core.data.esmre.multi_re import multi_re
 
 SOURCE_CODE = (
-        ('<\?(?! *xml)(?!xpacket).*\?>', 'PHP'),
-        ('<%.*?%>', 'ASP or JSP'),
-        ('<jsp:.*?>', 'JSP'),
-        ('<!--\s*%.*?%(--)?>', 'PHP'),
-        ('<!--\s*\?.*?\?(--)?>', 'ASP or JSP'),
-        ('<!--\s*jsp:.*?(--)?>', 'JSP'),
+    ('<\?(?! *xml)(?!xpacket).*\?>', 'PHP'),
+    ('<%.*?%>', 'ASP or JSP'),
+    ('<jsp:.*?>', 'JSP'),
+    ('<!--\s*%.*?%(--)?>', 'PHP'),
+    ('<!--\s*\?.*?\?(--)?>', 'ASP or JSP'),
+    ('<!--\s*jsp:.*?(--)?>', 'JSP'),
 )
 
 _multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 
-def is_source_file( file_content ):
+def is_source_file(file_content):
     '''
-    @param file_content: 
+    @param file_content:
     @return: A tuple with (
                             a re.match object if the file_content matches a source code file,
                             a string with the source code programming language
                           ).
-                          
+
     >>> is_source_file( 'foo <? echo "a"; ?> bar' ) != (None, None )
     True
 
@@ -57,9 +57,7 @@ def is_source_file( file_content ):
     >>> is_source_file( 'foo <?ypacket ?> "bar' ) != (None, None )
     True
     '''
-    for match, _, _, lang in _multi_re.query( file_content ):
+    for match, _, _, lang in _multi_re.query(file_content):
         return (match, lang)
-    
+
     return (None, None)
-
-

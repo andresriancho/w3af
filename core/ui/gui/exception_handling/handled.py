@@ -27,34 +27,33 @@ def handle_exceptions(w3af_core):
     '''
     In w3af's new exception handling method, some exceptions raising from
     plugins are "allowed" and the scan is NOT stopped because of them.
-    
+
     At the same time, developers still want users to report their bugs.
-    
+
     Because of that, we need to have a handler that at the end of the scan
     will allow the user to report the exceptions that were found during the
     scan.
-    
+
     The main class in this game is core.controllers.core_helpers.exception_handler
     and you should read it before this one.
-    ''' 
-    # Save the info to a file for later analysis by the user   
+    '''
+    # Save the info to a file for later analysis by the user
     for edata in w3af_core.exception_handler.get_all_exceptions():
         edata_str = edata.get_details()
         create_crash_file(edata_str)
 
     msg = 'Complete information related to the exceptions is available at "%s"'
-    print msg  % gettempdir()
-    
+    print msg % gettempdir()
+
     # We do this because it would be both awful and useless to simply
     # print all exceptions one below the other in the console
     print w3af_core.exception_handler.generate_summary_str()
-    
+
     # Create the dialog that allows the user to send the bugs, potentially more
     # than one since we captured all of them during the scan using the new
     # exception_handler, to Trac.
     title = _('Handled exceptions to report')
-    bug_report_win = handled_bug_report.bug_report_window( w3af_core, title )
-    
+    bug_report_win = handled_bug_report.bug_report_window(w3af_core, title)
+
     # Blocks waiting for user interaction
     bug_report_win.show()
-

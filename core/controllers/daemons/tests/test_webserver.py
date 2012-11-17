@@ -29,22 +29,24 @@ from core.data.constants.ports import REMOTEFILEINCLUDE
 
 
 class TestWebserver(unittest.TestCase):
-    
+
     IP = '127.0.0.1'
     PORT = REMOTEFILEINCLUDE
     TESTSTRING = 'abc<>def'
-    
+
     def setUp(self):
         self.tempdir = tempfile.gettempdir()
         start_webserver(self.IP, self.PORT, self.tempdir)
-    
+
     def test_GET_404(self):
         # Raises a 404
-        self.assertRaises(urllib2.HTTPError, urllib2.urlopen, 'http://%s:%s' % (self.IP, self.PORT) )
-    
+        self.assertRaises(urllib2.HTTPError, urllib2.urlopen,
+                          'http://%s:%s' % (self.IP, self.PORT))
+
     def test_GET_exists(self):
         # Create a file and request it
-        file(os.path.join(self.tempdir, 'foofile.txt'), 'w').write(self.TESTSTRING)
-        response_body = urllib2.urlopen( 'http://%s:%s/foofile.txt' % (self.IP, self.PORT) ).read()
+        file(os.path.join(
+            self.tempdir, 'foofile.txt'), 'w').write(self.TESTSTRING)
+        response_body = urllib2.urlopen(
+            'http://%s:%s/foofile.txt' % (self.IP, self.PORT)).read()
         self.assertEqual(response_body, self.TESTSTRING)
-        

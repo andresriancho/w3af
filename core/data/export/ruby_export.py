@@ -24,12 +24,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
-def ruby_escape_string( str_in ):
+def ruby_escape_string(str_in):
     str_out = str_in.replace('"', '\\"')
     return str_out
 
 
-def ruby_export( request_string ):
+def ruby_export(request_string):
     '''
     @param request_string: The string of the request to export
     @return: A net/http based ruby script that will perform the same HTTP request.
@@ -38,28 +38,29 @@ def ruby_export( request_string ):
     splitted_request = request_string.split('\n\n')
     header = splitted_request[0]
     body = '\n\n'.join(splitted_request[1:])
-    
+
     http_request = HTTPRequestParser(header, body)
-    
+
     # Now I do the real magic...
     res = 'require \'net/https\'\n\n'
-    
-    res += 'url = URI.parse("' + ruby_escape_string(http_request.getURI().url_string) + '")\n'
-    
+
+    res += 'url = URI.parse("' + ruby_escape_string(
+        http_request.getURI().url_string) + '")\n'
+
     if http_request.getData() != '\n' and http_request.getData() is not None:
-        escaped_data = ruby_escape_string( str(http_request.getData()) )
+        escaped_data = ruby_escape_string(str(http_request.getData()))
         res += 'data = "' + escaped_data + '"\n'
     else:
         res += 'data = nil\n'
-        
+
     res += 'headers = { \n'
     headers = http_request.getHeaders()
     for header_name, header_value in headers.iteritems():
-        header_value = ruby_escape_string(header_value)        
+        header_value = ruby_escape_string(header_value)
         header_name = ruby_escape_string(header_name)
         res += '    "' + header_name + '" => "' + header_value + '",\n'
-        
-    res = res [:-2]
+
+    res = res[:-2]
     res += '\n}\n'
 
     method = http_request.get_method()

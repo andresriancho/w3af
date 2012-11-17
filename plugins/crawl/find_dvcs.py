@@ -34,7 +34,7 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
 class find_dvcs(CrawlPlugin):
     '''
-    Search Git, Mercurial (HG), Bazaar (BZR), Subversion (SVN) and CVS 
+    Search Git, Mercurial (HG), Bazaar (BZR), Subversion (SVN) and CVS
     repositories and checks for files containing
 
     @author: Adam Baldwin (adam_baldwin@ngenuity-is.com)
@@ -43,7 +43,7 @@ class find_dvcs(CrawlPlugin):
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        
+
         # Internal variables
         self._analyzed_dirs = ScalableBloomFilter()
         self._analyzed_filenames = ScalableBloomFilter()
@@ -90,23 +90,22 @@ class find_dvcs(CrawlPlugin):
         self._dvcs['cvs ignore']['filename'] = '.cvsignore'
         self._dvcs['cvs ignore']['function'] = self.ignore_file
 
-
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         For every directory, fetch a list of files and analyze the response.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
         domain_path = fuzzable_request.getURL().getDomainPath()
-            
+
         if domain_path not in self._analyzed_dirs:
-            self._analyzed_dirs.add( domain_path )
-            
-            test_generator = self._url_generator( domain_path )
+            self._analyzed_dirs.add(domain_path)
+
+            test_generator = self._url_generator(domain_path)
             self._tm.threadpool.map_multi_args(self._send_and_check,
                                                test_generator)
-    
+
     def _url_generator(self, domain_path):
         '''
         Based on different URLs with directories, generate the URLs that need
@@ -146,7 +145,7 @@ class find_dvcs(CrawlPlugin):
         @return: None, everything is saved to the self.out_queue.
         '''
         http_response = self._get_and_parse(repo_url)
-        
+
         if not is_404(http_response):
 
             filenames = repo_get_files(http_response.getBody())
@@ -164,42 +163,42 @@ class find_dvcs(CrawlPlugin):
             if parsed_url_set:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.set_id( http_response.id )
-                v.set_name( repo+' found' )
+                v.set_id(http_response.id)
+                v.set_name(repo + ' found')
                 v.set_severity(severity.MEDIUM)
-                v.setURL( http_response.getURL() )
+                v.setURL(http_response.getURL())
                 msg = ('A %s was found at: "%s"; this could'
                        ' indicate that a %s is accessible. You might'
                        ' be able to download the Web application source code.')
-                v.set_desc( msg % (repo, v.getURL(), repo) )
-                kb.kb.append( self, repo, v )
-                om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
+                v.set_desc(msg % (repo, v.getURL(), repo))
+                kb.kb.append(self, repo, v)
+                om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
     def _get_and_parse(self, url):
         '''
         GET a URL that was found in the repository index file, and parse it.
-        
+
         @param url: The URL to GET.
         @return: None, everything is saved to self.out_queue.
         '''
         try:
-            http_response = self._uri_opener.GET( url, cache=True )
+            http_response = self._uri_opener.GET(url, cache=True)
         except w3afException, w3:
             msg = 'w3afException while fetching page in crawl.find_dvcs,'\
                   ' error: "%s".' % w3
             om.out.debug(msg)
             raise
         else:
-            if not is_404( http_response ):
-                for fr in self._create_fuzzable_requests( http_response ):
+            if not is_404(http_response):
+                for fr in self._create_fuzzable_requests(http_response):
                     self.output_queue.put(fr)
-            
+
             return http_response
 
-    def git_index( self, body ):
+    def git_index(self, body):
         '''
         Analyze the contents of the Git index and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
@@ -213,26 +212,29 @@ class find_dvcs(CrawlPlugin):
         version, = struct.unpack('>I', body[4:8])
         index_entries, = struct.unpack('>I', body[8:12])
 
-        if version == 2: filename_offset = 62
-        elif version == 3: filename_offset = 63
-        else: return filenames
+        if version == 2:
+            filename_offset = 62
+        elif version == 3:
+            filename_offset = 63
+        else:
+            return filenames
 
         for _ in range(0, index_entries):
             offset += filename_offset - 1
-            length, = struct.unpack('>B', body[offset:offset+1])
+            length, = struct.unpack('>B', body[offset:offset + 1])
             if length > (len(body) - offset):
                 return set()
-            filename = body[offset+1:offset+1+length]
+            filename = body[offset + 1:offset + 1 + length]
             padding = 8 - ((filename_offset + length) % 8)
             filenames.add(filename)
             offset += length + 1 + padding
 
         return filenames
 
-    def hg_dirstate( self, body ):
+    def hg_dirstate(self, body):
         '''
         Analyze the contents of the HG dirstate and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
@@ -240,20 +242,20 @@ class find_dvcs(CrawlPlugin):
         offset = 53
 
         while offset < len(body):
-            length, = struct.unpack('>I', body[offset:offset+4])
+            length, = struct.unpack('>I', body[offset:offset + 4])
             if length > (len(body) - offset):
                 return set()
             offset += 4
-            filename = body[offset:offset+length]
+            filename = body[offset:offset + length]
             offset += length + 13
             filenames.add(filename)
 
         return filenames
 
-    def bzr_checkout_dirstate( self, body ):
+    def bzr_checkout_dirstate(self, body):
         '''
         Analyze the contents of the BZR dirstate and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
@@ -265,8 +267,8 @@ class find_dvcs(CrawlPlugin):
 
         body = body.split('\x00')
         found = True
-        for offset in range(0,len(body)):
-            filename = body[offset-2]
+        for offset in range(0, len(body)):
+            filename = body[offset - 2]
             if body[offset] == 'd':
                 if found:
                     filenames.add(filename)
@@ -278,10 +280,10 @@ class find_dvcs(CrawlPlugin):
 
         return filenames
 
-    def svn_entries( self, body ):
+    def svn_entries(self, body):
         '''
         Analyze the contents of the SVN entries and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
@@ -291,7 +293,7 @@ class find_dvcs(CrawlPlugin):
 
         while offset < len(lines):
             line = lines[offset].strip()
-            filename = lines[offset-1].strip()
+            filename = lines[offset - 1].strip()
             if line == 'file':
                 filenames.add(filename)
                 offset += 34
@@ -301,10 +303,10 @@ class find_dvcs(CrawlPlugin):
 
         return filenames
 
-    def cvs_entries( self, body ):
+    def cvs_entries(self, body):
         '''
         Analyze the contents of the CVS entries and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
@@ -319,11 +321,11 @@ class find_dvcs(CrawlPlugin):
 
         return filenames
 
-    def filter_special_character( self, line ):
+    def filter_special_character(self, line):
         '''
-        Analyze the possible regexp contents and extract filenames or 
+        Analyze the possible regexp contents and extract filenames or
         directories without regexp.
-        
+
         @param line: A regexp filename or directory.
         @return: A real filename or directory.
         '''
@@ -340,19 +342,19 @@ class find_dvcs(CrawlPlugin):
 
         return line
 
-    def ignore_file( self, body ):
+    def ignore_file(self, body):
         '''
-        Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file 
+        Analyze the contents of the Git, HG, BZR, SVN and CVS ignore file
         and extract filenames.
-        
+
         @param body: The contents of the file to analyze.
         @return: A list of filenames found.
         '''
         filenames = set()
         for line in body.split('\n'):
-            
+
             line = line.strip()
-            
+
             if line.startswith('#') or line == '':
                 continue
 
@@ -369,7 +371,7 @@ class find_dvcs(CrawlPlugin):
 
         return filenames
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -378,7 +380,7 @@ class find_dvcs(CrawlPlugin):
 
         For example, if the input is:
             - http://host.tld/w3af/index.php
-            
+
         The plugin will perform requests to:
             - http://host.tld/w3af/.git/index
             - http://host.tld/w3af/.gitignore

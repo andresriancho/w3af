@@ -23,22 +23,19 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestHalberd(PluginTest):
-    
+
     target_url = 'http://moth/w3af/infrastructure/halberd/halberd.php'
-    
-    
+
     _run_configs = {
         'cfg': {
-                'target': target_url,
-                'plugins': {'infrastructure': (PluginConfig('halberd'),)}
-                }
+        'target': target_url,
+        'plugins': {'infrastructure': (PluginConfig('halberd'),)}
         }
-    
+    }
+
     def test_halberd(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        infos = self.kb.get('halberd', 'halberd')
-        self.assertEqual( len(infos), 0, infos)
-        
 
+        infos = self.kb.get('halberd', 'halberd')
+        self.assertEqual(len(infos), 0, infos)

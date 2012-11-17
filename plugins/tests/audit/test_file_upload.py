@@ -22,9 +22,9 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFileUpload(PluginTest):
-    
+
     file_upload_url = 'http://moth/w3af/audit/file_upload/'
-    
+
     _run_configs = {
         'cfg': {
             'target': file_upload_url,
@@ -32,18 +32,19 @@ class TestFileUpload(PluginTest):
                 'audit': (
                     PluginConfig(
                         'file_upload', ('extensions',
-                         'gif,html,bmp,jpg,png,txt',
-                         PluginConfig.LIST)
-                     ),)
-            },}
+                                        'gif,html,bmp,jpg,png,txt',
+                                        PluginConfig.LIST)
+                    ),)
+            }, }
     }
-    
+
     def test_reported_file_uploads(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         fuvulns = self.kb.get('file_upload', 'file_upload')
         self.assertEquals(1, len(fuvulns))
-        
+
         v = fuvulns[0]
         self.assertEquals(v.get_name(), 'Insecure file upload')
-        self.assertEquals(str(v.getURL().getDomainPath()), self.file_upload_url)
+        self.assertEquals(
+            str(v.getURL().getDomainPath()), self.file_upload_url)

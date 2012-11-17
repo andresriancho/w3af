@@ -28,14 +28,14 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 class strange_http_codes(GrepPlugin):
     '''
     Analyze HTTP response codes sent by the remote web application.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    COMMON_HTTP_CODES = set([ 200,
-                              301, 302, 303, 304,
-                              401, 403, 404,
-                              500, 501] )
+    COMMON_HTTP_CODES = set([200,
+                             301, 302, 303, 304,
+                             401, 403, 404,
+                             500, 501])
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -43,54 +43,58 @@ class strange_http_codes(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point. Analyze if the HTTP response codes are strange.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
         if response.getCode() not in self.COMMON_HTTP_CODES:
-            
+
             # I check if the kb already has a info object with this code:
-            strange_code_infos = kb.kb.get('strange_http_codes', 'strange_http_codes')
-            
+            strange_code_infos = kb.kb.get(
+                'strange_http_codes', 'strange_http_codes')
+
             corresponding_info = None
             for info_obj in strange_code_infos:
                 if info_obj['code'] == response.getCode():
                     corresponding_info = info_obj
                     break
-            
+
             if corresponding_info:
                 # Work with the "old" info object:
                 id_list = corresponding_info.get_id()
-                id_list.append( response.id )
-                corresponding_info.set_id( id_list )
-                
+                id_list.append(response.id)
+                corresponding_info.set_id(id_list)
+
             else:
                 # Create a new info object from scratch and save it to the kb:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
-                i.set_name('Strange HTTP Response code - ' + str(response.getCode()))
-                i.setURL( response.getURL() )
-                i.set_id( response.id )
+                i.set_name(
+                    'Strange HTTP Response code - ' + str(response.getCode()))
+                i.setURL(response.getURL())
+                i.set_id(response.id)
                 i['code'] = response.getCode()
                 desc = 'The remote Web server sent a strange HTTP response code: "'
-                desc += str(response.getCode()) + '" with the message: "'+response.getMsg()
+                desc += str(response.getCode(
+                )) + '" with the message: "' + response.getMsg()
                 desc += '", manual inspection is advised.'
-                i.set_desc( desc )
-                i.addToHighlight( str(response.getCode()), response.getMsg() )
-                kb.kb.append( self , 'strange_http_codes' , i )
-    
+                i.set_desc(desc)
+                i.addToHighlight(str(response.getCode()), response.getMsg())
+                kb.kb.append(self, 'strange_http_codes', i)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'strange_http_codes', 'strange_http_codes' ), 'URL' )
-    
-    def get_long_desc( self ):
+        self.print_uniq(
+            kb.kb.get('strange_http_codes', 'strange_http_codes'), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        Analyze HTTP response codes sent by the remote web application and 
+        Analyze HTTP response codes sent by the remote web application and
         report uncommon findings.
         '''

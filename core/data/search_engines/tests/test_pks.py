@@ -27,16 +27,15 @@ from core.controllers.misc.temp_dir import create_temp_dir
 
 
 class test_pks(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
-        self.pks_se = pks( xUrllib() )
+        self.pks_se = pks(xUrllib())
 
     def test_get_result(self):
-        result = self.pks_se.search('bonsai-sec.com')       
-        self.assertEqual( len(result), 2)
-        
+        result = self.pks_se.search('bonsai-sec.com')
+        self.assertEqual(len(result), 2)
+
         expected = set(['lucas'])
-        self.assertTrue( set([r.username for r in result]).issuperset(expected), result)
-        
-        
+        self.assertTrue(
+            set([r.username for r in result]).issuperset(expected), result)

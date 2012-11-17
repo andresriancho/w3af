@@ -26,7 +26,7 @@ from core.data.fuzzer.fuzzer import *
 from core.controllers.intrusion_tools.delayedExecution import delayedExecution
 
 
-class atHandler( delayedExecution ):
+class atHandler(delayedExecution):
     '''
     This class defines an "at" handler, that will:
         - add new commands to the crontab calculating time
@@ -34,59 +34,60 @@ class atHandler( delayedExecution ):
         - restore old crontab
     '''
 
-    def __init__( self, execMethod ):
+    def __init__(self, execMethod):
         self._execMethod = execMethod
-        
-    def canDelay( self ):
+
+    def canDelay(self):
         '''
         @return: True if the remote user can add entries to his crontab
         '''
         om.out.debug('[atHandler] Verifying if the remote user can run the at command.')
-        res = self._exec( 'at')
-        
+        res = self._exec('at')
+
         if 'Access is denied' in res:
             return False
         else:
             return True
-            
-    def addToSchedule( self, commandToExec ):
+
+    def addToSchedule(self, commandToExec):
         '''
         Adds a command to the cron.
         '''
         # Save this for later
         self._filename = commandToExec.split(' ')[0]
-        
+
         # Work
-        remoteTime = self._exec( 'time' )
-        atCommand, waitTime = self._createAtCommand( remoteTime, commandToExec )
-        
+        remoteTime = self._exec('time')
+        atCommand, waitTime = self._createAtCommand(remoteTime, commandToExec)
+
         # Schedule the shellcode for execution
-        self._exec( atCommand )
-        om.out.debug('[atHandler] Shellcode successfully added to "at" service.')
-        
+        self._exec(atCommand)
+        om.out.debug(
+            '[atHandler] Shellcode successfully added to "at" service.')
+
         return waitTime
 
-    def restoreOldSchedule( self ):
+    def restoreOldSchedule(self):
         try:
-            taskList = self._exec( 'at' )
+            taskList = self._exec('at')
             for line in taskList.split('\n'):
                 if self._filename in line:
                     taskId = line.split()[1]
                     break
-            
-            self._exec( 'at ' + taskId + ' /delete' )
+
+            self._exec('at ' + taskId + ' /delete')
         except:
             om.out.debug('Failed to remove task from "at" service.')
 
-    def _createAtCommand( self, time, command ):
+    def _createAtCommand(self, time, command):
         '''
-        Creates an at command based on the time and command parameter. 
+        Creates an at command based on the time and command parameter.
 
         This is the format i'm expecting for the time parameter:
-        
+
         The current time is: 11:24:19.59
         Enter the new time:
-        
+
         @return: A tuple with the "at" command, and the time that it will take to run the command.
         '''
         res = 'at '
@@ -100,18 +101,18 @@ class atHandler( delayedExecution ):
             else:
                 # windows XP. This assholes reimplement the time command from one release to another...
                 seconds = time[2].split(',')[0]
-            
+
             # TODO ( see below )
             if int(hour) > 12:
                 amPm = ''
             else:
                 # TODO !
                 # analyze... before I had amPm = 'a' ; check if this is really necesary
-                amPm = ''   
+                amPm = ''
         except:
             raise w3afException('The time command of the remote server returned an unknown format.')
         else:
-            
+
             if int(seconds) > 57:
                 # Just to be 100% sure...
                 delta = 2
@@ -119,10 +120,11 @@ class atHandler( delayedExecution ):
             else:
                 delta = 1
                 waitTime = 60 - int(seconds)
-            
-            minute = int( minute ) + delta
-            hour, minute, amPm = self._fixTime( hour, minute, amPm )
-                
-            res += str(hour) + ':' + str( minute ).zfill(2) + amPm + ' ' + command
-            
+
+            minute = int(minute) + delta
+            hour, minute, amPm = self._fixTime(hour, minute, amPm)
+
+            res += str(
+                hour) + ':' + str(minute).zfill(2) + amPm + ' ' + command
+
         return res, waitTime

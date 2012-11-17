@@ -134,7 +134,6 @@ class ScanTask:
         self.clues = []
         self.analyzed = []
 
-
     def readConf(self):
         """Read configuration file.
 
@@ -158,11 +157,11 @@ class ScanTask:
                     reader.writeDefault(default_conf_file)
                     reader.open(default_conf_file)
                 except (OSError, IOError):
-                    raise ConfError, 'unable to create a default conf. file'
+                    raise ConfError('unable to create a default conf. file')
             else:
-                raise ConfError, 'unable to open configuration file %s\n'
+                raise ConfError('unable to open configuration file %s\n')
         except conflib.InvalidConfFile:
-            raise ConfError, 'invalid configuration file %s\n' % self.conf_file
+            raise ConfError('invalid configuration file %s\n' % self.conf_file)
 
         confvals = reader.parse()
         self.proxy_serv_addr = confvals[0]

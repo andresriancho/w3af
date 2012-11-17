@@ -79,14 +79,13 @@ class ConfReader:
         try:
             self.confparser.readfp(self.__conf, fname)
         except ConfigParser.MissingSectionHeaderError, msg:
-            raise InvalidConfFile, msg
+            raise InvalidConfFile(msg)
 
     def close(self):
         """Release the configuration file's descriptor.
         """
         if self.__conf:
             self.__conf.close()
-
 
     def _getAddr(self, sectname, default_port):
         """Read a network address from the given section.
@@ -116,7 +115,7 @@ class ConfReader:
             for name, value in self.confparser.items(section):
                 sec.setdefault(name, value)
 
-        if self.__dict.has_key('proxy'):
+        if 'proxy' in self.__dict:
             proxy_serv_addr = self._getAddr('proxy', default_proxy_port)
 
         keyfile = self.__dict['ssl'].get('keyfile', None)
@@ -140,7 +139,6 @@ class ConfReader:
         conf_fp = open(conf_file, 'w')
         conf_fp.write(default_conf)
         conf_fp.close()
-
 
     def __del__(self):
         self.close()

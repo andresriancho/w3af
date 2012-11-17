@@ -42,40 +42,40 @@ from core.data.dc.headers import Headers
 class proxy(Process):
     '''
     This class defines a simple HTTP proxy, it is mainly used for "complex" plugins.
-    
+
     You should create a proxy instance like this:
         ws = proxy( '127.0.0.1', 8080, urlOpener )
-    
+
     Or like this, if you want to override the proxyHandler (most times you want to do it...):
         ws = proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
-    
+
     If the IP:Port is already in use, an exception will be raised while creating the ws instance.
-    
+
     To start the proxy, and given that this is a Process class, you can do this:
         ws.start()
-        
+
     Or if you don't want a different thread, you can simply call the run method:
         ws.run()
-    
+
     The proxy handler class is the place where you'll perform all the magic stuff,
     like intercepting requests, modifying them, etc. A good idea if you want to
     code your own proxy handler is to inherit from the proxy handler that is
     already defined in this file (see: w3afProxyHandler).
-    
+
     What you basically have to do is to inherit from it:
         class myProxyHandler(w3afProxyHandler):
-        
+
     And redefine the following methods:
         def do_ALL( self )
             Which originally receives a request from the browser, sends it to
             the remote site, receives the response and returns the response to
             the browser. This method is called every time the browser sends a
             new request.
-    
+
     Things that work:
         - http requests like GET, HEAD, POST, CONNECT
         - https CONNECT ( thanks Sasha! )
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
@@ -93,37 +93,39 @@ class proxy(Process):
         '''
         Process.__init__(self)
         self.daemon = True
-        
+
         # Internal vars
         self._server = None
         self._proxyHandler = proxyHandler
         self._running = False
         self._uri_opener = uri_opener
         self._tm = tm
-        
+
         # User configured parameters
         self._ip = ip
         self._port = port
         self._proxyCert = proxyCert
-        
+
         # Start the proxy server
         try:
-            self._server = ProxyServer( (self._ip, self._port), self._proxyHandler )
+            self._server = ProxyServer(
+                (self._ip, self._port), self._proxyHandler)
         except socket.error, se:
-            raise w3afProxyException('Socket error while starting proxy: "%s"' % se.strerror)
-    
-    def getBindIP( self ):
+            raise w3afProxyException(
+                'Socket error while starting proxy: "%s"' % se.strerror)
+
+    def getBindIP(self):
         '''
         @return: The IP address where the proxy will listen.
         '''
         return self._ip
-    
-    def getBindPort( self ):
+
+    def getBindPort(self):
         '''
         @return: The TCP port where the proxy will listen.
         '''
         return self._port
-        
+
     def stop(self):
         '''
         Stop the proxy by setting _go to False and creating a new request.
@@ -133,24 +135,26 @@ class proxy(Process):
             try:
                 # Tell the proxy that he must quit
                 self._server.stop = True
-                conn = httplib.HTTPConnection(self._ip+':'+str(self._port))
+                conn = httplib.HTTPConnection(self._ip + ':' + str(self._port))
                 conn.request("QUIT", "/")
                 conn.getresponse()
                 om.out.debug('Sent QUIT request.')
             except Exception:
-                om.out.debug('Sent QUIT request and got timeout. Proxy server closed.')
+                om.out.debug(
+                    'Sent QUIT request and got timeout. Proxy server closed.')
                 self._running = False
             else:
                 self._running = False
         else:
-            om.out.debug('You called stop() on a proxy daemon that isn\'t running.')
-    
-    def isRunning( self ):
+            om.out.debug(
+                'You called stop() on a proxy daemon that isn\'t running.')
+
+    def isRunning(self):
         '''
         @return: True if the proxy daemon is running
         '''
         return self._running
-    
+
     def run(self):
         """
         Starts the proxy daemon; usually this method isn't called directly. In
@@ -158,33 +162,34 @@ class proxy(Process):
         """
         if self._proxyHandler is None:
             self._proxyHandler = w3afProxyHandler
-        
-        om.out.debug( 'Using proxy handler: ' + str(self._proxyHandler) )
+
+        om.out.debug('Using proxy handler: ' + str(self._proxyHandler))
         self._proxyHandler._uri_opener = self._uri_opener
         self._proxyHandler._uri_opener._proxyCert = self._proxyCert
-        
+
         # Starting to handle requests
-        message = 'Proxy server listening on '+ self._ip + ':'+ str(self._port)
-        om.out.debug( message )
+        message = 'Proxy server listening on ' + self._ip + ':' + \
+            str(self._port)
+        om.out.debug(message)
         self._server.w3afLayer = self
 
         self._running = True
         self._server.serve_forever()
         self._running = False
-        
+
         # I have to do this to actually KILL the HTTPServer, and free the TCP port
         del self._server
 
 
 class w3afProxyHandler(BaseHTTPRequestHandler):
-    
+
     def handle_one_request(self):
         """Handle a single HTTP request.
 
         You normally don't need to override this method; see the class
         __doc__ string for information on how to handle specific HTTP
         commands such as GET and POST.
-        
+
         I override this because I'm going to use ONE handler for all the
         methods (except CONNECT).
         """
@@ -192,9 +197,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         if not self.raw_requestline:
             self.close_connection = 1
             return
-        if not self.parse_request(): # An error code has been sent, just exit
+        if not self.parse_request():  # An error code has been sent, just exit
             return
-        
+
         try:
             # Now I perform my specific tasks...
             if self.command == 'QUIT':
@@ -207,16 +212,16 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 self.do_CONNECT()
             else:
                 self.do_ALL()
-        except Exception,  e:
+        except Exception, e:
             ### FIXME: Maybe I should perform some more detailed error handling...
-            om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e) )
+            om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e))
 
     def _get_post_data(self):
         '''
         @return: Post data preserving rfile
         '''
         post_data = None
-        if self.headers.dict.has_key('content-length'):
+        if 'content-length' in self.headers.dict:
             cl = int(self.headers['content-length'])
             post_data = self.rfile.read(cl)
             # rfile is not seekable, so a little trick
@@ -229,7 +234,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
     def _create_fuzzable_request(self):
         '''
         Based on the attributes, return a fuzzable request object.
-        
+
         Important variables used here:
             - self.headers : Stores the headers for the request
             - self.rfile : A file like object that stores the post_data
@@ -243,16 +248,16 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             path = self.path
 
         fuzzable_request = FuzzableRequest(
-                                           URL(path), 
-                                           self.command,
-                                           Headers(self.headers.dict.items())
-                                           )
+            URL(path),
+            self.command,
+            Headers(self.headers.dict.items())
+        )
         post_data = self._get_post_data()
         if post_data:
             fuzzable_request.setData(post_data)
         return fuzzable_request
 
-    def do_ALL( self ):
+    def do_ALL(self):
         '''
         This method handles EVERY request that was send by the browser.
         '''
@@ -263,20 +268,19 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # the Handler work in python; this wasn't my choice.
             res = self._send_to_server()
         except Exception, e:
-            self._send_error( e, trace=str(traceback.format_exc()) )
+            self._send_error(e, trace=str(traceback.format_exc()))
         else:
             try:
-                self._send_to_browser( res )
+                self._send_to_browser(res)
             except Exception, e:
                 msg = 'Exception found while sending response to the browser.'\
                       ' Exception details: "%s".' % str(e)
                 om.out.debug(msg)
 
-
-    def _send_to_server( self,  grep=False ):
+    def _send_to_server(self, grep=False):
         '''
         Send a request that arrived from the browser to the remote web server.
-        
+
         Important variables used here:
             - self.headers : Stores the headers for the request
             - self.rfile : A file like object that stores the post_data
@@ -292,12 +296,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             base_path = "https://" + self.server.chainedHandler.path
             path = base_path + path
             uri_instance = URL(path)
-        
+
         #
         # Do the request to the remote server
         #
         post_data = None
-        if self.headers.dict.has_key('content-length'):
+        if 'content-length' in self.headers.dict:
             # most likely a POST request
             post_data = self._get_post_data()
 
@@ -308,45 +312,47 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                               grep=grep)
         except w3afException, w:
             traceback.print_exc()
-            om.out.error('The proxy request failed, error: ' + str(w) )
+            om.out.error('The proxy request failed, error: ' + str(w))
             raise w
         except Exception, e:
             traceback.print_exc()
             raise e
         else:
             return res
-    
-    def _send_error( self, exceptionObj, trace=None ):
+
+    def _send_error(self, exceptionObj, trace=None):
         '''
         Send an error to the browser.
-        
+
         Important methods used here:
             - self.send_header : Sends a header to the browser
             - self.end_headers : Ends the headers section
             - self.wfile : A file like object that represents the body of the response
         '''
         try:
-            self.send_response( 400 )
-            self.send_header( 'Connection', 'close')
-            self.send_header( 'Content-type', 'text/html')      
+            self.send_response(400)
+            self.send_header('Connection', 'close')
+            self.send_header('Content-type', 'text/html')
             self.end_headers()
             # FIXME: Make this error look nicer
-            self.wfile.write( 'w3af proxy error: ' + str(exceptionObj) + '<br/><br/>')
+            self.wfile.write(
+                'w3af proxy error: ' + str(exceptionObj) + '<br/><br/>')
             if trace:
-                self.wfile.write( 'Traceback for this error: <br/><br/>' + trace.replace('\n','<br/>') )
+                self.wfile.write('Traceback for this error: <br/><br/>' +
+                                 trace.replace('\n', '<br/>'))
 
         except Exception, e:
             traceback.print_exc()
             om.out.debug('An error occurred in proxy._send_error(). Maybe the browser closed the connection?')
-            om.out.debug('Exception: ' + str(e) )
-        
+            om.out.debug('Exception: ' + str(e))
+
         self.wfile.close()
-    
+
     def send_response(self, code, message=None):
         """Send the response header and log the response code.
 
         I'm overriding this method in order to avoid this:
-        
+
             ***
             Also send two standard headers with the server
             software version and the current date.
@@ -365,7 +371,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # print (self.protocol_version, code, message)
         #self.send_header('Server', self.version_string())
         #self.send_header('Date', self.date_time_string())
-    
+
     def _send_to_browser(self, res):
         '''
         Send a response that was sent by the remote web server to the browser
@@ -379,7 +385,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         send_header = self.send_header
         try:
             self.send_response(res.getCode())
-            
+
             what_to_send = res.body
             if res.is_text_or_html():
                 what_to_send = what_to_send.encode(res.charset, 'replace')
@@ -388,7 +394,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             # Overwrite 'content-length'
             send_header('content-length', str(len(what_to_send)))
             send_header('connection', 'close')
-            
+
             for header, value in res.getLowerCaseHeaders().items():
                 # Ignore these headers:
                 #   - 'content-length', as it has been overwritten before
@@ -401,9 +407,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                     continue
 
                 send_header(header, value)
-                
+
             self.end_headers()
-            
+
             self.wfile.write(what_to_send)
         except Exception, e:
             om.out.debug(
@@ -416,7 +422,8 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         Used by set_verify to check that the SSL certificate if valid.
         In our case, we always return True.
         '''
-        om.out.debug('Got this certificate from remote site: %s' % cert.get_subject() )
+        om.out.debug(
+            'Got this certificate from remote site: %s' % cert.get_subject())
         # I don't check for certificates, for me, they are always ok.
         return True
 
@@ -429,69 +436,77 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         # Log what we are doing.
         self.log_request(200)
         soc = None
-        
+
         try:
             try:
-                self.wfile.write(self.protocol_version + " 200 Connection established\r\n\r\n")
-                
+                self.wfile.write(self.protocol_version +
+                                 " 200 Connection established\r\n\r\n")
+
                 # Now, transform the socket that connects the browser and the proxy to a SSL socket!
                 ctx = SSL.Context(SSL.SSLv23_METHOD)
                 ctx.set_timeout(5)
-                
+
                 try:
-                    ctx.use_privatekey_file ( self._uri_opener._proxyCert )
+                    ctx.use_privatekey_file(self._uri_opener._proxyCert)
                 except:
-                    om.out.error( "[proxy error] Couldn't find certificate file %s"% self._uri_opener._proxyCert )
-                
-                ctx.use_certificate_file( self._uri_opener._proxyCert )
-                ctx.load_verify_locations( self._uri_opener._proxyCert )
-                
+                    om.out.error("[proxy error] Couldn't find certificate file %s" % self._uri_opener._proxyCert)
+
+                ctx.use_certificate_file(self._uri_opener._proxyCert)
+                ctx.load_verify_locations(self._uri_opener._proxyCert)
+
                 # Save for later
                 browSoc = self.connection
-                
+
                 # Don't demand a certificate
                 #
-                #   IMPORTANT: This line HAS to be just before the SSL.Connection, it seems that 
+                #   IMPORTANT: This line HAS to be just before the SSL.Connection, it seems that
                 #                         any other ctx method modifies the SSL.VERIFY_NONE setting!
                 #
                 ctx.set_verify(SSL.VERIFY_NONE, self._verify_cb)
-                
-                browCon = SSL.Connection(ctx, self.connection )
+
+                browCon = SSL.Connection(ctx, self.connection)
                 browCon.set_accept_state()
 
                 # see HTTPServerWrapper class below
                 httpsServer = HTTPServerWrapper(self.__class__, self)
                 httpsServer.w3afLayer = self.server.w3afLayer
-            
-                om.out.debug("SSL 'self.connection' connection state="+ browCon.state_string() )
-                
+
+                om.out.debug("SSL 'self.connection' connection state=" +
+                             browCon.state_string())
+
                 conWrap = SSLConnectionWrapper(browCon, browSoc)
                 try:
                     httpsServer.process_request(conWrap, self.client_address)
                 except SSL.ZeroReturnError, ssl_error:
-                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' + str(ssl_error) )
+                    om.out.debug('Catched SSL.ZeroReturn in do_CONNECT(): ' +
+                                 str(ssl_error))
                 except SSL.Error, ssl_error:
-                    om.out.debug('Catched SSL.Error in do_CONNECT(): ' + str(ssl_error) )
-            
+                    om.out.debug('Catched SSL.Error in do_CONNECT(): ' +
+                                 str(ssl_error))
+
             except Exception, e:
-                om.out.error( 'Traceback for this error: ' + str( traceback.format_exc() ) )
-        
+                om.out.error('Traceback for this error: ' +
+                             str(traceback.format_exc()))
+
         finally:
             om.out.debug('Closing browser-proxy and proxy-site connections.')
-            
+
             # Sometimes soc is just None
             if soc:
                 soc.close()
             self.connection.close()
 
-    def log_message( self, format, *args):
+    def log_message(self, format, *args):
         '''
         I dont want messages written to stderr, please write them to the om.
         '''
-        message = "Local proxy daemon handling request: %s - %s" % (self.address_string(), format%args) 
-        om.out.debug( message )
+        message = "Local proxy daemon handling request: %s - %s" % (
+            self.address_string(), format % args)
+        om.out.debug(message)
 
 # I want to use threads to handle all requests.
+
+
 class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
     def serve_forever(self):
         """Handle one request at a time until stopped."""
@@ -501,23 +516,26 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
                 self.handle_request()
             except KeyboardInterrupt:
                 self.stop = True
-        om.out.debug('Exiting proxy server serve_forever(); stop() was successful.')
-                
+        om.out.debug(
+            'Exiting proxy server serve_forever(); stop() was successful.')
+
     def server_bind(self):
         om.out.debug('Changing socket options of ProxyServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        HTTPServer.server_bind( self )                
+        HTTPServer.server_bind(self)
 
-# We make SSL Connection look almost exactly as a socket connection. 
+# We make SSL Connection look almost exactly as a socket connection.
 # Thus, we're able to use the SocketServer framework transparently.
+
+
 class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
     '''
     This is a dummy wrapper around HTTPServer.
     It is intended to be used only through process_request() method
-    It also has chainedHandler attribute, which refers to a handler instance 
+    It also has chainedHandler attribute, which refers to a handler instance
     that was created to handle CONNECT method.
 
-    Client                              Proxy                               Server                  
+    Client                              Proxy                               Server
        |                                  |                                   |
        | -- CONNECT http://host:port ---> |                                   |
        | <---------- 200 OK ------------  |                                   |
@@ -525,9 +543,9 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
        |                                  | -- create --> Wrapped Proxy       |
        |                                  |                     |             |
        | --------- (Over SSL) GET /path?params ---------------> |             |
-       |                                  | <--- Get info ----  |             |  
-       |                                  |                     | --- GET --> | 
-    
+       |                                  | <--- Get info ----  |             |
+       |                                  |                     | --- GET --> |
+
     Due to the wrapper object, the second (wrapped) proxy know almost nothing about
     SSL and works just as with plain sockets.
     Examples of what a second proxy handler would want to know from the original
@@ -537,8 +555,8 @@ class HTTPServerWrapper(HTTPServer, SocketServer.ThreadingMixIn):
         self.RequestHandlerClass = handler
         self.chainedHandler = chainedHandler
 
-        
-#### And now some helper functions ####        
+
+#### And now some helper functions ####
 def wrap(socket_obj, ssl_connection, fun, *params):
     '''
     A utility function that calls SSL read/write operation and handles errors.
@@ -575,9 +593,8 @@ def wrap(socket_obj, ssl_connection, fun, *params):
                 else:
                     raise ssl_error
 
-
     return result
-    
+
 
 class SSLConnectionWrapper(object):
     '''
@@ -598,11 +615,11 @@ class SSLConnectionWrapper(object):
 
     def __repr__(self):
         return object.__repr__(self)
-        
-    def recv( self, amount):
+
+    def recv(self, amount):
         return wrap(self._socket, self._connection, self._connection.recv, amount)
 
-    def send( self, data ):
+    def send(self, data):
         # Remember that SSL can only send a string of at most 16384 bytes
         # in one call to "send", so I have to perform this ugly hack:
         amount_sent = 0
@@ -613,36 +630,38 @@ class SSLConnectionWrapper(object):
             amount_sent += wrap(self._socket, self._connection,
                                 self._connection.send, to_send)
         return amount_sent
-           
+
     def makefile(self, perm, buf):
-        return SSLConnectionFile( self, socket )
+        return SSLConnectionFile(self, socket)
+
 
 class SSLConnectionFile:
     '''
     This class pretends to be a file to be used as rfile or wfile in request
     handlers. Actually, it reads and writes data from and to SSL connection
     '''
-    
+
     def __init__(self, sslCon, socket):
         self.closed = False
         self._read_buffer = ''
         self._sslCon = sslCon
         self._socket = socket
 
-    def read( self, amount ):
+    def read(self, amount):
         if len(self._read_buffer) < amount:
             #   We actually want to read ahead in order to have more data in the buffer.
             if amount <= 4096:
                 to_read = 4096
             else:
                 to_read = amount
-            self._read_buffer = self._sslCon.recv( to_read )
+            self._read_buffer = self._sslCon.recv(to_read)
 
-        result, self._read_buffer = self._read_buffer[0:amount], self._read_buffer[amount:]
+        result, self._read_buffer = self._read_buffer[0:
+                                                      amount], self._read_buffer[amount:]
         return result
-    
-    def write( self, data ):
-        result =  self._sslCon.send(data)
+
+    def write(self, data):
+        result = self._sslCon.send(data)
         return result
 
     def readline(self):

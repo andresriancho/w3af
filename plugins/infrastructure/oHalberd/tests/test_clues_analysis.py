@@ -33,7 +33,6 @@ class TestAnalysis(unittest.TestCase):
     def setUp(self):
         self.threshold = Halberd.ScanTask.default_ratio_threshold
 
-
     def _hits(self, clues):
         return sum(map(lambda c: c.getCount(), clues))
 

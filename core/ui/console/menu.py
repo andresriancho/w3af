@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import pprint
 
-import core.data.kb.knowledge_base as kb        
+import core.data.kb.knowledge_base as kb
 import core.controllers.output_manager as om
 
 from core.controllers.exceptions import w3afException
@@ -39,7 +39,7 @@ class menu(object):
     def __init__(self, name, console, w3af, parent=None, **other):
         self._name = name
         self._history = history()
-        
+
         self._help = HelpContainer()
         self._keysHelp = HelpContainer()
         self._w3af = w3af
@@ -50,7 +50,7 @@ class menu(object):
 
         self._loadHelp('common')
         helpMainRepository.loadHelp('keys', self._keysHelp)
-#        self._keysHelp = {} 
+#        self._keysHelp = {}
 
         self._initHandlers()
 
@@ -64,7 +64,7 @@ class menu(object):
         @param tokens: list of string
         @param part: base for completion
         '''
-        if len(tokens)==0:
+        if len(tokens) == 0:
             return self.suggestCommands(part, onlyLocalCommands)
         return self.suggestParams(tokens[0], tokens[1:], part)
 
@@ -80,16 +80,16 @@ class menu(object):
     def getHistory(self):
         return self._history
 
-    def _initHandlers( self ):
+    def _initHandlers(self):
         self._universalCommands = ['back', 'exit', 'keys', 'print']
-        
+
         self._paramHandlers = {}
         for cmd in [c for c in dir(self) if c.startswith('_cmd_')]:
-            self._handlers[cmd[5:]] =  getattr(self, cmd)
+            self._handlers[cmd[5:]] = getattr(self, cmd)
 
         for cmd in self._handlers.keys():
             try:
-                pHandler = getattr(self, '_para_'+cmd)
+                pHandler = getattr(self, '_para_' + cmd)
                 self._paramHandlers[cmd] = pHandler
             except:
                 pass
@@ -98,16 +98,14 @@ class menu(object):
         helpMainRepository.loadHelp(name, self._help, vars)
 #        self._help = loadHelp(name, self._help, vars)
 
-
     def addChild(self, name, constructor):
         if type(constructor) in (tuple, list):
             constructor, params = constructor[0], constructor[1:]
         else:
             params = []
 
-        self._children[name] = constructor(name, self._console, self._w3af, self, *params)
-
-        
+        self._children[name] = constructor(
+            name, self._console, self._w3af, self, *params)
 
     def suggestCommands(self, part='', onlyLocal=False):
 
@@ -117,7 +115,7 @@ class menu(object):
             # the command must be in the current menu
             result = suggest(self.getCommands(onlyLocal), part)
             if self.getChildren() is not None:
-                result +=   suggest(self.getChildren(), part)
+                result += suggest(self.getChildren(), part)
             return result
         else:
             try:
@@ -136,7 +134,6 @@ class menu(object):
             child = children[command]
             return child.suggest(params, part, True)
 
-
     def getCommands(self, onlyLocal=False):
         '''
         By default, commands are defined by methods _cmd_<command>.
@@ -149,14 +146,13 @@ class menu(object):
         return cmds
 
     def getChildren(self):
-        return self._children #self.getCommands()
+        return self._children  # self.getCommands()
 
     def getHandler(self, command):
         try:
             return self._handlers[command]
         except:
             return None
-            
 
     def execute(self, tokens):
 
@@ -164,24 +160,22 @@ class menu(object):
             return self
 
         command, params = tokens[0], tokens[1:]
-        handler = self.getHandler( command )
+        handler = self.getHandler(command)
         if handler:
-            return handler( params )
+            return handler(params)
 
         children = self.getChildren()
         if command in children:
             child = children[command]
-            return child.execute( params )
+            return child.execute(params)
 
         raise w3afException("Unknown command '%s'" % command)
-
 
     def _cmd_back(self, tokens):
         return self._console.back
 
     def _cmd_exit(self, tokens):
         return self._console.exit
-
 
     def _cmd_help(self, params, brief=False):
         if len(params) == 0:
@@ -196,42 +190,39 @@ class menu(object):
             om.out.console(short)
             if full:
                 om.out.console(full)
-                
 
     def _cmd_keys(self, params=None):
         table = self._keysHelp.getPlainHelpTable(True)
         self._console.drawTable(table)
-        
 
     def _cmd_print(self, params):
         if not len(params):
             raise w3afException('Variable is expected')
 
-        small_locals = {'kb':kb, 'w3af_core':self._w3af }
+        small_locals = {'kb': kb, 'w3af_core': self._w3af}
         small_globals = {}
-        
-        evalVariable = ' '.join( params )
+
+        evalVariable = ' '.join(params)
         try:
-            res = eval( evalVariable,  small_globals,  small_locals)
+            res = eval(evalVariable, small_globals, small_locals)
         except:
             om.out.console('Unknown variable.')
         else:
             pp = pprint.PrettyPrinter(indent=4)
             output = pp.pformat(res)
-            om.out.console( output )
-
+            om.out.console(output)
 
     def _cmd_assert(self, params):
         if not len(params):
             raise w3afException('Expression is expected')
 
-        small_locals = {'kb':kb, 'w3af_core':self._w3af }
+        small_locals = {'kb': kb, 'w3af_core': self._w3af}
         small_globals = {}
-        
+
         assert_command = 'assert '
-        assert_command += ' '.join( params )
+        assert_command += ' '.join(params)
         try:
-            exec( assert_command,  small_globals,  small_locals)
+            exec(assert_command, small_globals, small_locals)
         except AssertionError, ae:
             msg = 'Assert **FAILED**'
 
@@ -239,22 +230,22 @@ class menu(object):
             try:
                 # Get the value of the first argument
                 a = params[0]
-                exec( 'aRes = ' + a,  small_globals,  small_locals)
+                exec('aRes = ' + a, small_globals, small_locals)
             except:
                 pass
             else:
                 msg += ' : ' + a + ' == ' + str(aRes)
-            om.out.error( msg )
+            om.out.error(msg)
         except Exception, e:
-            om.out.error('An unexpected exception was raised during assertion: ' + str(e) )
-            om.out.error('The executed command was: ' + assert_command )
+            om.out.error('An unexpected exception was raised during assertion: ' + str(e))
+            om.out.error('The executed command was: ' + assert_command)
         else:
             om.out.console('Assert succeded.')
-        
+
         return None
 
     def _para_help(self, params, part):
-        if len(params) ==0:
+        if len(params) == 0:
             return suggest(self._help.getItems(), part)
         else:
             return []

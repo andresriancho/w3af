@@ -25,12 +25,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 
 
-def ajax_escape_string( str_in ):
+def ajax_escape_string(str_in):
     str_out = str_in.replace('"', '\\"')
     return str_out
 
 
-def ajax_export( request_string ):
+def ajax_export(request_string):
     '''
     @param request_string: The string of the request to export
     @return: A javascript that will perform the same HTTP request.
@@ -39,9 +39,9 @@ def ajax_export( request_string ):
     splitted_request = request_string.split('\n\n')
     header = splitted_request[0]
     body = '\n\n'.join(splitted_request[1:])
-    
+
     http_request = HTTPRequestParser(header, body)
-    
+
     # Now I do the real magic...
     # This is the header, to include the AJAX stuff:
     res = '''/* Init AJAX stuff */
@@ -81,10 +81,11 @@ if (!xmlhttp && window.createRequest) {
 /* Create the request, please remember the same-origin policy, which might
 affect how and if this request is sent by the browser */
 '''
-    
+
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.get_method() + '", "'
-    res +=  ajax_escape_string( http_request.getURI().url_string ) + '", true);\n'
+    res += ajax_escape_string(
+        http_request.getURI().url_string) + '", true);\n'
 
     # For debugging
     res += '''
@@ -104,14 +105,16 @@ make the request fail */
     # Now I add the headers:
     headers = http_request.getHeaders()
     for header_name, header_value in headers.iteritems():
-        res += 'xmlhttp.setRequestHeaders("' + ajax_escape_string(header_name) + '", "'
+        res += 'xmlhttp.setRequestHeaders("' + ajax_escape_string(
+            header_name) + '", "'
         res += ajax_escape_string(header_value) + '");\n'
-        
+
     # And finally the post data (if any)
     if http_request.getData() and http_request.getData() != '\n':
-        res += 'var post_data = (<r><![CDATA[' + str(http_request.getData()) + ']]></r>).toString();\n'
+        res += 'var post_data = (<r><![CDATA[' + str(
+            http_request.getData()) + ']]></r>).toString();\n'
         res += 'xmlhttp.send(post_data);\n'
     else:
         res += 'xmlhttp.send(null);\n'
-    
+
     return res

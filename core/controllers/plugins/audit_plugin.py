@@ -31,47 +31,47 @@ class AuditPlugin(Plugin):
     This is the base class for audit plugins, all audit plugins should inherit
     from it and implement the following methods :
         1. audit(...)
-        
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
-        Plugin.__init__( self )
+        Plugin.__init__(self)
         self._uri_opener = None
 
     # FIXME: This method is awful and returns LOTS of false positives. Only
     #        used by ./core/ui/gui/reqResViewer.py
-    def audit_wrapper( self, fuzzable_request ):
+    def audit_wrapper(self, fuzzable_request):
         '''
         Receives a FuzzableRequest and forwards it to the internal method
         audit()
-        
+
         @param fuzzable_request: A fuzzable_request instance
         '''
         # These lines were added because we need to return the new vulnerabilities found by this
         # audit plugin, and I don't want to change the code of EVERY plugin!
-        before_vuln_dict = kb.kb.get( self )
-        
-        self.audit_with_copy( fuzzable_request )
-        
-        after_vuln_dict = kb.kb.get( self )
-        
+        before_vuln_dict = kb.kb.get(self)
+
+        self.audit_with_copy(fuzzable_request)
+
+        after_vuln_dict = kb.kb.get(self)
+
         # Now I get the difference between them:
         before_list = []
         after_list = []
         for var_name in before_vuln_dict:
             for item in before_vuln_dict[var_name]:
                 before_list.append(item)
-        
+
         for var_name in after_vuln_dict:
             for item in after_vuln_dict[var_name]:
                 after_list.append(item)
-        
-        new_ones = after_list[len(before_list)-1:]
-        
+
+        new_ones = after_list[len(before_list) - 1:]
+
         # And return it,
         return new_ones
-    
+
     def audit_with_copy(self, fuzzable_request):
         '''
         Copy the FuzzableRequest before auditing.
@@ -80,26 +80,27 @@ class AuditPlugin(Plugin):
         In other words, if one plugins modified the fuzzable request object
         INSIDE that plugin, I don't want the next plugin to suffer from that.
         '''
-        return self.audit( fuzzable_request.copy() )
-        
-    def audit( self, freq ):
+        return self.audit(fuzzable_request.copy())
+
+    def audit(self, freq):
         '''
         The freq is a FuzzableRequest that is going to be modified and sent.
-        
+
         This method MUST be implemented on every plugin.
-        
+
         @param freq: A FuzzableRequest
         '''
-        raise w3afException('Plugin is not implementing required method audit' )
-    
+        raise w3afException(
+            'Plugin is not implementing required method audit')
+
     def _has_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         return not self._has_no_bug(fuzz_req, varname, pname, kb_varname)
-        
+
     def _has_no_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         '''
         Test if the current combination of `fuzz_req`, `varname` hasn't
         already been reported to the knowledge base.
-        
+
         @param fuzz_req: A FuzzableRequest like object.
         @param varname: Typically the name of the injection parameter.
         @param pname: The name of the plugin that presumably reported
@@ -112,18 +113,18 @@ class AuditPlugin(Plugin):
                 if hasattr(fuzz_req, 'get_var'):
                     varname = fuzz_req.get_var()
                 else:
-                    raise ValueError, "Invalid arg 'varname': %s" % varname
-            
+                    raise ValueError("Invalid arg 'varname': %s" % varname)
+
             pname = pname or self.get_name()
             kb_varname = kb_varname or pname
             vulns = kb.kb.get(pname, kb_varname)
-    
+
             for vuln in vulns:
                 if (vuln.get_var() == varname and
-                fuzz_req.get_dc().keys() == vuln.get_dc().keys() and
-                are_variants(vuln.getURI(), fuzz_req.getURI())):
+                    fuzz_req.get_dc().keys() == vuln.get_dc().keys() and
+                        are_variants(vuln.getURI(), fuzz_req.getURI())):
                     return False
             return True
-        
-    def get_type( self ):
+
+    def get_type(self):
         return 'audit'

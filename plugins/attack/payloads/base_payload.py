@@ -33,7 +33,7 @@ class base_payload(object):
 
     def __init__(self, shell_obj):
         self.shell = shell_obj
-        
+
     def can_run(self):
         '''
         @return: True if this payload has any way of running with the "syscalls"
@@ -41,20 +41,21 @@ class base_payload(object):
         '''
         #   Get the syscalls that this shell_obj implements
         available_syscalls = dir(self.shell)
-        available_syscalls = [ x for x in available_syscalls if x in SYSCALL_LIST ]
+        available_syscalls = [
+            x for x in available_syscalls if x in SYSCALL_LIST]
         available_syscalls = set(available_syscalls)
-        
+
         #   Get the different implementations of "run" that this payload has
         run_options = dir(self)
-        run_options = [ x[4:] for x in run_options if x.startswith('run_')]
+        run_options = [x[4:] for x in run_options if x.startswith('run_')]
         run_options = set(run_options)
 
         return available_syscalls.intersection(run_options)
-        
+
     def exec_payload(self, payload_name, args=()):
         '''
         Execute ANOTHER payload, by providing the other payload name.
-        
+
         @param payload_name: The name of the payload I want to run.
         @return: The payload result.
         '''
@@ -73,8 +74,7 @@ class base_payload(object):
                 msg += ' is trying to call another payload ("%s") which is failing because' % payload_name
                 msg += ' there are no shells that support the necessary system calls.'
                 return msg
-                
-    
+
     def run(self, *args):
         '''
         @return: The result of running the payload using the most performant way. Basically, if
@@ -82,19 +82,20 @@ class base_payload(object):
         '''
         #   Get the syscalls that this shell_obj implements
         available_syscalls = dir(self.shell)
-        available_syscalls = [ x for x in available_syscalls if x in SYSCALL_LIST ]
-        
+        available_syscalls = [
+            x for x in available_syscalls if x in SYSCALL_LIST]
+
         #   Get the different implementations of "run" that this payload has
         run_options = dir(self)
-        run_options = [ x[4:] for x in run_options if x.startswith('run_')]
+        run_options = [x[4:] for x in run_options if x.startswith('run_')]
 
         if 'execute' in run_options and 'execute' in available_syscalls:
-            return self.run_execute( *args )
+            return self.run_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
-            return self.run_is_open_port( *args )
+            return self.run_is_open_port(*args)
         else:
-            return self.run_read( *args )
-    
+            return self.run_read(*args)
+
     def run_api(self, *args):
         '''
         @return: The result of running the payload using the most performant way. Basically, if
@@ -102,25 +103,26 @@ class base_payload(object):
         '''
         #   Get the syscalls that this shell_obj implements
         available_syscalls = dir(self.shell)
-        available_syscalls = [ x for x in available_syscalls if x in SYSCALL_LIST ]
-        
+        available_syscalls = [
+            x for x in available_syscalls if x in SYSCALL_LIST]
+
         #   Get the different implementations of "run" that this payload has
         run_options = dir(self)
-        run_options = [ x[4:] for x in run_options if x.startswith('api_')]
+        run_options = [x[4:] for x in run_options if x.startswith('api_')]
 
         if 'execute' in run_options and 'execute' in available_syscalls:
-            return self.api_execute( *args )
+            return self.api_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
-            return self.api_is_open_port( *args )
+            return self.api_is_open_port(*args)
         else:
-            return self.api_read( *args )
+            return self.api_read(*args)
 
     def require(self):
         '''
         @return: The operating system requirement to run this payload.
         '''
         return 'linux'
-    
+
     def read_multi(self, fname_iter):
         '''
         @param fname_iter: An iterator that yields all the file names to read.
@@ -128,10 +130,9 @@ class base_payload(object):
         read_file = return_args(self.shell.read)
         for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
             yield file_name, content
-        
+
     def get_desc(self):
         if self.__doc__ is not None:
-            return textwrap.dedent(self.__doc__ ).strip()
+            return textwrap.dedent(self.__doc__).strip()
         else:
             return 'No help available for this payload.'
-       

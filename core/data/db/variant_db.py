@@ -25,48 +25,48 @@ from core.data.db.temp_shelve import temp_shelve as temp_shelve
 
 
 class VariantDB(object):
-    
-    def __init__(self, max_variants = 5):
+
+    def __init__(self, max_variants=5):
         self._temp_shelve = temp_shelve()
         self._db_lock = threading.RLock()
         self.max_variants = max_variants
-        
+
     def append(self, reference):
         '''
         Called when a new reference is found and we proved that new
         variants are still needed.
-        
+
         @param reference: The reference (as a URL object) to add. This method
                           will "normalize" it before adding it to the internal
                           shelve.
         '''
-        clean_reference = self._clean_reference( reference )
-        
+        clean_reference = self._clean_reference(reference)
+
         with self._db_lock:
-            count = self._temp_shelve.get( clean_reference, None)
-            
+            count = self._temp_shelve.get(clean_reference, None)
+
             if count is not None:
-                self._temp_shelve[ clean_reference ] = count + 1
+                self._temp_shelve[clean_reference] = count + 1
             else:
-                self._temp_shelve[ clean_reference ] = 1
-            
+                self._temp_shelve[clean_reference] = 1
+
     def _clean_reference(self, reference):
         '''
         This method is VERY dependent on the are_variants method from
         core.data.request.variant_identification , make sure to remember that
         when changing stuff here or there.
-        
+
         What this method does is to "normalize" any input reference string so
         that they can be compared very simply using string match.
 
         '''
         res = reference.getDomainPath() + reference.getFileName()
-        
+
         if reference.hasQueryString():
-            
+
             res += '?'
             qs = reference.querystring.copy()
-            
+
             for key in qs:
                 value_list = qs[key]
                 for i, value in enumerate(value_list):
@@ -74,19 +74,19 @@ class VariantDB(object):
                         qs[key][i] = 'number'
                     else:
                         qs[key][i] = 'string'
-            
+
             res += str(qs)
-            
+
         return res
-    
+
     def need_more_variants(self, reference):
         '''
         @return: True if there are not enough variants associated with
         this reference in the DB.
         '''
-        clean_reference = self._clean_reference( reference )
+        clean_reference = self._clean_reference(reference)
         # I believe this is atomic enough...
-        count = self._temp_shelve.get( clean_reference, 0 )
+        count = self._temp_shelve.get(clean_reference, 0)
         if count >= self.max_variants:
             return False
         else:

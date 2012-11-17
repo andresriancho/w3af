@@ -25,6 +25,7 @@ from nose.plugins.attrib import attr
 from core.controllers.misc.temp_dir import create_temp_dir
 from core.data.db.temp_shelve import temp_shelve
 
+
 @attr('smoke')
 class test_shelve(unittest.TestCase):
 
@@ -34,35 +35,35 @@ class test_shelve(unittest.TestCase):
     def test_int(self):
         tshelve = temp_shelve()
         for i in xrange(100):
-            tshelve[ i ] = i
-        self.assertEqual( len(tshelve) , 100 )
-        self.assertEqual( tshelve[50] , 50 )
+            tshelve[i] = i
+        self.assertEqual(len(tshelve), 100)
+        self.assertEqual(tshelve[50], 50)
 
     def test_get(self):
         tshelve = temp_shelve()
-        
+
         tshelve[0] = 'abc'
         abc1 = tshelve.get(0)
         abc2 = tshelve.get(0, 1)
         two = tshelve.get(1, 2)
-        self.assertEqual( abc1 , 'abc' )
-        self.assertEqual( abc2 , 'abc' )
-        self.assertEqual( two , 2 )
-    
+        self.assertEqual(abc1, 'abc')
+        self.assertEqual(abc2, 'abc')
+        self.assertEqual(two, 2)
+
     def test_keys(self):
         tshelve = temp_shelve()
-        
+
         tshelve['a'] = 'abc'
         tshelve['b'] = 'abc'
         tshelve['c'] = 'abc'
-        
-        self.assertEqual( set(tshelve.keys()), set(['a','b','c']) )
-    
+
+        self.assertEqual(set(tshelve.keys()), set(['a', 'b', 'c']))
+
     def test_iterkeys(self):
         tshelve = temp_shelve()
-        
+
         tshelve['a'] = 'abc'
         tshelve['b'] = 'abc'
         tshelve['c'] = 'abc'
-        
-        self.assertEqual( set(tshelve.iterkeys()), set(['a','b','c']) )
+
+        self.assertEqual(set(tshelve.iterkeys()), set(['a', 'b', 'c']))

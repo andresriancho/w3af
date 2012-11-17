@@ -25,7 +25,7 @@ import time
 def runonce(exc_class=Exception):
     '''
     Function to decorate methods that should be called only once.
-    
+
     @param exc_class: The Exception class to be raised when the method has
         already been called.
     '''
@@ -38,10 +38,11 @@ def runonce(exc_class=Exception):
         return inner_runonce_meth
     return runonce_meth
 
+
 def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
     '''
     Retries a function or method if an exception was raised.
-    
+
     @param tries: Number of attempts. Must be >= 1.
     @param delay: Initial delay before retrying. Must be nonnegative.
     @param backoff: Indicates how much the delay should lengthen after
@@ -55,18 +56,18 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
 
     if backoff <= 1:
         raise ValueError("'backoff' must be greater than 1")
-    
+
     tries = math.floor(tries)
     if tries < 1:
         raise ValueError("'tries' must be 1 or greater.")
-    
+
     if delay < 0:
         raise ValueError("'delay' must be nonnegative.")
-    
+
     def deco_retry(f):
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries - 1, delay
-            
+
             while mtries >= 0:
                 try:
                     rv = f(*args, **kwargs)
@@ -78,7 +79,7 @@ def retry(tries, delay=1, backoff=2, exc_class=None, err_msg=''):
                         raise
                 else:
                     return rv
-                                
+
                 mtries -= 1
                 time.sleep(mdelay)
                 mdelay *= backoff

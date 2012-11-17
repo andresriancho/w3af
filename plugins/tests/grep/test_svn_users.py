@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestSVNUsers(PluginTest):
-    
+
     svn_users_url = 'http://moth/w3af/grep/svn_users/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': svn_users_url,
@@ -35,22 +35,21 @@ class TestSVNUsers(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('svn_users', 'users')
-        
+
         self.assertEquals(1, len(vulns))
-        
+
         v = vulns[0]
         self.assertEquals(severity.LOW, v.get_severity())
-        self.assertEquals('SVN user disclosure vulnerability', v.get_name() )
-        self.assertEqual(self.svn_users_url + 'svn_user.html', v.getURL().url_string)
-        
-        
+        self.assertEquals('SVN user disclosure vulnerability', v.get_name())
+        self.assertEqual(
+            self.svn_users_url + 'svn_user.html', v.getURL().url_string)

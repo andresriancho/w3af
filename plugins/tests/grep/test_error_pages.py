@@ -26,9 +26,9 @@ import core.data.constants.severity as severity
 
 @attr('smoke')
 class TestErrorPages(PluginTest):
-    
+
     target_url = 'http://moth/w3af/grep/error_pages/error_page.html'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
@@ -37,7 +37,7 @@ class TestErrorPages(PluginTest):
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

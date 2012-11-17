@@ -32,7 +32,6 @@ class profilesMenu(menu):
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
 
     '''
-    
 
     def __init__(self, name, console, w3af, parent=None):
         menu.__init__(self, name, console, w3af, parent)
@@ -41,7 +40,6 @@ class profilesMenu(menu):
         for profile in instance_list:
             self._profiles[profile.get_name()] = profile
         self._loadHelp('profiles')
-
 
     def _cmd_use(self, params):
         '''
@@ -55,17 +53,17 @@ class profilesMenu(menu):
             profile = params[0]
             if profile not in self._profiles:
                 raise w3afException('Unknown profile name: "%s"' % profile)
-            
+
             try:
-                workdir = params[1] 
+                workdir = params[1]
             except IndexError:
-                workdir = None            
-            
+                workdir = None
+
             try:
                 self._w3af.profiles.useProfile(profile, workdir=workdir)
             except w3afException, w3:
-                om.out.console( str(w3) )
-            
+                om.out.console(str(w3))
+
             om.out.console('The plugins configured by the scan profile have '
                            'been enabled, and their options configured.')
             om.out.console('Please set the target URL(s) and start the scan.')
@@ -74,9 +72,10 @@ class profilesMenu(menu):
         if params:
             om.out.console('No parameters expected')
         else:
-            table = [['Profile', 'Description'],[]]
+            table = [['Profile', 'Description'], []]
             for profileInstance in self._profiles.values():
-                table.append([profileInstance.get_name() , profileInstance.get_desc()])
+                table.append(
+                    [profileInstance.get_name(), profileInstance.get_desc()])
 
             self._console.drawTable(table)
 
@@ -84,6 +83,3 @@ class profilesMenu(menu):
         if not params:
             return suggest(self._profiles.keys(), part)
         return []
-            
-       
-

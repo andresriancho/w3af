@@ -43,7 +43,7 @@ class lfi(AuditPlugin):
     '''
 
     FILE_PATTERNS = (
-        "root:x:0:0:",  
+        "root:x:0:0:",
         "daemon:x:1:1:",
         ":/bin/bash",
         ":/bin/sh",
@@ -57,52 +57,52 @@ class lfi(AuditPlugin):
         "[boot loader]",
         "default=multi(",
         "[operating systems]",
-            
+
         # win.ini
         "[fonts]",
     )
-    _multi_in = multi_in( FILE_PATTERNS )
+    _multi_in = multi_in(FILE_PATTERNS)
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         # Internal variables
         self._file_compiled_regex = []
         self._error_compiled_regex = []
         self._open_basedir = False
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Tests an URL for local file inclusion vulnerabilities.
-        
+
         @param freq: A FuzzableRequest
         '''
         orig_resp = self._uri_opener.send_mutant(freq)
-        
+
         # Which payloads do I want to send to the remote end?
         local_files = []
-        local_files.append( freq.getURL().getFileName() )
+        local_files.append(freq.getURL().getFileName())
         if not self._open_basedir:
-            local_files.extend( self._get_local_file_list(freq.getURL()) )
-        
-        mutants = create_mutants( freq , local_files, orig_resp=orig_resp )
-        
+            local_files.extend(self._get_local_file_list(freq.getURL()))
+
+        mutants = create_mutants(freq, local_files, orig_resp=orig_resp)
+
         self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                       mutants,
                                       self._analyze_result,
                                       grep=False)
-        
-    def _get_local_file_list( self, origUrl):
+
+    def _get_local_file_list(self, origUrl):
         '''
         This method returns a list of local files to try to include.
-        
+
         @return: A string list, see above.
         '''
         local_files = []
 
         extension = origUrl.getExtension()
 
-        # I will only try to open these files, they are easy to identify of they 
+        # I will only try to open these files, they are easy to identify of they
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
         # Feel free to mail me ( Andres Riancho ) if you know about other default files that
         # could be installed on AIX ? Solaris ? and are not /etc/passwd
@@ -111,17 +111,17 @@ class lfi(AuditPlugin):
             local_files.append("../" * 15 + "etc/passwd\0")
             local_files.append("../" * 15 + "etc/passwd\0.html")
             local_files.append("/etc/passwd")
-            
+
             # This test adds support for finding vulnerabilities like this one
             # http://website/zen-cart/extras/curltest.php?url=file:///etc/passwd
             #local_files.append("file:///etc/passwd")
-            
+
             local_files.append("/etc/passwd\0")
             local_files.append("/etc/passwd\0.html")
             if extension != '':
-                local_files.append("/etc/passwd%00."+ extension)
-                local_files.append("../" * 15 + "etc/passwd%00."+ extension)
-        
+                local_files.append("/etc/passwd%00." + extension)
+                local_files.append("../" * 15 + "etc/passwd%00." + extension)
+
         if cf.cf.get('targetOS') in ['windows', 'unknown']:
             local_files.append("../" * 15 + "boot.ini\0")
             local_files.append("../" * 15 + "boot.ini\0.html")
@@ -132,12 +132,12 @@ class lfi(AuditPlugin):
             local_files.append("%SYSTEMROOT%\\win.ini\0")
             local_files.append("%SYSTEMROOT%\\win.ini\0.html")
             if extension != '':
-                local_files.append("C:\\boot.ini%00."+extension)
-                local_files.append("%SYSTEMROOT%\\win.ini%00."+extension)
-        
+                local_files.append("C:\\boot.ini%00." + extension)
+                local_files.append("%SYSTEMROOT%\\win.ini%00." + extension)
+
         return local_files
 
-    def _analyze_result( self, mutant, response ):
+    def _analyze_result(self, mutant, response):
         '''
         Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
@@ -152,15 +152,15 @@ class lfi(AuditPlugin):
 
         if not self._open_basedir:
             if 'open_basedir restriction in effect' in response\
-            and 'open_basedir restriction in effect' not in mutant.get_original_response_body():
+                    and 'open_basedir restriction in effect' not in mutant.get_original_response_body():
                 self._open_basedir = True
-        
+
         #
         #   I will only report the vulnerability once.
         #
         if self._has_bug(mutant):
             return
-            
+
         #
         #   Identify the vulnerability
         #
@@ -172,13 +172,13 @@ class lfi(AuditPlugin):
                 v.set_id(response.id)
                 v.set_name('Local file inclusion vulnerability')
                 v.set_severity(severity.MEDIUM)
-                v.set_desc('Local File Inclusion was found at: ' + mutant.found_at())
+                v.set_desc(
+                    'Local File Inclusion was found at: ' + mutant.found_at())
                 v['file_pattern'] = file_pattern_match
                 v.addToHighlight(file_pattern_match)
                 kb.kb.append_uniq(self, 'lfi', v)
                 return
 
-        
         #
         #   If the vulnerability could not be identified by matching strings that commonly
         #   appear in "/etc/passwd", then I'll check one more thing...
@@ -186,43 +186,44 @@ class lfi(AuditPlugin):
         #
         #   http://host.tld/show_user.php?id=show_user.php
         if mutant.get_mod_value() == mutant.getURL().getFileName():
-            match, lang = is_source_file( response.getBody() )
+            match, lang = is_source_file(response.getBody())
             if match:
                 #   We were able to read the source code of the file that is vulnerable to
                 #   local file read
-                v = vuln.vuln( mutant )
+                v = vuln.vuln(mutant)
                 v.set_plugin_name(self.get_name())
-                v.set_id( response.id )
-                v.set_name( 'Local file read vulnerability' )
+                v.set_id(response.id)
+                v.set_name('Local file read vulnerability')
                 v.set_severity(severity.MEDIUM)
                 msg = 'An arbitrary local file read vulnerability was found at: '
                 msg += mutant.found_at()
-                v.set_desc( msg )
-                
+                v.set_desc(msg)
+
                 #
                 #    Set which part of the source code to match
                 #
                 match_source_code = match.group(0)
                 v['file_pattern'] = match_source_code
-                
-                kb.kb.append_uniq( self, 'lfi', v )
+
+                kb.kb.append_uniq(self, 'lfi', v)
                 return
-                
+
         #
         #   Check for interesting errors (note that this is run if no vulns were identified)
         #
         for regex in self.get_include_errors():
-            
-            match = regex.search( response.getBody() )
-            
-            if match and not regex.search( mutant.get_original_response_body() ):
-                i = info.info( mutant )
+
+            match = regex.search(response.getBody())
+
+            if match and not regex.search(mutant.get_original_response_body()):
+                i = info.info(mutant)
                 i.set_plugin_name(self.get_name())
-                i.set_id( response.id )
-                i.set_name( 'File read error' )
-                i.set_desc( 'A file read error was found at: ' + mutant.found_at() )
-                kb.kb.append_uniq( self, 'error', i )        
-    
+                i.set_id(response.id)
+                i.set_name('File read error')
+                i.set_desc(
+                    'A file read error was found at: ' + mutant.found_at())
+                kb.kb.append_uniq(self, 'error', i)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -230,24 +231,25 @@ class lfi(AuditPlugin):
         self.print_uniq(kb.kb.get('lfi', 'lfi'), 'VAR')
         self.print_uniq(kb.kb.get('lfi', 'error'), 'VAR')
 
-    def _find_file( self, response ):
+    def _find_file(self, response):
         '''
-        This method finds out if the local file has been successfully included in 
+        This method finds out if the local file has been successfully included in
         the resulting HTML.
-        
+
         @param response: The HTTP response object
         @return: A list of errors found on the page
         '''
         res = []
-        for file_pattern_match in self._multi_in.query( response.getBody() ):
-            res.append( file_pattern_match )
-        
+        for file_pattern_match in self._multi_in.query(response.getBody()):
+            res.append(file_pattern_match)
+
         if len(res) == 1:
             msg = 'A file fragment was found. The section where the file is included is (only'
             msg += ' a fragment is shown): "' + res[0]
             msg += '". This is just an informational message, which might be related to a'
-            msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
-            om.out.debug( msg )
+            msg += ' vulnerability and was found on response with id ' + \
+                str(response.id) + '.'
+            om.out.debug(msg)
         if len(res) > 1:
             msg = 'File fragments have been found. The following is a list of file fragments'
             msg += ' that were returned by the web application while testing for local file'
@@ -255,16 +257,17 @@ class lfi(AuditPlugin):
             for file_pattern_match in res:
                 msg += '- "' + file_pattern_match + '" \n'
             msg += 'This is just an informational message, which might be related to a'
-            msg += ' vulnerability and was found on response with id ' + str(response.id) + '.'
-            om.out.debug( msg )
-        return res    
-    
+            msg += ' vulnerability and was found on response with id ' + \
+                str(response.id) + '.'
+            om.out.debug(msg)
+        return res
+
     def get_include_errors(self):
         '''
         @return: A list of file inclusion / file read errors generated by the web application.
         '''
         #
-        #   In previous versions of the plugin the "Inclusion errors" listed in the _get_file_patterns 
+        #   In previous versions of the plugin the "Inclusion errors" listed in the _get_file_patterns
         #   method made sense... but... it seems that they trigger false positives...
         #   So I moved them here and report them as something "interesting" if the actual file
         #   inclusion is not possible
@@ -278,18 +281,19 @@ class lfi(AuditPlugin):
             read_errors.append('java.lang.IllegalArgumentException:')
             read_errors.append('java.net.MalformedURLException:')
             read_errors.append('The server encountered an internal error \\(.*\\) that prevented it from fulfilling this request.')
-            read_errors.append('The requested resource \\(.*\\) is not available.')
+            read_errors.append(
+                'The requested resource \\(.*\\) is not available.')
             read_errors.append("fread\\(\\):")
             read_errors.append("for inclusion '\\(include_path=")
             read_errors.append("Failed opening required")
             read_errors.append("<b>Warning</b>:  file\\(")
             read_errors.append("<b>Warning</b>:  file_get_contents\\(")
-            
-            self._error_compiled_regex = [re.compile(i, re.IGNORECASE) for i in read_errors]
-            return self._error_compiled_regex
-            
 
-    def get_long_desc( self ):
+            self._error_compiled_regex = [re.compile(
+                i, re.IGNORECASE) for i in read_errors]
+            return self._error_compiled_regex
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

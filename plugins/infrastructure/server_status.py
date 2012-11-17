@@ -37,111 +37,113 @@ from core.controllers.misc.decorators import runonce
 class server_status(InfrastructurePlugin):
     '''
     Find new URLs from the Apache server-status cgi.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         # Internal variables
         self._shared_hosting_hosts = []
 
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         Get the server-status and parse it.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         base_url = fuzzable_request.getURL().baseUrl()
-        server_status_url = base_url.urlJoin( 'server-status' )
-        response = self._uri_opener.GET( server_status_url, cache=True )
-        
-        if not is_404( response ) and response.getCode() not in range(400, 404):
+        server_status_url = base_url.urlJoin('server-status')
+        response = self._uri_opener.GET(server_status_url, cache=True)
+
+        if not is_404(response) and response.getCode() not in range(400, 404):
 
             if 'apache' in response.getBody().lower():
                 msg = 'Apache server-status module is enabled and accessible.'
                 msg += ' The URL is: "%s"' % response.getURL()
-                om.out.information( msg )
-                
-                self._extract_server_version( fuzzable_request, response )
-                
-                return self._extract_urls( fuzzable_request, response )
-    
+                om.out.information(msg)
+
+                self._extract_server_version(fuzzable_request, response)
+
+                return self._extract_urls(fuzzable_request, response)
+
     def _extract_server_version(self, fuzzable_request, response):
         '''
         Get the server version from the HTML:
             <dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>
         '''
-        for version in re.findall('<dl><dt>Server Version: (.*?)</dt>', 
+        for version in re.findall('<dl><dt>Server Version: (.*?)</dt>',
                                   response.getBody()):
             # Save the results in the KB so the user can look at it
             i = info.info()
             i.set_plugin_name(self.get_name())
-            i.setURL( response.getURL() )
-            i.set_id( response.id )
-            i.set_name( 'Apache Server version' )
+            i.setURL(response.getURL())
+            i.set_id(response.id)
+            i.set_name('Apache Server version')
             msg = 'The web server has the apache server status module enabled, '
             msg += 'which discloses the following remote server version: "%s".'
-            i.set_desc( msg % version )
+            i.set_desc(msg % version)
 
             om.out.information(i.get_desc())
-            kb.kb.append( self, 'server', i )
-    
+            kb.kb.append(self, 'server', i)
+
     def _extract_urls(self, fuzzable_request, response):
         '''
         Extract information from the server-status page and return fuzzable
         requests to the caller.
         '''
-        res = self._create_fuzzable_requests( response )
+        res = self._create_fuzzable_requests(response)
 
         # Now really parse the file and create custom made fuzzable requests
         regex = '<td>.*?<td nowrap>(.*?)</td><td nowrap>.*? (.*?) HTTP/1'
-        for domain, path in re.findall(regex, response.getBody() ):
-            
+        for domain, path in re.findall(regex, response.getBody()):
+
             if 'unavailable' in domain:
                 domain = response.getURL().getDomain()
-            
-            # Check if the requested domain and the found one are equal.    
+
+            # Check if the requested domain and the found one are equal.
             if domain == response.getURL().getDomain():
-                found_url = response.getURL().getProtocol() + '://' + domain + path
+                found_url = response.getURL(
+                ).getProtocol() + '://' + domain + path
                 found_url = URL(found_url)
-            
-                # They are equal, request the URL and create the fuzzable 
+
+                # They are equal, request the URL and create the fuzzable
                 # requests
-                tmp_res = self._uri_opener.GET( found_url, cache=True )
-                if not is_404( tmp_res ):
-                    res.extend( self._create_fuzzable_requests( tmp_res ) )
+                tmp_res = self._uri_opener.GET(found_url, cache=True)
+                if not is_404(tmp_res):
+                    res.extend(self._create_fuzzable_requests(tmp_res))
             else:
                 # This is a shared hosting server
-                self._shared_hosting_hosts.append( domain )
-        
+                self._shared_hosting_hosts.append(domain)
+
         # Now that we are outsite the for loop, we can report the possible vulns
-        if len( self._shared_hosting_hosts ):
+        if len(self._shared_hosting_hosts):
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL( fuzzable_request.getURL() )
-            v.set_id( response.id )
-            self._shared_hosting_hosts = list( set( self._shared_hosting_hosts ) )
+            v.setURL(fuzzable_request.getURL())
+            v.set_id(response.id)
+            self._shared_hosting_hosts = list(
+                set(self._shared_hosting_hosts))
             v['alsoInHosting'] = self._shared_hosting_hosts
-            v.set_desc( 'The web application under test seems to be in a shared hosting.' )
-            v.set_name( 'Shared hosting' )
+            v.set_desc('The web application under test seems to be in a shared hosting.')
+            v.set_name('Shared hosting')
             v.set_severity(severity.MEDIUM)
-            
-            kb.kb.append( self, 'shared_hosting', v )
-            om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
-        
+
+            kb.kb.append(self, 'shared_hosting', v)
+            om.out.vulnerability(v.get_desc(), severity=v.get_severity())
+
             msg = 'This list of domains, and the domain of the web application under test,'
             msg += ' all point to the same server:'
-            om.out.vulnerability(msg, severity=severity.MEDIUM )
+            om.out.vulnerability(msg, severity=severity.MEDIUM)
             for url in self._shared_hosting_hosts:
-                om.out.vulnerability('- ' + url, severity=severity.MEDIUM )
-                
+                om.out.vulnerability('- ' + url, severity=severity.MEDIUM)
+
         return res
-        
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

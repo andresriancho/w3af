@@ -2,26 +2,26 @@
 
 
 class SQLMapDump:
-    def dump( self, method, arguments, response ):
+    def dump(self, method, arguments, response):
         '''
         The entry point for the other methods.
         '''
         if method == 'users':
-            return self.list( 'Database users: ', response )
+            return self.list('Database users: ', response)
         elif method == 'dbs':
-            return self.list( 'Available databases: ', response )
+            return self.list('Available databases: ', response)
         elif method == 'tables':
-            return self.dbTables( response )
+            return self.dbTables(response)
         elif method == 'columns':
-            return self.dbTableColumns( response )
+            return self.dbTableColumns(response)
         elif method == 'dump':
-            return self.dbTableValues( response )
-            
-        return self.string( method, response )
-    
+            return self.dbTableValues(response)
+
+        return self.string(method, response)
+
     def string(self, header, string):
         res = ''
-        
+
         if string:
             if "\n" in string:
                 res += "%s:\n---\n%s---\n\n" % (header, string)
@@ -29,7 +29,7 @@ class SQLMapDump:
                 res += "%s: '%s'\n\n" % (header, string)
         else:
             res += "%s:\tNone\n" % header
-        
+
         return res.strip()
 
     def list(self, header, list):
@@ -40,7 +40,6 @@ class SQLMapDump:
         for element in list:
             res += "[*] %s\n" % element
         return res.strip()
-
 
     def dbTables(self, dbTables):
         res = ''
@@ -64,12 +63,11 @@ class SQLMapDump:
 
             for table in tables:
                 blank = " " * (maxlength - len(table))
-                res +=  "| %s%s |\n" % (table, blank)
+                res += "| %s%s |\n" % (table, blank)
 
             res += "+%s+\n\n" % lines
-        
-        return res.strip()
 
+        return res.strip()
 
     def dbTableColumns(self, tableColumns):
         res = ''
@@ -113,13 +111,12 @@ class SQLMapDump:
                     res += "| %s%s |\n" % (coltype, blank2)
 
                 res += "+%s+%s+\n" % (lines1, lines2)
-        
-        return res.strip()
 
+        return res.strip()
 
     def dbTableValues(self, tableValues):
         res = ''
-        
+
         db = tableValues["__infos__"]["db"]
         if not db:
             db = "All"
@@ -148,7 +145,7 @@ class SQLMapDump:
             if column != "__infos__":
                 maxlength = int(info["length"])
                 blank = " " * (maxlength - len(column))
-                res +=  "| %s%s " % (column, blank)
+                res += "| %s%s " % (column, blank)
 
         res += "|\n%s\n" % separator
 
@@ -158,10 +155,10 @@ class SQLMapDump:
                     value = info["values"][i]
                     maxlength = int(info["length"])
                     blank = " " * (maxlength - len(value))
-                    res +=  "| %s%s " % (value, blank)
+                    res += "| %s%s " % (value, blank)
 
             res += "|\n"
 
         res += "%s\n" % separator
-        
+
         return res.strip()

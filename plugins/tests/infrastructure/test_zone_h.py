@@ -23,37 +23,35 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestZoneH(PluginTest):
-    
+
     vuln_url = 'http://www.sgwater.gov.cn/'
     safe_url = 'http://www.google.com/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {'infrastructure': (PluginConfig('zone_h'),)}
-            }
         }
-    
+    }
+
     def test_zone_h_positive(self):
         cfg = self._run_configs['cfg']
         self._scan(self.vuln_url, cfg['plugins'])
-        
+
         infos = self.kb.get('zone_h', 'defacements')
-        
-        self.assertEqual( len(infos), 1, infos)
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
+
         self.assertEqual(info.get_name(), 'Previous defacements')
-        self.assertTrue(info.get_desc().startswith('The target site was defaced'))
-        
+        self.assertTrue(
+            info.get_desc().startswith('The target site was defaced'))
+
     def test_zone_h_negative(self):
         cfg = self._run_configs['cfg']
         self._scan(self.safe_url, cfg['plugins'])
-        
-        infos = self.kb.get('zone_h', 'defacements')
-        
-        self.assertEqual( len(infos), 0, infos)
-        
-        
 
+        infos = self.kb.get('zone_h', 'defacements')
+
+        self.assertEqual(len(infos), 0, infos)

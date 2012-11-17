@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestDOMXSS(PluginTest):
-    
+
     dom_xss_url = 'https://moth/w3af/grep/dom_xss/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': dom_xss_url,
@@ -35,24 +35,24 @@ class TestDOMXSS(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('dom_xss', 'dom_xss')
-        
+
         self.assertEquals(1, len(vulns))
-        
+
         v = vulns[0]
         self.assertEquals(severity.LOW, v.get_severity())
-        self.assertEquals('DOM Cross site scripting (Risky JavaScript Code)', v.get_name() )
+        self.assertEquals(
+            'DOM Cross site scripting (Risky JavaScript Code)', v.get_name())
         self.assertEquals(len(v.get_id()), 1)
         self.assertTrue('document.URL' in v.get_desc())
-        self.assertEqual(self.dom_xss_url + 'dom_xss_trivial.html', v.getURL().url_string)
-        
-        
+        self.assertEqual(
+            self.dom_xss_url + 'dom_xss_trivial.html', v.getURL().url_string)

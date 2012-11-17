@@ -9,7 +9,7 @@ class w3af_agent(base_payload):
     '''
     This payload starts a w3af agent that allows you to route TCP traffic through
     the compromised host.
-    
+
     Usage: w3af_agent <your_ip_address>
     '''
     def api_execute(self, ip_address):
@@ -19,20 +19,20 @@ class w3af_agent(base_payload):
         all this work is done by the w3afAgentManager, I just need to called
         start and thats it.
         '''
-        if not is_ip_address( ip_address ):
+        if not is_ip_address(ip_address):
             ValueError('Invalid IP address: "%s"' % ip_address)
-        
+
         try:
             agentManager = w3afAgentManager(self.shell.execute, ip_address)
         except w3afException, w3:
             return 'Error' + str(w3)
         else:
             agentManager.run()
-            if agentManager.isWorking(): 
+            if agentManager.isWorking():
                 return 'Successfully started the w3afAgent.'
             else:
                 return 'Failed to start the w3afAgent.'
-    
+
     def run_execute(self, ip_address):
         api_result = self.api_execute(ip_address)
         return api_result

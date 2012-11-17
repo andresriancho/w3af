@@ -25,9 +25,9 @@ from core.data.options.option_types import IPPORT
 
 
 class IPPortOption(BaseOption):
-    
+
     _type = IPPORT
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -37,7 +37,7 @@ class IPPortOption(BaseOption):
         looking object like True or ['a','b','c'].
         '''
         self._value = self.validate(value)
-    
+
     def validate(self, value):
         try:
             ip, port = value.split(':')
@@ -46,7 +46,7 @@ class IPPortOption(BaseOption):
                   ' <ip-address>:<port> , for example:  127.0.0.1:8080.'
             raise w3afException(msg)
         else:
-            
+
             try:
                 port = int(port)
                 assert port > 0
@@ -54,6 +54,6 @@ class IPPortOption(BaseOption):
             except:
                 msg = 'Invalid port specified, it needs to be a number between'\
                       ' 1 and 65535.'
-                raise w3afException(msg)            
-            
+                raise w3afException(msg)
+
             return value

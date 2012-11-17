@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_apache_run_group(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'apache_run_group': [u'www-data']}
 
     def test_apache_run_group(self):
         result = exec_payload(self.shell, 'apache_run_group', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

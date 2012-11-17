@@ -19,7 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
-import gtk, gobject
+import gtk
+import gobject
 import pango
 import time
 
@@ -32,7 +33,7 @@ class PromptView(gtk.TextView):
 
     The user input is passed to the registered function, the result
     of this is shown under the prompt.
-    
+
     @param procfunc: the function to process the user input
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
@@ -40,7 +41,7 @@ class PromptView(gtk.TextView):
     def __init__(self, promptText, procfunc):
         self.promptText = promptText
         self.procfunc = procfunc
-        super(PromptView,self).__init__()
+        super(PromptView, self).__init__()
         self.set_wrap_mode(gtk.WRAP_CHAR)
 
         # keys
@@ -50,8 +51,8 @@ class PromptView(gtk.TextView):
             gtk.gdk.keyval_from_name("Up"): self._key_up,
             gtk.gdk.keyval_from_name("Down"): self._key_down,
             gtk.gdk.keyval_from_name("BackSpace"): self._key_backspace,
-            gtk.gdk.keyval_from_name("Control_L"): lambda:False,
-            gtk.gdk.keyval_from_name("Control_R"): lambda:False,
+            gtk.gdk.keyval_from_name("Control_L"): lambda: False,
+            gtk.gdk.keyval_from_name("Control_R"): lambda: False,
         }
 
         # These lines are for printing the om.out.console messages
@@ -80,12 +81,12 @@ class PromptView(gtk.TextView):
     def addMessage(self, text):
         '''
         This method is called from the write_console_messages generator.
-        
+
         @param text: A string to write to the console textviev
         @return: None
         '''
-        self.insert_into_textbuffer( text )
-        
+        self.insert_into_textbuffer(text)
+
     def insert_into_textbuffer(self, text):
         '''
         Insert a text into the text buffer, taking care of \r, \n, self.user_started.
@@ -110,11 +111,11 @@ class PromptView(gtk.TextView):
             iterini = self.textbuffer.get_start_iter()
             old_text = self.textbuffer.get_text(iterini, delete_start)
             old_text_length = len(old_text)
-            delete_end = self.textbuffer.get_iter_at_offset(text_length+old_text_length)
+            delete_end = self.textbuffer.get_iter_at_offset(
+                text_length + old_text_length)
 
             # Delete
             self.textbuffer.delete(iterl, delete_end)
-
 
         self.textbuffer.insert(iterl, text)
         self.scroll_to_mark(self.textbuffer.get_insert(), 0)
@@ -123,8 +124,8 @@ class PromptView(gtk.TextView):
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iterl)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
-        self.user_started = self.textbuffer.create_mark("user-input", iterl, True)
-
+        self.user_started = self.textbuffer.create_mark(
+            "user-input", iterl, True)
 
     def getText(self):
         '''Returns the textbuffer content.'''
@@ -136,7 +137,8 @@ class PromptView(gtk.TextView):
     def _button_press(self, widg, event):
         '''The mouse button is down.'''
         if self.cursorPosition is None:
-            self.cursorPosition = self.textbuffer.get_property("cursor-position")
+            self.cursorPosition = self.textbuffer.get_property(
+                "cursor-position")
         return False
 
     def _button_release(self, widg, event):
@@ -198,13 +200,13 @@ class PromptView(gtk.TextView):
             return True
 
         textbuffer.insert(iter_end, "\n")
-        
+
         # In some strange cases `self.user_started` can be None causing
         # a TypeError raised by get_iter_at_mark(). This hack is to prevent it.
         if not self.user_started:
             self.user_started = textbuffer.create_mark("user-input",
                                                        iter_end, True)
-        
+
         iter_start = textbuffer.get_iter_at_mark(self.user_started)
         text = textbuffer.get_text(iter_start, iter_end)
         self.user_started = None
@@ -222,11 +224,11 @@ class PromptView(gtk.TextView):
         result = self.procfunc(text)
         if result is not None and isinstance(result, basestring):
             iterl = self.textbuffer.get_end_iter()
-            self.textbuffer.insert(iterl, result+"\n")
+            self.textbuffer.insert(iterl, result + "\n")
             self.scroll_to_mark(self.textbuffer.get_insert(), 0)
 
         self._prompt()
-        
+
     def _prompt(self):
         '''Show the prompt.'''
         iterl = self.textbuffer.get_end_iter()
@@ -235,7 +237,8 @@ class PromptView(gtk.TextView):
         iterl = self.textbuffer.get_end_iter()
         self.textbuffer.place_cursor(iterl)
         self.cursorLimit = self.textbuffer.get_property("cursor-position")
-        self.user_started = self.textbuffer.create_mark("user-input", iterl, True)
+        self.user_started = self.textbuffer.create_mark(
+            "user-input", iterl, True)
 
     def _key(self, widg, event):
         '''Separates the special keys from the other.'''
@@ -259,14 +262,14 @@ class PromptView(gtk.TextView):
 
 class PromptDialog(gtk.Dialog):
     '''Puts the Prompt widget inside a Dialog.
-    
+
     @param title: the title of the window.
     @param procfunc: the function to process the user input
 
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, title, promptText, procfunc):
-        super(PromptDialog,self).__init__(title, None, gtk.DIALOG_MODAL, ())
+        super(PromptDialog, self).__init__(title, None, gtk.DIALOG_MODAL, ())
         self.set_icon_from_file('core/ui/gui/data/shell.png')
 
         # the toolbar
@@ -287,14 +290,15 @@ class PromptDialog(gtk.Dialog):
         sw.add(self.prompt)
         self.vbox.pack_start(sw)
 
-        self.resize(800,300)
+        self.resize(800, 300)
         self.show_all()
-        
+
     def _save(self, widg):
         '''Saves the content to a file.'''
         text = self.prompt.getText()
-        dlg = gtk.FileChooserDialog(title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,
-                buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
+        dlg = gtk.FileChooserDialog(
+            title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,
+            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
         resp = dlg.run()
         fname = dlg.get_filename()
         dlg.destroy()
@@ -314,14 +318,14 @@ if __name__ == "__main__":
             # create a new window
             self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
             self.window.connect("destroy", gtk.main_quit)
-            self.window.resize(100,50)
+            self.window.resize(100, 50)
 
             # button
             button = gtk.Button("Prompt")
             button.connect("clicked", self.prompt)
             button.show()
             self.window.add(button)
-    
+
             self.window.show()
             gtk.main()
 

@@ -27,14 +27,14 @@ import core.controllers.output_manager as om
 
 class XunitGen(object):
     '''
-    Generate an Xunit XML output file for w3af test scripts. 
-    Tools like Hudson will be able to parse the gen xunit files and display 
+    Generate an Xunit XML output file for w3af test scripts.
+    Tools like Hudson will be able to parse the gen xunit files and display
     useful data to the user.
     '''
-    
+
     outputfile = 'w3aftestscripts.xml'
     sep = os.path.sep
-    
+
     def __init__(self, outputfile=None):
         if outputfile:
             self.outputfile = outputfile
@@ -43,35 +43,34 @@ class XunitGen(object):
                        'pass': 0,
                        'fail': 0}
         self.results = []
-        
-    
+
     def genfile(self):
         '''
         Writes the Xunit file.
         '''
         self._stats['total'] = (self._stats['error'] + self._stats['fail']
-                               + self._stats['pass'] + self._stats['skip'])
-        
+                                + self._stats['pass'] + self._stats['skip'])
+
         xml_chunks = [
-              '<?xml version="1.0" encoding="UTF-8"?>'
-              '<testsuite name="w3aftestscripts" tests="%(total)d" '
-              'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
-              % self._stats
-              ]
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<testsuite name="w3aftestscripts" tests="%(total)d" '
+            'errors="%(error)d" failures="%(fail)d" skip="%(skip)d">'
+            % self._stats
+        ]
         xml_chunks.append(''.join(self.results))
         xml_chunks.append('</testsuite>')
-        
+
         with open(self.outputfile, 'w') as output:
             output.write(
-                     parseString(''.join(xml_chunks)).toprettyxml()
-                     )
-        
+                parseString(''.join(xml_chunks)).toprettyxml()
+            )
+
         om.out.information('XML output file was successfuly generated: %s'
                            % self.outputfile)
 
     def add_failure(self, test, fail, took):
         '''
-        @param test: Qualified name for test case. 
+        @param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
@@ -85,7 +84,7 @@ class XunitGen(object):
         faillines = fail.split('\n')
         quoteattr = saxutils.quoteattr
         pkg, _, id = test.rpartition('.')
-        
+
         self.results.append(
             '<testcase classname=%(pkg)s name=%(name)s time="%(took)d">'
             '<failure type=%(errtype)s message="">'
@@ -97,10 +96,10 @@ class XunitGen(object):
              'errtype': quoteattr(faillines[-1]),
              'fail': '\n'.join(faillines[:-1]),
              })
-    
+
     def add_error(self, test, err, took, skipped=False):
         '''
-        @param test: Qualified name for test case. 
+        @param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
@@ -128,10 +127,10 @@ class XunitGen(object):
              'message': quoteattr(errlinedets[-1]),
              'tb': err,
              })
-    
+
     def add_success(self, test, took):
         '''
-        @param test: Qualified name for test case. 
+        @param test: Qualified name for test case.
             Should have next format:
                 {packagename}.{path.to.class.in.module}.{testcase}.
             Examples:
@@ -143,5 +142,4 @@ class XunitGen(object):
         quoteattr = saxutils.quoteattr
         pkg, _, id = test.rpartition('.')
         self.results.append('<testcase classname=%s name=%s time="%d" />'
-                              % (quoteattr(pkg), quoteattr(id), took))
-    
+                            % (quoteattr(pkg), quoteattr(id), took))

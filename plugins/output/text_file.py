@@ -36,18 +36,18 @@ from core.data.options.option_list import OptionList
 class text_file(OutputPlugin):
     '''
     Prints all messages to a text file.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         OutputPlugin.__init__(self)
-        
+
         # User configured parameters
         self._output_file_name = 'output.txt'
         self._http_file_name = 'output-http.txt'
         self.verbose = True
-        
+
         # Internal variables
         self._flush_counter = 0
         self._flush_number = 10
@@ -57,50 +57,52 @@ class text_file(OutputPlugin):
         self._http = None
         # XXX Only set '_show_caller' to True for debugging purposes. It
         # causes the execution of potentially slow code that handles
-        # with introspection. 
+        # with introspection.
         self._show_caller = False
 
-    def _init( self ):
+    def _init(self):
         self._initialized = True
         try:
-            self._file = open( self._output_file_name, "w")
+            self._file = open(self._output_file_name, "w")
         except IOError, io:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._output_file_name),
-                                        io.strerror))
+            raise w3afException(msg % (os.path.abspath(self._output_file_name),
+                                       io.strerror))
         except Exception, e:
             msg = 'Can\'t open report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._output_file_name), e))
-            
+            raise w3afException(
+                msg % (os.path.abspath(self._output_file_name), e))
+
         try:
             # Images aren't ascii, so this file that logs every request/response,
             # will be binary.
-            self._http = open( self._http_file_name, "wb" )
+            self._http = open(self._http_file_name, "wb")
         except IOError, io:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._http_file_name),
-                                        io.strerror))
+            raise w3afException(msg % (os.path.abspath(self._http_file_name),
+                                       io.strerror))
         except Exception, e:
             msg = 'Can\'t open HTTP report file "%s" for writing, error: %s.'
-            raise w3afException( msg % (os.path.abspath(self._http_file_name), e))
-    
-    def _write_to_file( self, msg ):
+            raise w3afException(
+                msg % (os.path.abspath(self._http_file_name), e))
+
+    def _write_to_file(self, msg):
         '''
         Write to the log file.
-        
+
         @param msg: The text to write.
         '''
         try:
-            self._file.write( self._clean_string(msg) )
+            self._file.write(self._clean_string(msg))
         except Exception, e:
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s".' % (self._output_file_name, e)
             sys.exit(1)
-        
-    def _write_to_HTTP_log( self, msg ):
+
+    def _write_to_HTTP_log(self, msg):
         '''
         Write to the HTTP log file.
-        
+
         @param msg: The text to write (a string representation of the HTTP
                         request and response)
         '''
@@ -110,79 +112,80 @@ class text_file(OutputPlugin):
             msg = 'An exception was raised while trying to write to the output'\
                   ' file "%s", error: "%s".' % (self._http_file_name, e)
             sys.exit(1)
-            
-    def write(self, message, log_type, newLine = True ):
+
+    def write(self, message, log_type, newLine=True):
         '''
         Method that writes stuff to the text_file.
-        
+
         @param message: The message to write to the file
         @param log_type: Type of message are we writing to the file
         @param newLine: Add a new line after the message
         '''
         if not self._initialized:
             self._init()
-        
+
         to_print = str(message)
         if newLine == True:
             to_print += '\n'
-        
+
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
-        
+
         if self._show_caller:
-            timestamp = '[%s - %s - %s] ' % (the_time, log_type, self.getCaller())
+            timestamp = '[%s - %s - %s] ' % (
+                the_time, log_type, self.getCaller())
         else:
             timestamp = '[%s - %s] ' % (the_time, log_type)
-            
-        self._write_to_file( timestamp + to_print )
+
+        self._write_to_file(timestamp + to_print)
 
         self._flush()
-    
-    def debug(self, message, newLine = True ):
+
+    def debug(self, message, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for debug messages.
         '''
         if self.verbose:
-            self.write( message, 'debug', newLine)
-            
-    def information(self, message , newLine = True ):
+            self.write(message, 'debug', newLine)
+
+    def information(self, message, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for informational messages.
         '''
-        self.write( message, 'information', newLine)
+        self.write(message, 'information', newLine)
 
-    def error(self, message , newLine = True ):
+    def error(self, message, newLine=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
         '''
-        self.write( message, 'error', newLine)     
+        self.write(message, 'error', newLine)
 
-    def vulnerability(self, message , newLine=True, severity=severity.MEDIUM ):
+    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
         '''
-        This method is called from the output object. The output object was 
+        This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
         '''
-        self.write( message, 'vulnerability', newLine)
-        
-    def console( self, message, newLine = True ):
+        self.write(message, 'vulnerability', newLine)
+
+    def console(self, message, newLine=True):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        self.write( message, 'console', newLine)
-        
-    def log_enabled_plugins(self,  plugins_dict,  options_dict):
+        self.write(message, 'console', newLine)
+
+    def log_enabled_plugins(self, plugins_dict, options_dict):
         '''
         This method is called from the output manager object. This method should
         take an action for the enabled plugins and their configuration. Usually,
         write the info to a file or print it somewhere.
-        
+
         @param pluginsDict: A dict with all the plugin types and the enabled
                                 plugins for that type of plugin.
         @param optionsDict: A dict with the options for every plugin.
@@ -190,24 +193,24 @@ class text_file(OutputPlugin):
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
         timestamp = '[ ' + the_time + ' - Enabled plugins ] '
-        
+
         to_print = ''
-        
+
         for plugin_type in plugins_dict:
-            to_print += self._create_plugin_info( plugin_type, 
-                                                  plugins_dict[plugin_type], 
-                                                  options_dict[plugin_type])
-        
+            to_print += self._create_plugin_info(plugin_type,
+                                                 plugins_dict[plugin_type],
+                                                 options_dict[plugin_type])
+
         # And now the target information
-        str_targets = ', '.join( [u.url_string for u in cf.cf.get('targets')] )
+        str_targets = ', '.join([u.url_string for u in cf.cf.get('targets')])
         to_print += 'target\n'
         to_print += '    set target ' + str_targets + '\n'
         to_print += '    back'
-        
-        to_print = to_print.replace('\n', '\n' + timestamp ) + '\n'
-        
-        self._write_to_file( timestamp + to_print )
-    
+
+        to_print = to_print.replace('\n', '\n' + timestamp) + '\n'
+
+        self._write_to_file(timestamp + to_print)
+
     def _flush(self):
         '''
         textfile.flush is called every time a message is sent to this plugin.
@@ -221,42 +224,43 @@ class text_file(OutputPlugin):
             #
             #self._file.flush()
             pass
-            
-    def set_options( self, option_list ):
+
+    def set_options(self, option_list):
         '''
         Sets the Options given on the OptionList to self. The options are the
-        result of a user entering some data on a window that was constructed 
+        result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using
         get_options()
-        
-        This method MUST be implemented on every plugin. 
-        
+
+        This method MUST be implemented on every plugin.
+
         @return: No value is returned.
-        ''' 
+        '''
         self.verbose = option_list['verbose'].get_value()
         self._output_file_name = option_list['output_file'].get_value()
         self._http_file_name = option_list['http_output_file'].get_value()
-        
+
         self._init()
-    
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'Enable if verbose output is needed'
         o = opt_factory('verbose', self.verbose, d, 'boolean')
         ol.add(o)
-        
+
         d = 'File name where this plugin will write to'
         o = opt_factory('output_file', self._output_file_name, d, OUTPUT_FILE)
         ol.add(o)
-        
+
         d = 'File name where this plugin will write HTTP requests and responses'
-        o = opt_factory('http_output_file', self._http_file_name, d, OUTPUT_FILE)
+        o = opt_factory(
+            'http_output_file', self._http_file_name, d, OUTPUT_FILE)
         ol.add(o)
-        
+
         return ol
 
     def log_http(self, request, response):
@@ -267,24 +271,26 @@ class text_file(OutputPlugin):
         '''
         now = time.localtime(time.time())
         the_time = time.strftime("%c", now)
-        
-        msg = '=' * 40 + 'Request ' + str(response.id) + ' - ' + the_time + '=' * 40 + '\n'
+
+        msg = '=' * 40 + 'Request ' + str(response.id) + ' - ' + \
+            the_time + '=' * 40 + '\n'
         self._write_to_HTTP_log(msg)
         self._write_to_HTTP_log(request.dump())
-        msg2 = '\n' + '=' * 40 + 'Response ' + str(response.id) + ' - ' + the_time + '=' * 39 + '\n'
+        msg2 = '\n' + '=' * 40 + 'Response ' + str(
+            response.id) + ' - ' + the_time + '=' * 39 + '\n'
         self._write_to_HTTP_log(msg2)
         self._write_to_HTTP_log(response.dump())
-        
+
         self._write_to_HTTP_log('\n' + '=' * (len(msg) - 1) + '\n')
         self._http.flush()
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin writes the framework messages to a text file.
-        
+
         Four configurable parameters exist:
             - output_file
             - http_output_file

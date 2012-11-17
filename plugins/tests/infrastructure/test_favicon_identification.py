@@ -23,33 +23,31 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFaviconIdentification(PluginTest):
-    
+
     favicon_url = 'http://moth/'
     no_favicon_url = 'http://wordpress/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': None,
-                'plugins': {'infrastructure': (PluginConfig('favicon_identification'),)}
-                }
+        'target': None,
+        'plugins': {'infrastructure': (PluginConfig('favicon_identification'),)}
         }
-    
+    }
+
     def test_no_favicon_identification_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.no_favicon_url, cfg['plugins'])
-        
+
         infos = self.kb.get('favicon_identification', 'info')
-        self.assertEqual( len(infos), 0, infos)
-    
+        self.assertEqual(len(infos), 0, infos)
+
     def test_favicon_identification_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.favicon_url, cfg['plugins'])
-        
+
         infos = self.kb.get('favicon_identification', 'info')
-        self.assertEqual( len(infos), 1, infos)
-        
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        self.assertEqual( info.get_name(), 'Favicon identification')
+        self.assertEqual(info.get_name(), 'Favicon identification')
         self.assertTrue('tomcat' in info.get_desc().lower(), info.get_desc())
-        
-        

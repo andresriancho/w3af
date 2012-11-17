@@ -31,11 +31,11 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestTextFile(PluginTest):
-    
+
     OUTPUT_FILE = 'output-unittest.txt'
-    
+
     target_url = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?name=xxx',
@@ -50,25 +50,25 @@ class TestTextFile(PluginTest):
                     PluginConfig(
                         'text_file',
                         ('output_file', OUTPUT_FILE, PluginConfig.STR)),
-                )         
+                )
             },
         }
     }
-    
+
     def test_found_vulns(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         kb_vulns = self.kb.get('sqli', 'sqli')
         file_vulns = self._from_txt_get_vulns()
-        
+
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
-        
+
         self.assertEquals(
             set(sorted([v.getURL() for v in kb_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
-        
+
         self.assertEquals(
             set(sorted([v.get_method() for v in kb_vulns])),
             set(sorted([v.get_method() for v in file_vulns]))
@@ -85,12 +85,12 @@ class TestTextFile(PluginTest):
 
             if mo:
                 v = vuln.vuln()
-                v.setURL( URL(mo.group(1)) )
-                v.set_method( mo.group(2) )
+                v.setURL(URL(mo.group(1)))
+                v.set_method(mo.group(2))
                 file_vulns.append(v)
-        
+
         return file_vulns
-            
+
     def tearDown(self):
         try:
             os.remove(self.OUTPUT_FILE)

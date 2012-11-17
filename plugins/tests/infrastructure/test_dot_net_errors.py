@@ -20,28 +20,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestDotNetErrors(PluginTest):
-    
+
     moth_url = 'http://moth/w3af/infrastructure/dot_net_errors/'
-    
+
     _run_configs = {
         'cfg': {
             'target': moth_url,
             'plugins': {'infrastructure': (PluginConfig('dot_net_errors'),),
                         'crawl': (PluginConfig('web_spider',
                                                ('onlyForward', True, PluginConfig.BOOL),),)}
-            }
         }
-    
+    }
+
     def test_dot_net_errors(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('dot_net_errors', 'dot_net_errors')
-        
-        self.assertEqual( len(infos), 1, infos )
-        
+
+        self.assertEqual(len(infos), 1, infos)
+
         info = infos[0]
-        
-        self.assertEqual( info.get_name(), 'Information disclosure via .NET errors')
-                
+
+        self.assertEqual(
+            info.get_name(), 'Information disclosure via .NET errors')

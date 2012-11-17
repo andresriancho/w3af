@@ -26,72 +26,76 @@ from nose.plugins.skip import SkipTest
 
 
 class TestDirBruter(PluginTest):
-    
+
     directory_url = 'http://moth/w3af/crawl/dir_bruter/'
     base_url = 'http://moth/'
-    
+
     _run_simple = {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('dir_bruter',
-                                                  ('be_recursive', 
-                                                   False,
-                                                   PluginConfig.BOOL)
-                                              ),)}
-        }
+        'target': base_url,
+        'plugins': {'crawl': (PluginConfig('dir_bruter',
+                                           ('be_recursive',
+                                            False,
+                                            PluginConfig.BOOL)
+                                           ),)}
+    }
 
     _run_recursive = {
-            'target': directory_url,
-            'plugins': {'crawl': (PluginConfig('dir_bruter',
-                                                  ('be_recursive', 
-                                                   True,
-                                                   PluginConfig.BOOL)
-                                              ),)}
-        }
+        'target': directory_url,
+        'plugins': {'crawl': (PluginConfig('dir_bruter',
+                                           ('be_recursive',
+                                            True,
+                                            PluginConfig.BOOL)
+                                           ),)}
+    }
 
-    TEST_DB_PATH = os.path.join('plugins', 'tests', 'crawl', 'dir_bruter', 'test_dirs_small.db')
-    DIST_DB_PATH = os.path.join('plugins', 'crawl', 'dir_bruter', 'common_dirs_small.db')
-    TEMP_DB_PATH = os.path.join('plugins', 'tests', 'crawl', 'dir_bruter', 'common_dirs_small.db.orig')
-    
+    TEST_DB_PATH = os.path.join(
+        'plugins', 'tests', 'crawl', 'dir_bruter', 'test_dirs_small.db')
+    DIST_DB_PATH = os.path.join(
+        'plugins', 'crawl', 'dir_bruter', 'common_dirs_small.db')
+    TEMP_DB_PATH = os.path.join('plugins', 'tests', 'crawl',
+                                'dir_bruter', 'common_dirs_small.db.orig')
+
     def setUp(self):
         '''
         This is a rather complex setUp since I need to move the failing_spider.py
         plugin to the plugin directory in order to be able to run it afterwards.
-        
+
         In the tearDown method, I'll remove the file.
         '''
-        shutil.move( self.DIST_DB_PATH, self.TEMP_DB_PATH )
-        shutil.copy( self.TEST_DB_PATH, self.DIST_DB_PATH )
-        
+        shutil.move(self.DIST_DB_PATH, self.TEMP_DB_PATH)
+        shutil.copy(self.TEST_DB_PATH, self.DIST_DB_PATH)
+
         super(TestDirBruter, self).setUp()
-    
+
     def tearDown(self):
-        shutil.move( self.TEMP_DB_PATH, self.DIST_DB_PATH )
+        shutil.move(self.TEMP_DB_PATH, self.DIST_DB_PATH)
 
         super(TestDirBruter, self).tearDown()
-            
+
     def test_fuzzer_found_urls(self):
         self._scan(self._run_simple['target'], self._run_simple['plugins'])
         urls = self.kb.get('urls', 'url_objects')
-        
-        EXPECTED_URLS = ('setup/', 'header/', 'images/', 'portal/', 'index/', '')        
-        
+
+        EXPECTED_URLS = (
+            'setup/', 'header/', 'images/', 'portal/', 'index/', '')
+
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.base_url + end) for end in EXPECTED_URLS)
-                )
-    
+            set(str(u) for u in urls),
+            set((self.base_url + end) for end in EXPECTED_URLS)
+        )
+
     def test_no_index(self):
         raise SkipTest('FIXME: The index/ in EXPECTED_URLS is a bug!')
-    
-    def test_recursive(self):
-        self._scan(self._run_recursive['target'], self._run_recursive['plugins'])
-        urls = self.kb.get('urls', 'url_objects')
-        
-        EXPECTED_URLS = ('spameggs/', 'test/', 'spameggs/portal/', 'spameggs/portal/andres/', '')        
-        
-        self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.directory_url + end) for end in EXPECTED_URLS)
-                )
 
-        
+    def test_recursive(self):
+        self._scan(
+            self._run_recursive['target'], self._run_recursive['plugins'])
+        urls = self.kb.get('urls', 'url_objects')
+
+        EXPECTED_URLS = ('spameggs/', 'test/', 'spameggs/portal/',
+                         'spameggs/portal/andres/', '')
+
+        self.assertEquals(
+            set(str(u) for u in urls),
+            set((self.directory_url + end) for end in EXPECTED_URLS)
+        )

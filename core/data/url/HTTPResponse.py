@@ -47,29 +47,29 @@ def from_httplib_resp(httplibresp, original_url=None):
     '''
     Factory function. Build a HTTPResponse object from a httplib.HTTPResponse
     instance
-    
+
     @param httplibresp: httplib.HTTPResponse instance
     @param original_url: Optional 'url_object' instance.
-    
+
     @return: A HTTPResponse instance
     '''
     resp = httplibresp
     code, msg, hdrs, body = (resp.code, resp.msg, resp.info(), resp.read())
     hdrs = Headers(hdrs.items())
-    
+
     if original_url:
         url_inst = URL(resp.geturl(), original_url.encoding)
         url_inst = url_inst.urlDecode()
     else:
         url_inst = original_url = URL(resp.geturl())
-    
+
     charset = getattr(resp, 'encoding', None)
     return HTTPResponse(code, body, hdrs, url_inst,
                         original_url, msg, charset=charset)
 
 
 class HTTPResponse(object):
-    
+
     DOC_TYPE_TEXT_OR_HTML = 'DOC_TYPE_TEXT_OR_HTML'
     DOC_TYPE_SWF = 'DOC_TYPE_SWF'
     DOC_TYPE_PDF = 'DOC_TYPE_PDF'
@@ -99,9 +99,9 @@ class HTTPResponse(object):
                             % type(original_url))
 
         if not isinstance(headers, Headers):
-            raise TypeError('Invalid type %s for HTTPResponse ctor param headers.' 
+            raise TypeError('Invalid type %s for HTTPResponse ctor param headers.'
                             % type(headers))
-        
+
         self._charset = charset
         self._headers = None
         self._body = None
@@ -117,7 +117,7 @@ class HTTPResponse(object):
         self._info = headers
         # Set code
         self.setCode(code)
-        
+
         # Set the URL variables
         # The URL that we really GET'ed
         self._realurl = original_url.uri2url()
@@ -132,16 +132,16 @@ class HTTPResponse(object):
         self._time = time
         self._alias = alias
         self._doc_type = None
-    
+
     def __contains__(self, string_to_test):
         '''
         Determine if the `string_to_test` is contained by the HTTP response
         body.
 
-        @param string_to_test: String to look for in the body  
+        @param string_to_test: String to look for in the body
         '''
         return string_to_test in self.body
-    
+
     def __repr__(self):
 
         vals = {
@@ -149,18 +149,18 @@ class HTTPResponse(object):
             'url': str(self.getURL()),
             'id': self.id and ' | id:%s' % self.id or '',
             'fcache': self._fromCache and ' | fromCache:True' or ''
-            }
+        }
         return '<HTTPResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
-    
+
     def set_id(self, id):
         self.id = id
-    
+
     def get_id(self):
         return self.id
 
     def setCode(self, code):
         self._code = code
-    
+
     def getCode(self):
         return self._code
 
@@ -171,13 +171,13 @@ class HTTPResponse(object):
             # Free 'raw_body'
             self._raw_body = None
         return self._body
-    
+
     @body.setter
     def body(self, body):
         # Reset body
         self._body = None
         self._raw_body = body
-    
+
     def setBody(self, body):
         '''
         Setter for body.
@@ -185,44 +185,45 @@ class HTTPResponse(object):
         @body: A string that represents the body of the HTTP response
         '''
         self.body = body
-    
+
     def getBody(self):
         return self.body
 
     def getClearTextBody(self):
         '''
-        @return: A clear text representation of the HTTP response body. 
+        @return: A clear text representation of the HTTP response body.
         '''
-        
+
         clear_text_body = self._clear_text_body
-        
+
         if clear_text_body is None:
             # Calculate the clear text body
             dom = self.getDOM()
             if dom is not None:
-                clear_text_body = self._clear_text_body = ''.join(dom.itertext())
-        
+                clear_text_body = self._clear_text_body = ''.join(
+                    dom.itertext())
+
         return clear_text_body
 
     def setDOM(self, dom_inst):
         '''
         This setter is part of a performance improvement I'm talking about in
         getDOM() and sgmlParser._parse().
-        
+
         Without this setDOM() which is called from sgmlParser._parse() when the
         code runs:
             sgmlParser( http_response )
             ...
             http_response.getDOM()
-        
+
         The DOM is calculated twice.
-        
+
         We still need to figure out how to solve the other issue which should
         aim to avoid the double DOM generation when:
             http_response.getDOM()
             ...
             sgmlParser( http_response )
-        
+
         @return: None
         '''
         self._dom = dom_inst
@@ -232,10 +233,10 @@ class HTTPResponse(object):
         I don't want to calculate the DOM for all responses, only for those
         which are needed. This method will first calculate the DOM, and then
         save it for upcoming calls.
-        
+
         @see: TODO: Potential performance improvement in sgmlParser._parse()
                     for ideas on how to reduce CPU usage.
-                            
+
         @return: The DOM, or None if the HTML normalization failed.
         '''
         if self._dom is None:
@@ -247,7 +248,7 @@ class HTTPResponse(object):
                        % self.getURL())
                 om.out.debug(msg)
         return self._dom
-    
+
     @property
     def charset(self):
         if not self._charset:
@@ -255,26 +256,26 @@ class HTTPResponse(object):
             # Free 'raw_body'
             self._raw_body = None
         return self._charset
-    
+
     @charset.setter
     def charset(self, charset):
         self._charset = charset
-    
+
     def setCharset(self, charset):
         self.charset = charset
-    
+
     def getCharset(self):
         return self.charset
-    
+
     def setRedirURL(self, ru):
         self._redirectedURL = ru
-    
+
     def getRedirURL(self):
         return self._redirectedURL
 
     def setRedirURI(self, ru):
         self._redirectedURI = ru
-    
+
     def getRedirURI(self):
         return self._redirectedURI
 
@@ -284,7 +285,7 @@ class HTTPResponse(object):
             self.headers = self._info
             assert self._headers is not None
         return self._headers
-    
+
     @headers.setter
     def headers(self, headers):
         # Fix lowercase in header names from HTTPMessage
@@ -299,9 +300,9 @@ class HTTPResponse(object):
         # Set the type, for easy access.
         self._doc_type = HTTPResponse.DOC_TYPE_OTHER
         find_word = lambda w: content_type.find(w) != -1
-        
+
         content_type_hvalue, _ = self._headers.iget('content-type', None)
-        
+
         # we need exactly content type but not charset
         if content_type_hvalue is not None:
             try:
@@ -311,17 +312,17 @@ class HTTPResponse(object):
                 om.out.debug(msg % (content_type_hvalue,))
             else:
                 content_type = self._content_type.lower()
-        
+
                 # Set the doc_type
                 if content_type.count('image'):
                     self._doc_type = HTTPResponse.DOC_TYPE_IMAGE
-                
+
                 elif content_type.count('pdf'):
                     self._doc_type = HTTPResponse.DOC_TYPE_PDF
-                
+
                 elif content_type.count('x-shockwave-flash'):
                     self._doc_type = HTTPResponse.DOC_TYPE_SWF
-                
+
                 elif any(imap(find_word,
                               ('text', 'html', 'xml', 'txt', 'javascript'))):
                     self._doc_type = HTTPResponse.DOC_TYPE_TEXT_OR_HTML
@@ -334,7 +335,7 @@ class HTTPResponse(object):
         @param headers: The headers dict.
         '''
         self.headers = headers
-    
+
     def getHeaders(self):
         return self.headers
 
@@ -344,10 +345,11 @@ class HTTPResponse(object):
             {'Abc-Def': 'F00N3s'}
         This will return:
             {'abc-def': 'F00N3s'}
-        
+
         The only thing that changes is the header name.
         '''
-        lcase_headers = dict((k.lower(), v) for k, v in self.headers.iteritems())
+        lcase_headers = dict(
+            (k.lower(), v) for k, v in self.headers.iteritems())
         return Headers(lcase_headers.items())
 
     def setURL(self, url):
@@ -364,10 +366,10 @@ class HTTPResponse(object):
         '''
         if not isinstance(url, URL):
             raise TypeError('The URL of a HTTPResponse object must be of '
-                             'url.URL type.')
-        
+                            'url.URL type.')
+
         self._realurl = url.uri2url()
-        
+
     def getURL(self):
         return self._realurl
 
@@ -382,12 +384,12 @@ class HTTPResponse(object):
         >>> r.setURI(uri)
         >>> r.getURI() == uri
         True
-        
+
         '''
         if not isinstance(uri, URL):
             raise TypeError('The URI of a HTTPResponse object must be of '
-                             'url.URL type.')
-        
+                            'url.URL type.')
+
         self._uri = uri
         self._realurl = uri.uri2url()
 
@@ -403,7 +405,7 @@ class HTTPResponse(object):
         local cache.
         '''
         self._fromCache = fcache
-    
+
     def getFromCache(self):
         '''
         @return: True if this response was obtained from the local cache.
@@ -412,13 +414,13 @@ class HTTPResponse(object):
 
     def set_wait_time(self, t):
         self._time = t
-    
+
     def getWaitTime(self):
         return self._time
 
     def setAlias(self, alias):
         self._alias = alias
-        
+
     def getAlias(self):
         return self._alias
 
@@ -428,10 +430,10 @@ class HTTPResponse(object):
     def getStatusLine(self):
         '''Return status-line of response.'''
         return 'HTTP/1.1' + SP + str(self._code) + SP + self._msg + CRLF
-    
+
     def getMsg(self):
         return self._msg
-    
+
     def _charset_handling(self):
         '''
         Decode the body based on the header (or metadata) encoding.
@@ -445,23 +447,23 @@ class HTTPResponse(object):
                     <meta .* content="text/html; charset=utf-8" />
                 c) Determine the charset using the chardet module (TODO)
                 d) Use the DEFAULT_CHARSET
-            
+
             2) Try to decode the body using the found charset. If it fails,
             then force it to use the DEFAULT_CHARSET
-        
-        Finally return the unicode (decoded) body and the used charset.  
-        
+
+        Finally return the unicode (decoded) body and the used charset.
+
         Note: If the body is already a unicode string return it as it is.
         '''
         lcase_headers = self.getLowerCaseHeaders()
         charset = self._charset
         rawbody = self._raw_body
-        
+
         # Only try to decode <str> strings. Skip <unicode> strings
         if type(rawbody) is unicode:
             _body = rawbody
             assert charset is not None, ("HTTPResponse objects containing "
-                             "unicode body must have an associated charset")
+                                         "unicode body must have an associated charset")
         elif 'content-type' not in lcase_headers:
             _body = rawbody
             charset = DEFAULT_CHARSET
@@ -470,7 +472,7 @@ class HTTPResponse(object):
                 msg = "The remote web server failed to send the 'content-type'"\
                       " header in HTTP response with id %s" % self.id
                 om.out.debug(msg)
-                
+
         elif not self.is_text_or_html():
             # Not text, save as it is.
             _body = rawbody
@@ -480,8 +482,8 @@ class HTTPResponse(object):
             if not charset:
                 # Start with the headers
                 charset_mo = CHARSET_EXTRACT_RE.search(
-                                                lcase_headers['content-type'],
-                                                re.I)
+                    lcase_headers['content-type'],
+                    re.I)
                 if charset_mo:
                     # Seems like the response's headers contain a charset
                     charset = charset_mo.groups()[0].lower().strip()
@@ -497,28 +499,28 @@ class HTTPResponse(object):
             # The return value of the decode function is a unicode string.
             try:
                 _body = smart_unicode(
-                                rawbody,
-                                charset,
-                                errors=ESCAPED_CHAR,
-                                on_error_guess=False
-                            )
+                    rawbody,
+                    charset,
+                    errors=ESCAPED_CHAR,
+                    on_error_guess=False
+                )
             except LookupError:
                 # Warn about a buggy charset
                 msg = ('Charset LookupError: unknown charset: %s; '
-                    'ignored and set to default: %s' % 
-                    (charset, self._charset))
+                       'ignored and set to default: %s' %
+                      (charset, self._charset))
                 om.out.debug(msg)
                 # Forcing it to use the default
                 charset = DEFAULT_CHARSET
                 _body = smart_unicode(
-                                rawbody,
-                                charset,
-                                errors=ESCAPED_CHAR,
-                                on_error_guess=False
-                            )
-            
+                    rawbody,
+                    charset,
+                    errors=ESCAPED_CHAR,
+                    on_error_guess=False
+                )
+
         return _body, charset
-    
+
     @property
     def content_type(self):
         '''
@@ -540,13 +542,13 @@ class HTTPResponse(object):
         @return: True if this response is text or html
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML
-    
+
     def is_pdf(self):
         '''
         @return: True if this response is a PDF file
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_PDF
-    
+
     def is_swf(self):
         '''
         @return: True if this response is a SWF file
@@ -558,7 +560,7 @@ class HTTPResponse(object):
         @return: True if this response is an image file
         '''
         return self.doc_type == HTTPResponse.DOC_TYPE_IMAGE
-    
+
     def dumpResponseHead(self):
         '''
         @return: A string with:
@@ -581,15 +583,15 @@ class HTTPResponse(object):
         if isinstance(body, unicode):
             body = body.encode(DEFAULT_CHARSET, 'replace')
         return "%s%s%s" % (self.dumpResponseHead(), CRLF, body)
-        
+
     def dumpHeaders(self):
         '''
         @return: a str representation of the headers.
         '''
         if self.headers:
-            return CRLF.join(h + ': ' + hv  for h, hv in self.headers.items()) + CRLF
+            return CRLF.join(h + ': ' + hv for h, hv in self.headers.items()) + CRLF
         else:
             return ''
-        
+
     def copy(self):
         return copy.deepcopy(self)

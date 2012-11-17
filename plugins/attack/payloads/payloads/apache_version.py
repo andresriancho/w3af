@@ -11,9 +11,9 @@ class apache_version(base_payload):
         result = {}
         result['version'] = []
 
-        def parse_apache_binary (binary):
-            version = re.search('(?<=/build/buildd/)(.*?)/',  binary)
-            version2 = re.search('(?<=Apache)/(\d\.\d\.\d*)(.*?) ',  binary)
+        def parse_apache_binary(binary):
+            version = re.search('(?<=/build/buildd/)(.*?)/', binary)
+            version2 = re.search('(?<=Apache)/(\d\.\d\.\d*)(.*?) ', binary)
             if version and version2:
                 return [version.group(1), version2.group(1)]
             elif version:
@@ -33,20 +33,19 @@ class apache_version(base_payload):
         result['version'] = [p for p in result['version'] if p != '']
 
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result['version']:
             return 'Apache version not found.'
         else:
             rows = []
-            rows.append( ['Version',] ) 
-            rows.append( [] )
+            rows.append(['Version', ])
+            rows.append([])
             for key_name in api_result:
                 for version in api_result[key_name]:
-                    rows.append( [version,] )
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+                    rows.append([version, ])
+            result_table = table(rows)
+            result_table.draw(80)
             return rows
-

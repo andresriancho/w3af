@@ -21,19 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestFormatString(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/format_string/format_string.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?id=1',
             'plugins': {
-                 'audit': (PluginConfig('format_string'),),
-                 }
+                'audit': (PluginConfig('format_string'),),
             }
         }
-    
+    }
+
     def test_found_format(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -41,6 +42,6 @@ class TestFormatString(PluginTest):
         self.assertEquals(1, len(vulns))
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals('Format string vulnerability',vuln.get_name())
+        self.assertEquals('Format string vulnerability', vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.getURL()))
         self.assertEquals('id', vuln.get_var())

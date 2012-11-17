@@ -31,7 +31,7 @@ from plugins.grep.private_ip import private_ip
 
 
 class test_private_ip(unittest.TestCase):
-    
+
     def setUp(self):
         kb.kb.cleanup()
         self.plugin = private_ip()
@@ -40,60 +40,60 @@ class test_private_ip(unittest.TestCase):
 
     def tearDown(self):
         self.plugin.end()
-        
+
     def test_private_ip_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 0 )
-    
+        self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 0)
+
     def test_private_ip_find(self):
         body = '<html><head>192.168.1.1</head></html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
+
     def test_private_ip_broken_html(self):
         body = '<html><head>192.168.1.1</html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
+
     def test_private_ip_find_10(self):
         body = 'header 10.2.34.2 footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 1 )
-    
+        self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
+
     def test_private_ip_find_header(self):
         body = 'header content footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
-                           ('x-via','10.3.4.5')])
-        response = HTTPResponse(200, body , headers, url, url)
+                           ('x-via', '10.3.4.5')])
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'header')) , 1 )
+        self.assertEquals(len(kb.kb.get('private_ip', 'header')), 1)
 
     def test_private_ip_no(self):
         body = '<script> 1010.2.3.4 </script>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-via', '10.256.3.10.1.2.3')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('private_ip', 'HTML')) , 0 )
-        self.assertEquals( len(kb.kb.get('private_ip', 'header')) , 0 )
+        self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 0)
+        self.assertEquals(len(kb.kb.get('private_ip', 'header')), 0)

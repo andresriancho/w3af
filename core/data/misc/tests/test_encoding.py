@@ -24,18 +24,19 @@ import unittest
 
 from core.data.misc.encoding import is_known_encoding, ESCAPED_CHAR, HTML_ENCODE
 
+
 class TestEncoding(unittest.TestCase):
-    
+
     def test_is_known_encoding_true(self):
-        self.assertTrue( is_known_encoding('utf-8') )
-        
+        self.assertTrue(is_known_encoding('utf-8'))
+
     def test_is_known_encoding_false(self):
-        self.assertFalse( is_known_encoding('andres-16') )
-    
+        self.assertFalse(is_known_encoding('andres-16'))
+
     def test_escaped_char_empty(self):
         decoded = ''.decode('utf-8', errors=ESCAPED_CHAR)
         self.assertEqual(decoded, '')
-        
+
     def test_escaped_char_no_error(self):
         decoded = 'ábc'.decode('utf-8', errors=ESCAPED_CHAR)
         self.assertEqual(decoded, 'ábc')

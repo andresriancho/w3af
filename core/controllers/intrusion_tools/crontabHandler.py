@@ -27,7 +27,7 @@ from core.controllers.intrusion_tools.delayedExecution import delayedExecution
 from core.controllers.intrusion_tools.execMethodHelpers import *
 
 
-class crontabHandler( delayedExecution ):
+class crontabHandler(delayedExecution):
     '''
     This class defines a crontab handler, that will:
         - add new commands to the crontab calculating time
@@ -35,67 +35,69 @@ class crontabHandler( delayedExecution ):
         - restore old crontab
     '''
 
-    def __init__( self, execMethod ):
+    def __init__(self, execMethod):
         self._execMethod = execMethod
-        self._cronFile = get_remote_temp_file( self._execMethod )
-        
-    def canDelay( self ):
+        self._cronFile = get_remote_temp_file(self._execMethod)
+
+    def canDelay(self):
         '''
         @return: True if the remote user can add entries to his crontab
         '''
-        actualCron = self._exec( 'crontab -l 2>&1' )
+        actualCron = self._exec('crontab -l 2>&1')
         if 'not allowed to use this program' in actualCron:
             om.out.debug('[crontabHandler] The user has no permission to create a cron entry.')
             return False
         else:
             om.out.debug('[crontabHandler] The user can create a cron entry.')
             return True
-            
-    def addToSchedule( self, commandToExec ):
+
+    def addToSchedule(self, commandToExec):
         '''
         Adds a command to the cron.
         '''
-        actualCron = self._exec( 'crontab -l 2>&1' )
+        actualCron = self._exec('crontab -l 2>&1')
         actualCron = actualCron.strip()
-        
-        remoteDate = self._exec( 'date +%d-%m-%H:%M:%S-%u' )
+
+        remoteDate = self._exec('date +%d-%m-%H:%M:%S-%u')
         remoteDate = remoteDate.strip()
-        
-        user = self._exec( 'whoami')
+
+        user = self._exec('whoami')
         user = user.strip()
-        
-        newCronLine, waitTime = self._createCronLine( remoteDate, commandToExec )
-        
+
+        newCronLine, waitTime = self._createCronLine(
+            remoteDate, commandToExec)
+
         if 'no crontab for ' + user == actualCron:
             newCron = newCronLine
         else:
             newCron = actualCron + '\n' + newCronLine
-        
+
         # This is done this way so I don't need to use one echo that prints new lines
         # new lines are \n and with gpc magic quotes that fails
         for line in newCron.split('\n'):
-            self._exec( '/bin/echo ' + line + ' >> ' + self._cronFile )
-        self._exec( 'crontab ' + self._cronFile )
-        self._exec( '/bin/rm ' + self._cronFile )
-        
+            self._exec('/bin/echo ' + line + ' >> ' + self._cronFile)
+        self._exec('crontab ' + self._cronFile)
+        self._exec('/bin/rm ' + self._cronFile)
+
         filename = commandToExec.split(' ')[0]
-        self._exec( '/bin/chmod +x ' + filename )
-        
-        om.out.debug('Added command: "' + commandToExec + '" to the remote crontab of user : "'+user+'".')
+        self._exec('/bin/chmod +x ' + filename)
+
+        om.out.debug('Added command: "' + commandToExec +
+                     '" to the remote crontab of user : "' + user + '".')
         self._oldCron = actualCron
-        
+
         return waitTime
 
-    def restoreOldSchedule( self ):
-        self._exec( '/bin/echo -e ' + self._oldCron + ' > ' + self._cronFile )
-        self._exec( 'crontab ' + self._cronFile )
-        self._exec( '/bin/rm ' + self._cronFile )
+    def restoreOldSchedule(self):
+        self._exec('/bin/echo -e ' + self._oldCron + ' > ' + self._cronFile)
+        self._exec('crontab ' + self._cronFile)
+        self._exec('/bin/rm ' + self._cronFile)
         om.out.debug('Successfully restored old crontab.')
 
-    def _createCronLine( self, remoteDate, commandToExec ):
+    def _createCronLine(self, remoteDate, commandToExec):
         '''
         Creates a crontab line that executes the command one minute after the "date" parameter.
-        
+
         @return: A tuple with the new line to add to the crontab, and the time that it will take to run the command.
         '''
         resLine = ''
@@ -114,10 +116,10 @@ class crontabHandler( delayedExecution ):
             else:
                 delta = 1
                 waitTime = 60 - int(sec)
-                
-            minute = int( minute ) + delta
-            hour, minute, amPm = self._fixTime( hour, minute )
-            
-            resLine = str( minute ) + ' ' + str(hour) + ' ' + str(dayNumber) + ' ' + str(month) + ' ' + str(weekDay) + ' ' + commandToExec
-                
+
+            minute = int(minute) + delta
+            hour, minute, amPm = self._fixTime(hour, minute)
+
+            resLine = str(minute) + ' ' + str(hour) + ' ' + str(dayNumber) + ' ' + str(month) + ' ' + str(weekDay) + ' ' + commandToExec
+
         return resLine, waitTime

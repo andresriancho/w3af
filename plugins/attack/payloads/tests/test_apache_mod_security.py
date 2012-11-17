@@ -23,12 +23,11 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_apache_mod_security(PayloadTestHelper):
-    
-    EXPECTED_RESULT = { 'file': { '/etc/apache2/mods-available/mod-security.conf': 
-                                 u'<IfModule security2_module>\n\t# Default Debian dir for modsecurity\'s persistent data\n\tSecDataDir /var/cache/modsecurity\n\n\t# Include all the *.conf files in /etc/modsecurity.\n\t# Keeping your local configuration in that directory\n\t# will allow for an easy upgrade of THIS file and\n\t# make your life easier\n\tInclude "/etc/modsecurity/*.conf"\n</IfModule>\n'},
-                        'version': { u'2.6.3 ': 'Yes'}}
+
+    EXPECTED_RESULT = {'file': {'/etc/apache2/mods-available/mod-security.conf':
+                                u'<IfModule security2_module>\n\t# Default Debian dir for modsecurity\'s persistent data\n\tSecDataDir /var/cache/modsecurity\n\n\t# Include all the *.conf files in /etc/modsecurity.\n\t# Keeping your local configuration in that directory\n\t# will allow for an easy upgrade of THIS file and\n\t# make your life easier\n\tInclude "/etc/modsecurity/*.conf"\n</IfModule>\n'},
+                       'version': {u'2.6.3 ': 'Yes'}}
 
     def test_apache_mod_security(self):
         result = exec_payload(self.shell, 'apache_mod_security', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

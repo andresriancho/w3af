@@ -26,7 +26,7 @@ from core.data.misc.file_utils import days_since_file_update
 
 
 class TestFileUtils(unittest.TestCase):
-    
+
     def test_days_since_file_update_true(self):
         filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
         result = days_since_file_update(filename, 0)
@@ -34,6 +34,5 @@ class TestFileUtils(unittest.TestCase):
 
     def test_days_since_file_update_false(self):
         filename = os.path.join('core', 'data', 'misc', 'file_utils.py')
-        result = days_since_file_update(filename, 309**32)
+        result = days_since_file_update(filename, 309 ** 32)
         self.assertFalse(result)
-        

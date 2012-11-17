@@ -29,7 +29,7 @@ class xss_protection_header(GrepPlugin):
     '''
     Grep headers for "X-XSS-Protection: 0" which disables security features in
     the browser.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
@@ -38,7 +38,7 @@ class xss_protection_header(GrepPlugin):
     def grep(self, request, response):
         '''
         Plugin entry point.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
@@ -48,24 +48,24 @@ class xss_protection_header(GrepPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Insecure X-XSS-Protection header usage')
-            i.setURL( response.getURL() )
-            i.set_id( response.id )
+            i.setURL(response.getURL())
+            i.set_id(response.id)
             msg = 'The remote web server sent the HTTP X-XSS-Protection header'\
                   ' with a 0 value, which disables Internet Explorer\'s XSS ' \
                   ' filter. In most cases, this is a bad practice and should' \
                   ' be subject to review.'
-            i.set_desc( msg )
-            i.addToHighlight( 'X-XSS-Protection' )
-            kb.kb.append( self , 'xss_protection_header' , i )
+            i.set_desc(msg)
+            i.addToHighlight('X-XSS-Protection')
+            kb.kb.append(self, 'xss_protection_header', i)
 
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'xss_protection_header', 
-                                    'xss_protection_header' ), 'URL' )
-            
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('xss_protection_header',
+                                  'xss_protection_header'), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -19,23 +19,22 @@ class ldap_config_files(base_payload):
         for file in files:
             content = self.shell.read(file)
             if content:
-                result[ file ] = content
+                result[file] = content
         return result
-        
+
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result:
             return 'LDAP configuration files not found.'
         else:
             rows = []
-            rows.append( ['LDAP file', 'Content'] ) 
-            rows.append( [] )
+            rows.append(['LDAP file', 'Content'])
+            rows.append([])
             for filename in api_result:
-                rows.append( [filename, api_result[filename] ] )
-                rows.append( [] )
-                              
-            result_table = table( rows[:-1] )
-            result_table.draw( 80 )                    
-            return rows
+                rows.append([filename, api_result[filename]])
+                rows.append([])
 
+            result_table = table(rows[:-1])
+            result_table.draw(80)
+            return rows

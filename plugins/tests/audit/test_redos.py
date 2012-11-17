@@ -21,18 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestREDoS(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('redos'),),
-                 }
+                'audit': (PluginConfig('redos'),),
             }
         }
-    
+    }
+
     def test_found_redos(self):
         self.assertTrue(False)

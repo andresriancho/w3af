@@ -35,16 +35,16 @@ class rnd_hex_encode(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request ):
+    def modifyRequest(self, request):
         '''
         Mangles the request
-        
+
         @param request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-        
+
         >>> from core.data.parsers.url import URL
         >>> rhe = rnd_hex_encode()
-        
+
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rhe.modifyRequest( r ).url_object.url_string
@@ -72,37 +72,37 @@ class rnd_hex_encode(EvasionPlugin):
         u'http://www.w3af.com/aa/'
 
         '''
-        # First we mangle the URL        
+        # First we mangle the URL
         path = request.url_object.getPath()
         path = self._mutate(path)
-        
+
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath( path )
-        
+        new_url.setPath(path)
+
         # Mangle the postdata
         data = request.get_data()
         if data:
-            
+
             try:
                 # Only mangle the postdata if it is a url encoded string
-                parse_qs( data )
+                parse_qs(data)
             except:
                 pass
             else:
-                data = self._mutate(data) 
-        
-        new_req = HTTPRequest( new_url , data, request.headers, 
-                               request.get_origin_req_host() )
-        
+                data = self._mutate(data)
+
+        new_req = HTTPRequest(new_url, data, request.headers,
+                              request.get_origin_req_host())
+
         return new_req
-    
-    def _mutate( self, data ):
+
+    def _mutate(self, data):
         '''
         Replace some strings by it's hex encoded value.
-        
+
         @return: a string.
-        '''        
+        '''
         new_data = ''
         for char in data:
             if char not in ['?', '/', '&', '\\', '=', '%', '+']:
@@ -110,23 +110,23 @@ class rnd_hex_encode(EvasionPlugin):
                     char = "%%%02x" % ord(char)
             new_data += char
         return new_data
-    
-    def getPriority( self ):
+
+    def getPriority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
-        
+
         @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
         return 50
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin adds random hex encoding.
-        
+
         Example:
             Input:      '/bar/foo.asp'
             Output :    '/b%61r/%66oo.asp'

@@ -33,47 +33,47 @@ class domain_dot(InfrastructurePlugin):
     '''
     Send a specially crafted request with a dot after the domain
     (http://host.tld./) and analyze response.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         # Internal variables
         self._already_tested = set()
 
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         Sends the special request.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
         domain = fuzzable_request.getURL().getDomain()
         extension = fuzzable_request.getURL().getExtension()
-        
+
         if (domain, extension) not in self._already_tested:
-            
+
             # Do it only one time
-            self._already_tested.add( (domain, extension) )
-            
+            self._already_tested.add((domain, extension))
+
             # Generate the new URL
             domain_dot = domain + '.'
             orig_url = fuzzable_request.getURL()
             try:
                 # GET the original response
-                original_response = self._uri_opener.GET( orig_url,
-                                                          cache=False )
+                original_response = self._uri_opener.GET(orig_url,
+                                                         cache=False)
                 # GET the response with the modified domain
                 # (with the trailing dot)
                 headers = Headers([('Host', domain_dot)])
-                response = self._uri_opener.GET( orig_url, cache=False,
-                                                 headers=headers )
-            except w3afException,w3:
-                om.out.error( str(w3) )
+                response = self._uri_opener.GET(orig_url, cache=False,
+                                                headers=headers)
+            except w3afException, w3:
+                om.out.error(str(w3))
             else:
-                self._analyze_response( original_response, response )
+                self._analyze_response(original_response, response)
 
     def _analyze_response(self, original_resp, resp):
         '''
@@ -94,12 +94,12 @@ class domain_dot(InfrastructurePlugin):
                   'some cases, this misconfiguration permits the attacker to ' \
                   'read the source code of the web application.'
             i.set_desc(msg)
-            
+
             om.out.information(msg)
-            
+
             kb.kb.append(self, 'domain_dot', i)
-                
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -108,8 +108,8 @@ class domain_dot(InfrastructurePlugin):
         sending a specially crafted request with a trailing dot in the domain
         name. For example, if the input for this plugin is http://host.tld/ ,
         the plugin will perform a request to http://host.tld./ .
-        
-        In some misconfigurations, the attacker is able to read the web 
+
+        In some misconfigurations, the attacker is able to read the web
         application source code by requesting any of the files in the "dotted"
         domain like this:
             - http://host.tld/login.php

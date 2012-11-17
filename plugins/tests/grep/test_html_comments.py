@@ -24,9 +24,9 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 @attr('smoke')
 class TestHTMLComments(PluginTest):
-    
+
     html_comments_url = 'https://moth/w3af/grep/html_comments/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': html_comments_url,
@@ -35,24 +35,27 @@ class TestHTMLComments(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos_html = self.kb.get('html_comments', 'html_comment_hides_html')
-        infos_interesting = self.kb.get('html_comments', 'interesting_comments')
-        
+        infos_interesting = self.kb.get(
+            'html_comments', 'interesting_comments')
+
         self.assertEquals(1, len(infos_html))
         self.assertEquals(1, len(infos_interesting))
-        
+
         html_info = infos_html[0]
         interesting_info = infos_interesting[0]
-        
-        self.assertEqual( interesting_info.get_name(), 'HTML comment with "pass" inside')
-        self.assertEqual( html_info.get_name(), 'HTML comment contains HTML code')
+
+        self.assertEqual(
+            interesting_info.get_name(), 'HTML comment with "pass" inside')
+        self.assertEqual(
+            html_info.get_name(), 'HTML comment contains HTML code')

@@ -30,7 +30,7 @@ class vuln(info):
     '''
     def __init__(self, data_obj=None):
         info.__init__(self, data_obj)
-        
+
         # Default values
         self._method = None
         self._id = None
@@ -38,9 +38,9 @@ class vuln(info):
         self._severity = None
         self._variable = None
         self._mutant = None
-        
+
         if isinstance(data_obj, Mutant) or \
-            isinstance(data_obj, vuln):
+                isinstance(data_obj, vuln):
             self.set_method(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())
@@ -52,19 +52,19 @@ class vuln(info):
         Sets the mutant that created this vuln.
         '''
         self._mutant = mutant
-        
+
     def get_mutant(self):
         return self._mutant
-        
+
     def set_var(self, variable):
         self._variable = variable
 
     def set_dc(self, dc):
         self._dc = dc
-        
+
     def set_severity(self, severity):
         self._severity = severity
-        
+
     def get_method(self):
         if self._mutant:
             return self._mutant.get_method()
@@ -82,27 +82,28 @@ class vuln(info):
             return self._mutant.get_dc()
         else:
             return self._dc
-    
+
     def get_severity(self):
         return self._severity
-        
+
     def get_desc(self):
         if self._id is not None and self._id != 0:
             if not self._desc.endswith('.'):
                 self._desc += '.'
-            
+
             # One request OR more than one request
             desc_to_return = self._desc
             if len(self._id) > 1:
                 desc_to_return += ' This vulnerability was found in the requests with'
-                desc_to_return += ' ids ' + self._convert_to_range_wrapper(self._id) + '.'
+                desc_to_return += ' ids ' + \
+                    self._convert_to_range_wrapper(self._id) + '.'
             else:
                 desc_to_return += ' This vulnerability was found in the request with'
                 desc_to_return += ' id ' + str(self._id[0]) + '.'
-                
+
             return desc_to_return
         else:
             return self._desc
-            
+
     def __repr__(self):
         return '<vuln object for vulnerability: "' + self._desc + '">'

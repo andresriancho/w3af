@@ -44,19 +44,19 @@ class ghdb(CrawlPlugin):
     Search Google for vulnerabilities in the target site.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         CrawlPlugin.__init__(self)
-        
+
         # Internal variables
         self._ghdb_file = os.path.join('plugins', 'crawl',
                                        'ghdb', 'GHDB.xml')
-        
+
         # User configured variables
         self._result_limit = 300
-    
+
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request ):
+    def crawl(self, fuzzable_request):
         '''
         @param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
@@ -69,18 +69,18 @@ class ghdb(CrawlPlugin):
             om.out.information(msg % domain)
         else:
             self._do_clasic_GHDB(domain)
-        
-    def _do_clasic_GHDB( self, domain ):
+
+    def _do_clasic_GHDB(self, domain):
         '''
         In classic GHDB, i search google for every term in the ghdb.
         '''
         self._google_se = google(self._uri_opener)
-        
-        google_hack_list = self._read_ghdb() 
+
+        google_hack_list = self._read_ghdb()
         # Don't get discovered by google [at least try...] and avoid dups
-        random.shuffle( google_hack_list )
+        random.shuffle(google_hack_list)
         google_hack_set = set(google_hack_list)
-        
+
         for gh in google_hack_set:
             search_term = 'site:%s %s' % (domain, gh.search)
             try:
@@ -89,7 +89,7 @@ class ghdb(CrawlPlugin):
                 # Google is saying: "no more automated tests".
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break
-    
+
     def _classic_worker(self, gh, search_term):
         '''
         Perform the searches and store the results in the kb.
@@ -98,114 +98,115 @@ class ghdb(CrawlPlugin):
 
         for result in google_list:
             # I found a vuln in the site!
-            response = self._uri_opener.GET(result.URL, cache=True )
-            if not is_404( response ):
+            response = self._uri_opener.GET(result.URL, cache=True)
+            if not is_404(response):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL( response.getURL() )
-                v.set_method( 'GET' )
-                v.set_name( 'Google hack database vulnerability' )
+                v.setURL(response.getURL())
+                v.set_method('GET')
+                v.set_name('Google hack database vulnerability')
                 v.set_severity(severity.MEDIUM)
                 msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
                       ' According to GHDB the vulnerability description is "%s".'
                 v.set_desc(msg % (response.getURL(), gh.desc))
-                v.set_id( response.id )
-                kb.kb.append( self, 'vuln', v )
-                om.out.vulnerability( v.get_desc(), severity=severity.LOW )
-                        
+                v.set_id(response.id)
+                kb.kb.append(self, 'vuln', v)
+                om.out.vulnerability(v.get_desc(), severity=severity.LOW)
+
                 # Create the fuzzable requests
-                for fr in self._create_fuzzable_requests( response ):
+                for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
-    
+
     def _read_ghdb(self):
         '''
         @return: Reads the ghdb.xml file and returns a list of GoogleHack
                  objects.
-        '''        
+        '''
         try:
-            ghdb_fd = file( self._ghdb_file )
+            ghdb_fd = file(self._ghdb_file)
         except Exception, e:
             msg = 'Failed to open ghdb file: "%s", error: "%s".'
-            raise w3afException( msg % (self._ghdb_file, e))
-        
+            raise w3afException(msg % (self._ghdb_file, e))
+
         try:
-            dom = xml.dom.minidom.parseString( ghdb_fd.read() )
+            dom = xml.dom.minidom.parseString(ghdb_fd.read())
         except Exception, e:
             msg = 'Failed to parse XML file: "%s", error: "%s".'
-            raise w3afException( msg % (self._ghdb_file, e))
-            
+            raise w3afException(msg % (self._ghdb_file, e))
+
         res = []
-        
+
         for signature in dom.getElementsByTagName("signature"):
             if len(signature.childNodes) != 6:
                 msg = 'There is a corrupt signature in the GHDB. The error was'\
                       ' found in the following XML code: "%s".' % signature.toxml()
                 om.out.debug(msg)
                 continue
-            
+
             try:
                 query_string = signature.childNodes[4].childNodes[0].data
-                
+
             except Exception, e:
                 msg = 'There is a corrupt signature in the GHDB. No query '\
                       ' string was found in the following XML code: "%s".'
                 om.out.debug(msg % signature.toxml())
                 continue
-                
+
             try:
                 desc = signature.childNodes[5].childNodes[0].data
             except:
                 desc = 'No description provided by GHDB.'
 
             gh = GoogleHack(query_string, desc)
-            res.append( gh )
-          
+            res.append(gh)
+
         return res
-        
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''        
+        '''
         ol = OptionList()
-        
+
         d = 'Fetch the first "result_limit" results from the Google search'
         o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
-        
+
         return ol
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         '''
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
-        
+
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._result_limit = options_list['result_limit'].get_value()
-            
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin finds possible vulnerabilities using google.
-        
+
         One configurable parameter exist:
             - result_limit
-        
-        Using the google hack database released by Exploit-DB.com, this 
+
+        Using the google hack database released by Exploit-DB.com, this
 	    plugin searches Google for possible vulnerabilities in the target
 	    domain.
-	    
+
 	    Special thanks go to the guys at http://www.exploit-db.com/ for
 	    maintaining the GHDB and letting us use this information.
         '''
+
 
 class GoogleHack(object):
     def __init__(self, search, desc):
         self.search = search
         self.desc = desc
-    
+
     def __eq__(self, other):
         return self.search == other.search

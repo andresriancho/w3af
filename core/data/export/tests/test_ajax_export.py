@@ -131,6 +131,7 @@ var post_data = (<r><![CDATA[a=1]]></r>).toString();
 xmlhttp.send(post_data);
 '''
 
+
 class TestAjaxExport(unittest.TestCase):
 
     def test_export_GET(self):
@@ -151,4 +152,3 @@ class TestAjaxExport(unittest.TestCase):
         ajax_code = ajax_export(http_request)
         file('/tmp/post.txt', 'w').write(ajax_code)
         self.assertEquals(ajax_code, EXPECTED_POST)
-        

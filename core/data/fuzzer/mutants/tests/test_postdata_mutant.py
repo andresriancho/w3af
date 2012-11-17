@@ -37,43 +37,49 @@ class TestPostDataMutant(unittest.TestCase):
         form = Form()
         form.addInput([("name", "username"), ("value", "")])
         form.addInput([("name", "address"), ("value", "")])
-        
+
         freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
         m = PostDataMutant(freq)
         m.set_var('username')
-        
+
         expected = '"http://www.w3af.com/?id=3", using HTTP method PUT. '\
                    'The sent post-data was: "username=&address=" '\
                    'which modifies the "username" parameter.'
         self.assertEqual(m.found_at(), expected)
-            
-    def test_mutant_creation(self): 
+
+    def test_mutant_creation(self):
         form = Form()
         form.addInput([("name", "username"), ("value", "")])
         form.addInput([("name", "address"), ("value", "")])
-        
+
         freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
-        
-        created_mutants = PostDataMutant.create_mutants(freq, self.payloads, [],
-                                                        False, self.fuzzer_config)
-        
-        expected_dc_lst = [Form([('username', ['abc']), ('address', ['Bonsai Street 123'])]),
-                           Form([('username', ['def']), ('address', ['Bonsai Street 123'])]),
-                           Form([('username', ['John8212']), ('address', ['abc'])]),
-                           Form([('username', ['John8212']), ('address', ['def'])])] 
-        
+
+        created_mutants = PostDataMutant.create_mutants(
+            freq, self.payloads, [],
+            False, self.fuzzer_config)
+
+        expected_dc_lst = [Form(
+            [('username', ['abc']), ('address', ['Bonsai Street 123'])]),
+            Form([('username', [
+                   'def']), ('address', ['Bonsai Street 123'])]),
+            Form([('username', [
+                   'John8212']), ('address', ['abc'])]),
+            Form([('username', ['John8212']), ('address', ['def'])])]
+
         created_dc_lst = [i.get_dc() for i in created_mutants]
-        
+
         self.assertEqual(created_dc_lst, expected_dc_lst)
-        
+
         self.assertEqual(created_mutants[0].get_var(), 'username')
         self.assertEqual(created_mutants[0].get_var_index(), 0)
         self.assertEqual(created_mutants[0].get_original_value(), '')
         self.assertEqual(created_mutants[2].get_var(), 'address')
         self.assertEqual(created_mutants[2].get_var_index(), 0)
         self.assertEqual(created_mutants[2].get_original_value(), '')
-        
-        self.assertTrue(all(isinstance(m, PostDataMutant) for m in created_mutants))
-        self.assertTrue(all(m.get_method().startswith('PUT') for m in created_mutants))
+
+        self.assertTrue(
+            all(isinstance(m, PostDataMutant) for m in created_mutants))
+        self.assertTrue(
+            all(m.get_method().startswith('PUT') for m in created_mutants))

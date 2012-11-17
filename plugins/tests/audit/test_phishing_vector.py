@@ -23,32 +23,33 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestPhishingVector(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/phishing_vector/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('phishing_vector'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 
-                 }
-            },
-        }
-    
+                'audit': (PluginConfig('phishing_vector'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
+
+            }
+        },
+    }
+
     def test_found_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         vulns = self.kb.get('phishing_vector', 'phishing_vector')
-        
+
         self.assertEquals(3, len(vulns))
-        self.assertEquals(all(['Phishing vector' == vuln.get_name() for vuln in vulns ]) , True)
+        self.assertEquals(all(
+            ['Phishing vector' == vuln.get_name() for vuln in vulns]), True)
 
         # Verify the specifics about the vulnerabilities
         expected = [
@@ -57,10 +58,11 @@ class TestPhishingVector(PluginTest):
             ('frame_phishing.php', 'url'),
         ]
 
-        found = [ (str(v.getURL()), v.get_var()) for v in vulns]
-        expected = [ ((self.target_url + end), param) for (end, param) in expected ]
-        
+        found = [(str(v.getURL()), v.get_var()) for v in vulns]
+        expected = [((self.target_url + end), param) for (end,
+                    param) in expected]
+
         self.assertEquals(
-                set( found ),
-                set( expected )
-                )
+            set(found),
+            set(expected)
+        )

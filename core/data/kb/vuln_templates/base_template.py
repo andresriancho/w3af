@@ -34,7 +34,7 @@ class BaseTemplate(Configurable):
     '''
     Vulnerability templates are a way to let the user know which parameters
     need to be completed in order to add a vulnerability to the KB.
-    
+
     This is specially useful in the new way we're going to define the exploit
     workflow in which the user will be able to add a vulnerability to the KB
     for later exploitation.
@@ -45,7 +45,7 @@ class BaseTemplate(Configurable):
         self.data = ''
         self.method = 'GET'
         self.vulnerable_parameter = ''
-        
+
     def get_options(self):
         '''
         In this case we provide a sample implementation since most vulnerabilities
@@ -57,7 +57,7 @@ class BaseTemplate(Configurable):
         d = 'Vulnerability name (eg. SQL Injection)'
         o = opt_factory('name', self.name, d, 'string')
         ol.add(o)
-        
+
         d = 'URL (without query string parameters)'
         o = opt_factory('url', self.url, d, 'url')
         ol.add(o)
@@ -70,31 +70,32 @@ class BaseTemplate(Configurable):
             ' format.'
         o = opt_factory('data', self.data, d, 'string', help=h)
         ol.add(o)
-        
+
         d = 'HTTP method'
         o = opt_factory('method', self.method, d, 'string')
         ol.add(o)
-        
+
         d = 'Vulnerable parameter (needs to be one of the entered in the data'\
             ' field).'
         o = opt_factory('vulnerable_parameter', self.vulnerable_parameter, d,
                         'string')
         ol.add(o)
-        
+
         return ol
-    
+
     def set_options(self, options_list):
         self.name = options_list['name'].get_value()
         self.url = options_list['url'].get_value()
-        self.data = parse_qs( options_list['data'].get_value() )
+        self.data = parse_qs(options_list['data'].get_value())
         self.method = options_list['method'].get_value()
-        self.vulnerable_parameter = options_list['vulnerable_parameter'].get_value()
-        
+        self.vulnerable_parameter = options_list[
+            'vulnerable_parameter'].get_value()
+
         if self.vulnerable_parameter not in self.data:
             msg = 'The vulnerable parameter was not found in the configured data'\
                   ' field. Please enter one of the following values: %s.'
             raise ValueError(msg % ', '.join(self.data))
-    
+
     def store_in_kb(self):
         '''
         @return: None, just stores the configured vulnerability to the KB.
@@ -102,14 +103,14 @@ class BaseTemplate(Configurable):
         kb_loc_a, kb_loc_b = self.get_kb_location()
         created_vulnerability = self.create_vuln()
         kb.kb.append(kb_loc_a, kb_loc_b, created_vulnerability)
-    
+
     def get_vuln_id(self):
         return consecutive_number_generator()
 
     def create_base_vuln(self):
         '''
         @return: A vulnerability with some preconfigured settings
-        '''    
+        '''
         v = vuln.vuln()
         v.set_plugin_name('Manually added vulnerability')
         v.set_id(self.get_vuln_id())
@@ -118,31 +119,31 @@ class BaseTemplate(Configurable):
                ' and represents a "%s" vulnerability.'
         v.set_desc(desc % self.get_vulnerability_name())
         return v
-    
+
     def create_vuln(self):
         '''
-        Sample implementation of the 
+        Sample implementation of the
         @return: A vulnerability object based on the data that was configured
                  by the user with calls to set_options().
         '''
         v = self.create_base_vuln()
-        
+
         # User configured
         v.set_method(self.method)
         v.set_name(self.name)
         v.set_var(self.vulnerable_parameter)
         v.setURL(self.url)
         v.set_dc(self.data)
-        
-        return v        
-        
+
+        return v
+
     def get_kb_location(self):
         '''
         @return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         '''
         raise NotImplementedError
-    
+
     def get_vulnerability_name(self):
         '''
         @return: A string containing the name of the vulnerability to be added
@@ -151,7 +152,7 @@ class BaseTemplate(Configurable):
                  strict matching of vulns before exploiting.
         '''
         raise NotImplementedError
-    
+
     def get_vulnerability_desc(self):
         '''
         @return: A string containing the description of the vulnerability to be
@@ -159,4 +160,3 @@ class BaseTemplate(Configurable):
                  file uploads using the HTTP PUT method'
         '''
         raise NotImplementedError
-        

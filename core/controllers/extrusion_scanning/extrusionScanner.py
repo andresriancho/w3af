@@ -31,8 +31,9 @@ import core.controllers.output_manager as om
 
 from core.controllers.extrusion_scanning.server.extrusionServer import extrusionServer
 from core.controllers.exceptions import w3afException
-from core.controllers.intrusion_tools.execMethodHelpers import (os_detection_exec, 
-                                                               get_remote_temp_file)
+from core.controllers.intrusion_tools.execMethodHelpers import (
+    os_detection_exec,
+    get_remote_temp_file)
 from core.controllers.payload_transfer.echo_windows import EchoWindows
 from core.controllers.payload_transfer.echo_linux import EchoLinux
 
@@ -43,13 +44,13 @@ class extrusionScanner(object):
         - sends extrusion client to compromised machine
         - starts extrusion server
         - returns results from extrusion server to user
-    
-    @author: Andres Riancho (andres.riancho@gmail.com)    
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__( self, execMethod, forceReRun=False, 
-                  tcpPortList=[25,80,53,1433,8080],
-                  udpPortList=[53,69,139,1025] ):
+    def __init__(self, execMethod, forceReRun=False,
+                 tcpPortList=[25, 80, 53, 1433, 8080],
+                 udpPortList=[53, 69, 139, 1025]):
         '''
         @param execMethod: The execMethod used to execute commands on the
                                remote host
@@ -60,14 +61,14 @@ class extrusionScanner(object):
         self._forceReRun = forceReRun
         self._tcp_port_list = tcpPortList
         self._udp_port_list = udpPortList
-        
-        os = os_detection_exec( execMethod )
+
+        os = os_detection_exec(execMethod)
         if os == 'windows':
-            self._transferHandler = EchoWindows( execMethod, os )
+            self._transferHandler = EchoWindows(execMethod, os)
         elif os == 'linux':
-            self._transferHandler = EchoLinux( execMethod, os )
-    
-    def _getRemoteId( self ):
+            self._transferHandler = EchoLinux(execMethod, os)
+
+    def _getRemoteId(self):
         '''
         Runs some commands on the remote host, concatenates outputs and creates a hash
         of the results. This will be an unique identifier for the host.
@@ -82,13 +83,14 @@ class extrusionScanner(object):
         m = hashlib.md5()
         m.update(r)
         return m.hexdigest()
-    
-    def isAvailable( self, port, proto ):
+
+    def isAvailable(self, port, proto):
         try:
             if proto.lower() == 'tcp':
-                serversocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM)
+                serversocket = socket.socket(
+                    socket.AF_INET, socket.SOCK_STREAM)
             if proto.lower() == 'udp':
-                serversocket = socket.socket( socket.AF_INET, socket.SOCK_DGRAM)
+                serversocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             serversocket.bind(('', port))
             serversocket.listen(5)
         except:
@@ -96,16 +98,16 @@ class extrusionScanner(object):
         else:
             serversocket.close()
             return True
-    
-    def estimateScanTime( self ):
+
+    def estimateScanTime(self):
         savedResults = kb.kb.get('extrusionScanner', 'extrusions')
         if savedResults:
             return 1
         else:
             _, file_content, _ = self._selectExtrusionClient()
-            return self._transferHandler.estimate_transfer_time( len(file_content) ) + 8
-    
-    def get_inbound_port( self, desiredProtocol='TCP' ):
+            return self._transferHandler.estimate_transfer_time(len(file_content)) + 8
+
+    def get_inbound_port(self, desiredProtocol='TCP'):
         '''
         Performs the process
         '''
@@ -114,116 +116,120 @@ class extrusionScanner(object):
             remoteId = self._getRemoteId()
             savedResults = kb.kb.get('extrusionScanner', 'extrusions')
             if remoteId in savedResults:
-                om.out.information('Reusing previous result from the knowledgeBase:' )
+                om.out.information(
+                    'Reusing previous result from the knowledgeBase:')
                 msg = '- Selecting port "%s" for inbound connections from the'
-                msg += ' compromised server to w3af.' % savedResults[ remoteId ]
-                om.out.information( msg )
-                return savedResults[ remoteId ]
-            
-        om.out.information('Please wait some seconds while w3af performs an extrusion scan.')
-        
-        es = extrusionServer( self._tcp_port_list, self._udp_port_list )
+                msg += ' compromised server to w3af.' % savedResults[remoteId]
+                om.out.information(msg)
+                return savedResults[remoteId]
+
+        om.out.information(
+            'Please wait some seconds while w3af performs an extrusion scan.')
+
+        es = extrusionServer(self._tcp_port_list, self._udp_port_list)
         if not es.canSniff():
             msg = 'The user running w3af can\'t sniff on the specified'
             msg += ' interface. Hints: Are you root? Does this interface'
             msg += ' exist?'
-            raise w3afException( msg )
+            raise w3afException(msg)
         else:
             # I can sniff, it makes sense to send the extrusion client
             interpreter, remoteFilename = self._sendExtrusionClient()
-            
+
             # This sniffs for packets in a new thread
             sniff_thread = threading.Thread(target=es.sniffAndAnalyze)
             sniff_thread.start()
             time.sleep(1)
-            
-            self._execExtrusionClient( interpreter, remoteFilename )
-            
+
+            self._execExtrusionClient(interpreter, remoteFilename)
+
             res = es.getResult()
             om.out.information('Finished extrusion scan.')
-            
+
             if not res:
                 msg = 'No inbound ports have been found. Maybe the extrusion'
                 msg += ' scan failed ?'
-                raise w3afException( msg )
+                raise w3afException(msg)
             else:
                 host = res[0][0]
                 msg = 'The remote host: "%s" can connect to w3af with these ports:'
-                om.out.information( msg  % host )
+                om.out.information(msg % host)
                 port = None
                 portList = []
                 for x in res:
                     if x[0] == host:
                         port = x[1]
                         protocol = x[2]
-                        om.out.information('- '+ str(port) + '/' + protocol )
-                        portList.append( (port, protocol) )
-                
+                        om.out.information('- ' + str(port) + '/' + protocol)
+                        portList.append((port, protocol))
+
                 localPorts = []
                 for port, protocol in portList:
-                    if self.isAvailable( port, protocol ):
-                        localPorts.append( (port, protocol) )
-                
+                    if self.isAvailable(port, protocol):
+                        localPorts.append((port, protocol))
+
                 if not localPorts:
                     raise w3afException('All the inbound ports are in use.')
                 else:
                     msg = 'The following ports are not bound to a local process'
                     msg += ' and can be used by w3af:'
-                    om.out.information( msg )
+                    om.out.information(msg)
                     for lp, proto in localPorts:
-                        om.out.information('- ' + str(lp) + '/' + proto )
-                        
+                        om.out.information('- ' + str(lp) + '/' + proto)
+
                         # Selecting the highest port
                         if desiredProtocol.upper() == proto.upper():
                             port = lp
-                    
+
                     msg = 'Selecting port "%s/%s" for inbound connections from'
                     msg += ' the compromised server to w3af.'
-                    om.out.information( msg % (port,proto) )
-                    
+                    om.out.information(msg % (port, proto))
+
                     if not self._forceReRun:
                         om.out.debug('Saving information in the kb.')
-                        savedResults = kb.kb.get('extrusionScanner', 'extrusions' )
+                        savedResults = kb.kb.get(
+                            'extrusionScanner', 'extrusions')
                         if savedResults:
-                            savedResults[ remoteId ] = port
+                            savedResults[remoteId] = port
                         else:
                             savedResults = {}
-                            savedResults[ remoteId ] = port
-                        kb.kb.save('extrusionScanner', 'extrusions', savedResults )
-                            
+                            savedResults[remoteId] = port
+                        kb.kb.save(
+                            'extrusionScanner', 'extrusions', savedResults)
+
                     return port
-                
-    
-    def _sendExtrusionClient( self ):
+
+    def _sendExtrusionClient(self):
         interpreter, extrusionClient, extension = self._selectExtrusionClient()
-        remoteFilename = get_remote_temp_file( self._execMethod )
+        remoteFilename = get_remote_temp_file(self._execMethod)
         remoteFilename += '.' + extension
-        
+
         # do the transfer
-        apply( self._transferHandler.transfer , ( extrusionClient, remoteFilename ) )
-        
+        apply(self._transferHandler.transfer, (extrusionClient,
+              remoteFilename))
+
         return interpreter, remoteFilename
-    
-    def _exec( self, command ):
+
+    def _exec(self, command):
         '''
         A wrapper for executing commands
         '''
-        om.out.debug('Executing: ' + command )
-        response = apply( self._execMethod, ( command ,))
-        om.out.debug('"' + command + '" returned: ' + response )
+        om.out.debug('Executing: ' + command)
+        response = apply(self._execMethod, (command,))
+        om.out.debug('"' + command + '" returned: ' + response)
         return response
-    
-    def canScan( self ):
+
+    def canScan(self):
         try:
             self._selectExtrusionClient()
         except:
             return False
         else:
             return True
-    
-    def _selectExtrusionClient( self ):
+
+    def _selectExtrusionClient(self):
         '''
-        This method selects the extrusion client to use based on the remote OS 
+        This method selects the extrusion client to use based on the remote OS
         and some other factors like:
             - is python installed ?
             - is perl installed ?
@@ -235,33 +241,35 @@ class extrusionScanner(object):
         if '6' in self._exec('python -c print+3+3'):
             # "python -c 'print 3+3'" fails with magic quotes on... but
             # this trick of the print+3+3 works ( returns 6 ) and ALSO evades magic quotes
-            filename = os.path.join( 'core','controllers','extrusion_scanning',
-                                     'client','extrusionClient.py' )
-            fileContent = file( filename ).read()
+            filename = os.path.join(
+                'core', 'controllers', 'extrusion_scanning',
+                'client', 'extrusionClient.py')
+            fileContent = file(filename).read()
             extension = 'py'
             interpreter = 'python'
         else:
             msg = 'Failed to find a suitable extrusion scanner client for'
             msg += ' the remote system.'
-            raise w3afException( msg )
-        
+            raise w3afException(msg)
+
         return interpreter, fileContent, extension
 
-    def _execExtrusionClient( self, interpreter, remoteFilename ):
-        
-        local_address = cf.cf.get( 'local_ip_address' )
+    def _execExtrusionClient(self, interpreter, remoteFilename):
+
+        local_address = cf.cf.get('local_ip_address')
         if local_address is None:
-            raise Exception('Invalid environment: no local address found in cf.')
-        
+            raise Exception(
+                'Invalid environment: no local address found in cf.')
+
         cmd_fmt = '%s %s %s %s %s'
         cmd = cmd_fmt % (interpreter,
                          remoteFilename,
                          local_address,
-                         ','.join( [ str(x) for x in self._tcp_port_list ] ),
-                         ','.join( [ str(x) for x in self._udp_port_list ] ) )
+                         ','.join([str(x) for x in self._tcp_port_list]),
+                         ','.join([str(x) for x in self._udp_port_list]))
 
-        res = self._exec( cmd )
-        
+        res = self._exec(cmd)
+
         if 'OK.' not in res:
             raise w3afException('The extrusion client failed to execute.')
         else:

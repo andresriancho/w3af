@@ -31,34 +31,33 @@ class error_500(GrepPlugin):
     '''
     Grep every page for error 500 pages that haven't been identified as bugs by
     other plugins.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     FALSE_POSITIVE_STRINGS = ('<h1>Bad Request (Invalid URL)</h1>',
                               )
-    
+
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._error_500_responses = disk_set()
 
     def grep(self, request, response):
         '''
         Plugin entry point, identify which requests generated a 500 error.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html() \
-        and response.getCode() in xrange(400, 600) \
-        and response.getCode() not in (404 , 403, 401, 405, 400, 501)\
-        and not self._is_false_positive(response):
+            and response.getCode() in xrange(400, 600) \
+            and response.getCode() not in (404, 403, 401, 405, 400, 501)\
+                and not self._is_false_positive(response):
             self._error_500_responses.add((request, response.id))
 
-    
-    def _is_false_positive( self, response ):
+    def _is_false_positive(self, response):
         '''
         Filters out some false positives like this one:
 
@@ -67,44 +66,44 @@ class error_500(GrepPlugin):
             - http://127.0.0.2/ext.ini.%00.txt
             - http://127.0.0.2/%00/
             - http://127.0.0.2/%0a%0a<script>alert(\Vulnerable\)</script>.jsp
-        
+
         @return: True if the response is a false positive.
         '''
         for fps in self.FALSE_POSITIVE_STRINGS:
             if fps in response.getBody():
                 return True
         return False
-    
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
-        
-        The real job of this plugin is done here, where I will try to see if 
+
+        The real job of this plugin is done here, where I will try to see if
         one of the error_500 responses were not identified as a vuln by some
         of my audit plugins
         '''
         all_vulns = kb.kb.getAllVulns()
-        all_vulns_tuples = [ (v.getURI(), v.get_dc()) for v in all_vulns ]
+        all_vulns_tuples = [(v.getURI(), v.get_dc()) for v in all_vulns]
 
         for request, error_500_response_id in self._error_500_responses:
-            if ( request.getURI() , request.get_dc() ) not in all_vulns_tuples:
+            if (request.getURI(), request.get_dc()) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURI( request.getURI() )
-                v.set_id( error_500_response_id )
+                v.setURI(request.getURI())
+                v.set_id(error_500_response_id)
                 v.set_severity(severity.MEDIUM)
-                v.set_name( 'Unhandled error in web application' )
+                v.set_name('Unhandled error in web application')
                 msg = 'An unidentified web application error (HTTP response code 500)'
-                msg += ' was found at: "' + v.getURL()+'".'
+                msg += ' was found at: "' + v.getURL() + '".'
                 msg += ' Enable all plugins and try again, if the vulnerability still is not'
                 msg += ' identified, please verify manually and report it to the w3af developers.'
-                v.set_desc( msg )
-                kb.kb.append( self, 'error_500', v )
-                
-        self.print_uniq( kb.kb.get( 'error_500', 'error_500' ), 'VAR' )
+                v.set_desc(msg)
+                kb.kb.append(self, 'error_500', v)
 
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('error_500', 'error_500'), 'VAR')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

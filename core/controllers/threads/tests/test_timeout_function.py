@@ -23,14 +23,15 @@ import unittest
 import time
 import sys
 import time
-import threading  #PYCHOK expected
+import threading  # PYCHOK expected
 
-from core.controllers.threads.timeout_function import (timelimited, TimeLimited,
-                                                       TimeLimitExpired)
+from core.controllers.threads.timeout_function import (
+    timelimited, TimeLimited,
+    TimeLimitExpired)
 
 
 class TestTimeoutFunction(unittest.TestCase):
-    
+
     def _check(self, timeout, sleep, result, arg='OK'):
         '''
         Utility function that helps with the assertions.
@@ -41,15 +42,15 @@ class TestTimeoutFunction(unittest.TestCase):
             x = result
         else:
             x = TimeLimitExpired
-        
-        self.assertTrue( result is x )
+
+        self.assertTrue(result is x)
 
     def test_timelimited_function(self):
         for t, s in ((2.0, 1),
                      (1.0, 20)):  # note, 20!
             try:
                 r = timelimited(t, time.sleep, s)
-            except Exception, e:  #XXX as for Python 3.0
+            except Exception, e:  # XXX as for Python 3.0
                 r = e
             self._check(t, s, r, timelimited)
 
@@ -60,7 +61,7 @@ class TestTimeoutFunction(unittest.TestCase):
             f.timeout = t
             try:
                 r = f(s)
-            except Exception, e:  #XXX as for Python 3.0
+            except Exception, e:  # XXX as for Python 3.0
                 r = e
             self._check(t, s, r, f)
 
@@ -80,7 +81,7 @@ class TestTimeoutFunction(unittest.TestCase):
 
     def test_error_passing_from_thread(self):
         try:
-            r = timelimited(1, lambda x: 1/x, 0)
+            r = timelimited(1, lambda x: 1 / x, 0)
             self.assertTrue(False)
         except ZeroDivisionError:
             pass
@@ -88,4 +89,4 @@ class TestTimeoutFunction(unittest.TestCase):
     def test_all_created_threads_stopped(self):
         for t in threading.enumerate():
             if t.isAlive() and repr(t).startswith('<_Timelimited('):
-               self.assertTrue(False, 'Thread %r still alive' %  t)
+                self.assertTrue(False, 'Thread %r still alive' % t)

@@ -35,21 +35,21 @@ FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
 class file_upload(GrepPlugin):
     '''
     Find HTML forms with file upload capabilities.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         # Internal variables
         self._already_inspected = ScalableBloomFilter()
-        self._file_input_xpath = etree.XPath( FILE_INPUT_XPATH )
+        self._file_input_xpath = etree.XPath(FILE_INPUT_XPATH)
 
     def grep(self, request, response):
         '''
         Plugin entry point, verify if the HTML has a form with file uploads.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
@@ -64,28 +64,27 @@ class file_upload(GrepPlugin):
             # In some strange cases, we fail to normalize the document
             if dom is not None:
 
-                # Loop through file inputs tags                
-                for input_file in self._file_input_xpath( dom ):
+                # Loop through file inputs tags
+                for input_file in self._file_input_xpath(dom):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('File upload form')
                     i.setURL(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has form with file upload ' \
-                    'capabilities.' % url
+                        'capabilities.' % url
                     i.set_desc(msg)
                     to_highlight = etree.tostring(input_file)
                     i.addToHighlight(to_highlight)
                     kb.kb.append(self, 'file_upload', i)
 
-    
-    def set_options( self, option_list ):
+    def set_options(self, option_list):
         pass
-    
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
-        '''    
+        '''
         ol = OptionList()
         return ol
 
@@ -93,9 +92,9 @@ class file_upload(GrepPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'file_upload', 'file_upload' ), 'URL' )
+        self.print_uniq(kb.kb.get('file_upload', 'file_upload'), 'URL')
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_interesting_files(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {u'/home/moth/keys.txt': None}
 
     def test_interesting_files(self):
         result = exec_payload(self.shell, 'interesting_files', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

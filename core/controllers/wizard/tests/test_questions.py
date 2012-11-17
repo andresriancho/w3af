@@ -44,7 +44,7 @@ class test_questions(object):
         '''
         mod = 'core.controllers.wizard.questions.%s'
         w3af_core = w3afCore()
-        
+
         for filename in os.listdir('core/controllers/wizard/questions/'):
             question_id, ext = os.path.splitext(filename)
 
@@ -52,32 +52,32 @@ class test_questions(object):
                 continue
 
             klass = mod % question_id
-            question_inst = factory( klass, w3af_core )
-            
+            question_inst = factory(klass, w3af_core)
+
             yield self._test_qid, question_inst
-    
+
     @attr('smoke')
     def _test_qid(self, question_inst):
         '''
         Ahhh, nose's magic of test generators :D
         '''
         orig = question_inst.getQuestionTitle()
-        question_inst.setQuestionTitle( 'New' )
+        question_inst.setQuestionTitle('New')
         new = question_inst.getQuestionTitle()
         assert 'New' == new
-        
+
         orig = question_inst.getQuestionString()
-        question_inst.setQuestionString( 'New' )
+        question_inst.setQuestionString('New')
         new = question_inst.getQuestionString()
         assert 'New' == new
-        
+
         opt = question_inst.getOptionObjects()
         assert isinstance(opt, OptionList) == True
-        
+
         qid = question_inst.getQuestionId()
         assert qid not in self.unique_question_ids
-        self.unique_question_ids.append( qid )
-            
+        self.unique_question_ids.append(qid)
+
         question_inst.setPreviouslyAnsweredValues(opt)
         stored_opt = question_inst.getOptionObjects()
         assert id(stored_opt) == id(opt)

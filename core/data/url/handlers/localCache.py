@@ -52,11 +52,12 @@ def gen_hash(request):
     '''
     req = request
     thestr = '%s%s%s%s%s' % (
-                req.get_method(),
-                req.get_full_url(),
-                ''.join('%s%s' % (h, v) for h, v in req.headers.iteritems()),
-                ''.join('%s%s' % (h, v) for h, v in req.unredirected_hdrs.iteritems()),
-                req.get_data() or '')
+        req.get_method(),
+        req.get_full_url(),
+        ''.join('%s%s' % (h, v) for h, v in req.headers.iteritems()),
+        ''.join('%s%s' % (h, v) for h,
+                v in req.unredirected_hdrs.iteritems()),
+        req.get_data() or '')
     return hashlib.md5(thestr).hexdigest()
 
 
@@ -75,12 +76,12 @@ class CacheHandler(urllib2.BaseHandler):
         CacheClass.init()
 
     def default_open(self, request):
-        
+
         method = request.get_method().upper()
-        
+
         if method in CACHE_METHODS and \
-        request.get_from_cache and \
-        CacheClass.exists_in_cache(request):
+            request.get_from_cache and \
+                CacheClass.exists_in_cache(request):
             try:
                 cache_response_obj = CacheClass(request)
             except Exception:
@@ -91,7 +92,7 @@ class CacheHandler(urllib2.BaseHandler):
                 # Send None to the urllib2 framework, which means that we don't
                 # know how to handle the request, and we forward it to the next
                 # handler in the list.
-                return None 
+                return None
             else:
                 return cache_response_obj
         else:
@@ -105,9 +106,9 @@ class CacheHandler(urllib2.BaseHandler):
             CacheClass.store_in_cache(request, response)
         except w3afException, w3:
             om.out.debug(str(w3))
-        
+
         return response
-    
+
     https_response = http_response
 
 
@@ -118,13 +119,13 @@ class CachedResponse(StringIO.StringIO):
     To determine whether a response is cached or coming directly from
     the network, check the x-cache header rather than the object type.
     """
-    
+
     PART_HEADER = 'PART_HEADER'
     PART_BODY = 'PART_BODY'
     PART_CODE = 'PART_CODE'
     PART_MSG = 'PART_MSG'
     PART_CHARSET = 'PART_CHARSET'
-    
+
     def __init__(self, request):
         self._hash_id = gen_hash(request)
         self.from_cache = True
@@ -136,31 +137,31 @@ class CachedResponse(StringIO.StringIO):
         # Call parent's __init__
         self._body = self._get_from_response(CachedResponse.PART_BODY)
         StringIO.StringIO.__init__(self, self._body)
-        
+
         # This kludge is necessary, do not touch!
         class placeHolder:
             sock = None
         self._connection = placeHolder()
-    
+
     @property
     def code(self):
         if not self._code:
             self._code = int(self._get_from_response(CachedResponse.PART_CODE))
         return self._code
-    
+
     @property
     def msg(self):
         if not self._msg:
             self._msg = self._get_from_response(CachedResponse.PART_MSG)
         return self._msg
-    
+
     @property
     def encoding(self):
         if not self._encoding:
             self._encoding = self._get_from_response(
-                                            CachedResponse.PART_CHARSET)
+                CachedResponse.PART_CHARSET)
         return self._encoding
-    
+
     def info(self):
         return self.headers()
 
@@ -169,27 +170,27 @@ class CachedResponse(StringIO.StringIO):
             headerbuf = self._get_from_response(CachedResponse.PART_HEADER)
             self._headers = httplib.HTTPMessage(StringIO.StringIO(headerbuf))
         return self._headers
-        
+
     def geturl(self):
         return self.url
-    
+
     def read(self):
         return self._body
-    
+
     def get_full_url(self):
         return self.url
-    
+
     def _get_from_response(self, part):
         '''
         Return the `part` string from the saved response.
-        
+
         @param part: Possible values: PART_HEADER, PART_BODY, PART_CODE and
             PART_MSG
         @raise ValueError: If `part` is not an expected value this exception
             is raised.
         '''
         raise NotImplementedError
-    
+
     @staticmethod
     def _get_cache_location():
         '''
@@ -200,12 +201,12 @@ class CachedResponse(StringIO.StringIO):
         if not os.path.exists(cacheloc):
             os.mkdir(cacheloc)
         return cacheloc
-    
+
     @staticmethod
     def exists_in_cache(request):
         '''
         Verifies if a request is in the cache container
-        
+
         @param reqid: Request object
         @return: Boolean value
         @raises NotImplementedError: if the method is not redefined
@@ -216,41 +217,41 @@ class CachedResponse(StringIO.StringIO):
     def store_in_cache(request, response):
         '''
         Saves data in request and response objects to the cache container
-        
+
         @param request:
-        @param response:  
+        @param response:
         @raises NotImplementedError: if the method is not redefined
         '''
         raise NotImplementedError
-    
+
     @staticmethod
     def init():
         '''
         Takes all the actions needed for the CachedResponse class to work,
-        in most cases this means creating a file, directory or databse. 
+        in most cases this means creating a file, directory or databse.
         '''
         raise NotImplementedError
 
 
 class DiskCachedResponse(CachedResponse):
-    
+
     PARTS_MAPPING = {
         CachedResponse.PART_HEADER: 'headers',
         CachedResponse.PART_BODY: 'body',
         CachedResponse.PART_CODE: 'code',
         CachedResponse.PART_MSG: 'msg',
     }
-    
+
     def _get_from_response(self, part):
         if part not in self.PARTS_MAPPING:
-            raise ValueError, "Unexpected value for param 'part': %s" % part
+            raise ValueError("Unexpected value for param 'part': %s" % part)
         ext = self.PARTS_MAPPING[part]
         file = os.path.join(DiskCachedResponse._get_cache_location(),
                             '%s.%s' % (self._hash_id, ext))
         with open(file, 'r') as f:
             content = f.read()
         return content
-    
+
     @staticmethod
     def store_in_cache(request, response):
         reqid = gen_hash(request)
@@ -266,8 +267,8 @@ class DiskCachedResponse(CachedResponse):
             raise e
         except Exception, e:
             raise w3afException(
-                'localCache.py: Could not save headers file. Error: '+ str(e))
-        
+                'localCache.py: Could not save headers file. Error: ' + str(e))
+
         try:
             body = response.read()
         except KeyboardInterrupt, e:
@@ -284,7 +285,7 @@ class DiskCachedResponse(CachedResponse):
             except Exception, e:
                 raise w3afException(
                     'localCache.py: Could not save body file. Error: ' + str(e))
-            
+
         try:
             f = open(fname + ".code", "w")
 
@@ -298,8 +299,8 @@ class DiskCachedResponse(CachedResponse):
             raise e
         except Exception, e:
             raise w3afException(
-                    'localCache.py: Could not save msg file. Error: '+ str(e))
-            
+                'localCache.py: Could not save msg file. Error: ' + str(e))
+
         try:
             f = open(fname + ".msg", "w")
             f.write(str(response.msg))
@@ -308,9 +309,9 @@ class DiskCachedResponse(CachedResponse):
             raise e
         except Exception, e:
             om.out.error(
-                    'localCache.py: Could not save msg file. Error: ' + str(e))
+                'localCache.py: Could not save msg file. Error: ' + str(e))
             raise e
-    
+
     @staticmethod
     def exists_in_cache(req):
         reqid = gen_hash(req)
@@ -318,8 +319,8 @@ class DiskCachedResponse(CachedResponse):
         cache_loc = DiskCachedResponse._get_cache_location()
         reqfname = os.path.join(cache_loc, reqid)
         return exists(reqfname + ".headers") and exists(reqfname + ".body") \
-                and exists(reqfname + ".code") and exists(reqfname + ".msg")
-    
+            and exists(reqfname + ".code") and exists(reqfname + ".msg")
+
     @staticmethod
     def init():
         if not os.path.exists(CACHE_LOCATION):
@@ -327,13 +328,13 @@ class DiskCachedResponse(CachedResponse):
 
 
 class SQLCachedResponse(CachedResponse):
-    
+
     def __init__(self, req):
         self._hist_obj = None
         CachedResponse.__init__(self, req)
-    
+
     def _get_from_response(self, part):
-        
+
         hist = self._get_hist_obj()
 
         if part == CachedResponse.PART_HEADER:
@@ -347,21 +348,21 @@ class SQLCachedResponse(CachedResponse):
         elif part == CachedResponse.PART_CHARSET:
             res = hist.charset
         else:
-            raise ValueError, "Unexpected value for param 'part': %s" % part
+            raise ValueError("Unexpected value for param 'part': %s" % part)
 
         return res
-    
+
     def _get_hist_obj(self):
         hist_obj = self._hist_obj
         if hist_obj is None:
             historyobjs = HistoryItem().find([('alias', self._hash_id, "=")])
             self._hist_obj = hist_obj = historyobjs[0] if historyobjs else None
         return hist_obj
-    
+
     @staticmethod
     def store_in_cache(request, response):
         hi = HistoryItem()
-        
+
         # Set the request
         headers = Headers(request.unredirected_hdrs.items())
         req = create_fuzzable_request(request,
@@ -383,11 +384,11 @@ class SQLCachedResponse(CachedResponse):
         except Exception, ex:
             msg = ('Exception while inserting request/response to the'
                    ' database: %s\nThe request/response that generated'
-                   ' the error is: %s %s %s' % 
+                   ' the error is: %s %s %s' %
                    (ex, resp.get_id(), req.getURI(), resp.getCode()))
             om.out.error(msg)
             raise
-    
+
     @staticmethod
     def exists_in_cache(req):
         '''
@@ -403,4 +404,3 @@ class SQLCachedResponse(CachedResponse):
 
 # This is the default implementation
 CacheClass = SQLCachedResponse
-

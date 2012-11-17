@@ -27,7 +27,7 @@ from core.data.fuzzer.utils import rand_alpha, rand_number
 class dbDriver(dbDriverFunctions):
     '''
     This represents a database driver. This class is an "interface" between w3af and sqlmap.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, urlOpener, cmpFunction, vuln):
@@ -36,45 +36,45 @@ class dbDriver(dbDriverFunctions):
         self.args.injectionMethod = vuln['type']
         self.args.injParameter = vuln.get_var()
         self.args.httpMethod = vuln.get_method()
-        
+
         self._uri_opener = urlOpener
         self._vuln = vuln
-        
+
         mutant = vuln.get_mutant()
-        url = mutant.getURI()       
+        url = mutant.getURI()
         if vuln.get_method() == 'POST':
             url += '?' + str(vuln.get_mutant().getData())
         self.args.trueResult = vuln['trueHtml']
-        
-        falseValue = self._findFalseValue( vuln )
+
+        falseValue = self._findFalseValue(vuln)
         self._vuln['falseValue'] = falseValue
-        
+
         # "pretty" prints output
         self.dump = SQLMapDump()
-    
-    def auxGetTables( self, db=None ):
+
+    def auxGetTables(self, db=None):
         self.args.db = db
         # Now I call the sqlmap function
         return self.getTables()
-    
-    def auxGetColumns( self, tbl , db=None):
+
+    def auxGetColumns(self, tbl, db=None):
         self.args.tbl = tbl
         self.args.db = db
-        
+
         # Now I call the sqlmap function
         return self.getColumns()
-        
-    def auxDump( self, tbl , db=None, col=None):
+
+    def auxDump(self, tbl, db=None, col=None):
         self.args.tbl = tbl
         self.args.db = db
         self.args.col = col
-        
+
         # Now I call the sqlmap function
         return self.dumpTable()
-        
-    def _findFalseValue( self, vuln ):
+
+    def _findFalseValue(self, vuln):
         '''
-        Find a value that returns a false response for the sql injection. 
+        Find a value that returns a false response for the sql injection.
         For example:
             http://a/a.php?id=1
         and
@@ -84,34 +84,35 @@ class dbDriver(dbDriverFunctions):
         '''
         found = False
         for i in xrange(3):
-            
+
             if vuln['type'] == 'numeric':
                 possibleFalse = rand_number(4)
-            elif vuln['type'] in ['stringsingle','stringdouble']:
+            elif vuln['type'] in ['stringsingle', 'stringdouble']:
                 possibleFalse = rand_alpha(5)
-            
+
             mutant = vuln.get_mutant()
-            mutant.set_mod_value( possibleFalse )
-            
+            mutant.set_mod_value(possibleFalse)
+
             res = self._uri_opener.send_mutant(mutant)
             if res.getBody() != vuln['trueHtml']:
                 return possibleFalse
-            
+
         if not found:
-            raise w3afException('Failed to find a false value for the injection.')
+            raise w3afException(
+                'Failed to find a false value for the injection.')
 
     def getTables(self):
         '''
         To be implemented by subclasses.
         '''
         pass
-    
+
     def getColumns(self):
         '''
         To be implemented by subclasses.
-        '''        
+        '''
         pass
-    
+
     def dumpTable(self):
         '''
         To be implemented by subclasses.

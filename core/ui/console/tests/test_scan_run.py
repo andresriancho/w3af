@@ -28,44 +28,44 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
     '''
     Run scans from the console UI.
     '''
-    
+
     def test_SQL_scan(self):
         target = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
         qs = '?name=andres'
         commands_to_run = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                                'set fileName %s' % self.OUTPUT_FILE,
-                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
-                                'set verbose True', 'back',
+                           'set fileName %s' % self.OUTPUT_FILE,
+                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set verbose True', 'back',
                            'output config console',
-                                'set verbose False', 'back', 
+                           'set verbose False', 'back',
                            'audit sqli',
                            'crawl web_spider',
-                           'crawl config web_spider', 
-                                'set onlyForward True', 'back',
-                            'grep path_disclosure',
-                            'back', 
-                            'target',
-                                'set target %s%s' % (target, qs), 'back',
-                            'start',
-                            'exit']
-        
+                           'crawl config web_spider',
+                           'set onlyForward True', 'back',
+                           'grep path_disclosure',
+                           'back',
+                           'target',
+                           'set target %s%s' % (target, qs), 'back',
+                           'start',
+                           'exit']
+
         expected = ('SQL injection in ',
                     'A SQL error was found in the response supplied by ',
                     'New URL found by web_spider plugin: "%s"' % target)
-        
+
         self.console = ConsoleUI(commands=commands_to_run, do_upd=False)
         self.console.sh()
-        
-        self.assertTrue( self.startswith_expected_in_output(expected), 
-                         self._mock_stdout.messages )
-        
+
+        self.assertTrue(self.startswith_expected_in_output(expected),
+                        self._mock_stdout.messages)
+
         found_errors = self.error_in_output(['No such file or directory',
                                              'Exception'])
-        
+
         self.assertFalse(found_errors)
-    
+
     @attr('smoke')
     def test_two_scans(self):
         target_1 = 'http://moth/w3af/audit/sql_injection/select/sql_injection_string.php'
@@ -73,21 +73,21 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         scan_commands_1 = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                                'set fileName %s' % self.OUTPUT_FILE,
-                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
-                                'set verbose True', 'back',
+                           'set fileName %s' % self.OUTPUT_FILE,
+                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set verbose True', 'back',
                            'output config console',
-                                'set verbose False', 'back', 
+                           'set verbose False', 'back',
                            'audit sqli',
                            'crawl web_spider',
-                           'crawl config web_spider', 
-                                'set onlyForward True', 'back',
-                            'grep path_disclosure',
-                            'back', 
-                            'target',
-                                'set target %s%s' % (target_1, qs_1), 'back',
-                            'start']
-        
+                           'crawl config web_spider',
+                           'set onlyForward True', 'back',
+                           'grep path_disclosure',
+                           'back',
+                           'target',
+                           'set target %s%s' % (target_1, qs_1), 'back',
+                           'start']
+
         expected_1 = ('SQL injection in ',
                       'A SQL error was found in the response supplied by ',
                       'New URL found by web_spider plugin: "%s"' % target_1)
@@ -97,37 +97,37 @@ class TestScanRunConsoleUI(ConsoleTestHelper):
         scan_commands_2 = ['plugins',
                            'output console,text_file',
                            'output config text_file',
-                                'set fileName %s' % self.OUTPUT_FILE,
-                                'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
-                                'set verbose True', 'back',
+                           'set fileName %s' % self.OUTPUT_FILE,
+                           'set httpFileName %s' % self.OUTPUT_HTTP_FILE,
+                           'set verbose True', 'back',
                            'output config console',
-                                'set verbose False', 'back', 
+                           'set verbose False', 'back',
                            'audit xss',
                            'crawl web_spider',
-                           'crawl config web_spider', 
-                                'set onlyForward True', 'back',
-                            'grep path_disclosure',
-                            'back', 
-                            'target',
-                                'set target %s%s' % (target_2, qs_2), 'back',
-                            'start',
-                            'exit']
-        
+                           'crawl config web_spider',
+                           'set onlyForward True', 'back',
+                           'grep path_disclosure',
+                           'back',
+                           'target',
+                           'set target %s%s' % (target_2, qs_2), 'back',
+                           'start',
+                           'exit']
+
         expected_2 = ('Cross Site Scripting was found at',
                       'New URL found by web_spider plugin: "%s"' % target_2)
-        
+
         scan_commands = scan_commands_1 + scan_commands_2
-        
+
         self.console = ConsoleUI(commands=scan_commands, do_upd=False)
         self.console.sh()
-        
-        self.assertTrue( self.startswith_expected_in_output(expected_1), 
-                         self._mock_stdout.messages )
-        
-        self.assertTrue( self.startswith_expected_in_output(expected_2), 
-                         self._mock_stdout.messages )
+
+        self.assertTrue(self.startswith_expected_in_output(expected_1),
+                        self._mock_stdout.messages)
+
+        self.assertTrue(self.startswith_expected_in_output(expected_2),
+                        self._mock_stdout.messages)
 
         found_errors = self.error_in_output(['No such file or directory',
                                              'Exception'])
-        
-        self.assertFalse(found_errors)        
+
+        self.assertFalse(found_errors)

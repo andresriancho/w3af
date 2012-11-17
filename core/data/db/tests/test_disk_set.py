@@ -44,89 +44,89 @@ class test_disk_set(unittest.TestCase):
         ds.add(2)
         ds.add(3)
         ds.add(1)
-        
-        self.assertEqual( list(ds), [1,2,3])
-        self.assertEqual( len(ds), 3)
+
+        self.assertEqual(list(ds), [1, 2, 3])
+        self.assertEqual(len(ds), 3)
 
     def test_add_urlobject(self):
         ds = disk_set()
 
-        ds.add( URL('http://w3af.org/?id=2') )
-        ds.add( URL('http://w3af.org/?id=3') )
-        ds.add( URL('http://w3af.org/?id=3') )
-        
-        self.assertEqual( ds[0] , URL('http://w3af.org/?id=2'))
-        self.assertEqual( ds[1] , URL('http://w3af.org/?id=3'))
-        self.assertEqual( len(ds) , 2)
-        self.assertFalse( URL('http://w3af.org/?id=4') in ds )
-        self.assertTrue( URL('http://w3af.org/?id=2') in ds )
-        
+        ds.add(URL('http://w3af.org/?id=2'))
+        ds.add(URL('http://w3af.org/?id=3'))
+        ds.add(URL('http://w3af.org/?id=3'))
+
+        self.assertEqual(ds[0], URL('http://w3af.org/?id=2'))
+        self.assertEqual(ds[1], URL('http://w3af.org/?id=3'))
+        self.assertEqual(len(ds), 2)
+        self.assertFalse(URL('http://w3af.org/?id=4') in ds)
+        self.assertTrue(URL('http://w3af.org/?id=2') in ds)
+
     def test_add_HTTPQSRequest(self):
         ds = disk_set()
-        
+
         uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
-        
+
         qsr1 = HTTPQSRequest(uri, method='GET', headers=hdr)
 
         uri = URL('http://w3af.org/?id=3')
         qsr2 = HTTPQSRequest(uri, method='GET', headers=hdr)
-        
+
         uri = URL('http://w3af.org/?id=7')
         qsr3 = HTTPQSRequest(uri, method='FOO', headers=hdr)
-        
-        ds.add( qsr1 )
-        ds.add( qsr2 )
-        ds.add( qsr2 )
-        ds.add( qsr1 )
-        
-        self.assertEqual( ds[0] , qsr1)
-        self.assertEqual( ds[1] , qsr2)
-        self.assertFalse( qsr3 in ds )
-        self.assertTrue( qsr2 in ds )
-        self.assertEqual( len(ds) , 2)
-        
+
+        ds.add(qsr1)
+        ds.add(qsr2)
+        ds.add(qsr2)
+        ds.add(qsr1)
+
+        self.assertEqual(ds[0], qsr1)
+        self.assertEqual(ds[1], qsr2)
+        self.assertFalse(qsr3 in ds)
+        self.assertTrue(qsr2 in ds)
+        self.assertEqual(len(ds), 2)
+
         # This forces an internal change in the URL object
         qsr2.getURL().url_string
-        self.assertTrue( qsr2 in ds )
+        self.assertTrue(qsr2 in ds)
 
     @attr('smoke')
     def test_add_HTTPPostDataRequest(self):
         ds = disk_set()
-        
+
         uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
-        
+
         pdr1 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
 
         uri = URL('http://w3af.org/?id=3')
         pdr2 = HTTPPostDataRequest(uri, method='GET', headers=hdr)
-        
+
         uri = URL('http://w3af.org/?id=7')
         pdr3 = HTTPPostDataRequest(uri, method='FOO', headers=hdr)
-        
-        ds.add( pdr1 )
-        ds.add( pdr2 )
-        ds.add( pdr2 )
-        ds.add( pdr1 )
-        
-        self.assertEqual( ds[0] , pdr1)
-        self.assertEqual( ds[1] , pdr2)
-        self.assertFalse( pdr3 in ds )
-        self.assertTrue( pdr2 in ds )
-        self.assertEqual( len(ds) , 2)
-        
+
+        ds.add(pdr1)
+        ds.add(pdr2)
+        ds.add(pdr2)
+        ds.add(pdr1)
+
+        self.assertEqual(ds[0], pdr1)
+        self.assertEqual(ds[1], pdr2)
+        self.assertFalse(pdr3 in ds)
+        self.assertTrue(pdr2 in ds)
+        self.assertEqual(len(ds), 2)
+
         # This forces an internal change in the URL object
         pdr2.getURL().url_string
-        self.assertTrue( pdr2 in ds )
-                
+        self.assertTrue(pdr2 in ds)
+
     def test_update(self):
         ds = disk_set()
         ds.add(1)
-        ds.update([2,3,1])
-        
-        self.assertEqual( list(ds), [1,2,3])
-        
+        ds.update([2, 3, 1])
+
+        self.assertEqual(list(ds), [1, 2, 3])
+
     def test_thread_safe(self):
         ds = disk_set()
 
@@ -138,18 +138,19 @@ class test_disk_set(unittest.TestCase):
         _min = 0
         add_dups = False
         for _max in xrange(0, 1100, 100):
-            
+
             th = threading.Thread(target=worker, args=(xrange(_min, _max),))
             threads.append(th)
-            
+
             # For testing the uniqueness of disk_sets
             add_dups = not add_dups
             if add_dups:
-                th = threading.Thread(target=worker, args=(xrange(_min, _max),))
+                th = threading.Thread(
+                    target=worker, args=(xrange(_min, _max),))
                 threads.append(th)
 
             _min = _max
-                
+
         for th in threads:
             th.start()
 
@@ -161,6 +162,6 @@ class test_disk_set(unittest.TestCase):
 
         ds_as_list = list(ds)
         self.assertEqual(len(ds_as_list), len(set(ds_as_list)))
-        
+
         ds_as_list.sort()
         self.assertEqual(ds_as_list, range(1000))

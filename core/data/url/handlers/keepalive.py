@@ -9,9 +9,9 @@
 #   Lesser General Public License for more details.
 #
 #   You should have received a copy of the GNU Lesser General Public
-#   License along with this library; if not, write to the 
-#     Free Software Foundation, Inc., 
-#     59 Temple Place, Suite 330, 
+#   License along with this library; if not, write to the
+#     Free Software Foundation, Inc.,
+#     59 Temple Place, Suite 330,
 #     Boston, MA  02111-1307  USA
 
 # This file is part of urlgrabber, a high-level cross-protocol url-grabber
@@ -30,7 +30,7 @@
 >> keepalive_handler = HTTPHandler()
 >> opener = urllib2.build_opener(keepalive_handler)
 >> urllib2.install_opener(opener)
->> 
+>>
 >> fo = urllib2.urlopen('http://www.python.org')
 
 If a connection to a given host is requested, and all of the existing
@@ -124,7 +124,7 @@ import core.data.kb.config as cf
 
 from core.data.constants.response_codes import NO_CONTENT
 from core.controllers.exceptions import (w3afException,
-                                            w3afMustStopByKnownReasonExc)
+                                         w3afMustStopByKnownReasonExc)
 
 
 HANDLE_ERRORS = 1 if sys.version_info < (2, 4) else 0
@@ -145,6 +145,7 @@ RESP_OK = 0
 RESP_TIMEOUT = 1
 RESP_BAD = 2
 
+
 class URLTimeoutError(urllib2.URLError):
     '''
     Our own URLError timeout exception. Basically a wrapper for socket.timeout.
@@ -154,6 +155,7 @@ class URLTimeoutError(urllib2.URLError):
 
     def __str__(self):
         return '<urlopen error timeout>'
+
 
 def closeonerror(read_meth):
     '''
@@ -167,6 +169,7 @@ def closeonerror(read_meth):
             inst.close()
             raise
     return new_read_meth
+
 
 class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
@@ -187,43 +190,42 @@ class HTTPResponse(httplib.HTTPResponse):
     # Both readline and readlines have been stolen with almost no
     # modification from socket.py
 
-
     def __init__(self, sock, debuglevel=0, strict=0, method=None):
-        if method: # the httplib in python 2.3 uses the method arg
+        if method:  # the httplib in python 2.3 uses the method arg
             httplib.HTTPResponse.__init__(self, sock, debuglevel, method)
-        else: # 2.2 doesn't
+        else:  # 2.2 doesn't
             httplib.HTTPResponse.__init__(self, sock, debuglevel)
         self.fileno = sock.fileno
         self.code = None
         self._rbuf = ''
         self._rbufsize = 8096
-        self._handler = None # inserted by the handler later
+        self._handler = None  # inserted by the handler later
         self._host = None   # (same)
         self._url = None     # (same)
-        self._connection = None # (same)
+        self._connection = None  # (same)
         self._method = method
         self._multiread = None
         self._encoding = None
-    
+
     @property
     def URL(self):
         return self.geturl()
 
     def geturl(self):
         return self._url
-    
+
     @property
     def encoding(self):
         return self._encoding
-    
+
     @encoding.setter
     def encoding(self, enc):
         self._encoding = enc
 
     def _raw_read(self, amt=None):
         '''
-        This is the original read function from httplib with a minor 
-        modification that allows me to check the size of the file being 
+        This is the original read function from httplib with a minor
+        modification that allows me to check the size of the file being
         fetched, and throw an exception in case it is too big.
         '''
         if self.fp is None:
@@ -311,13 +313,18 @@ class HTTPResponse(httplib.HTTPResponse):
         i = self._rbuf.find('\n')
         while i < 0 and not (0 < limit <= len(self._rbuf)):
             new = self._raw_read(self._rbufsize)
-            if not new: break
+            if not new:
+                break
             i = new.find('\n')
-            if i >= 0: i = i + len(self._rbuf)
+            if i >= 0:
+                i = i + len(self._rbuf)
             self._rbuf = self._rbuf + new
-        if i < 0: i = len(self._rbuf)
-        else: i = i + 1
-        if 0 <= limit < len(self._rbuf): i = limit
+        if i < 0:
+            i = len(self._rbuf)
+        else:
+            i = i + 1
+        if 0 <= limit < len(self._rbuf):
+            i = limit
         data, self._rbuf = self._rbuf[:i], self._rbuf[i:]
         return data
 
@@ -327,7 +334,8 @@ class HTTPResponse(httplib.HTTPResponse):
         list = []
         while 1:
             line = self.readline()
-            if not line: break
+            if not line:
+                break
             list.append(line)
             total += len(line)
             if sizehint and total >= sizehint:
@@ -354,14 +362,14 @@ class ConnectionManager(object):
     def __init__(self):
         self._lock = threading.RLock()
         self._host_pool_size = MAXCONNECTIONS
-        self._hostmap = {} # map hosts to a list of connections
-        self._used_cons = [] # connections being used per host
-        self._free_conns = [] # available connections
+        self._hostmap = {}  # map hosts to a list of connections
+        self._used_cons = []  # connections being used per host
+        self._free_conns = []  # available connections
 
     def remove_connection(self, conn, host=None):
         '''
         Remove a connection, it was closed by the server.
-        
+
         @param conn: Connection to remove
         @param host: The host for to the connection. If passed, the connection
         will be removed faster.
@@ -370,11 +378,11 @@ class ConnectionManager(object):
 
             if host:
                 if host not in self._hostmap:
-                    raise ValueError, 'Host "%s" not present in pool.' % host
+                    raise ValueError('Host "%s" not present in pool.' % host)
                 if conn in self._hostmap[host]:
                     self._hostmap[host].remove(conn)
 
-            else: # We don't know the host. Need to find it by looping
+            else:  # We don't know the host. Need to find it by looping
                 for _host, conns in self._hostmap.items():
                     if conn in conns:
                         host = _host
@@ -392,8 +400,8 @@ class ConnectionManager(object):
                 except ValueError:
                     pass
             if not removed:
-                raise ValueError, "Connection obj <%s> not present in pool" % \
-                conn
+                raise ValueError("Connection obj <%s> not present in pool" %
+                                 conn)
 
             conn_total = self.get_connections_total(host)
             if DEBUG:
@@ -416,7 +424,7 @@ class ConnectionManager(object):
     def replace_connection(self, bad_conn, host, conn_factory):
         '''
         Re-create a mal-functioning connection.
-        
+
         @param bad_conn: The bad connection
         @param host: The host for the connection
         @param conn_factory: The factory function for new connection creation.
@@ -435,7 +443,7 @@ class ConnectionManager(object):
     def get_available_connection(self, host, conn_factory):
         '''
         Return an available connection ready to be reused
-        
+
         @param host: Host for the connection.
         @param conn_factory: Factory function for connection creation. Receives
             <host> as parameter.
@@ -468,18 +476,18 @@ class ConnectionManager(object):
                     self._used_cons.append(ret_conn)
                     self._hostmap[host].append(ret_conn)
 
-                if ret_conn is not None: # Good! We have one!
+                if ret_conn is not None:  # Good! We have one!
                     return ret_conn
-                else: # Maybe we should wait a little and try again 8^)
+                else:  # Maybe we should wait a little and try again 8^)
                     retry_count -= 1
                     time.sleep(0.3)
 
             msg = 'keepalive: been waiting too long for a pool connection.' \
                   ' I\'m giving up. Seems like the pool is full.'
-            
+
             if DEBUG:
                 om.out.debug(msg)
-            
+
             raise w3afException(msg)
 
     def resize_pool(self, new_size):
@@ -488,13 +496,12 @@ class ConnectionManager(object):
         '''
         pass
 
-
     def get_all(self, host=None):
         '''
         If <host> is passed return a list containing the created connections
-        for that host. Otherwise return a dict with 'host: str' and 
+        for that host. Otherwise return a dict with 'host: str' and
         'conns: list' as items.
-        
+
         @param host: Host
         '''
         if host:
@@ -504,11 +511,11 @@ class ConnectionManager(object):
 
     def get_connections_total(self, host=None):
         '''
-        If <host> is None return the grand total of created connections; 
+        If <host> is None return the grand total of created connections;
         otherwise return the total of created conns. for <host>.
         '''
         values = self._hostmap.values() if (host is None) \
-                                            else [self._hostmap[host]]
+            else [self._hostmap[host]]
         return reduce(operator.add, map(len, values or [[]]))
 
 # Create the pool instance to be used. Intended to be shared by handlers.
@@ -532,7 +539,6 @@ class KeepAliveHandler(object):
         self._curr_check_failures = IN_A_ROW_TIMEOUTS
         # Tail list filter factory function
         self._get_tail_filter = lambda: deque(maxlen=self._curr_check_failures)
-
 
     def get_open_connections(self):
         '''
@@ -585,9 +591,9 @@ class KeepAliveHandler(object):
             # Check if all our last 'resp_statuses' were timeouts and raise
             # a w3afMustStopException if this is the case.
             if len(resp_statuses) == self._curr_check_failures and \
-                all(st == RESP_TIMEOUT for st in resp_statuses):
+                    all(st == RESP_TIMEOUT for st in resp_statuses):
                 msg = ('w3af found too much consecutive timeouts. The remote '
-                'webserver seems to be unresponsive; please verify manually.')
+                       'webserver seems to be unresponsive; please verify manually.')
                 reason = 'Timeout while trying to reach target.'
                 raise w3afMustStopByKnownReasonExc(msg, reason=reason)
 
@@ -653,7 +659,6 @@ class KeepAliveHandler(object):
         resp.msg = resp.reason
         return resp
 
-
     def _reuse_connection(self, conn, req, host):
         '''
         Start the transaction with a re-used connection
@@ -695,7 +700,8 @@ class KeepAliveHandler(object):
             r = None
         else:
             if DEBUG:
-                om.out.debug("re-using connection to %s (%d)" % (host, id(conn)))
+                om.out.debug(
+                    "re-using connection to %s (%d)" % (host, id(conn)))
             r._multiread = None
 
         return r
@@ -729,11 +735,11 @@ class KeepAliveHandler(object):
             header_dict = dict(self.parent.addheaders)
             header_dict.update(req.headers)
             header_dict.update(req.unredirected_hdrs)
-    
+
             for k, v in header_dict.iteritems():
                 conn.putheader(k, v)
             conn.endheaders()
-    
+
             if data is not None:
                 conn.send(data)
 
@@ -753,6 +759,7 @@ class HTTPHandler(KeepAliveHandler, urllib2.HTTPHandler):
 
     def _get_connection(self, host):
         return HTTPConnection(host)
+
 
 class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
     def __init__(self, proxy):
@@ -779,6 +786,7 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         else:
             return HTTPSConnection(host)
 
+
 class _HTTPConnection(httplib.HTTPConnection):
 
     def __init__(self, host, port=None, strict=None,
@@ -792,7 +800,7 @@ class ProxyHTTPConnection(_HTTPConnection):
     '''
     this class is used to provide HTTPS CONNECT support.
     '''
-    _ports = {'http' : 80, 'https' : 443}
+    _ports = {'http': 80, 'https': 443}
 
     def __init__(self, host, port=None, strict=None):
         _HTTPConnection.__init__(self, host, port, strict)
@@ -802,7 +810,7 @@ class ProxyHTTPConnection(_HTTPConnection):
         #real host/port to be used to make CONNECT request to proxy
         proto, rest = urllib.splittype(url)
         if proto is None:
-            raise ValueError, "unknown URL type: %s" % url
+            raise ValueError("unknown URL type: %s" % url)
         #get host
         host, rest = urllib.splithost(rest)
         self._real_host = host
@@ -814,7 +822,7 @@ class ProxyHTTPConnection(_HTTPConnection):
             try:
                 self._real_port = self._ports[proto]
             except KeyError:
-                raise ValueError, "unknown protocol for: %s" % url
+                raise ValueError("unknown protocol for: %s" % url)
         else:
             self._real_port = int(port)
 
@@ -831,13 +839,15 @@ class ProxyHTTPConnection(_HTTPConnection):
         if code != 200:
             #proxy returned and error, abort connection, and raise exception
             self.close()
-            raise socket.error, "Proxy connection failed: %d %s" % \
-            (code, message.strip())
+            raise socket.error("Proxy connection failed: %d %s" %
+                              (code, message.strip()))
         #eat up header block from proxy....
         while True:
             #should not use directly fp probablu
             line = response.fp.readline()
-            if line == '\r\n': break
+            if line == '\r\n':
+                break
+
 
 class ProxyHTTPSConnection(ProxyHTTPConnection):
     '''
@@ -860,6 +870,7 @@ class ProxyHTTPSConnection(ProxyHTTPConnection):
         ssl = socket.ssl(self.sock, self.key_file, self.cert_file)
         self.sock = httplib.FakeSocket(self.sock, ssl)
 
+
 class HTTPConnection(_HTTPConnection):
     # use the modified response class
     response_class = HTTPResponse
@@ -867,11 +878,12 @@ class HTTPConnection(_HTTPConnection):
     def __init__(self, host, port=None, strict=None):
         _HTTPConnection.__init__(self, host, port, strict, TIMEOUT)
 
+
 class HTTPSConnection(httplib.HTTPSConnection):
     response_class = HTTPResponse
 
     def __init__(self, host, port=None, key_file=None, cert_file=None,
                  strict=None):
         httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
-                                        strict, timeout=TIMEOUT)
+                                         strict, timeout=TIMEOUT)
         self.is_fresh = True

@@ -26,8 +26,7 @@ from pybloomfilter import BloomFilter as CMmapFilter
 
 
 class TestImplementationSelection(unittest.TestCase):
-    
+
     def test_correct_type(self):
         _filter = BloomFilter(1000, 0.01)
         self.assertIsInstance(_filter.bf, CMmapFilter)
-        

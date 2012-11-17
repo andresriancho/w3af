@@ -23,7 +23,7 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_ssh_version(PayloadTestHelper):
-    
+
     # Please note that this only works IF the remote end allows us to use
     # php wrappers and read the binary file with base64
     EXPECTED_RESULT = {'ssh_version': 'OpenSSH_5.9p1 Debian-5ubuntu1'}
@@ -31,4 +31,3 @@ class test_ssh_version(PayloadTestHelper):
     def test_ssh_version(self):
         result = exec_payload(self.shell, 'ssh_version', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

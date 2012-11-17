@@ -24,9 +24,9 @@ import core.data.constants.severity as severity
 
 
 class TestClickJacking(PluginTest):
-    
+
     click_jacking_url = 'http://moth/w3af/grep/click_jacking/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': click_jacking_url,
@@ -34,23 +34,24 @@ class TestClickJacking(PluginTest):
                 'grep': (PluginConfig('click_jacking'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                             ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                                 ('onlyForward', True, PluginConfig.BOOL)),
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('click_jacking', 'click_jacking')
-        
+
         self.assertEquals(1, len(vulns))
-        
+
         v = vulns[0]
         self.assertEquals(severity.MEDIUM, v.get_severity())
-        self.assertEquals('Potential Click-Jacking vulnerability', v.get_name() )
+        self.assertEquals(
+            'Potential Click-Jacking vulnerability', v.get_name())
         self.assertEquals(len(v.get_id()), 1)
-        self.assertTrue(self.click_jacking_url + 'without_protection.php' in v.get_desc())
-        
+        self.assertTrue(
+            self.click_jacking_url + 'without_protection.php' in v.get_desc())

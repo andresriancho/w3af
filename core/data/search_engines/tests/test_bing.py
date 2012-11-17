@@ -27,22 +27,22 @@ from core.data.url.xUrllib import xUrllib
 
 
 class test_bing(unittest.TestCase):
-    
+
     def setUp(self):
         self.query, self.limit = random.choice([('big bang theory', 200),
                                                 ('two and half man', 37),
                                                 ('doctor house', 55)])
-        self.bing_se = bing( xUrllib() )
-        
-    
+        self.bing_se = bing(xUrllib())
+
     def test_get_links_results(self):
         results = self.bing_se.getNResults(self.query, self.limit)
         # Len of results must be le. than limit
         self.assertTrue(len(results) <= self.limit)
-        
+
         # I want to get some results...
         self.assertTrue(len(results) >= 10, results)
-        self.assertTrue(len(set([r.URL.getDomain() for r in results])) >= 3, results)
-        
+        self.assertTrue(
+            len(set([r.URL.getDomain() for r in results])) >= 3, results)
+
         # URLs should be unique
         self.assertTrue(len(results) == len(set([r.URL for r in results])))

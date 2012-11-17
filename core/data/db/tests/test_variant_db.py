@@ -27,7 +27,7 @@ from core.controllers.misc.temp_dir import create_temp_dir
 
 
 class TestVariantDB(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
         self.vdb = VariantDB()
@@ -35,85 +35,97 @@ class TestVariantDB(unittest.TestCase):
     def test_db_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s'
         _max = 5
-        
+
         for i in xrange(_max):
             url = URL(url_fmt % i)
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
-        self.assertFalse( self.vdb.need_more_variants(URL(url_fmt % (_max+1,)) ))
-    
+
+        self.assertFalse(
+            self.vdb.need_more_variants(URL(url_fmt % (_max + 1,))))
+
     def test_db_int_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=1'
         _max = 5
-        
+
         for i in xrange(_max):
             url = URL(url_fmt % i)
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
-        self.assertFalse( self.vdb.need_more_variants(URL(url_fmt % (_max+1,)) ))
-        
+
+        self.assertFalse(
+            self.vdb.need_more_variants(URL(url_fmt % (_max + 1,))))
+
     def test_db_int_int_var(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
         _max = 5
-        
+
         for i in xrange(_max):
             url = URL(url_fmt % (i, i))
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
-        self.assertFalse( self.vdb.need_more_variants(URL(url_fmt % (_max+1,_max+1)) ))
-        
+
+        self.assertFalse(
+            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+
     def test_db_int_str(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
         _max = 5
-        
+
         for i in xrange(_max):
             url = URL(url_fmt % (i, 'abc' * i))
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
-        self.assertFalse( self.vdb.need_more_variants(URL(url_fmt % (_max+1,'abc'*(_max+1))) ))
-        
+
+        self.assertFalse(self.vdb.need_more_variants(
+            URL(url_fmt % (_max + 1, 'abc' * (_max + 1)))))
+
     def test_db_int_str_then_int_int(self):
         url_fmt = 'http://w3af.org/foo.htm?id=%s&bar=%s'
         _max = 5
-        
+
         # Add (int, str)
         for i in xrange(_max):
             url = URL(url_fmt % (i, 'abc' * i))
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
+
         # Please note that in this case I'm asking for (int, int) and I added
         # (int, str) before
-        self.assertTrue( self.vdb.need_more_variants(URL(url_fmt % (_max+1,_max+1)) ))
-        
+        self.assertTrue(
+            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+
         # Add (int, int)
         for i in xrange(_max):
             url = URL(url_fmt % (i, i))
-            self.assertTrue( self.vdb.need_more_variants(url) )
+            self.assertTrue(self.vdb.need_more_variants(url))
             self.vdb.append(url)
-        
-        self.assertFalse( self.vdb.need_more_variants(URL(url_fmt % (_max+1,_max+1)) ))
-        
+
+        self.assertFalse(
+            self.vdb.need_more_variants(URL(url_fmt % (_max + 1, _max + 1))))
+
     def test_clean_reference_simple(self):
-        self.assertEqual( self.vdb._clean_reference(URL('http://w3af.org/')),
-                          u'http://w3af.org/')
-    
+        self.assertEqual(self.vdb._clean_reference(URL('http://w3af.org/')),
+                         u'http://w3af.org/')
+
     def test_clean_reference_file(self):
-        self.assertEqual( self.vdb._clean_reference(URL('http://w3af.org/index.php')),
-                          u'http://w3af.org/index.php')
-    
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/index.php')),
+            u'http://w3af.org/index.php')
+
     def test_clean_reference_int(self):
-        self.assertEqual( self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2')),
-                          u'http://w3af.org/index.php?id=number' )
-    
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2')),
+            u'http://w3af.org/index.php?id=number')
+
     def test_clean_reference_int_str(self):
-        self.assertEqual( self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar')),
-                          u'http://w3af.org/index.php?id=number&foo=string')
-    
+        self.assertEqual(
+            self.vdb._clean_reference(
+                URL('http://w3af.org/index.php?id=2&foo=bar')),
+            u'http://w3af.org/index.php?id=number&foo=string')
+
     def test_clean_reference_int_str_empty(self):
-        self.assertEqual( self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2&foo=bar&spam=')),
-                          u'http://w3af.org/index.php?id=number&foo=string&spam=string')
+        self.assertEqual(
+            self.vdb._clean_reference(
+                URL('http://w3af.org/index.php?id=2&foo=bar&spam=')),
+            u'http://w3af.org/index.php?id=number&foo=string&spam=string')

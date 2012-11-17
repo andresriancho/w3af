@@ -35,16 +35,16 @@ class rnd_case(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request ):
+    def modifyRequest(self, request):
         '''
         Mangles the request
-        
+
         @param request: HTTPRequest instance that is going to be modified by the evasion plugin
         @return: The modified request
-        
+
         >>> from core.data.parsers.url import URL
         >>> rc = rnd_case()
-        
+
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> rc.modifyRequest( r ).url_object.url_string
@@ -62,7 +62,7 @@ class rnd_case(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/a/B')
         >>> r = HTTPRequest( u )
-        >>> options = ['/a/b','/a/B','/A/b','/A/B'] 
+        >>> options = ['/a/b','/a/B','/A/b','/A/B']
         >>> path = rc.modifyRequest( r ).url_object.getPath()
         >>> path in options
         True
@@ -74,32 +74,32 @@ class rnd_case(EvasionPlugin):
         u'http://www.w3af.com/a/B'
 
         '''
-        # First we mangle the URL        
+        # First we mangle the URL
         path = request.url_object.getPath()
         path = self._mutate(path)
-        
+
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath( path )
-        
+        new_url.setPath(path)
+
         # Mangle the postdata
         data = request.get_data()
         if data:
-            
+
             try:
                 # Only mangle the postdata if it is a url encoded string
-                parse_qs( data )
+                parse_qs(data)
             except:
                 pass
             else:
-                data = self._mutate(data) 
-        
-        new_req = HTTPRequest( new_url , data, request.headers, 
-                               request.get_origin_req_host() )
-        
+                data = self._mutate(data)
+
+        new_req = HTTPRequest(new_url, data, request.headers,
+                              request.get_origin_req_host())
+
         return new_req
-    
-    def _mutate( self, data ):
+
+    def _mutate(self, data):
         '''
         Change the case of the data string.
         @return: a string.
@@ -112,23 +112,23 @@ class rnd_case(EvasionPlugin):
                 char = char.lower()
             new_data += char
         return new_data
-        
-    def getPriority( self ):
+
+    def getPriority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
-        
+
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         return 25
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin changes the case of random letters.
-        
+
         Example:
             Input:      '/bar/foo.asp'
             Output :    '/BAr/foO.Asp'

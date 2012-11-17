@@ -31,9 +31,9 @@ from core.ui.gui.payload_generators import create_generator_menu
 
 from core.data.db.history import HistoryItem
 from core.controllers.exceptions import (w3afException, w3afMustStopException,
-                                            w3afMustStopOnUrlError,
-                                            w3afMustStopByKnownReasonExc,
-                                            w3afProxyException)
+                                         w3afMustStopOnUrlError,
+                                         w3afMustStopByKnownReasonExc,
+                                         w3afProxyException)
 
 ui_proxy_menu = """
 <ui>
@@ -59,6 +59,7 @@ Pragma: no-cache
 Content-Type: application/x-www-form-urlencoded
 """
 
+
 class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
     def __init__(self, w3af, tsup, tlow, event, fixContentLength):
@@ -73,8 +74,8 @@ class ThreadedURLImpact(threading.Thread):
     def run(self):
         '''Starts the thread.'''
         try:
-            self.httpResp = self.w3af.uri_opener.send_raw_request(self.tsup,\
-                    self.tlow, self.fixContentLength)
+            self.httpResp = self.w3af.uri_opener.send_raw_request(self.tsup,
+                                                                  self.tlow, self.fixContentLength)
             self.ok = True
         except Exception, e:
             self.exception = e
@@ -88,7 +89,7 @@ class ManualRequests(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(ManualRequests,self).__init__(
+        super(ManualRequests, self).__init__(
             w3af, "manualreq", "w3af - Manual Requests", "Manual_Requests")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
@@ -97,7 +98,8 @@ class ManualRequests(entries.RememberingWindow):
         self.add_accel_group(accelgroup)
         actiongroup = gtk.ActionGroup('UIManager')
         actiongroup.add_actions([
-            ('Send', gtk.STOCK_YES, _('_Send Request'), None, _('Send request'), self._send),
+            ('Send', gtk.STOCK_YES, _('_Send Request'), None,
+             _('Send request'), self._send),
         ])
         # Finish the toolbar
         self._uimanager.insert_action_group(actiongroup, 0)
@@ -111,8 +113,8 @@ class ManualRequests(entries.RememberingWindow):
         self._fixContentLengthCB.set_active(True)
         self._fixContentLengthCB.show()
         # request-response viewer
-        self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive],\
-                withManual=False, editableRequest=True)
+        self.reqresp = reqResViewer.reqResViewer(w3af, [b.set_sensitive],
+                                                 withManual=False, editableRequest=True)
         self.reqresp.response.set_sensitive(False)
         self.vbox.pack_start(self._fixContentLengthCB, False, False)
         self.vbox.pack_start(self.reqresp, True, True)
@@ -133,9 +135,9 @@ class ManualRequests(entries.RememberingWindow):
         '''
         (tsup, tlow) = self.reqresp.request.getBothTexts()
 
-        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),\
-                gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD,\
-                0, gtk.gdk.INPUT_ONLY)
+        busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
+                              gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD,
+                              0, gtk.gdk.INPUT_ONLY)
         busy.set_cursor(gtk.gdk.Cursor(gtk.gdk.WATCH))
         busy.show()
 
@@ -147,7 +149,9 @@ class ManualRequests(entries.RememberingWindow):
 
         # threading game
         event = threading.Event()
-        impact = ThreadedURLImpact(self.w3af, tsup, tlow, event, fixContentLength)
+        impact = ThreadedURLImpact(
+            self.w3af, tsup, tlow, event, fixContentLength)
+
         def impactDone():
             if not event.isSet():
                 return True
@@ -163,7 +167,8 @@ class ManualRequests(entries.RememberingWindow):
                              w3afMustStopOnUrlError,
                              w3afMustStopByKnownReasonExc,
                              w3afProxyException):
-                    msg = "Stopped sending requests because '%s'" % str(impact.exception)
+                    msg = "Stopped sending requests because '%s'" % str(
+                        impact.exception)
                 else:
                     raise impact.exception
                 self.reqresp.response.clearPanes()
@@ -173,13 +178,13 @@ class ManualRequests(entries.RememberingWindow):
                 gtk.gdk.threads_leave()
             else:
                 # This is a very strange case, because impact.ok == False
-                # but impact.exception does not exist! 
+                # but impact.exception does not exist!
                 self.reqresp.response.clearPanes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
-                helpers.friendlyException('Errors occurred while sending the HTTP request.')
+                helpers.friendlyException(
+                    'Errors occurred while sending the HTTP request.')
                 gtk.gdk.threads_leave()
-                
 
             return False
 
@@ -193,7 +198,7 @@ class PreviewWindow(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, parent, fg):
-        super(PreviewWindow,self).__init__(
+        super(PreviewWindow, self).__init__(
             w3af, "fuzzypreview", "Preview", "Fuzzy_Requests")
         self.pages = []
         self.generator = fg.generate()
@@ -201,10 +206,10 @@ class PreviewWindow(entries.RememberingWindow):
         self.set_transient_for(parent)
 
         # content
-        self.panes = reqResViewer.requestPart(self, w3af, editable=False, widgname="fuzzypreview")
+        self.panes = reqResViewer.requestPart(
+            self, w3af, editable=False, widgname="fuzzypreview")
         self.vbox.pack_start(self.panes)
         self.panes.show()
-
 
         # the ok button
         centerbox = gtk.HBox()
@@ -225,7 +230,6 @@ class PreviewWindow(entries.RememberingWindow):
             self.pages.append(it)
         (txtup, txtdn) = self.pages[page]
         self.panes.showRaw(txtup, txtdn)
-
 
 
 FUZZYHELP = """\
@@ -269,7 +273,7 @@ class FuzzyRequests(entries.RememberingWindow):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af, initialRequest=None):
-        super(FuzzyRequests,self).__init__(
+        super(FuzzyRequests, self).__init__(
             w3af, "fuzzyreq", "w3af - Fuzzy Requests", "Fuzzy_Requests")
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
@@ -285,9 +289,12 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # we create the buttons first, to pass them
         analyzBut = gtk.Button("Analyze")
-        self.sendPlayBut = entries.SemiStockButton("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
-        self.sendStopBut = entries.SemiStockButton("", gtk.STOCK_MEDIA_STOP, "Stops the request being sent")
-        self.sSB_state = helpers.PropagateBuffer(self.sendStopBut.set_sensitive)
+        self.sendPlayBut = entries.SemiStockButton(
+            "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendStopBut = entries.SemiStockButton(
+            "", gtk.STOCK_MEDIA_STOP, "Stops the request being sent")
+        self.sSB_state = helpers.PropagateBuffer(
+            self.sendStopBut.set_sensitive)
         self.sSB_state.change(self, False)
 
         # Fix content length checkbox
@@ -296,10 +303,11 @@ class FuzzyRequests(entries.RememberingWindow):
         self._fixContentLengthCB.show()
 
         # request
-        self.originalReq = reqResViewer.requestPart(self, w3af,\
-                [analyzBut.set_sensitive, self.sendPlayBut.set_sensitive,\
-                functools.partial(self.sSB_state.change, "rRV")],\
-                editable=True, widgname="fuzzyrequest")
+        self.originalReq = reqResViewer.requestPart(self, w3af,
+                                                    [analyzBut.set_sensitive, self.sendPlayBut.set_sensitive,
+                                                     functools.partial(
+                                                     self.sSB_state.change, "rRV")],
+                                                    editable=True, widgname="fuzzyrequest")
 
         if initialRequest is None:
             self.originalReq.showRaw(fuzzy_request_example, '')
@@ -373,20 +381,22 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # cluster responses button
         image = gtk.Image()
-        image.set_from_file( os.path.join( os.path.split(__file__)[0] ,'data','cluster_data.png'))
+        image.set_from_file(os.path.join(
+            os.path.split(__file__)[0], 'data', 'cluster_data.png'))
         image.show()
         self.clusterButton = gtk.Button(label='Cluster Responses')
-        self.clusterButton.connect("clicked", self._clusterData )
-        self.clusterButton.set_sensitive( False )
+        self.clusterButton.connect("clicked", self._clusterData)
+        self.clusterButton.set_sensitive(False)
         self.clusterButton.set_image(image)
         self.clusterButton.show()
         centerbox.pack_start(self.clusterButton, True, False)
 
         # clear responses button
-        self.clearButton = entries.SemiStockButton('Clear Responses', gtk.STOCK_CLEAR, \
-                                                                    tooltip='Clear all HTTP responses from fuzzer window')
-        self.clearButton.connect("clicked", self._clearResponses )
-        self.clearButton.set_sensitive( False )
+        self.clearButton = entries.SemiStockButton(
+            'Clear Responses', gtk.STOCK_CLEAR,
+            tooltip='Clear all HTTP responses from fuzzer window')
+        self.clearButton.connect("clicked", self._clearResponses)
+        self.clearButton.set_sensitive(False)
         self.clearButton.show()
         centerbox.pack_start(self.clearButton, True, False)
 
@@ -407,7 +417,7 @@ class FuzzyRequests(entries.RememberingWindow):
         menu.append(main_generator_menu)
         menu.show_all()
 
-    def _clearResponses( self, widg ):
+    def _clearResponses(self, widg):
         '''Clears all the responses from the fuzzy window.'''
         self.responses = []
         self.resultReqResp.request.clearPanes()
@@ -417,7 +427,7 @@ class FuzzyRequests(entries.RememberingWindow):
         self.clearButton.set_sensitive(False)
         self.pagesControl.deactivate()
 
-    def _clusterData( self, widg):
+    def _clusterData(self, widg):
         '''Analyze if we can cluster the responses and do it.'''
         data = []
         for resp in self.responses:
@@ -431,7 +441,8 @@ class FuzzyRequests(entries.RememberingWindow):
         else:
             # Let the user know ahout the problem
             msg = "There are no HTTP responses available to cluster."
-            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
+            dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
+                                    gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
             opt = dlg.run()
             dlg.destroy()
 
@@ -453,7 +464,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_stop(self, widg=None):
         '''Stop the requests being sent.'''
         self._sendStopped = True
-        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendPlayBut.changeInternals(
+            "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_start)
         self.sSB_state.change(self, False)
@@ -462,7 +474,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_pause(self, widg):
         '''Pause the requests being sent.'''
         self._sendPaused = True
-        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
+        self.sendPlayBut.changeInternals(
+            "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_play)
         self.throbber.running(False)
@@ -470,7 +483,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_play(self, widg):
         '''Continue sending the requests.'''
         self._sendPaused = False
-        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
+        self.sendPlayBut.changeInternals(
+            "", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
         self.throbber.running(True)
@@ -503,15 +517,16 @@ class FuzzyRequests(entries.RememberingWindow):
         requestGenerator = fg.generate()
 
         # change the buttons
-        self.sendPlayBut.changeInternals("", gtk.STOCK_MEDIA_PAUSE, "Pauses the requests sending")
+        self.sendPlayBut.changeInternals(
+            "", gtk.STOCK_MEDIA_PAUSE, "Pauses the requests sending")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
         self.sSB_state.change(self, True)
         self.throbber.running(True)
 
         # let's send the requests!
-        gobject.timeout_add(100, self._real_send, fixContentLength, requestGenerator)
-
+        gobject.timeout_add(
+            100, self._real_send, fixContentLength, requestGenerator)
 
     def _real_send(self, fixContentLength, requestGenerator):
         '''This is the one that actually sends the requests, if corresponds.
@@ -532,7 +547,8 @@ class FuzzyRequests(entries.RememberingWindow):
             return False
 
         try:
-            httpResp = self.w3af.uri_opener.send_raw_request(realreq, realbody, fixContentLength)
+            httpResp = self.w3af.uri_opener.send_raw_request(
+                realreq, realbody, fixContentLength)
             errorMsg = None
             self.result_ok += 1
         except w3afException, e:
@@ -546,7 +562,7 @@ class FuzzyRequests(entries.RememberingWindow):
 
             # Let the user know ahout the problem
             msg = "Stopped sending requests because " + str(e)
-            helpers.friendlyException( msg )
+            helpers.friendlyException(msg)
             return False
 
         if httpResp is not None:
@@ -556,12 +572,13 @@ class FuzzyRequests(entries.RememberingWindow):
 
         # always update the gtk stuff
         self.sendfb.set_sensitive(True)
-        self.sendfb.set_text("%d ok, %d errors" % (self.result_ok, self.result_err))
+        self.sendfb.set_text(
+            "%d ok, %d errors" % (self.result_ok, self.result_err))
 
         # activate and show
         self.resultReqResp.set_sensitive(True)
         self.clearButton.set_sensitive(True)
-        if len(self.responses) >=3:
+        if len(self.responses) >= 3:
             self.clusterButton.set_sensitive(True)
         self.pagesControl.activate(len(self.responses))
         self._pageChange(0)
@@ -570,13 +587,13 @@ class FuzzyRequests(entries.RememberingWindow):
     def _pageChange(self, page):
         '''
         Change the page, and show the information that was stored in self.responses
-            
+
         If OK, the responses are saved like this:
             self.responses.append((True, httpResp.get_id()))
-        
+
         else:
-            self.responses.append((False, realreq, realbody, errorMsg))        
-        
+            self.responses.append((False, realreq, realbody, errorMsg))
+
         @return: None.
         '''
         info = self.responses[page]
@@ -588,21 +605,21 @@ class FuzzyRequests(entries.RememberingWindow):
                 historyItem = self.historyItem.read(reqid)
             except IndexError:
                 #
-                # This catches a strange error 
+                # This catches a strange error
                 # https://sourceforge.net/tracker/?func=detail&aid=2696941&group_id=170274&atid=853652
                 # TODO: Investigate this further...
                 #
                 error_msg = 'Error searching the request database'
-                self.resultReqResp.request.showRaw( error_msg, error_msg )
-                self.resultReqResp.response.showError( error_msg )
-                self.title0.set_markup( "<b>Error</b>")
+                self.resultReqResp.request.showRaw(error_msg, error_msg)
+                self.resultReqResp.response.showError(error_msg)
+                self.title0.set_markup("<b>Error</b>")
             else:
-                self.resultReqResp.request.showObject( historyItem.request )
-                self.resultReqResp.response.showObject( historyItem.response )
-                self.title0.set_markup( "<b>Id: %d</b>" % reqid )
+                self.resultReqResp.request.showObject(historyItem.request)
+                self.resultReqResp.response.showObject(historyItem.response)
+                self.title0.set_markup("<b>Id: %d</b>" % reqid)
         else:
             # the request brought problems
             realreq, realbody, errorMsg = info[1:]
-            self.resultReqResp.request.showRaw( realreq, realbody )
-            self.resultReqResp.response.showError( errorMsg )
-            self.title0.set_markup( "<b>Error</b>")
+            self.resultReqResp.request.showRaw(realreq, realbody)
+            self.resultReqResp.response.showError(errorMsg)
+            self.title0.set_markup("<b>Error</b>")

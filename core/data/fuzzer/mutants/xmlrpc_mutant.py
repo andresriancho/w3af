@@ -25,15 +25,15 @@ from core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 class MutantXMLRPC(PostDataMutant):
     '''
     This class is a XMLRPC mutant.
-    
+
     *** IMPORTANT ***
     Not in use in any section of the code!
     *** IMPORTANT ***
     '''
-    def __init__( self, freq ):
+    def __init__(self, freq):
         PostDataMutant.__init__(self, freq)
 
-    def get_mutant_type( self ):
+    def get_mutant_type(self):
         return 'XMLRPC data'
 
     def getHeaders(self):
@@ -47,7 +47,7 @@ class MutantXMLRPC(PostDataMutant):
         I had to implement this again here instead of just inheriting from
         PostDataMutant because of the duplicated parameter name support which
         I added to the framework.
-        
+
         @return: A string representing WHAT was fuzzed.
         '''
         res = ''

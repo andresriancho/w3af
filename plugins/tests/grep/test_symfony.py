@@ -34,11 +34,11 @@ from plugins.grep.symfony import symfony
 
 
 class test_symfony(unittest.TestCase):
-    
+
     SYMFONY_HEADERS = Headers([('content-type', 'text/html'),
-                               ('set-cookie','symfony=sfasfasfa')])
+                               ('set-cookie', 'symfony=sfasfasfa')])
     NON_SYMFONY_HEADERS = Headers([('content-type', 'text/html')])
-    
+
     EMPTY_BODY = ''
     UNPROTECTED_BODY = '''<html><head></head><body><form action="login" method="post">
                             <input type="text" name="signin" id="signin" /></form></body>
@@ -47,47 +47,55 @@ class test_symfony(unittest.TestCase):
                             <input type="text" name="signin" id="signin" /><input type="hidden"
                             name="signin[_csrf_token]" value="069092edf6b67d5c25fd07642a54f6e3"
                             id="signin__csrf_token" /></form></body></html>'''
-    
+
     def setUp(self):
         create_temp_dir()
         kb.kb.cleanup()
         self.plugin = symfony()
         self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
-        self.http_resp = partial(HTTPResponse, code=200, geturl=self.url, original_url=self.url) 
+        self.http_resp = partial(
+            HTTPResponse, code=200, geturl=self.url, original_url=self.url)
 
     def tearDown(self):
         self.plugin.end()
-            
+
     def test_symfony_positive(self):
-        response = self.http_resp(read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue( self.plugin.symfonyDetected(response) )
-    
+        response = self.http_resp(
+            read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
+        self.assertTrue(self.plugin.symfonyDetected(response))
+
     def test_symfony_negative(self):
-        response = self.http_resp(read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
-        self.assertFalse( self.plugin.symfonyDetected(response) )
-    
+        response = self.http_resp(
+            read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
+        self.assertFalse(self.plugin.symfonyDetected(response))
+
     def test_symfony_override(self):
         self.plugin._override = True
-        response = self.http_resp(read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue( self.plugin.symfonyDetected(response) )
-    
+        response = self.http_resp(
+            read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
+        self.assertTrue(self.plugin.symfonyDetected(response))
+
     def test_symfony_csrf_positive(self):
-        response = self.http_resp(read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue( self.plugin.csrfDetected(response.getDOM()) )
-    
+        response = self.http_resp(
+            read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
+        self.assertTrue(self.plugin.csrfDetected(response.getDOM()))
+
     def test_symfony_csrf_negative(self):
-        response = self.http_resp(read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertFalse( self.plugin.csrfDetected(response.getDOM()) )
+        response = self.http_resp(
+            read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
+        self.assertFalse(self.plugin.csrfDetected(response.getDOM()))
 
     def test_symfony_protected(self):
-        response = self.http_resp(read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
+        response = self.http_resp(
+            read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         request = FuzzableRequest(self.url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 0 )
-    
+        self.assertEquals(len(kb.kb.get('symfony', 'symfony')), 0)
+
     def test_symfony_unprotected(self):
         request = FuzzableRequest(self.url, method='GET')
-        response = self.http_resp(read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
+        response = self.http_resp(
+            read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
         self.plugin.grep(request, response)
-        self.assertEquals( len(kb.kb.get('symfony', 'symfony')) , 1 )
+        self.assertEquals(len(kb.kb.get('symfony', 'symfony')), 1)

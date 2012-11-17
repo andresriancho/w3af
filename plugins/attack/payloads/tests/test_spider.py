@@ -31,4 +31,3 @@ class test_spider(PayloadTestHelper):
         result = exec_payload(self.shell, 'spider', args=(2,), use_api=True)
         self.assertTrue('/home/moth/keys.txt' in result)
         self.assertTrue(result['/home/moth/keys.txt'])
-        

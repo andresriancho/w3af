@@ -30,16 +30,16 @@ from core.data.fuzzer.form_filler import smart_fill
 class TestSmartFill(unittest.TestCase):
 
     def test_address(self):
-        self.assertEquals( smart_fill('address'), 'Bonsai Street 123' ) 
-    
+        self.assertEquals(smart_fill('address'), 'Bonsai Street 123')
+
     def test_address_2(self):
-        self.assertEquals( smart_fill('street_address'), 'Bonsai Street 123' )
-         
+        self.assertEquals(smart_fill('street_address'), 'Bonsai Street 123')
+
     def test_ip(self):
-        self.assertEquals( smart_fill('ip'), '127.0.0.1' ) 
-    
+        self.assertEquals(smart_fill('ip'), '127.0.0.1')
+
     def test_ip_case_insensitive(self):
-        self.assertEquals( smart_fill('IP'), '127.0.0.1' )
-        
+        self.assertEquals(smart_fill('IP'), '127.0.0.1')
+
     def test_default(self):
-        self.assertEquals( smart_fill('foobar'), '56' )
+        self.assertEquals(smart_fill('foobar'), '56')

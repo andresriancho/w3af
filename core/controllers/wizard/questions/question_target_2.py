@@ -27,40 +27,38 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.controllers.wizard.question import question
 
+
 class question_target_2(question):
     '''
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self, w3af_core):
-        question.__init__( self, w3af_core )
+        question.__init__(self, w3af_core)
 
         self._question_id = 'target_2'
 
         self._question_title = 'Target Location'
-        
+
         self._question_str = 'w3af has a group of plugins that fetch information about your target application'
         self._question_str += ' using Internet search engines. In order to enable or disable those plugins, we need'
         self._question_str += ' to know the following:'
 
-        
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
 
         d1 = 'Is the target web application reachable from the Internet?'
-        o1 = opt_factory('internet',True, d1, 'boolean')
+        o1 = opt_factory('internet', True, d1, 'boolean')
 
         ol = OptionList()
         ol.add(o1)
 
         return ol
-        
-    def getNextQuestionId(self,  options_list ):
+
+    def getNextQuestionId(self, options_list):
 
         internet = options_list['internet'].get_value()
         # FIXME: Do something with this value
 
         return None
-
-

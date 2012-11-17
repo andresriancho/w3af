@@ -52,7 +52,7 @@ class PropagateBuffer(object):
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
             return
-        
+
         # something changed, let's see our message
         self.alerted[widg] = status
         message = all(self.alerted.values())
@@ -87,7 +87,7 @@ class PropagateBufferPayload(object):
         # if the widget didn't change anything, we do not propagate
         if self.alerted.get(widg) == status:
             return
-        
+
         # something changed, let's see our message
         self.alerted[widg] = status
         message = all(self.alerted.values())
@@ -107,7 +107,7 @@ def clean_description(desc):
     eliminate all these spaces.
 
     Also trims more than one space between words.
-    
+
     @param desc: the description to clean
     @return The cleaned description
 
@@ -120,6 +120,7 @@ def clean_description(desc):
 
 _threadPool = []
 
+
 def endThreads():
     '''This function must be called once when the GUI shuts down'''
     for t in _threadPool:
@@ -128,15 +129,16 @@ def endThreads():
         t.my_thread_ended = True
         t.join()
 
+
 class RegistThread(threading.Thread):
     '''Class to provide registered threads.
-    
+
     If the class that inherits this will get locked listening a queue, it
     should pass it here, at thread termination it will receive there a
     'Terminated' message.
 
     The inheriting class will need to implement the main loop in a run()
-    method; the start() call is automatic. 
+    method; the start() call is automatic.
 
     It must supervise if needs to finish through the 'self.my_thread_ended'
     bool attribute.
@@ -146,15 +148,16 @@ class RegistThread(threading.Thread):
     def __init__(self):
         _threadPool.append(self)
         self.my_thread_ended = False
-        
-        super(RegistThread,self).__init__()
+
+        super(RegistThread, self).__init__()
         self.name = 'RegistThread'
-        
+
         self.start()
 
 #--
 
 #-- the following is for core wrapping
+
 
 def friendlyException(message):
     '''Creates the dialog showing the message.
@@ -167,7 +170,7 @@ def friendlyException(message):
             http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
             '''
             self.destroy()
-            
+
         def dialog_run(self):
             '''
             http://faq.pygtk.org/index.py?req=show&file=faq10.017.htp
@@ -176,12 +179,14 @@ def friendlyException(message):
                 self.set_modal(True)
             self.connect('response', self.dialog_response_cb)
             self.show()
-            
-    dlg = w3af_message_dialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
+
+    dlg = w3af_message_dialog(
+        None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message)
     dlg.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
     dlg.set_title('Error')
     dlg.dialog_run()
     return
+
 
 class _Wrapper(object):
     '''Wraps a call to the Core.
@@ -206,7 +211,7 @@ class _Wrapper(object):
 coreWrap = _Wrapper(w3afException)
 
 #--
-# Trying to not use threads anymore, but still need to 
+# Trying to not use threads anymore, but still need to
 # supervise queues
 
 
@@ -224,13 +229,13 @@ class IteratedQueue(RegistThread):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     CLEANUP_NUM = 1000
-    
+
     def __init__(self, queue):
         self.inputqueue = queue
         self.repository = []
         self.indexes = []
         self._lock = threading.Lock()
-                
+
         RegistThread.__init__(self)
 
     def run(self):
@@ -247,33 +252,33 @@ class IteratedQueue(RegistThread):
         '''Serves the elements taken from the queue.'''
         if start_idx > len(self.repository):
             start_idx = len(self.repository)
-            
+
         idx = start_idx
-        
+
         self.indexes.append(idx)
         idxidx = len(self.indexes) - 1
-        
+
         while True:
-            
+
             if self.indexes[idxidx] == len(self.repository):
                 msg = None
             else:
-                msg = self.repository[ self.indexes[idxidx] ]
+                msg = self.repository[self.indexes[idxidx]]
                 self.indexes[idxidx] += 1
                 self.clean()
-                
+
             yield msg
 
     def clean(self):
         with self._lock:
             min_index = min(self.indexes)
-            
+
             if min_index >= self.CLEANUP_NUM:
-            
+
                 self.repository = self.repository[min_index:]
-                
+
                 for pos in xrange(len(self.indexes)):
-                    self.indexes[pos] -= min_index 
+                    self.indexes[pos] -= min_index
 
     def qsize(self):
         return self.inputqueue.qsize()
@@ -281,7 +286,7 @@ class IteratedQueue(RegistThread):
 
 class BroadcastWrapper(object):
     '''Broadcast methods access to several widgets.
-    
+
     Wraps objects to be able to have n widgets, and handle them
     as one.
 
@@ -290,7 +295,7 @@ class BroadcastWrapper(object):
     def __init__(self, *values):
         self.initvalues = values
         self.widgets = []
-    
+
     def __addWidget(self, widg):
         '''Adds the widget to broadcast.'''
         self.widgets.append(widg)
@@ -308,16 +313,19 @@ class BroadcastWrapper(object):
 # This is a helper for debug, you just should connect the
 # 'event' event to this debugHandler
 
-event_types = [i for i in vars(gtk.gdk).values() if type(i) is gtk.gdk.EventType]
+event_types = [i for i in vars(gtk.gdk).values() if type(i)
+               is gtk.gdk.EventType]
+
 
 def debugHandler(widget, event, *a):
     '''Just connect it to the 'event' event.'''
     if event.type in event_types:
         print event.type.value_nick
 
+
 class Throbber(gtk.ToolButton):
     '''Creates the throbber widget.
-    
+
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self):
@@ -328,7 +336,7 @@ class Throbber(gtk.ToolButton):
         self.img_animat.set_from_file('core/ui/gui/data/throbber_animat.gif')
         self.img_animat.show()
 
-        super(Throbber,self).__init__(self.img_static, "")
+        super(Throbber, self).__init__(self.img_static, "")
         self.set_sensitive(False)
         self.show()
 
@@ -338,7 +346,7 @@ class Throbber(gtk.ToolButton):
             self.set_icon_widget(self.img_animat)
         else:
             self.set_icon_widget(self.img_static)
-            
+
 
 def loadImage(filename, path='core/ui/gui/data/'):
     '''Loads a pixbuf from disk.
@@ -353,10 +361,9 @@ def loadImage(filename, path='core/ui/gui/data/'):
     return im
 
 
-
 def loadIcon(stock_item_id):
-    '''Loads a pixbuf from Stock. 
-    
+    '''Loads a pixbuf from Stock.
+
     @param stock_item_id: Stock item id string
     @return: The icon's pixbuf
     '''
@@ -372,7 +379,7 @@ def loadIcon(stock_item_id):
 
 class SensitiveAnd(object):
     ''''AND's some sensitive info for a widget.
-    
+
     If all says it should be enable it is. If only one says it shouldn't
     it's off.
 
@@ -389,23 +396,23 @@ class SensitiveAnd(object):
         self.opinions[whosays] = how
         sensit = all(self.opinions.values())
         self.target.set_sensitive(sensit)
-            
-        
+
+
 import core.data.constants.severity as severity
 KB_ICONS = {
     ("excp", None): loadImage('warning-black-animated.gif'),
     ("info", None): loadImage('information.png'),
-    ("vuln", None):  loadImage('vulnerability.png'),
-    ("shell", None):  loadImage('shell.png'),
-    ("vuln", severity.LOW):  loadImage('vulnerability_l.png'),
-    ("vuln", severity.MEDIUM):  loadImage('vulnerability_m.png'),
-    ("vuln", severity.HIGH):  loadImage('vulnerability_h.png'),
+    ("vuln", None): loadImage('vulnerability.png'),
+    ("shell", None): loadImage('shell.png'),
+    ("vuln", severity.LOW): loadImage('vulnerability_l.png'),
+    ("vuln", severity.MEDIUM): loadImage('vulnerability_m.png'),
+    ("vuln", severity.HIGH): loadImage('vulnerability_h.png'),
 }
 KB_COLOR_LEVEL = {
-    ("info", None):            0,
-    ("vuln", severity.LOW):    1,
+    ("info", None): 0,
+    ("vuln", severity.LOW): 1,
     ("vuln", severity.MEDIUM): 2,
-    ("vuln", severity.HIGH):   3,
+    ("vuln", severity.HIGH): 3,
 }
 
 KB_COLORS = ["black", "orange", "red", "red"]
@@ -418,28 +425,29 @@ def open_help(chapter=''):
     '''
     if chapter:
         chapter = '#' + chapter
-    helpfile = os.path.join(os.getcwd(), "readme/EN/guiHTML/guiUsersGuide.html" + chapter)
+    helpfile = os.path.join(
+        os.getcwd(), "readme/EN/guiHTML/guiUsersGuide.html" + chapter)
     webbrowser.open("file://" + helpfile)
 
 
-def write_console_messages( dlg ):
+def write_console_messages(dlg):
     '''
     Write console messages to the TextDialog.
-    
+
     @param dlg: The TextDialog.
     '''
     import core.data.kb.knowledge_base as kb
     from core.ui.gui import messages
-    
+
     msg_queue = messages.getQueueDiverter()
     get_message_index = kb.kb.get('get_message_index', 'get_message_index')
     inc_message_index = kb.kb.get('inc_message_index', 'inc_message_index')
-    
+
     for msg in msg_queue.get(get_message_index()):
         if msg is None:
             yield True
             continue
-        
+
         inc_message_index()
 
         if msg.get_type() != 'console':
@@ -450,59 +458,60 @@ def write_console_messages( dlg ):
         if msg.getNewLine():
             text += '\n'
 
-        dlg.addMessage( text )
+        dlg.addMessage(text)
 
     yield False
 
+
 class DrawingAreaStringRepresentation(gtk.DrawingArea):
-    
+
     def __init__(self, str_repr=None, width=60, height=40):
-        super(gtk.DrawingArea,self).__init__()
-        
+        super(gtk.DrawingArea, self).__init__()
+
         self.width = width
         self.height = height
         self.set_size_request(self.width, self.height)
-        
+
         self.str_repr = str_repr
-        
+
         self.set_events(gtk.gdk.POINTER_MOTION_MASK |
-                        gtk.gdk.POINTER_MOTION_HINT_MASK )
+                        gtk.gdk.POINTER_MOTION_HINT_MASK)
         self.connect("expose-event", self.area_expose_cb)
         self.show()
-        
+
     def area_expose_cb(self, area, event):
         self.draw()
         return True
-    
+
     def set_string_representation(self, str_repr):
         self.str_repr = str_repr
         self.draw()
         return True
-    
+
     def draw(self):
         '''
         Draw the string representation to the DrawingArea
         '''
         if self.window is None:
             return
-        
+
         style = self.get_style()
         gc = style.fg_gc[gtk.STATE_NORMAL]
 
         #    Clear the area
         #
         self.clear()
-        
-        if self.str_repr is not None:                        
+
+        if self.str_repr is not None:
             #
             #    Draw
-            #                        
-            for index,value in self.str_repr.iteritems():
+            #
+            for index, value in self.str_repr.iteritems():
                 for i in xrange(value):
-                    self.window.draw_point(gc, index, self.height-i)
+                    self.window.draw_point(gc, index, self.height - i)
 
     def clear(self):
         if self.window is not None:
             style = self.get_style()
-            self.window.draw_rectangle(style.white_gc, True, 0, 0, self.width+1, self.height+1)
-
+            self.window.draw_rectangle(
+                style.white_gc, True, 0, 0, self.width + 1, self.height + 1)

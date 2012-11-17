@@ -26,12 +26,15 @@ from plugins.grep.hash_analysis import hash_analysis
 
 
 class test_hash_analysis(unittest.TestCase):
-    
+
     def test_hash_analysis(self):
         p = hash_analysis()
-        self.assertTrue( p._has_hash_distribution( 'cdf13c6f85b216a18665e7bba74cc1a7' ) )
-        
-        self.assertFalse( p._has_hash_distribution( 'AB_Halloween_Wallpaper_1920x1080' ) )
-        
+        self.assertTrue(
+            p._has_hash_distribution('cdf13c6f85b216a18665e7bba74cc1a7'))
+
+        self.assertFalse(
+            p._has_hash_distribution('AB_Halloween_Wallpaper_1920x1080'))
+
         # Note the "h" at the beginning
-        self.assertFalse( p._has_hash_distribution( 'hdf13c6f85b216a18665e7bba74cc1a7' ) )
+        self.assertFalse(
+            p._has_hash_distribution('hdf13c6f85b216a18665e7bba74cc1a7'))

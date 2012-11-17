@@ -23,28 +23,27 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestUnSSL(PluginTest):
-    
+
     target_url = 'http://moth/w3af/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('un_ssl'),),
-                 }
+                'audit': (PluginConfig('un_ssl'),),
             }
         }
-    
+    }
+
     def test_found_unssl(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         vulns = self.kb.get('un_ssl', 'un_ssl')
         self.assertEquals(1, len(vulns))
-        
+
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals( vuln.get_name(), 'Secure content over insecure channel')
-        self.assertEquals( vuln.getURL().url_string, 'http://moth/w3af/')
-        
-        
+        self.assertEquals(
+            vuln.get_name(), 'Secure content over insecure channel')
+        self.assertEquals(vuln.getURL().url_string, 'http://moth/w3af/')

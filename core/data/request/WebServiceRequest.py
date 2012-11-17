@@ -27,8 +27,8 @@ from core.data.dc.headers import Headers
 
 class WebServiceRequest(HTTPPostDataRequest):
     '''
-    This class represents a fuzzable request for a webservice method call. 
-    
+    This class represents a fuzzable request for a webservice method call.
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
@@ -39,7 +39,6 @@ class WebServiceRequest(HTTPPostDataRequest):
         self._NS = ns
         self._name = meth_name
         self.setParameters(params)
-        
 
     def getData(self):
         '''
@@ -51,7 +50,7 @@ class WebServiceRequest(HTTPPostDataRequest):
         Content-type: text/xml; charset="UTF-8"
         Content-length: 561
         SOAPAction: "urn:xmethodsBabelFish#BabelFish"
-        
+
         <?xml version="1.0" encoding="UTF-8"?>
         <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">
         <SOAP-ENV:Body>
@@ -65,55 +64,57 @@ class WebServiceRequest(HTTPPostDataRequest):
         res = '<?xml version="1.0" encoding="UTF-8"?>\n'
         res += '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">\n'
         res += '<SOAP-ENV:Body>\n'
-        res += '<ns1:' + self.get_methodName() + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
+        res += '<ns1:' + self.get_methodName(
+        ) + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
         count = 0
         for param in self.getParameters():
             count += 1
             res += '<v' + str(count) + ' xsi:type="xsd:' + param.get_type() + '">' + \
-            cgi.escape(self._dc[param.get_name()]) + '</v' + str(count) + '>\n'
-            
+                cgi.escape(
+                    self._dc[param.get_name()]) + '</v' + str(count) + '>\n'
+
         res += '</ns1:' + self.get_methodName() + '>\n'
         res += '</SOAP-ENV:Body>\n'
         res += '</SOAP-ENV:Envelope>\n'
         return res
-        
+
     def getHeaders(self):
         '''
         web service calls MUST send a header with the action:
             -   SOAPAction: "urn:xmethodsBabelFish#BabelFish"
         '''
-        self._headers[ 'SOAPAction' ] = '"' + self.getAction() + '"'
+        self._headers['SOAPAction'] = '"' + self.getAction() + '"'
         self._headers['Content-Type'] = 'text/xml'
-        
+
         return self._headers
-        
+
     def getNS(self):
         return self._NS
-    
+
     def setNS(self, ns):
         self._NS = ns
-    
+
     def getAction(self):
         return self._action
-    
+
     def setAction(self, a):
         self._action = a
-    
+
     def get_methodName(self):
         return self._name
-    
-    def set_methodName(self , name):
+
+    def set_methodName(self, name):
         self._name = name
-    
+
     def getParameters(self):
         return self._parameters
-    
+
     def setParameters(self, par):
         # Fixed bug #1958368, we have to save this!
         self._parameters = par
         # And now save it so we can fuzz it.
         for param in par:
-            self._dc[ param.get_name() ] = ''
+            self._dc[param.get_name()] = ''
 
     def __str__(self):
         '''
@@ -129,7 +130,7 @@ class WebServiceRequest(HTTPPostDataRequest):
             strRes = strRes[:-1]
             strRes += ')'
         return strRes
-        
+
     def __repr__(self):
         return '<WS fuzzable request | %s | %s >' % (self.get_method(),
                                                      self.getURI())

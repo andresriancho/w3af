@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_filesystem(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = ['/etc/mtab', '/etc/fstab', '/proc/mounts']
 
     def test_filesystem(self):
         result = exec_payload(self.shell, 'filesystem', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result.keys())
-        

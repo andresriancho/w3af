@@ -32,7 +32,7 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class svn_users(GrepPlugin):
     '''
     Grep every response for users of the versioning system.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
@@ -46,12 +46,12 @@ class svn_users(GrepPlugin):
         #
         regex = '\$.{1,12}: .*? .*? \d{4}[-/]\d{1,2}[-/]\d{1,2}'
         regex += ' \d{1,2}:\d{1,2}:\d{1,2}.*? (.*?) (Exp )?\$'
-        self._regex_list = [ re.compile(regex), ]
-        
+        self._regex_list = [re.compile(regex), ]
+
     def grep(self, request, response):
         '''
         Plugin entry point.
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
@@ -77,14 +77,13 @@ class svn_users(GrepPlugin):
                     v.addToHighlight(m[0])
                     kb.kb.append(self, 'users', v)
 
-        
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'svn_users', 'users' ), 'URL' )
-    
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('svn_users', 'users'), 'URL')
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

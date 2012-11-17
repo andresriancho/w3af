@@ -24,10 +24,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 class test_domainname(PayloadTestHelper):
 
-    # Note: the (none) is actually the expected result for this host    
+    # Note: the (none) is actually the expected result for this host
     EXPECTED_RESULT = {'domain_name': u'(none)'}
 
     def test_domainname(self):
         result = exec_payload(self.shell, 'domainname', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

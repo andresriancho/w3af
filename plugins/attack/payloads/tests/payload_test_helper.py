@@ -24,18 +24,18 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class PayloadTestHelper(PluginTest):
-    
+
     target_url = 'https://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('lfi'),),
-                 }
+                'audit': (PluginConfig('lfi'),),
             }
         }
-    
+    }
+
     def _scan_wrapper(self):
         '''
         @return: Run the scan and return the vulnerability itself and the vuln_id.
@@ -47,34 +47,32 @@ class PayloadTestHelper(PluginTest):
         # Assert the general results
         vulns = self.kb.get('lfi', 'lfi')
         self.assertEquals(1, len(vulns))
-        
+
         vuln = vulns[0]
         vuln_to_exploit_id = vuln.get_id()
-        
+
         return vuln, vuln_to_exploit_id
-    
+
     def _get_shell(self):
         vuln, vuln_to_exploit_id = self._scan_wrapper()
-        
-        plugin = self.w3afcore.plugins.get_plugin_inst('attack','local_file_reader' )
-        
-        self.assertTrue( plugin.canExploit( vuln_to_exploit_id ) )
-        
-        exploit_result = plugin.exploit( vuln_to_exploit_id )
+
+        plugin = self.w3afcore.plugins.get_plugin_inst(
+            'attack', 'local_file_reader')
+
+        self.assertTrue(plugin.canExploit(vuln_to_exploit_id))
+
+        exploit_result = plugin.exploit(vuln_to_exploit_id)
 
         self.assertGreaterEqual(len(exploit_result), 1)
-        
+
         shell = exploit_result[0]
         return shell
-    
+
     def setUp(self):
         super(PayloadTestHelper, self).setUp()
         cf.cf.save('targetOS', 'unix')
         self.shell = self._get_shell()
-    
+
     def tearDown(self):
         super(PayloadTestHelper, self).tearDown()
         cf.cf.save('targetOS', 'unknown')
-
-        
-        

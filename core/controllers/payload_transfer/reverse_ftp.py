@@ -24,51 +24,50 @@ import socket
 from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 
 
-class ReverseFTP( BasePayloadTransfer ):
+class ReverseFTP(BasePayloadTransfer):
     '''
     This is a class that defines how to send a file to a remote server a reverse
     connection and a ftp like transfer mode ( using a new TCP connection and
     socket.send/socket.recv )
     '''
 
-    def __init__( self , execMethod, os, inboundPort ):
+    def __init__(self, execMethod, os, inboundPort):
         self._execMethod = execMethod
         self._os = os
         self._inbound_port = inboundPort
-        
-    def can_transfer( self ):
+
+    def can_transfer(self):
         '''
         This method is used to test if the transfer method works as expected.
         The implementation of this should transfer 10 bytes and check if they
         arrived as expected to the other end.
         '''
         return False
-    
-    def estimate_transfer_time( self, size ):
+
+    def estimate_transfer_time(self, size):
         '''
         @return: An estimated transfer time for a file with the specified size.
         '''
-        return int( 3 )
-    
-    
-    def _serve( self, strObject ):
+        return int(3)
+
+    def _serve(self, strObject):
         '''
-        Listens for 1 connection on the inbound port, transfers the data and 
+        Listens for 1 connection on the inbound port, transfers the data and
         then returns. This function should be called with tm.apply_async ; and
         afterwards you should exec the ftp client on the remote server.
         '''
         serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         serverSock.bind(('', self._inbound_port))
         serverSock.listen(1)
-        
+
         clientSock, addr = serverSock.accept()
-        
+
         clientSock.send(strObject)
         clientSock.close()
-        
+
         return True
 
-    def transfer( self, strObject, destination ):
+    def transfer(self, strObject, destination):
         '''
         This method is used to transfer the strObject from w3af to the compromised server.
         Steps:
@@ -79,14 +78,13 @@ class ReverseFTP( BasePayloadTransfer ):
             - verify that the file exists
         '''
         return False
-        
-    def get_speed( self ):
+
+    def get_speed(self):
         '''
         @return: The transfer speed of the transfer object. It should return
                  a number between 100 (fast) and 1 (slow)
         '''
-        # Not as fast as ClientlessReverseHTTP or ClientlessReverseTFTP, just 
+        # Not as fast as ClientlessReverseHTTP or ClientlessReverseTFTP, just
         # because I need to upload a "ftp" client to the compromised host in
         # order to upload all the data afterwards.
         return 80
-        

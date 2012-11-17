@@ -32,67 +32,68 @@ from core.data.request.WebServiceRequest import WebServiceRequest
 class export_requests(OutputPlugin):
     '''
     Export the fuzzable requests found during crawl to a file.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     def __init__(self):
         OutputPlugin.__init__(self)
         self.output_file = 'output-requests.csv'
 
-    def do_nothing(self, *args, **kwds): pass
+    def do_nothing(self, *args, **kwds):
+        pass
 
     debug = log_http = vulnerability = do_nothing
     information = error = console = debug = log_enabled_plugins = do_nothing
-    
+
     def end(self):
         '''
         Exports a list of fuzzable requests to the user configured file.
         '''
         fuzzable_request_list = kb.kb.get('urls', 'fuzzable_requests')
-        
+
         filename = self.output_file
         try:
             out_file = open(filename, 'w')
             file.write('HTTP-METHOD,URI,POSTDATA\n')
-        
+
             for fr in fuzzable_request_list:
                 # TODO: How shall we export WebServiceRequests?
                 if not isinstance(fr, WebServiceRequest):
                     out_file.write(fr.export() + '\n')
-            
+
             out_file.close()
         except Exception, e:
             msg = 'An exception was raised while trying to export fuzzable'\
                   ' requests to the output file: "%s".' % e
-            raise om.out.error(msg)        
+            raise om.out.error(msg)
 
-    def set_options( self, option_list ):
+    def set_options(self, option_list):
         '''
         Sets the Options given on the OptionList to self. The options are the
         result of a user entering some data on a window that was constructed
         using the XML Options that was retrieved from the plugin using
         get_options()
-        
-        This method MUST be implemented on every plugin. 
-        
+
+        This method MUST be implemented on every plugin.
+
         @return: No value is returned.
-        ''' 
+        '''
         self.output_file = option_list['output_file'].get_value()
 
-    def get_options( self ):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'The name of the output file where the HTTP requests will be saved'
         o = opt_factory('output_file', self.output_file, d, OUTPUT_FILE)
         ol.add(o)
-        
+
         return ol
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -100,7 +101,7 @@ class export_requests(OutputPlugin):
         This plugin exports all discovered HTTP requests (URL, Method, Params)
         to the given file (CSV) which can then be imported in another scan by
         using the crawl.import_results.
-        
+
         One configurable parameter exists:
             - output_file
         '''

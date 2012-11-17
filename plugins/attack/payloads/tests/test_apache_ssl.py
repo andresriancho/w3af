@@ -25,13 +25,12 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_apache_ssl(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'apache_ssl_certificate': {}, 'apache_ssl_key': {}}
 
     def test_apache_ssl(self):
         result = exec_payload(self.shell, 'apache_ssl', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        
+
     def test_a_positive_test(self):
         raise SkipTest('FIXME: I need a positive test where SSL cert and keys are found.')
-    

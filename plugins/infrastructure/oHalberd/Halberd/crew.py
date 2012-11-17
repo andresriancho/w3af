@@ -200,7 +200,7 @@ class WorkCrew:
         self.working = False
 
         self.prev = None
-        
+
     def _setupSigHandler(self):
         """Performs what's needed to catch SIGINT.
         """
@@ -209,7 +209,7 @@ class WorkCrew:
             """
             self.state.setError('received SIGINT')
 
-        self.prev = signal.signal(signal.SIGINT, interrupt) 
+        self.prev = signal.signal(signal.SIGINT, interrupt)
 
     def _restoreSigHandler(self):
         """Restore previous SIGINT handler.
@@ -334,6 +334,7 @@ class BaseScanner(threading.Thread):
         """
         pass
 
+
 class Scanner(BaseScanner):
     """Scans the target host from the local machine.
     """
@@ -409,8 +410,8 @@ class Manager(BaseScanner):
         def statbar(elapsed, total):
             """Compose a status bar string showing progress.
             """
-            done = int(math.floor(float(total - elapsed)/total * 10))
-            notdone = int(math.ceil(float(elapsed)/total * 10))
+            done = int(math.floor(float(total - elapsed) / total * 10))
+            notdone = int(math.ceil(float(elapsed) / total * 10))
             return '[' + '#' * done + ' ' * notdone + ']'
 
         nclues, replies, missed = self.state.getStats()
@@ -422,9 +423,10 @@ class Manager(BaseScanner):
             remaining = self.remaining()
 
         statusline = '\r' + self.task.addr.ljust(15) + \
-                    '  %s  clues: %3d | replies: %3d | missed: %3d' \
-                    % (statbar(remaining, self.task.scantime),
-                       nclues, replies, missed)
+            '  %s  clues: %3d | replies: %3d | missed: %3d' \
+            % (
+            statbar(remaining, self.task.scantime),
+                nclues, replies, missed)
         sys.stdout.write(statusline)
         sys.stdout.flush()
 

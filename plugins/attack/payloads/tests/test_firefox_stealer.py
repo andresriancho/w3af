@@ -23,19 +23,17 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_firefox_stealer(PayloadTestHelper):
-    
-    EXPECTED_RESULT = {   u'/home/moth/.mozilla/firefox/xmo3gf47.moth/cert8.db': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/content-prefs.sqlite': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/cookies.sqlite': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/extensions.ini': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/formhistory.sqlite': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/key3.db': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/permissions.sqlite': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/places.sqlite': 'Yes',
-                          u'/home/moth/.mozilla/firefox/xmo3gf47.moth/signons.sqlite': 'Yes'}
 
+    EXPECTED_RESULT = {u'/home/moth/.mozilla/firefox/xmo3gf47.moth/cert8.db': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/content-prefs.sqlite': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/cookies.sqlite': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/extensions.ini': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/formhistory.sqlite': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/key3.db': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/permissions.sqlite': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/places.sqlite': 'Yes',
+                       u'/home/moth/.mozilla/firefox/xmo3gf47.moth/signons.sqlite': 'Yes'}
 
     def test_firefox_stealer(self):
         result = exec_payload(self.shell, 'firefox_stealer', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

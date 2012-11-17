@@ -29,11 +29,11 @@ class CrawlPlugin(Plugin):
     This is the base class for crawl plugins, all crawl plugins should
     inherit from it and implement the following methods:
         1. crawl(...)
-        
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self):
-        Plugin.__init__( self )
+        Plugin.__init__(self)
 
     def crawl_wrapper(self, fuzzable_request):
         '''
@@ -43,24 +43,25 @@ class CrawlPlugin(Plugin):
         # in other words, if one plugin modified the fuzzable request object
         # INSIDE that plugin, I don't want the next plugin to suffer from that
         fuzzable_request_copy = fuzzable_request.copy()
-        return self.crawl( fuzzable_request_copy )
+        return self.crawl(fuzzable_request_copy)
 
     def crawl(self, fuzzable_request):
         '''
         This method MUST be implemented on every plugin.
-        
+
         @param fuzzable_request: Represents an HTTP request, with its URL and
                                  parameters.
-                                 
+
         @return: A list with of new fuzzable request objects found by this
                  plugin. Can be empty.
         '''
-        raise w3afException('Plugin is not implementing required method crawl' )
+        raise w3afException(
+            'Plugin is not implementing required method crawl')
 
-    def _create_fuzzable_requests( self, HTTPResponse, request=None, add_self=True ):
-        return create_fuzzable_requests( HTTPResponse, request, add_self )
-    
+    def _create_fuzzable_requests(self, HTTPResponse, request=None, add_self=True):
+        return create_fuzzable_requests(HTTPResponse, request, add_self)
+
     discover_wrapper = crawl_wrapper
-    
-    def get_type( self ):
+
+    def get_type(self):
         return 'crawl'

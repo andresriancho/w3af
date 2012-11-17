@@ -26,28 +26,28 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_get_source_code(PayloadTestHelper):
-    
-    EXPECTED_RESULT =  { "https://moth/w3af/audit/local_file_read/local_file_read.php": 
-                                ('/var/www/moth/w3af/audit/local_file_read/local_file_read.php',
-                                 'tmp__random__/var/www/moth/w3af/audit/local_file_read/local_file_read.php')
-                        }
+
+    EXPECTED_RESULT = {"https://moth/w3af/audit/local_file_read/local_file_read.php":
+                       (
+                       '/var/www/moth/w3af/audit/local_file_read/local_file_read.php',
+                       'tmp__random__/var/www/moth/w3af/audit/local_file_read/local_file_read.php')
+                       }
 
     CONTENT = "echo file_get_contents( $_REQUEST['file'] );"
 
     def test_get_source_code(self):
         temp_dir = tempfile.mkdtemp()
-        result = exec_payload(self.shell, 'get_source_code', args=(temp_dir,), 
+        result = exec_payload(self.shell, 'get_source_code', args=(temp_dir,),
                               use_api=True)
-        
-        self.assertEqual( len(self.EXPECTED_RESULT.keys()), 1)
-        
+
+        self.assertEqual(len(self.EXPECTED_RESULT.keys()), 1)
+
         expected_url = self.EXPECTED_RESULT.keys()[0]
         downloaded_url = result.items()[0][0].url_string
         self.assertEquals(expected_url, downloaded_url)
-        
+
         downloaded_file_path = result.items()[0][1][1]
         downloaded_file_content = file(downloaded_file_path).read()
-        self.assertTrue( self.CONTENT in downloaded_file_content)
-        
-        shutil.rmtree(temp_dir)
+        self.assertTrue(self.CONTENT in downloaded_file_content)
 
+        shutil.rmtree(temp_dir)

@@ -27,12 +27,12 @@ from core.data.options.option_types import COMBO
 class ComboOption(BaseOption):
     '''
     This class represents an ComboOption.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     _type = COMBO
-    
+
     def __init__(self, name, default_value, desc, _help='', tabid=''):
         '''
         @param name: The name of the ComboOption
@@ -47,7 +47,7 @@ class ComboOption(BaseOption):
         self._value = default_value[0]
         self._default_value = default_value[0]
         self._combo_options = default_value
-        
+
         self._name = name
         self._desc = desc
         self._help = _help
@@ -58,15 +58,14 @@ class ComboOption(BaseOption):
 
     def set_value(self, value):
         '''
-        @param value: The value parameter is set by the user interface, which 
+        @param value: The value parameter is set by the user interface, which
                       or example sends 'a' when the options of the combobox are
                       '1','2','a','f'
         '''
         self._value = self.validate(value)
-        
+
     def validate(self, value):
         if value in self._combo_options:
             return value
         else:
             raise w3afException('The option you selected is invalid.')
-        

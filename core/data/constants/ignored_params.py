@@ -25,9 +25,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 # the fuzzing process
 #
 IGNORED_PARAMETERS = [
-    '__EVENTTARGET', '__EVENTARGUMENT', '__VIEWSTATE', '__VIEWSTATEENCRYPTED', 
+    '__EVENTTARGET', '__EVENTARGUMENT', '__VIEWSTATE', '__VIEWSTATEENCRYPTED',
     '__EVENTVALIDATION', '__dnnVariable', 'javax.faces.ViewState',
-    'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64', 
-    'jsf_viewid', 'jsf_state', 'cfid', 'cftoken','ASP.NET_sessionid',
+    'jsf_state_64', 'jsf_sequence', 'jsf_tree', 'jsf_tree_64',
+    'jsf_viewid', 'jsf_state', 'cfid', 'cftoken', 'ASP.NET_sessionid',
     'ASPSESSIONID', 'PHPSESSID', 'JSESSIONID'
-    ]
+]

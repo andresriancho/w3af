@@ -54,7 +54,6 @@ class TestStorage(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def testSimpleSaveAndLoad(self):
         try:
             Halberd.clues.file.save(self.filename, [self.clue])

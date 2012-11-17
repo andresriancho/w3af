@@ -44,6 +44,7 @@ def is_running(ip, port):
         return False
     return not web_server.is_down()
 
+
 def _get_inst(ip, port):
     '''
     Return a previously created instance bound to `ip` and `port`. Otherwise
@@ -53,11 +54,12 @@ def _get_inst(ip, port):
 
 
 class w3afHTTPServer(BaseHTTPServer.HTTPServer):
-    '''Must of the behavior added here is included in 
+    '''Must of the behavior added here is included in
     '''
 
     def __init__(self, server_address, webroot, RequestHandlerClass):
-        BaseHTTPServer.HTTPServer.__init__(self, server_address, RequestHandlerClass)
+        BaseHTTPServer.HTTPServer.__init__(
+            self, server_address, RequestHandlerClass)
         self.webroot = webroot
         self.__is_shut_down = threading.Event()
         self.__shutdown_request = False
@@ -102,7 +104,7 @@ class w3afHTTPServer(BaseHTTPServer.HTTPServer):
     def server_bind(self):
         msg = 'Changing socket options of w3afHTTPServer to (socket.SOL_SOCKET'
         msg += ', socket.SO_REUSEADDR, 1)'
-        om.out.debug( msg )
+        om.out.debug(msg)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         BaseHTTPServer.HTTPServer.server_bind(self)
 
@@ -152,10 +154,11 @@ class w3afWebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         message = "webserver.py: %s - %s" % (self.address_string(), fmt % args)
         om.out.debug(message)
 
+
 def start_webserver(ip, port, webroot, handler=w3afWebHandler):
     '''Create a http server deamon. The returned instance is unique for <ip>
     and <port>.
-    
+
     @param ip: IP number
     @param port: Port number
     @param webroot: webserver's root directory
@@ -171,5 +174,5 @@ def start_webserver(ip, port, webroot, handler=w3afWebHandler):
         server_thread.name = 'WebServer'
         server_thread.daemon = True
         server_thread.start()
-    
+
     return server_thread

@@ -25,12 +25,12 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_running_honeypot(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'is_a_honeypot': False, 'running_honeypot': False}
 
     def test_running_honeypot(self):
         result = exec_payload(self.shell, 'running_honeypot', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        
+
     def test_a_positive_test(self):
         raise SkipTest('FIXME: I need a positive test.')

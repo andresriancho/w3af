@@ -40,50 +40,50 @@ class DogtailUnittest(unittest.TestCase):
         '''
         One of the most important tricks for being able to run dogtail tests via
         nosetests without any special parameters is done in this __init__ method.
-        
+
         The thing I found is that when importing dogtail modules, they are going
         to "hook" to the display that is set to the current environment at
         import time; not use time. In other words, this will work as expected:
-        
+
             os.environ['DISPLAY'] = ':9'
             from dogtail import tree
             ...
             tree()
             ...
-        
+
         This is NOT going to work as expected:
-        
+
             from dogtail import tree
             ...
             os.environ['DISPLAY'] = ':9'
             tree()
             ...
-        
+
         And this is not working either:
-        
+
             os.environ['DISPLAY'] = ':9'
             from dogtail import tree
             ...
             os.environ['DISPLAY'] = ':0'
             tree()
             ...
-        
+
         So, I import stuff here and store a reference as an object attribute
         in order to be able to use it in all the remaining tests.
-        
+
         The only issue that comes with this is that not more that one DISPLAY
         can be used at the same time for testing with dogtail.
-        
+
         The second trick that was discovered during my testing is that when
         importing dogtail the display NEEDS to point to a working X environment
         with a11y enabled. That's why you'll see this before the imports:
-        
+
             self.gnome = Gnome()
             self.gnome.start_sync()
-         
+
         '''
         unittest.TestCase.__init__(self, methodName=methodName)
-    
+
     def _setup_env(self):
         '''
         @see: __init__ documentation.
@@ -91,25 +91,25 @@ class DogtailUnittest(unittest.TestCase):
         self.gnome = Gnome()
         self.gnome.start_sync()
         set_display_to_self()
-        
+
         from dogtail import tree
         from dogtail.utils import run
         from dogtail.rawinput import pressKey
         from dogtail.predicate import GenericPredicate
-        
+
         self.dogtail = dummy()
         self.dogtail.utils = dummy()
         self.dogtail.predicate = dummy()
         self.dogtail.rawinput = dummy()
-        
+
         self.dogtail.tree = tree
         self.dogtail.utils.run = run
         self.dogtail.predicate.GenericPredicate = GenericPredicate
         self.dogtail.rawinput.pressKey = pressKey
-        
+
     def setUp(self):
         self._setup_env()
-    
+
     def tearDown(self):
         self.gnome.stop()
         restore_original_display()
@@ -119,7 +119,7 @@ class DogtailUnittest(unittest.TestCase):
         Logs out the full gnome session. Be sure to have your documents saved,
         as running may cause loosing the changes, or it may halt the logout
         process.
-        ''' 
+        '''
         # A gnome-shell object
         shell = self.dogtail.tree.root.application('gnome-shell')
         # Click onto a super menu label that we find under the g-s top panel object.
@@ -133,7 +133,8 @@ class DogtailUnittest(unittest.TestCase):
         # in the affected application however, that might put the logout process on hold again. Unfortunatelly
         # we cannot do anything about that with dotail at that point as a11y registry got disabled already
         # by the logout process.
-        shell[0][1].child(roleName='dialog', recursive=False).child('Log Out', roleName='push button').click()
-        
+        shell[0][1].child(roleName='dialog', recursive=False).child(
+            'Log Out', roleName='push button').click()
+
         # Give the session some time to end before we kill it.
         time.sleep(10)

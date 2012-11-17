@@ -39,24 +39,24 @@ from core.controllers.exceptions import w3afException
 class html_comments(GrepPlugin):
     '''
     Find HTML comments.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    
+
     HTML_RE = re.compile('<[a-zA-Z]*.*?>.*?</[a-zA-Z]>')
 
     INTERESTING_WORDS = (
         'user', 'pass', 'xxx', 'fix', 'bug', 'broken', 'oops', 'hack',
         'caution', 'todo', 'note', 'warning', '!!!', '???', 'shit',
         'stupid', 'tonto', 'porqueria', 'ciudado', 'usuario', 'contrase',
-        'puta', 'secret', '@', 'email','security','captcha', 'pinga',
+        'puta', 'secret', '@', 'email', 'security', 'captcha', 'pinga',
         'cojones',
         # some in Portuguese
         'banco', 'bradesco', 'itau', 'visa', 'bancoreal', u'transfêrencia',
         u'depósito', u'cartão', u'crédito', 'dados pessoais'
     )
-    
-    _multi_in = multi_in( INTERESTING_WORDS )
+
+    _multi_in = multi_in(INTERESTING_WORDS)
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -64,80 +64,84 @@ class html_comments(GrepPlugin):
         # Internal variables
         self._comments = temp_shelve()
         self._already_reported_interesting = ScalableBloomFilter()
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point, parse those comments!
-        
+
         @param request: The HTTP request object.
         @param response: The HTTP response object
         @return: None
         '''
         if response.is_text_or_html():
             try:
-                dp = dpCache.dpc.get_document_parser_for( response )
+                dp = dpCache.dpc.get_document_parser_for(response)
             except w3afException:
                 return
             else:
                 for comment in dp.get_comments():
                     # These next two lines fix this issue:
                     # audit.ssi + grep.html_comments + web app with XSS = false positive
-                    if request.sent( comment ):
+                    if request.sent(comment):
                         continue
-                    
+
                     # show nice comments ;)
                     comment = comment.strip()
-                    
+
                     if self._is_new(comment, response):
-                        
-                        self._interesting_word( comment, request, response )
-                        self._html_in_comment( comment, request, response )
+
+                        self._interesting_word(comment, request, response)
+                        self._html_in_comment(comment, request, response)
 
     def _interesting_word(self, comment, request, response):
         '''
         Find interesting words in HTML comments
         '''
         comment = comment.lower()
-        for word in self._multi_in.query( response.body ):                    
+        for word in self._multi_in.query(response.body):
             if (word, response.getURL()) not in self._already_reported_interesting:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('HTML comment with "' + word + '" inside')
-                msg = 'A comment with the string "' + word + '" was found in: "'
+                msg = 'A comment with the string "' + \
+                    word + '" was found in: "'
                 msg += response.getURL() + '". This could be interesting.'
-                i.set_desc( msg )
-                i.set_id( response.id )
-                i.set_dc( request.get_dc )
-                i.setURI( response.getURI() )
-                i.addToHighlight( word )
-                kb.kb.append( self, 'interesting_comments', i )
-                om.out.information( i.get_desc() )
-                self._already_reported_interesting.add( ( word, response.getURL() ) )
+                i.set_desc(msg)
+                i.set_id(response.id)
+                i.set_dc(request.get_dc)
+                i.setURI(response.getURI())
+                i.addToHighlight(word)
+                kb.kb.append(self, 'interesting_comments', i)
+                om.out.information(i.get_desc())
+                self._already_reported_interesting.add(
+                    (word, response.getURL()))
 
-    def _html_in_comment(self, comment, request, response):                    
+    def _html_in_comment(self, comment, request, response):
         '''
         Find HTML code in HTML comments
         '''
-        html_in_comment = self.HTML_RE.search( comment )
+        html_in_comment = self.HTML_RE.search(comment)
         if html_in_comment and \
-        ( comment, response.getURL() ) not in self._already_reported_interesting:
+                (comment, response.getURL()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('HTML comment contains HTML code')
-            comment = comment.replace('\n','')
-            comment = comment.replace('\r','')
-            desc = 'A comment with the string "' +comment + '" was found in: "'
+            comment = comment.replace('\n', '')
+            comment = comment.replace('\r', '')
+            desc = 'A comment with the string "' + comment + \
+                '" was found in: "'
             desc += response.getURL() + '" . This could be interesting.'
-            i.set_desc( desc )
-            i.set_id( response.id )
-            i.set_dc( request.get_dc )
-            i.setURI( response.getURI() )
-            i.addToHighlight( html_in_comment.group(0) )
-            kb.kb.append( self, 'html_comment_hides_html', i )
-            om.out.information( i.get_desc() )
-            self._already_reported_interesting.add( ( comment, response.getURL() ) )
-                            
+            i.set_desc(desc)
+            i.set_id(response.id)
+            i.set_dc(request.get_dc)
+            i.setURI(response.getURI())
+            i.addToHighlight(html_in_comment.group(0))
+            kb.kb.append(self, 'html_comment_hides_html', i)
+            om.out.information(i.get_desc())
+            self._already_reported_interesting.add(
+                (comment, response.getURL()))
+
     def _is_new(self, comment, response):
         '''
         Make sure that we perform a thread safe check on the self._comments dict,
@@ -145,15 +149,16 @@ class html_comments(GrepPlugin):
         '''
         with self._plugin_lock:
             if comment not in self._comments.keys():
-                self._comments[ comment ] = [ (response.getURL(), response.id), ]
+                self._comments[comment] = [(response.getURL(), response.id), ]
                 return True
             else:
-                if response.getURL() not in [ x[0] for x in self._comments[ comment ] ]:
-                    self._comments[ comment ].append( (response.getURL(), response.id) )
+                if response.getURL() not in [x[0] for x in self._comments[comment]]:
+                    self._comments[comment].append((
+                        response.getURL(), response.id))
                     return True
-        
-        return False        
-    
+
+        return False
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -165,23 +170,25 @@ class html_comments(GrepPlugin):
             stick_comment = ' '.join(comment.split())
             if len(stick_comment) > 40:
                 msg = 'A comment with the string "%s..." (and %s more bytes) was found on these URL(s):'
-                om.out.information( msg % (stick_comment[:40], str(len(stick_comment) - 40) ))
+                om.out.information(
+                    msg % (stick_comment[:40], str(len(stick_comment) - 40)))
             else:
                 msg = 'A comment containing "%s" was found on these URL(s):' % (stick_comment)
-                om.out.information( msg )
-             
-            for url , request_id in urls_with_this_comment:
-                inform.append('- ' + url + ' (request with id: '+str(request_id)+')' )
-        
+                om.out.information(msg)
+
+            for url, request_id in urls_with_this_comment:
+                inform.append('- ' + url +
+                              ' (request with id: ' + str(request_id) + ')')
+
             inform.sort()
             for i in inform:
-                om.out.information( i )
+                om.out.information(i)
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for HTML comments, special comments like 
+        This plugin greps every page for HTML comments, special comments like
         the ones containing the words "password" or "user" are specially reported.
         '''

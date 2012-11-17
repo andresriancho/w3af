@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from __future__ import division
 
-import gtk, gobject
+import gtk
+import gobject
 from core.ui.gui import messages, entries
 import core.data.constants.severity as severity
 import time
@@ -33,6 +34,7 @@ MIZQ = 20
 MDER = 30
 MINF = 30
 MSUP = 20
+
 
 class colors:
     grey = gtk.gdk.color_parse("grey")
@@ -50,7 +52,7 @@ class LogGraph(gtk.DrawingArea):
     '''
     def __init__(self, w3af):
         self.w3af = w3af
-        super(LogGraph,self).__init__()
+        super(LogGraph, self).__init__()
         self.pangolayout = self.create_pango_layout("")
 
         # get the messages
@@ -95,7 +97,6 @@ class LogGraph(gtk.DrawingArea):
                 sever = None
             self.all_messages.append((mmseg, mtype, sever))
 
-        
     def _redrawAll(self):
         '''Redraws all the graph.'''
         if self.gc is None:
@@ -107,7 +108,7 @@ class LogGraph(gtk.DrawingArea):
             yield True
 
         self.window.clear()
-        (w, h)  = self.window.get_size()
+        (w, h) = self.window.get_size()
 
         # some size helpers
         pan = self.all_messages[-1][0] - self.all_messages[0][0]
@@ -116,7 +117,7 @@ class LogGraph(gtk.DrawingArea):
         if tspan > usableWidth:
             self.timeGrouping *= int(tspan / usableWidth) + 1
             tspan = pan / self.timeGrouping
-        elif tspan < usableWidth//2 and self.timeGrouping>1:
+        elif tspan < usableWidth // 2 and self.timeGrouping > 1:
             self.timeGrouping //= 2
             tspan = pan / self.timeGrouping
 
@@ -125,58 +126,63 @@ class LogGraph(gtk.DrawingArea):
         maxw = 0
         for txt in txts:
             self.pangolayout.set_text(txt)
-            (tw,th) = self.pangolayout.get_pixel_size()
+            (tw, th) = self.pangolayout.get_pixel_size()
             if tw > maxw:
                 maxw = tw
-        lm = self.realLeftMargin = int(maxw) + MIZQ + 8  # 5 for the tick, 3 separating
+        lm = self.realLeftMargin = int(
+            maxw) + MIZQ + 8  # 5 for the tick, 3 separating
 
         # the axis
         self.gc.set_rgb_fg_color(colors.whitesmoke)
-        self.window.draw_rectangle(self.gc, True, lm, MSUP, w-MDER-lm, h-MINF-MSUP)
+        self.window.draw_rectangle(
+            self.gc, True, lm, MSUP, w - MDER - lm, h - MINF - MSUP)
         self.gc.set_rgb_fg_color(colors.black)
-        self.window.draw_line(self.gc, lm, MSUP, lm, h-MINF+10)
-        self.window.draw_line(self.gc, lm, h-MINF, w-MDER, h-MINF)
+        self.window.draw_line(self.gc, lm, MSUP, lm, h - MINF + 10)
+        self.window.draw_line(self.gc, lm, h - MINF, w - MDER, h - MINF)
 
         # small horizontal ticks
-        for x,timepoint in self._calculateXTicks(w-lm-MDER):
-            posx = x + lm 
-            self.window.draw_line(self.gc, posx, h-MINF+5, posx, h-MINF)
+        for x, timepoint in self._calculateXTicks(w - lm - MDER):
+            posx = x + lm
+            self.window.draw_line(self.gc, posx, h - MINF + 5, posx, h - MINF)
             self.pangolayout.set_text(timepoint)
-            (tw,th) = self.pangolayout.get_pixel_size()
-            self.window.draw_layout(self.gc, posx-tw//2, h-MINF+10, self.pangolayout)
+            (tw, th) = self.pangolayout.get_pixel_size()
+            self.window.draw_layout(
+                self.gc, posx - tw // 2, h - MINF + 10, self.pangolayout)
         self.pangolayout.set_text("[s]")
-        (tw,th) = self.pangolayout.get_pixel_size()
-        self.window.draw_layout(self.gc, w-MDER+5, h-MINF-th//2, self.pangolayout)
+        (tw, th) = self.pangolayout.get_pixel_size()
+        self.window.draw_layout(
+            self.gc, w - MDER + 5, h - MINF - th // 2, self.pangolayout)
 
         # small vertical ticks and texts
-        sep = (h-MSUP-MINF) / 4
+        sep = (h - MSUP - MINF) / 4
         self.posHorizItems = {}
         self.maxItemHeight = {}
         posyant = MSUP
-        for i,txt in enumerate(txts):
+        for i, txt in enumerate(txts):
             if not txt:
                 continue
-            posy = int(MSUP + i*sep)
+            posy = int(MSUP + i * sep)
             self.posHorizItems[txt] = posy
             self.maxItemHeight[txt] = posy - posyant - 1
             posyant = posy
-            self.window.draw_line(self.gc, lm-5, posy, lm, posy)
+            self.window.draw_line(self.gc, lm - 5, posy, lm, posy)
             self.pangolayout.set_text(txt)
-            (tw,th) = self.pangolayout.get_pixel_size()
-            self.window.draw_layout(self.gc, lm-tw-8, posy-th//2, self.pangolayout)
+            (tw, th) = self.pangolayout.get_pixel_size()
+            self.window.draw_layout(
+                self.gc, lm - tw - 8, posy - th // 2, self.pangolayout)
 
         # draw the info
         countingPixel = 0
         pixelQuant = 0
         mesind = 0
         while True:
-            for (mmseg, mtype, sever) in itertools.islice( self.all_messages, mesind, None, None ):
+            for (mmseg, mtype, sever) in itertools.islice(self.all_messages, mesind, None, None):
                 mesind += 1
                 pixel = (mmseg - self.timeBase) // self.timeGrouping
                 posx = self.realLeftMargin + pixel
 
                 # if out of bound, restart draw
-                if posx > (w-MDER):
+                if posx > (w - MDER):
                     yield True
 
                 if mtype == "debug":
@@ -196,13 +202,13 @@ class LogGraph(gtk.DrawingArea):
         posy = self.posHorizItems["Debug"] - 1
         quant = min(quant, self.maxItemHeight["Debug"])
         self.gc.set_rgb_fg_color(colors.grey)
-        self.window.draw_line(self.gc, posx, posy, posx, posy-quant)
+        self.window.draw_line(self.gc, posx, posy, posx, posy - quant)
         self.gc.set_rgb_fg_color(colors.black)
 
     def _drawItem_info(self, posx):
         posy = self.posHorizItems["Info"]
         self.gc.set_rgb_fg_color(colors.blue)
-        self.window.draw_rectangle(self.gc, True, posx-1, posy-1, 2, 2)
+        self.window.draw_rectangle(self.gc, True, posx - 1, posy - 1, 2, 2)
         self.gc.set_rgb_fg_color(colors.black)
 
     def _drawItem_vuln(self, posx, sever):
@@ -214,7 +220,8 @@ class LogGraph(gtk.DrawingArea):
             sever = 10
         else:
             sever = 20
-        self.window.draw_rectangle(self.gc, True, posx-1, posy-sever, 2, sever)
+        self.window.draw_rectangle(
+            self.gc, True, posx - 1, posy - sever, 2, sever)
         self.gc.set_rgb_fg_color(colors.black)
 
     def area_expose_cb(self, area, event):
@@ -240,38 +247,38 @@ class LogBody(entries.RememberingVPaned):
     @author: Facundo Batista <facundobatista =at= taniquetil.com.ar>
     '''
     def __init__(self, w3af):
-        super(LogBody,self).__init__(w3af, "pane-logbody")
+        super(LogBody, self).__init__(w3af, "pane-logbody")
         self.w3af = w3af
 
         # top vpan
         top_vbox = gtk.VBox()
-        
+
         # Content of top vbox
         self._what_is_being_run = gtk.Label()
         self._what_is_being_run.set_max_width_chars(90)
-        self._what_is_being_run.set_ellipsize( pango.ELLIPSIZE_END )
+        self._what_is_being_run.set_ellipsize(pango.ELLIPSIZE_END)
         # and the progress bar
         self._progress_bar = gtk.ProgressBar()
         self._progress_bar.show()
-        
+
         # Refresh the content
-        gobject.timeout_add(1500, self._set_what_is_running )
-        gobject.timeout_add(1500, self._update_progress )        
+        gobject.timeout_add(1500, self._set_what_is_running)
+        gobject.timeout_add(1500, self._update_progress)
         self._what_is_being_run.show()
-        
+
         messag = messages.Messages()
         messag.show()
-        
+
         # Add the widgets to the top vbox
-        top_vbox.pack_start( messag, True, True )
-        top_vbox.pack_start( self._progress_bar, False, True )
-        top_vbox.pack_start( self._what_is_being_run, False, False )
+        top_vbox.pack_start(messag, True, True)
+        top_vbox.pack_start(self._progress_bar, False, True)
+        top_vbox.pack_start(self._what_is_being_run, False, False)
         top_vbox.show()
 
         # bottom widget
         # The log visualization
         graph = LogGraph(w3af)
-        
+
         # Add to the main vpan
         self.pack1(top_vbox)
         self.pack2(graph)
@@ -282,31 +289,32 @@ class LogBody(entries.RememberingVPaned):
         '''
         This method is called every 500ms to update the w3af core
         scanning progress bar.
-        
+
         @return: Always True because I want to run once again
         '''
         progress = self.w3af.progress.get_progress()
-        self._progress_bar.set_fraction( progress )
-        
+        self._progress_bar.set_fraction(progress)
+
         # Create text
-        text = self.w3af.status.get_phase().title() + ' progress: ' + str(progress * 100)[:5] + ' ' + '%' + ' - '
+        text = self.w3af.status.get_phase().title(
+        ) + ' progress: ' + str(progress * 100)[:5] + ' ' + '%' + ' - '
         eta = self.w3af.progress.get_eta()
         text += 'ETA: %.2dd %.2dh %.2dm %.2ds' % eta
-        self._progress_bar.set_text( text )
+        self._progress_bar.set_text(text)
         return True
-        
-    def _set_what_is_running( self ):
+
+    def _set_what_is_running(self):
         '''
         @return: True so the timeout_add keeps calling it.
         '''
         core_status = self.w3af.status.get_status()
-        
-        # Fixing 
+
+        # Fixing
         # https://sourceforge.net/tracker/?func=detail&aid=2680683&group_id=170274&atid=853652
         #
         #   TypeError: GtkLabel.set_text() argument 1 must be string without null bytes, not str
         #
         core_status = core_status.replace('\0', '')
-        
-        self._what_is_being_run.set_text( core_status )
+
+        self._what_is_being_run.set_text(core_status)
         return True

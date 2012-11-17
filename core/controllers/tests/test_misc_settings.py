@@ -23,22 +23,24 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.controllers.misc_settings import MiscSettings
-from core.data.options.option_types import (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,
-                                            REGEX,COMBO,INPUT_FILE,OUTPUT_FILE,PORT)
+from core.data.options.option_types import (
+    BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
 
-OPTION_TYPES = (BOOL,INT,FLOAT,STRING,URL,IPPORT,LIST,REGEX,COMBO,
-                INPUT_FILE,OUTPUT_FILE,PORT)
-        
+OPTION_TYPES = (BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
+                INPUT_FILE, OUTPUT_FILE, PORT)
+
+
 @attr('smoke')
 class TestMiscSettings(unittest.TestCase):
     def test_basic(self):
         opt_lst = MiscSettings().get_options()
-        
+
         for opt in opt_lst:
             self.assertIn(opt.get_type(), OPTION_TYPES)
             self.assertTrue(opt.get_name())
             self.assertEqual(opt, opt)
-            
+
             # Just verify that this doesn't crash and that the types
             # are correct
             self.assertIsInstance(opt.get_name(), basestring)
@@ -46,4 +48,3 @@ class TestMiscSettings(unittest.TestCase):
             self.assertIsInstance(opt.get_type(), basestring)
             self.assertIsInstance(opt.get_help(), basestring)
             self.assertIsInstance(opt.get_value_str(), basestring)
-                    

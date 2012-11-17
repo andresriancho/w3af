@@ -24,7 +24,7 @@ import gzip
 
 from cStringIO import StringIO
 
-from core.data.url.handlers.localCache import SQLCachedResponse 
+from core.data.url.handlers.localCache import SQLCachedResponse
 
 
 class HTTPGzipProcessor(urllib2.BaseHandler):
@@ -41,9 +41,9 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
         # First I need to check if the response came from the cache
         # stuff that's stored in the cache is there uncompressed,
         # so I can simply return the same response!
-        if isinstance( response, SQLCachedResponse ): 
+        if isinstance(response, SQLCachedResponse):
             return response
-        
+
         #
         # post-process response
         #
@@ -52,7 +52,8 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
             if ("gzip" in enc_hdr) or ("compress" in enc_hdr):
                 # Decompress
                 try:
-                    data = gzip.GzipFile(fileobj=StringIO(response.read())).read()
+                    data = gzip.GzipFile(
+                        fileobj=StringIO(response.read())).read()
                 except:
                     # I get here when the HTTP response body is corrupt
                     # return the same thing that I got... can't do magic yet!

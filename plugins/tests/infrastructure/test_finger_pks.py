@@ -23,21 +23,20 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestFingerPKS(PluginTest):
-    
+
     base_url = 'http://www.bonsai-sec.com/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'infrastructure': (PluginConfig('finger_pks'),)}
-            }
         }
-    
+    }
+
     def test_find_pks_email(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        emails = self.kb.get('emails', 'emails')
-        
-        self.assertEqual( len(emails), 2, emails)
 
+        emails = self.kb.get('emails', 'emails')
+
+        self.assertEqual(len(emails), 2, emails)

@@ -24,21 +24,21 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestXSS(PluginTest):
-    
+
     xss_url = 'http://moth/w3af/audit/xss/'
     xss_302_url = 'http://moth/w3af/audit/xss/302/'
     xss_smoke = 'http://moth/w3af/audit/xss/simple_xss_no_js.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': None,
             'plugins': {
                 'audit': (
                     PluginConfig(
-                         'xss',
+                        'xss',
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                ),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -46,38 +46,39 @@ class TestXSS(PluginTest):
                 )
             },
         },
-                    
+
         'smoke': {
             'target': xss_smoke + '?text=1',
             'plugins': {
                 'audit': (
                     PluginConfig(
-                         'xss',
+                        'xss',
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 10, PluginConfig.INT)),
-                    ),
+                ),
             },
         }
-                    
+
     }
-    
+
     @attr('smoke')
     def test_find_one_xss(self):
         cfg = self._run_configs['smoke']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         xssvulns = self.kb.get('xss', 'xss')
         kb_data = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
                    for m in (xv.get_mutant() for xv in xssvulns)]
-                
-        EXPECTED = [('simple_xss_no_js.php', 'text', ['text']),]
-        expected_data = [(self.xss_smoke, e[1],tuple(sorted(e[2]))) for e in EXPECTED]
-        
+
+        EXPECTED = [('simple_xss_no_js.php', 'text', ['text']), ]
+        expected_data = [(self.xss_smoke, e[1], tuple(sorted(e[2]))
+                          ) for e in EXPECTED]
+
         self.assertEquals(
             set(expected_data),
             set(kb_data),
         )
-        
+
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.xss_url, cfg['plugins'])
@@ -93,17 +94,18 @@ class TestXSS(PluginTest):
             ('no_tag_xss.php', 'text', ['text']),
             ('dataReceptor2.php', 'empresa', ['empresa', 'firstname']),
             ('stored/writer.php', 'a', ['a']),
-            ('xss_clean.php', 'text', ['text',]),
-            ('xss_clean_4_strict.php', 'text', ['text',])
-            
+            ('xss_clean.php', 'text', ['text', ]),
+            ('xss_clean_4_strict.php', 'text', ['text', ])
+
         ]
         res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
-                for m in (xv.get_mutant() for xv in xssvulns)]
+               for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
-            set([(self.xss_url + e[0], e[1],tuple(sorted(e[2]))) for e in expected]),
+            set([(self.xss_url + e[0], e[1], tuple(sorted(e[2])
+                                                   )) for e in expected]),
             set(res),
         )
-        
+
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(self.xss_302_url, cfg['plugins'])
@@ -118,8 +120,9 @@ class TestXSS(PluginTest):
             ('printer.php', 'added', ('x', 'added'))
         ]
         res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
-                        for m in (xv.get_mutant() for xv in xssvulns)]
+               for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
-            set([(self.xss_302_url + e[0], e[1], tuple(sorted(e[2]))) for e in expected]),
+            set([(self.xss_302_url + e[0], e[1], tuple(sorted(
+                e[2]))) for e in expected]),
             set(res),
         )

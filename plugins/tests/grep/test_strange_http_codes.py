@@ -33,39 +33,39 @@ from plugins.grep.strange_http_codes import strange_http_codes
 
 
 class test_strange_http_codes(unittest.TestCase):
-    
+
     def setUp(self):
         create_temp_dir()
         self.plugin = strange_http_codes()
 
     def tearDown(self):
         self.plugin.end()
-                    
+
     def test_strange_http_codes(self):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
-        
-        resp_200 = HTTPResponse(200, body , headers, url, url)
-        resp_404 = HTTPResponse(404, body , headers, url, url)
+
+        resp_200 = HTTPResponse(200, body, headers, url, url)
+        resp_404 = HTTPResponse(404, body, headers, url, url)
         KNOWN_GOOD = [resp_200, resp_404]
-        
-        resp_999 = HTTPResponse(999, body , headers, url, url)
-        resp_123 = HTTPResponse(123, body , headers, url, url)
-        resp_567 = HTTPResponse(567, body , headers, url, url)
-        resp_666 = HTTPResponse(666, body , headers, url, url)
-        resp_777 = HTTPResponse(777, body , headers, url, url)
+
+        resp_999 = HTTPResponse(999, body, headers, url, url)
+        resp_123 = HTTPResponse(123, body, headers, url, url)
+        resp_567 = HTTPResponse(567, body, headers, url, url)
+        resp_666 = HTTPResponse(666, body, headers, url, url)
+        resp_777 = HTTPResponse(777, body, headers, url, url)
         KNOWN_BAD = [resp_999, resp_123, resp_567, resp_666, resp_777]
-        
+
         for resp in KNOWN_GOOD:
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
-            self.assertEquals( len(kb.kb.get('strange_http_codes', 
-                                             'strange_http_codes')), 0)
-        
+            self.assertEquals(len(kb.kb.get('strange_http_codes',
+                                            'strange_http_codes')), 0)
+
         for resp in KNOWN_BAD:
             kb.kb.cleanup()
             self.plugin.grep(request, resp)
-            self.assertEquals( len(kb.kb.get('strange_http_codes', 
-                                             'strange_http_codes')), 1)
+            self.assertEquals(len(kb.kb.get('strange_http_codes',
+                                            'strange_http_codes')), 1)

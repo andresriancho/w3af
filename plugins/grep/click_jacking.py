@@ -36,7 +36,7 @@ class click_jacking(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._total_count = 0
         self._vuln_count = 0
         self._vulns = disk_list()
@@ -48,26 +48,26 @@ class click_jacking(GrepPlugin):
         '''
         if not response.is_text_or_html():
             return
-        
+
         self._total_count += 1
-        
+
         headers = response.getLowerCaseHeaders()
         x_frame_options = headers.get('x-frame-options', '')
-        
+
         if not x_frame_options.lower() in ('deny', 'sameorigin'):
             self._vuln_count += 1
             if response.getURL() not in self._vulns:
-                self._vulns.append( response.getURL() )
-                self._ids.append( response.id )
+                self._vulns.append(response.getURL())
+                self._ids.append(response.id)
 
     def end(self):
         # If all URLs implement protection, don't report anything.
         if not self._vuln_count:
             return
-        
+
         v = vuln.vuln()
         v.set_plugin_name(self.get_name())
-        v.set_name('Potential Click-Jacking vulnerability' )
+        v.set_name('Potential Click-Jacking vulnerability')
         v.set_severity(severity.MEDIUM)
         v.set_id([_id for _id in self._ids])
         # If none of the URLs implement protection, simply report
@@ -85,8 +85,8 @@ class click_jacking(GrepPlugin):
             msg += ' '.join([str(url) + '\n' for url in self._vulns])
             v.set_desc(msg)
             kb.kb.append(self, 'click_jacking', v)
-            
-        self.print_uniq(kb.kb.get( 'click_jacking', 'click_jacking' ), 'URL')
+
+        self.print_uniq(kb.kb.get('click_jacking', 'click_jacking'), 'URL')
 
     def get_long_desc(self):
         return '''

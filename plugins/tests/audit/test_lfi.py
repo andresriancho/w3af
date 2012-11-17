@@ -21,25 +21,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestLFI(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/local_file_inclusion/index.html'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('lfi'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
+                'audit': (PluginConfig('lfi'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
 
-                 }
             }
         }
-    
+    }
+
     def test_found_lfi(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -56,9 +57,10 @@ class TestLFI(PluginTest):
         # Assert the general results
         vulns = self.kb.get('lfi', 'lfi')
         self.assertEquals(len(EXPECTED), len(vulns))
-        self.assertEquals(all(["Local file inclusion vulnerability" == v.get_name() for v in vulns ]),
-                          True)
-        
-        self.assertEqual( set(EXPECTED), 
-                          set([ (v.getURL().getFileName() , v.get_mutant().get_var()) for v in vulns ]) )
-        
+        self.assertEquals(
+            all(["Local file inclusion vulnerability" == v.get_name(
+            ) for v in vulns]),
+            True)
+
+        self.assertEqual(set(EXPECTED),
+                         set([(v.getURL().getFileName(), v.get_mutant().get_var()) for v in vulns]))

@@ -31,7 +31,7 @@ class bruteforce(BaseConsumer):
     Consumer thread that takes fuzzable requests from a Queue that's populated
     by the crawl plugins and bruteforces logins by performing various requests.
     '''
-    
+
     def __init__(self, bruteforce_plugins, w3af_core):
         '''
         @param in_queue: The input queue that will feed the bruteforce plugins
@@ -47,58 +47,61 @@ class bruteforce(BaseConsumer):
             try:
                 plugin.end()
             except w3afException, e:
-                om.out.error( str(e) )
+                om.out.error(str(e))
 
     def _consume(self, work_unit):
-        
+
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(), work_unit ) )
-            
+            om.out.debug('%s plugin is testing: "%s"' % (
+                plugin.get_name(), work_unit))
+
             # Now I'm adding new tasks that will be in progress until the
             # self._plugin_finished_cb is called.
             self._add_task()
-            
-            self._threadpool.apply_async( return_args(self._bruteforce),
-                                          (plugin, work_unit,),
-                                          callback=self._plugin_finished_cb)
-    
+
+            self._threadpool.apply_async(return_args(self._bruteforce),
+                                        (plugin, work_unit,),
+                                         callback=self._plugin_finished_cb)
+
     def _plugin_finished_cb(self, ((plugin, input_fuzzable_request), plugin_result)):
         for new_fuzzable_request in plugin_result:
-            self._out_queue.put( (plugin.get_name(), 
-                                  input_fuzzable_request,
-                                  new_fuzzable_request) )
-        
+            self._out_queue.put((plugin.get_name(),
+                                 input_fuzzable_request,
+                                 new_fuzzable_request))
+
         self._task_done(None)
-            
+
     def _bruteforce(self, plugin, fuzzable_request):
         '''
         Since threadpool's apply_async runs the callback only when the call to
         this method ends without any exceptions, it is *very important* to handle
         exceptions correctly here. Failure to do so will end up in _task_done not
         called, which will make has_pending_work always return True.
-        
+
         Python 3 has an error_callback in the apply_async method, which we could
-        use in the future. 
+        use in the future.
 
         @param fuzzable_request: The fuzzable request that (if suitable) will be
                                  bruteforced by @plugin.
         @return: A list of the URL's that have been successfully bruteforced
         '''
         res = set()
-        
+
         # Status
-        om.out.debug('Called _bruteforce(%s,%s)' %(plugin.get_name(),fuzzable_request) )
+        om.out.debug('Called _bruteforce(%s,%s)' % (
+            plugin.get_name(), fuzzable_request))
         self._w3af_core.status.set_phase('bruteforce')
-        self._w3af_core.status.set_running_plugin( plugin.get_name() )
-        self._w3af_core.status.set_current_fuzzable_request( fuzzable_request )
-        
+        self._w3af_core.status.set_running_plugin(plugin.get_name())
+        self._w3af_core.status.set_current_fuzzable_request(fuzzable_request)
+
         # TODO: Report progress to the core.
 
         try:
-            new_frs = plugin.bruteforce_wrapper( fuzzable_request )
+            new_frs = plugin.bruteforce_wrapper(fuzzable_request)
         except Exception, e:
-            self.handle_exception('bruteforce', plugin.get_name(), fuzzable_request, e)        
+            self.handle_exception(
+                'bruteforce', plugin.get_name(), fuzzable_request, e)
         else:
-            res.update( new_frs )
-        
+            res.update(new_frs)
+
         return res

@@ -28,20 +28,20 @@ from core.controllers.intrusion_tools.execMethodHelpers import *
 from core.controllers.intrusion_tools.crontabHandler import crontabHandler
 from core.controllers.intrusion_tools.atHandler import atHandler
 
+
 class delayedExecutionFactory:
     '''
     This class constructs a delayedExecution based on the remote operating system.
     '''
-    def __init__( self, execMethod ):
+    def __init__(self, execMethod):
         self._execMethod = execMethod
-        
-    def getDelayedExecutionHandler( self ):
-        os = os_detection_exec( self._execMethod )
-        if os == 'windows':
-            return atHandler( self._execMethod )
-        elif os == 'linux':
-            return crontabHandler( self._execMethod )
-        else:
-            raise w3afException('Failed to create a delayed execution handler.')
-            
 
+    def getDelayedExecutionHandler(self):
+        os = os_detection_exec(self._execMethod)
+        if os == 'windows':
+            return atHandler(self._execMethod)
+        elif os == 'linux':
+            return crontabHandler(self._execMethod)
+        else:
+            raise w3afException(
+                'Failed to create a delayed execution handler.')

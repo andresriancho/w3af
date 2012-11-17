@@ -28,34 +28,34 @@ from core.data.dc.queryString import QueryString
 
 
 class test_knowledge_base(unittest.TestCase):
-    
+
     def setUp(self):
         kb.cleanup()
-    
+
     def test_basic(self):
-        kb.save('a','b','c')
-        data = kb.get('a','b')
+        kb.save('a', 'b', 'c')
+        data = kb.get('a', 'b')
         self.assertEqual(data, 'c')
-    
+
     def test_default(self):
-        self.assertEqual( kb.get('a','b'), [] )
-    
+        self.assertEqual(kb.get('a', 'b'), [])
+
     def test_default_first_saved(self):
         kb.save('a', 'b', 'c')
-        self.assertEqual( kb.get('a','not-exist'), [] )
-    
+        self.assertEqual(kb.get('a', 'not-exist'), [])
+
     def test_return_all_for_plugin(self):
         kb.append('a', 'b', 'c')
         kb.append('a', 'b', 'd')
         kb.append('a', 'b', 'e')
-        self.assertEqual( kb.get('a'), {'b': ['c', 'd', 'e']})
-    
+        self.assertEqual(kb.get('a'), {'b': ['c', 'd', 'e']})
+
     def test_append(self):
         kb.append('a', 'b', 1)
         kb.append('a', 'b', 2)
         kb.append('a', 'b', 3)
-        self.assertEqual( kb.get('a', 'b'), [1,2,3] )
-    
+        self.assertEqual(kb.get('a', 'b'), [1, 2, 3])
+
     def test_append_uniq_true(self):
         i1 = info()
         i1.setURI(URL('http://moth/abc.html?id=1'))
@@ -66,11 +66,11 @@ class test_knowledge_base(unittest.TestCase):
         i2.setURI(URL('http://moth/abc.html?id=3'))
         i2.set_dc(QueryString([('id', '3')]))
         i2.set_var('id')
-        
+
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
-        self.assertEqual( kb.get('a', 'b'), [i1,] )
-    
+        self.assertEqual(kb.get('a', 'b'), [i1, ])
+
     def test_append_uniq_false(self):
         i1 = info()
         i1.setURI(URL('http://moth/abc.html?id=1'))
@@ -81,37 +81,35 @@ class test_knowledge_base(unittest.TestCase):
         i2.setURI(URL('http://moth/def.html?id=3'))
         i2.set_dc(QueryString([('id', '3')]))
         i2.set_var('id')
-        
+
         kb.append_uniq('a', 'b', i1)
         kb.append_uniq('a', 'b', i2)
-        self.assertEqual( kb.get('a', 'b'), [i1, i2] )
+        self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
     def test_append_save(self):
         kb.append('a', 'b', 1)
         kb.append('a', 'b', 2)
         kb.save('a', 'b', 3)
-        self.assertEqual( kb.get('a', 'b'), 3 )
-    
+        self.assertEqual(kb.get('a', 'b'), 3)
+
     def test_save_append(self):
-        kb.save('a', 'b', [1,])
+        kb.save('a', 'b', [1, ])
         kb.append('a', 'b', 2)
         kb.append('a', 'b', 3)
-        self.assertEqual( kb.get('a', 'b'), [1,2,3] )
-    
+        self.assertEqual(kb.get('a', 'b'), [1, 2, 3])
+
     def test_all_of_klass(self):
-        kb.save('a', 'b', [1,])
-        self.assertEqual( kb.getAllEntriesOfClass(int), [1])
+        kb.save('a', 'b', [1, ])
+        self.assertEqual(kb.getAllEntriesOfClass(int), [1])
 
     def test_all_of_klass_str(self):
         kb.append('a', 'b', 'abc')
-        self.assertEqual( kb.getAllEntriesOfClass(str), ['abc'])
-    
+        self.assertEqual(kb.getAllEntriesOfClass(str), ['abc'])
+
     def test_dump_empty(self):
         empty = kb.dump()
         self.assertEqual(empty, {})
-        
+
     def test_dump(self):
-        kb.save('a', 'b', [1,])
+        kb.save('a', 'b', [1, ])
         self.assertEqual(kb.dump(), {'a': {'b': [1]}})
-        
-        

@@ -33,10 +33,10 @@ class TestUnittestCoverage(unittest.TestCase):
 
     def setUp(self):
         self.w3afcore = w3afCore()
-        
+
     def test_audit(self):
         self._analyze_unittests('audit')
-        
+
     def test_attack(self):
         self._analyze_unittests('attack')
 
@@ -54,25 +54,23 @@ class TestUnittestCoverage(unittest.TestCase):
 
     def test_grep(self):
         self._analyze_unittests('grep')
-        
+
     def _analyze_unittests(self, plugin_type):
         plugins = self.w3afcore.plugins.get_plugin_list(plugin_type)
-        
+
         missing = []
-        
+
         for plugin in plugins:
             if not self._has_test(plugin_type, plugin):
                 missing.append(plugin)
-        
+
         if missing:
             msg = 'The following %s plugins dont have unittests: %s' %  \
-                  (plugin_type, ', '.join(sorted(missing)) )
-            self.assertTrue( False, msg )
-    
+                  (plugin_type, ', '.join(sorted(missing)))
+            self.assertTrue(False, msg)
+
     def _has_test(self, plugin_type, plugin_name):
         tests = os.listdir(os.path.join(TEST_PATH, plugin_type))
-        
-        
+
         fname = 'test_%s.py' % plugin_name
         return fname in tests
-        

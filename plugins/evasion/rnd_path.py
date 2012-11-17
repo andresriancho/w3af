@@ -36,10 +36,10 @@ class rnd_path(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request ):
+    def modifyRequest(self, request):
         '''
         Mangles the request
-        
+
         @param request: HTTPRequest instance that is going to be modified by
                         the evasion plugin
         @return: The modified request
@@ -47,7 +47,7 @@ class rnd_path(EvasionPlugin):
         >>> from core.data.parsers.url import URL
         >>> import re
         >>> rp = rnd_path()
-        
+
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
@@ -71,7 +71,7 @@ class rnd_path(EvasionPlugin):
         >>> url_string = rp.modifyRequest( r ).url_object.url_string
         >>> re.match('http://www.w3af.com/\w*/../abc/def.htm\?id=1', url_string) is not None
         True
-        
+
         '''
         # We mangle the URL
         path = request.url_object.getPath()
@@ -81,30 +81,30 @@ class rnd_path(EvasionPlugin):
 
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath( path )
-        
+        new_url.setPath(path)
+
         # Finally, we set all the mutants to the request in order to return it
-        new_req = HTTPRequest( new_url , request.data, request.headers, 
-                               request.get_origin_req_host() )
-        
+        new_req = HTTPRequest(new_url, request.data, request.headers,
+                              request.get_origin_req_host())
+
         return new_req
-    
-    def getPriority( self ):
+
+    def getPriority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
-        
+
         @return: An integer specifying the priority. 0 is run first, 100 last.
         '''
         return 0
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This evasion plugin adds a random path to the URI.
-        
+
         Example:
             Input:      '/bar/foo.asp'
             Output :    '/aflsasfasfkn/../bar/foo.asp'

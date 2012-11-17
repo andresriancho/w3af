@@ -31,14 +31,14 @@ comparator._pixmap_path = os.path.join(COMPARATOR_PATH, 'pixmaps')
 
 
 class TestComparator(unittest.TestCase):
-    
+
     def test_basic(self):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.connect("destroy", gtk.main_quit)
-        self.window.resize(800,400)
+        self.window.resize(800, 400)
 
         doc = comparator.FileDiff()
-        
+
         #cont0 = open(os.path.join(COMPARATOR_PATH, 'tests', 'example1.txt')).read()
         #cont1 = open(os.path.join(COMPARATOR_PATH, 'tests', 'example2.txt')).read()
 
@@ -56,10 +56,9 @@ class TestComparator(unittest.TestCase):
 
         buf = doc.textview1.get_buffer()
         textview_1_content = buf.get_text(*buf.get_bounds())
-        
+
         self.assertEqual(cont0, textview_0_content)
         self.assertEqual(cont1, textview_1_content)
-        
+
         refresh_gui()
         #gtk.main()
-

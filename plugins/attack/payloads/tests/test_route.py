@@ -23,21 +23,21 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_route(PayloadTestHelper):
-    
+
     # This is the output I got when I run it on my environment, but because
     # I want it to be more generic, I'll only use bits and pieces of this below
-    EXPECTED_RESULT = { 'route': [ { 'Destination': '0.0.0.0',
-                                     'Gateway': '10.0.2.2',
-                                     'Iface': 'eth0',
-                                     'Mask': '0.0.0.0'},
-                                  { 'Destination': '10.0.2.0',
-                                    'Gateway': '0.0.0.0',
-                                    'Iface': 'eth0',
-                                    'Mask': '255.255.255.0'},
-                                  { 'Destination': '192.168.56.0',
-                                    'Gateway': '0.0.0.0',
-                                    'Iface': 'eth1',
-                                    'Mask': '255.255.255.0'}]}
+    EXPECTED_RESULT = {'route': [{'Destination': '0.0.0.0',
+                                  'Gateway': '10.0.2.2',
+                                  'Iface': 'eth0',
+                                  'Mask': '0.0.0.0'},
+                                 {'Destination': '10.0.2.0',
+                                  'Gateway': '0.0.0.0',
+                                  'Iface': 'eth0',
+                                  'Mask': '255.255.255.0'},
+                                 {'Destination': '192.168.56.0',
+                                  'Gateway': '0.0.0.0',
+                                  'Iface': 'eth1',
+                                  'Mask': '255.255.255.0'}]}
 
     def test_route(self):
         result = exec_payload(self.shell, 'route', use_api=True)
@@ -47,9 +47,8 @@ class test_route(PayloadTestHelper):
             gw = route_info['Gateway']
             iface = route_info['Iface']
             mask = route_info['Mask']
-            
+
             self.assertEqual(dest.count('.'), 3)
             self.assertEqual(gw.count('.'), 3)
             self.assertTrue(iface.startswith('eth'))
             self.assertEqual(mask.count('.'), 3)
-            

@@ -49,11 +49,13 @@ def getLogger():
 
     return _logger
 
+
 def setDebug():
     """Set the logging level to C{debug}.
     """
     logger = getLogger()
     logger.setLevel(logging.DEBUG)
+
 
 def setError():
     """Set the logging level to C{error}.

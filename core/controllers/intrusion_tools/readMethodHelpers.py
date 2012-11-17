@@ -24,11 +24,11 @@ import core.controllers.output_manager as om
 from core.controllers.exceptions import w3afException
 
 
-def read_os_detection( remote_read ):
+def read_os_detection(remote_read):
     '''
     Uses the remote_read method to read remote files and determine what the
     remote OS is.
-    
+
     @return: String with 'windows' or 'linux' or raises a w3afException
              if unknown.
     '''
@@ -42,7 +42,7 @@ def read_os_detection( remote_read ):
         if '/bin/' in linux1 or 'rw' in linux2 or 'linux' in linux3.lower():
             om.out.debug('Identified remote OS as Linux, returning "linux".')
             return 'linux'
-        
+
     try:
         # Try if it's a windows system
         # TODO: Are we sure that this works? When is the %SYSTEMROOT% resolved?
@@ -53,9 +53,9 @@ def read_os_detection( remote_read ):
     except:
         pass
     else:
-        if '[fonts]' in win1+win2+win3+win4:
-            om.out.debug('Identified remote OS as Windows, returning "windows".')
+        if '[fonts]' in win1 + win2 + win3 + win4:
+            om.out.debug(
+                'Identified remote OS as Windows, returning "windows".')
             return 'windows'
-    
-    raise w3afException('Failed to get/identify the remote OS.')
 
+    raise w3afException('Failed to get/identify the remote OS.')

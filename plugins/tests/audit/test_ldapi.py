@@ -21,19 +21,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestLDAPI(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/LDAP/simple_ldap.php'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url + '?i=xxx',
             'plugins': {
-                 'audit': (PluginConfig('ldapi'),),
-                 }
+                'audit': (PluginConfig('ldapi'),),
             }
         }
-    
+    }
+
     def test_found_ldapi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -41,5 +42,5 @@ class TestLDAPI(PluginTest):
         self.assertEquals(1, len(vulns))
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
-        self.assertEquals("LDAP injection vulnerability",vuln.get_name())
+        self.assertEquals("LDAP injection vulnerability", vuln.get_name())
         self.assertEquals(self.target_url, str(vuln.getURL()))

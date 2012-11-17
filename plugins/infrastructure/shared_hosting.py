@@ -43,49 +43,49 @@ class shared_hosting(InfrastructurePlugin):
 
     def __init__(self):
         InfrastructurePlugin.__init__(self)
-        
+
         # User variables
         self._result_limit = 300
-    
+
     @runonce(exc_class=w3afRunOnce)
-    def discover(self, fuzzable_request ):
+    def discover(self, fuzzable_request):
         '''
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        bing_wrapper = bing( self._uri_opener )
-        
+        bing_wrapper = bing(self._uri_opener)
+
         domain = fuzzable_request.getURL().getDomain()
-        if is_private_site( domain ):
+        if is_private_site(domain):
             msg = 'shared_hosting plugin is not checking for subdomains for '
-            msg += 'domain: "' + domain + '" because it is a private address.' 
+            msg += 'domain: "' + domain + '" because it is a private address.'
             om.out.debug(msg)
             return
-        
+
         try:
             addrinfo = socket.getaddrinfo(domain, 0)
         except:
             om.out.error('Failed to resolve address: "%s"' % domain)
             return
-        
+
         ip_address_list = [info[4][0] for info in addrinfo]
-        ip_address_list = list( set(ip_address_list) )
-        
+        ip_address_list = list(set(ip_address_list))
+
         # This is the best way to search, one by one!
         for ip_address in ip_address_list:
-            results = bing_wrapper.getNResults('ip:'+ ip_address, 
-                                               self._result_limit )
-            
-            results = [ r.URL.baseUrl() for r in results ]
-            results = list( set( results ) )
-            
+            results = bing_wrapper.getNResults('ip:' + ip_address,
+                                               self._result_limit)
+
+            results = [r.URL.baseUrl() for r in results]
+            results = list(set(results))
+
             # not vuln by default
             is_vulnerable = False
-            
+
             if len(results) > 1:
                 # We may have something...
                 is_vulnerable = True
-                
+
                 if len(results) == 2:
                     # Maybe we have this case:
                     # [Mon 09 Jun 2008 01:08:26 PM ART] - http://216.244.147.14/
@@ -93,20 +93,20 @@ class shared_hosting(InfrastructurePlugin):
                     # Where www.business.com resolves to 216.244.147.14; so we don't really
                     # have more than one domain in the same server.
                     try:
-                        res0 = socket.gethostbyname( results[0].getDomain() )
-                        res1 = socket.gethostbyname( results[1].getDomain() )
+                        res0 = socket.gethostbyname(results[0].getDomain())
+                        res1 = socket.gethostbyname(results[1].getDomain())
                     except:
                         pass
                     else:
                         if res0 == res1:
                             is_vulnerable = False
-            
+
             if is_vulnerable:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.setURL(fuzzable_request.getURL())
                 v.set_id(1)
-                
+
                 v['alsoInHosting'] = results
                 msg = 'The web application under test seems to be in a shared' \
                       ' hosting. This list of domains, and the domain of the ' \
@@ -115,14 +115,14 @@ class shared_hosting(InfrastructurePlugin):
                 for url in results:
                     domain = url.getDomain()
                     msg += '- %s\n' % url
-                    kb.kb.append( self, 'domains', domain)
-                v.set_desc( msg )
-                v.set_name( 'Shared hosting' )
+                    kb.kb.append(self, 'domains', domain)
+                v.set_desc(msg)
+                v.set_name('Shared hosting')
                 v.set_severity(severity.MEDIUM)
-                om.out.vulnerability( msg, severity=severity.MEDIUM )
-                kb.kb.append( self, 'shared_hosting', v )
+                om.out.vulnerability(msg, severity=severity.MEDIUM)
+                kb.kb.append(self, 'shared_hosting', v)
 
-    def get_options( self ):
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
@@ -131,29 +131,29 @@ class shared_hosting(InfrastructurePlugin):
         o = opt_factory('result_limit', self._result_limit, d, 'integer')
         ol.add(o)
         return ol
-        
-    def set_options( self, options_list ):
+
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._result_limit = options_list['result_limit'].get_value()
-    
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin tries to find out if the web application under test is stored
         in a shared hosting. The procedure is pretty simple, using bing search
-        engine, the plugin searches for "ip:1.2.3.4" where 1.2.3.4 is the IP 
+        engine, the plugin searches for "ip:1.2.3.4" where 1.2.3.4 is the IP
         address of the webserver.
-        
+
         One configurable option exists:
             - result_limit
-            
+
         Fetch the first "result_limit" results from the "ip:" bing search.
         '''

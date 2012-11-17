@@ -22,10 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from plugins.tests.helper import PluginTest, PluginConfig
 import core.data.constants.severity as severity
 
+
 class TestDirectoryIndexing(PluginTest):
-    
+
     dir_indexing_url = 'http://moth/w3af/grep/directory_indexing/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': dir_indexing_url,
@@ -34,7 +35,7 @@ class TestDirectoryIndexing(PluginTest):
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -44,6 +45,6 @@ class TestDirectoryIndexing(PluginTest):
         self.assertEquals(self.dir_indexing_url, str(v.getURL()))
         self.assertEquals(severity.LOW, v.get_severity())
         self.assertEquals(
-                  'Directory indexing - /w3af/grep/directory_indexing/',
-                  v.get_name()
-                  )
+            'Directory indexing - /w3af/grep/directory_indexing/',
+            v.get_name()
+        )

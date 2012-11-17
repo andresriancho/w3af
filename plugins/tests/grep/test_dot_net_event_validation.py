@@ -23,9 +23,9 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestEventValidation(PluginTest):
-    
+
     dot_net_event_validation_url = 'http://moth/w3af/grep/event_validation/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': dot_net_event_validation_url,
@@ -34,30 +34,30 @@ class TestEventValidation(PluginTest):
                 'crawl': (
                     PluginConfig('web_spider',
                                  ('onlyForward', True, PluginConfig.BOOL)),
-                )         
-                
+                )
+
             }
         }
     }
-    
+
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        vulns = self.kb.get('dot_net_event_validation', 'dot_net_event_validation')
-        
+        vulns = self.kb.get(
+            'dot_net_event_validation', 'dot_net_event_validation')
+
         self.assertEquals(3, len(vulns))
-        
-        EXPECTED_VULNS = set([('event_validation.html', 'decode the viewstate contents.'),
-                              ('without_event_validation.html', 'decode the viewstate contents.'),
-                              ('without_event_validation.html', 'r should be manually verified.')])
-        
+
+        EXPECTED_VULNS = set(
+            [('event_validation.html', 'decode the viewstate contents.'),
+             ('without_event_validation.html',
+              'decode the viewstate contents.'),
+             ('without_event_validation.html', 'r should be manually verified.')])
+
         vulns_set = set()
         for vuln in vulns:
             ending = vuln.get_desc(with_id=False)[-30:]
-            vulns_set.add( (vuln.getURL().getFileName(), ending ) )
+            vulns_set.add((vuln.getURL().getFileName(), ending))
 
-        self.assertEqual( EXPECTED_VULNS,
-                          vulns_set)
-        
-        
-        
+        self.assertEqual(EXPECTED_VULNS,
+                         vulns_set)

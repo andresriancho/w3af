@@ -23,29 +23,29 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestSitemap(PluginTest):
-    
+
     target_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {'crawl': (PluginConfig('sitemap_xml'),)}
-            }
         }
-    
+    }
+
     def test_robots(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         urls = self.kb.get('urls', 'url_objects')
-        
-        self.assertEqual( len(urls), 3, urls )
-        
+
+        self.assertEqual(len(urls), 3, urls)
+
         hidden_url = 'http://moth/hidden/'
-        
+
         for url in urls:
             if url.url_string == hidden_url:
-                self.assertTrue( True )
+                self.assertTrue(True)
                 break
         else:
-            self.assertTrue( False )
+            self.assertTrue(False)

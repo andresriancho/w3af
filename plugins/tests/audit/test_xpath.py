@@ -21,24 +21,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestXPATH(PluginTest):
-    
+
     target_url = 'http://moth/w3af/audit/xpath/'
-    
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                 'audit': (PluginConfig('xpath'),),
-                 'crawl': (
-                      PluginConfig(
-                          'web_spider',
-                          ('onlyForward', True, PluginConfig.BOOL)),
-                  )
-                 }
+                'audit': (PluginConfig('xpath'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
             }
         }
-    
+    }
+
     def test_found_xpath(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -48,7 +49,7 @@ class TestXPATH(PluginTest):
         expected_vuln_number = 4
         vulns = self.kb.get('xpath', 'xpath')
         self.assertEquals(expected_vuln_number, len(vulns))
-        self.assertEquals(all(["XPATH injection vulnerability" == vuln.get_name() for vuln in vulns ]) , True)
+        self.assertEquals(all(["XPATH injection vulnerability" == vuln.get_name() for vuln in vulns]), True)
 
         # Verify the specifics about the vulnerabilities
         expected = [
@@ -60,8 +61,7 @@ class TestXPATH(PluginTest):
 
         verified_vulns = 0
         for vuln in vulns:
-            if ( vuln.getURL().getFileName() , vuln.get_mutant().get_var() ) in expected:
+            if (vuln.getURL().getFileName(), vuln.get_mutant().get_var()) in expected:
                 verified_vulns += 1
 
         self.assertEquals(expected_vuln_number, verified_vulns)
-

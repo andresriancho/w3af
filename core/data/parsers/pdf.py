@@ -29,7 +29,7 @@ try:
     from extlib.pyPdf import pyPdf as pyPdf
 except ImportError:
     import pyPdf
-    
+
 import StringIO
 import re
 
@@ -38,30 +38,30 @@ class PDFParser(BaseParser):
     '''
     This class parses pdf documents to find emails and URLs. It's based in the
     pyPdf library.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, HTTPResponse):
         super(PDFParser, self).__init__(HTTPResponse)
         # Work !
         self._pre_parse(HTTPResponse.body)
-        
+
     def _pre_parse(self, document):
         content_text = self.getPDFContent(document)
         self._parse(content_text)
-    
+
     def _parse(self, content_text):
 
         # Get the URLs using a regex
         for x in re.findall(BaseParser.URL_RE, content_text):
             try:
-                self._re_urls.add( URL(x[0]) )
+                self._re_urls.add(URL(x[0]))
             except ValueError:
                 pass
-        
+
         # Get the mail addys
         self._extract_emails(content_text)
-        
+
     def getPDFContent(self, documentString):
         content = u""
         if documentString:
@@ -72,8 +72,8 @@ class PDFParser(BaseParser):
             except Exception, e:
                 om.out.debug('Exception in getPDFContent(), error: ' + str(e))
         return content
-    
-    def get_references( self ):
+
+    def get_references(self):
         '''
         Searches for references on a page. w3af searches references in every html tag, including:
             - a
@@ -81,11 +81,11 @@ class PDFParser(BaseParser):
             - images
             - frames
             - etc.
-        
+
         @return: Two lists, one with the parsed URLs, and one with the URLs that came out of a
         regular expression. The second list if less trustworthy.
         '''
         return ([], list(self._re_urls))
-        
+
     get_references_of_tag = get_forms = get_comments = \
-    get_meta_redir = get_meta_tags = lambda *args, **kwds: []
+        get_meta_redir = get_meta_tags = lambda *args, **kwds: []

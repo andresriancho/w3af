@@ -24,13 +24,13 @@ from core.data.dc.data_container import DataContainer
 
 class Headers(DataContainer):
     '''
-    This class represents the set of HTTP request headers. 
-    
+    This class represents the set of HTTP request headers.
+
     @author: Javier Andalia (jandalia AT gmail DOT com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
         super(Headers, self).__init__(init_val, encoding)
-        
+
     def iget(self, header_name, default=None):
         '''
         @param header_name: The name of the header we want the value for
@@ -39,13 +39,13 @@ class Headers(DataContainer):
         for stored_header_name in self:
             if header_name.lower() == stored_header_name.lower():
                 return self[stored_header_name], stored_header_name
-        
+
         return default, None
 
     def clone_with_list_values(self):
         clone = Headers()
         for key, value in self.iteritems():
-            clone[key] = [value,]
+            clone[key] = [value, ]
         return clone
 
     def __setitem__(self, k, v):
@@ -53,16 +53,16 @@ class Headers(DataContainer):
             k = k.encode(self.encoding, 'replace')
         else:
             raise ValueError('Header name must be a string.')
-        
+
         if isinstance(v, basestring):
             v = v.encode(self.encoding, 'replace')
         #
         # Had to remove this for clone_with_list_values
         #else:
         #    raise ValueError('Header value must be a string.')
-            
+
         super(Headers, self).__setitem__(k, v)
-    
+
     def __str__(self):
         '''
         >>> str(Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items()))
@@ -74,6 +74,6 @@ class Headers(DataContainer):
         @return: string representation of the Headers() object.
         '''
         return self._to_str_with_separators(u': ', u'\n') + u'\n'
-    
+
     def __unicode__(self):
         return str(self).decode(self.encoding)

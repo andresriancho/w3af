@@ -28,37 +28,37 @@ from core.controllers.misc.homeDir import get_home_dir
 
 
 class TestStartUpConfig(unittest.TestCase):
-    
+
     CFG_FILE = os.path.join(get_home_dir(), 'unittest-startup.conf')
-    
+
     def tearDown(self):
         try:
             os.unlink(self.CFG_FILE)
         except:
             pass
-        
+
     def test_save(self):
         scfg = StartUpConfig(self.CFG_FILE)
-        
+
         scfg.last_upd = date.today()
         scfg.accepted_disclaimer = True
         revision = Mock()
         revision.number = 3
         scfg.last_rev = revision
         scfg.save()
-    
+
     def test_load_not_exist(self):
         '''
         This is a test to verify that the defaults are loaded when the file does not
         exist.
         '''
         scfg = StartUpConfig('foo.conf')
-        
-        self.assertEqual( scfg.last_upd , date.today() - timedelta(days=31) )
-        self.assertEqual( scfg.accepted_disclaimer , False )
-        self.assertEqual( scfg.last_rev , 0 )
-        self.assertEqual( scfg.freq , 'D' )
-        
+
+        self.assertEqual(scfg.last_upd, date.today() - timedelta(days=31))
+        self.assertEqual(scfg.accepted_disclaimer, False)
+        self.assertEqual(scfg.last_rev, 0)
+        self.assertEqual(scfg.freq, 'D')
+
     def test_load_file_exists(self):
         '''This is a test to verify that the things we saved were persited in
         the actual file.
@@ -71,11 +71,10 @@ class TestStartUpConfig(unittest.TestCase):
         revision.number = 3
         scfg.last_rev = revision
         scfg.save()
-        
+
         # Load
         scfg = StartUpConfig(self.CFG_FILE)
-        self.assertEqual( scfg.last_upd , date.today() )
-        self.assertEqual( scfg.accepted_disclaimer , True )
-        self.assertEqual( scfg.last_rev , 3 )
-        self.assertEqual( scfg.freq , 'D' )
-        
+        self.assertEqual(scfg.last_upd, date.today())
+        self.assertEqual(scfg.accepted_disclaimer, True)
+        self.assertEqual(scfg.last_rev, 3)
+        self.assertEqual(scfg.freq, 'D')

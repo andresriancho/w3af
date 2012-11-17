@@ -29,21 +29,21 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestCSVFile(PluginTest):
-    
+
     OUTPUT_FILE = 'output-unittest.csv'
-    
+
     xss_url = 'http://moth/w3af/audit/xss/'
-    
+
     _run_configs = {
         'cfg': {
             'target': xss_url,
             'plugins': {
                 'audit': (
                     PluginConfig(
-                         'xss',
+                        'xss',
                          ('checkStored', True, PluginConfig.BOOL),
                          ('numberOfChecks', 3, PluginConfig.INT)),
-                    ),
+                ),
                 'crawl': (
                     PluginConfig(
                         'web_spider',
@@ -53,25 +53,25 @@ class TestCSVFile(PluginTest):
                     PluginConfig(
                         'csv_file',
                         ('output_file', OUTPUT_FILE, PluginConfig.STR)),
-                )         
+                )
             },
         }
     }
-    
+
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         xss_vulns = self.kb.get('xss', 'xss')
         file_vulns = self._from_csv_get_vulns()
-        
+
         self.assertGreaterEqual(len(xss_vulns), 3)
-        
+
         self.assertEquals(
             set(sorted([v.getURL() for v in xss_vulns])),
             set(sorted([v.getURL() for v in file_vulns]))
         )
-        
+
         self.assertEquals(
             set(sorted([v.get_method() for v in xss_vulns])),
             set(sorted([v.get_method() for v in file_vulns]))
@@ -81,28 +81,28 @@ class TestCSVFile(PluginTest):
             set(sorted([v.get_id()[0] for v in xss_vulns])),
             set(sorted([v.get_id()[0] for v in file_vulns]))
         )
-        
+
     def _from_csv_get_vulns(self):
         file_vulns = []
-        
-        vuln_reader = csv.reader(open(self.OUTPUT_FILE, 'rb'), delimiter=',',
-                                     quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
-        for name,method,uri,var,dc,_id,desc in vuln_reader:
+        vuln_reader = csv.reader(open(self.OUTPUT_FILE, 'rb'), delimiter=',',
+                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+        for name, method, uri, var, dc, _id, desc in vuln_reader:
             v = vuln.vuln()
-            
+
             v.set_name(name)
-            v.set_method( method )
-            v.setURI( URL(uri) )
+            v.set_method(method)
+            v.setURI(URL(uri))
             v.set_var(var)
             v.set_dc(dc)
-            v.set_id(json.loads(_id) )
+            v.set_id(json.loads(_id))
             v.set_desc(desc)
-            
+
             file_vulns.append(v)
-        
+
         return file_vulns
-            
+
     def tearDown(self):
         try:
             os.remove(self.OUTPUT_FILE)

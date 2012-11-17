@@ -26,16 +26,16 @@ import sys
 
 from multiprocessing.dummy import Queue, Process
 
-from core.data.misc.file_utils import replace_file_special_chars 
+from core.data.misc.file_utils import replace_file_special_chars
 
 
 class DBClient(object):
     """Simple w3af DB interface"""
-    
+
     def __init__(self):
         '''Construct object.'''
         super(DBClient, self).__init__()
-    
+
     def createTable(self, name, columns=(), primaryKeyColumns=[]):
         '''Create table in convenient way.'''
         #
@@ -58,8 +58,9 @@ class DBClient(object):
         @param table: The table from which you want to create an index from
         @param columns: A list of column names.
         '''
-        sql = 'CREATE INDEX %s_index ON %s( %s )' % (table, table, ','.join(columns) )
-        
+        sql = 'CREATE INDEX %s_index ON %s( %s )' % (
+            table, table, ','.join(columns))
+
         self.execute(sql)
         self.commit()
 
@@ -70,7 +71,7 @@ class DBClient(object):
     def execute(self, sql, parameters=()):
         '''Execute SQL statement.'''
         raise NotImplementedError
-    
+
     def executemany(self, sql, items):
         '''Execute many SQL statement.'''
         raise NotImplementedError
@@ -82,43 +83,43 @@ class DBClient(object):
     def select_one(self, sql, parameters=()):
         '''Execute SELECT statement and return first result'''
         raise NotImplementedError
-    
-    
+
+
 class DBClientSQLite(Process, DBClient):
     """
     Wrap sqlite connection in a way that allows concurrent requests from multiple
     threads.
 
-    This is done by internally queueing the requests and processing them 
+    This is done by internally queueing the requests and processing them
     sequentially in a separate thread (in the same order they arrived).
 
     """
-    def __init__(self, filename, autocommit=False, journal_mode="OFF", 
-                       cache_size=2000):
-        
+    def __init__(self, filename, autocommit=False, journal_mode="OFF",
+                 cache_size=2000):
+
         super(DBClientSQLite, self).__init__()
-        
+
         # Convert the filename to UTF-8, this is needed for windows, and special
         # characters, see:
         # http://www.sqlite.org/c3ref/open.html
         unicode_filename = filename.decode(sys.getfilesystemencoding())
         filename = unicode_filename.encode("utf-8")
         self.filename = replace_file_special_chars(filename)
-        
+
         self.autocommit = autocommit
         self.journal_mode = journal_mode
         self.cache_size = cache_size
-        
+
         # Setting the size to 50 in order to avoid high memory consumption
         self.reqs = Queue(50)
-        
+
         # Setting the thread to daemon mode so it dies with the rest of the
         # process, and a name so we can identify it during debugging sessions
         self.daemon = True
         self.name = 'DBClientSQLite'
-        
+
         # This put/join is here in order to wait for the setup phase in the run
-        # method to execute before we return from this method, also see 
+        # method to execute before we return from this method, also see
         # get/task_done below.
         self.reqs.put(None)
         self.start()
@@ -132,24 +133,24 @@ class DBClientSQLite(Process, DBClient):
             * Other parts of the framework which want to insert into the DB simply
               add an item to our input Queue and "forget about it" since it will
               be processed in another thread.
-              
+
             * Only one thread accesses the sqlite3 object, which avoids many
             issues because of sqlite's non thread-safeness
-            
+
         The only important thing to keep in mind is that before any SELECT
         query we need to join() the input Queue in order to make sure that all
         INSERTS were processed.
-        
+
         Since this is a daemon thread, I don't need any break/poison-pill, simply
         perform a "while True" and the Queue.get() will make sure we don't have
-        100% CPU usage in the loop. 
+        100% CPU usage in the loop.
         '''
-        
+
         #
         #    Setup phase
         #
         if self.autocommit:
-            conn = sqlite3.connect(self.filename, isolation_level=None, 
+            conn = sqlite3.connect(self.filename, isolation_level=None,
                                    check_same_thread=True)
         else:
             conn = sqlite3.connect(self.filename, check_same_thread=True)
@@ -163,7 +164,7 @@ class DBClientSQLite(Process, DBClient):
         #
         #    End setup phase
         #
-        
+
         while True:
             req, arg, res = self.reqs.get()
             if req == '--close--':
@@ -204,7 +205,8 @@ class DBClientSQLite(Process, DBClient):
         request is dequeued, and although you can iterate over the result normally
         (`for res in self.select(): ...`), the entire result will be in memory.
         """
-        res = Queue() # results of the select will appear as items in this queue
+        res = Queue(
+        )  # results of the select will appear as items in this queue
         self.execute(sql, parameters, res)
         while True:
             rec = res.get()
@@ -224,7 +226,7 @@ class DBClientSQLite(Process, DBClient):
         self.execute('--commit--')
 
     def close(self):
-        self.filename = None        
+        self.filename = None
         self.execute('--close--')
 
     def getFileName(self):
@@ -240,7 +242,7 @@ class WhereHelper(object):
     conditions = {}
     _values = []
 
-    def __init__(self, conditions = {}):
+    def __init__(self, conditions={}):
         '''Construct object.'''
         self.conditions = conditions
 
@@ -250,7 +252,7 @@ class WhereHelper(object):
             self.sql()
         return self._values
 
-    def _makePair(self, field, value, oper='=',  conjunction='AND'):
+    def _makePair(self, field, value, oper='=', conjunction='AND'):
         '''Auxiliary method.'''
         result = ' ' + conjunction + ' ' + field + ' ' + oper + ' ?'
         return (result, value)
@@ -258,7 +260,7 @@ class WhereHelper(object):
     def sql(self, whereStr=True):
         '''
         @return: SQL string.
-        
+
         >>> w = WhereHelper( [ ('field', '3', '=') ] )
         >>> w.sql()
         ' WHERE field = ?'
@@ -277,11 +279,12 @@ class WhereHelper(object):
                 tmpWhere = ''
                 for tmpField in item:
                     tmpName, tmpValue, tmpOper = tmpField
-                    sql, value = self._makePair(tmpName, tmpValue, tmpOper, oper)
+                    sql, value = self._makePair(
+                        tmpName, tmpValue, tmpOper, oper)
                     self._values.append(value)
                     tmpWhere += sql
                 if tmpWhere:
-                    result += " AND (" + tmpWhere[len(oper)+1:] + ")"
+                    result += " AND (" + tmpWhere[len(oper) + 1:] + ")"
             else:
                 sql, value = self._makePair(cond[0], cond[1], cond[2])
                 self._values.append(value)
@@ -295,5 +298,3 @@ class WhereHelper(object):
 
     def __str__(self):
         return self.sql() + ' | ' + str(self.values())
-
-

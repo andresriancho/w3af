@@ -37,12 +37,13 @@ class wordnet_loader(LazyCorpusLoader):
 
     def __load(self):
         # Find the corpus root directory.
-        zip_location = os.path.join('plugins', 'crawl', 'wordnet','wordnet.zip')
+        zip_location = os.path.join(
+            'plugins', 'crawl', 'wordnet', 'wordnet.zip')
         root = ZipFilePathPointer(zip_location, 'wordnet/')
 
         # Load the corpus.
         corpus = self.__reader_cls(root, *self.__args, **self.__kwargs)
-        
+
         # This is where the magic happens!  Transform ourselves into
         # the corpus by modifying our own __dict__ and __class__ to
         # match that of the corpus.

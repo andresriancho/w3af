@@ -53,7 +53,8 @@ def check_version_syntax(version):
     splittedVersion = version.split('/')
 
     if len(splittedVersion) != 2:
-        msg = 'The HTTP request has an invalid version token: "' + version +'"'
+        msg = 'The HTTP request has an invalid version token: "' + \
+            version + '"'
         raise w3afException(msg)
     elif len(splittedVersion) == 2:
         if splittedVersion[0].lower() != 'http':
@@ -61,8 +62,10 @@ def check_version_syntax(version):
             msg += version + '"'
             raise w3afException(msg)
         if splittedVersion[1] not in supportedVersions:
-            raise w3afException('HTTP request version "' + version + '" is unsupported')
+            raise w3afException(
+                'HTTP request version "' + version + '" is unsupported')
     return True
+
 
 def check_uri_syntax(uri, host=None):
     '''
@@ -79,7 +82,7 @@ def check_uri_syntax(uri, host=None):
     supported_schemes = ['http', 'https']
     scheme, domain, path, params, qs, fragment = urlparse.urlparse(uri)
     scheme = scheme.lower()
-    
+
     if not scheme:
         scheme = 'http'
     if not domain:
@@ -92,29 +95,30 @@ def check_uri_syntax(uri, host=None):
         msg += ' Invalid URI: ' + uri
         raise w3afException(msg)
 
-    res = urlparse.urlunparse( (scheme, domain, path, params, qs, fragment) )
+    res = urlparse.urlunparse((scheme, domain, path, params, qs, fragment))
     return res
+
 
 def HTTPRequestParser(head, postdata):
     '''
     This function parses HTTP Requests from a string to a FuzzableRequest.
-    
+
     @param head: The head of the request.
     @param postdata: The post data of the request
     @return: A FuzzableRequest object with all the corresponding information
         that was sent in head and postdata
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
 
     '''
     # Parse the request head, the strip() helps us deal with the \r (if any)
     splitted_head = head.split('\n')
     splitted_head = [h.strip() for h in splitted_head if h]
-    
+
     if not splitted_head:
         msg = 'The HTTP request is invalid.'
-        raise w3afException(msg)        
-    
+        raise w3afException(msg)
+
     # Get method, uri, version
     method_uri_version = splitted_head[0]
     first_line = method_uri_version.split(' ')
@@ -123,7 +127,7 @@ def HTTPRequestParser(head, postdata):
         method, uri, version = first_line
     elif len(first_line) < 3:
         msg = 'The HTTP request has an invalid <method> <uri> <version> token: "'
-        msg += method_uri_version +'".'
+        msg += method_uri_version + '".'
         raise w3afException(msg)
     elif len(first_line) > 3:
         # GET /hello world.html HTTP/1.0
@@ -131,10 +135,10 @@ def HTTPRequestParser(head, postdata):
         # the request...
         method = first_line[0]
         version = first_line[-1]
-        uri = ' '.join( first_line[1:-1] )
-    
+        uri = ' '.join(first_line[1:-1])
+
     check_version_syntax(version)
-    
+
     # If we got here, we have a nice method, uri, version first line
     # Now we parse the headers (easy!) and finally we send the request
     headers_str = splitted_head[1:]
@@ -142,8 +146,9 @@ def HTTPRequestParser(head, postdata):
     for header in headers_str:
         one_splitted_header = header.split(':', 1)
         if len(one_splitted_header) == 1:
-            raise w3afException('The HTTP request has an invalid header: "' + header + '"')
-        
+            raise w3afException(
+                'The HTTP request has an invalid header: "' + header + '"')
+
         header_name = one_splitted_header[0].strip()
         header_value = one_splitted_header[1].strip()
         if header_name in headers_inst:
@@ -152,7 +157,7 @@ def HTTPRequestParser(head, postdata):
             headers_inst[header_name] = header_value
 
     host, _ = headers_inst.iget('host', None)
-        
+
     uri = URL(check_uri_syntax(uri, host))
-    
+
     return create_fuzzable_request(uri, method, postdata, headers_inst)

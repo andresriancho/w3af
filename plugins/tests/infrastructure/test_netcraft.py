@@ -21,32 +21,32 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestNetcraft(PluginTest):
-    
+
     base_url = 'http://www.w3af.org/'
-    
+
     _run_configs = {
         'cfg1': {
             'target': base_url,
             'plugins': {'infrastructure': (PluginConfig('netcraft'),)}
-            }
         }
-    
+    }
+
     def test_fuzzer_found_urls(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        expected_infos = ( ('netblock_owner', 'Netblock owner', 
-                            u'Netcraft reports that the netblock owner for the target domain is GoDaddy.com, LLC') ,
-                         )
+        expected_infos = (('netblock_owner', 'Netblock owner',
+                           u'Netcraft reports that the netblock owner for the target domain is GoDaddy.com, LLC'),
+                          )
 
         for kb_item, ename, edesc in expected_infos:
             items = self.kb.get('netcraft', kb_item)
 
-            self.assertEquals( len(items), 1)
+            self.assertEquals(len(items), 1)
 
             iname = items[0].get_name()
             idesc = items[0].get_desc()
 
-            self.assertEquals( iname, ename )
-            self.assertTrue( idesc.startswith(edesc) )
-
+            self.assertEquals(iname, ename)
+            self.assertTrue(idesc.startswith(edesc))

@@ -25,9 +25,9 @@ import core.data.kb.knowledge_base as kb
 update_lock = threading.RLock()
 
 
-def update_kb( fuzzable_request ):
+def update_kb(fuzzable_request):
     '''
-    Updates the URL and fuzzable request list in the kb for other plugins to 
+    Updates the URL and fuzzable request list in the kb for other plugins to
     use.
     '''
     with update_lock:
@@ -41,19 +41,20 @@ def update_kb( fuzzable_request ):
         # something that fails if developers change it.
         url_object_list = get_urls_from_kb()
         if fuzzable_request.getURL() not in url_object_list:
-    
-            url_object_list.append( fuzzable_request.getURL() )
-            kb.kb.save( 'urls', 'url_objects', url_object_list )
-    
+
+            url_object_list.append(fuzzable_request.getURL())
+            kb.kb.save('urls', 'url_objects', url_object_list)
+
         # Update the list of fuzzable requests that lives in the KB
         # TODO: Move the whole KB to a sqlite database in order to save
         #       some memory usage.
         kb_fr_set = get_fuzzable_requests_from_kb()
-        kb_fr_set.add( fuzzable_request )
+        kb_fr_set.add(fuzzable_request)
+
 
 def get_urls_from_kb():
-    return kb.kb.get( 'urls', 'url_objects' )
-    
+    return kb.kb.get('urls', 'url_objects')
+
+
 def get_fuzzable_requests_from_kb():
-    return kb.kb.get( 'urls', 'fuzzable_requests' )
-        
+    return kb.kb.get('urls', 'fuzzable_requests')

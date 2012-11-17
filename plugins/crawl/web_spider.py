@@ -47,12 +47,12 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 class web_spider(CrawlPlugin):
     '''
     Crawl the web application.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    NOT_404 = set([ http_constants.UNAUTHORIZED, 
-                    http_constants.FORBIDDEN])
-    
+    NOT_404 = set([http_constants.UNAUTHORIZED,
+                   http_constants.FORBIDDEN])
+
     def __init__(self):
         CrawlPlugin.__init__(self)
 
@@ -81,8 +81,9 @@ class web_spider(CrawlPlugin):
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [i.getDomainPath() for i in cf.cf.get('targets')]
-            
+            self._target_urls = [i.getDomainPath(
+            ) for i in cf.cf.get('targets')]
+
             #    The following line triggered lots of bugs when the "stop" button
             #    was pressed and the core did this: "cf.cf.save('targets', [])"
             #self._target_domain = cf.cf.get('targets')[0].getDomain()
@@ -98,30 +99,30 @@ class web_spider(CrawlPlugin):
         # makes sense and will allow us to cover more code.
         #
         if isinstance(fuzzable_req, HTTPPostDataRequest):
-            
+
             if fuzzable_req.getURL() in self._already_filled_form:
                 return []
 
-            fuzzable_req = self._fill_form(fuzzable_req)            
+            fuzzable_req = self._fill_form(fuzzable_req)
 
         # Send the HTTP request,
         resp = self._uri_opener.send_mutant(fuzzable_req,
                                             follow_redir=False)
-        
-        # Nothing to do here...        
+
+        # Nothing to do here...
         if resp.getCode() == 401:
             return []
 
         fuzz_req_list = self._create_fuzzable_requests(
-                                             resp,
-                                             request=fuzzable_req,
-                                             add_self=False
-                                            )
+            resp,
+            request=fuzzable_req,
+            add_self=False
+        )
         for fr in fuzz_req_list:
             self.output_queue.put(fr)
 
         self._extract_links_and_verify(resp, fuzzable_req)
-        
+
     def _urls_to_verify_generator(self, resp, fuzzable_req):
         '''
         @param resp: HTTP response object
@@ -130,9 +131,9 @@ class web_spider(CrawlPlugin):
         #
         # Note: I WANT to follow links that are in the 404 page.
         #
-        
+
         # Modified when I added the PDFParser
-        # I had to add this x OR y stuff, just because I don't want 
+        # I had to add this x OR y stuff, just because I don't want
         # the SGML parser to analyze a image file, its useless and
         # consumes CPU power.
         if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
@@ -144,14 +145,14 @@ class web_spider(CrawlPlugin):
                              'Exception "%s"' % w3)
             else:
                 # Note:
-                # - With parsed_refs I'm 100% that it's really 
+                # - With parsed_refs I'm 100% that it's really
                 # something in the HTML that the developer intended to add.
                 #
                 # - The re_refs are the result of regular expressions,
                 # which in some cases are just false positives.
-                
+
                 parsed_refs, re_refs = doc_parser.get_references()
-                
+
                 # I also want to analyze all directories, if the URL I just
                 # fetched is:
                 # http://localhost/a/b/c/f00.php I want to GET:
@@ -162,21 +163,21 @@ class web_spider(CrawlPlugin):
                 # And analyze the responses...
                 dirs = resp.getURL().getDirectories()
                 only_re_refs = set(re_refs) - set(dirs + parsed_refs)
-                
+
                 all_refs = itertools.chain(dirs, parsed_refs, re_refs)
-                
-                for ref in unique_justseen( sorted( all_refs )):
-                    
+
+                for ref in unique_justseen(sorted(all_refs)):
+
                     # I don't want w3af sending requests to 3rd parties!
                     if ref.getDomain() != self._target_domain:
                         continue
-                    
+
                     # Filter the URL's according to the configured regexs
                     urlstr = ref.url_string
                     if not self._compiled_follow_re.match(urlstr) or \
-                        self._compiled_ignore_re.match(urlstr):
+                            self._compiled_ignore_re.match(urlstr):
                         continue
-                    
+
                     if self._only_forward:
                         if not self._is_forward(ref):
                             continue
@@ -188,79 +189,80 @@ class web_spider(CrawlPlugin):
                         self._known_variants.append(ref)
                         possibly_broken = ref in only_re_refs
                         yield ref, fuzzable_req, original_url, possibly_broken
-                        
+
     def _extract_links_and_verify(self, resp, fuzzable_req):
         '''
         This is a very basic method that will send the work to different
         threads. Work is generated by the _urls_to_verify_generator
-        
+
         @param resp: HTTP response object
         @param fuzzable_req: The HTTP request that generated the response
         '''
         self._tm.threadpool.map_multi_args(
-                                self._verify_reference,
-                                self._urls_to_verify_generator(resp, fuzzable_req)
-                                )
-              
+            self._verify_reference,
+            self._urls_to_verify_generator(
+                resp, fuzzable_req)
+        )
+
     def _fill_form(self, fuzzable_req):
         '''
         Fill the HTTP request form that is passed as fuzzable_req.
         @return: A filled form
         '''
         self._already_filled_form.add(fuzzable_req.getURL())
-        
+
         to_send = fuzzable_req.get_dc().copy()
-        
+
         for param_name in to_send:
-            
+
             # I do not want to mess with the "static" fields
             if isinstance(to_send, form.Form):
                 if to_send.get_type(param_name) in ('checkbox', 'file',
-                                                   'radio', 'select'):
+                                                    'radio', 'select'):
                     continue
-            
+
             # Set all the other fields, except from the ones that have a
             # value set (example: hidden fields like __VIEWSTATE).
             for elem_index in xrange(len(to_send[param_name])):
-                
+
                 # TODO: Should I ignore it because it already has a value?
                 if to_send[param_name][elem_index] != '':
                     continue
-                
+
                 # SmartFill it!
                 to_send[param_name][elem_index] = smart_fill(param_name)
-                
+
         fuzzable_req.set_dc(to_send)
-        return fuzzable_req 
-    
+        return fuzzable_req
+
     def _need_more_variants(self, new_reference):
         '''
         @param new_reference: The new URL that we want to see if its a variant
             of at most MAX_VARIANTS references stored in self._already_crawled.
-        
+
         @return: True if I need more variants of ref.
-        
+
         Basically, the idea is to crawl the whole website, but if we are
-        crawling a site like youtube.com that has A LOT of links with the form: 
+        crawling a site like youtube.com that has A LOT of links with the form:
             - http://www.youtube.com/watch?v=xwLNu5MHXFs
             - http://www.youtube.com/watch?v=JEzjwifH4ts
             - ...
             - http://www.youtube.com/watch?v=something_here
-        
+
         Then we don't actually want to follow all the links to all the videos!
         So we are going to follow a decent number of variant URLs (in this
         case, video URLs) to see if we can find something interesting in those
         links, but after a fixed number of variants, we will start ignoring all
         those variants.
         '''
-        if self._known_variants.need_more_variants( new_reference ):
+        if self._known_variants.need_more_variants(new_reference):
             return True
         else:
             msg = ('Ignoring new reference "%s" (it is simply a variant).'
-                    % new_reference)
+                   % new_reference)
             om.out.debug(msg)
             return False
-    
+
     def _verify_reference(self, reference, original_request,
                           original_url, possibly_broken):
         '''
@@ -276,9 +278,9 @@ class web_spider(CrawlPlugin):
         #
         referer = original_url.baseUrl().url_string
         headers = Headers([('Referer', referer)])
-        
+
         try:
-            resp = self._uri_opener.GET(reference, cache=True, 
+            resp = self._uri_opener.GET(reference, cache=True,
                                         headers=headers, follow_redir=False)
         except w3afMustStopOnUrlError:
             pass
@@ -298,37 +300,38 @@ class web_spider(CrawlPlugin):
                 # want to return a 404 to the core.
                 add_self = resp.getCode() in self.NOT_404
                 fuzz_req_list = self._create_fuzzable_requests(resp,
-                                 request=original_request, add_self=add_self)
+                                                               request=original_request, add_self=add_self)
                 if not possibly_broken and not add_self:
                     t = (resp.getURL(), original_request.getURI())
                     self._broken_links.add(t)
             else:
                 om.out.debug('Adding relative reference "%s" '
                              'to the result.' % reference)
-                frlist = self._create_fuzzable_requests(resp, request=original_request)
+                frlist = self._create_fuzzable_requests(
+                    resp, request=original_request)
                 fuzz_req_list.extend(frlist)
-                            
+
             # Process the list.
             for fuzz_req in fuzz_req_list:
                 fuzz_req.setReferer(referer)
                 self.output_queue.put(fuzz_req)
-    
+
     def end(self):
         '''
         Called when the process ends, prints out the list of broken links.
         '''
         if len(self._broken_links):
-            
+
             om.out.information('The following is a list of broken links that '
                                'were found by the web_spider plugin:')
             for broken, where in unique_justseen(self._broken_links.ordered_iter()):
                 om.out.information('- %s [ referenced from: %s ]' %
                                    (broken, where))
-    
+
     def _is_forward(self, reference):
         '''
         Check if the reference is inside the target directories.
-        
+
         @return: True if reference is an URL inside the directory structure of at least
                  one of the target URLs.
         '''
@@ -337,42 +340,42 @@ class web_spider(CrawlPlugin):
                 return True
 
         return False
-            
-    def get_options( self ):
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'When spidering, only search directories inside the one that was given as target'
         o = opt_factory('onlyForward', self._only_forward, d, BOOL)
         ol.add(o)
-        
+
         d = 'When spidering, only follow links that match this regular expression '
-        d +=  '(ignoreRegex has precedence over followRegex)'
+        d += '(ignoreRegex has precedence over followRegex)'
         o = opt_factory('followRegex', self._follow_regex, d, REGEX)
         ol.add(o)
-        
+
         d = 'When spidering, DO NOT follow links that match this regular expression '
         d += '(has precedence over followRegex)'
         o = opt_factory('ignoreRegex', self._ignore_regex, d, REGEX)
         ol.add(o)
-        
+
         return ol
-        
-    def set_options( self, options_list ):
+
+    def set_options(self, options_list):
         '''
         This method sets all the options that are configured using the user
         interface generated by the framework using the result of get_options().
-        
+
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         self._only_forward = options_list['onlyForward'].get_value()
         self._ignore_regex = options_list['ignoreRegex'].get_value()
         self._follow_regex = options_list['followRegex'].get_value()
         self._compile_re()
-    
+
     def _compile_re(self):
         '''
         Compile the regular expressions that are going to be used to ignore
@@ -392,15 +395,15 @@ class web_spider(CrawlPlugin):
         # Compilation of this regex can't fail because it was already
         # verified as valid at regex_option.py: see REGEX in get_options()
         self._compiled_follow_re = re.compile(self._follow_regex)
-            
-    def get_long_desc( self ):
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin is a classic web spider, it will request a URL and extract
         all links and forms from the response.
-    
+
         Three configurable parameter exist:
             - onlyForward
             - ignoreRegex
@@ -410,12 +413,11 @@ class web_spider(CrawlPlugin):
         to spider all URLs except the "logout" or some other more exciting link
         like "Reboot Appliance" that would make the w3af run finish without the
         expected result.
-        
-        By default ignoreRegex is an empty string (nothing is ignored) and 
-        followRegex is '.*' (everything is followed). Both regular expressions 
+
+        By default ignoreRegex is an empty string (nothing is ignored) and
+        followRegex is '.*' (everything is followed). Both regular expressions
         are normal regular expressions that are compiled with the python's re module.
-        
+
         The regular expressions are applied to the URLs that are found using the
         match function.
         '''
-

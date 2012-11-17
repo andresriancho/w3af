@@ -33,29 +33,34 @@ class TestURLParser(unittest.TestCase):
     #
     def decode_get_qs(self, url_str):
         return URL(url_str).urlDecode().querystring['id'][0]
-        
+
     def test_decode_simple(self):
-        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1')
+        qs_value = self.decode_get_qs(
+            u'https://w3af.com:443/xyz/file.asp?id=1')
         EXPECTED = '1'
         self.assertEqual(qs_value, EXPECTED)
-        
+
     def test_decode_perc_20(self):
-        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1%202')
+        qs_value = self.decode_get_qs(
+            u'https://w3af.com:443/xyz/file.asp?id=1%202')
         EXPECTED = u'1 2'
         self.assertEqual(qs_value, EXPECTED)
-        
-    def test_decode_space(self):    
-        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1 2')
+
+    def test_decode_space(self):
+        qs_value = self.decode_get_qs(
+            u'https://w3af.com:443/xyz/file.asp?id=1 2')
         EXPECTED = u'1 2'
         self.assertEqual(qs_value, EXPECTED)
-        
-    def test_decode_plus(self):    
-        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1+2')
+
+    def test_decode_plus(self):
+        qs_value = self.decode_get_qs(
+            u'https://w3af.com:443/xyz/file.asp?id=1+2')
         EXPECTED = u'1+2'
         self.assertEqual(qs_value, EXPECTED)
-        
-    def test_decode_url_encode_plus(self):    
-        qs_value = self.decode_get_qs(u'https://w3af.com:443/xyz/file.asp?id=1%2B2')
+
+    def test_decode_url_encode_plus(self):
+        qs_value = self.decode_get_qs(
+            u'https://w3af.com:443/xyz/file.asp?id=1%2B2')
         EXPECTED = u'1+2'
         self.assertEqual(qs_value, EXPECTED)
 
@@ -66,48 +71,48 @@ class TestURLParser(unittest.TestCase):
         res_str = URL(u'http://w3af.com').urlEncode()
         EXPECTED = 'http://w3af.com/'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_perc_20(self):
         res_str = URL(u'https://w3af.com:443/file.asp?id=1%202').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%202'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_space(self):
         res_str = URL(u'https://w3af.com:443/file.asp?id=1 2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%202'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_plus(self):
         msg = '''
         When parsing an HTML document that has a link like the one below, can
         the browser (or in this case w3af) know the original intent of the web
         developer?
-        
+
         Was he trying to put a space or a real "+" ? At the moment of writing
         these lines, w3af thinks that the user is trying to put a "+", so it
         will encode it as a %2B for sending to the wire.
         '''
         raise SkipTest(msg)
-    
+
         res_str = URL(u'https://w3af.com:443/file.asp?id=1+2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1+2'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_url_encode_plus(self):
         res_str = URL(u'https://w3af.com:443/file.asp?id=1%2B2').urlEncode()
         EXPECTED = 'https://w3af.com:443/file.asp?id=1%2B2'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_math(self):
         res_str = URL(u'http://w3af.com/x.py?ec=x*y/2==3').urlEncode()
         EXPECTED = 'http://w3af.com/x.py?ec=x%2Ay%2F2%3D%3D3'
         self.assertEqual(res_str, EXPECTED)
-    
+
     def test_encode_param(self):
         res_str = URL(u'http://w3af.com/x.py;id=1?y=3').urlEncode()
         EXPECTED = 'http://w3af.com/x.py;id=1?y=3'
         self.assertEqual(res_str, EXPECTED)
-        
+
     def test_decode_encode(self):
         '''Encode and Decode should be able to run one on the result of the
         other and return the original'''
@@ -123,4 +128,3 @@ class TestURLParser(unittest.TestCase):
         encoded = original.urlEncode()
         decoded = URL(encoded).urlDecode()
         self.assertEqual(original, decoded)
-        

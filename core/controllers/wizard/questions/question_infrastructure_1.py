@@ -31,46 +31,45 @@ class question_infrastructure_1(question):
     This is the first question of the wizard, where you have to speficy the target.
     '''
     def __init__(self, w3af_core):
-        question.__init__( self, w3af_core )
-    
+        question.__init__(self, w3af_core)
+
         self._question_id = 'infrastructure_1'
 
         self._question_title = 'Target URL'
-        
+
         self._question_str = 'In this step you should specify the URL of the target web application.'
         self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
         self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
-        
+
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
         self._d1 = 'Target URL'
-        o1 = opt_factory( 'target','http://', self._d1, 'list')
-    
+        o1 = opt_factory('target', 'http://', self._d1, 'list')
+
         ol = OptionList()
         ol.add(o1)
 
         return ol
-        
-    def getNextQuestionId(self,  options_list ):
+
+    def getNextQuestionId(self, options_list):
         # I don't care about the target OS for these tests, so I add them here with the default value
-        o2 = opt_factory('targetOS','unknown', '', 'string')
-        o3 = opt_factory('targetFramework','unknown', '', 'string')
-        
+        o2 = opt_factory('targetOS', 'unknown', '', 'string')
+        o3 = opt_factory('targetFramework', 'unknown', '', 'string')
+
         #   Manually copy the OptionList... the copy.deepcopy method fails :(
         ol_copy = OptionList()
         for o in options_list:
             ol_copy.add(o)
-       
+
         # Get the "Target URL" and change it back to "target" so the core can understand it
         o1 = ol_copy['target']
         ol_copy.add(o2)
         ol_copy.add(o3)
-        
+
         # Save the target to the core, all the validations are made there.
-        self.w3af_core.target.set_options( ol_copy )
+        self.w3af_core.target.set_options(ol_copy)
 
         # The next question
         return 'infrastructure_2'
-

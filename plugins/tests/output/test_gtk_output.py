@@ -26,7 +26,7 @@ from plugins.output.gtk_output import gtk_output
 
 
 class TestGTKOutput(unittest.TestCase):
-    
+
     def setUp(self):
         self.plugin = gtk_output()
 
@@ -39,23 +39,22 @@ class TestGTKOutput(unittest.TestCase):
         self.plugin.vulnerability('3')
         self.plugin.debug('4')
         self.plugin.error('5')
-        
+
         gtk_output_queue = kb.kb.get('gtk_output', 'queue')
-        
+
         EXPECTED = set([
-                        ('console','1'),
-                        ('information','2'),
-                        ('vulnerability','3'),
-                        ('debug',''), # Note that this empty string is correct
-                        ('error','5'),]
-                    )
-        
+            ('console', '1'),
+            ('information', '2'),
+            ('vulnerability', '3'),
+            ('debug', ''),
+            # Note that this empty string is correct
+            ('error', '5'), ]
+        )
+
         from_queue = set()
-        
+
         while gtk_output_queue.qsize() > 0:
             msg = gtk_output_queue.get()
-            from_queue.add( (msg.get_type(), msg.getMsg() ) )
-            
-        self.assertEquals( from_queue, EXPECTED )
-        
-        
+            from_queue.add((msg.get_type(), msg.getMsg()))
+
+        self.assertEquals(from_queue, EXPECTED)

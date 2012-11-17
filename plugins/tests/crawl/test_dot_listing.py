@@ -22,47 +22,48 @@ import os
 
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.dot_listing import dot_listing
- 
+
 
 class TestDotListing(PluginTest):
-    
+
     base_url = 'https://moth/w3af/crawl/dot_listing/'
-    
+
     _run_config = {
-            'target': base_url,
-            'plugins': {'crawl': (PluginConfig('dot_listing'),)}
-        }
-    
+        'target': base_url,
+        'plugins': {'crawl': (PluginConfig('dot_listing'),)}
+    }
+
     def test_dot_listing(self):
-        self._scan( self._run_config['target'], self._run_config['plugins'] )
-        
+        self._scan(self._run_config['target'], self._run_config['plugins'])
+
         infos = self.kb.get('dot_listing', 'dot_listing')
-        self.assertEqual( len(infos), 2)
-        
-        self.assertEqual( set(['.listing file found', 'Operating system username and group leak']),
-                          set([i.get_name() for i in infos]))
-        self.assertEqual( set([self.base_url + '.listing'] * 2),
-                          set([i.getURL().url_string for i in infos]))
-        
+        self.assertEqual(len(infos), 2)
+
+        self.assertEqual(
+            set(['.listing file found',
+                'Operating system username and group leak']),
+            set([i.get_name() for i in infos]))
+        self.assertEqual(set([self.base_url + '.listing'] * 2),
+                         set([i.getURL().url_string for i in infos]))
 
         urls = self.kb.get('urls', 'url_objects')
-        urls = [ url.url_string for url in urls ]
-        
-        self.assertTrue( self.base_url + '.listing' in urls )
-        self.assertTrue( self.base_url + 'hidden.txt' in urls )
-        
-        
+        urls = [url.url_string for url in urls]
+
+        self.assertTrue(self.base_url + '.listing' in urls)
+        self.assertTrue(self.base_url + 'hidden.txt' in urls)
+
     def test_listing_extraction(self):
-        listing_files_path = os.path.join('plugins', 'tests', 'crawl', 'dot_listing')
+        listing_files_path = os.path.join(
+            'plugins', 'tests', 'crawl', 'dot_listing')
         file_name_fmt = 'listing_test_%s.txt'
-        
+
         dot_listing_inst = dot_listing()
-        
+
         users = set()
         groups = set()
-        files = set()        
-        
-        for i in xrange(1,4):
+        files = set()
+
+        for i in xrange(1, 4):
             file_name = file_name_fmt % i
             file_path = os.path.join(listing_files_path, file_name)
             file_content = file(file_path).read()
@@ -70,16 +71,15 @@ class TestDotListing(PluginTest):
                 users.add(user)
                 groups.add(group)
                 files.add(filename)
-        
+
         self.assertGreater(len(files), 20)
-        
+
         self.assertTrue('stepstolife' in users)
         self.assertTrue('1193040' in users)
-        
+
         self.assertTrue('1000007' in groups)
         self.assertTrue('psaserv' in groups)
-        
+
         self.assertTrue('_vti_cnf.exe' in files)
         self.assertTrue('salvage_2.html' in files)
         self.assertTrue('GodRest.mid' in files)
-            

@@ -38,34 +38,34 @@ from core.data.options.option_list import OptionList
 class web_diff(CrawlPlugin):
     '''
     Compare a local directory with a remote URL path.
-    
-    @author: Andres Riancho (andres.riancho@gmail.com)  
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-        
+
         # Internal variables
         self._first = True
         self._start_path = None
-        
+
         self._not_exist_remote = []
         self._exist_remote = []
-        
+
         self._not_eq_content = []
         self._eq_content = []
-        
+
         # Configuration
         self._ban_url = ['asp', 'jsp', 'php']
         self._content = True
         self._local_dir = ''
         self._remote_url_path = 'http://host.tld/'
-    
+
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
         '''
         GET's local files one by one until done.
-        
+
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
@@ -75,9 +75,9 @@ class web_diff(CrawlPlugin):
         else:
             msg = 'web_diff plugin: You need to configure a local directory'\
                   ' and a remote URL to use in the diff process.'
-            raise w3afException( msg )
-    
-    def _generate_report( self ):
+            raise w3afException(msg)
+
+    def _generate_report(self):
         '''
         Generates a report based on:
             - self._not_exist_remote
@@ -85,53 +85,53 @@ class web_diff(CrawlPlugin):
             - self._exist_remote
             - self._eq_content
         '''
-        if len( self._exist_remote ):
+        if len(self._exist_remote):
             msg = 'The following files exist in the local directory and in the'\
                   ' remote server:'
-            om.out.information( msg )
+            om.out.information(msg)
             for file_name in self._exist_remote:
-                om.out.information('- '+ file_name)
-        
-        if len( self._eq_content ):
+                om.out.information('- ' + file_name)
+
+        if len(self._eq_content):
             msg = 'The following files exist in the local directory and in the'\
                   ' remote server and their contents match:'
             om.out.information(msg)
             for file_name in self._eq_content:
-                om.out.information('- '+ file_name)
+                om.out.information('- ' + file_name)
 
-        if len( self._not_exist_remote ):
+        if len(self._not_exist_remote):
             msg = 'The following files exist in the local directory and do NOT'\
                   ' exist in the remote server:'
             om.out.information(msg)
             for file_name in self._not_exist_remote:
-                om.out.information('- '+ file_name)
-        
-        if len( self._not_eq_content ):
+                om.out.information('- ' + file_name)
+
+        if len(self._not_eq_content):
             msg = 'The following files exist in the local directory and in the'\
                   ' remote server but their contents don\'t match:'
             om.out.information(msg)
             for file_name in self._not_eq_content:
-                om.out.information('- '+ file_name)
-        
+                om.out.information('- ' + file_name)
+
         exist = len(self._exist_remote)
         total = len(self._exist_remote) + len(self._not_exist_remote)
         file_stats = '%s of %s' % (exist, total)
-        om.out.information('Match files: ' + file_stats )
-        
+        om.out.information('Match files: ' + file_stats)
+
         if self._content:
             eq_content = len(self._eq_content)
             total = len(self._eq_content) + len(self._not_eq_content)
             content_stats = '%s of %s' % (eq_content, total)
-            om.out.information('Match contents: ' + content_stats )
+            om.out.information('Match contents: ' + content_stats)
 
-    def _compare_dir( self, arg, directory, flist ):
+    def _compare_dir(self, arg, directory, flist):
         '''
         This function is the callback function called from os.path.walk, python's
         help says:
-        
+
         walk(top, func, arg)
             Directory tree walk with callback function.
-        
+
             For each directory in the directory tree rooted at top (including top
             itself, but excluding '.' and '..'), call func(arg, dirname, fnames).
             dirname is the name of the directory, and fnames a list of the names of
@@ -148,83 +148,85 @@ class web_diff(CrawlPlugin):
         if self._first:
             self._first = False
             self._start_path = directory
-        
-        relative_dir = directory.replace(self._start_path,'')
+
+        relative_dir = directory.replace(self._start_path, '')
         if relative_dir and not relative_dir.endswith('/'):
             relative_dir += '/'
-            
+
         remote_root = self._remote_url_path
         remote_root_with_local_path = remote_root.urlJoin(relative_dir)
-        
+
         for fname in flist:
-            if os.path.isfile( directory + os.path.sep + fname ):
-                
-                url = remote_root_with_local_path.urlJoin( fname )
-                response = self._uri_opener.GET( url, cache=True )
-            
-                if not is_404( response ):
+            if os.path.isfile(directory + os.path.sep + fname):
+
+                url = remote_root_with_local_path.urlJoin(fname)
+                response = self._uri_opener.GET(url, cache=True)
+
+                if not is_404(response):
                     if response.is_text_or_html():
-                        for fr in self._create_fuzzable_requests( response ):
+                        for fr in self._create_fuzzable_requests(response):
                             self.output_queue.put(fr)
-                    self._check_content( response, directory + os.path.sep + fname )
-                    self._exist_remote.append( url )
+                    self._check_content(
+                        response, directory + os.path.sep + fname)
+                    self._exist_remote.append(url)
                 else:
-                    self._not_exist_remote.append( url )
-        
-    def _check_content( self, response, file_name ):
+                    self._not_exist_remote.append(url)
+
+    def _check_content(self, response, file_name):
         '''
         Check if the contents match.
         '''
         if self._content:
             if file_name.count('.'):
-                extension = os.path.splitext( file_name )[1].replace('.', '')
-                
+                extension = os.path.splitext(file_name)[1].replace('.', '')
+
                 if extension in self._ban_url:
                     return
-                
+
                 try:
-                    local_content = open( file_name, 'r' ).read()
+                    local_content = open(file_name, 'r').read()
                 except:
                     om.out.debug('Failed to open file: "%s".' % file_name)
                 else:
                     if local_content == response.getBody():
-                        self._eq_content.append( response.getURL() )
+                        self._eq_content.append(response.getURL())
                     else:
-                        self._not_eq_content.append( response.getURL() )
-    
-    def get_options( self ):
+                        self._not_eq_content.append(response.getURL())
+
+    def get_options(self):
         '''
         @return: A list of option objects for this plugin.
         '''
         ol = OptionList()
-        
+
         d = 'When comparing, also compare the content of files.'
         o = opt_factory('content', self._content, d, BOOL)
         ol.add(o)
-        
+
         d = 'The local directory used in the comparison.'
         o = opt_factory('local_dir', self._local_dir, d, STRING)
         ol.add(o)
-        
+
         d = 'The remote directory used in the comparison.'
-        o = opt_factory('remote_url_path', self._remote_url_path, d, URL_OPTION_TYPE)
+        o = opt_factory(
+            'remote_url_path', self._remote_url_path, d, URL_OPTION_TYPE)
         ol.add(o)
-        
+
         d = 'When comparing content of two files, ignore files with these'\
             'extensions.'
         o = opt_factory('banned_ext', self._ban_url, d, LIST)
         ol.add(o)
-        
+
         return ol
 
-    def set_options( self, options_list ):
+    def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface 
+        This method sets all the options that are configured using the user interface
         generated by the framework using the result of get_options().
-        
+
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
-        ''' 
+        '''
         url = options_list['remote_url_path'].get_value()
         self._remote_url_path = url.getDomainPath()
 
@@ -234,12 +236,11 @@ class web_diff(CrawlPlugin):
         else:
             msg = 'Error in user configuration: "%s" is not a directory.'
             raise w3afException(msg % local_dir)
-        
+
         self._content = options_list['content'].get_value()
         self._ban_url = options_list['banned_ext'].get_value()
-        
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
@@ -247,20 +248,20 @@ class web_diff(CrawlPlugin):
         This plugin tries to do a diff of two directories, a local and a remote
         one. The idea is to mimic the functionality implemented by the linux
         command "diff" when invoked with two directories.
-        
+
         Four configurable parameter exist:
             - local_dir
             - remote_url_path
             - banned_ext
             - content
-            
+
         This plugin will read the file list inside "local_dir", and for each file
         it will request the same filename from the "remote_url_path", matches and
         failures are recorded and saved.
-        
+
         The content of both files is checked only if "content" is set to True
         and the file extension isn't in the "banned_ext" list.
-        
+
         The "banned_ext" list should be used to ban script extensions like ASP,
         PHP, etc.
         '''

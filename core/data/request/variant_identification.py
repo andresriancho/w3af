@@ -30,7 +30,7 @@ def are_variants(uri, other_uri):
         - have the same method
         - have the same parameters
         - values for each parameter have the same type (int/string)
-    
+
     @param uri: The URI we want to analyze
     @param other_uri: The other URI we want to analyze
     @return: True if the URLs are variants.
@@ -38,31 +38,30 @@ def are_variants(uri, other_uri):
     '''
     if uri.getDomain() != other_uri.getDomain():
         return False
-    
+
     if uri.getPath() != other_uri.getPath():
         return False
-    
+
     if not uri.hasQueryString() and not other_uri.hasQueryString():
         # No QS and same Domain
         return True
-    
+
     if uri.hasQueryString() and other_uri.hasQueryString():
         dc = uri.querystring
         odc = other_uri.querystring
 
         if dc.keys() != odc.keys():
             return False
-        
-        for vself, vother in izip_longest(
-                                  chain(*dc.values()),
-                                  chain(*odc.values()),
-                                  fillvalue=None
-                                  ):
-            if None in (vself, vother) or \
-                vself.isdigit() != vother.isdigit():
-                return False
-        
-        return True
-    
-    return False    
 
+        for vself, vother in izip_longest(
+            chain(*dc.values()),
+            chain(*odc.values()),
+            fillvalue=None
+        ):
+            if None in (vself, vother) or \
+                    vself.isdigit() != vother.isdigit():
+                return False
+
+        return True
+
+    return False

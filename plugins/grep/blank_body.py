@@ -29,14 +29,14 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class blank_body(GrepPlugin):
     '''
     Find responses with empty body.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_reported = ScalableBloomFilter()
-        
+
     def grep(self, request, response):
         '''
         Plugin entry point, find the blank bodies and report them.
@@ -46,31 +46,32 @@ class blank_body(GrepPlugin):
         @return: None
         '''
         if response.getBody() == '' and request.get_method() in ['GET', 'POST']\
-        and response.getCode() not in [401, 304, 302, 301, 204]\
-        and 'location' not in response.getLowerCaseHeaders()\
-        and response.getURL() not in self._already_reported:
-            
+            and response.getCode() not in [401, 304, 302, 301, 204]\
+            and 'location' not in response.getLowerCaseHeaders()\
+                and response.getURL() not in self._already_reported:
+
             #   report these informations only once
-            self._already_reported.add( response.getURL() )
-            
+            self._already_reported.add(response.getURL())
+
             #   append the info object to the KB.
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Blank body')
-            i.setURL( response.getURL() )
-            i.set_id( response.id )
-            msg = 'The URL: "'+ response.getURL()  + '" returned an empty body. '
+            i.setURL(response.getURL())
+            i.set_id(response.id)
+            msg = 'The URL: "' + response.getURL() + \
+                '" returned an empty body. '
             msg += 'This could indicate an error.'
             i.set_desc(msg)
-            kb.kb.append( self, 'blank_body', i )
-        
+            kb.kb.append(self, 'blank_body', i)
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'blank_body', 'blank_body' ), None )
-    
-    def get_long_desc( self ):
+        self.print_uniq(kb.kb.get('blank_body', 'blank_body'), None)
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

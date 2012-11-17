@@ -25,54 +25,54 @@ from plugins.crawl.find_dvcs import find_dvcs
 
 
 class TestFindDVCS(PluginTest):
-    
+
     base_url = 'http://moth/w3af/crawl/find_dvcs/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('find_dvcs'),
                                   PluginConfig('web_spider',
-                                         ('onlyForward', True, PluginConfig.BOOL)),)}
-            }
+                                               ('onlyForward', True, PluginConfig.BOOL)),)}
         }
-    
+    }
+
     def test_dvcs(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         vulns_git = self.kb.get('find_dvcs', 'git repository')
         vulns_bzr = self.kb.get('find_dvcs', 'bzr repository')
         vulns_hg = self.kb.get('find_dvcs', 'hg repository')
         vulns_svn = self.kb.get('find_dvcs', 'svn repository')
         vulns_cvs = self.kb.get('find_dvcs', 'cvs repository')
-        
-        self.assertEqual( len(vulns_git), 1, vulns_git )
-        self.assertEqual( len(vulns_bzr), 1, vulns_bzr )
-        self.assertEqual( len(vulns_hg), 1, vulns_hg )
+
+        self.assertEqual(len(vulns_git), 1, vulns_git)
+        self.assertEqual(len(vulns_bzr), 1, vulns_bzr)
+        self.assertEqual(len(vulns_hg), 1, vulns_hg)
         #FIXME: What to do about dups?
-        self.assertTrue( len(vulns_svn) > 0, vulns_svn )
-        self.assertTrue( len(vulns_cvs) > 0, vulns_cvs )
-        
+        self.assertTrue(len(vulns_svn) > 0, vulns_svn)
+        self.assertTrue(len(vulns_cvs) > 0, vulns_cvs)
+
         for repo in ('git', 'bzr', 'hg', 'svn', 'cvs'):
-            
+
             vuln_repo = self.kb.get('find_dvcs', repo + ' repository')[0]
-            
+
             expected_url_1 = self.base_url + repo
             expected_url_2 = self.base_url + '.' + repo
             url_start = vuln_repo.getURL().url_string.startswith(expected_url_1) or \
-                        vuln_repo.getURL().url_string.startswith(expected_url_2)
-            
-            self.assertTrue(url_start, vuln_repo.getURL().url_string)
-            
-            self.assertEqual(vuln_repo.get_severity(), severity.MEDIUM)
-            self.assertEqual(vuln_repo.get_name(), repo + ' repository found' )
+                vuln_repo.getURL(
+                ).url_string.startswith(expected_url_2)
 
+            self.assertTrue(url_start, vuln_repo.getURL().url_string)
+
+            self.assertEqual(vuln_repo.get_severity(), severity.MEDIUM)
+            self.assertEqual(vuln_repo.get_name(), repo + ' repository found')
 
     def test_ignore_file_blank(self):
         fdvcs = find_dvcs()
         files = fdvcs.ignore_file('')
-        
+
         self.assertEqual(files, set())
 
     def test_ignore_file_two_files_comment(self):
@@ -83,8 +83,5 @@ class TestFindDVCS(PluginTest):
         spam.eggs
         '''
         files = fdvcs.ignore_file(content)
-        
-        self.assertEqual(files, set(['foo.txt', 'spam.eggs']))
 
-    
-    
+        self.assertEqual(files, set(['foo.txt', 'spam.eggs']))

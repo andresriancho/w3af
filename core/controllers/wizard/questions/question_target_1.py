@@ -30,26 +30,26 @@ class question_target_1(question):
     This is the first question of the wizard, where you have to specify the target.
     '''
     def __init__(self, w3af_core):
-        question.__init__( self, w3af_core )
-    
+        question.__init__(self, w3af_core)
+
         self._question_id = 'target_1'
 
         self._question_title = 'Target URL'
-        
+
         self._question_str = 'In this step you should specify the URL of the target web application.'
         self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
         self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
-        
+
     def _getOptionObjects(self):
         '''
         @return: A list of options for this question.
         '''
 
         d1 = 'Target URL'
-        o1 = opt_factory('target','', d1, 'list')
-        
-        o2 = opt_factory('targetOS','unknown', d1, 'string')
-        o3 = opt_factory('targetFramework','unknown', d1, 'string')
+        o1 = opt_factory('target', '', d1, 'list')
+
+        o2 = opt_factory('targetOS', 'unknown', d1, 'string')
+        o3 = opt_factory('targetFramework', 'unknown', d1, 'string')
 
         ol = OptionList()
         ol.add(o1)
@@ -57,11 +57,10 @@ class question_target_1(question):
         ol.add(o3)
 
         return ol
-        
-    def getNextQuestionId(self,  options_list ):
+
+    def getNextQuestionId(self, options_list):
         # Save the target to the core, all the validations are made there.
-        self.w3af_core.target.set_options( options_list )
+        self.w3af_core.target.set_options(options_list)
 
         # The next question
         return 'target_2'
-

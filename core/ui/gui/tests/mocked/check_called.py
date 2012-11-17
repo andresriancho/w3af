@@ -8,6 +8,7 @@
     :license: LGPL 2 or later (see README/COPYING/LICENSE)
 """
 
+
 class CheckCalled(object):
     """Utility to check whether a signal has been emitted
 

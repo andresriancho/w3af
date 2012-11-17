@@ -28,46 +28,46 @@ from core.controllers.daemons.proxy import proxy, w3afProxyHandler
 
 
 class TestProxy(unittest.TestCase):
-    
+
     IP = '127.0.0.1'
     PORT = 44445
-    
+
     def setUp(self):
         # Start the proxy server
         create_temp_dir()
-        
+
         last_exception = None
-        
-        for port in xrange(self.PORT, self.PORT+10):
+
+        for port in xrange(self.PORT, self.PORT + 10):
             try:
                 self._proxy = proxy(self.IP, port, xUrllib(), w3afProxyHandler)
                 self._proxy.start()
             except Exception, e:
-                last_exception = e 
+                last_exception = e
             else:
                 # Build the proxy opener
                 proxy_handler = urllib2.ProxyHandler({"http": "http://%s:%s"
-                                                  % (self.IP, port)})
+                                                      % (self.IP, port)})
                 self.proxy_opener = urllib2.build_opener(proxy_handler,
-                                                     urllib2.HTTPHandler)
+                                                         urllib2.HTTPHandler)
                 break
         else:
             raise last_exception
-    
+
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open('http://moth').read()
-        
+
         # Basic check
         self.assertTrue(len(resp_body) > 0)
-        
+
         # Get response using the proxy
         proxy_resp = self.proxy_opener.open('http://moth')
         # Get it without any proxy
         direct_resp = urllib2.urlopen('http://moth')
-        
+
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
-        
+
         # Have to remove the Date header because in some cases they differ because
         # one request was sent in second X and the other in X+1, which makes the
         # test fail
@@ -79,15 +79,15 @@ class TestProxy(unittest.TestCase):
 
     def test_do_SSL_req_through_proxy(self):
         resp_body = self.proxy_opener.open('https://moth').read()
-        
+
         # Basic check
         self.assertTrue(len(resp_body) > 0)
-        
+
         # Get response using the proxy
         proxy_resp = self.proxy_opener.open('https://moth')
         # Get it without any proxy
         direct_resp = urllib2.urlopen('https://moth')
-        
+
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
 
@@ -100,9 +100,8 @@ class TestProxy(unittest.TestCase):
         del proxy_resp_headers['date']
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
-    
     def test_prox_req_ok(self):
-        '''Test if self._proxy.stop() works as expected. Note that the check 
+        '''Test if self._proxy.stop() works as expected. Note that the check
         content is the same as the previous check, but it might be that this
         check fails because of some error in start() or stop() which is run
         during setUp and tearDown.'''
@@ -112,7 +111,7 @@ class TestProxy(unittest.TestCase):
         resp = urllib2.urlopen('http://moth').read()
         # They must be very similar
         self.assertEqual(resp, proxy_resp)
-    
+
     def tearDown(self):
         # Shutdown the proxy server
         self._proxy.stop()

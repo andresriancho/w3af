@@ -24,9 +24,9 @@ from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 # This import can't fail, it is pure-python love ;)
 from core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter\
-                                                 as FileSeekFilter
+    as FileSeekFilter
 
- 
+
 try:
     # This might fail since it is a C library that only works in Linux
     from pybloomfilter import BloomFilter as CMmapFilter
@@ -43,11 +43,11 @@ try:
         WrappedBloomFilter = FileSeekFilter
     else:
         WrappedBloomFilter = CMmapFilter
-    
+
 except:
     WrappedBloomFilter = FileSeekFilter
 
-    
+
 class BloomFilter(GenericBloomFilter):
     def __init__(self, capacity, error_rate):
         '''
@@ -55,6 +55,6 @@ class BloomFilter(GenericBloomFilter):
         @param error_rate: The acceptable false positive rate, eg. 0.001
         '''
         GenericBloomFilter.__init__(self, capacity, error_rate)
-        
+
         temp_file = self.get_temp_file()
         self.bf = WrappedBloomFilter(capacity, error_rate, temp_file)

@@ -30,9 +30,9 @@ from core.controllers.plugins.grep_plugin import GrepPlugin
 
 def luhnCheck(value):
     '''
-    The Luhn check against the value which can be an array of digits, 
+    The Luhn check against the value which can be an array of digits,
     numeric string or a positive integer.
-    
+
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
     # Prepare the value to be analyzed.
@@ -41,12 +41,12 @@ def luhnCheck(value):
         if c.isdigit():
             arr.append(int(c))
     arr.reverse()
-    
+
     # Analyze
-    for idx in [i for i in range(len(arr)) if i%2]:
+    for idx in [i for i in range(len(arr)) if i % 2]:
         d = arr[idx] * 2
         if d > 9:
-            d = d/10 + d % 10
+            d = d / 10 + d % 10
         arr[idx] = d
 
     sm = sum(arr)
@@ -59,7 +59,6 @@ class credit_cards(GrepPlugin):
 
     @author Alexander Berezhnoy (alexander.berezhnoy |at| gmail.com)
     '''
-    
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -76,7 +75,6 @@ class credit_cards(GrepPlugin):
 
         self._cc_regex = re.compile(cc_regex, re.M)
 
-        
     def grep(self, request, response):
         '''
         Plugin entry point, search for the credit cards.
@@ -85,22 +83,22 @@ class credit_cards(GrepPlugin):
         @return: None
         '''
         if response.is_text_or_html() and response.getCode() == 200 \
-        and response.getClearTextBody() is not None:
-            
-            found_cards = self._find_card( response.getClearTextBody() )
-            
+                and response.getClearTextBody() is not None:
+
+            found_cards = self._find_card(response.getClearTextBody())
+
             for card in found_cards:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL( response.getURL() )
-                v.set_id( response.id )
+                v.setURL(response.getURL())
+                v.set_id(response.id)
                 v.set_severity(severity.LOW)
-                v.set_name( 'Credit card number disclosure' )
+                v.set_name('Credit card number disclosure')
                 v.addToHighlight(card)
                 msg = 'The URL: "%s" discloses the credit card number: "%s"'
-                v.set_desc( msg % (v.getURL(), card) )
-                kb.kb.append( self, 'credit_cards', v )
-     
+                v.set_desc(msg % (v.getURL(), card))
+                kb.kb.append(self, 'credit_cards', v)
+
     def _find_card(self, body):
         '''
         @return: A list of matching credit card numbers
@@ -116,20 +114,18 @@ class credit_cards(GrepPlugin):
 
         return res
 
-    
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'credit_cards', 'credit_cards' ), 'URL' )
+        self.print_uniq(kb.kb.get('credit_cards', 'credit_cards'), 'URL')
 
-     
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugins scans every response page to find the strings that are 
+        This plugins scans every response page to find the strings that are
         likely to be credit card numbers. It can be tested against the following
         URL:
             - https://www.paypal.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm

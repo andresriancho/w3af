@@ -33,31 +33,30 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 class meta_tags(GrepPlugin):
     '''
     Grep every page for interesting meta tags.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     '''
     Can someone explain what this meta tag does?
-    <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2LXYrdnnK50g7kdY=" /> 
-    
+    <meta name="verify-v1" content="/JBoXnwT1d7TbbWCwL8tXe+Ts2I2LXYrdnnK50g7kdY=" />
+
     Answer:
     That's one of the verification elements used by Google Sitemaps. When you sign up
     for Sitemaps you have to add that element to a root page to demonstrate to Google that
-    you're the site owner. So there is probably a Sitemaps account for the site, if you 
-    haven't found it already. 
+    you're the site owner. So there is probably a Sitemaps account for the site, if you
+    haven't found it already.
     '''
-    INTERESTING_WORDS = {'user':None, 'pass':None, 'microsoft':None,
-                         'visual':None, 'linux':None, 'source':None,
-                         'author':None, 'release':None,'version':None,
-                         'verify-v1':'Google Sitemap' }
+    INTERESTING_WORDS = {'user': None, 'pass': None, 'microsoft': None,
+                         'visual': None, 'linux': None, 'source': None,
+                         'author': None, 'release': None, 'version': None,
+                         'verify-v1': 'Google Sitemap'}
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        
+
         self._already_inspected = ScalableBloomFilter()
-        
-       
+
     def grep(self, request, response):
         '''
         Plugin entry point, search for meta tags.
@@ -67,58 +66,60 @@ class meta_tags(GrepPlugin):
         @return: None
         '''
         uri = response.getURI()
-        
-        if response.is_text_or_html() and not is_404( response ) \
-        and uri not in self._already_inspected:
+
+        if response.is_text_or_html() and not is_404(response) \
+                and uri not in self._already_inspected:
 
             self._already_inspected.add(uri)
-            
+
             try:
-                dp = dpCache.dpc.get_document_parser_for( response )
+                dp = dpCache.dpc.get_document_parser_for(response)
             except w3afException:
                 pass
             else:
                 meta_tag_list = dp.get_meta_tags()
-                
+
                 for tag in meta_tag_list:
-                    tag_name = self._find_name( tag )
+                    tag_name = self._find_name(tag)
                     for attr in tag:
-                        
+
                         key = attr[0].lower()
                         val = attr[1].lower()
-                        
+
                         for word in self.INTERESTING_WORDS:
 
                             # Check if we have something interesting
                             # and WHERE that thing actually is
                             where = content = None
-                            if ( word in key ):
+                            if (word in key):
                                 where = 'name'
                                 content = key
-                            elif ( word in val ):
+                            elif (word in val):
                                 where = 'value'
                                 content = val
-                            
+
                             # Now... if we found something, report it =)
                             if where is not None:
                                 # The atribute is interesting!
                                 i = info.info()
                                 i.set_plugin_name(self.get_name())
                                 i.set_name('Interesting META tag')
-                                i.setURI( response.getURI() )
-                                i.set_id( response.id )
-                                msg = 'The URI: "' +  i.getURI() + '" sent a META tag with '
-                                msg += 'attribute '+ where +' "'+ content +'" which'
+                                i.setURI(response.getURI())
+                                i.set_id(response.id)
+                                msg = 'The URI: "' + \
+                                    i.getURI() + '" sent a META tag with '
+                                msg += 'attribute ' + \
+                                    where + ' "' + content + '" which'
                                 msg += ' looks interesting.'
-                                i.addToHighlight( where, content )
+                                i.addToHighlight(where, content)
                                 if self.INTERESTING_WORDS.get(tag_name, None):
                                     msg += ' The tag is used for '
-                                    msg += self.INTERESTING_WORDS[tag_name] + '.'
-                                i.set_desc( msg )
-                                kb.kb.append( self , 'meta_tags' , i )
+                                    msg += self.INTERESTING_WORDS[
+                                        tag_name] + '.'
+                                i.set_desc(msg)
+                                kb.kb.append(self, 'meta_tags', i)
 
-    
-    def _find_name( self, tag ):
+    def _find_name(self, tag):
         '''
         @return: the tag name.
         '''
@@ -126,14 +127,14 @@ class meta_tags(GrepPlugin):
             if attr[0].lower() == 'name':
                 return attr[1]
         return ''
-        
+
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq( kb.kb.get( 'meta_tags', 'meta_tags' ), 'URL' )
+        self.print_uniq(kb.kb.get('meta_tags', 'meta_tags'), 'URL')
 
-    def get_long_desc( self ):
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

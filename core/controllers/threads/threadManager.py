@@ -28,51 +28,52 @@ from core.controllers.threads.threadpool import Pool
 
 class ThreadManager(object):
     '''
-    This class manages threads. Note: This is just a wrapper around Pool 
-    
+    This class manages threads. Note: This is just a wrapper around Pool
+
     @author: Andres Riancho (andres.riancho@gmail.com)
-    ''' 
-    
+    '''
+
     MAX_THREADS = 20
-    
-    def __init__( self ):
+
+    def __init__(self):
         self._threadpool = None
-        
+
         # FIXME: Remove me (and potentially the whole threadmanager object)
         self._results = {}
-    
+
     @property
     def threadpool(self):
         if self._threadpool is None:
             self.start()
         return self._threadpool
-    
-    def start( self ):
-        self._threadpool = Pool(self.MAX_THREADS, worker_names='ThreadManagerWorker')
-        
+
+    def start(self):
+        self._threadpool = Pool(
+            self.MAX_THREADS, worker_names='ThreadManagerWorker')
+
     def apply_async(self, target, args=(), kwds={}, ownerObj=None):
-        
+
         assert len(kwds) == 0, 'The new ThreadPool does NOT support kwds.'
 
         if self._threadpool is None:
             self.start()
-        
+
         result = self._threadpool.apply_async(target, args)
-        self._results.setdefault(ownerObj, Queue.Queue() ).put(result)
-                
+        self._results.setdefault(ownerObj, Queue.Queue()).put(result)
+
         msg = '[thread manager] Successfully added function to threadpool.'
         msg += 'Work queue size: %s' % self._threadpool.in_qsize()
-        om.out.debug( msg )
-            
-    def join( self, ownerObj=None):
+        om.out.debug(msg)
+
+    def join(self, ownerObj=None):
         if self._threadpool is None:
             return
-        
+
         if ownerObj is None:
             # Means that I want to join all the threads
             self._threadpool.join()
             self._results = {}
-            
+
         else:
             # Only join the threads that were created for ownerObj
             while True:
@@ -85,8 +86,7 @@ class ThreadManager(object):
                     break
                 else:
                     result.get()
-            
-    
+
     def terminate(self):
         if self._threadpool is not None:
             self._threadpool.terminate()

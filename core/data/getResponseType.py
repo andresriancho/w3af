@@ -20,32 +20,34 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-def isTextOrHtml( headers ):
+
+def isTextOrHtml(headers):
     '''
     @return: Inspects if the type of the url passed as parameter and returns True
     if it is a Text of a html document.
     '''
     for key in headers.keys():
         if 'Content-Type'.lower() == key.lower():
-            _type = headers[ key ]
+            _type = headers[key]
             if _type.lower().count('txt') or _type.lower().count('html'):
                 return True
             else:
                 return False
-    
+
     return False
 
-def isPDF( headers ):
+
+def isPDF(headers):
     '''
     @return: Inspects if the type of the url passed as parameter and returns True
     if it is a PDF document.
     '''
     for key in headers.keys():
         if 'Content-Type'.lower() == key.lower():
-            _type = headers[ key ]
+            _type = headers[key]
             if _type.lower().count('pdf'):
                 return True
             else:
                 return False
-    
+
     return False

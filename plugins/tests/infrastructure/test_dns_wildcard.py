@@ -23,26 +23,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestDNSWildcard(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'infrastructure': (PluginConfig('dns_wildcard'),)}
-            }
         }
-    
+    }
+
     def test_wildcard(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         infos = self.kb.get('dns_wildcard', 'dns_wildcard')
-        
-        self.assertEqual( len(infos), 2, infos)
-        
+
+        self.assertEqual(len(infos), 2, infos)
+
         expected = set(['Default domain', 'No DNS wildcard'])
-        
-        self.assertEqual( expected,
-                          set([i.get_name() for i in infos]) )
-        
+
+        self.assertEqual(expected,
+                         set([i.get_name() for i in infos]))

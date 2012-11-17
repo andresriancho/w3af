@@ -25,12 +25,13 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_kerberos_config_files(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {}
 
     def test_kerberos_config_files(self):
-        result = exec_payload(self.shell, 'kerberos_config_files', use_api=True)
+        result = exec_payload(
+            self.shell, 'kerberos_config_files', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        
+
     def test_a_positive_test(self):
         raise SkipTest('FIXME: I need a positive test.')

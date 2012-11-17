@@ -34,43 +34,46 @@ from core.data.parsers.url import URL
 
 
 class test_code_disclosure(unittest.TestCase):
-    
+
     def setUp(self):
         self.plugin = code_disclosure()
         kb.kb.save('code_disclosure', 'code_disclosure', [])
-    
+
     def tearDown(self):
         self.plugin.end()
-    
+
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_ASP_code_disclosure(self, *args):
         body = 'header <% Response.Write("Hello World!") %> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 1 )
-    
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
+
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_PHP_code_disclosure(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 1 )
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 1)
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_blank(self, *args):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure(self, *args):
@@ -84,14 +87,15 @@ class test_code_disclosure(unittest.TestCase):
         suscipit non, tristique vel, ma<?uris. Curabitur vel lorem id nisl porta
         adipiscing. Suspendisse eu lectus. In nunc. Duis vulputate tristique
         enim. Donec quis lectus a justo imperdiet tempus."""
-        
+
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
-    
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
+
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_code_disclosure_xml(self, *args):
         body = '''
@@ -104,17 +108,19 @@ class test_code_disclosure(unittest.TestCase):
                 </note>'''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)
 
     @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
     def test_no_analysis_content_type(self, *args):
         body = 'header <? echo $a; ?> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'image/jpeg')])
-        response = HTTPResponse(200, body , headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
-        self.assertEqual( len(kb.kb.get('code_disclosure', 'code_disclosure')), 0 )
+        self.assertEqual(
+            len(kb.kb.get('code_disclosure', 'code_disclosure')), 0)

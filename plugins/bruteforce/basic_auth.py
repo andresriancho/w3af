@@ -38,40 +38,42 @@ class basic_auth(BruteforcePlugin):
     def __init__(self):
         BruteforcePlugin.__init__(self)
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Tries to bruteforce a basic HTTP auth. This is not fast!
-        
+
         @param freq: A FuzzableRequest
         '''
-        auth_url_list = [ i.getURL().getDomainPath() for i in 
-                          kb.kb.get( 'http_auth_detect', 'auth' )]
-        
+        auth_url_list = [i.getURL().getDomainPath() for i in
+                                 kb.kb.get('http_auth_detect', 'auth')]
+
         domain_path = freq.getURL().getDomainPath()
         if domain_path in auth_url_list and domain_path not in self._already_tested:
-                
+
                 # Save it (we don't want dups!)
-                self._already_tested.append( domain_path )
-                
+                self._already_tested.append(domain_path)
+
                 # Let the user know what we are doing
-                msg = 'Starting basic authentication bruteforce on URL: "' + domain_path + '".'
-                om.out.information( msg )
+                msg = 'Starting basic authentication bruteforce on URL: "' + \
+                    domain_path + '".'
+                om.out.information(msg)
 
-                up_generator = self._create_user_pass_generator( domain_path )
+                up_generator = self._create_user_pass_generator(domain_path)
 
-                self._bruteforce( domain_path, up_generator )
-                
-                om.out.information('No more user/password combinations available.')
-    
-    def _brute_worker( self, url, combination ):
+                self._bruteforce(domain_path, up_generator)
+
+                om.out.information(
+                    'No more user/password combinations available.')
+
+    def _brute_worker(self, url, combination):
         '''
         Try a user/password combination with HTTP basic authentication against
         a specific URL.
-        
+
         @param url: A string representation of an URL
         @param combination: A tuple that contains (user,pass)
         '''
-        # Remember that this worker is called from a thread which lives in a 
+        # Remember that this worker is called from a thread which lives in a
         # threadpool. If the worker finds something, it has to let the rest know
         # and the way we do that is by setting self._found.
         #
@@ -79,25 +81,25 @@ class basic_auth(BruteforcePlugin):
         # simply no-op
         if not self._found or not self._stop_on_first:
             user, passwd = combination
-            
+
             #
             # TODO: These four lines make the whole process *very* CPU hungry
             #       since we're creating a new xUrllib() for each user/password
             #       combination! In my test environment I achieve 100% CPU usage
             #
             uri_opener = xUrllib()
-            uri_opener.settings.setBasicAuth( url, user, passwd  )
+            uri_opener.settings.setBasicAuth(url, user, passwd)
             # The next lines replace the uri_opener opener with a new one that has
             # the basic auth settings configured
             uri_opener.settings.build_openers()
             uri_opener._opener = uri_opener.settings.get_custom_opener()
-            
+
             try:
-                response = uri_opener.GET( url, cache=False, grep=False )
+                response = uri_opener.GET(url, cache=False, grep=False)
             except w3afException, w3:
                 msg = 'Exception while bruteforcing basic authentication, error'
-                msg += ' message: "%s"' 
-                om.out.debug( msg % w3 )
+                msg += ' message: "%s"'
+                om.out.debug(msg % w3)
             else:
                 # GET was OK
                 if response.getCode() != 401:
@@ -105,34 +107,35 @@ class basic_auth(BruteforcePlugin):
                     v = vuln.vuln()
                     v.set_id(response.id)
                     v.set_plugin_name(self.get_name())
-                    v.setURL( url )
-                    v.set_desc( 'Found authentication credentials to: "'+ url +
-                    '". A correct user and password combination is: ' + user + '/' + passwd)
+                    v.setURL(url)
+                    v.set_desc('Found authentication credentials to: "' + url +
+                               '". A correct user and password combination is: ' + user + '/' + passwd)
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response
                     v.set_severity(severity.HIGH)
-                    v.set_name( 'Guessable credentials' )
-            
-                    kb.kb.append( self , 'auth' , v )
-                    om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
-    
-    def end( self ):
+                    v.set_name('Guessable credentials')
+
+                    kb.kb.append(self, 'auth', v)
+                    om.out.vulnerability(
+                        v.get_desc(), severity=v.get_severity())
+
+    def end(self):
         '''
         Configure the main urllib with the newly found credentials.
         '''
-        for v in kb.kb.get( 'basic_auth' , 'auth' ):
-            self._uri_opener.settings.setBasicAuth( v.getURL(),
-                                                    v['user'],
-                                                    v['pass'] )
-             
-    def get_long_desc( self ):
+        for v in kb.kb.get('basic_auth', 'auth'):
+            self._uri_opener.settings.setBasicAuth(v.getURL(),
+                                                   v['user'],
+                                                   v['pass'])
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
         This plugin bruteforces basic authentication logins.
-        
+
         Nine configurable parameters exist:
             - usersFile
             - stopOnFirst
@@ -143,16 +146,16 @@ class basic_auth(BruteforcePlugin):
             - useEmails
             - useProfiling
             - profilingNumber
-        
-        This plugin will take users from the file pointed by "usersFile", mail 
+
+        This plugin will take users from the file pointed by "usersFile", mail
         users found on the site and email addresses (if "useEmails" is set to True)
         and svn users found on the site ( if "useSvnUsers" is set to True ).
-        
+
         This plugin will take passwords from the file pointed by "passwdFile" and
         the result of the password profiling plugin (if "useProfiling" is set to
         True). The profilingNumber sets the number of results from the password
         profiling plugin to use in the password field.
-        
-        The "stopOnFirst" parameter indicates if the bruteforce will stop when 
+
+        The "stopOnFirst" parameter indicates if the bruteforce will stop when
         finding the first valid credentials or not.
         '''

@@ -25,9 +25,9 @@ from core.data.options.option_types import BOOL
 
 
 class BoolOption(BaseOption):
-    
+
     _type = BOOL
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -39,9 +39,9 @@ class BoolOption(BaseOption):
         if isinstance(value, bool):
             self._value = value
             return
-    
+
         self._value = self.validate(value)
-    
+
     def validate(self, value):
         if value.lower() == 'true':
             validated_value = True
@@ -50,5 +50,5 @@ class BoolOption(BaseOption):
         else:
             msg = 'Invalid boolean option value "%s".' % value
             raise w3afException(msg)
-        
+
         return validated_value

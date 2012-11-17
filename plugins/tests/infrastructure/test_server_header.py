@@ -23,26 +23,25 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestServerHeader(PluginTest):
-    
+
     base_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': base_url,
-                'plugins': {'infrastructure': (PluginConfig('server_header'),)}
-                }
+        'target': base_url,
+        'plugins': {'infrastructure': (PluginConfig('server_header'),)}
         }
-    
+    }
+
     def test_find_server_power(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         server = self.kb.get('server_header', 'server')
         pow_by = self.kb.get('server_header', 'poweredBy')
-        
-        self.assertEqual( len(server), 1, server)
-        self.assertEqual( len(pow_by), 1, pow_by)
 
-        self.assertEqual( server[0].get_name(), 'Server header')
-        self.assertEqual( pow_by[0].get_name(), '"x-powered-by" header')
-        
+        self.assertEqual(len(server), 1, server)
+        self.assertEqual(len(pow_by), 1, pow_by)
+
+        self.assertEqual(server[0].get_name(), 'Server header')
+        self.assertEqual(pow_by[0].get_name(), '"x-powered-by" header')

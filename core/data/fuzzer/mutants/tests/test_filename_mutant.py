@@ -28,69 +28,72 @@ from core.data.dc.data_container import DataContainer
 
 
 class TestFileNameMutant(unittest.TestCase):
-    
+
     def setUp(self):
         self.fuzzer_config = {'fuzz_url_filenames': True}
         self.payloads = ['abc', 'def']
-    
+
     def test_basics(self):
         divided_path = DataContainer()
         divided_path['start'] = ''
         divided_path['modified_part'] = 'ping!'
         divided_path['end'] = '.htm'
-        
-        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar.htm'))        
+
+        freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar.htm'))
         m = FileNameMutant(freq)
         m.set_mutant_dc(divided_path)
         m.set_var('modified_part')
         self.assertEqual(m.getURL().url_string,
                          u'http://www.w3af.com/foo/ping%21.htm')
-        
+
         expected_mod_value = 'The sent url filename is: "ping!.htm".'
         generated_mod_value = m.print_mod_value()
-        
+
         self.assertEqual(generated_mod_value, expected_mod_value)
-        
+
         expected_found_at = '"http://www.w3af.com/foo/ping%21.htm", using HTTP'\
                             ' method GET. The modified parameter was the URL '\
                             'filename, with value: "ping!".'
         generated_found_at = m.found_at()
-        
+
         self.assertEqual(generated_found_at, expected_found_at)
-    
+
     def test_config_false(self):
         fuzzer_config = {'fuzz_url_filenames': False}
         freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
-        
-        generated_mutants = FileNameMutant.create_mutants(freq, self.payloads, [],
-                                                          False, fuzzer_config)
-        
+
+        generated_mutants = FileNameMutant.create_mutants(
+            freq, self.payloads, [],
+            False, fuzzer_config)
+
         self.assertEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_config_true(self):
         fuzzer_config = {'fuzz_url_filenames': True}
         freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar'))
-        
-        generated_mutants = FileNameMutant.create_mutants(freq, self.payloads, [],
-                                                          False, fuzzer_config)
-        
+
+        generated_mutants = FileNameMutant.create_mutants(
+            freq, self.payloads, [],
+            False, fuzzer_config)
+
         self.assertNotEqual(len(generated_mutants), 0, generated_mutants)
 
     def test_valid_results(self):
         freq = HTTPQSRequest(URL('http://www.w3af.com/foo/bar.htm'))
-        
-        generated_mutants = FileNameMutant.create_mutants(freq, self.payloads, [],
-                                                          False, self.fuzzer_config)
-        
+
+        generated_mutants = FileNameMutant.create_mutants(
+            freq, self.payloads, [],
+            False, self.fuzzer_config)
+
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
-        
+
         expected_urls = [URL('http://www.w3af.com/foo/abc.htm'),
                          URL('http://www.w3af.com/foo/def.htm'),
                          URL('http://www.w3af.com/foo/bar.abc'),
                          URL('http://www.w3af.com/foo/bar.def')]
-        
+
         generated_urls = [m.getURL() for m in generated_mutants]
-        
+
         self.assertEqual(expected_urls, generated_urls)
 
     def test_valid_results_double_encoding(self):
@@ -100,17 +103,17 @@ class TestFileNameMutant(unittest.TestCase):
         case, and given that both the encoded and double encoded versions were
         the same, the number of generated mutants was 4.
         '''
-        payloads = ['ls - la',]
+        payloads = ['ls - la', ]
         freq = HTTPQSRequest(URL('http://www.w3af.com/bar.htm'))
-        
+
         generated_mutants = FileNameMutant.create_mutants(freq, payloads, [],
                                                           False, self.fuzzer_config)
-        
+
         self.assertEqual(len(generated_mutants), 2, generated_mutants)
-        
+
         expected_urls = ['http://www.w3af.com/ls+-+la.htm',
                          'http://www.w3af.com/bar.ls+-+la']
-        
+
         generated_urls = [m.getURL().url_string for m in generated_mutants]
-        
+
         self.assertEqual(expected_urls, generated_urls)

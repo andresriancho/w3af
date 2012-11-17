@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import gtk
 from core.ui.gui.entries import SemiStockButton
 
+
 class Searchable(object):
     '''Class that gives the machinery to search to a TextView.
 
@@ -106,10 +107,12 @@ class Searchable(object):
         self.srchtab.pack_start(label, expand=False, fill=False, padding=3)
         # entry
         self.search_entry = gtk.Entry()
-        self.search_entry.set_tooltip_text( _("Type here the phrase you want to find") )
+        self.search_entry.set_tooltip_text(
+            _("Type here the phrase you want to find"))
         self.search_entry.connect("activate", self._find, "next")
         self.search_entry.connect("changed", self._find, "find")
-        self.srchtab.pack_start(self.search_entry, expand=False, fill=False, padding=3)
+        self.srchtab.pack_start(
+            self.search_entry, expand=False, fill=False, padding=3)
         # find next button
         if self.small:
             but_text = ''
@@ -117,7 +120,7 @@ class Searchable(object):
             but_text = 'Next'
         butn = SemiStockButton(but_text, gtk.STOCK_GO_DOWN)
         butn.connect("clicked", self._find, "next")
-        butn.set_tooltip_text( _("Find the next ocurrence of the phrase") )
+        butn.set_tooltip_text(_("Find the next ocurrence of the phrase"))
         self.srchtab.pack_start(butn, expand=False, fill=False, padding=3)
         # find previous button
         if self.small:
@@ -126,11 +129,11 @@ class Searchable(object):
             but_text = ('Previous')
         butp = SemiStockButton(but_text, gtk.STOCK_GO_UP)
         butp.connect("clicked", self._find, "previous")
-        butp.set_tooltip_text( _("Find the previous ocurrence of the phrase"))
+        butp.set_tooltip_text(_("Find the previous ocurrence of the phrase"))
         self.srchtab.pack_start(butp, expand=False, fill=False, padding=3)
         # make last two buttons equally width
-        wn,hn = butn.size_request()
-        wp,hp = butp.size_request()
+        wn, hn = butn.size_request()
+        wp, hp = butp.size_request()
         newwidth = max(wn, wp)
         butn.set_size_request(newwidth, hn)
         butp.set_size_request(newwidth, hp)
@@ -145,7 +148,8 @@ class Searchable(object):
         self.pack_start(self.srchtab, expand=False, fill=False)
         # Results
         self._resultsLabel = gtk.Label("")
-        self.srchtab.pack_start(self._resultsLabel, expand=False, fill=False, padding=3)
+        self.srchtab.pack_start(
+            self._resultsLabel, expand=False, fill=False, padding=3)
         self.searching = False
 
     def _matchCase(self, widg):
@@ -165,14 +169,15 @@ class Searchable(object):
         tosearch = self.search_entry.get_text()
         if not tosearch:
             return
-        positions = self.highlight(tosearch, "yellow-background", self._matchCaseValue)
+        positions = self.highlight(
+            tosearch, "yellow-background", self._matchCaseValue)
         if not len(positions):
             return
         # find where's the cursor in the found items
         cursor = self.textbuf.get_mark("insert")
         cursorIter = self.textbuf.get_iter_at_mark(cursor)
         for ind, (iterini, iterfin) in enumerate(positions):
-            if iterini.compare(cursorIter) >=0:
+            if iterini.compare(cursorIter) >= 0:
                 keypos = ind
                 break
         else:
@@ -193,17 +198,17 @@ class Searchable(object):
 
     def highlight(self, text, tag='yellow-background', case_sensitive=True):
         """Find the text, and handle highlight."""
-        
+
         # Before searching, I clean the text parameter, as it might contain
         # null bytes, which will trigger an error like:
         # TypeError: GtkTextIter.forward_search() argument 1 must be string without null bytes, not str
         text = str(text)
-        text = text.replace('\x00','')
+        text = text.replace('\x00', '')
         # TODO: Will the highlighting succeed? How's the text with \0's actually
-        # printed in the textview? 
-        
+        # printed in the textview?
+
         flags = gtk.TEXT_SEARCH_VISIBLE_ONLY
-        startIter =  self.textbuf.get_start_iter()
+        startIter = self.textbuf.get_start_iter()
         # find the positions where the phrase is found
         positions = []
         while True:
@@ -238,6 +243,3 @@ class Searchable(object):
         # entry background
         self.search_entry.modify_base(gtk.STATE_NORMAL, self.bg_normal)
         self._resultsLabel.set_text('')
-
-
-

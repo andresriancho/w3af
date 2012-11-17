@@ -29,56 +29,61 @@ from plugins.attack.db.mssqlservermap import MSSQLServerMap as mssqlservermap
 
 from core.controllers.exceptions import w3afException
 
+
 class dbDriverBuilder:
     '''
     This class is a builder for database drivers.
-    
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__( self , urlOpener, cmpFunction ):
+    def __init__(self, urlOpener, cmpFunction):
         '''
         cmpFunction is the function to be used to compare two strings.
         '''
         self._uri_opener = urlOpener
         self._cmpFunction = cmpFunction
-    
-    def _get_type( self, vuln ):
+
+    def _get_type(self, vuln):
         '''
         Determine how to escape the sql injection
         '''
         exploitDc = vuln.get_dc()
-        exploitDc[ vuln.get_var() ] = "'z'z'z'"
-        functionReference = getattr( self._uri_opener , vuln.get_method() )
-        errorResponse = functionReference( vuln.getURL(), str(exploitDc) )
+        exploitDc[vuln.get_var()] = "'z'z'z'"
+        functionReference = getattr(self._uri_opener, vuln.get_method())
+        errorResponse = functionReference(vuln.getURL(), str(exploitDc))
 
-        for escape, type in [ ('\'','stringsingle') , ('"','stringdouble'), (' ','numeric')]:
-            exploitDc[ vuln.get_var() ] = '1' + escape + ' AND ' + escape + '1' + escape + '=' + escape + '1'
-            response = functionReference( vuln.getURL(), str(exploitDc) )
+        for escape, type in [('\'', 'stringsingle'), ('"', 'stringdouble'), (' ', 'numeric')]:
+            exploitDc[vuln.get_var()] = '1' + escape + ' AND ' + \
+                escape + '1' + escape + '=' + escape + '1'
+            response = functionReference(vuln.getURL(), str(exploitDc))
             if response.getBody() != errorResponse.getBody():
                 vuln['type'] = type
-                om.out.debug('[INFO] The injection type is: ' + type )
+                om.out.debug('[INFO] The injection type is: ' + type)
                 return vuln
-                
+
         om.out.error('Could not find SQL injection type.')
         return None
-                
-    def getDriverForVuln( self, vuln ):
+
+    def getDriverForVuln(self, vuln):
         '''
         @return: A database driver for the vuln passed as parameter.
         '''
         if 'type' not in vuln:
-            vuln = self._get_type( vuln )
+            vuln = self._get_type(vuln)
             if vuln is None:
                 return None
-        
+
         driverList = []
-        driverList.append( mysqlmap( self._uri_opener, self._cmpFunction, vuln ) )
-        driverList.append( postgresqlmap( self._uri_opener, self._cmpFunction, vuln ) )
-        driverList.append( mssqlservermap( self._uri_opener, self._cmpFunction,  vuln ) )
+        driverList.append(
+            mysqlmap(self._uri_opener, self._cmpFunction, vuln))
+        driverList.append(
+            postgresqlmap(self._uri_opener, self._cmpFunction, vuln))
+        driverList.append(
+            mssqlservermap(self._uri_opener, self._cmpFunction, vuln))
         #driverList.append( db2( self._uri_opener, vuln ) )
 
         for driver in driverList:
             if driver.checkDbms():
                 return driver
-    
+
         return None

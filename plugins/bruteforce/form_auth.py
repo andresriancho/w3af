@@ -42,25 +42,26 @@ class form_auth(BruteforcePlugin):
     '''
 
     def __init__(self):
-        BruteforcePlugin.__init__(self)        
-        
+        BruteforcePlugin.__init__(self)
+
         self._found = set()
-        
+
     def audit(self, freq):
         '''
         Tries to bruteforce a form auth. This aint fast!
-        
+
         @param freq: A FuzzableRequest
         '''
         freq_url = freq.getURL()
-        
+
         if self._is_login_form(freq) and freq_url not in self._already_tested:
-            
+
             self._already_tested.append(freq_url)
-            
+
             user_field, passwd_field = self._get_login_field_names(freq)
-            login_failed_result_list = self._id_failed_login_page(freq, user_field, passwd_field)
-            
+            login_failed_result_list = self._id_failed_login_page(
+                freq, user_field, passwd_field)
+
             # Let the user know what we are doing
             om.out.information('Found a form login. The action of the '
                                'form is: "%s".' % freq_url)
@@ -71,36 +72,37 @@ class form_auth(BruteforcePlugin):
                                % passwd_field)
             om.out.information('Starting form authentication bruteforce'
                                ' on URL: "%s".' % freq_url)
-            
+
             if user_field is not None:
-                generator = self._create_user_pass_generator( freq_url )
+                generator = self._create_user_pass_generator(freq_url)
             else:
-                generator = self._create_pass_generator( freq_url )
-            
-            self._bruteforce_test(freq, user_field, passwd_field, 
-                             login_failed_result_list, generator)                    
+                generator = self._create_pass_generator(freq_url)
+
+            self._bruteforce_test(freq, user_field, passwd_field,
+                                  login_failed_result_list, generator)
 
             # Report that we've finished.
             msg = 'Finished bruteforcing "%s".' % freq_url
-            om.out.information( msg )
+            om.out.information(msg)
 
-    def _bruteforce( self, url, user_field, passwd_field, 
-                           login_failed_result_list, generator ):
-        args_iter = izip( repeat(url), repeat(user_field), repeat(passwd_field),
-                          repeat(login_failed_result_list), generator )
-        self._tm.threadpool.map_multi_args( self._brute_worker, args_iter, chunksize=100 )
-    
-    def _bruteforce_test(self, url, user_field, passwd_field, 
-                           login_failed_result_list, generator ):
+    def _bruteforce(self, url, user_field, passwd_field,
+                    login_failed_result_list, generator):
+        args_iter = izip(repeat(url), repeat(user_field), repeat(passwd_field),
+                         repeat(login_failed_result_list), generator)
+        self._tm.threadpool.map_multi_args(
+            self._brute_worker, args_iter, chunksize=100)
+
+    def _bruteforce_test(self, url, user_field, passwd_field,
+                         login_failed_result_list, generator):
         for combination in generator:
-            self._brute_worker(url, user_field, passwd_field, 
+            self._brute_worker(url, user_field, passwd_field,
                                login_failed_result_list, combination)
-        
+
     def _id_failed_login_page(self, freq, user_field, passwd_field):
         '''
         Generate TWO different response bodies that are the result of failed
         logins.
-        
+
         The first result is for logins with filled user and password fields;
         the second one is for a filled user and a blank passwd.
         '''
@@ -108,13 +110,14 @@ class form_auth(BruteforcePlugin):
         login_failed_result_list = []
 
         data_container = freq.get_dc()
-        data_container = self._true_extra_fields(data_container, user_field, passwd_field)
-        
+        data_container = self._true_extra_fields(
+            data_container, user_field, passwd_field)
+
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
-        tests = [(rand_alnum(8), rand_alnum(8)), 
+        tests = [(rand_alnum(8), rand_alnum(8)),
                  (rand_alnum(8), '')]
-        
+
         for user, passwd in tests:
             # Setup the data_container
             # Remember that we can have password only forms!
@@ -122,22 +125,22 @@ class form_auth(BruteforcePlugin):
                 data_container[user_field][0] = user
             data_container[passwd_field][0] = passwd
             freq.set_dc(data_container)
-            
+
             response = self._uri_opener.send_mutant(freq, grep=False)
-            
+
             body = response.getBody()
             body = body.replace(user, '')
             body = body.replace(passwd, '')
-            
+
             # Save it
             login_failed_result_list.append(body)
-        
+
         # Now I perform a self test, before starting with the actual bruteforcing
         # The first tuple is an invalid username and a password
         # The second tuple is an invalid username with a blank password
         tests = [(rand_alnum(8), rand_alnum(8)),
                  (rand_alnum(8), '')]
-        
+
         for user, passwd in tests:
             # Now I do a self test of the result I just created.
             #   Remember that we can have password only forms!
@@ -146,7 +149,7 @@ class form_auth(BruteforcePlugin):
             data_container[passwd_field][0] = passwd
             freq.set_dc(data_container)
             response = self._uri_opener.send_mutant(freq, grep=False)
-            
+
             body = response.getBody()
             body = body.replace(user, '')
             body = body.replace(passwd, '')
@@ -154,12 +157,12 @@ class form_auth(BruteforcePlugin):
             if not self._matches_failed_login(body, login_failed_result_list):
                 raise w3afException('Failed to generate a response that '
                                     'matches the failed login page.')
-        
+
         return login_failed_result_list
-    
+
     def _matches_failed_login(self, resp_body, login_failed_result_list):
         '''
-        @return: True if the resp_body matches the previously created 
+        @return: True if the resp_body matches the previously created
         responses that are stored in self._login_failed_result_list.
         '''
         for login_failed_result in login_failed_result_list:
@@ -175,9 +178,9 @@ class form_auth(BruteforcePlugin):
         '''
         passwd = text = other = 0
         data_container = freq.get_dc()
-        
+
         if isinstance(data_container, form.Form):
-            
+
             for parameter_name in data_container:
 
                 if data_container.get_type(parameter_name).lower() == 'password':
@@ -186,7 +189,7 @@ class form_auth(BruteforcePlugin):
                     text += 1
                 else:
                     other += 1
-            
+
             #
             #   These are the ones we support
             #
@@ -195,46 +198,47 @@ class form_auth(BruteforcePlugin):
             elif text == 0 and passwd == 1:
                 msg = 'Identified a form with a password field and no username field: "'
                 msg += freq.getURL() + '".'
-                om.out.information( msg )
+                om.out.information(msg)
                 return True
-                
+
             #
             #   These we don't
             #
             elif passwd == 2:
                 om.out.information(freq.getURL() + ' is a registration form.')
             elif passwd == 3:
-                om.out.information(freq.getURL() + ' is a password change form.')
+                om.out.information(
+                    freq.getURL() + ' is a password change form.')
             return False
-                
+
     def _get_login_field_names(self, freq):
         '''
-        @return: The names of the form fields where to input the user and the 
+        @return: The names of the form fields where to input the user and the
             password. Please remember that maybe user_parameter might be None,
             since we support password only login forms.
         '''
         data_container = freq.get_dc()
         passwd_parameter = None
         user_parameter = None
-        
+
         for parameter_name in data_container:
-                
+
             if data_container.get_type(parameter_name).lower() == 'password':
                 passwd_parameter = parameter_name
-            
+
             elif data_container.get_type(parameter_name).lower() == 'text':
                 user_parameter = parameter_name
 
         return user_parameter, passwd_parameter
-    
+
     def _true_extra_fields(self, data_container, user_field, passwd_field):
         '''
-        Some login forms have "extra" parameters. In some cases I've seen 
-        login forms that have an "I agree with the terms and conditions" 
-        checkbox. If w3af does not set that extra field to "true", even if 
-        I have the correct username and password combination, it won't 
+        Some login forms have "extra" parameters. In some cases I've seen
+        login forms that have an "I agree with the terms and conditions"
+        checkbox. If w3af does not set that extra field to "true", even if
+        I have the correct username and password combination, it won't
         perform a successful login.
-        
+
         @return: A data_container that has all fields (other than the username
             and password) set to 1,
         '''
@@ -244,8 +248,8 @@ class form_auth(BruteforcePlugin):
                     if not element_value:
                         data_container[parameter_name][element_index] = '1'
         return data_container
-        
-    def _brute_worker(self, freq, user_field, passwd_field, 
+
+    def _brute_worker(self, freq, user_field, passwd_field,
                       login_failed_result_list, combination):
         '''
         @param freq: A FuzzableRequest
@@ -255,8 +259,9 @@ class form_auth(BruteforcePlugin):
         if freq.getURL() not in self._found or not self._stop_on_first:
             freq = freq.copy()
             data_container = freq.get_dc()
-            data_container = self._true_extra_fields(data_container, user_field, passwd_field)
-                        
+            data_container = self._true_extra_fields(
+                data_container, user_field, passwd_field)
+
             # Handle password-only forms!
             if user_field is not None:
                 user, pwd = combination
@@ -270,20 +275,22 @@ class form_auth(BruteforcePlugin):
             freq.set_dc(data_container)
 
             try:
-                resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
+                resp = self._uri_opener.send_mutant(
+                    freq, cookies=False, grep=False)
             except w3afMustStopOnUrlError:
                 return
             else:
                 body = resp.getBody()
                 body = body.replace(user, '').replace(pwd, '')
-                
+
                 if not self._matches_failed_login(body, login_failed_result_list):
                     # Ok, this might be a valid combination.
                     # Now test with a new invalid password to ensure our
-                    # previous possible found credentials are valid                        
+                    # previous possible found credentials are valid
                     data_container[passwd_field][0] = rand_alnum(8)
                     freq.set_dc(data_container)
-                    verif_resp = self._uri_opener.send_mutant(freq, cookies=False, grep=False)
+                    verif_resp = self._uri_opener.send_mutant(
+                        freq, cookies=False, grep=False)
                     body = verif_resp.getBody()
                     body = body.replace(user, '').replace(pwd, '')
 
@@ -296,13 +303,13 @@ class form_auth(BruteforcePlugin):
                         v.setURL(freq.getURL())
                         if user_field is not None:
                             msg = ('Found authentication credentials to: '
-                            '"%s". A correct user and password combination'
-                            ' is: %s/%s' % (freq_url, user, pwd))
+                                   '"%s". A correct user and password combination'
+                                   ' is: %s/%s' % (freq_url, user, pwd))
                         else:
                             # There is no user field!
                             msg = ('Found authentication credentials to: '
-                            '"%s". The correct password is: "%s".'
-                            % (freq_url, pwd))
+                                   '"%s". The correct password is: "%s".'
+                                   % (freq_url, pwd))
 
                         v.set_desc(msg)
                         v['user'] = user
@@ -311,7 +318,7 @@ class form_auth(BruteforcePlugin):
                         v.set_severity(severity.HIGH)
                         v.set_name('Guessable credentials')
                         kb.kb.append(self, 'auth', v)
-    
+
                         om.out.vulnerability(msg, severity=severity.HIGH)
                         return
 

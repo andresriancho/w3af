@@ -32,94 +32,96 @@ from core.data.profile.profile import profile as profile
 
 
 class w3af_core_profiles(object):
-    
+
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
-        
-    def saveCurrentToNewProfile( self, profile_name, profileDesc='' ):
+
+    def saveCurrentToNewProfile(self, profile_name, profileDesc=''):
         '''
         Saves current config to a newly created profile.
-        
+
         @param profile_name: The profile to clone
         @param profileDesc: The description of the new profile
-        
+
         @return: The new profile instance if the profile was successfully saved.
                  Else, raise a w3afException.
         '''
         # Create the new profile.
         profile_inst = profile()
-        profile_inst.set_desc( profileDesc )
-        profile_inst.set_name( profile_name )
-        profile_inst.save( profile_name )
-        
+        profile_inst.set_desc(profileDesc)
+        profile_inst.set_name(profile_name)
+        profile_inst.save(profile_name)
+
         # Save current to profile
-        return self.saveCurrentToProfile( profile_name, profileDesc )
+        return self.saveCurrentToProfile(profile_name, profileDesc)
 
     def saveCurrentToProfile(self, profile_name, prof_desc='', prof_path=''):
         '''
-        Save the current configuration of the core to the profile called 
+        Save the current configuration of the core to the profile called
         profile_name.
-        
+
         @return: The new profile instance if the profile was successfully saved.
             otherwise raise a w3afException.
         '''
         # Open the already existing profile
         new_profile = profile(profile_name, workdir=os.path.dirname(prof_path))
-        
+
         # Save the enabled plugins
         for pType in self._w3af_core.plugins.get_plugin_types():
             enabledPlugins = []
             for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                enabledPlugins.append( pName )
+                enabledPlugins.append(pName)
             new_profile.setEnabledPlugins(pType, enabledPlugins)
-        
+
         # Save the profile options
         for pType in self._w3af_core.plugins.get_plugin_types():
             for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
-                pOptions = self._w3af_core.plugins.get_plugin_options(pType, pName)
+                pOptions = self._w3af_core.plugins.get_plugin_options(
+                    pType, pName)
                 if pOptions:
                     new_profile.set_plugin_options(pType, pName, pOptions)
-                
+
         # Save the profile targets
         targets = cf.cf.get('targets')
         if targets:
             new_profile.setTarget(' , '.join(t.url_string for t in targets))
-                
+
         # Save the misc and http settings
         misc_settings = MiscSettings()
         new_profile.setMiscSettings(misc_settings.get_options())
-        new_profile.setHttpSettings(self._w3af_core.uri_opener.settings.get_options())
-        
+        new_profile.setHttpSettings(
+            self._w3af_core.uri_opener.settings.get_options())
+
         # Save the profile name and description
         new_profile.set_desc(prof_desc)
         new_profile.set_name(profile_name)
-        
+
         # Save the profile to the file
         new_profile.save(profile_name)
-        
+
         return new_profile
-                
+
     def useProfile(self, profile_name, workdir=None):
         '''
         Gets all the information from the profile and stores it in the
         w3af core plugins / target attributes for later use.
-        
+
         @raise w3afException: if the profile to load has some type of problem.
         '''
         # Clear all enabled plugins if profile_name is None
         if profile_name is None:
             self._w3af_core.plugins.zero_enabled_plugins()
             return
-        
+
         # This might raise an exception (which we don't want to handle) when
         # the profile does not exist
         profile_inst = profile(profile_name, workdir)
-        
+
         # It exists, work with it!
-        
+
         # Set the target settings of the profile to the core
-        self._w3af_core.target.set_options( profile_inst.getTarget() )
-        
+        self._w3af_core.target.set_options(profile_inst.getTarget())
+
         # Set the misc and http settings
         #
         # IGNORE the following parameters from the profile:
@@ -128,11 +130,12 @@ class w3af_core_profiles(object):
         profile_misc_settings = profile_inst.getMiscSettings()
         if 'local_ip_address' in profile_inst.getMiscSettings():
             profile_misc_settings['local_ip_address'].set_value(get_local_ip())
-        
+
         misc_settings = MiscSettings()
-        misc_settings.set_options( profile_misc_settings )
-        self._w3af_core.uri_opener.settings.set_options( profile_inst.getHttpSettings() )
-        
+        misc_settings.set_options(profile_misc_settings)
+        self._w3af_core.uri_opener.settings.set_options(
+            profile_inst.getHttpSettings())
+
         #
         #    Handle plugin options
         #
@@ -148,76 +151,78 @@ class w3af_core_profiles(object):
                      ' apply the required changes and save the profile in order'
                      ' to update it and avoid this message. If this warning does not'
                      ' disappear you can manually edit the profile file to fix it.')
-        
+
         error_messages = []
-        
+
         for plugin_type in self._w3af_core.plugins.get_plugin_types():
-            plugin_names = profile_inst.get_enabled_plugins( plugin_type )
-            
+            plugin_names = profile_inst.get_enabled_plugins(plugin_type)
+
             # Handle errors that might have been triggered from a possibly invalid profile
-            unknown_plugins = self._w3af_core.plugins.set_plugins( plugin_names, plugin_type )
+            unknown_plugins = self._w3af_core.plugins.set_plugins(
+                plugin_names, plugin_type)
             for unknown_plugin in unknown_plugins:
                 msg = 'The profile references the "%s.%s" plugin which is unknown.'
-                error_messages.append( msg % (plugin_type, unknown_plugin))
-                
+                error_messages.append(msg % (plugin_type, unknown_plugin))
+
             # Now we set the plugin options, which can also trigger errors with "outdated"
             # profiles that users could have in their ~/.w3af/ directory.
             for plugin_name in set(plugin_names) - set(unknown_plugins):
-                
+
                 try:
-                    plugin_options = profile_inst.get_plugin_options( plugin_type,
-                                                                      plugin_name )
-                    self._w3af_core.plugins.set_plugin_options( plugin_type, 
-                                                                plugin_name,
-                                                                plugin_options )
+                    plugin_options = profile_inst.get_plugin_options(
+                        plugin_type,
+                        plugin_name)
+                    self._w3af_core.plugins.set_plugin_options(plugin_type,
+                                                               plugin_name,
+                                                               plugin_options)
                 except w3afException, w3e:
                     msg = 'Setting the options for plugin "%s.%s" raised an' \
                           ' exception due to unknown or invalid configuration' \
                           ' parameters.'
                     msg += ' ' + str(w3e)
-                    error_messages.append( msg % (plugin_type, plugin_name))
-                                
+                    error_messages.append(msg % (plugin_type, plugin_name))
+
         if error_messages:
-            msg = error_fmt % (profile_name, '\n    - '.join(error_messages) )
-            raise w3afException( msg ) 
-            
-    def getProfileList( self, directory=HOME_DIR ):
+            msg = error_fmt % (profile_name, '\n    - '.join(error_messages))
+            raise w3afException(msg)
+
+    def getProfileList(self, directory=HOME_DIR):
         '''
         @param directory: The directory from which profiles are loaded
-        
+
         @return: Two different lists:
             - One that contains the instances of the valid profiles that were loaded
             - One with the file names of the profiles that are invalid
 
-        >>> HOME_DIR = '.' 
+        >>> HOME_DIR = '.'
         >>> p = w3af_core_profiles(None)
         >>> valid, invalid = p.getProfileList()
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
         True
-        
+
         '''
         profile_home = os.path.join(directory, 'profiles')
         str_profile_list = get_file_list(profile_home, extension='.pw3af')
-        
+
         instance_list = []
         invalid_profiles = []
-        
+
         for profile_name in str_profile_list:
-            profile_filename = os.path.join(profile_home, profile_name + '.pw3af')
+            profile_filename = os.path.join(
+                profile_home, profile_name + '.pw3af')
             try:
-                profile_instance = profile( profile_filename )
+                profile_instance = profile(profile_filename)
             except:
-                invalid_profiles.append( profile_filename )
+                invalid_profiles.append(profile_filename)
             else:
-                instance_list.append( profile_instance )
+                instance_list.append(profile_instance)
         return instance_list, invalid_profiles
-    
-    def removeProfile( self, profile_name ):
+
+    def removeProfile(self, profile_name):
         '''
         @return: True if the profile was successfully removed. Else, raise a w3afException.
         '''
-        profile_inst = profile( profile_name )
+        profile_inst = profile(profile_name)
         profile_inst.remove()
         return True
-    

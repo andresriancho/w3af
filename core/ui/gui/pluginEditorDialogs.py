@@ -1,5 +1,7 @@
-import pygtk, gtk
+import pygtk
+import gtk
 import os
+
 
 def InputBox(title, label, parent, text=''):
     dlg = gtk.Dialog(title, parent, gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -9,7 +11,8 @@ def InputBox(title, label, parent, text=''):
     lbl.show()
     dlg.vbox.pack_start(lbl)
     entry = gtk.Entry()
-    if text: entry.set_text(text)
+    if text:
+        entry.set_text(text)
     entry.show()
     dlg.vbox.pack_start(entry, False)
     resp = dlg.run()
@@ -18,6 +21,7 @@ def InputBox(title, label, parent, text=''):
     if resp == gtk.RESPONSE_CANCEL:
         return None
     return text
+
 
 def OpenFile(title, parent=None, dirname=None, fname=None):
     dlg = gtk.FileChooserDialog(title, parent,
@@ -35,6 +39,7 @@ def OpenFile(title, parent=None, dirname=None, fname=None):
     if resp == gtk.RESPONSE_CANCEL:
         return None
     return fname
+
 
 def SaveFile(title, parent=None, dirname=None, fname=None):
     dlg = gtk.FileChooserDialog(title, parent,

@@ -20,11 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-def get_common_directories( os=None ):
+
+def get_common_directories(os=None):
     '''
     @param os: The operating system for which we want the common directories.
     If no os is specified, all directories are returned.
-    
+
     @return: A list of common directories
     '''
     directories = []
@@ -40,16 +41,16 @@ def get_common_directories( os=None ):
         directories.append("/media/")
         directories.append("/mnt/")
         directories.append("/opt/")
-        directories.append("/proc/")        
+        directories.append("/proc/")
         directories.append("/root/")
         directories.append("/sbin/")
         directories.append("/sys/")
         directories.append("/srv/")
         directories.append("/tmp/")
-        directories.append("/usr/")        
+        directories.append("/usr/")
         directories.append("/var/")
         directories.append("/htdocs/")
-    
+
     if os == 'windows' or os is None:
         directories.append(r"C:\\")
         directories.append(r"D:\\")
@@ -64,5 +65,5 @@ def get_common_directories( os=None ):
         directories.append(r"C:\\win32\\system\\")
         directories.append(r"C:\\Program Files\\")
         directories.append(r"C:\\Documents and Settings\\")
-        
+
     return directories

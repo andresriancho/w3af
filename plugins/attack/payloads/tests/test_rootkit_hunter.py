@@ -23,10 +23,10 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_rootkit_hunter(PayloadTestHelper):
-    
-    EXPECTED_RESULT = {'backdoor_files': ['/sbin/.login'], 'bad_kernel_modules': []}
+
+    EXPECTED_RESULT = {'backdoor_files': ['/sbin/.login'],
+                       'bad_kernel_modules': []}
 
     def test_rootkit_hunter(self):
         result = exec_payload(self.shell, 'rootkit_hunter', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

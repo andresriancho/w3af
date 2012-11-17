@@ -38,9 +38,9 @@ def gtkui_dependency_check():
     packages_mac_ports = []
     packages_openbsd = []
     additional_information = []
-    
+
     om.out.debug('Checking GTK UI dependencies')
-    
+
     try:
         import sqlite3
     except:
@@ -51,7 +51,8 @@ def gtkui_dependency_check():
         reason_for_exit = True
 
     try:
-        proc = subprocess.Popen('neato -V',shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen('neato -V', shell=True, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
     except:
         packages_debian.append('graphviz')
         packages_mac_ports.append('graphviz')
@@ -66,7 +67,8 @@ def gtkui_dependency_check():
     try:
         import pygtk
         pygtk.require('2.0')
-        import gtk, gobject
+        import gtk
+        import gobject
         assert gtk.gtk_version >= (2, 12)
         assert gtk.pygtk_version >= (2, 12)
     except:
@@ -74,7 +76,7 @@ def gtkui_dependency_check():
         packages_debian.append('python-gtk2')
         packages_mac_ports.append('py26-gtk')
         reason_for_exit = True
-        
+
     try:
         import gtksourceview2
     except:
@@ -82,31 +84,31 @@ def gtkui_dependency_check():
         packages_debian.append('python-gtksourceview2')
         packages_openbsd.append('gtksourceview')
         reason_for_exit = True
-    
+
     curr_platform = platform.system().lower()
-    
+
     if packages:
         msg = 'Your python installation needs the following packages:\n'
-        msg += '    '+' '.join(packages)
+        msg += '    ' + ' '.join(packages)
         print msg, '\n'
     if packages_debian and 'linux' in curr_platform:
         msg = 'On debian based systems:\n'
-        msg += '    sudo apt-get install '+' '.join(packages_debian)
+        msg += '    sudo apt-get install ' + ' '.join(packages_debian)
         print msg, '\n'
     if packages_mac_ports and is_mac(curr_platform):
         msg = 'On a mac with mac ports installed:\n'
-        msg += '    sudo port install '+' '.join(packages_mac_ports)
+        msg += '    sudo port install ' + ' '.join(packages_mac_ports)
         print msg, '\n'
     if packages_openbsd and 'openbsd' in curr_platform:
         msg = 'On a OpenBSD 5.1 install the requirements by running:\n'
         msg += '    export PKG_PATH="http://ftp.openbsd.org/pub/OpenBSD/5.1/packages/i386/"\n'
-        msg += '    pkg_add -v  '+' '.join(packages_openbsd)
+        msg += '    pkg_add -v  ' + ' '.join(packages_openbsd)
         print msg, '\n'
     if additional_information:
         msg = 'Additional information:\n'
         msg += '\n'.join(additional_information)
         print msg
-    
+
     #Now exit if necessary
     if reason_for_exit:
-        exit(1)        
+        exit(1)

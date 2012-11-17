@@ -23,22 +23,22 @@ class ssh_version(base_payload):
         # php wrappers and read the binary file with base64
         version = self.shell.read('/usr/sbin/sshd')
         if version:
-            result['ssh_version'] = 'OpenSSH'+parse_binary(version)
+            result['ssh_version'] = 'OpenSSH' + parse_binary(version)
 
         return result
 
     def run_read(self):
         api_result = self.api_read()
-        
+
         if not api_result['ssh_version']:
             return 'SSH version could not be identified.'
         else:
             rows = []
-            rows.append( ['SSH version'] ) 
-            rows.append( [] )
-            
-            rows.append( [api_result['ssh_version'],] )
-                
-            result_table = table( rows )
-            result_table.draw( 80 )                    
+            rows.append(['SSH version'])
+            rows.append([])
+
+            rows.append([api_result['ssh_version'], ])
+
+            result_table = table(rows)
+            result_table.draw(80)
             return rows

@@ -22,16 +22,16 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestDetectTransparentProxy(PluginTest):
-    
+
     target_url = 'http://moth/'
-    
+
     _run_config = {
         'cfg': {
             'target': target_url,
             'plugins': {'infrastructure': (PluginConfig('detect_transparent_proxy'),)}
-            }
         }
-    
+    }
+
     def test_transparent_proxy(self):
         cfg = self._run_config['cfg']
         self._scan(cfg['target'], cfg['plugins'])

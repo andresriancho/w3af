@@ -25,9 +25,9 @@ from core.data.options.option_types import FLOAT
 
 
 class FloatOption(BaseOption):
-    
+
     _type = FLOAT
-    
+
     def set_value(self, value):
         '''
         @param value: The value parameter is set by the user interface, which
@@ -36,8 +36,8 @@ class FloatOption(BaseOption):
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
         '''
-        self._value = self.validate(value) 
-        
+        self._value = self.validate(value)
+
     def validate(self, value):
         try:
             return float(value)

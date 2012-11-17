@@ -19,7 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.kb.knowledge_base as kb        
+import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.kb.shell as shell
@@ -38,24 +38,24 @@ class kbMenu(menu):
     '''
     def __init__(self, name, console, w3afcore, parent=None, **other):
         menu.__init__(self, name, console, w3afcore, parent)
-        self._loadHelp( 'kb' )
+        self._loadHelp('kb')
 
         # A mapping of KB data types to how to display it.
         # Key of the data type => (KB getter, (column names), (column getters))k
         self.__getters = {
             'vulns': (
-                kb.kb.getAllVulns, 
-                ['Vulnerabilities'], 
+                kb.kb.getAllVulns,
+                ['Vulnerabilities'],
                 [vuln.vuln.get_desc]),
-            'info':  (
+            'info': (
                 kb.kb.getAllInfos,
                 ['Info'],
                 [info.info.get_desc]),
-            'shells':  (
+            'shells': (
                 kb.kb.getAllShells,
                 ['Shells'],
                 [shell.shell.get_desc])
-         }
+        }
 
     def _list_objects(self, descriptor, objs):
         colNames = descriptor[0]
@@ -73,9 +73,8 @@ class kbMenu(menu):
 
         self._console.drawTable(result)
 
-
     def _cmd_list(self, params):
-        if len(params)>0:
+        if len(params) > 0:
             for p in params:
                 if p in self.__getters:
                     desc = self.__getters[p]
@@ -85,10 +84,9 @@ class kbMenu(menu):
         else:
             om.out.console('Parameter type is missed, see the help:')
             self._cmd_help(['list'])
-            
 
     def _para_list(self, params, part):
         if len(params):
             return []
 
-        return suggest(self.__getters.keys(), part) 
+        return suggest(self.__getters.keys(), part)

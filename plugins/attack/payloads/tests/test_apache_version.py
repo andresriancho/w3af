@@ -23,10 +23,9 @@ from plugins.attack.payloads.payload_handler import exec_payload
 
 
 class test_apache_version(PayloadTestHelper):
-    
+
     EXPECTED_RESULT = {'version': [u'2.2.22']}
 
     def test_apache_version(self):
         result = exec_payload(self.shell, 'apache_version', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
-        

@@ -36,17 +36,17 @@ class un_ssl(AuditPlugin):
 
     def __init__(self):
         AuditPlugin.__init__(self)
-        
+
         # Internal variables
         self._run = True
 
-    def audit(self, freq ):
+    def audit(self, freq):
         '''
         Check if the protocol specified in freq is https and fetch the same URL
         using http. ie:
             - input: https://a/
             - check: http://a/
-        
+
         @param freq: A FuzzableRequest
         '''
         if not self._run:
@@ -58,41 +58,44 @@ class un_ssl(AuditPlugin):
             initial_url = freq.getURL()
             insecure_url = initial_url.copy()
             secure_url = initial_url.copy()
-            
+
             insecure_url.setProtocol('http')
             insecure_fr = freq.copy()
-            insecure_fr.setURL( insecure_url )
-            
+            insecure_fr.setURL(insecure_url)
+
             secure_url.setProtocol('https')
             secure_fr = freq.copy()
-            secure_fr.setURL( secure_url )
-            
+            secure_fr.setURL(secure_url)
+
             try:
-                insecure_response = self._uri_opener.send_mutant(insecure_fr, follow_redir=False)
-                secure_response = self._uri_opener.send_mutant(secure_fr, follow_redir=False)
+                insecure_response = self._uri_opener.send_mutant(
+                    insecure_fr, follow_redir=False)
+                secure_response = self._uri_opener.send_mutant(
+                    secure_fr, follow_redir=False)
             except:
                 # No vulnerability to report since one of these threw an error
                 # (because there is nothing listening on that port).
                 pass
             else:
                 if insecure_response.getCode() == secure_response.getCode():
-                    
-                    if relative_distance_boolean( insecure_response.getBody(),
-                                                  secure_response.getBody(),
-                                                  0.95 ):
-                        v = vuln.vuln( freq )
+
+                    if relative_distance_boolean(insecure_response.getBody(),
+                                                 secure_response.getBody(),
+                                                 0.95):
+                        v = vuln.vuln(freq)
                         v.set_plugin_name(self.get_name())
                         v.setURL(insecure_response.getURL())
-                        v.set_name( 'Secure content over insecure channel' )
+                        v.set_name('Secure content over insecure channel')
                         v.set_severity(severity.MEDIUM)
                         msg = 'Secure content can be accesed using the insecure'
                         msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
-                        v.set_desc( msg % (secure_url, insecure_url) )
-                        v.set_id( [insecure_response.id, secure_response.id] )
-                        kb.kb.append( self, 'un_ssl', v )
-                        om.out.vulnerability( v.get_desc(), severity=v.get_severity() )
-    
-    def get_long_desc( self ):
+                        v.set_desc(msg % (secure_url, insecure_url))
+                        v.set_id([insecure_response.id, secure_response.id])
+                        kb.kb.append(self, 'un_ssl', v)
+                        om.out.vulnerability(
+                            v.get_desc(), severity=v.get_severity())
+
+    def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''

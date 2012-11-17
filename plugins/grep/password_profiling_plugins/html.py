@@ -26,28 +26,29 @@ from plugins.grep.password_profiling_plugins.basePpPlugin import basePpPlugin
 
 words_split_re = re.compile("[^\w]")
 
+
 class html(basePpPlugin):
     '''
     This plugin creates a map of possible passwords by reading html responses.
-      
+
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
     def __init__(self):
         basePpPlugin.__init__(self)
-        
+
     def getWords(self, response):
         '''
         Get words from the body, this is a modified "strings" that filters out HTML tags.
-        
+
         @param body: In most common cases, an html. Could be almost anything.
         @return: A map of strings:repetitions.
         '''
-        
+
         data = {}
 
         if response.is_text_or_html():
-            
+
             dom = response.getDOM()
             # Splitter function
             split = words_split_re.split
@@ -56,7 +57,7 @@ class html(basePpPlugin):
 
             # In some strange cases, we fail to normalize the document
             if dom is not None:
-                
+
                 for elem in dom.getiterator():
                     # Words inside <title> weights more.
                     inc = (elem.tag == 'title') and 5 or 1
@@ -69,4 +70,3 @@ class html(basePpPlugin):
                             else:
                                 data[w] = inc
         return data
-    

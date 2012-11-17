@@ -27,7 +27,7 @@ Stack trace:
 #0 {main}
 thrown in <b>/var/www/w3af/audit/sql_injection/select/sql_injection_string.php</b> on line <b>15</b><br />
   """
-  
+
 SQL_ERRORS = (
     # ASP / MSSQL
     (r'System\.Data\.OleDb\.OleDbException', ),

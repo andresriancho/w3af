@@ -26,17 +26,17 @@ from threading import Lock
 class number_generator(object):
     '''
     The simplest class that returns a sequence of consecutive numbers.
-    
+
     This is used for assigning IDs to HTTP request and responses.
     '''
-    
+
     def __init__(self):
         '''
         Start the counter and be thread safe.
         '''
         self._lock = Lock()
         self._id = 0
-    
+
     def inc(self):
         '''
         @return: The next number.
@@ -44,18 +44,18 @@ class number_generator(object):
         with self._lock:
             self._id += 1
             return self._id
-    
+
     def get(self):
         '''
         @return: The current number
         '''
         return self._id
-    
+
     def reset(self):
         '''
         Reset internal counter to 0.
         '''
         with self._lock:
             self._id = 0
-    
+
 consecutive_number_generator = number_generator()

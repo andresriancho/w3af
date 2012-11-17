@@ -22,37 +22,38 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
+
 class TestWordnet(PluginTest):
-    
+
     target_url = 'http://moth/w3af/crawl/wordnet/'
-        
+
     _run_configs = {
         'cfg': {
             'target': target_url,
             'plugins': {
-                        'crawl': (PluginConfig('wordnet',
-                                         ('wn_results', 20, PluginConfig.INT)),
-                                      PluginConfig('web_spider',
-                                         ('onlyForward', True, PluginConfig.BOOL)))
-                        },
-                }
+        'crawl': (PluginConfig('wordnet',
+                               ('wn_results', 20, PluginConfig.INT)),
+                  PluginConfig('web_spider',
+                               ('onlyForward', True, PluginConfig.BOOL)))
+            },
+        }
     }
-    
+
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
+
         expected_urls = (
-             'azure.html', 'blue.html', 'green.html', 'red.html',
-             'hide.php', 'show.php', '',
-             )
-        
+            'azure.html', 'blue.html', 'green.html', 'red.html',
+            'hide.php', 'show.php', '',
+        )
+
         urls = self.kb.get('urls', 'url_objects')
         self.assertEquals(
-                set(str(u) for u in urls),
-                set((self.target_url + end) for end in expected_urls)
-                )
-    
+            set(str(u) for u in urls),
+            set((self.target_url + end) for end in expected_urls)
+        )
+
     def test_fix_bug(self):
         '''
          FIXME: There is an ugly bug in the wordnet plugin that returns many
@@ -63,4 +64,3 @@ class TestWordnet(PluginTest):
         - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="clerestory")
         '''
         self.assertTrue(False)
-

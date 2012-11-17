@@ -23,21 +23,19 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestDomainDot(PluginTest):
-    
+
     simple_url = 'http://moth/'
-    
+
     _run_configs = {
         'cfg': {
-                'target': None,
-                'plugins': {'infrastructure': (PluginConfig('domain_dot'),)}
-                }
+        'target': None,
+        'plugins': {'infrastructure': (PluginConfig('domain_dot'),)}
         }
-    
+    }
+
     def test_domain_dot(self):
         cfg = self._run_configs['cfg']
         self._scan(self.simple_url, cfg['plugins'])
-        
-        infos = self.kb.get('domain_dot', 'domain_dot')
-        self.assertEqual( len(infos), 0, infos)
-        
 
+        infos = self.kb.get('domain_dot', 'domain_dot')
+        self.assertEqual(len(infos), 0, infos)

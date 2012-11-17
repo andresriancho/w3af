@@ -23,21 +23,21 @@ from core.controllers.wizard.wizard import wizard
 
 
 class short_wizard(wizard):
-    
-    def __init__( self, w3af_core ):
+
+    def __init__(self, w3af_core):
         '''
-        This method should be overwritten by the actual wizards, so they can 
+        This method should be overwritten by the actual wizards, so they can
         define what questions they are going to ask.
         '''
-        wizard.__init__( self, w3af_core )
+        wizard.__init__(self, w3af_core)
 
-        self._question_lst = self._get_instances( ['target_1','target_2'],
-                                                  w3af_core )
-        
+        self._question_lst = self._get_instances(['target_1', 'target_2'],
+                                                 w3af_core)
+
     def getWizardDescription(self):
         '''
         This method should be overwritten by the actual wizards.
-        
+
         @return: A string that describes what the wizard will let you configure.
         '''
         return 'This is a small demo wizard to be able to code the GUI'
@@ -47,4 +47,3 @@ class short_wizard(wizard):
         @return: The name of the wizard.
         '''
         return 'Short wizard'
-

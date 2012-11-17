@@ -24,14 +24,13 @@ import core.data.kb.config as cf
 import core.data.request.WebServiceRequest as WebServiceRequest
 from core.controllers.exceptions import w3afException
 
+
 class export:
     """
     This class helps to export stuff.
-    
+
     @author: Kevin Denver ( muffysw@hotmail.com )
     """
 
     def __init__(self):
         pass
-
-

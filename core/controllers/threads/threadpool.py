@@ -35,9 +35,10 @@ class one_to_many(object):
     '''
     def __init__(self, func):
         self.func = func
-    
+
     def __call__(self, args):
         return self.func(*args)
+
 
 class return_args(object):
     '''
@@ -46,7 +47,7 @@ class return_args(object):
     '''
     def __init__(self, func, *args, **kwds):
         self.func = partial(func, *args, **kwds)
-    
+
     def __call__(self, *args, **kwds):
         return args, self.func(*args, **kwds)
 
@@ -56,8 +57,7 @@ class Pool(ThreadPool):
     def __init__(self, processes=None, initializer=None, initargs=(), worker_names=None):
         self.Process = partial(Process, name=worker_names)
         ThreadPool.__init__(self, processes, initializer, initargs)
-    
+
     def map_multi_args(self, func, iterable, chunksize=None):
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()
-        

@@ -23,30 +23,30 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 
 class TestWSDLFinder(PluginTest):
-    
+
     base_url = 'http://moth/w3af/crawl/wsdl_finder/'
-    
+
     _run_configs = {
         'cfg': {
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('wsdl_finder'),
                                   PluginConfig('web_spider',
-                                         ('onlyForward', True, PluginConfig.BOOL))),
+                                               (
+                                               'onlyForward', True, PluginConfig.BOOL))),
                         }
-            }
         }
-    
+    }
+
     def test_wsdl_found(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
-        
-        infos = self.kb.get('wsdl_greper', 'wsdl')
-        
-        self.assertEqual( len(infos), 1, infos )
-        
-        info = infos[0]
-        
-        self.assertTrue( info.get_name().startswith('WSDL file') )
-        self.assertEquals( info.getURL().url_string, self.base_url + 'web_service_server.php' )
-        
 
+        infos = self.kb.get('wsdl_greper', 'wsdl')
+
+        self.assertEqual(len(infos), 1, infos)
+
+        info = infos[0]
+
+        self.assertTrue(info.get_name().startswith('WSDL file'))
+        self.assertEquals(info.getURL(
+        ).url_string, self.base_url + 'web_service_server.php')

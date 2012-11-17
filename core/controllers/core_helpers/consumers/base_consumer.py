@@ -37,7 +37,7 @@ class BaseConsumer(Process):
     by the crawl plugins and identified vulnerabilities by performing various
     requests.
     '''
-    
+
     def __init__(self, consumer_plugins, w3af_core, thread_name='Consumer'):
         '''
         @param in_queue: The input queue that will feed the base_consumer plugins
@@ -45,7 +45,7 @@ class BaseConsumer(Process):
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
         super(BaseConsumer, self).__init__()
-        
+
         self.in_queue = Queue.Queue()
         # See documentation in the property below
         self._out_queue = Queue.Queue()
@@ -53,34 +53,34 @@ class BaseConsumer(Process):
         self._w3af_core = w3af_core
         self._threadpool = Pool(10, worker_names=thread_name)
         self._tasks_in_progress_counter = 0
-    
+
     def run(self):
         '''
         Consume the queue items, sending them to the plugins which are then going
         to find vulnerabilities, new URLs, etc.
-        
+
         TODO: Report progress to w3afCore somehow.
         '''
 
         while True:
-           
+
             work_unit = self.in_queue.get()
 
             if work_unit == POISON_PILL:
-                
+
                 # Close the pool and wait for everyone to finish
                 self._threadpool.close()
                 self._threadpool.join()
-                
+
                 self._teardown()
 
                 # Finish this consumer and everyone consuming the output
-                self._out_queue.put( POISON_PILL )
+                self._out_queue.put(POISON_PILL)
                 self.in_queue.task_done()
                 break
-                
+
             else:
-                
+
                 self._consume(work_unit)
                 self.in_queue.task_done()
 
@@ -95,58 +95,58 @@ class BaseConsumer(Process):
         The task_in_progress_counter is needed because we want to know if the
         consumer is processing something and let it finish. It is mainly used
         in the has_pending_work().
-        
+
         For example:
-        
+
             * You can have pending work if there are items in the input_queue
-            
+
             * You can have pending work if there are still items to be read from
             the output_queue by one of the consumers that reads our output.
-            
+
             * You can have pending work when there are no items in input_queue
             and no items in output_queue but the threadpool inside the consumer
             is processing something. This situation is handled by the
             self._tasks_in_progress_counter attribute and the _add_task and
-            _task_done methods. 
-        
+            _task_done methods.
+
         So, for each _add_task() there has to be a _task_done() even if the
         task ends in an error or exception.
         '''
         self._tasks_in_progress_counter -= 1
         assert self._tasks_in_progress_counter >= 0, 'You can not _task_done()' \
-                                                     ' more than you _add_task().' 
-    
+                                                     ' more than you _add_task().'
+
     def _add_task(self):
         '''
         @see: _task_done()'s documentation.
         '''
         self._tasks_in_progress_counter += 1
-    
+
     def in_queue_put(self, work):
         if work is not None:
-            return self.in_queue.put( work )
-        
+            return self.in_queue.put(work)
+
     def in_queue_put_iter(self, work_iter):
         if work_iter is not None:
             for work in work_iter:
-                self.in_queue_put( work )
-                    
+                self.in_queue_put(work)
+
     def has_pending_work(self):
         '''
         @see: _task_done() documentation
-        
+
         @return: True if the in_queue_size is != 0 OR if one of the pool workers
                  is still doing something that might impact on out_queue.
         '''
         if self.in_queue_size() > 0 \
-        or self.out_queue.qsize() > 0:
+                or self.out_queue.qsize() > 0:
             return True
-        
+
         if self._tasks_in_progress_counter > 0:
             return True
-        
+
         return False
-    
+
     @property
     def out_queue(self):
         #
@@ -154,7 +154,7 @@ class BaseConsumer(Process):
         #        * POISON_PILL
         #        * (plugin_name, fuzzable_request, AsyncResult)
         return self._out_queue
-        
+
     def in_queue_size(self):
         return self.in_queue.qsize()
 
@@ -163,7 +163,7 @@ class BaseConsumer(Process):
         Poison the loop and wait for all queued work to finish this might take
         some time to process.
         '''
-        self.in_queue_put( POISON_PILL )
+        self.in_queue_put(POISON_PILL)
         self.in_queue.join()
 
     def terminate(self):
@@ -175,8 +175,8 @@ class BaseConsumer(Process):
         while not self.in_queue.empty():
             self.in_queue.get()
             self.in_queue.task_done()
-        
-        self.in_queue_put( POISON_PILL )
+
+        self.in_queue_put(POISON_PILL)
         self.in_queue.join()
 
     def get_result(self, timeout=0.5):
@@ -190,21 +190,20 @@ class BaseConsumer(Process):
         Get the exception information, and put it into the output queue
         then, the strategy will get the items from the output queue and
         handle the exceptions.
-        
+
         @param plugin_name: The plugin that generated the exception
         @param fuzzable_request: The fuzzable request that was sent as input to
                                  the plugin when the exception was raised
         @param _exception: The exception object
-        '''                    
+        '''
         except_type, except_class, tb = sys.exc_info()
         enabled_plugins = pprint_plugins(self._w3af_core)
-        
+
         status = w3af_core_status()
-        status.set_running_plugin( plugin_name, log=False )
-        status.set_phase( phase )
-        status.set_current_fuzzable_request( fuzzable_request )
-        
-        exception_data = ExceptionData( status, _exception , tb,
-                                        enabled_plugins )
+        status.set_running_plugin(plugin_name, log=False)
+        status.set_phase(phase)
+        status.set_current_fuzzable_request(fuzzable_request)
+
+        exception_data = ExceptionData(status, _exception, tb,
+                                       enabled_plugins)
         self._out_queue.put(exception_data)
-        

@@ -21,18 +21,19 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 
+
 def download_debug(fn):
-    def new( self, remote_filename, local_filename ):
+    def new(self, remote_filename, local_filename):
         #   Run the original function
-        result = fn( self, remote_filename, local_filename )
-        
-        msg = 'download( "' + remote_filename + '" , "' + local_filename +'") == ' + result
-        
+        result = fn(self, remote_filename, local_filename)
+
+        msg = 'download( "' + remote_filename + '" , "' + \
+            local_filename + '") == ' + result
+
         #   Print the message to the debug output
-        om.out.debug( msg )
-        
+        om.out.debug(msg)
+
         #   Return the result
         return result
-        
-    return new
 
+    return new
