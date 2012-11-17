@@ -18,7 +18,6 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import gtk, gobject
 
 import core.data.kb.knowledge_base as kb
@@ -51,8 +50,10 @@ class KBTree(gtk.TreeView):
         self.w3af = w3af
 
         # simple empty Tree Store
-        # columns: string to show; key for the plugin instance, icon, colorLevel, color, child_count
-        self.treestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, str, gtk.gdk.Pixbuf, int, str, str)
+        # columns: string to show; key for the plugin instance, icon, 
+        #          colorLevel, color, child_count
+        self.treestore = gtk.TreeStore(gtk.gdk.Pixbuf, str, str,
+                                       gtk.gdk.Pixbuf, int, str, str)
         gtk.TreeView.__init__(self, self.treestore)
         #self.set_enable_tree_lines(True)
 
@@ -105,7 +106,7 @@ class KBTree(gtk.TreeView):
 
         # get the knowledge base and go live
         self.fullkb = kb.kb.dump()
-        gobject.timeout_add(500, self._updateTree, self.treestore, self.treeholder)
+        gobject.timeout_add(500, self._update_tree, self.treestore, self.treeholder)
         self.postcheck = False
         
         self.show()
@@ -201,7 +202,7 @@ class KBTree(gtk.TreeView):
         new_treestore.set_sort_func(4, self._treestore_sort)
         
         new_treeholder = {}
-        self._updateTree(new_treestore, new_treeholder)
+        self._update_tree(new_treestore, new_treeholder)
         self.set_model(new_treestore)
         self.treestore = new_treestore
         self.treeholder = new_treeholder
@@ -222,7 +223,7 @@ class KBTree(gtk.TreeView):
             
         return name
         
-    def _updateTree(self, treestore, treeholder):
+    def _update_tree(self, treestore, treeholder):
         '''Updates the GUI with the KB.
 
         @param treestore: the gui tree to updated.
@@ -255,9 +256,9 @@ class KBTree(gtk.TreeView):
                 # the color can change later!
                 self.treestore[treeplugin][5] = plugincolor
                 # Update the child_count
-                self.treestore[treeplugin][6] = child_count = '( ' + str(len(plugvalues)) + ' )'
+                self.treestore[treeplugin][6] = child_count = '( %s )' % len(plugvalues)
             else:
-                child_count = '( ' + str(len(plugvalues)) + ' )'
+                child_count = '( %s )' % len(plugvalues)
                 treeplugin = treestore.append(None, [None, pluginname, 0, None,
                                                      0, plugincolor, child_count])
                 holdplugin = {}
@@ -272,9 +273,10 @@ class KBTree(gtk.TreeView):
                     # the color can change later!
                     self.treestore[treevariab][5] = variabcolor
                     # Update the child_count
-                    self.treestore[treevariab][6] = child_count = '( ' + str(len(variabobjects)) + ' )'
+                    child_count = '( %s )' % len(variabobjects)
+                    self.treestore[treevariab][6] = child_count 
                 else:
-                    child_count = '( ' + str(len(variabobjects)) + ' )'
+                    child_count = '( %s )' % len(variabobjects)
                     treevariab = treestore.append(treeplugin, [None, variabname,
                                                                0, None, 0,
                                                                variabcolor,
@@ -299,6 +301,14 @@ class KBTree(gtk.TreeView):
                                                       icon, 0, color, ''])
                         self.instances[idinstance] = instance
                         self._mapExploitsToVuln(instance)
+                    
+                    # And just to make sure the UI is responsive we call the
+                    # main iteration until all events are processed 
+                    gtk.threads_enter()
+                    while gtk.events_pending():
+                        gtk.main_iteration()
+                    gtk.threads_leave()
+                
         
         # TODO: Right now I only get ValueError: invalid tree path
         # when enabling this line, and I don't know why :S

@@ -23,7 +23,7 @@ import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
 from core.data.kb.vuln import vuln as vuln
-from core.data.kb.ExploitResult import ExploitResult
+from core.data.kb.exploit_result import ExploitResult
 
 
 class shell(vuln, ExploitResult):

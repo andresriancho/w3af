@@ -14,7 +14,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a     copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
@@ -26,7 +26,7 @@ import pango
 # The elements to create the req/res viewer
 from core.ui.gui import reqResViewer, entries
 from core.ui.gui.entries import EasyTable
-from core.ui.gui.entries import wrapperWidgets
+from core.ui.gui.entries import wrapperWidgets, TextInput
 from core.controllers.exceptions import w3afException
 from core.data.db.history import HistoryItem
 from core.data.options.preferences import Preferences
@@ -485,7 +485,8 @@ class FilterOptions(gtk.HBox, Preferences):
             for i, opt in enumerate(optList):
                 titl = gtk.Label(opt.get_desc())
                 titl.set_alignment(xalign=0.0, yalign=0.5)
-                widg = wrapperWidgets[opt.get_type()](self._changedWidget, opt)
+                input_widget_klass = wrapperWidgets.get(opt.get_type(), TextInput)
+                widg = input_widget_klass(self._changedWidget, opt)
                 titl.set_mnemonic_widget(widg)
                 opt.widg = widg
                 widg.set_tooltip_text( opt.get_help() )

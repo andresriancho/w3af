@@ -18,10 +18,11 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 import gtk, gobject
-from core.ui.gui import helpers, entries
+
 import core.data.kb.knowledge_base as kb
+
+from core.ui.gui import helpers, entries
 from core.ui.gui.common.searchable import Searchable
 from core.data.db.disk_list import disk_list
 

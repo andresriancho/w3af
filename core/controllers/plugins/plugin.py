@@ -183,8 +183,9 @@ class Plugin(Configurable):
     
     def end( self ):
         '''
-        This method is called by w3afCore to let the plugin know that it wont be used
-        anymore. This is helpfull to do some final tests, free some structures, etc.
+        This method is called by w3afCore to let the plugin know that it wont
+        be used anymore. This is helpfull to do some final tests, free some
+        structures, etc.
         '''
         pass
         

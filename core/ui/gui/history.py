@@ -18,8 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import cPickle
+import operator
+import os
 
-import cPickle, operator, os
 
 class HistorySuggestion(object):
     '''Handles the history of any text, providing suggestions.
