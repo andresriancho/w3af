@@ -29,7 +29,7 @@ SHELL_IDENTIFIER_1 = '15825b40c6dace2a'
 SHELL_IDENTIFIER_2 = '7cf5d4ab8ed434d5'
 
 
-def get_webshells(extension, forceExtension=False):
+def get_webshells(extension, force_extension=False):
     '''
     This method returns a webshell content to be used in exploits, based on
     the extension, or based on the x-powered-by header.
@@ -37,10 +37,10 @@ def get_webshells(extension, forceExtension=False):
     Plugins calling this function, should depend on "infrastructure.server_header"
     if they want to use the complete power if this function.
     '''
-    return _get_file_list('webshell', extension, forceExtension)
+    return _get_file_list('webshell', extension, force_extension)
 
 
-def get_shell_code(extension, forceExtension=False):
+def get_shell_code(extension, force_extension=False):
     '''
     Like getShell, but instead of returning a list of the contents of a web shell,
     that you can upload to a server and execute, this method returns the CODE
@@ -55,7 +55,7 @@ def get_shell_code(extension, forceExtension=False):
 
     @return: The CODE of the web shell, suitable to use in an eval() exploit.
     '''
-    return _get_file_list('code', extension, forceExtension)
+    return _get_file_list('code', extension, force_extension)
 
 
 def extract_result(body):
@@ -70,7 +70,7 @@ def extract_result(body):
     return body[idx_1 + len_1:idx_2]
 
 
-def _get_file_list(type_of_list, extension, forceExtension=False):
+def _get_file_list(type_of_list, extension, force_extension=False):
     '''
     @param type_of_list: Indicates what type of list to return, options:
         - code
@@ -85,7 +85,7 @@ def _get_file_list(type_of_list, extension, forceExtension=False):
         'payloads' + os.path.sep
     path += type_of_list + os.path.sep
 
-    if forceExtension:
+    if force_extension:
         filename = path + type_of_list + '.' + extension
         real_extension = extension
         known_framework.append((filename, real_extension))
