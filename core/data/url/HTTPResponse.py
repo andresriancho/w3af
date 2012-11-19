@@ -141,6 +141,11 @@ class HTTPResponse(object):
         @param string_to_test: String to look for in the body
         '''
         return string_to_test in self.body
+    
+    def __eq__(self, other):
+        return self.id == other.id and self._code == other._code and \
+               self.headers == other.headers and self.body == other.body and \
+               self._uri == other._uri
 
     def __repr__(self):
 
@@ -152,8 +157,8 @@ class HTTPResponse(object):
         }
         return '<HTTPResponse | %(code)s | %(url)s%(id)s%(fcache)s>' % vals
 
-    def set_id(self, id):
-        self.id = id
+    def set_id(self, _id):
+        self.id = _id
 
     def get_id(self):
         return self.id

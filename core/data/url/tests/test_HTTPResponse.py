@@ -20,8 +20,10 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import cPickle
 
 from nose.plugins.attrib import attr
+from nose.plugins.skip import SkipTest
 
 from core.data.url.HTTPResponse import HTTPResponse, DEFAULT_CHARSET
 from core.data.misc.encoding import smart_unicode, ESCAPED_CHAR
@@ -188,3 +190,37 @@ class TestHTTPResponse(unittest.TestCase):
 
         self.assertEqual(resp.getLowerCaseHeaders(), lcase_headers)
         self.assertIn('content-type', resp.getLowerCaseHeaders())
+
+    def test_pickleable_no_dom(self):
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        resp = self.create_resp(headers, html)
+        
+        pickled_resp = cPickle.dumps(resp)
+        unpickled_resp = cPickle.loads(pickled_resp)
+        
+        self.assertEqual(unpickled_resp, resp)
+
+    def test_pickleable_dom(self):
+        
+        msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
+              ' having a multiprocess process that will perform all HTTP requests' \
+              ' and return HTTP responses over a multiprocessing Queue.'
+        raise SkipTest(msg)
+    
+    
+        html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
+        headers = Headers([('Content-Type', 'text/html')])
+        resp = self.create_resp(headers, html)
+        # This just calculates the DOM and stores it as an attribute, NEEDS
+        # to be done before pickling (dumps) to have a real test.
+        original_dom = resp.getDOM()
+        
+        pickled_resp = cPickle.dumps(resp)
+        unpickled_resp = cPickle.loads(pickled_resp)
+        
+        self.assertEqual(unpickled_resp, resp)
+        
+        unpickled_dom = unpickled_resp.getDOM()
+        self.assertEqual(unpickled_dom, original_dom)
+        
