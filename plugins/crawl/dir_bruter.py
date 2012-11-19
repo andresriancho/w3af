@@ -108,7 +108,8 @@ class dir_bruter(CrawlPlugin):
         else:
             if not is_404(http_response):
                 #
-                #   Looking fine... but lets see if this is a false positive or not...
+                #   Looking good, but lets see if this is a false positive
+                #   or not...
                 #
                 dir_url = base_path.urlJoin(
                     directory_name + rand_alnum(5) + '/')
@@ -159,8 +160,8 @@ class dir_bruter(CrawlPlugin):
         o = opt_factory('wordlist', self._dir_list, d, INPUT_FILE)
         ol.add(o)
 
-        d = 'If set to True, this plugin will bruteforce all directories, not only the root'
-        d += ' directory.'
+        d = 'If set to True, this plugin will bruteforce all directories, not'\
+            ' only the root directory.'
         h = 'WARNING: Enabling this will make the plugin send LOTS of requests.'
         o = opt_factory('be_recursive', self._be_recursive, d, BOOL, help=h)
         ol.add(o)
