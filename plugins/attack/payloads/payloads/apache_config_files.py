@@ -42,7 +42,7 @@ class apache_config_files(base_payload):
                 for possible_domain in extras:
                     yield directory + 'sites-enabled/' + possible_domain.lower()
 
-                yield directory + 'sites-enabled/' + self.shell.getURL().getDomain()
+                yield directory + 'sites-enabled/' + self.shell.get_url().get_domain()
 
     def api_read(self):
         result = {}

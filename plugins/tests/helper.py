@@ -65,7 +65,7 @@ class PluginTest(unittest.TestCase):
             opt.set_value(','.join(target))
             opts.add(opt)
             opt = opt_factory(
-                'targetOS', ('unknown', 'unix', 'windows'), '', 'combo')
+                'target_os', ('unknown', 'unix', 'windows'), '', 'combo')
             opts.add(opt)
             opt = opt_factory(
                 'targetFramework',

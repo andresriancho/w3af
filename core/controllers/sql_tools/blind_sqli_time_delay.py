@@ -62,7 +62,7 @@ class blind_sqli_time_delay(object):
                 v.set_desc(desc)
                 v.set_dc(mutant.get_dc())
                 v.set_id([r.id for r in responses])
-                v.setURI(r.getURI())
+                v.set_uri(r.get_uri())
 
                 om.out.debug(v.get_desc())
 
@@ -102,7 +102,7 @@ class blind_sqli_time_delay(object):
         # In my test environment 3500000 delays 10 seconds
         # This is why I selected 2500000 which is guaranteed to (at least) delay 8
         # seconds; and I only check the delay like this:
-        #                 response.getWaitTime() > (original_wait_time + self._wait_time-2):
+        #                 response.get_wait_time() > (original_wait_time + self._wait_time-2):
         #
         # With a small wait time of 5 seconds, this should work without problems...
         # and without hitting the xUrllib timeout !

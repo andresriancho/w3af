@@ -38,10 +38,10 @@ class TestAll(unittest.TestCase):
 
     def test_quantities(self):
         fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
-        self.assertEqual(fg.calculateQuantity(), 4)
+        self.assertEqual(fg.calculate_quantity(), 4)
 
         fg = FuzzyGenerator("$range(2)$ n$'as'$", "p$string.lowercase[:2]$")
-        self.assertEqual(fg.calculateQuantity(), 8)
+        self.assertEqual(fg.calculate_quantity(), 8)
 
     def test_generations(self):
         fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
@@ -57,7 +57,7 @@ class TestAll(unittest.TestCase):
 
     def test_quant_gen_gen(self):
         fg = FuzzyGenerator("$range(2)$ dnd$'as'$", "pp")
-        self.assertEqual(fg.calculateQuantity(), 4)
+        self.assertEqual(fg.calculate_quantity(), 4)
 
         self.assertEqual(list(fg.generate()), [
             ('0 dnda', 'pp'), ('0 dnds', 'pp'),

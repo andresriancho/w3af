@@ -53,7 +53,7 @@ class TestDAVShell(PluginTest):
 
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'dav')
 
-        self.assertTrue(plugin.canExploit(vuln_to_exploit_id))
+        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
 
         exploit_result = plugin.exploit(vuln_to_exploit_id)
 

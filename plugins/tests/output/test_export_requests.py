@@ -65,7 +65,7 @@ class TestExportRequests(PluginTest):
 
         self.assertEquals(
             set(sorted(file_urls)),
-            set(sorted([fr.getURL() for fr in freq]))
+            set(sorted([fr.get_url() for fr in freq]))
         )
 
     def _get_urls_from_file(self):

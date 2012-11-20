@@ -48,4 +48,4 @@ class TestContentNegotiation(PluginTest):
         expected_fnames = set(['backup.zip', 'backup.php', 'backup.gz',
                                'backup.tar', ''])
         self.assertEqual(expected_fnames,
-                         set([u.getFileName() for u in urls]))
+                         set([u.get_fileName() for u in urls]))

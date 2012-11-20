@@ -41,9 +41,9 @@ class dbDriver(dbDriverFunctions):
         self._vuln = vuln
 
         mutant = vuln.get_mutant()
-        url = mutant.getURI()
+        url = mutant.get_uri()
         if vuln.get_method() == 'POST':
-            url += '?' + str(vuln.get_mutant().getData())
+            url += '?' + str(vuln.get_mutant().get_data())
         self.args.trueResult = vuln['trueHtml']
 
         falseValue = self._findFalseValue(vuln)
@@ -52,25 +52,25 @@ class dbDriver(dbDriverFunctions):
         # "pretty" prints output
         self.dump = SQLMapDump()
 
-    def auxGetTables(self, db=None):
+    def aux_get_tables(self, db=None):
         self.args.db = db
         # Now I call the sqlmap function
-        return self.getTables()
+        return self.get_tables()
 
-    def auxGetColumns(self, tbl, db=None):
+    def aux_get_columns(self, tbl, db=None):
         self.args.tbl = tbl
         self.args.db = db
 
         # Now I call the sqlmap function
-        return self.getColumns()
+        return self.get_columns()
 
-    def auxDump(self, tbl, db=None, col=None):
+    def aux_dump(self, tbl, db=None, col=None):
         self.args.tbl = tbl
         self.args.db = db
         self.args.col = col
 
         # Now I call the sqlmap function
-        return self.dumpTable()
+        return self.dump_table()
 
     def _findFalseValue(self, vuln):
         '''
@@ -94,26 +94,26 @@ class dbDriver(dbDriverFunctions):
             mutant.set_mod_value(possibleFalse)
 
             res = self._uri_opener.send_mutant(mutant)
-            if res.getBody() != vuln['trueHtml']:
+            if res.get_body() != vuln['trueHtml']:
                 return possibleFalse
 
         if not found:
             raise w3afException(
                 'Failed to find a false value for the injection.')
 
-    def getTables(self):
+    def get_tables(self):
         '''
         To be implemented by subclasses.
         '''
         pass
 
-    def getColumns(self):
+    def get_columns(self):
         '''
         To be implemented by subclasses.
         '''
         pass
 
-    def dumpTable(self):
+    def dump_table(self):
         '''
         To be implemented by subclasses.
         '''

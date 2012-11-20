@@ -49,10 +49,10 @@ class GrepPlugin(Plugin):
         @return: If something is found it must be reported to the Output
             Manager and the KB.
         '''
-        if response.getFromCache():
+        if response.get_from_cache():
             return
 
-        if response.getURL().getDomain() in cf.cf.get('targetDomains'):
+        if response.get_url().get_domain() in cf.cf.get('target_domains'):
             self.grep(fuzzable_request, response)
 
     def grep(self, fuzzable_request, response):

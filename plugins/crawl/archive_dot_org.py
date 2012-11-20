@@ -66,7 +66,7 @@ class archive_dot_org(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        domain = fuzzable_request.getURL().getDomain()
+        domain = fuzzable_request.get_url().get_domain()
 
         if is_private_site(domain):
             msg = 'There is no point in searching archive.org for "%s"'
@@ -75,7 +75,7 @@ class archive_dot_org(CrawlPlugin):
             raise w3afRunOnce(msg)
 
         # Initial check to verify if domain in archive
-        start_url = self.ARCHIVE_START_URL % fuzzable_request.getURL()
+        start_url = self.ARCHIVE_START_URL % fuzzable_request.get_url()
         start_url = URL(start_url)
         http_response = self._uri_opener.GET(start_url, cache=True)
 
@@ -140,7 +140,7 @@ class archive_dot_org(CrawlPlugin):
             # Filter the ones we need
             url_regex_str = self.INTERESTING_URLS_RE % domain
             matched_urls = re.findall(url_regex_str, http_response.body)
-            new_urls = set([URL(u).removeFragment() for u in matched_urls])
+            new_urls = set([URL(u).remove_fragment() for u in matched_urls])
 
             # Go recursive
             if max_depth - 1 > 0:

@@ -59,8 +59,8 @@ class TestOSCommanding(PluginTest):
             ('blind_osc.php', 'cmd')
         ]
 
-        found_vulns = [(v.getURL(
-        ).getFileName(), v.get_mutant().get_var()) for v in vulns]
+        found_vulns = [(v.get_url(
+        ).get_fileName(), v.get_mutant().get_var()) for v in vulns]
 
         self.assertEquals(set(EXPECTED),
                           set(found_vulns)

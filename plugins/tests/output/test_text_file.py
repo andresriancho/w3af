@@ -65,8 +65,8 @@ class TestTextFile(PluginTest):
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
         self.assertEquals(
-            set(sorted([v.getURL() for v in kb_vulns])),
-            set(sorted([v.getURL() for v in file_vulns]))
+            set(sorted([v.get_url() for v in kb_vulns])),
+            set(sorted([v.get_url() for v in file_vulns]))
         )
 
         self.assertEquals(
@@ -85,7 +85,7 @@ class TestTextFile(PluginTest):
 
             if mo:
                 v = vuln.vuln()
-                v.setURL(URL(mo.group(1)))
+                v.set_url(URL(mo.group(1)))
                 v.set_method(mo.group(2))
                 file_vulns.append(v)
 

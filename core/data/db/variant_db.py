@@ -60,9 +60,9 @@ class VariantDB(object):
         that they can be compared very simply using string match.
 
         '''
-        res = reference.getDomainPath() + reference.getFileName()
+        res = reference.get_domain_path() + reference.get_file_name()
 
-        if reference.hasQueryString():
+        if reference.has_query_string():
 
             res += '?'
             qs = reference.querystring.copy()

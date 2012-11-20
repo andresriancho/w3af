@@ -69,7 +69,7 @@ class user_defined_regex(GrepPlugin):
             return
 
         # TODO: Verify this this is really a performance improvement
-        html_string = response.getBody()
+        html_string = response.get_body()
         if not self._all_in_one.search(html_string):
             return
 
@@ -103,7 +103,7 @@ class user_defined_regex(GrepPlugin):
                         om.out.information(msg % (regex.pattern, str_match))
                         info_inst.set_desc(msg % (regex.pattern, str_match))
 
-                        info_inst.setURL(response.getURL())
+                        info_inst.set_url(response.get_url())
                         info_inst.set_id(response.id)
                         info_inst.set_name(
                             'User defined regex - %s' % regex.pattern)

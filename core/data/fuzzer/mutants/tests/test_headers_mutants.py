@@ -41,11 +41,11 @@ class TestHeadersMutant(unittest.TestCase):
 
         mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
-        original_referer = freq.getReferer()
+        original_referer = freq.get_referer()
         mutant.set_original_value(original_referer)
         mutant.set_mod_value(fake_ref)
 
-        self.assertEqual(mutant.getHeaders()['Referer'], fake_ref)
+        self.assertEqual(mutant.get_headers()['Referer'], fake_ref)
         self.assertEqual(mutant.get_original_value(), original_referer)
 
     def test_found_at(self):

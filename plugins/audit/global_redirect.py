@@ -92,7 +92,7 @@ class global_redirect(AuditPlugin):
         One day we should be able to identify all redirect methods:
         http://code.google.com/p/html5security/wiki/RedirectionMethods
         '''
-        lheaders = response.getLowerCaseHeaders()
+        lheaders = response.get_lower_case_headers()
 
         response = self._30x_code_redirect(response, lheaders) or \
             self._refresh_redirect(response, lheaders) or \
@@ -159,7 +159,7 @@ class global_redirect(AuditPlugin):
              window.location.href="http://www.w3af.com/";
              location.replace('http://www.w3af.com/');
             '''
-        res = self._script_re.search(response.getBody())
+        res = self._script_re.search(response.get_body())
         if res:
 
             url_group_re = '(%s)' % '|'.join(self.TEST_URLS)

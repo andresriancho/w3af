@@ -134,7 +134,7 @@ class ScanTask:
         self.clues = []
         self.analyzed = []
 
-    def readConf(self):
+    def read_conf(self):
         """Read configuration file.
 
         This method tries to read the specified configuration file. If we try
@@ -154,7 +154,7 @@ class ScanTask:
             if self.conf_file == default_conf_file:
                 try:
                     os.mkdir(default_conf_dir)
-                    reader.writeDefault(default_conf_file)
+                    reader.write_default(default_conf_file)
                     reader.open(default_conf_file)
                 except (OSError, IOError):
                     raise ConfError('unable to create a default conf. file')

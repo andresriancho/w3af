@@ -50,13 +50,13 @@ class dbDriverBuilder:
         exploitDc = vuln.get_dc()
         exploitDc[vuln.get_var()] = "'z'z'z'"
         functionReference = getattr(self._uri_opener, vuln.get_method())
-        errorResponse = functionReference(vuln.getURL(), str(exploitDc))
+        errorResponse = functionReference(vuln.get_url(), str(exploitDc))
 
         for escape, type in [('\'', 'stringsingle'), ('"', 'stringdouble'), (' ', 'numeric')]:
             exploitDc[vuln.get_var()] = '1' + escape + ' AND ' + \
                 escape + '1' + escape + '=' + escape + '1'
-            response = functionReference(vuln.getURL(), str(exploitDc))
-            if response.getBody() != errorResponse.getBody():
+            response = functionReference(vuln.get_url(), str(exploitDc))
+            if response.get_body() != errorResponse.get_body():
                 vuln['type'] = type
                 om.out.debug('[INFO] The injection type is: ' + type)
                 return vuln
@@ -64,7 +64,7 @@ class dbDriverBuilder:
         om.out.error('Could not find SQL injection type.')
         return None
 
-    def getDriverForVuln(self, vuln):
+    def get_driver_for_vuln(self, vuln):
         '''
         @return: A database driver for the vuln passed as parameter.
         '''
@@ -83,7 +83,7 @@ class dbDriverBuilder:
         #driverList.append( db2( self._uri_opener, vuln ) )
 
         for driver in driverList:
-            if driver.checkDbms():
+            if driver.check_dbms():
                 return driver
 
         return None

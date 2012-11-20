@@ -87,7 +87,7 @@ class wordnet(CrawlPlugin):
         Check the URL query string.
         @return: A list of mutants.
         '''
-        query_string = fuzzable_request.getURI().querystring
+        query_string = fuzzable_request.get_uri().querystring
         for parameter_name in query_string:
             # this for loop was added to address the repeated parameter name issue
             for element_index in xrange(len(query_string[parameter_name])):
@@ -183,7 +183,7 @@ class wordnet(CrawlPlugin):
         Check the URL filenames
         @return: A list mutants.
         '''
-        url = fuzzable_request.getURL()
+        url = fuzzable_request.get_url()
         fname = self._get_filename(url)
 
         wordnet_result = self._search_wn(fname)
@@ -196,8 +196,8 @@ class wordnet(CrawlPlugin):
         '''
         @return: The filename, without the extension
         '''
-        fname = url.getFileName()
-        ext = url.getExtension()
+        fname = url.get_fileName()
+        ext = url.get_extension()
         return fname.replace('.' + ext, '')
 
     def _generate_URL_from_wn_result(self, analyzed_variable, element_index,
@@ -214,9 +214,9 @@ class wordnet(CrawlPlugin):
         '''
         if analyzed_variable is None:
             # The URL was analyzed
-            url = fuzzable_request.getURL()
-            fname = url.getFileName()
-            domain_path = url.getDomainPath()
+            url = fuzzable_request.get_url()
+            fname = url.get_fileName()
+            domain_path = url.get_domain_path()
 
             # The result
             result = []
@@ -232,7 +232,7 @@ class wordnet(CrawlPlugin):
             for set_item in result_set:
                 new_fname = fname.replace(name, set_item)
                 frCopy = fuzzable_request.copy()
-                frCopy.setURL(domain_path.urlJoin(new_fname))
+                frCopy.set_url(domain_path.url_join(new_fname))
                 result.append(frCopy)
 
             return result

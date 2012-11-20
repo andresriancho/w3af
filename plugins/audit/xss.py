@@ -199,7 +199,7 @@ class xss(AuditPlugin):
 
         # Analyze the response
         allowed = []
-        body = response.getBody()
+        body = response.get_body()
 
         # Create the regular expression
         joined_char_regex = rndNum.join(
@@ -358,7 +358,7 @@ class xss(AuditPlugin):
                     msg += ' This vulnerability affects ' + \
                         ','.join(mutant.affected_browsers)
                     v.set_desc(msg)
-                    v.addToHighlight(mod_value)
+                    v.add_to_highlight(mod_value)
                     kb.kb.append_uniq(self, 'xss', v)
 
     def _checkHTML(self, xss_string, response):
@@ -374,7 +374,7 @@ class xss(AuditPlugin):
             HTML Response: I love javascript:alert('XSS');
             _checkHTML returns False
         '''
-        html_string = response.getBody()
+        html_string = response.get_body()
         html_string = html_string.replace(' ', '')
         xss_string = xss_string.replace(' ', '')
         xss_tags = []
@@ -419,13 +419,13 @@ class xss(AuditPlugin):
 
                 for mutant, mutant_response_id in self._xssMutants:
                     # Remember that HTTPResponse objects have a faster "__in__" than
-                    # the one in strings; so string in response.getBody() is slower than
+                    # the one in strings; so string in response.get_body() is slower than
                     # string in response
                     if mutant.get_mod_value() in response:
 
                         v = vuln.vuln(mutant)
                         v.set_plugin_name(self.get_name())
-                        v.setURL(fuzzable_request.getURL())
+                        v.set_url(fuzzable_request.get_url())
                         v.set_dc(fuzzable_request.get_dc())
                         v.set_method(fuzzable_request.get_method())
 
@@ -436,14 +436,14 @@ class xss(AuditPlugin):
                             'Permanent cross site scripting vulnerability')
                         v.set_severity(severity.HIGH)
                         msg = 'Permanent Cross Site Scripting was found at: ' + \
-                            response.getURL()
+                            response.get_url()
                         msg += ' . Using method: ' + \
                             v.get_method() + '. The XSS was sent to the'
                         msg += ' URL: ' + \
-                            mutant.getURL() + '. ' + mutant.print_mod_value()
+                            mutant.get_url() + '. ' + mutant.print_mod_value()
                         v.set_desc(msg)
                         v.set_id([response.id, mutant_response_id])
-                        v.addToHighlight(mutant.get_mod_value())
+                        v.add_to_highlight(mutant.get_mod_value())
 
                         om.out.vulnerability(v.get_desc())
                         kb.kb.append(self, 'xss', v)

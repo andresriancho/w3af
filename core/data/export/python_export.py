@@ -44,17 +44,17 @@ def python_export(request_string):
     # Now I do the real magic...
     res = 'import urllib2\n\n'
 
-    res += 'url = "' + python_escape_string(http_request.getURI()
+    res += 'url = "' + python_escape_string(http_request.get_uri()
                                             .url_string) + '"\n'
 
-    if http_request.getData() != '\n' and http_request.getData() is not None:
-        escaped_data = python_escape_string(str(http_request.getData()))
+    if http_request.get_data() != '\n' and http_request.get_data() is not None:
+        escaped_data = python_escape_string(str(http_request.get_data()))
         res += 'data = "' + escaped_data + '"\n'
     else:
         res += 'data = None\n'
 
     res += 'headers = { \n'
-    headers = http_request.getHeaders()
+    headers = http_request.get_headers()
     for header_name, header_value in headers.iteritems():
         header_value = python_escape_string(header_value)
         header_name = python_escape_string(header_name)

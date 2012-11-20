@@ -60,7 +60,7 @@ class DAVTemplate(BaseTemplate):
 
         # User configured
         v.set_name(self.name)
-        v.setURL(self.url)
+        v.set_url(self.url)
 
         return v
 

@@ -66,7 +66,7 @@ class FullKBTree(kbtree.KBTree):
         if path is None:
             return
 
-        instance = self.getInstance(path)
+        instance = self.get_instance(path)
         if hasattr(instance, "get_desc"):
             longdesc = str(instance.get_desc())
         else:
@@ -105,14 +105,14 @@ class FullKBTree(kbtree.KBTree):
                         historyItem = self._historyItem.read(
                             instance.get_id()[0])
                         if historyItem:
-                            self.kbbrowser.rrV.request.showObject(
+                            self.kbbrowser.rrV.request.show_object(
                                 historyItem.request)
-                            self.kbbrowser.rrV.response.showObject(
+                            self.kbbrowser.rrV.response.show_object(
                                 historyItem.response)
 
                             # Don't forget to highlight if neccesary
                             severity = instance.get_severity()
-                            for s in instance.getToHighlight():
+                            for s in instance.get_to_highlight():
                                 self.kbbrowser.rrV.response.highlight(
                                     s, severity)
 
@@ -134,8 +134,8 @@ class FullKBTree(kbtree.KBTree):
         if success:
             self.kbbrowser.rrV.set_sensitive(True)
         else:
-            self.kbbrowser.rrV.request.clearPanes()
-            self.kbbrowser.rrV.response.clearPanes()
+            self.kbbrowser.rrV.request.clear_panes()
+            self.kbbrowser.rrV.response.clear_panes()
             self.kbbrowser.rrV.set_sensitive(False)
 
 
@@ -159,16 +159,16 @@ class KBBrowser(entries.RememberingHPaned):
         filterbox = gtk.HBox()
         self.filters = {}
 
-        def makeBut(label, signal, initial):
+        def make_but(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
-            but.connect("clicked", self.typeFilter, signal)
+            but.connect("clicked", self.type_filter, signal)
             self.filters[signal] = initial
             but.show()
             filterbox.pack_start(but, expand=False, fill=False, padding=2)
-        makeBut("Vuln", "vuln", True)
-        makeBut("Info", "info", True)
-        makeBut("Misc", "misc", False)
+        make_but("Vuln", "vuln", True)
+        make_but("Info", "info", True)
+        make_but("Misc", "misc", False)
         filterbox.show()
 
         # the kb tree
@@ -237,10 +237,10 @@ class KBBrowser(entries.RememberingHPaned):
         self.pack2(vpanedExplainAndView)
         self.show()
 
-    def typeFilter(self, button, ptype):
+    def type_filter(self, button, ptype):
         '''Changes the filter of the KB in the tree.'''
         self.filters[ptype] = button.get_active()
-        self.kbtree.setFilter(self.filters)
+        self.kbtree.set_filter(self.filters)
 
     def _pageChange(self, page):
         '''
@@ -253,14 +253,14 @@ class KBBrowser(entries.RememberingHPaned):
                 historyItem = self._historyItem.read(request_id)
             except:
                 # the request brought problems
-                self.rrV.request.clearPanes()
-                self.rrV.response.clearPanes()
+                self.rrV.request.clear_panes()
+                self.rrV.response.clear_panes()
                 self.rrV.set_sensitive(False)
                 self.title0.set_markup("<b>Error</b>")
             else:
                 self.title0.set_markup("<b>Id: %d</b>" % request_id)
-                self.rrV.request.showObject(historyItem.request)
-                self.rrV.response.showObject(historyItem.response)
+                self.rrV.request.show_object(historyItem.request)
+                self.rrV.response.show_object(historyItem.response)
                 self.rrV.set_sensitive(True)
 
 
@@ -340,7 +340,7 @@ class URLsGraph(gtk.VBox):
 
         gobject.timeout_add(500, self._draw_start)
 
-    def limitNode(self, parent, node, name):
+    def limit_node(self, parent, node, name):
         # I have to escape the quotes, because I don't want a "dot code injection"
         # This was bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
@@ -354,7 +354,7 @@ class URLsGraph(gtk.VBox):
             self.nodos_code.append(nline)
         self._somethingnew = True
 
-    def newNode(self, parent, node, name, isLeaf):
+    def new_node(self, parent, node, name, isLeaf):
         # I have to escape the quotes, because I don't want a "dot code injection"
         # This was bug #2675512
         # https://sourceforge.net/tracker/?func=detail&aid=2675512&group_id=170274&atid=853652
@@ -406,7 +406,7 @@ class URLsTree(gtk.TreeView):
 
         # get the queue and go live
         self.urls = IteratedURLList()
-        gobject.timeout_add(750, self.addUrl().next)
+        gobject.timeout_add(750, self.add_url().next)
         self.show()
 
     def _doubleClick(self, widg, event):
@@ -421,7 +421,7 @@ class URLsTree(gtk.TreeView):
                 else:
                     self.expand_row(path, False)
 
-    def addUrl(self):
+    def add_url(self):
         '''Adds periodically the new URLs to the tree.
 
         @return: True to keep being called by gobject, False when it's done.
@@ -431,12 +431,12 @@ class URLsTree(gtk.TreeView):
                 yield True
                 continue
 
-            path = url.getPath()
-            params = url.getParamsString()
+            path = url.get_path()
+            params = url.get_params_string()
             query = str(url.querystring)
-            fragment = url.getFragment()
-            scheme = url.getProtocol()
-            netloc = url.getDomain()
+            fragment = url.get_fragment()
+            scheme = url.get_protocol()
+            netloc = url.get_domain()
 
             ini = "%s://%s" % (scheme, netloc)
             end = ""
@@ -485,7 +485,7 @@ class URLsTree(gtk.TreeView):
 
         if rec_cntr >= RECURSION_LIMIT:
             newtreenode = self.treestore.append(parent, [RECURSION_MSG])
-            self.grapher.limitNode(parent, newtreenode, RECURSION_MSG)
+            self.grapher.limit_node(parent, newtreenode, RECURSION_MSG)
             return holder
 
         if node in holder:
@@ -495,7 +495,7 @@ class URLsTree(gtk.TreeView):
 
         # does not exist, create it
         newtreenode = self.treestore.append(parent, [node])
-        self.grapher.newNode(parent, newtreenode, node, not rest)
+        self.grapher.new_node(parent, newtreenode, node, not rest)
         newholdnode = self._insertNodes(newtreenode, rest, {}, rec_cntr + 1)
         holder[node] = (newtreenode, newholdnode)
         return holder
@@ -563,7 +563,7 @@ class ScanRunBody(gtk.Notebook):
         self.w3af = w3af
         self.helpChapter = ("Browsing_the_Knowledge_Base",
                             "Site_structure", "Requests_and_Responses")
-        self.connect("switch-page", self.changedPage)
+        self.connect("switch-page", self.changed_page)
 
         # KB Browser
         # this one does not go inside a scrolled window, because that's handled
@@ -593,7 +593,7 @@ class ScanRunBody(gtk.Notebook):
 
         self.show()
 
-    def changedPage(self, notebook, page, page_num):
+    def changed_page(self, notebook, page, page_num):
         '''Changed the page in the Notebook.'''
         self.w3af.helpChapters["scanrun"] = self.helpChapter[page_num]
 

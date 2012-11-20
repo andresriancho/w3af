@@ -60,7 +60,7 @@ class TestFuzzableRequest(unittest.TestCase):
 
     def test_variants_true_similar_params(self):
         # change the url by adding a querystring. shouldn't affect anything.
-        url = self.url.urlJoin('?a=z')
+        url = self.url.url_join('?a=z')
         fr = FuzzableRequest(url, method='GET', dc={'a': ['1'], 'b': ['bb']})
         fr_other = FuzzableRequest(
             self.url, method='GET', dc={'a': ['2'], 'b': ['cc']})

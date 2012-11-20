@@ -68,7 +68,7 @@ class extrusionServer(object):
                 raise Exception(
                     'Failed to bind extrusionServer to an interface.')
 
-    def canSniff(self):
+    def can_sniff(self):
         '''
         Determine if the user running w3af can sniff packets on the configured
         interface.
@@ -80,7 +80,7 @@ class extrusionServer(object):
         else:
             return True
 
-    def sniffAndAnalyze(self):
+    def sniff_and_analyze(self):
         '''
         Performs the sniffing
         '''
@@ -106,7 +106,7 @@ class extrusionServer(object):
         finally:
             self._sniffing = False
 
-    def getResult(self):
+    def get_result(self):
         while self._sniffing:
             time.sleep(0.5)
         return self.reverse_ports_allowed

@@ -61,7 +61,7 @@ def report(scantask):
         out.write('difference: %d seconds\n' % clue.diff)
 
         out.write('successful requests: %d hits (%.2f%%)\n'
-                  % (clue.getCount(), clue.getCount() * 100 / float(hits)))
+                  % (clue.get_count(), clue.get_count() * 100 / float(hits)))
 
         if info['contloc']:
             out.write('content-location: %s\n' % info['contloc'].lstrip())

@@ -48,15 +48,15 @@ class menu(object):
         self._console = console
         self._children = {}
 
-        self._loadHelp('common')
-        helpMainRepository.loadHelp('keys', self._keysHelp)
+        self._load_help('common')
+        helpMainRepository.load_help('keys', self._keysHelp)
 #        self._keysHelp = {}
 
         self._initHandlers()
 
 #            if cmd not in helpTab:
                 # highlight undocumented items
-#                self._help.addHelpEntry(cmd, 'UNDOCUMENTED', 'menu')
+#                self._help.add_help_entry(cmd, 'UNDOCUMENTED', 'menu')
 
     def suggest(self, tokens, part, onlyLocalCommands=False):
         '''
@@ -65,19 +65,19 @@ class menu(object):
         @param part: base for completion
         '''
         if len(tokens) == 0:
-            return self.suggestCommands(part, onlyLocalCommands)
-        return self.suggestParams(tokens[0], tokens[1:], part)
+            return self.suggest_commands(part, onlyLocalCommands)
+        return self.suggest_params(tokens[0], tokens[1:], part)
 
-    def isRaw(self=None):
+    def is_raw(self=None):
         return False
 
-    def getPath(self):
+    def get_path(self):
         if self._parent is None:
             return self._name
         else:
-            return self._parent.getPath() + '/' + self._name
+            return self._parent.get_path() + '/' + self._name
 
-    def getHistory(self):
+    def get_history(self):
         return self._history
 
     def _initHandlers(self):
@@ -94,9 +94,9 @@ class menu(object):
             except:
                 pass
 
-    def _loadHelp(self, name, vars=None):
-        helpMainRepository.loadHelp(name, self._help, vars)
-#        self._help = loadHelp(name, self._help, vars)
+    def _load_help(self, name, vars=None):
+        helpMainRepository.load_help(name, self._help, vars)
+#        self._help = load_help(name, self._help, vars)
 
     def addChild(self, name, constructor):
         if type(constructor) in (tuple, list):
@@ -107,34 +107,34 @@ class menu(object):
         self._children[name] = constructor(
             name, self._console, self._w3af, self, *params)
 
-    def suggestCommands(self, part='', onlyLocal=False):
+    def suggest_commands(self, part='', onlyLocal=False):
 
         first, rest = splitPath(part)
 
         if rest is None:
             # the command must be in the current menu
-            result = suggest(self.getCommands(onlyLocal), part)
-            if self.getChildren() is not None:
-                result += suggest(self.getChildren(), part)
+            result = suggest(self.get_commands(onlyLocal), part)
+            if self.get_children() is not None:
+                result += suggest(self.get_children(), part)
             return result
         else:
             try:
                 # delegate to the children
-                subMenu = self.getChildren()[first]
-                return subMenu.suggestCommands(rest, True)
+                subMenu = self.get_children()[first]
+                return subMenu.suggest_commands(rest, True)
             except:
                 return []
 
-    def suggestParams(self, command, params, part):
+    def suggest_params(self, command, params, part):
         if command in self._paramHandlers:
             return self._paramHandlers[command](params, part)
 
-        children = self.getChildren()
+        children = self.get_children()
         if command in children:
             child = children[command]
             return child.suggest(params, part, True)
 
-    def getCommands(self, onlyLocal=False):
+    def get_commands(self, onlyLocal=False):
         '''
         By default, commands are defined by methods _cmd_<command>.
         '''
@@ -145,10 +145,10 @@ class menu(object):
 
         return cmds
 
-    def getChildren(self):
-        return self._children  # self.getCommands()
+    def get_children(self):
+        return self._children  # self.get_commands()
 
-    def getHandler(self, command):
+    def get_handler(self, command):
         try:
             return self._handlers[command]
         except:
@@ -160,11 +160,11 @@ class menu(object):
             return self
 
         command, params = tokens[0], tokens[1:]
-        handler = self.getHandler(command)
+        handler = self.get_handler(command)
         if handler:
             return handler(params)
 
-        children = self.getChildren()
+        children = self.get_children()
         if command in children:
             child = children[command]
             return child.execute(params)
@@ -179,8 +179,8 @@ class menu(object):
 
     def _cmd_help(self, params, brief=False):
         if len(params) == 0:
-            table = self._help.getPlainHelpTable(True)
-            self._console.drawTable(table)
+            table = self._help.get_plain_help_table(True)
+            self._console.draw_table(table)
         else:
             subj = params[0]
             short, full = self._help.get_help(subj)
@@ -192,8 +192,8 @@ class menu(object):
                 om.out.console(full)
 
     def _cmd_keys(self, params=None):
-        table = self._keysHelp.getPlainHelpTable(True)
-        self._console.drawTable(table)
+        table = self._keysHelp.get_plain_help_table(True)
+        self._console.draw_table(table)
 
     def _cmd_print(self, params):
         if not len(params):
@@ -246,7 +246,7 @@ class menu(object):
 
     def _para_help(self, params, part):
         if len(params) == 0:
-            return suggest(self._help.getItems(), part)
+            return suggest(self._help.get_items(), part)
         else:
             return []
 

@@ -136,32 +136,32 @@ class profile(object):
         Create a copy of the profile file into copyProfileName. The directory
         of the profile is kept unless specified.
         '''
-        newProfilePathAndName = copyProfileName
+        new_profilePathAndName = copyProfileName
 
         # Check path
         if os.path.sep not in copyProfileName:
             dir = os.path.dirname(self._profile_file_name)
-            newProfilePathAndName = os.path.join(dir, copyProfileName)
+            new_profilePathAndName = os.path.join(dir, copyProfileName)
 
         # Check extension
-        if not newProfilePathAndName.endswith('.pw3af'):
-            newProfilePathAndName += '.pw3af'
+        if not new_profilePathAndName.endswith('.pw3af'):
+            new_profilePathAndName += '.pw3af'
 
         try:
-            shutil.copyfile(self._profile_file_name, newProfilePathAndName)
+            shutil.copyfile(self._profile_file_name, new_profilePathAndName)
         except Exception, e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
             raise w3afException(msg % e)
         else:
             # Now I have to change the data inside the copied profile, to reflect the changes.
-            pNew = profile(newProfilePathAndName)
+            pNew = profile(new_profilePathAndName)
             pNew.set_name(copyProfileName)
-            pNew.save(newProfilePathAndName)
+            pNew.save(new_profilePathAndName)
 
             return True
 
-    def setEnabledPlugins(self, plugin_type, plugin_nameList):
+    def set_enabled_plugins(self, plugin_type, plugin_nameList):
         '''
         Set the enabled plugins of type plugin_type.
 
@@ -246,7 +246,7 @@ class profile(object):
 
         return options_list
 
-    def setMiscSettings(self, options):
+    def set_misc_settings(self, options):
         '''
         Set the misc settings options.
         @param options: an OptionList
@@ -254,7 +254,7 @@ class profile(object):
         '''
         self._set_x_settings('misc-settings', options)
 
-    def setHttpSettings(self, options):
+    def set_http_settings(self, options):
         '''
         Set the http settings options.
         @param options: an OptionList
@@ -277,7 +277,7 @@ class profile(object):
             self._config.set(
                 section, option.get_name(), option.get_value_str())
 
-    def getMiscSettings(self):
+    def get_misc_settings(self):
         '''
         Get the misc settings options.
         @return: The misc settings in an OptionList
@@ -286,7 +286,7 @@ class profile(object):
         misc_settings = MiscSettings()
         return self._get_x_settings('misc-settings', misc_settings)
 
-    def getHttpSettings(self):
+    def get_http_settings(self):
         '''
         Get the http settings options.
         @return: The http settings in an OptionList
@@ -344,7 +344,7 @@ class profile(object):
         # Something went wrong
         return None
 
-    def setTarget(self, target):
+    def set_target(self, target):
         '''
         Set the target of the profile.
         @param target: The target URL of the profile
@@ -355,13 +355,13 @@ class profile(object):
             self._config.add_section(section)
         self._config.set(section, 'target', target)
 
-    def getTarget(self):
+    def get_target(self):
         '''
-        @return: The profile target with the options (targetOS, targetFramework, etc.)
+        @return: The profile target with the options (target_os, targetFramework, etc.)
         '''
         # Get the plugin defaults with their types
-        targetInstance = w3af_core_target()
-        options = targetInstance.get_options()
+        target_instance = w3af_core_target()
+        options = target_instance.get_options()
 
         for section in self._config.sections():
             # Section is something like audit.xss or crawl.web_spider

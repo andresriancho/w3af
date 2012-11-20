@@ -81,8 +81,8 @@ class TestHistoryItem(unittest.TestCase):
             res.set_id(i)
             h1.response = res
             if i == find_id:
-                h1.toggleMark()
-                h1.updateTag(tag_value)
+                h1.toggle_mark()
+                h1.update_tag(tag_value)
             h1.save()
         h2 = HistoryItem()
         self.assertEqual(
@@ -112,7 +112,7 @@ class TestHistoryItem(unittest.TestCase):
             res.set_id(i)
             h1.response = res
             if i == mark_id:
-                h1.toggleMark()
+                h1.toggle_mark()
             h1.save()
         h2 = HistoryItem()
         h2.load(mark_id)
@@ -185,7 +185,7 @@ class TestHistoryItem(unittest.TestCase):
             res.set_id(i)
             h1.response = res
             if i == tag_id:
-                h1.updateTag(tag_value)
+                h1.update_tag(tag_value)
             h1.save()
 
         h2 = HistoryItem()

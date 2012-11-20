@@ -68,8 +68,8 @@ class TestCSVFile(PluginTest):
         self.assertGreaterEqual(len(xss_vulns), 3)
 
         self.assertEquals(
-            set(sorted([v.getURL() for v in xss_vulns])),
-            set(sorted([v.getURL() for v in file_vulns]))
+            set(sorted([v.get_url() for v in xss_vulns])),
+            set(sorted([v.get_url() for v in file_vulns]))
         )
 
         self.assertEquals(
@@ -93,7 +93,7 @@ class TestCSVFile(PluginTest):
 
             v.set_name(name)
             v.set_method(method)
-            v.setURI(URL(uri))
+            v.set_uri(URL(uri))
             v.set_var(var)
             v.set_dc(dc)
             v.set_id(json.loads(_id))

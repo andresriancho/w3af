@@ -119,7 +119,7 @@ class OpenerSettings(Configurable):
             cfg.save('always404', [])
             cfg.save('404string', '')
 
-    def setHeadersFile(self, headers_file):
+    def set_headersFile(self, headers_file):
         '''
         Sets the special headers to use, this headers are specified in a file by the user.
         The file can have multiple lines, each line should have the following structure :
@@ -143,10 +143,10 @@ class OpenerSettings(Configurable):
                 header_value = header_value.strip()
                 hList.append((header_name, header_value))
 
-            self.setHeaderList(hList)
+            self.set_header_list(hList)
             cfg.save('headersFile', headers_file)
 
-    def setHeaderList(self, hList):
+    def set_header_list(self, hList):
         '''
         @param hList: A list of tuples with (header,value) to be added to every request.
         @return: nothing
@@ -180,7 +180,7 @@ class OpenerSettings(Configurable):
         '''
         return self._cookieHandler.cookiejar
 
-    def setTimeout(self, timeout):
+    def set_timeout(self, timeout):
         om.out.debug('Called SetTimeout(' + str(timeout) + ')')
         if timeout > 60 or timeout < 1:
             raise w3afException(
@@ -192,20 +192,20 @@ class OpenerSettings(Configurable):
             # I dont need to use timeoutsocket.py , it has been added to python sockets
             socket.setdefaulttimeout(cfg.get('timeout'))
 
-    def getTimeout(self):
+    def get_timeout(self):
         return cfg.get('timeout')
 
-    def setUserAgent(self, useragent):
+    def set_user_agent(self, useragent):
         om.out.debug('Called SetUserAgent')
         self.header_list = [i for i in self.header_list if i[0]
                             != 'User-Agent']
         self.header_list.append(('User-Agent', useragent))
         cfg.save('User-Agent', useragent)
 
-    def getUserAgent(self):
+    def get_user_agent(self):
         return cfg.get('User-Agent')
 
-    def setProxy(self, ip, port):
+    def set_proxy(self, ip, port):
         '''
         Saves the proxy information and creates the handler.
 
@@ -214,7 +214,7 @@ class OpenerSettings(Configurable):
 
         @return: None
         '''
-        om.out.debug('Called setProxy(%s,%s)' % (ip, port))
+        om.out.debug('Called set_proxy(%s,%s)' % (ip, port))
 
         if not ip:
             #    The user doesn't want a proxy anymore
@@ -244,10 +244,10 @@ class OpenerSettings(Configurable):
         proxyMap = {'http': "http://" + ip + ":" + str(port)}
         self._proxyHandler = urllib2.ProxyHandler(proxyMap)
 
-    def getProxy(self):
+    def get_proxy(self):
         return cfg.get('proxyAddress') + ':' + str(cfg.get('proxyPort'))
 
-    def setBasicAuth(self, url, username, password):
+    def set_basic_auth(self, url, username, password):
         om.out.debug('Called SetBasicAuth')
 
         if not url:
@@ -265,8 +265,8 @@ class OpenerSettings(Configurable):
                 self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
             # Add the username and password
-            domain = url.getDomain()
-            protocol = url.getProtocol()
+            domain = url.get_domain()
+            protocol = url.get_protocol()
             protocol = protocol if protocol in ('http', 'https') else 'http'
             self._password_mgr.add_password(None, domain, username, password)
             self._basicAuthHandler = FastHTTPBasicAuthHandler(
@@ -282,14 +282,14 @@ class OpenerSettings(Configurable):
         cfg.save('basicAuthUser', username)
         cfg.save('basicAuthDomain', url)
 
-    def getBasicAuth(self):
+    def get_basic_auth(self):
         scheme, domain, path, x1, x2, x3 = urlparse.urlparse(
             cfg.get('basicAuthDomain'))
         res = scheme + '://' + cfg.get('basicAuthUser') + ':'
         res += cfg.get('basicAuthPass') + '@' + domain + '/'
         return res
 
-    def setNtlmAuth(self, url, ntlm_domain, username, password):
+    def set_ntlm_auth(self, url, ntlm_domain, username, password):
 
         cfg.save('ntlmAuthPass', password)
         cfg.save('ntlmAuthDomain', ntlm_domain)
@@ -317,7 +317,7 @@ class OpenerSettings(Configurable):
 
         # Instantiate the handlers passing the proxy as parameter
         self._kAHTTP = kAHTTP()
-        self._kAHTTPS = kAHTTPS(self.getProxy())
+        self._kAHTTPS = kAHTTPS(self.get_proxy())
         self._cache_hdler = localCache.CacheHandler()
 
         # Prepare the list of handlers
@@ -344,7 +344,7 @@ class OpenerSettings(Configurable):
     def get_custom_opener(self):
         return self._uri_opener
 
-    def setManglePlugins(self, mp):
+    def set_mangle_plugins(self, mp):
         '''
         Configure the mangle plugins to be used.
 
@@ -352,22 +352,22 @@ class OpenerSettings(Configurable):
         '''
         self._manglePlugins = mp
 
-    def getManglePlugins(self):
+    def get_mangle_plugins(self):
         return self._manglePlugins
 
-    def getMaxFileSize(self):
+    def get_max_file_size(self):
         return cfg.get('maxFileSize')
 
-    def setMaxFileSize(self, fsize):
+    def set_maxFileSize(self, fsize):
         cfg.save('maxFileSize', fsize)
 
-    def setMaxRetrys(self, retryN):
+    def set_maxRetrys(self, retryN):
         cfg.save('maxRetrys', retryN)
 
-    def getMaxRetrys(self):
+    def get_max_retrys(self):
         return cfg.get('maxRetrys')
 
-    def setUrlParameter(self, urlParam):
+    def set_url_parameter(self, urlParam):
         # Do some input cleanup/validation
         urlParam = urlParam.replace("'", "")
         urlParam = urlParam.replace("\"", "")
@@ -376,7 +376,7 @@ class OpenerSettings(Configurable):
             cfg.save('urlParameter', urlParam)
             self._urlParameterHandler = URLParameterHandler(urlParam)
 
-    def getUrlParameter(self):
+    def get_url_parameter(self):
         return cfg.get('urlParameter')
 
     def get_options(self):
@@ -514,7 +514,7 @@ class OpenerSettings(Configurable):
         @return: No value is returned.
         '''
         getOptsMapValue = lambda n: options_list[n].get_value()
-        self.setTimeout(getOptsMapValue('timeout'))
+        self.set_timeout(getOptsMapValue('timeout'))
 
         # Only apply changes if they exist
         bAuthDomain = getOptsMapValue('basicAuthDomain')
@@ -529,7 +529,7 @@ class OpenerSettings(Configurable):
             except ValueError:
                 bAuthDomain = None
 
-            self.setBasicAuth(bAuthDomain, bAuthUser, bAuthPass)
+            self.set_basic_auth(bAuthDomain, bAuthUser, bAuthPass)
 
         ntlmAuthDomain = getOptsMapValue('ntlmAuthDomain')
         ntlmAuthUser = getOptsMapValue('ntlmAuthUser')
@@ -540,7 +540,7 @@ class OpenerSettings(Configurable):
             ntlmAuthUser != cfg['ntlmAuthUser'] or \
             ntlmAuthPass != cfg['ntlmAuthPass'] or \
                 ntlmAuthURL != cfg['ntlmAuthURL']:
-            self.setNtlmAuth(
+            self.set_ntlm_auth(
                 ntlmAuthURL, ntlmAuthDomain, ntlmAuthUser, ntlmAuthPass)
 
         # Only apply changes if they exist
@@ -549,17 +549,17 @@ class OpenerSettings(Configurable):
 
         if proxyAddress != cfg['proxyAddress'] or \
                 proxyPort != cfg['proxyPort']:
-            self.setProxy(proxyAddress, proxyPort)
+            self.set_proxy(proxyAddress, proxyPort)
 
         self.set_cookieJarFile(getOptsMapValue('cookieJarFile'))
-        self.setHeadersFile(getOptsMapValue('headersFile'))
-        self.setUserAgent(getOptsMapValue('userAgent'))
+        self.set_headersFile(getOptsMapValue('headersFile'))
+        self.set_user_agent(getOptsMapValue('userAgent'))
         cfg['ignoreSessCookies'] = getOptsMapValue('ignoreSessCookies')
 
-        self.setMaxFileSize(getOptsMapValue('maxFileSize'))
-        self.setMaxRetrys(getOptsMapValue('maxRetrys'))
+        self.set_maxFileSize(getOptsMapValue('maxFileSize'))
+        self.set_maxRetrys(getOptsMapValue('maxRetrys'))
 
-        self.setUrlParameter(getOptsMapValue('urlParameter'))
+        self.set_url_parameter(getOptsMapValue('urlParameter'))
 
         # 404 settings are saved here
         cfg['never404'] = getOptsMapValue('never404')

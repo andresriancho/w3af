@@ -47,7 +47,7 @@ class PDFParser(BaseParser):
         self._pre_parse(HTTPResponse.body)
 
     def _pre_parse(self, document):
-        content_text = self.getPDFContent(document)
+        content_text = self.get_pdf_content(document)
         self._parse(content_text)
 
     def _parse(self, content_text):
@@ -62,7 +62,7 @@ class PDFParser(BaseParser):
         # Get the mail addys
         self._extract_emails(content_text)
 
-    def getPDFContent(self, documentString):
+    def get_pdf_content(self, documentString):
         content = u""
         if documentString:
             # Load PDF into pyPDF
@@ -70,7 +70,7 @@ class PDFParser(BaseParser):
             try:
                 content = u"\n".join(p.extractText() for p in pdfreader.pages)
             except Exception, e:
-                om.out.debug('Exception in getPDFContent(), error: ' + str(e))
+                om.out.debug('Exception in get_pdf_content(), error: ' + str(e))
         return content
 
     def get_references(self):

@@ -55,15 +55,15 @@ class server_status(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
-        server_status_url = base_url.urlJoin('server-status')
+        base_url = fuzzable_request.get_url().base_url()
+        server_status_url = base_url.url_join('server-status')
         response = self._uri_opener.GET(server_status_url, cache=True)
 
-        if not is_404(response) and response.getCode() not in range(400, 404):
+        if not is_404(response) and response.get_code() not in range(400, 404):
 
-            if 'apache' in response.getBody().lower():
+            if 'apache' in response.get_body().lower():
                 msg = 'Apache server-status module is enabled and accessible.'
-                msg += ' The URL is: "%s"' % response.getURL()
+                msg += ' The URL is: "%s"' % response.get_url()
                 om.out.information(msg)
 
                 self._extract_server_version(fuzzable_request, response)
@@ -76,11 +76,11 @@ class server_status(InfrastructurePlugin):
             <dl><dt>Server Version: Apache/2.2.9 (Unix)</dt>
         '''
         for version in re.findall('<dl><dt>Server Version: (.*?)</dt>',
-                                  response.getBody()):
+                                  response.get_body()):
             # Save the results in the KB so the user can look at it
             i = info.info()
             i.set_plugin_name(self.get_name())
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
             i.set_name('Apache Server version')
             msg = 'The web server has the apache server status module enabled, '
@@ -99,15 +99,15 @@ class server_status(InfrastructurePlugin):
 
         # Now really parse the file and create custom made fuzzable requests
         regex = '<td>.*?<td nowrap>(.*?)</td><td nowrap>.*? (.*?) HTTP/1'
-        for domain, path in re.findall(regex, response.getBody()):
+        for domain, path in re.findall(regex, response.get_body()):
 
             if 'unavailable' in domain:
-                domain = response.getURL().getDomain()
+                domain = response.get_url().get_domain()
 
             # Check if the requested domain and the found one are equal.
-            if domain == response.getURL().getDomain():
-                found_url = response.getURL(
-                ).getProtocol() + '://' + domain + path
+            if domain == response.get_url().get_domain():
+                found_url = response.get_url(
+                ).get_protocol() + '://' + domain + path
                 found_url = URL(found_url)
 
                 # They are equal, request the URL and create the fuzzable
@@ -123,7 +123,7 @@ class server_status(InfrastructurePlugin):
         if len(self._shared_hosting_hosts):
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(fuzzable_request.getURL())
+            v.set_url(fuzzable_request.get_url())
             v.set_id(response.id)
             self._shared_hosting_hosts = list(
                 set(self._shared_hosting_hosts))

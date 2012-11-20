@@ -42,19 +42,19 @@ class pdf(basePpPlugin):
     def __init__(self):
         basePpPlugin.__init__(self)
 
-    def _getPDFContent(self, documentString):
+    def _get_pdf_content(self, documentString):
         content = ""
         # Load PDF into pyPDF
         pdf = pyPdf.PdfFileReader(StringIO.StringIO(documentString))
         # Iterate pages
         for i in range(0, pdf.getNumPages()):
             # Extract text from page and add to content
-            content += pdf.getPage(i).extractText() + "\n"
+            content += pdf.get_page(i).extractText() + "\n"
         # Collapse whitespace
         content = " ".join(content.replace("\xa0", " ").strip().split())
         return content.split()
 
-    def getWords(self, response):
+    def get_words(self, response):
         '''
         Get words from the pdf document.
 
@@ -64,9 +64,9 @@ class pdf(basePpPlugin):
         res = None
         words = []
 
-        if isPDF(response.getHeaders()):
+        if isPDF(response.get_headers()):
             try:
-                words = self._getPDFContent(response.getBody())
+                words = self._get_pdf_content(response.get_body())
             except:
                 return None
             else:

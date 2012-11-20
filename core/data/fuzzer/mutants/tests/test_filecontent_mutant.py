@@ -38,16 +38,16 @@ class TestFileContentMutant(unittest.TestCase):
 
     def test_basics(self):
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addInput([("name", "address"), ("value", "")])
-        form.addFileInput([("name", "file"), ("type", "file")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
 
         freq = HTTPPostDataRequest(self.url, dc=form)
 
         m = FileContentMutant(freq)
         m.set_var('file', 0)
         m.set_mod_value('abc')
-        self.assertEqual(m.getURL().url_string, 'http://moth/')
+        self.assertEqual(m.get_url().url_string, 'http://moth/')
 
         expected_mod_value = 'The data that was sent is: "username=&file=abc&address=".'
         generated_mod_value = m.print_mod_value()
@@ -76,9 +76,9 @@ class TestFileContentMutant(unittest.TestCase):
                          'fuzzed_files_extension': 'gif'}
 
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addInput([("name", "address"), ("value", "")])
-        form.addFileInput([("name", "file"), ("type", "file")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
 
         freq = HTTPPostDataRequest(self.url, dc=form)
 
@@ -90,8 +90,8 @@ class TestFileContentMutant(unittest.TestCase):
 
     def test_valid_results(self):
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addFileInput([("name", "file"), ("type", "file")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_file_input([("name", "file"), ("type", "file")])
 
         freq = HTTPPostDataRequest(self.url, dc=form)
 
@@ -104,7 +104,7 @@ class TestFileContentMutant(unittest.TestCase):
         expected_data = [Form([('username', ['John8212']), ('file', ['abc'])]),
                          Form([('username', ['John8212']), ('file', ['def'])]), ]
 
-        generated_data = [m.getData() for m in generated_mutants]
+        generated_data = [m.get_data() for m in generated_mutants]
 
         self.assertEqual(expected_data, generated_data)
 

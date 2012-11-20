@@ -72,12 +72,12 @@ class dom_xss(GrepPlugin):
         for vuln_code in self._smart_grep(response):
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.addToHighlight(vuln_code)
-            v.setURL(response.getURL())
+            v.add_to_highlight(vuln_code)
+            v.set_url(response.get_url())
             v.set_id(response.id)
             v.set_severity(severity.LOW)
             v.set_name('DOM Cross site scripting (Risky JavaScript Code)')
-            msg = 'The URL: "' + v.getURL(
+            msg = 'The URL: "' + v.get_url(
             ) + '" has a DOM XSS (Risky JavaScript Code) '
             msg += 'bug using: "' + vuln_code + '".'
             v.set_desc(msg)
@@ -90,7 +90,7 @@ class dom_xss(GrepPlugin):
         @return: list of dom xss items
         '''
         res = []
-        match = self._scriptRe.search(response.getBody())
+        match = self._scriptRe.search(response.get_body())
 
         if not match:
             return res

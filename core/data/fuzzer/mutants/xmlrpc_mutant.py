@@ -36,7 +36,7 @@ class MutantXMLRPC(PostDataMutant):
     def get_mutant_type(self):
         return 'XMLRPC data'
 
-    def getHeaders(self):
+    def get_headers(self):
         headers = self._headers
         # TODO: Verify this, I had no internet while adding the next line
         headers['Content-Type'] = 'application/xml'
@@ -51,7 +51,7 @@ class MutantXMLRPC(PostDataMutant):
         @return: A string representing WHAT was fuzzed.
         '''
         res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
+        res += '"' + self.get_url() + '", using HTTP method '
         res += self.get_method() + '. The sent JSON-data was: "'
         res += str(self.get_dc())
         res += '"'

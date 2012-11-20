@@ -113,7 +113,7 @@ class rfi_proxy(AttackPlugin, Process):
         @return: True if the user can start using the proxy.
         '''
         # Set proxy parameters
-        self._url = vuln.getURL().uri2url()
+        self._url = vuln.get_url().uri2url()
         self._method = vuln.get_method()
         self._exploitData = vuln.get_dc()
         self._variable = vuln.get_var()
@@ -344,13 +344,13 @@ class RFIProxyShell(shell):
     def __repr__(self):
         return '<' + self.get_name() + ' object (Use proxy: "' + self._proxy_url + '")>'
 
-    def getRemoteSystem(self):
+    def get_remote_system(self):
         return 'browser'
 
-    def getRemoteUser(self):
+    def get_remote_user(self):
         return 'user'
 
-    def getRemoteSystemName(self):
+    def get_remote_system_name(self):
         return 'browser'
 
     __str__ = __repr__
@@ -382,7 +382,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             om.out.error('Oops! Error when proxy tried to open remote site: ' +
                          str(e))
         else:
-            page = response.getBody()
+            page = response.get_body()
             theStart = page.find(RFI_SEPARATOR)
             theEnd = page.rfind(RFI_SEPARATOR)
             page = page[theStart + len(RFI_SEPARATOR): theEnd]

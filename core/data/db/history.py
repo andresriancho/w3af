@@ -129,13 +129,13 @@ class HistoryItem(object):
         self._db = DB(db_name)
 
         self._session_dir = os.path.join(get_temp_dir(),
-                                         self._db.getFileName() + '_traces')
-        tablename = self.getTableName()
+                                         self._db.get_file_name() + '_traces')
+        tablename = self.get_table_name()
         # Init tables
-        self._db.createTable(tablename,
-                             self.getColumns(),
-                             self.getPrimaryKeyColumns())
-        self._db.createIndex(tablename, self.getIndexColumns())
+        self._db.create_table(tablename,
+                             self.get_columns(),
+                             self.get_primary_key_columns())
+        self._db.create_index(tablename, self.get_index_columns())
         # Init dirs
         try:
             os.mkdir(self._session_dir)
@@ -286,22 +286,22 @@ class HistoryItem(object):
         resp = self.response
         values = []
         values.append(resp.get_id())
-        values.append(self.request.getURI().url_string)
-        values.append(resp.getCode())
+        values.append(self.request.get_uri().url_string)
+        values.append(resp.get_code())
         values.append(self.tag)
         values.append(int(self.mark))
         values.append(str(resp.info()))
-        values.append(resp.getWaitTime())
-        values.append(resp.getMsg())
+        values.append(resp.get_wait_time())
+        values.append(resp.get_msg())
         values.append(resp.content_type)
         ch = resp.charset
         values.append(ch)
         values.append(self.request.get_method())
         values.append(len(resp.body))
-        code = int(resp.getCode()) / 100
+        code = int(resp.get_code()) / 100
         values.append(code)
-        values.append(resp.getAlias())
-        values.append(int(self.request.getURI().hasQueryString()))
+        values.append(resp.get_alias())
+        values.append(int(self.request.get_uri().has_query_string()))
 
         if not self.id:
             sql = ('INSERT INTO %s '
@@ -333,16 +333,16 @@ class HistoryItem(object):
             rrfile.close()
             return True
 
-    def getColumns(self):
+    def get_columns(self):
         return self._COLUMNS
 
-    def getTableName(self):
+    def get_table_name(self):
         return self._DATA_TABLE
 
-    def getPrimaryKeyColumns(self):
+    def get_primary_key_columns(self):
         return self._PRIMARY_KEY_COLUMNS
 
-    def getIndexColumns(self):
+    def get_index_columns(self):
         return self._INDEX_COLUMNS
 
     def _updateField(self, name, value):
@@ -352,13 +352,13 @@ class HistoryItem(object):
         sql += ' WHERE id = ?'
         self._db.execute(sql, (value, self.id))
 
-    def updateTag(self, value, forceDb=False):
+    def update_tag(self, value, forceDb=False):
         '''Update tag.'''
         self.tag = value
         if forceDb:
             self._updateField('tag', value)
 
-    def toggleMark(self, forceDb=False):
+    def toggle_mark(self, forceDb=False):
         '''Toggle mark state.'''
         self.mark = not self.mark
         if forceDb:

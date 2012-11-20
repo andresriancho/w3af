@@ -117,7 +117,7 @@ def _generate_upper_bounds():
     UPPER_BOUNDS = set()
     UPPER_BOUNDS.add((1.0, 1.0))
 
-    def addToBounds(a, b):
+    def add_to_bounds(a, b):
         size = float(len(b)) / len(a)
         upper_bound = relative_distance(a, b)
         UPPER_BOUNDS.add((size, upper_bound))
@@ -128,7 +128,7 @@ def _generate_upper_bounds():
                 continue
             atest = 'm' * k
             btest = 'm' * k + 'm' * (i - 1)
-            addToBounds(atest, btest)
+            add_to_bounds(atest, btest)
 
     # Remove duplicates
     UPPER_BOUNDS = list(UPPER_BOUNDS)

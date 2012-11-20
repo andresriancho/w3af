@@ -84,7 +84,7 @@ class find_captchas(CrawlPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Captcha image detected')
-                    i.setURI(img_src)
+                    i.set_uri(img_src)
                     i.set_method('GET')
                     i.set_desc('Found a CAPTCHA image at: "%s".' % img_src)
                     kb.kb.append(self, 'CAPTCHA', i)
@@ -103,7 +103,7 @@ class find_captchas(CrawlPlugin):
 
         try:
             response = self._uri_opener.GET(
-                fuzzable_request.getURI(), cache=False)
+                fuzzable_request.get_uri(), cache=False)
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
@@ -122,9 +122,9 @@ class find_captchas(CrawlPlugin):
                     GET, image_path_list)
                 for image_response in result_iter:
                     if image_response.is_image():
-                        img_src = image_response.getURI()
+                        img_src = image_response.get_uri()
                         img_hash = hashlib.sha1(
-                            image_response.getBody()).hexdigest()
+                            image_response.get_body()).hexdigest()
                         res.append((img_src, img_hash))
 
         return res

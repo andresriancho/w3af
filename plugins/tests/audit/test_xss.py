@@ -67,7 +67,7 @@ class TestXSS(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         xssvulns = self.kb.get('xss', 'xss')
-        kb_data = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
+        kb_data = [(str(m.get_url()), m.get_var(), tuple(sorted(m.get_dc().keys())))
                    for m in (xv.get_mutant() for xv in xssvulns)]
 
         EXPECTED = [('simple_xss_no_js.php', 'text', ['text']), ]
@@ -98,7 +98,7 @@ class TestXSS(PluginTest):
             ('xss_clean_4_strict.php', 'text', ['text', ])
 
         ]
-        res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
+        res = [(str(m.get_url()), m.get_var(), tuple(sorted(m.get_dc().keys())))
                for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
             set([(self.xss_url + e[0], e[1], tuple(sorted(e[2])
@@ -119,7 +119,7 @@ class TestXSS(PluginTest):
             ('printer.php', 'x', ('x', 'added')),
             ('printer.php', 'added', ('x', 'added'))
         ]
-        res = [(str(m.getURL()), m.get_var(), tuple(sorted(m.get_dc().keys())))
+        res = [(str(m.get_url()), m.get_var(), tuple(sorted(m.get_dc().keys())))
                for m in (xv.get_mutant() for xv in xssvulns)]
         self.assertEquals(
             set([(self.xss_302_url + e[0], e[1], tuple(sorted(

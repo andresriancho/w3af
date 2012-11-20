@@ -53,12 +53,12 @@ class http_auth_detect(GrepPlugin):
         @return: None
         '''
         # If I have a 401 code, and this URL wasn't already reported...
-        if response.getCode() == 401:
+        if response.get_code() == 401:
 
             # Doing this after the other if in order to be faster.
-            already_reported = [i.getURL().getDomainPath() for i in
+            already_reported = [i.get_url().get_domain_path() for i in
                                 kb.kb.get('http_auth_detect', 'auth')]
-            if response.getURL().getDomainPath() not in already_reported:
+            if response.get_url().get_domain_path() not in already_reported:
 
                 # Perform all the work in this method
                 self._analyze_401(response)
@@ -76,19 +76,19 @@ class http_auth_detect(GrepPlugin):
         #
         #   Analyze the HTTP URL
         #
-        if ('@' in response.getURI() and
-                self._auth_uri_regex.match(response.getURI().url_string)):
+        if ('@' in response.get_uri() and
+                self._auth_uri_regex.match(response.get_uri().url_string)):
             # An authentication URI was found!
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(response.getURL())
+            v.set_url(response.get_url())
             v.set_id(response.id)
             desc = 'The resource: "%s" has a user and password in ' \
-                'the URI.' % response.getURI()
+                'the URI.' % response.get_uri()
             v.set_desc(desc)
             v.set_severity(severity.HIGH)
             v.set_name('Basic HTTP credentials')
-            v.addToHighlight(response.getURI().url_string)
+            v.add_to_highlight(response.get_uri().url_string)
 
             kb.kb.append(self, 'userPassUri', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
@@ -114,16 +114,16 @@ class http_auth_detect(GrepPlugin):
                     self._auth_uri_regex.match(url.url_string)):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(response.getURL())
+                v.set_url(response.get_url())
                 v.set_id(response.id)
-                msg = 'The resource: "' + response.getURL(
+                msg = 'The resource: "' + response.get_url(
                 ) + '" has a user and password in the'
                 msg += ' body. The offending URL is: "' + url + '".'
                 v.set_desc(msg)
 
                 v.set_severity(severity.HIGH)
                 v.set_name('Basic HTTP credentials')
-                v.addToHighlight(url.url_string)
+                v.add_to_highlight(url.url_string)
 
                 kb.kb.append(self, 'userPassUri', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
@@ -135,9 +135,9 @@ class http_auth_detect(GrepPlugin):
         '''
         # Get the realm
         realm = None
-        for key in response.getHeaders():
+        for key in response.get_headers():
             if key.lower() == 'www-authenticate':
-                realm = response.getHeaders()[key]
+                realm = response.get_headers()[key]
                 break
 
         if realm is None:
@@ -145,9 +145,9 @@ class http_auth_detect(GrepPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Authentication without www-authenticate header')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
-            i.set_desc('The resource: "' + response.getURL() + '" requires authentication ' +
+            i.set_desc('The resource: "' + response.get_url() + '" requires authentication ' +
                        '(HTTP Code 401) but the www-authenticate header is not present. This requires ' +
                        'human verification.')
             kb.kb.append(self, 'non_rfc_auth', i)
@@ -160,12 +160,12 @@ class http_auth_detect(GrepPlugin):
                 i.set_name('NTLM authentication')
             else:
                 i.set_name('HTTP Basic authentication')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
-            i.set_desc('The resource: "' + response.getURL() + '" requires authentication.' +
+            i.set_desc('The resource: "' + response.get_url() + '" requires authentication.' +
                        ' The realm is: "' + realm + '".')
             i['message'] = realm
-            i.addToHighlight(realm)
+            i.add_to_highlight(realm)
 
             kb.kb.append(self, 'auth', i)
 

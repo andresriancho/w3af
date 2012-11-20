@@ -69,7 +69,7 @@ class InMemoryKnowledgeBase(object):
         with self._kb_lock:
             for saved_vuln in self.get(location_a, location_b):
                 if saved_vuln.get_var() == info_inst.get_var() and\
-                    saved_vuln.getURL() == info_inst.getURL() and \
+                    saved_vuln.get_url() == info_inst.get_url() and \
                         saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
                     return False
 
@@ -119,7 +119,7 @@ class InMemoryKnowledgeBase(object):
                 else:
                     return self._kb[name][variable_name]
 
-    def getAllEntriesOfClass(self, klass):
+    def get_all_entries_of_class(self, klass):
         '''
         @return: A list of all objects of class == klass that are saved in the kb.
         '''
@@ -135,23 +135,23 @@ class InMemoryKnowledgeBase(object):
                             res.append(v)
         return res
 
-    def getAllVulns(self):
+    def get_all_vulns(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(vuln.vuln)
+        return self.get_all_entries_of_class(vuln.vuln)
 
-    def getAllInfos(self):
+    def get_all_infos(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(info.info)
+        return self.get_all_entries_of_class(info.info)
 
-    def getAllShells(self):
+    def get_all_shells(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(shell.shell)
+        return self.get_all_entries_of_class(shell.shell)
 
     def dump(self):
         return self._kb
@@ -213,7 +213,7 @@ class DBKnowledgeBase(object):
         with self._kb_lock:
             for saved_vuln in self.get(location_a, location_b):
                 if saved_vuln.get_var() == info_inst.get_var() and\
-                    saved_vuln.getURL() == info_inst.getURL() and \
+                    saved_vuln.get_url() == info_inst.get_url() and \
                         saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
                     return False
 
@@ -263,7 +263,7 @@ class DBKnowledgeBase(object):
                 else:
                     return self._kb[name][variable_name]
 
-    def getAllEntriesOfClass(self, klass):
+    def get_all_entries_of_class(self, klass):
         '''
         @return: A list of all objects of class == klass that are saved in the kb.
         '''
@@ -279,23 +279,23 @@ class DBKnowledgeBase(object):
                             res.append(v)
         return res
 
-    def getAllVulns(self):
+    def get_all_vulns(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(vuln.vuln)
+        return self.get_all_entries_of_class(vuln.vuln)
 
-    def getAllInfos(self):
+    def get_all_infos(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(info.info)
+        return self.get_all_entries_of_class(info.info)
 
-    def getAllShells(self):
+    def get_all_shells(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.getAllEntriesOfClass(shell.shell)
+        return self.get_all_entries_of_class(shell.shell)
 
     def dump(self):
         return self._kb

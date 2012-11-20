@@ -37,7 +37,7 @@ class html(basePpPlugin):
     def __init__(self):
         basePpPlugin.__init__(self)
 
-    def getWords(self, response):
+    def get_words(self, response):
         '''
         Get words from the body, this is a modified "strings" that filters out HTML tags.
 
@@ -49,7 +49,7 @@ class html(basePpPlugin):
 
         if response.is_text_or_html():
 
-            dom = response.getDOM()
+            dom = response.get_dom()
             # Splitter function
             split = words_split_re.split
             # Filter function

@@ -128,12 +128,12 @@ class os_commanding(AttackPlugin):
         func_ref = getattr(self._uri_opener, vuln.get_method())
         exploitDc[vuln.get_var()] = command
         try:
-            response = func_ref(vuln.getURL(), str(exploitDc))
+            response = func_ref(vuln.get_url(), str(exploitDc))
         except w3afException, e:
             om.out.error(str(e))
             return False
         else:
-            return self._define_exact_cut(response.getBody(), rand)
+            return self._define_exact_cut(response.get_body(), rand)
 
     def get_options(self):
         '''
@@ -236,11 +236,11 @@ class OSCommandingShell(exec_shell):
         exploit_dc = self.get_dc()
         exploit_dc[self.get_var()] = self['separator'] + command
         try:
-            response = func_ref(self.getURL(), str(exploit_dc))
+            response = func_ref(self.get_url(), str(exploit_dc))
         except w3afException, e:
             return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
         else:
-            return self._cut(response.getBody())
+            return self._cut(response.get_body())
 
     def end(self):
         om.out.debug('OSCommandingShell cleanup complete.')

@@ -105,7 +105,7 @@ class ScanState:
         self.__missed = 0
         self.__replies = 0
 
-    def getStats(self):
+    def get_stats(self):
         """Provides statistics about the scanning process.
 
         @return: Number of clues gathered so far, number of successful requests
@@ -121,22 +121,22 @@ class ScanState:
 
         return (nclues, replies, missed)
 
-    def insertClue(self, clue):
+    def insert_clue(self, clue):
         """Inserts a clue in the list if it is new.
         """
         self.__mutex.acquire()
 
-        count = clue.getCount()
+        count = clue.get_count()
         self.__replies += count
         try:
             idx = self.__clues.index(clue)
-            self.__clues[idx].incCount(count)
+            self.__clues[idx].inc_count(count)
         except ValueError:
             self.__clues.append(clue)
 
         self.__mutex.release()
 
-    def getClues(self):
+    def get_clues(self):
         """Clue accessor.
 
         @return: A copy of all obtained clues.
@@ -148,14 +148,14 @@ class ScanState:
 
         return clues
 
-    def incMissed(self):
+    def inc_missed(self):
         """Increase the counter of missed replies.
         """
         self.__mutex.acquire()
         self.__missed += 1
         self.__mutex.release()
 
-    def setError(self, err):
+    def set_error(self, err):
         """Signal an error condition.
         """
         self.__mutex.acquire()
@@ -167,7 +167,7 @@ class ScanState:
         self.shouldstop.set()
         self.__mutex.release()
 
-    def getError(self):
+    def get_error(self):
         """Returns the reason of the error condition.
         """
         self.__mutex.acquire()
@@ -207,7 +207,7 @@ class WorkCrew:
         def interrupt(signum, frame):
             """SIGINT handler
             """
-            self.state.setError('received SIGINT')
+            self.state.set_error('received SIGINT')
 
         self.prev = signal.signal(signal.SIGINT, interrupt)
 
@@ -243,24 +243,24 @@ class WorkCrew:
             worker.join()
 
         # Display status information for the last time.
-        manager.showStats()
+        manager.show_stats()
         sys.stdout.write('\n\n')
 
         #self._restoreSigHandler()
         self.working = False
 
-        err = self.state.getError()
+        err = self.state.get_error()
         if err is not None:
             sys.stderr.write('*** finished (%s) ***\n\n' % err)
 
-        return self._getClues()
+        return self._get_clues()
 
-    def _getClues(self):
+    def _get_clues(self):
         """Returns a sequence of clues obtained during the scan.
         """
         assert not self.working
 
-        return self.state.getClues()
+        return self.state.get_clues()
 
 
 class BaseScanner(threading.Thread):
@@ -300,7 +300,7 @@ class BaseScanner(threading.Thread):
             end = self.timeout
         return int(end - time.time())
 
-    def hasExpired(self):
+    def has_expired(self):
         """Expiration predicate.
 
         @return: True if the timeout has expired, False otherwise.
@@ -308,7 +308,7 @@ class BaseScanner(threading.Thread):
         """
         return (self.remaining() <= 0)
 
-    def setTimeout(self, secs):
+    def set_timeout(self, secs):
         """Compute an expiration time.
 
         @param secs: Amount of seconds to spend scanning the target.
@@ -322,7 +322,7 @@ class BaseScanner(threading.Thread):
     def run(self):
         """Perform the scan.
         """
-        self.setTimeout(self.task.scantime)
+        self.set_timeout(self.task.scantime)
 
         while not self.state.shouldstop.isSet():
             self.process()
@@ -350,15 +350,15 @@ class Scanner(BaseScanner):
         )
 
         try:
-            ts, hdrs = client.getHeaders(self.task.addr, self.task.url)
+            ts, hdrs = client.get_headers(self.task.addr, self.task.url)
         except fatal_exceptions, msg:
-            self.state.setError(msg)
+            self.state.set_error(msg)
         except clientlib.TimedOut, msg:
-            self.state.incMissed()
+            self.state.inc_missed()
         else:
-            self.state.insertClue(self.makeClue(ts, hdrs))
+            self.state.insert_clue(self.make_clue(ts, hdrs))
 
-    def makeClue(self, timestamp, headers):
+    def make_clue(self, timestamp, headers):
         """Compose a clue object.
 
         @param timestamp: Time when the reply was received.
@@ -371,7 +371,7 @@ class Scanner(BaseScanner):
         @rtype: C{Clue}
         """
         clue = Halberd.clues.Clue.Clue()
-        clue.setTimestamp(timestamp)
+        clue.set_timestamp(timestamp)
         clue.parse(headers)
 
         return clue
@@ -390,9 +390,9 @@ class Manager(BaseScanner):
         of the scanning threads that they should stop. It also displays (in
         case the user asked for it) detailed information regarding the process.
         """
-        self.showStats()
+        self.show_stats()
 
-        if self.hasExpired():
+        if self.has_expired():
             self.state.shouldstop.set()
         try:
             time.sleep(self.refresh_interval)
@@ -401,7 +401,7 @@ class Manager(BaseScanner):
             # CONTROL-C is pressed on win32 systems).
             self.state.shouldstop.set()
 
-    def showStats(self):
+    def show_stats(self):
         """Displays certain statistics while the scan is happening.
         """
         if not self.task.verbose:
@@ -414,7 +414,7 @@ class Manager(BaseScanner):
             notdone = int(math.ceil(float(elapsed) / total * 10))
             return '[' + '#' * done + ' ' * notdone + ']'
 
-        nclues, replies, missed = self.state.getStats()
+        nclues, replies, missed = self.state.get_stats()
 
         # We put a lower bound on the remaining time.
         if self.remaining() < 0:

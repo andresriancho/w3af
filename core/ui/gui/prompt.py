@@ -78,7 +78,7 @@ class PromptView(gtk.TextView):
         gobject.idle_add(self._prompt)
         gobject.idle_add(self.grab_focus)
 
-    def addMessage(self, text):
+    def add_message(self, text):
         '''
         This method is called from the write_console_messages generator.
 
@@ -127,7 +127,7 @@ class PromptView(gtk.TextView):
         self.user_started = self.textbuffer.create_mark(
             "user-input", iterl, True)
 
-    def getText(self):
+    def get_text(self):
         '''Returns the textbuffer content.'''
         iterini = self.textbuffer.get_start_iter()
         iterend = self.textbuffer.get_end_iter()
@@ -295,7 +295,7 @@ class PromptDialog(gtk.Dialog):
 
     def _save(self, widg):
         '''Saves the content to a file.'''
-        text = self.prompt.getText()
+        text = self.prompt.get_text()
         dlg = gtk.FileChooserDialog(
             title=_("Choose a file..."), action=gtk.FILE_CHOOSER_ACTION_OPEN,
             buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE, gtk.RESPONSE_OK))
@@ -309,7 +309,7 @@ class PromptDialog(gtk.Dialog):
         return
 
 if __name__ == "__main__":
-    def procFunc(x):
+    def proc_func(x):
         x = x.decode("utf8")
         return x[::-1]
 
@@ -330,6 +330,6 @@ if __name__ == "__main__":
             gtk.main()
 
         def prompt(self, widg):
-            prompt = PromptDialog("Just a test", "test", procFunc)
+            prompt = PromptDialog("Just a test", "test", proc_func)
 
     Test()

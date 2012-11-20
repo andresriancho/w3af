@@ -101,15 +101,15 @@ class TestUtils(unittest.TestCase):
 
         fr = build_cors_request(url, 'http://foo.com/')
 
-        self.assertEquals(fr.getURL(), url)
+        self.assertEquals(fr.get_url(), url)
         self.assertEquals(fr.get_method(), 'GET')
-        self.assertEquals(fr.getHeaders(), {'Origin': 'http://foo.com/'})
+        self.assertEquals(fr.get_headers(), {'Origin': 'http://foo.com/'})
 
     def test_build_cors_request_false(self):
         url = URL('http://moth/')
 
         fr = build_cors_request(url, None)
 
-        self.assertEquals(fr.getURL(), url)
+        self.assertEquals(fr.get_url(), url)
         self.assertEquals(fr.get_method(), 'GET')
-        self.assertEquals(fr.getHeaders(), {})
+        self.assertEquals(fr.get_headers(), {})

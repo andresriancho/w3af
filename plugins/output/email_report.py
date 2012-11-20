@@ -88,7 +88,7 @@ class email_report(OutputPlugin):
         self._exec = True
 
         data = self.MSG_TMPL % (self.targets[0])
-        vulns = kb.kb.getAllVulns()
+        vulns = kb.kb.get_all_vulns()
 
         for v in vulns:
             data += v.get_desc() + '\n'

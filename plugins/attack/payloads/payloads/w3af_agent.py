@@ -28,7 +28,7 @@ class w3af_agent(base_payload):
             return 'Error' + str(w3)
         else:
             agentManager.run()
-            if agentManager.isWorking():
+            if agentManager.is_working():
                 return 'Successfully started the w3afAgent.'
             else:
                 return 'Failed to start the w3afAgent.'

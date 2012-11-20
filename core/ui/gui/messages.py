@@ -81,7 +81,7 @@ class _LineScroller(gtk.TextView):
             "error": "brown-fg",
         }
 
-        gobject.timeout_add(500, self.addMessage().next)
+        gobject.timeout_add(500, self.add_message().next)
 
     def filter(self, filtinfo):
         '''Applies a different filter to the textview.
@@ -98,7 +98,7 @@ class _LineScroller(gtk.TextView):
                 textbuff.insert_with_tags_by_name(iterl, text, colortag)
         self.scroll_to_end()
 
-    def addMessage(self):
+    def add_message(self):
         '''Adds a message to the textview.
 
         The message is read from the iterated queue.
@@ -111,7 +111,7 @@ class _LineScroller(gtk.TextView):
             if mess is None:
                 yield True
                 continue
-            text = "[%s] %s\n" % (mess.getTime(), mess.getMsg())
+            text = "[%s] %s\n" % (mess.getTime(), mess.get_msg())
             mtype = mess.get_type()
 
             # only store it if it's of one of the possible filtered
@@ -161,15 +161,15 @@ class Messages(gtk.VBox, Searchable):
         upbox = gtk.HBox()
         self.filters = {}
 
-        def makeBut(label, signal, initial):
+        def make_but(label, signal, initial):
             but = gtk.CheckButton(label)
             but.set_active(initial)
-            but.connect("clicked", self.typeFilter, signal)
+            but.connect("clicked", self.type_filter, signal)
             self.filters[signal] = initial
             upbox.pack_start(but, False, False)
-        makeBut(_("Vulnerabilities"), "vulnerability", True)
-        makeBut(_("Information"), "information", True)
-        makeBut(_("Error"), "error", True)
+        make_but(_("Vulnerabilities"), "vulnerability", True)
+        make_but(_("Information"), "information", True)
+        make_but(_("Error"), "error", True)
         search = entries.SemiStockButton(
             _("Search"), gtk.STOCK_FIND, _("Search in the text"))
         upbox.pack_end(search, False, False)
@@ -190,7 +190,7 @@ class Messages(gtk.VBox, Searchable):
         search.connect("clicked", self.show_search)
         self.show()
 
-    def typeFilter(self, button, ptype):
+    def type_filter(self, button, ptype):
         '''Applies the filter selected through the checkboxes.'''
         self.filters[ptype] = button.get_active()
         active_types = [k for k, v in self.filters.items() if v]

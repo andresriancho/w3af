@@ -218,8 +218,8 @@ class GUIUpdater(UIUpdater):
                 dlg = entries.TextDialog("Update report",
                                          tabnames=tabnames,
                                          icon=W3AF_ICON)
-                dlg.addMessage(str(files), page_num=0)
-                dlg.addMessage(str(self._vmngr.show_summary(lrev, rrev)),
+                dlg.add_message(str(files), page_num=0)
+                dlg.add_message(str(self._vmngr.show_summary(lrev, rrev)),
                                page_num=1)
                 dlg.done()
                 dlg.dialog_run()
@@ -243,7 +243,7 @@ class MainApp(object):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_icon_from_file(W3AF_ICON)
         self.window.connect("delete_event", self.quit)
-        self.window.connect('key_press_event', self.helpF1)
+        self.window.connect('key_press_event', self.help_f1)
         splash.push(_("Loading..."))
 
         self.w3af = w3af_core = w3afCore()
@@ -291,7 +291,7 @@ class MainApp(object):
         print '\n  '.join(get_w3af_version().split('\n'))
 
         self.w3af.mainwin = self
-        self.isRunning = False
+        self.is_running = False
         self.paused = False
         self.scanShould = "start"
         self.menuViews = {}
@@ -309,17 +309,17 @@ class MainApp(object):
             ('Quit', gtk.STOCK_QUIT, _('_Quit'), None, _(
                 'Exit the program'), lambda w: self.quit(None, None)),
             ('New', gtk.STOCK_NEW, _('_New'), None, _(
-                'Create a new profile'), lambda w: self.profileAction("new")),
-            ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profileAction("save")),
-            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profileAction("saveAs")),
-            ('Revert', gtk.STOCK_REVERT_TO_SAVED, _('_Revert'), None, _('Revert the profile to its saved state'), lambda w: self.profileAction("revert")),
-            ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _('Delete this profile'), lambda w: self.profileAction("delete")),
+                'Create a new profile'), lambda w: self.profile_action("new")),
+            ('Save', gtk.STOCK_SAVE, _('_Save'), None, _('Save this configuration'), lambda w: self.profile_action("save")),
+            ('SaveAs', gtk.STOCK_SAVE_AS, _('Save _as...'), None, _('Save this configuration in a new profile'), lambda w: self.profile_action("saveAs")),
+            ('Revert', gtk.STOCK_REVERT_TO_SAVED, _('_Revert'), None, _('Revert the profile to its saved state'), lambda w: self.profile_action("revert")),
+            ('Delete', gtk.STOCK_DELETE, _('_Delete'), None, _('Delete this profile'), lambda w: self.profile_action("delete")),
             ('ProfilesMenu', None, _('_Profiles')),
             ('ViewMenuScan', None, _('_View')),
             ('ViewMenuExploit', None, _('_View')),
 
             ('EditPlugin', gtk.STOCK_EDIT, _('_Edit plugin'),
-             None, _('Edit selected plugin'), self._editSelectedPlugin),
+             None, _('Edit selected plugin'), self._edit_selected_plugin),
             ('EditMenuScan', None, _('_Edit'), None, _('Edit'),
              self._editMenu),
 
@@ -369,11 +369,11 @@ class MainApp(object):
             (
                 'ExploitVuln', None, '_Plugins', None, _(
                     'Toggle the plugins panel'),
-                lambda w: self.dynPanels(w, "exploitvuln"), True),
+                lambda w: self.dyn_panels(w, "exploitvuln"), True),
             (
                 'Interactive', None, '_Shells and Proxies', None, _(
                     'Toggle the shells and proxies window'),
-                lambda w: self.dynPanels(w, "interac"), True),
+                lambda w: self.dyn_panels(w, "interac"), True),
         ])
         ag = actiongroup.get_action("ViewMenuExploit")
         ag.set_sensitive(False)
@@ -381,9 +381,9 @@ class MainApp(object):
         self.menuViews["Exploit"] = ag
 
         # the sensitive options for profiles
-        self.profileActions = [actiongroup.get_action(
+        self.profile_actions = [actiongroup.get_action(
             x) for x in "Save SaveAs Revert Delete".split()]
-        self.activateProfileActions([False, True, False, False])
+        self.activate_profile_actions([False, True, False, False])
 
         # the sensitive options for edit
         ag = actiongroup.get_action("EditPlugin")
@@ -440,7 +440,7 @@ class MainApp(object):
         # notebook
         splash.push(_("Building the main screen..."))
         self.nb = gtk.Notebook()
-        self.nb.connect("switch-page", self.nbChangedPage)
+        self.nb.connect("switch-page", self.nb_changed_page)
         mainvbox.pack_start(self.nb, True)
         self.nb.show()
 
@@ -464,13 +464,13 @@ class MainApp(object):
         self.nb.append_page(pan, label)
         self.viewSignalRecipient = self.pcbody
 
-        # dummy tabs creation for notebook, real ones are done in setTabs
+        # dummy tabs creation for notebook, real ones are done in set_tabs
         self.notetabs = {}
         for title in (_("Log"), _("Results"), _("Exploit")):
             dummy = gtk.Label("dummy")
             self.notetabs[title] = dummy
             self.nb.append_page(dummy, gtk.Label())
-        self.setTabs(False)
+        self.set_tabs(False)
 
         # status bar
         mainvbox.pack_start(self.sb, False)
@@ -487,9 +487,9 @@ class MainApp(object):
         # it is already done in unhandled.handle_crash
         gtk.main()
 
-    def profileChanged(self, *args, **kwargs):
+    def profile_changed(self, *args, **kwargs):
         if hasattr(self, "profiles"):
-            self.profiles.profileChanged(*args, **kwargs)
+            self.profiles.profile_changed(*args, **kwargs)
 
     def _editMenu(self, widget):
         '''
@@ -517,13 +517,13 @@ class MainApp(object):
             ag = self._actiongroup.get_action("EditPlugin")
             ag.set_sensitive(True)
 
-    def _editSelectedPlugin(self, widget):
+    def _edit_selected_plugin(self, widget):
         '''
         This is the handler for the "Edit Plugin" menu option.
 
         @param widget: Not used
         '''
-        self.pcbody.editSelectedPlugin()
+        self.pcbody.edit_selected_plugin()
 
     def quit(self, widget, event, data=None):
         '''Main quit.
@@ -562,7 +562,7 @@ class MainApp(object):
         func = getattr(self, action)
         func()
 
-    def saveStateToCore(self, relaxedTarget=False):
+    def save_state_to_core(self, relaxedTarget=False):
         '''Save the actual state to the core.
 
         @param relaxedTarget: if True, return OK even if the target wasn't saved ok
@@ -573,7 +573,7 @@ class MainApp(object):
             self.w3af.plugins.set_plugins([], ptype)
 
         # save the activated plugins
-        for ptype, plugins in self.pcbody.getActivatedPlugins():
+        for ptype, plugins in self.pcbody.get_activated_plugins():
             self.w3af.plugins.set_plugins(plugins, ptype)
 
         # save the URL, the rest of the options are saved in the "Advanced" dialog
@@ -602,7 +602,7 @@ class MainApp(object):
         # This is inited before all, to have a full logging facility.
         om.out.set_output_plugins(['gtk_output'])
 
-        if not self.saveStateToCore():
+        if not self.save_state_to_core():
             return
 
         # Verify that everything is ready to run
@@ -612,7 +612,7 @@ class MainApp(object):
         except w3afException:
             return
 
-        def startScanWrap():
+        def start_scan_wrap():
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
@@ -635,14 +635,14 @@ class MainApp(object):
                 self._scan_finished()
 
         # start real work in background, and start supervising if it ends
-        Process(target=startScanWrap, name='MainGTKScanner').start()
+        Process(target=start_scan_wrap, name='MainGTKScanner').start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
         self.sb(_("The scan has started"))
-        self.setTabs(True)
+        self.set_tabs(True)
         self.throbber.running(True)
         self.toolbut_pause.set_sensitive(True)
-        self.startstopbtns.changeInternals(
+        self.startstopbtns.change_internals(
             "Stop", gtk.STOCK_MEDIA_STOP, _("Stop scan"))
         self.scanShould = "stop"
         self.stoppedByUser = False
@@ -650,13 +650,13 @@ class MainApp(object):
         self.exploitallsens.set_sensitive(True, "stopstart")
 
         # Save the target URL to the history
-        self.pcbody.target.insertURL()
+        self.pcbody.target.insert_url()
 
         # sets the title
         targets = cf.cf.get('targets')
         if targets:
             target_domain_obj = targets[0]
-            target_domain = target_domain_obj.getDomain()
+            target_domain = target_domain_obj.get_domain()
             self.window.set_title("w3af - " + target_domain)
 
     def _scan_pause(self, widget):
@@ -691,7 +691,7 @@ class MainApp(object):
         This is separated because it's called when the process finishes by
         itself or by the user click.
         '''
-        self.startstopbtns.changeInternals(_("Clear"), gtk.STOCK_CLEAR,
+        self.startstopbtns.change_internals(_("Clear"), gtk.STOCK_CLEAR,
                                            _("Clear all the obtained results"))
         self.throbber.running(False)
         self.toolbut_pause.set_sensitive(False)
@@ -718,12 +718,12 @@ class MainApp(object):
         self.nb.set_current_page(0)
         self.w3af.cleanup()
         messages.getQueueDiverter(reset=True)
-        self.setTabs(False)
+        self.set_tabs(False)
         self.sb(_("Scan results cleared"))
         self.exploitallsens.set_sensitive(False, "stopstart")
 
         # put the button in start
-        self.startstopbtns.changeInternals(
+        self.startstopbtns.change_internals(
             _("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         self.scanShould = "start"
         self.window.set_title(MAIN_TITLE)
@@ -749,7 +749,7 @@ class MainApp(object):
         self._scan_stopfeedback()
         return False
 
-    def setTabs(self, sensit):
+    def set_tabs(self, sensit):
         '''Set the exploits tabs to real window or dummies labels.
 
         @param sensit: if it's active or not
@@ -757,7 +757,7 @@ class MainApp(object):
         # the View menu
         for menu in self.menuViews.values():
             menu.set_sensitive(sensit)
-        self.isRunning = sensit
+        self.is_running = sensit
 
         # ok, the tabs, :p
         self._setTab(sensit, _("Log"), logtab.LogBody)
@@ -794,12 +794,12 @@ class MainApp(object):
         confpanel.ConfigDialog(
             _("Configure Misc settings"), self.w3af, configurable)
 
-    def dynPanels(self, widget, panel):
+    def dyn_panels(self, widget, panel):
         '''Turns on and off the Log Panel.'''
         active = widget.get_active()
-        self.viewSignalRecipient.togglePanels(panel, active)
+        self.viewSignalRecipient.toggle_panels(panel, active)
 
-    def nbChangedPage(self, notebook, page, page_num):
+    def nb_changed_page(self, notebook, page, page_num):
         '''Changed the page in the Notebook.
 
         It manages which View will be visible in the Menu, and
@@ -813,7 +813,7 @@ class MainApp(object):
         self.viewSignalRecipient = None
         for name, menu in self.menuViews.items():
             if name == page:
-                menu.set_sensitive(self.isRunning)
+                menu.set_sensitive(self.is_running)
                 menu.set_visible(True)
                 self.viewSignalRecipient = self.notetabs[name]
             else:
@@ -830,18 +830,18 @@ class MainApp(object):
         for widg, where in self.tabDependant:
             widg(page in where)
 
-    def profileAction(self, action):
+    def profile_action(self, action):
         '''Do the action on the profile.'''
         methname = action + "Profile"
         method = getattr(self.profiles, methname)
         method()
 
-    def activateProfileActions(self, newstatus):
+    def activate_profile_actions(self, newstatus):
         '''Activate profiles buttons.
 
         @param newstatus: if the profile changed or not.
         '''
-        for opt, stt in zip(self.profileActions, newstatus):
+        for opt, stt in zip(self.profile_actions, newstatus):
             opt.set_sensitive(stt)
 
     def menu_help(self, action):
@@ -860,7 +860,7 @@ class MainApp(object):
     def _exploit_all(self, action):
         '''Exploits all vulns.'''
         exploitpage = self.notetabs[_("Exploit")]
-        exploitpage.exploitAll()
+        exploitpage.exploit_all()
 
     def _manual_request(self, action):
         '''Generate manual HTTP requests.'''
@@ -884,14 +884,14 @@ class MainApp(object):
 
     def _proxy_tool(self, action):
         '''Proxies the HTTP calls.'''
-        self.setTabs(True)
+        self.set_tabs(True)
         proxywin.ProxiedRequests(self.w3af)
 
     def _wizards(self, action):
         '''Execute the wizards machinery.'''
         wizard.WizardChooser(self.w3af)
 
-    def helpF1(self, widget, event):
+    def help_f1(self, widget, event):
         if event.keyval != 65470:  # F1, check: gtk.gdk.keyval_name(event.keyval)
             return
 

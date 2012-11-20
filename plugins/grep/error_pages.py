@@ -164,11 +164,11 @@ class error_pages(GrepPlugin):
                     name += msg + '"'
                 i.set_name(name)
 
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 i.set_id(response.id)
-                i.set_desc('The URL: "' + response.getURL(
+                i.set_desc('The URL: "' + response.get_url(
                 ) + '" contains the descriptive error: "' + msg + '"')
-                i.addToHighlight(msg)
+                i.add_to_highlight(msg)
                 kb.kb.append(self, 'errorPage', i)
 
                 # There is no need to report more than one info for the same result,
@@ -178,7 +178,7 @@ class error_pages(GrepPlugin):
 
             # Now i'll check if I can get a version number from the error page
             # This is common in apache, tomcat, etc...
-            if response.getCode() in range(400, 600):
+            if response.get_code() in range(400, 600):
 
                 for match, regex_str, regex_comp, server in self._multi_re.query(response.body):
                     match_string = match.group(0)
@@ -187,13 +187,13 @@ class error_pages(GrepPlugin):
                         i = info.info()
                         i.set_plugin_name(self.get_name())
                         i.set_name('Error page with information disclosure')
-                        i.setURL(response.getURL())
+                        i.set_url(response.get_url())
                         i.set_id(response.id)
                         i.set_name('Error page with information disclosure')
                         i.set_desc('An error page sent this ' + server +
                                    ' version: "' + match_string + '".')
-                        i.addToHighlight(server)
-                        i.addToHighlight(match_string)
+                        i.add_to_highlight(server)
+                        i.add_to_highlight(match_string)
                         kb.kb.append(self, 'server', i)
                         # Save the string
                         kb.kb.append(self, 'server', match_string)

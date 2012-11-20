@@ -70,7 +70,7 @@ class wizard:
             return self._question_lst[0]
 
         # Save the user completed values, so we can handle previous button
-        self._currentQuestion.setPreviouslyAnsweredValues(self._user_options)
+        self._currentQuestion.set_previously_answered_values(self._user_options)
         self._already_asked.append(self._currentQuestion)
 
         # Special case to end iteration
@@ -78,7 +78,7 @@ class wizard:
             return None
 
         # Find the next one
-        possibleQuestions = [q for q in self._question_lst if q.getQuestionId(
+        possibleQuestions = [q for q in self._question_lst if q.get_question_id(
         ) == self._nextQuestionId]
         if len(possibleQuestions) != 1:
             raise w3afException('We have more than one next question. Please verify your wizard definition.\
@@ -104,7 +104,7 @@ class wizard:
         self._currentQuestion = self._already_asked.pop()
         return self._currentQuestion
 
-    def getWizardDescription(self):
+    def get_wizard_description(self):
         '''
         This method should be overwritten by the actual wizards.
 
@@ -118,7 +118,7 @@ class wizard:
         '''
         return ''
 
-    def setAnswer(self, options_list):
+    def set_answer(self, options_list):
         '''
         Saves the answer for the current question, and finds the next question
         to be performed to the user.
@@ -129,7 +129,7 @@ class wizard:
                                that was made to the user.
         '''
         # This line may rise a w3afException
-        self._nextQuestionId = self._currentQuestion.getNextQuestionId(
+        self._nextQuestionId = self._currentQuestion.get_next_question_id(
             options_list)
 
         # save the options selected by the user, to be able to perform a "previous"

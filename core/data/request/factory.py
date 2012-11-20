@@ -65,7 +65,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     # Headers for all fuzzable requests created here:
     # And add the fuzzable headers to the dict
     req_headers = dict((h, '') for h in cf.cf.get('fuzzable_headers'))
-    req_headers.update(request and request.getHeaders() or {})
+    req_headers.update(request and request.get_headers() or {})
     req_headers = Headers(req_headers.items())
 
     # Get the cookie!
@@ -75,7 +75,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
     # passed as parameter
     if add_self:
         qsr = HTTPQSRequest(
-            resp.getURI(),
+            resp.get_uri(),
             headers=req_headers,
             cookie=cookieObj
         )
@@ -83,14 +83,14 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
 
     # If response was a 30X (i.e. a redirect) then include the
     # corresponding fuzzable request.
-    resp_headers = resp.getHeaders()
+    resp_headers = resp.get_headers()
 
     for url_header_name in URL_HEADERS:
         url_header_value, _ = resp_headers.iget(url_header_name, '')
         if url_header_value:
             url = smart_unicode(url_header_value, encoding=resp.charset)
             try:
-                absolute_location = resp.getURL().urlJoin(url)
+                absolute_location = resp.get_url().url_join(url)
             except ValueError:
                 msg = 'The application sent a "%s" redirect that w3af' \
                       ' failed to correctly parse as an URL, the header' \
@@ -112,23 +112,23 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
         form_list = []
     else:
         form_list = dp.get_forms()
-        same_domain = lambda f: f.getAction(
-        ).getDomain() == resp.getURL().getDomain()
+        same_domain = lambda f: f.get_action(
+        ).get_domain() == resp.get_url().get_domain()
         form_list = [f for f in form_list if same_domain(f)]
 
     if not form_list:
         # Check if its a wsdl file
         wsdlp = wsdlParser.wsdlParser()
         try:
-            wsdlp.setWsdl(resp.getBody())
+            wsdlp.set_wsdl(resp.get_body())
         except w3afException:
             pass
         else:
             for rem_meth in wsdlp.get_methods():
                 wspdr = WebServiceRequest(
-                    rem_meth.getLocation(),
-                    rem_meth.getAction(),
-                    rem_meth.getParameters(),
+                    rem_meth.get_location(),
+                    rem_meth.get_action(),
+                    rem_meth.get_parameters(),
                     rem_meth.get_namespace(),
                     rem_meth.get_methodName(),
                     req_headers
@@ -141,7 +141,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
             for variant in form.get_variants(mode):
                 if form.get_method().upper() == 'POST':
                     r = HTTPPostDataRequest(
-                        variant.getAction(),
+                        variant.get_action(),
                         variant.get_method(),
                         req_headers,
                         cookieObj,
@@ -149,7 +149,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
                 else:
                     # The default is a GET request
                     r = HTTPQSRequest(
-                        variant.getAction(),
+                        variant.get_action(),
                         headers=req_headers,
                         cookie=cookieObj
                     )
@@ -280,7 +280,7 @@ def _create_cookie(http_response):
     cookies = []
 
     # Get data from RESPONSE
-    response_headers = http_response.getHeaders()
+    response_headers = http_response.get_headers()
 
     for hname, hvalue in response_headers.iteritems():
         if 'cookie' in hname.lower():

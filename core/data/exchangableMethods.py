@@ -43,8 +43,8 @@ def isExchangable(uri_opener, freq):
         # I have to create a HTTPPostDataRequest and set all
         # the parameters to it.
         pdr = HTTPPostDataRequest(
-            freq.getURL(),
-            headers=freq.getHeaders(),
+            freq.get_url(),
+            headers=freq.get_headers(),
             cookie=freq.get_cookie(),
             dc=freq.get_dc()
         )
@@ -53,11 +53,11 @@ def isExchangable(uri_opener, freq):
     elif freq.get_method() == 'POST':
         # I have to create a HTTPQSRequest and set all the parameters to it.
         qsr = HTTPQSRequest(
-            freq.getURL(),
-            headers=freq.getHeaders(),
+            freq.get_url(),
+            headers=freq.get_headers(),
             cookie=freq.get_cookie()
         )
         qsr.set_dc(freq.get_dc())
         response2 = uri_opener.send_mutant(qsr)
 
-    return response2.getBody() == response.getBody()
+    return response2.get_body() == response.get_body()

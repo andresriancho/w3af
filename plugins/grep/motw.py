@@ -60,16 +60,16 @@ class motw (GrepPlugin):
         if response.is_text_or_html():
 
             if not is_404(response):
-                motw_match = self._motw_re.search(response.getBody())
+                motw_match = self._motw_re.search(response.get_body())
 
                 # Create the info object
                 if motw_match or self._withoutMOTW:
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Mark of the web')
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     i.set_id(response.id)
-                    i.addToHighlight(motw_match.group(0))
+                    i.add_to_highlight(motw_match.group(0))
 
                 # Act based on finding/non-finding
                 if motw_match:
@@ -79,13 +79,13 @@ class motw (GrepPlugin):
                     url_length_indicated = int(motw_match.group(1))
                     url_length_actual = len(motw_match.group(2))
                     if (url_length_indicated <= url_length_actual):
-                        msg = 'The  URL: "' + response.getURL() + '"'
+                        msg = 'The  URL: "' + response.get_url() + '"'
                         msg += ' contains a  valid Mark of the Web.'
                         i.set_desc(msg)
                         kb.kb.append(self, 'motw', i)
                     else:
                         msg = 'The URL: "' + \
-                            response.getURL() + '" will be executed in Local '
+                            response.get_url() + '" will be executed in Local '
                         msg += 'Machine Zone security context because the indicated length is '
                         msg += 'greater than the actual URL length.'
                         i['localMachine'] = True
@@ -93,7 +93,7 @@ class motw (GrepPlugin):
                         kb.kb.append(self, 'motw', i)
 
                 elif self._withoutMOTW:
-                    msg = 'The URL: "' + response.getURL()
+                    msg = 'The URL: "' + response.get_url()
                     msg += '" doesn\'t contain a Mark of the Web.'
                     i.set_desc(msg)
                     kb.kb.append(self, 'no_motw', i)
@@ -130,9 +130,9 @@ class motw (GrepPlugin):
                 om.out.information(pretty_msg[motw_type])
                 for i in inform:
                     if 'localMachine' not in i:
-                        om.out.information('- ' + i.getURL())
+                        om.out.information('- ' + i.get_url())
                     else:
-                        msg = '- ' + i.getURL(
+                        msg = '- ' + i.get_url(
                         ) + ' [Executed in Local machine context]'
                         om.out.information(msg)
 

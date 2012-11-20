@@ -37,7 +37,7 @@ class atHandler(delayedExecution):
     def __init__(self, execMethod):
         self._execMethod = execMethod
 
-    def canDelay(self):
+    def can_delay(self):
         '''
         @return: True if the remote user can add entries to his crontab
         '''
@@ -49,7 +49,7 @@ class atHandler(delayedExecution):
         else:
             return True
 
-    def addToSchedule(self, commandToExec):
+    def add_to_schedule(self, commandToExec):
         '''
         Adds a command to the cron.
         '''
@@ -67,7 +67,7 @@ class atHandler(delayedExecution):
 
         return waitTime
 
-    def restoreOldSchedule(self):
+    def restore_old_schedule(self):
         try:
             taskList = self._exec('at')
             for line in taskList.split('\n'):

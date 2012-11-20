@@ -44,7 +44,7 @@ class HTMLParser(SGMLParser):
         # For <select> elems parsing
         self._selects = []
         # Save for using in form parsing
-        self._source_url = http_resp.getURL()
+        self._source_url = http_resp.get_url()
         # Call parent's __init__
         SGMLParser.__init__(self, http_resp)
 
@@ -62,7 +62,7 @@ class HTMLParser(SGMLParser):
         HTML document inside its body.
         '''
         SGMLParser._pre_parse(self, http_resp)
-        assert self._baseUrl, 'The base URL must be set.'
+        assert self._base_url, 'The base URL must be set.'
 
     def _form_elems_generic_handler(self, tag, attrs):
         side = 'inside' if self._inside_form else 'outside'
@@ -91,7 +91,7 @@ class HTMLParser(SGMLParser):
         if not missing_or_invalid_action:
             action = self._decode_url(action)
             try:
-                action = self._baseUrl.urlJoin(action, encoding=self._encoding)
+                action = self._base_url.url_join(action, encoding=self._encoding)
             except ValueError:
                 missing_or_invalid_action = True
         if missing_or_invalid_action:
@@ -105,7 +105,7 @@ class HTMLParser(SGMLParser):
         # Create the form object and store everything for later use
         form_obj = form.Form(encoding=self._encoding)
         form_obj.set_method(method)
-        form_obj.setAction(action)
+        form_obj.set_action(action)
         self._forms.append(form_obj)
 
         # Now I verify if there are any input tags that were found
@@ -132,14 +132,14 @@ class HTMLParser(SGMLParser):
         if _type == 'file':
             # Let the form know, that this is a file input
             form_obj.hasFileInput = True
-            form_obj.addFileInput(items)
+            form_obj.add_file_input(items)
         elif _type == 'radio':
-            form_obj.addRadio(items)
+            form_obj.add_radio(items)
         elif _type == 'checkbox':
-            form_obj.addCheckBox(items)
+            form_obj.add_check_box(items)
         else:
             # Simply add all the other input types
-            form_obj.addInput(items)
+            form_obj.add_input(items)
 
     def _handle_input_tag_outside_form(self, tag, attrs):
         # I'm going to use this ruleset:
@@ -188,7 +188,7 @@ class HTMLParser(SGMLParser):
             self._saved_inputs.append(attrs)
         else:
             form_obj = self._forms[-1]
-            form_obj.addInput(attrs.items())
+            form_obj.add_input(attrs.items())
 
     ## <select> handler methods
     _handle_select_tag_start = _form_elems_generic_handler
@@ -203,7 +203,7 @@ class HTMLParser(SGMLParser):
             for sel_name, optvalues in self._selects:
                 # First convert  to list of tuples before passing it as arg
                 optvalues = [tuple(attrs.items()) for attrs in optvalues]
-                form_obj.addSelect(sel_name, optvalues)
+                form_obj.add_select(sel_name, optvalues)
 
             # Reset selects container
             self._selects = []

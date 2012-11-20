@@ -38,14 +38,14 @@ def provides_cors_features(freq, url_opener):
                        HTTP request/response processing.
     @return: True if the URL provides CORS features, False otherwise.
     '''
-    response = url_opener.GET(freq.getURL())
+    response = url_opener.GET(freq.get_url())
 
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:
         return True
 
     headers = Headers({'Origin': 'www.w3af.org'}.items())
-    response = url_opener.GET(freq.getURL(), headers=headers)
+    response = url_opener.GET(freq.get_url(), headers=headers)
     ac_value = retrieve_cors_header(response, ACCESS_CONTROL_ALLOW_ORIGIN)
     if ac_value is not None:
         return True
@@ -61,7 +61,7 @@ def retrieve_cors_header(response, key):
     @param key: A key representing the desired header value to retrieve.
     @return: The header value or None if the header do not exists.
     '''
-    headers = response.getHeaders()
+    headers = response.get_headers()
 
     for header_name in headers:
         if header_name.upper().strip() == key.upper():

@@ -57,8 +57,8 @@ class spider_man(CrawlPlugin):
     def crawl(self, freq):
         # Create the proxy server
         self._proxy = proxy(self._listen_address, self._listen_port,
-                            self._uri_opener, self.createPH())
-        self._proxy.targetDomain = freq.getURL().getDomain()
+                            self._uri_opener, self.create_p_h())
+        self._proxy.target_domain = freq.get_url().get_domain()
 
         # Inform the user
         msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
@@ -90,10 +90,10 @@ class spider_man(CrawlPlugin):
         for fr in self._create_fuzzable_requests(response):
             self.output_queue.put(fr)
 
-    def stopProxy(self):
+    def stop_proxy(self):
         self._proxy.stop()
 
-    def createPH(self):
+    def create_p_h(self):
         '''
         This method returns closure which is dressed up as a proxyHandler.
         It's a trick to get rid of global variables.
@@ -189,7 +189,7 @@ class proxyHandler(w3afProxyHandler):
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')
             self._sendEnd()
-            self._spider_man.stopProxy()
+            self._spider_man.stop_proxy()
             return
 
         om.out.debug("[spider_man] Handling request: %s %s" %
@@ -198,8 +198,8 @@ class proxyHandler(w3afProxyHandler):
         freq = self._create_fuzzable_request()
         self._spider_man.append_fuzzable_request(freq)
 
-        grep = True if path.getDomain(
-        ) == self.server.w3afLayer.targetDomain else False
+        grep = True if path.get_domain(
+        ) == self.server.w3afLayer.target_domain else False
 
         try:
             response = self._send_to_server(grep=grep)
@@ -209,12 +209,12 @@ class proxyHandler(w3afProxyHandler):
             if response.is_text_or_html():
                 self._spider_man.ext_fuzzable_requests(response)
 
-            for h in response.getHeaders():
+            for h in response.get_headers():
                 if 'cookie' in h.lower():
                     msg = ('The remote web application sent the following'
                            ' cookie: "%s".\nw3af will use it during the rest '
                            'of the process in order to maintain the session.'
-                           % response.getHeaders()[h])
+                           % response.get_headers()[h])
                     om.out.information(msg)
             self._send_to_browser(response)
         return self._spider_man._fuzzable_requests

@@ -146,8 +146,8 @@ class HttpEditor(gtk.VBox, Searchable):
 
     def _send2enc(self, w=None):
         enc = EncodeDecode(self.w3af)
-        enc.paneup.setText(self.get_selected_text())
-        enc.panedn.setText(self.get_selected_text())
+        enc.paneup.set_text(self.get_selected_text())
+        enc.panedn.set_text(self.get_selected_text())
 
     def clear(self):
         buf = self.textView.get_buffer()

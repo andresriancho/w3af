@@ -38,7 +38,7 @@ class reversed_slashes(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -51,17 +51,17 @@ class reversed_slashes(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
+        >>> rs.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/'
 
         >>> u = URL('http://www.w3af.com/abc/def.htm')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
+        >>> rs.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/abc\\\def.htm'
 
         >>> u = URL('http://www.w3af.com/abc/123/def.htm')
         >>> r = HTTPRequest( u )
-        >>> rs.modifyRequest( r ).url_object.url_string
+        >>> rs.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/abc\\\\123\\\def.htm'
         >>> #
         >>> #    The plugins should not modify the original request
@@ -71,12 +71,12 @@ class reversed_slashes(EvasionPlugin):
 
         '''
         # We mangle the URL
-        path = request.url_object.getPath()
+        path = request.url_object.get_path()
         path = path.replace('/', '\\').replace('\\', '/', 1)
 
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath(path)
+        new_url.set_path(path)
         new_req = HTTPRequest(new_url, request.get_data(),
                               request.headers, request.get_origin_req_host())
 
@@ -106,7 +106,7 @@ class reversed_slashes(EvasionPlugin):
         '''
         return []
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

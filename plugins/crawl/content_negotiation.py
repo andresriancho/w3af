@@ -79,7 +79,7 @@ class content_negotiation(CrawlPlugin):
             if con_neg_result is None:
                 # I can't say if it's vulnerable or not (yet), save the current
                 # directory to be included in the bruteforcing process, and return.
-                self._to_bruteforce.put(fuzzable_request.getURL())
+                self._to_bruteforce.put(fuzzable_request.get_url())
                 return
 
             elif con_neg_result == False:
@@ -92,7 +92,7 @@ class content_negotiation(CrawlPlugin):
                 self._find_new_resources(fuzzable_request)
 
                 # and we can also perform a bruteforce:
-                self._to_bruteforce.put(fuzzable_request.getURL())
+                self._to_bruteforce.put(fuzzable_request.get_url())
                 self._bruteforce()
 
     def _find_new_resources(self, fuzzable_request):
@@ -104,7 +104,7 @@ class content_negotiation(CrawlPlugin):
         @return: A list of new fuzzable requests.
         '''
         # Get the file name
-        filename = fuzzable_request.getURL().getFileName()
+        filename = fuzzable_request.get_url().get_fileName()
         if filename == '':
             return
         else:
@@ -118,8 +118,8 @@ class content_negotiation(CrawlPlugin):
             filename = filename.split('.')[0]
 
             # Now I simply perform the request:
-            alternate_resource = fuzzable_request.getURL().urlJoin(filename)
-            original_headers = fuzzable_request.getHeaders()
+            alternate_resource = fuzzable_request.get_url().url_join(filename)
+            original_headers = fuzzable_request.get_headers()
 
             if alternate_resource not in self._already_tested_resource:
                 self._already_tested_resource.add(alternate_resource)
@@ -130,7 +130,7 @@ class content_negotiation(CrawlPlugin):
 
                 # And create the new fuzzable requests
                 for fr in self._create_new_fuzzable_requests(
-                    fuzzable_request.getURL(),
+                    fuzzable_request.get_url(),
                         alternates):
                     self.output_queue.put(fr)
 
@@ -164,7 +164,7 @@ class content_negotiation(CrawlPlugin):
             except Queue.Empty:
                 break
             else:
-                directories = bf_url.getDirectories()
+                directories = bf_url.get_directories()
 
                 for directory_url in directories:
                     if directory_url not in self._already_tested_dir:
@@ -172,7 +172,7 @@ class content_negotiation(CrawlPlugin):
 
                         for word in file(self._wordlist):
                             word = word.strip()
-                            yield directory_url.urlJoin(word)
+                            yield directory_url.url_join(word)
 
     def _request_and_get_alternates(self, alternate_resource, headers):
         '''
@@ -188,8 +188,8 @@ class content_negotiation(CrawlPlugin):
         response = self._uri_opener.GET(alternate_resource, headers=headers)
 
         # And I parse the result
-        if 'alternates' in response.getLowerCaseHeaders():
-            alternates = response.getLowerCaseHeaders()['alternates']
+        if 'alternates' in response.get_lower_case_headers():
+            alternates = response.get_lower_case_headers()['alternates']
 
             # An alternates header looks like this:
             # alternates: {"backup.php.bak" 1 {type application/x-trash} {length 0}},
@@ -216,7 +216,7 @@ class content_negotiation(CrawlPlugin):
         result = []
         for alternate in alternates:
             # Get the new resource
-            full_url = base_url.urlJoin(alternate)
+            full_url = base_url.url_join(alternate)
             response = self._uri_opener.GET(full_url)
 
             result.extend(self._create_fuzzable_requests(response))
@@ -238,20 +238,20 @@ class content_negotiation(CrawlPlugin):
         else:
             # We perform the test, for this we need a URL that has a filename, URL's
             # that don't have a filename can't be used for this.
-            filename = fuzzable_request.getURL().getFileName()
+            filename = fuzzable_request.get_url().get_fileName()
             if filename == '':
                 return None
 
             filename = filename.split('.')[0]
 
             # Now I simply perform the request:
-            alternate_resource = fuzzable_request.getURL().urlJoin(filename)
-            headers = fuzzable_request.getHeaders()
+            alternate_resource = fuzzable_request.get_url().url_join(filename)
+            headers = fuzzable_request.get_headers()
             headers['Accept'] = 'w3af/bar'
             response = self._uri_opener.GET(
                 alternate_resource, headers=headers)
 
-            if 'alternates' in response.getLowerCaseHeaders():
+            if 'alternates' in response.get_lower_case_headers():
                 # Even if there is only one file, with an unique mime type,
                 # the content negotiation will return an alternates header.
                 # So this is pretty safe.
@@ -263,7 +263,7 @@ class content_negotiation(CrawlPlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('HTTP Content Negotiation enabled')
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 i.set_method('GET')
                 desc = 'HTTP Content negotiation is enabled in the remote web server. This'
                 desc += ' could be used to bruteforce file names and find new resources.'

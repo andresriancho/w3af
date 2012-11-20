@@ -54,8 +54,8 @@ class feeds(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        dom = response.getDOM()
-        uri = response.getURI()
+        dom = response.get_dom()
+        uri = response.get_uri()
 
         # In some strange cases, we fail to normalize the document
         if uri not in self._already_inspected and dom is not None:
@@ -74,12 +74,12 @@ class feeds(GrepPlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name(feed_type + ' feed')
-                i.setURI(uri)
+                i.set_uri(uri)
                 fmt = 'The URL "%s" is a %s version %s feed.'
                 msg = fmt % (uri, feed_type, version)
                 i.set_desc(msg)
                 i.set_id(response.id)
-                i.addToHighlight(feed_type)
+                i.add_to_highlight(feed_type)
                 kb.kb.append(self, 'feeds', i)
 
     def end(self):

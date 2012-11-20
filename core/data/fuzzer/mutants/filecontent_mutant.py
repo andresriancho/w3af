@@ -35,9 +35,9 @@ class FileContentMutant(Mutant):
     def get_mutant_type(self):
         return 'file content'
 
-    def getData(self):
+    def get_data(self):
         '''
-        Override the default getData() of the fuzzable request that contains a
+        Override the default get_data() of the fuzzable request that contains a
         str(self._dc) <<---- that kills the file I contain in my DC.
         '''
         return self._dc
@@ -46,7 +46,7 @@ class FileContentMutant(Mutant):
         '''
         @return: A string representing WHAT was fuzzed.
         '''
-        res = '"' + self.getURI() + '", using HTTP method '
+        res = '"' + self.get_uri() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
 
         # Depending on the data container, print different things:

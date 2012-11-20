@@ -78,16 +78,16 @@ def create_mutants(freq, mutant_str_list, append=False,
     #
     if orig_resp is not None:
 
-        headers = orig_resp.getHeaders()
+        headers = orig_resp.get_headers()
         etag = headers.get('ETag', None)
 
         for m in result:
-            m.set_original_response_body(orig_resp.getBody())
+            m.set_original_response_body(orig_resp.get_body())
 
             if etag is not None:
-                orig_headers = m.getHeaders()
+                orig_headers = m.get_headers()
                 orig_headers['If-None-Match'] = etag
-                m.setHeaders(orig_headers)
+                m.set_headers(orig_headers)
 
     return result
 

@@ -45,5 +45,5 @@ class TestWordpressPathDisclosure(PluginTest):
         info = infos[0]
 
         self.assertEqual(info.get_name(), 'WordPress path disclosure')
-        self.assertEqual(info.getURL().url_string,
+        self.assertEqual(info.get_url().url_string,
                          self.wordpress_url + 'wp-content/plugins/akismet/akismet.php')

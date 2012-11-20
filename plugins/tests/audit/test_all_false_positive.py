@@ -53,8 +53,8 @@ class TestAllFP(PluginTest):
             plugins = run_config['plugins']
             self._scan(target, plugins)
 
-            vulns = self.kb.getAllVulns()
-            infos = self.kb.getAllInfos()
+            vulns = self.kb.get_all_vulns()
+            infos = self.kb.get_all_infos()
 
             vulns = [str(v) for v in vulns]
             infos = [str(i) for i in infos]

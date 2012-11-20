@@ -35,14 +35,14 @@ class test_bing(unittest.TestCase):
         self.bing_se = bing(xUrllib())
 
     def test_get_links_results(self):
-        results = self.bing_se.getNResults(self.query, self.limit)
+        results = self.bing_se.get_n_results(self.query, self.limit)
         # Len of results must be le. than limit
         self.assertTrue(len(results) <= self.limit)
 
         # I want to get some results...
         self.assertTrue(len(results) >= 10, results)
         self.assertTrue(
-            len(set([r.URL.getDomain() for r in results])) >= 3, results)
+            len(set([r.URL.get_domain() for r in results])) >= 3, results)
 
         # URLs should be unique
         self.assertTrue(len(results) == len(set([r.URL for r in results])))

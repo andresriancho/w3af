@@ -47,4 +47,4 @@ class TestFileUpload(PluginTest):
         v = fuvulns[0]
         self.assertEquals(v.get_name(), 'Insecure file upload')
         self.assertEquals(
-            str(v.getURL().getDomainPath()), self.file_upload_url)
+            str(v.get_url().get_domain_path()), self.file_upload_url)

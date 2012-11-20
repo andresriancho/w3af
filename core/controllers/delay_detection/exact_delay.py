@@ -101,7 +101,7 @@ class exact_delay(object):
         response = self.uri_opener.send_mutant(mutant, cache=False)
 
         #    Test
-        if response.getWaitTime() > (original_wait_time + seconds - 0.5):
+        if response.get_wait_time() > (original_wait_time + seconds - 0.5):
                 return True, response
 
         return False, response
@@ -111,7 +111,7 @@ class exact_delay(object):
 
         for _ in xrange(rep):
             time = self.uri_opener.send_mutant(
-                self.mutant, cache=False).getWaitTime()
+                self.mutant, cache=False).get_wait_time()
             original_wait_times.append(time)
 
         return float(sum(original_wait_times)) / len(original_wait_times)

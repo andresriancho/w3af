@@ -57,10 +57,10 @@ class digit_sum(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
-        url = fuzzable_request.getURL()
+        url = fuzzable_request.get_url()
         headers = Headers([('Referer', url.url_string)])
 
-        original_response = self._uri_opener.GET(fuzzable_request.getURI(),
+        original_response = self._uri_opener.GET(fuzzable_request.get_uri(),
                                                  cache=True, headers=headers)
 
         if original_response.is_text_or_html() or self._fuzz_images:
@@ -75,7 +75,7 @@ class digit_sum(CrawlPlugin):
 
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html
-            self._already_visited.add(fuzzable_request.getURI())
+            self._already_visited.add(fuzzable_request.get_uri())
 
     def _do_request(self, fuzzable_request, original_resp, headers):
         '''
@@ -86,7 +86,7 @@ class digit_sum(CrawlPlugin):
                               sent.
         '''
 
-        response = self._uri_opener.GET(fuzzable_request.getURI(),
+        response = self._uri_opener.GET(fuzzable_request.get_uri(),
                                         cache=True,
                                         headers=headers)
 
@@ -96,7 +96,7 @@ class digit_sum(CrawlPlugin):
             # We have different cases:
             #    - If the URLs are different, then there is nothing to think
             #      about, we simply found something new!
-            if response.getURL() != original_resp.getURL():
+            if response.get_url() != original_resp.get_url():
                 add = True
 
             #    - If the content type changed, then there is no doubt that
@@ -106,8 +106,8 @@ class digit_sum(CrawlPlugin):
 
             #    - If we changed the query string parameters, we have to check
             #      the content
-            elif relative_distance_lt(response.getClearTextBody(),
-                                      original_resp.getClearTextBody(),
+            elif relative_distance_lt(response.get_clear_text_body(),
+                                      original_resp.get_clear_text_body(),
                                       0.8):
                 # In this case what might happen is that the number we changed
                 # is "out of range" and when requesting that it will trigger an
@@ -135,14 +135,14 @@ class digit_sum(CrawlPlugin):
         @return: A generator which returns mangled fuzzable requests
         '''
         # First i'll mangle the digits in the URL file
-        filename = fuzzable_request.getURL().getFileName()
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        filename = fuzzable_request.get_url().get_fileName()
+        domain_path = fuzzable_request.get_url().get_domain_path()
         for fname in self._do_combinations(filename):
             fr_copy = fuzzable_request.copy()
-            fr_copy.setURL(domain_path.urlJoin(fname))
+            fr_copy.set_url(domain_path.url_join(fname))
 
-            if fr_copy.getURI() not in self._already_visited:
-                self._already_visited.add(fr_copy.getURI())
+            if fr_copy.get_uri() not in self._already_visited:
+                self._already_visited.add(fr_copy.get_uri())
 
                 yield fr_copy
 
@@ -162,8 +162,8 @@ class digit_sum(CrawlPlugin):
                         new_dc[parameter][element_index] = modified_value
                         fr_copy.set_dc(new_dc)
 
-                        if fr_copy.getURI() not in self._already_visited:
-                            self._already_visited.add(fr_copy.getURI())
+                        if fr_copy.get_uri() not in self._already_visited:
+                            self._already_visited.add(fr_copy.get_uri())
                             yield fr_copy
 
     def _do_combinations(self, a_string):

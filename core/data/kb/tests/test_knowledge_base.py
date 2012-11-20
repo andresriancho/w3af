@@ -58,12 +58,12 @@ class test_knowledge_base(unittest.TestCase):
 
     def test_append_uniq_true(self):
         i1 = info()
-        i1.setURI(URL('http://moth/abc.html?id=1'))
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', '1')]))
         i1.set_var('id')
 
         i2 = info()
-        i2.setURI(URL('http://moth/abc.html?id=3'))
+        i2.set_uri(URL('http://moth/abc.html?id=3'))
         i2.set_dc(QueryString([('id', '3')]))
         i2.set_var('id')
 
@@ -73,12 +73,12 @@ class test_knowledge_base(unittest.TestCase):
 
     def test_append_uniq_false(self):
         i1 = info()
-        i1.setURI(URL('http://moth/abc.html?id=1'))
+        i1.set_uri(URL('http://moth/abc.html?id=1'))
         i1.set_dc(QueryString([('id', '1')]))
         i1.set_var('id')
 
         i2 = info()
-        i2.setURI(URL('http://moth/def.html?id=3'))
+        i2.set_uri(URL('http://moth/def.html?id=3'))
         i2.set_dc(QueryString([('id', '3')]))
         i2.set_var('id')
 
@@ -100,11 +100,11 @@ class test_knowledge_base(unittest.TestCase):
 
     def test_all_of_klass(self):
         kb.save('a', 'b', [1, ])
-        self.assertEqual(kb.getAllEntriesOfClass(int), [1])
+        self.assertEqual(kb.get_all_entries_of_class(int), [1])
 
     def test_all_of_klass_str(self):
         kb.append('a', 'b', 'abc')
-        self.assertEqual(kb.getAllEntriesOfClass(str), ['abc'])
+        self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
     def test_dump_empty(self):
         empty = kb.dump()

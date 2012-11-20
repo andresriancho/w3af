@@ -203,7 +203,7 @@ class vdaemon(object):
 
         # Now we get the transfer handler
         wait_time_for_extrusion_scan = ptf.estimate_transfer_time()
-        transferHandler = ptf.getTransferHandler()
+        transferHandler = ptf.get_transfer_handler()
 
         if not transferHandler.can_transfer():
             raise w3afException('Can\'t transfer the file to remote host, can_transfer() returned False.')

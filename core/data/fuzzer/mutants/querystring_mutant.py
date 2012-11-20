@@ -34,7 +34,7 @@ class QSMutant(Mutant):
         return 'query string'
 
     def print_mod_value(self):
-        return 'The sent URI was ' + self.getURI() + ' .'
+        return 'The sent URI was ' + self.get_uri() + ' .'
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,

@@ -122,7 +122,7 @@ class AuditPlugin(Plugin):
             for vuln in vulns:
                 if (vuln.get_var() == varname and
                     fuzz_req.get_dc().keys() == vuln.get_dc().keys() and
-                        are_variants(vuln.getURI(), fuzz_req.getURI())):
+                        are_variants(vuln.get_uri(), fuzz_req.get_uri())):
                     return False
             return True
 

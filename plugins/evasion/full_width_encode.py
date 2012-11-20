@@ -42,7 +42,7 @@ class full_width_encode(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -54,17 +54,17 @@ class full_width_encode(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
+        >>> fwe.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/'
 
         >>> u = URL('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
+        >>> fwe.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
 
         >>> u = URL('http://www.w3af.com/hola-mundo')
         >>> r = HTTPRequest( u )
-        >>> fwe.modifyRequest( r ).url_object.url_string
+        >>> fwe.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/%uFF48%uFF4f%uFF4c%uFF41%uFF0d%uFF4d%uFF55%uFF4e%uFF44%uFF4f'
         >>> #
         >>> #    The plugins should not modify the original request
@@ -78,7 +78,7 @@ class full_width_encode(EvasionPlugin):
         # <%=Request.QueryString("q")%>
 
         # First we mangle the URL
-        path = request.url_object.getPath()
+        path = request.url_object.get_path()
         path = self._mutate(path)
 
         # Now we mangle the postdata
@@ -96,7 +96,7 @@ class full_width_encode(EvasionPlugin):
 
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath(path)
+        new_url.set_path(path)
 
         new_req = HTTPRequest(new_url, data, request.headers,
                               request.get_origin_req_host())
@@ -137,7 +137,7 @@ class full_width_encode(EvasionPlugin):
         '''
         return []
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

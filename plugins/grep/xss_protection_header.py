@@ -43,19 +43,19 @@ class xss_protection_header(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        value = response.getLowerCaseHeaders().get('x-xss-protection', None)
+        value = response.get_lower_case_headers().get('x-xss-protection', None)
         if value == '0':
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Insecure X-XSS-Protection header usage')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
             msg = 'The remote web server sent the HTTP X-XSS-Protection header'\
                   ' with a 0 value, which disables Internet Explorer\'s XSS ' \
                   ' filter. In most cases, this is a bad practice and should' \
                   ' be subject to review.'
             i.set_desc(msg)
-            i.addToHighlight('X-XSS-Protection')
+            i.add_to_highlight('X-XSS-Protection')
             kb.kb.append(self, 'xss_protection_header', i)
 
     def end(self):

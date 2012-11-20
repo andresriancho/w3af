@@ -45,4 +45,4 @@ class TestFindBackdoor(PluginTest):
 
         self.assertEqual(vuln.get_name(), 'Possible web backdoor')
         self.assertEqual(
-            vuln.getURL().url_string, self.base_url + 'c99shell.php')
+            vuln.get_url().url_string, self.base_url + 'c99shell.php')

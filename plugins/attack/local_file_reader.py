@@ -66,7 +66,7 @@ class local_file_reader(AttackPlugin):
         else:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(self._url)
+            v.set_url(self._url)
             v.set_method(self._method)
             v.set_dc(self._data)
             v['file_pattern'] = self._file_pattern
@@ -137,14 +137,14 @@ class local_file_reader(AttackPlugin):
         data_b = str(vulnerable_dc_copy)
 
         try:
-            response_a = function_reference(vuln_obj.getURL(), data_a)
-            response_b = function_reference(vuln_obj.getURL(), data_b)
+            response_a = function_reference(vuln_obj.get_url(), data_a)
+            response_b = function_reference(vuln_obj.get_url(), data_b)
         except w3afException, e:
             om.out.error(str(e))
             return False
         else:
-            if self._guess_cut(response_a.getBody(),
-                               response_b.getBody(),
+            if self._guess_cut(response_a.get_body(),
+                               response_b.get_body(),
                                vuln_obj['file_pattern']):
                 return True
             else:
@@ -378,12 +378,12 @@ class FileReaderShell(read_shell):
         data_container[self.get_var()] = filename
         try:
             response = function_reference(
-                self.getURL(), str(data_container))
+                self.get_url(), str(data_container))
         except w3afException, e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
         else:
-            cutted_response = self._cut(response.getBody())
+            cutted_response = self._cut(response.get_body())
             filtered_response = self._filter_errors(cutted_response, filename)
 
             return filtered_response

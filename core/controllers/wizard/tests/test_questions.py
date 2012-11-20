@@ -61,23 +61,23 @@ class test_questions(object):
         '''
         Ahhh, nose's magic of test generators :D
         '''
-        orig = question_inst.getQuestionTitle()
-        question_inst.setQuestionTitle('New')
-        new = question_inst.getQuestionTitle()
+        orig = question_inst.get_question_title()
+        question_inst.set_question_title('New')
+        new = question_inst.get_question_title()
         assert 'New' == new
 
-        orig = question_inst.getQuestionString()
-        question_inst.setQuestionString('New')
-        new = question_inst.getQuestionString()
+        orig = question_inst.get_question_string()
+        question_inst.set_question_string('New')
+        new = question_inst.get_question_string()
         assert 'New' == new
 
-        opt = question_inst.getOptionObjects()
+        opt = question_inst.get_option_objects()
         assert isinstance(opt, OptionList) == True
 
-        qid = question_inst.getQuestionId()
+        qid = question_inst.get_question_id()
         assert qid not in self.unique_question_ids
         self.unique_question_ids.append(qid)
 
-        question_inst.setPreviouslyAnsweredValues(opt)
-        stored_opt = question_inst.getOptionObjects()
+        question_inst.set_previously_answered_values(opt)
+        stored_opt = question_inst.get_option_objects()
         assert id(stored_opt) == id(opt)

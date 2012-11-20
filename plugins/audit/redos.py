@@ -64,13 +64,13 @@ class redos(AuditPlugin):
             if 'php' in powered_by.lower():
                 return
 
-        if 'php' in freq.getURL().getExtension().lower():
+        if 'php' in freq.get_url().get_extension().lower():
             return
 
         # Send the FuzzableRequest without any fuzzing, so we can measure the
         # response time of this script in order to compare it later
         res = self._uri_opener.send_mutant(freq, grep=False)
-        self._original_wait_time = res.getWaitTime()
+        self._original_wait_time = res.get_wait_time()
 
         # Prepare the strings to create the mutants
         patterns_list = self._get_wait_patterns(run=1)
@@ -90,13 +90,13 @@ class redos(AuditPlugin):
         if self._has_no_bug(mutant, pname='preg_replace',
                             kb_varname='preg_replace'):
 
-            if response.getWaitTime() > (self._original_wait_time + self._wait_time):
+            if response.get_wait_time() > (self._original_wait_time + self._wait_time):
 
                 # This could be because of a ReDoS vuln, an error that generates a delay in the
                 # response or simply a network delay; so I'll resend changing the length and see
                 # what happens.
 
-                first_wait_time = response.getWaitTime()
+                first_wait_time = response.get_wait_time()
 
                 # Replace the old pattern with the new one:
                 original_wait_param = mutant.get_mod_value()
@@ -108,7 +108,7 @@ class redos(AuditPlugin):
                 response = self._uri_opener.send_mutant(mutant)
 
                 # compare the times
-                if response.getWaitTime() > (first_wait_time * 1.5):
+                if response.get_wait_time() > (first_wait_time * 1.5):
                     # Now I can be sure that I found a vuln, I control the time of the response.
                     v = vuln.vuln(mutant)
                     v.set_plugin_name(self.get_name())
@@ -117,7 +117,7 @@ class redos(AuditPlugin):
                     v.set_desc('ReDoS was found at: ' + mutant.found_at())
                     v.set_dc(mutant.get_dc())
                     v.set_id(response.id)
-                    v.setURI(response.getURI())
+                    v.set_uri(response.get_uri())
                     kb.kb.append_uniq(self, 'redos', v)
 
                 else:

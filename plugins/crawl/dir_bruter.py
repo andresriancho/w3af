@@ -65,8 +65,8 @@ class dir_bruter(CrawlPlugin):
         if not self._exec:
             raise w3afRunOnce()
         else:
-            domain_path = fuzzable_request.getURL().getDomainPath()
-            base_url = fuzzable_request.getURL().baseUrl()
+            domain_path = fuzzable_request.get_url().get_domain_path()
+            base_url = fuzzable_request.get_url().base_url()
 
             if not self._be_recursive:
                 # Only run once
@@ -92,7 +92,7 @@ class dir_bruter(CrawlPlugin):
 
             # ignore comments and empty lines
             if directory_name and not directory_name.startswith('#'):
-                dir_url = base_path.urlJoin(directory_name + '/')
+                dir_url = base_path.url_join(directory_name + '/')
                 yield directory_name, dir_url
 
     def _send_and_check(self, base_path, (directory_name, dir_url)):
@@ -111,7 +111,7 @@ class dir_bruter(CrawlPlugin):
                 #   Looking good, but lets see if this is a false positive
                 #   or not...
                 #
-                dir_url = base_path.urlJoin(
+                dir_url = base_path.url_join(
                     directory_name + rand_alnum(5) + '/')
 
                 invalid_http_response = self._uri_opener.GET(
@@ -126,11 +126,11 @@ class dir_bruter(CrawlPlugin):
                         self.output_queue.put(fr)
 
                     msg = 'Directory bruteforcer plugin found directory "'
-                    msg += http_response.getURL() + '"'
+                    msg += http_response.get_url() + '"'
                     msg += ' with HTTP response code ' + \
-                        str(http_response.getCode())
+                        str(http_response.get_code())
                     msg += ' and Content-Length: ' + \
-                        str(len(http_response.getBody()))
+                        str(len(http_response.get_body()))
                     msg += '.'
 
                     om.out.information(msg)

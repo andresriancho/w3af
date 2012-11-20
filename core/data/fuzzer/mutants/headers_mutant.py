@@ -55,7 +55,7 @@ class HeadersMutant(Mutant):
         fmt = '"%s", using HTTP method %s. The modified header was: "%s"'\
               ' and it\'s value was: "%s".'
 
-        return fmt % (self.getURL(), self.get_method(), self.get_var(),
+        return fmt % (self.get_url(), self.get_method(), self.get_var(),
                       self.get_mod_value())
 
     def set_mod_value(self, val):
@@ -99,7 +99,7 @@ class HeadersMutant(Mutant):
         # Note that I'm undoing this in the set_dc method above.
         # (search for __HERE__)
         #
-        orig_headers = freq.getHeaders()
+        orig_headers = freq.get_headers()
         headers_copy = orig_headers.copy()
         for header_name in fuzzer_config['fuzzable_headers']:
             headers_copy[header_name] = ''

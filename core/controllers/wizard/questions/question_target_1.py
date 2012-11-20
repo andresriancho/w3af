@@ -40,7 +40,7 @@ class question_target_1(question):
         self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
         self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -48,7 +48,7 @@ class question_target_1(question):
         d1 = 'Target URL'
         o1 = opt_factory('target', '', d1, 'list')
 
-        o2 = opt_factory('targetOS', 'unknown', d1, 'string')
+        o2 = opt_factory('target_os', 'unknown', d1, 'string')
         o3 = opt_factory('targetFramework', 'unknown', d1, 'string')
 
         ol = OptionList()
@@ -58,7 +58,7 @@ class question_target_1(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         # Save the target to the core, all the validations are made there.
         self.w3af_core.target.set_options(options_list)
 

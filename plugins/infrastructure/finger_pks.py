@@ -45,14 +45,14 @@ class finger_pks(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        root_domain = fuzzable_request.getURL().getRootDomain()
+        root_domain = fuzzable_request.get_url().get_root_domain()
 
         pks_se = pks(self._uri_opener)
         results = pks_se.search(root_domain)
 
         for result in results:
             i = info.info()
-            i.setURL(URL('http://pgp.mit.edu:11371/'))
+            i.set_url(URL('http://pgp.mit.edu:11371/'))
             i.set_plugin_name(self.get_name())
             i.set_id([])
             mail = result.username + '@' + root_domain

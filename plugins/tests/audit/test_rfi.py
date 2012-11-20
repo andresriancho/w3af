@@ -81,7 +81,7 @@ class TestRFI(PluginTest):
 
         vuln = vulns[0]
         self.assertEquals("Remote code execution", vuln.get_name())
-        self.assertEquals(self.target_rce, vuln.getURL().url_string)
+        self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
     @attr('smoke')
     def test_found_rfi_with_local_server_rce(self):
@@ -94,7 +94,7 @@ class TestRFI(PluginTest):
 
         vuln = vulns[0]
         self.assertEquals("Remote code execution", vuln.get_name())
-        self.assertEquals(self.target_rce, vuln.getURL().url_string)
+        self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
     def test_found_rfi_with_local_server_read(self):
         cfg = self._run_configs['local_read']
@@ -106,7 +106,7 @@ class TestRFI(PluginTest):
 
         vuln = vulns[0]
         self.assertEquals("Remote file inclusion", vuln.get_name())
-        self.assertEquals(self.target_read, vuln.getURL().url_string)
+        self.assertEquals(self.target_read, vuln.get_url().url_string)
 
     def test_found_rfi_with_remote_server_read(self):
         cfg = self._run_configs['remote_read']
@@ -118,7 +118,7 @@ class TestRFI(PluginTest):
 
         vuln = vulns[0]
         self.assertEquals("Remote file inclusion", vuln.get_name())
-        self.assertEquals(self.target_read, vuln.getURL().url_string)
+        self.assertEquals(self.target_read, vuln.get_url().url_string)
 
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'

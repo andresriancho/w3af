@@ -44,10 +44,10 @@ class basic_auth(BruteforcePlugin):
 
         @param freq: A FuzzableRequest
         '''
-        auth_url_list = [i.getURL().getDomainPath() for i in
+        auth_url_list = [i.get_url().get_domain_path() for i in
                                  kb.kb.get('http_auth_detect', 'auth')]
 
-        domain_path = freq.getURL().getDomainPath()
+        domain_path = freq.get_url().get_domain_path()
         if domain_path in auth_url_list and domain_path not in self._already_tested:
 
                 # Save it (we don't want dups!)
@@ -88,7 +88,7 @@ class basic_auth(BruteforcePlugin):
             #       combination! In my test environment I achieve 100% CPU usage
             #
             uri_opener = xUrllib()
-            uri_opener.settings.setBasicAuth(url, user, passwd)
+            uri_opener.settings.set_basic_auth(url, user, passwd)
             # The next lines replace the uri_opener opener with a new one that has
             # the basic auth settings configured
             uri_opener.settings.build_openers()
@@ -102,12 +102,12 @@ class basic_auth(BruteforcePlugin):
                 om.out.debug(msg % w3)
             else:
                 # GET was OK
-                if response.getCode() != 401:
+                if response.get_code() != 401:
                     self._found = True
                     v = vuln.vuln()
                     v.set_id(response.id)
                     v.set_plugin_name(self.get_name())
-                    v.setURL(url)
+                    v.set_url(url)
                     v.set_desc('Found authentication credentials to: "' + url +
                                '". A correct user and password combination is: ' + user + '/' + passwd)
                     v['user'] = user
@@ -125,7 +125,7 @@ class basic_auth(BruteforcePlugin):
         Configure the main urllib with the newly found credentials.
         '''
         for v in kb.kb.get('basic_auth', 'auth'):
-            self._uri_opener.settings.setBasicAuth(v.getURL(),
+            self._uri_opener.settings.set_basic_auth(v.get_url(),
                                                    v['user'],
                                                    v['pass'])
 

@@ -44,7 +44,7 @@ class vuln(info):
             self.set_method(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())
-            self.setURI(data_obj.getURI())
+            self.set_uri(data_obj.get_uri())
             self.set_mutant(data_obj)
 
     def set_mutant(self, mutant):

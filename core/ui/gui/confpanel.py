@@ -146,7 +146,7 @@ class OnlyOptions(gtk.VBox):
                 helpbtn.connect("clicked", self._showHelp, cleanhelp)
             else:
                 helpbtn = None
-            table.autoAddRow(titl, widg, helpbtn)
+            table.auto_add_row(titl, widg, helpbtn)
             self.widgets_status[widg] = (titl, opt.get_name(),
                                          "<b>%s</b>" % opt.get_name())
             self.propagLabels[widg] = prop
@@ -163,7 +163,7 @@ class OnlyOptions(gtk.VBox):
         '''
         self.save_btn.set_sensitive(not like_initial)
         self.rvrt_btn.set_sensitive(not like_initial)
-        self.parentwidg.configChanged(like_initial)
+        self.parentwidg.config_changed(like_initial)
 
     def _changedLabelNotebook(self, like_initial, label, text):
         if like_initial:
@@ -214,8 +214,8 @@ class OnlyOptions(gtk.VBox):
         # check if all widgets are valid
         invalid = []
         for opt in self.options:
-            if hasattr(opt.widg, "isValid"):
-                if not opt.widg.isValid():
+            if hasattr(opt.widg, "is_valid"):
+                if not opt.widg.is_valid():
                     invalid.append(opt.get_name())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"\
@@ -245,7 +245,7 @@ class OnlyOptions(gtk.VBox):
             opt.widg.save()
 
         # Tell the profile tree that something changed
-        self.w3af.mainwin.profiles.profileChanged(changed=True)
+        self.w3af.mainwin.profiles.profile_changed(changed=True)
 
         # Status bar
         self.w3af.mainwin.sb("Plugin configuration saved successfully")
@@ -253,7 +253,7 @@ class OnlyOptions(gtk.VBox):
     def _revertPanel(self, *vals):
         '''Revert all widgets to their initial state.'''
         for widg in self.widgets_status:
-            widg.revertValue()
+            widg.revert_value()
 
         msg = "The plugin configuration was reverted to its last saved state"
         self.w3af.mainwin.sb(msg)
@@ -310,7 +310,7 @@ class ConfigDialog(gtk.Dialog):
         self.action_area.pack_start(b)
         return b
 
-    def configChanged(self, like_initial):
+    def config_changed(self, like_initial):
         '''Propagates the change from the options.
 
         @params like_initial: If the config is like the initial one

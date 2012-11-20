@@ -137,7 +137,7 @@ class SGMLParser(BaseParser):
 
         TODO: Potential performance improvement:
             * Note that this method receives an HTTPResponse and that it has a
-              getDOM method that generates a DOM based on the same response body
+              get_dom method that generates a DOM based on the same response body
               we use here for generating our DOM. In other words, the same
               response body is passed through etree.fromstring twice.
 
@@ -147,7 +147,7 @@ class SGMLParser(BaseParser):
                   * This method fallbacks to a different parser when errors
                     are found (which is good and is not done in HTTPResponse)
 
-            * Note that a part of this issue was solved with the call to setDOM,
+            * Note that a part of this issue was solved with the call to set_dom,
               read the docs in that method to understand what.
         '''
         # Start parsing!
@@ -170,11 +170,11 @@ class SGMLParser(BaseParser):
             dom = etree.fromstring(resp_body, parser)
         except etree.XMLSyntaxError:
             msg = 'An error occurred while parsing "%s", original exception: "%s"'
-            msg = msg % (http_resp.getURL(), etree.XMLSyntaxError)
+            msg = msg % (http_resp.get_url(), etree.XMLSyntaxError)
             om.out.debug(msg)
 
         # Performance improvement! Read the docs before removing this!
-        http_resp.setDOM(dom)
+        http_resp.set_dom(dom)
 
     def _filter_ref(self, attr):
         key = attr[0]
@@ -194,7 +194,7 @@ class SGMLParser(BaseParser):
         for _, url_path in filter(filter_ref, attrs.iteritems()):
             try:
                 url_path = self._decode_url(url_path)
-                url = self._baseUrl.urlJoin(url_path, encoding=self._encoding)
+                url = self._base_url.url_join(url_path, encoding=self._encoding)
             except ValueError:
                 # Just ignore it, this happens in many cases but one
                 # of the most noticeable is "d:url.html", where the
@@ -202,7 +202,7 @@ class SGMLParser(BaseParser):
                 msg = 'Ignoring URL "%s" as it generated an invalid URL.'
                 om.out.debug(msg % url_path)
             else:
-                url.normalizeURL()
+                url.normalize_url()
                 # Save url
                 self._parsed_urls.add(url)
                 self._tag_and_url.add((tag, url))
@@ -288,7 +288,7 @@ class SGMLParser(BaseParser):
     def _handle_base_tag_start(self, tag, attrs):
         # Override base url
         try:
-            self._baseUrl = self._baseUrl.urlJoin(attrs.get('href', ''))
+            self._base_url = self._base_url.url_join(attrs.get('href', ''))
         except ValueError:
             pass
 
@@ -308,7 +308,7 @@ class SGMLParser(BaseParser):
             #   "6  ; URL=http://www.f00.us/"
             for urlstr in re.findall('.*?URL.*?=(.*)', content, re.IGNORECASE):
                 urlstr = self._decode_url(urlstr.strip())
-                url = unicode(self._baseUrl.urlJoin(urlstr))
+                url = unicode(self._base_url.url_join(urlstr))
                 url = URL(url, encoding=self._encoding)
                 self._parsed_urls.add(url)
                 self._tag_and_url.add(('meta', url))

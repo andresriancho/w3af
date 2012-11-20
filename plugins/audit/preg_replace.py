@@ -79,7 +79,7 @@ class preg_replace(AuditPlugin):
                     v.set_name('Unsafe usage of preg_replace')
                     v.set_desc('Unsafe usage of preg_replace was found at: ' +
                                mutant.found_at())
-                    v.addToHighlight(preg_error_string)
+                    v.add_to_highlight(preg_error_string)
                     kb.kb.append_uniq(self, 'preg_replace', v)
                     break
 

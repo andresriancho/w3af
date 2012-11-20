@@ -54,21 +54,21 @@ class dns_wildcard(InfrastructurePlugin):
         '''
 
         # Only do all this if this is a domain name!
-        if not self.SIMPLE_IP_RE.match(fuzzable_request.getURL().getDomain()):
+        if not self.SIMPLE_IP_RE.match(fuzzable_request.get_url().get_domain()):
 
-            base_url = fuzzable_request.getURL().baseUrl()
+            base_url = fuzzable_request.get_url().base_url()
             original_response = self._uri_opener.GET(base_url, cache=True)
 
-            domain = fuzzable_request.getURL().getDomain()
-            dns_wildcard_url = fuzzable_request.getURL().copy()
+            domain = fuzzable_request.get_url().get_domain()
+            dns_wildcard_url = fuzzable_request.get_url().copy()
 
-            root_domain = base_url.getRootDomain()
+            root_domain = base_url.get_root_domain()
             if len(domain) > len(root_domain):
                 # Remove the last subdomain and test with that
                 domain_without_subdomain = '.'.join(domain.split('.')[1:])
-                dns_wildcard_url.setDomain(domain_without_subdomain)
+                dns_wildcard_url.set_domain(domain_without_subdomain)
             else:
-                dns_wildcard_url.setDomain('foobar.' + domain)
+                dns_wildcard_url.set_domain('foobar.' + domain)
 
             self._test_DNS(original_response, dns_wildcard_url)
             self._test_IP(original_response, domain)
@@ -82,9 +82,9 @@ class dns_wildcard(InfrastructurePlugin):
         except:
             return
 
-        url = original_response.getURL()
+        url = original_response.get_url()
         ip_url = url.copy()
-        ip_url.setDomain(ip_address)
+        ip_url.set_domain(ip_address)
 
         try:
             modified_response = self._uri_opener.GET(ip_url, cache=True)
@@ -93,16 +93,16 @@ class dns_wildcard(InfrastructurePlugin):
                   ' dns_wildcard plugin: "%s"' % w3
             om.out.debug(msg)
         else:
-            if relative_distance_lt(modified_response.getBody(),
-                                    original_response.getBody(), 0.35):
+            if relative_distance_lt(modified_response.get_body(),
+                                    original_response.get_body(), 0.35):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Default domain')
-                i.setURL(modified_response.getURL())
+                i.set_url(modified_response.get_url())
                 i.set_method('GET')
-                msg = 'The contents of ' + modified_response.getURI()
+                msg = 'The contents of ' + modified_response.get_uri()
                 msg += ' differ from the contents of ' + \
-                    original_response.getURI()
+                    original_response.get_uri()
                 i.set_desc(msg)
                 i.set_id(modified_response.id)
                 kb.kb.append(self, 'dns_wildcard', i)
@@ -112,26 +112,26 @@ class dns_wildcard(InfrastructurePlugin):
         '''
         Check if http://www.domain.tld/ == http://domain.tld/
         '''
-        headers = Headers([('Host', dns_wildcard_url.getDomain())])
+        headers = Headers([('Host', dns_wildcard_url.get_domain())])
         try:
             modified_response = self._uri_opener.GET(
-                original_response.getURL(),
+                original_response.get_url(),
                 cache=True,
                 headers=headers)
         except w3afException:
             return
         else:
-            if relative_distance_lt(modified_response.getBody(),
-                                    original_response.getBody(), 0.35):
+            if relative_distance_lt(modified_response.get_body(),
+                                    original_response.get_body(), 0.35):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('No DNS wildcard')
-                i.setURL(dns_wildcard_url)
+                i.set_url(dns_wildcard_url)
                 i.set_method('GET')
                 msg = 'The target site has NO DNS wildcard, and the contents of ' \
                       '"%s" differ from the contents of "%s".'
                 i.set_desc(
-                    msg % (dns_wildcard_url, original_response.getURL()))
+                    msg % (dns_wildcard_url, original_response.get_url()))
                 i.set_id(modified_response.id)
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())
@@ -139,12 +139,12 @@ class dns_wildcard(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('DNS wildcard')
-                i.setURL(original_response.getURL())
+                i.set_url(original_response.get_url())
                 i.set_method('GET')
                 msg = 'The target site has a DNS wildcard configuration, the' \
                       ' contents of "%s" are equal to the ones of "%s".'
                 i.set_desc(
-                    msg % (dns_wildcard_url, original_response.getURL()))
+                    msg % (dns_wildcard_url, original_response.get_url()))
                 i.set_id(modified_response.id)
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())

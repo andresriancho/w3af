@@ -54,7 +54,7 @@ class TestHTTPResponse(unittest.TestCase):
         A charset *must* be passed as arg when creating a new
         HTTPResponse; otherwise expect an error.
         '''
-        self.assertRaises(AssertionError, self.resp.getBody)
+        self.assertRaises(AssertionError, self.resp.get_body)
 
     def test_rawread_is_none(self):
         '''
@@ -62,9 +62,9 @@ class TestHTTPResponse(unittest.TestCase):
         used (Memory optimization)
         '''
         resp = self.resp
-        resp.setCharset('utf-8')
+        resp.set_charset('utf-8')
         # Use the 'raw body'
-        _ = resp.getBody()
+        _ = resp.get_body()
         self.assertEquals(resp._raw_body, None)
 
     def test_doc_type(self):
@@ -114,7 +114,7 @@ class TestHTTPResponse(unittest.TestCase):
             htmlbody = '%s' % body.encode(charset)
             resp = self.create_resp(
                 Headers([('Content-Type', hvalue)]), htmlbody)
-            self.assertEquals(body, resp.getBody())
+            self.assertEquals(body, resp.get_body())
 
     def test_parse_response_with_charset_in_meta_header(self):
         # Ensure responses' bodies are correctly decoded (charset only
@@ -167,20 +167,20 @@ class TestHTTPResponse(unittest.TestCase):
         </html>"""
         headers = Headers([('Content-Type', 'text/xml')])
         resp = self.create_resp(headers, html)
-        self.assertEquals(2, len(resp.getDOM().xpath('.//input')))
+        self.assertEquals(2, len(resp.get_dom().xpath('.//input')))
 
     def test_dom_are_the_same(self):
         resp = self.create_resp(
             Headers([('Content-Type', 'text/html')]), "<html/>")
-        domid = id(resp.getDOM())
-        self.assertEquals(domid, id(resp.getDOM()))
+        domid = id(resp.get_dom())
+        self.assertEquals(domid, id(resp.get_dom()))
 
     def test_get_clear_text_body(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
         clear_text = 'header ABC-DEF-XYZ footer'
         headers = Headers([('Content-Type', 'text/html')])
         resp = self.create_resp(headers, html)
-        self.assertEquals(clear_text, resp.getClearTextBody())
+        self.assertEquals(clear_text, resp.get_clear_text_body())
 
     def test_get_lower_case_headers(self):
         headers = Headers([('Content-Type', 'text/html')])
@@ -188,8 +188,8 @@ class TestHTTPResponse(unittest.TestCase):
 
         resp = self.create_resp(headers, "<html/>")
 
-        self.assertEqual(resp.getLowerCaseHeaders(), lcase_headers)
-        self.assertIn('content-type', resp.getLowerCaseHeaders())
+        self.assertEqual(resp.get_lower_case_headers(), lcase_headers)
+        self.assertIn('content-type', resp.get_lower_case_headers())
 
     def test_pickleable_no_dom(self):
         html = 'header <b>ABC</b>-<b>DEF</b>-<b>XYZ</b> footer'
@@ -205,7 +205,9 @@ class TestHTTPResponse(unittest.TestCase):
         
         msg = 'lxml DOM objects are NOT pickleable. This is an impediment for' \
               ' having a multiprocess process that will perform all HTTP requests' \
-              ' and return HTTP responses over a multiprocessing Queue.'
+              ' and return HTTP responses over a multiprocessing Queue AND only' \
+              ' process the DOM once. Of course I can set the dom to None before' \
+              ' pickling.'
         raise SkipTest(msg)
     
     
@@ -214,13 +216,13 @@ class TestHTTPResponse(unittest.TestCase):
         resp = self.create_resp(headers, html)
         # This just calculates the DOM and stores it as an attribute, NEEDS
         # to be done before pickling (dumps) to have a real test.
-        original_dom = resp.getDOM()
+        original_dom = resp.get_dom()
         
         pickled_resp = cPickle.dumps(resp)
         unpickled_resp = cPickle.loads(pickled_resp)
         
         self.assertEqual(unpickled_resp, resp)
         
-        unpickled_dom = unpickled_resp.getDOM()
+        unpickled_dom = unpickled_resp.get_dom()
         self.assertEqual(unpickled_dom, original_dom)
-        
+

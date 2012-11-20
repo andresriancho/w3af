@@ -65,23 +65,23 @@ class Form(DataContainer):
         # This is used for processing checkboxes
         self._secret_value = "3_!21#47w@"
 
-    def getAction(self):
+    def get_action(self):
         '''
         @return: The Form action.
         '''
         return self._action
 
-    def setAction(self, action):
+    def set_action(self, action):
         '''
         >>> f = Form()
-        >>> f.setAction('http://www.google.com/')
+        >>> f.set_action('http://www.google.com/')
         Traceback (most recent call last):
           ...
         TypeError: The action of a Form must be of url.URL type.
         >>> f = Form()
         >>> action = URL('http://www.google.com/')
-        >>> f.setAction(action)
-        >>> f.getAction() == action
+        >>> f.set_action(action)
+        >>> f.get_action() == action
         True
         '''
         if not isinstance(action, URL):
@@ -109,7 +109,7 @@ class Form(DataContainer):
         vals = self.setdefault(name, [])
         vals.append(value)
 
-    def addFileInput(self, attrs):
+    def add_file_input(self, attrs):
         '''
         Adds a file input to the Form
         @param attrs: attrs=[("class", "screen")]
@@ -158,14 +158,14 @@ class Form(DataContainer):
 
         return urlencode(d, encoding=self.encoding)
 
-    def addSubmit(self, name, value):
+    def add_submit(self, name, value):
         '''
         This is something I hadn't thought about !
         <input type="submit" name="b0f" value="Submit Request">
         '''
         self._submit_map[name] = value
 
-    def addInput(self, attrs):
+    def add_input(self, attrs):
         '''
         Adds an input to the Form object. Input examples:
             <INPUT type="text" name="email"><BR>
@@ -200,7 +200,7 @@ class Form(DataContainer):
                 value = attr[1]
 
         if attr_type == self.INPUT_TYPE_SUBMIT:
-            self.addSubmit(name, value)
+            self.add_submit(name, value)
         else:
             self._set_var(name, value)
 
@@ -209,18 +209,18 @@ class Form(DataContainer):
 
         #
         # TODO May be create special internal method instead of using
-        # addInput()?
+        # add_input()?
         #
         return (name, value)
 
     def get_type(self, name):
         return self._types[name]
 
-    def addCheckBox(self, attrs):
+    def add_check_box(self, attrs):
         """
         Adds checkbox field
         """
-        name, value = self.addInput(attrs)
+        name, value = self.add_input(attrs)
 
         if not name:
             return
@@ -234,11 +234,11 @@ class Form(DataContainer):
 
         self._types[name] = self.INPUT_TYPE_CHECKBOX
 
-    def addRadio(self, attrs):
+    def add_radio(self, attrs):
         """
         Adds radio field
         """
-        name, value = self.addInput(attrs)
+        name, value = self.add_input(attrs)
 
         if not name:
             return
@@ -255,7 +255,7 @@ class Form(DataContainer):
         if value not in self._selects[name]:
             self._selects[name].append(value)
 
-    def addSelect(self, name, options):
+    def add_select(self, name, options):
         """
         Adds one more select field with options
         Options is list of options attrs (tuples)

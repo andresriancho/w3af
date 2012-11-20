@@ -92,7 +92,7 @@ class path_disclosure(GrepPlugin):
         '''
         if response.is_text_or_html():
 
-            html_string = response.getBody()
+            html_string = response.get_body()
 
             for potential_disclosure in self._potential_disclosures(html_string):
 
@@ -103,7 +103,7 @@ class path_disclosure(GrepPlugin):
                 #     http://host.tld/?id=%2Fhome
                 # into,
                 #     http://host.tld/?id=/home
-                realurl = response.getURL().urlDecode()
+                realurl = response.get_url().url_decode()
 
                 #   Sort by the longest match, this is needed for filtering out some false positives
                 #   please read the note below.
@@ -140,17 +140,17 @@ class path_disclosure(GrepPlugin):
 
                             v = vuln.vuln()
                             v.set_plugin_name(self.get_name())
-                            v.setURL(realurl)
+                            v.set_url(realurl)
                             v.set_id(response.id)
                             msg = 'The URL: "' + \
-                                v.getURL() + '" has a path disclosure '
+                                v.get_url() + '" has a path disclosure '
                             msg += 'vulnerability which discloses: "' + \
                                 match + '".'
                             v.set_desc(msg)
                             v.set_severity(severity.LOW)
                             v.set_name('Path disclosure vulnerability')
                             v['path'] = match
-                            v.addToHighlight(match)
+                            v.add_to_highlight(match)
                             kb.kb.append(self, 'path_disclosure', v)
 
         self._update_KB_path_list()
@@ -208,7 +208,7 @@ class path_disclosure(GrepPlugin):
             longest_path_disc_vuln = None
             for path_disc_vuln in path_disc_vulns:
                 for url in url_list:
-                    path_and_file = url.getPath()
+                    path_and_file = url.get_path()
 
                     if path_disc_vuln['path'].endswith(path_and_file):
                         if len(longest_match) < len(path_and_file):
@@ -243,7 +243,7 @@ class path_disclosure(GrepPlugin):
                     # Create the remote locations
                     remote_locations = []
                     for url in url_list:
-                        remote_path = url.getPath().replace('/', path_sep)
+                        remote_path = url.get_path().replace('/', path_sep)
                         remote_locations.append(webroot + remote_path)
                     remote_locations = list(set(remote_locations))
 
@@ -258,10 +258,10 @@ class path_disclosure(GrepPlugin):
         tmp = {}
         ids = {}
         for v in inform:
-            if v.getURL() in tmp.keys():
-                tmp[v.getURL()].append(v['path'])
+            if v.get_url() in tmp.keys():
+                tmp[v.get_url()].append(v['path'])
             else:
-                tmp[v.getURL()] = [v['path'], ]
+                tmp[v.get_url()] = [v['path'], ]
 
             if v['path'] in ids.keys():
                 ids[v['path']].append(v.get_id())

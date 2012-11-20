@@ -86,16 +86,16 @@ class TestQSMutant(unittest.TestCase):
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
 
         m0 = generated_mutants[0]
-        self.assertEqual(m0.getData(), '{"a": "abc", "c": "d"}')
+        self.assertEqual(m0.get_data(), '{"a": "abc", "c": "d"}')
 
         m1 = generated_mutants[1]
-        self.assertEqual(m1.getData(), '{"a": "53", "c": "d"}')
+        self.assertEqual(m1.get_data(), '{"a": "53", "c": "d"}')
 
         m2 = generated_mutants[2]
-        self.assertEqual(m2.getData(), '{"a": "b", "c": "abc"}')
+        self.assertEqual(m2.get_data(), '{"a": "b", "c": "abc"}')
 
         m3 = generated_mutants[3]
-        self.assertEqual(m3.getData(), '{"a": "b", "c": "53"}')
+        self.assertEqual(m3.get_data(), '{"a": "b", "c": "53"}')
 
     def test_json_mutant_create_mutants(self):
         freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))
@@ -107,16 +107,16 @@ class TestQSMutant(unittest.TestCase):
         self.assertEqual(len(generated_mutants), 4, generated_mutants)
 
         m0 = generated_mutants[0]
-        self.assertEqual(m0.getData(), '{"a": "abc", "c": "d"}')
+        self.assertEqual(m0.get_data(), '{"a": "abc", "c": "d"}')
 
         m1 = generated_mutants[1]
-        self.assertEqual(m1.getData(), '{"a": "53", "c": "d"}')
+        self.assertEqual(m1.get_data(), '{"a": "53", "c": "d"}')
 
         m2 = generated_mutants[2]
-        self.assertEqual(m2.getData(), '{"a": "b", "c": "abc"}')
+        self.assertEqual(m2.get_data(), '{"a": "b", "c": "abc"}')
 
         m3 = generated_mutants[3]
-        self.assertEqual(m3.getData(), '{"a": "b", "c": "53"}')
+        self.assertEqual(m3.get_data(), '{"a": "b", "c": "53"}')
 
     def test_json_mutant_create_mutants_not(self):
         freq = JSONPostDataRequest(URL('http://www.w3af.com/?id=3'))

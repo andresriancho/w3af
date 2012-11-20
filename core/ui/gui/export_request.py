@@ -104,12 +104,12 @@ class export_request(entries.RememberingWindow):
 
         # Show the data
         if initialRequest is None:
-            self.http_request.setText(export_request_example)
+            self.http_request.set_text(export_request_example)
         else:
             (request_header, request_body) = initialRequest
-            self.http_request.setText(request_header + '\n\n' + request_body)
+            self.http_request.set_text(request_header + '\n\n' + request_body)
         func = self._exporters[0][1]
-        self.exported_text.setText(func(self.http_request.getText()))
+        self.exported_text.set_text(func(self.http_request.get_text()))
 
         self.vbox.pack_start(vpan, padding=10)
         self.show_all()
@@ -120,12 +120,12 @@ class export_request(entries.RememberingWindow):
         func = self._exporters[opc][1]
 
         try:
-            exported_request = func(self.http_request.getText())
+            exported_request = func(self.http_request.get_text())
         except w3afException, w3:
             error_msg = str(w3)
-            self.exported_text.setText(error_msg)
+            self.exported_text.set_text(error_msg)
         else:
-            self.exported_text.setText(exported_request)
+            self.exported_text.set_text(exported_request)
 
     def _save_as(self, widg):
         '''
@@ -141,7 +141,7 @@ class export_request(entries.RememberingWindow):
             filename = chooser.get_filename()
             try:
                 fh = file(filename, 'w')
-                fh.write(self.exported_text.getText())
+                fh.write(self.exported_text.get_text())
             except:
                 msg = _("Failed to save exported data to file")
                 dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, msg)

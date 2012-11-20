@@ -55,7 +55,7 @@ class netcraft(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the site to test.
         '''
-        target_domain = fuzzable_request.getURL().getRootDomain()
+        target_domain = fuzzable_request.get_url().get_root_domain()
 
         # Example URL:
         # http://toolbar.netcraft.com/site_report?url=http://www.foo.org

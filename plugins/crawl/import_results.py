@@ -113,7 +113,7 @@ class import_results(CrawlPlugin):
         <postdata fuzzable request | GET | http://www.w3af.com/>
         >>> pdr._dc
         QueryString({u'id': [u'1']})
-        >>> pdr.getData()
+        >>> pdr.get_data()
         'id=1'
         '''
         try:

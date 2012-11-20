@@ -109,7 +109,7 @@ class ssi(AuditPlugin):
                 v.set_desc('Server side include (SSI) was found at: ' +
                            mutant.found_at())
                 v.set_id(response.id)
-                v.addToHighlight(e_res)
+                v.add_to_highlight(e_res)
                 kb.kb.append_uniq(self, 'ssi', v)
 
     def end(self):
@@ -145,7 +145,7 @@ class ssi(AuditPlugin):
 
         def analyze_persistent(freq, response):
 
-            for matched_expected_result in multi_in_inst.query(response.getBody()):
+            for matched_expected_result in multi_in_inst.query(response.get_body()):
                 # We found one of the expected results, now we search the
                 # self._persistent_data to find which of the mutants sent it
                 # and create the vulnerability
@@ -157,10 +157,10 @@ class ssi(AuditPlugin):
                 msg = 'Server side include (SSI) was found at: ' + \
                     mutant.found_at()
                 msg += ' The result of that injection is shown by'
-                msg += ' browsing to "%s".' % freq.getURL()
+                msg += ' browsing to "%s".' % freq.get_url()
                 v.set_desc(msg)
                 v.set_id(response.id)
-                v.addToHighlight(matched_expected_result)
+                v.add_to_highlight(matched_expected_result)
                 kb.kb.append(self, 'ssi', v)
 
         self._send_mutants_in_threads(self._uri_opener.send_mutant,

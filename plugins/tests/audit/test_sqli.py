@@ -46,4 +46,4 @@ class TestSQLI(PluginTest):
         vuln = vulns[0]
         self.assertEquals("SELECT * FROM ", vuln['error'])
         self.assertEquals("Unknown database", vuln['db'])
-        self.assertEquals(self.target_url, str(vuln.getURL()))
+        self.assertEquals(self.target_url, str(vuln.get_url()))

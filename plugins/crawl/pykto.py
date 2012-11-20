@@ -94,7 +94,7 @@ class pykto(CrawlPlugin):
                 self._update_db()
 
             # Run the basic scan (only once)
-            url = fuzzable_request.getURL().baseUrl()
+            url = fuzzable_request.get_url().base_url()
             if url not in self._already_analyzed:
                 self._already_analyzed.add(url)
                 self._run(url)
@@ -104,7 +104,7 @@ class pykto(CrawlPlugin):
             if self._mutate_tests:
 
                 # Tests need to be mutated
-                url = fuzzable_request.getURL().getDomainPath()
+                url = fuzzable_request.get_url().get_domain_path()
                 if url not in self._already_analyzed:
                     # Save the directories I already have tested in order to avoid
                     # testing them more than once...
@@ -160,18 +160,18 @@ class pykto(CrawlPlugin):
 
                 om.out.debug('Testing pykto signature: "%s".' % query)
 
-                # I don't use urlJoin here because in some cases pykto needs to
+                # I don't use url_join here because in some cases pykto needs to
                 # send something like http://abc/../../../../etc/passwd
-                # and after urlJoin the URL would be just http://abc/etc/passwd
+                # and after url_join the URL would be just http://abc/etc/passwd
                 #
                 # But I do want is to avoid URLs like this one being generated:
                 # http://localhost//f00   <---- Note the double //
-                if len(query) != 0 and len(url.getPath()) != 0:
-                    if query[0] == '/' == url.getPath()[-1]:
+                if len(query) != 0 and len(url.get_path()) != 0:
+                    if query[0] == '/' == url.get_path()[-1]:
                         query = query[1:]
 
                 modified_url = url.copy()
-                modified_url.setPath(modified_url.getPath() + query)
+                modified_url.set_path(modified_url.get_path() + query)
 
                 yield modified_url, parameters
 
@@ -227,7 +227,7 @@ class pykto(CrawlPlugin):
         res_version = self._uri_opener.GET(versions_url)
 
         fetched_version = False
-        for line in res_version.getBody().split():
+        for line in res_version.get_body().split():
             if line.count('scan_database.db'):
                 _, remote_version = line.strip().split(',')
                 fetched_version = True
@@ -261,13 +261,13 @@ class pykto(CrawlPlugin):
                     # Write new scan_database
                     os.unlink(self._db_file)
                     fd_new_db = file(self._db_file, 'w')
-                    fd_new_db.write(res.getBody())
+                    fd_new_db.write(res.get_body())
                     fd_new_db.close()
 
                     # Write new version file
                     os.unlink(_version_file)
                     fd_new_version = file(_version_file, 'w')
-                    fd_new_version.write(res_version.getBody())
+                    fd_new_version.write(res_version.get_body())
                     fd_new_version.close()
 
                     msg = 'Successfully updated scan_database.db to version: ' + str(remote_version)
@@ -439,7 +439,7 @@ class pykto(CrawlPlugin):
             except:
                 pass
             else:
-                if res.getCode() != int(expected_response):
+                if res.get_code() != int(expected_response):
                     #
                     #    If the response code is not 200, then there is nothing there.
                     #
@@ -463,24 +463,24 @@ class pykto(CrawlPlugin):
             return False
 
         if self._analyze_result(response, expected_response, parameters, url):
-            kb.kb.append(self, 'url', response.getURL())
+            kb.kb.append(self, 'url', response.get_url())
 
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURI(response.getURI())
+            v.set_uri(response.get_uri())
             v.set_method(method)
             vuln_desc = 'pykto plugin found a vulnerability at URL: "' + \
-                v.getURL() + '". '
+                v.get_url() + '". '
             vuln_desc += 'Vulnerability description: "' + desc.strip() + '"'
             if not vuln_desc.endswith('.'):
                 vuln_desc += '.'
             v.set_desc(vuln_desc)
             v.set_id(response.id)
 
-            if not response.getURL().getPath().endswith('/'):
-                msg = 'Insecure file - ' + response.getURL().getPath()
+            if not response.get_url().get_path().endswith('/'):
+                msg = 'Insecure file - ' + response.get_url().get_path()
             else:
-                msg = 'Insecure directory - ' + response.getURL().getPath()
+                msg = 'Insecure directory - ' + response.get_url().get_path()
             v.set_name(msg)
             v.set_severity(severity.LOW)
 
@@ -488,7 +488,7 @@ class pykto(CrawlPlugin):
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
             fr_list = self._create_fuzzable_requests(response)
-            [fr.getURI().normalizeURL() for fr in fr_list]
+            [fr.get_uri().normalize_url() for fr in fr_list]
             for fr in fr_list:
                 self.output_queue.put(fr)
 
@@ -501,7 +501,7 @@ class pykto(CrawlPlugin):
         if expected_response.isdigit():
             int_er = int(expected_response)
             # This is used when expected_response is 200 , 401, 403, etc.
-            if response.getCode() == int_er and not is_404(response):
+            if response.get_code() == int_er and not is_404(response):
                 return True
 
         elif expected_response in response and not is_404(response):

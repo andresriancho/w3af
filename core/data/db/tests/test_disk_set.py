@@ -87,7 +87,7 @@ class test_disk_set(unittest.TestCase):
         self.assertEqual(len(ds), 2)
 
         # This forces an internal change in the URL object
-        qsr2.getURL().url_string
+        qsr2.get_url().url_string
         self.assertTrue(qsr2 in ds)
 
     @attr('smoke')
@@ -117,7 +117,7 @@ class test_disk_set(unittest.TestCase):
         self.assertEqual(len(ds), 2)
 
         # This forces an internal change in the URL object
-        pdr2.getURL().url_string
+        pdr2.get_url().url_string
         self.assertTrue(pdr2 in ds)
 
     def test_update(self):

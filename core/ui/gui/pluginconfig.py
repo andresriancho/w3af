@@ -81,12 +81,12 @@ class OptionsPanel(gtk.VBox):
 
         self.show()
 
-    def configChanged(self, like_initial):
+    def config_changed(self, like_initial):
         '''Propagates the change from the options.
 
         @params like_initial: If the config is like the initial one
         '''
-        self.plugin_tree.configChanged(like_initial)
+        self.plugin_tree.config_changed(like_initial)
 
 
 class ConfigPanel(gtk.VBox):
@@ -277,7 +277,7 @@ class PluginTree(gtk.TreeView):
         tvcolumn = gtk.TreeViewColumn(_('Active'))
         cell = gtk.CellRendererToggle()
         cell.set_property('activatable', True)
-        cell.connect('toggled', self.activatePlugin)
+        cell.connect('toggled', self.activate_plugin)
         tvcolumn.pack_start(cell, False)
         tvcolumn.add_attribute(cell, 'active', 1)
         tvcolumn.add_attribute(cell, 'inconsistent', 2)
@@ -300,7 +300,7 @@ class PluginTree(gtk.TreeView):
         options = plugin.get_options()
         return bool(len(options))
 
-    def configChanged(self, like_initial):
+    def config_changed(self, like_initial):
         '''Shows in the tree when a plugin configuration changed.
 
         @param like_initial: if some of the configuration changed
@@ -316,7 +316,7 @@ class PluginTree(gtk.TreeView):
             # we just alert the changing here, as if it's not saved, the
             # profile shouldn't really be changed
             plugin = self._get_plugin_inst(path)
-            self.mainwin.profiles.profileChanged(plugin)
+            self.mainwin.profiles.profile_changed(plugin)
         else:
             row[0] = "<b>%s</b>" % row[3]
 
@@ -451,10 +451,10 @@ class PluginTree(gtk.TreeView):
             plugin = self._get_plugin_inst(path)
             longdesc = plugin.get_long_desc()
             longdesc = helpers.clean_description(longdesc)
-            self.mainwin.profiles.pluginConfig(plugin)
+            self.mainwin.profiles.plugin_config(plugin)
             self.config_panel.config(self, plugin, longdesc)
 
-    def _getChildren(self, path):
+    def _get_children(self, path):
         '''Finds the children of a path.
 
         @param path: the path to find the children.
@@ -468,7 +468,7 @@ class PluginTree(gtk.TreeView):
             treerow = self.treestore[child]
             yield treerow
 
-    def activatePlugin(self, cell, path):
+    def activate_plugin(self, cell, path):
         '''Handles the plugin activation/deactivation.
 
         @param cell: the cell that generated the signal.
@@ -519,7 +519,7 @@ class PluginTree(gtk.TreeView):
 
             if user_response == gtk.RESPONSE_YES or plugin_fam not in banned_fams:
                 # father: let's change the value of all children
-                for childtreerow in self._getChildren(path):
+                for childtreerow in self._get_children(path):
                     if childtreerow[0] == "gtk_output":
                         childtreerow[1] = True
                         if newvalue is False:
@@ -542,7 +542,7 @@ class PluginTree(gtk.TreeView):
 
             # child: let's change the father status
             vals = []
-            for treerow in self._getChildren(pathfather):
+            for treerow in self._get_children(pathfather):
                 vals.append(treerow[1])
             if all(vals):
                 father[1] = True
@@ -554,9 +554,9 @@ class PluginTree(gtk.TreeView):
                 father[2] = True
 
         # alert the profiles that something changed here
-        self.mainwin.profiles.profileChanged()
+        self.mainwin.profiles.profile_changed()
 
-    def getActivatedPlugins(self):
+    def get_activated_plugins(self):
         '''Return the activated plugins.
 
         @return: all the plugins that are active.
@@ -565,7 +565,7 @@ class PluginTree(gtk.TreeView):
         for row in self.treestore:
             plugins = []
             ptype = row[3]
-            for childrow in self._getChildren(row.path):
+            for childrow in self._get_children(row.path):
                 plugin = childrow[3]
                 if childrow[1]:
                     plugins.append(plugin)
@@ -603,9 +603,9 @@ class PluginConfigBody(gtk.VBox):
         # entry
         histfile = os.path.join(get_home_dir(), "urlhistory.pkl")
         self.target = entries.AdvisedEntry(_("Insert the target URL here"),
-                                           mainwin.scanok.change, histfile, alertmodif=mainwin.profileChanged)
+                                           mainwin.scanok.change, histfile, alertmodif=mainwin.profile_changed)
         self.target.connect("activate", mainwin._scan_director)
-        self.target.connect("activate", self.target.insertURL)
+        self.target.connect("activate", self.target.insert_url)
         targetbox.pack_start(self.target, expand=True, fill=True, padding=5)
 
         # start/stop button
@@ -613,7 +613,7 @@ class PluginConfigBody(gtk.VBox):
             _("Start"), gtk.STOCK_MEDIA_PLAY, _("Start scan"))
         startstop.set_sensitive(False)
         startstop.connect("clicked", mainwin._scan_director)
-        startstop.connect("clicked", self.target.insertURL)
+        startstop.connect("clicked", self.target.insert_url)
         mainwin.startstopbtns.addWidget(startstop)
         targetbox.pack_start(startstop, expand=False, fill=False, padding=5)
 
@@ -690,14 +690,14 @@ class PluginConfigBody(gtk.VBox):
         options = configurable_target.get_options()
         self.target.set_text(options['target'].get_value_str())
 
-    def getActivatedPlugins(self):
+    def get_activated_plugins(self):
         '''Return the activated plugins.
 
         @return: all the plugins that are active.
         '''
-        return self.std_plugin_tree.getActivatedPlugins() + self.out_plugin_tree.getActivatedPlugins()
+        return self.std_plugin_tree.get_activated_plugins() + self.out_plugin_tree.get_activated_plugins()
 
-    def editSelectedPlugin(self):
+    def edit_selected_plugin(self):
         '''Edits the selected plugin.'''
         treeToUse = None
         if self.out_plugin_tree.is_focus():
@@ -724,7 +724,7 @@ class PluginConfigBody(gtk.VBox):
         options = configurable_obj.get_options()
         newurl = options['target'].get_default_value_str()
         if newurl:
-            self.target.setText(newurl)
+            self.target.set_text(newurl)
             self.w3af.mainwin.scanok.change(self.target, True)
         else:
             self.target.reset()

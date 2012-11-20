@@ -53,7 +53,7 @@ class mangleHandler(urllib2.BaseHandler):
         fr = FuzzableRequest(request.url_object,
                              request.get_method(),
                              headers)
-        fr.setData(request.get_data() or '')
+        fr.set_data(request.get_data() or '')
         return fr
 
     def _fr2urllibReq(self, fuzzable_request, orig_req):
@@ -64,16 +64,16 @@ class mangleHandler(urllib2.BaseHandler):
         @param fuzzable_request: A FuzzableRequest.
         @return: A urllib2 request obj.
         '''
-        host = fuzzable_request.getURL().getDomain()
+        host = fuzzable_request.get_url().get_domain()
 
         if fuzzable_request.get_method().upper() == 'GET':
             data = None
         else:
-            data = fuzzable_request.getData()
+            data = fuzzable_request.get_data()
 
         req = HTTPRequest(
-            fuzzable_request.getURI(), data=data,
-            headers=fuzzable_request.getHeaders(),
+            fuzzable_request.get_uri(), data=data,
+            headers=fuzzable_request.get_headers(),
             origin_req_host=host,
             follow_redir=orig_req.follow_redir
         )
@@ -119,10 +119,10 @@ class mangleHandler(urllib2.BaseHandler):
         '''
         kaRes = kaHTTPResponse(originalResponse._connection.sock, debuglevel=0,
                                strict=0, method=None)
-        kaRes.setBody(mangledResponse.getBody())
-        kaRes.headers = mangledResponse.getHeaders()
-        kaRes.code = mangledResponse.getCode()
-        kaRes._url = mangledResponse.getURI().url_string
+        kaRes.set_body(mangledResponse.get_body())
+        kaRes.headers = mangledResponse.get_headers()
+        kaRes.code = mangledResponse.get_code()
+        kaRes._url = mangledResponse.get_uri().url_string
         kaRes.msg = originalResponse.msg
         kaRes.id = originalResponse.id
         kaRes.encoding = mangledResponse.charset

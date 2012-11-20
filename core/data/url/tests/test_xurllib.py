@@ -83,7 +83,7 @@ class TestXUrllib(unittest.TestCase):
     def test_gzip(self):
         url = URL('http://www.google.com.ar/')
         res = self.uri_opener.GET(url, cache=False)
-        headers = res.getHeaders()
+        headers = res.get_headers()
         content_encoding, _ = headers.iget('content-encoding', '')
         test_res = 'gzip' in content_encoding or \
                    'compress' in content_encoding
@@ -149,6 +149,6 @@ class TestXUrllib(unittest.TestCase):
 
         http_response = output.get()
 
-        self.assertEqual(http_response.getCode(), 200)
+        self.assertEqual(http_response.get_code(), 200)
         self.assertTrue(
             self.MOTH_MESSAGE in http_response.body, http_response.body)

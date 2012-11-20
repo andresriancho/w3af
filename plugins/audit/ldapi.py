@@ -120,7 +120,7 @@ class ldapi(AuditPlugin):
                     v.set_name('LDAP injection vulnerability')
                     v.set_desc(
                         'LDAP injection was found at: ' + mutant.found_at())
-                    v.addToHighlight(ldap_error_string)
+                    v.add_to_highlight(ldap_error_string)
                     kb.kb.append_uniq(self, 'ldapi', v)
                     break
 

@@ -99,22 +99,22 @@ class html_comments(GrepPlugin):
         '''
         comment = comment.lower()
         for word in self._multi_in.query(response.body):
-            if (word, response.getURL()) not in self._already_reported_interesting:
+            if (word, response.get_url()) not in self._already_reported_interesting:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('HTML comment with "' + word + '" inside')
                 msg = 'A comment with the string "' + \
                     word + '" was found in: "'
-                msg += response.getURL() + '". This could be interesting.'
+                msg += response.get_url() + '". This could be interesting.'
                 i.set_desc(msg)
                 i.set_id(response.id)
                 i.set_dc(request.get_dc)
-                i.setURI(response.getURI())
-                i.addToHighlight(word)
+                i.set_uri(response.get_uri())
+                i.add_to_highlight(word)
                 kb.kb.append(self, 'interesting_comments', i)
                 om.out.information(i.get_desc())
                 self._already_reported_interesting.add(
-                    (word, response.getURL()))
+                    (word, response.get_url()))
 
     def _html_in_comment(self, comment, request, response):
         '''
@@ -122,7 +122,7 @@ class html_comments(GrepPlugin):
         '''
         html_in_comment = self.HTML_RE.search(comment)
         if html_in_comment and \
-                (comment, response.getURL()) not in self._already_reported_interesting:
+                (comment, response.get_url()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
             i = info.info()
             i.set_plugin_name(self.get_name())
@@ -131,16 +131,16 @@ class html_comments(GrepPlugin):
             comment = comment.replace('\r', '')
             desc = 'A comment with the string "' + comment + \
                 '" was found in: "'
-            desc += response.getURL() + '" . This could be interesting.'
+            desc += response.get_url() + '" . This could be interesting.'
             i.set_desc(desc)
             i.set_id(response.id)
             i.set_dc(request.get_dc)
-            i.setURI(response.getURI())
-            i.addToHighlight(html_in_comment.group(0))
+            i.set_uri(response.get_uri())
+            i.add_to_highlight(html_in_comment.group(0))
             kb.kb.append(self, 'html_comment_hides_html', i)
             om.out.information(i.get_desc())
             self._already_reported_interesting.add(
-                (comment, response.getURL()))
+                (comment, response.get_url()))
 
     def _is_new(self, comment, response):
         '''
@@ -149,12 +149,12 @@ class html_comments(GrepPlugin):
         '''
         with self._plugin_lock:
             if comment not in self._comments.keys():
-                self._comments[comment] = [(response.getURL(), response.id), ]
+                self._comments[comment] = [(response.get_url(), response.id), ]
                 return True
             else:
-                if response.getURL() not in [x[0] for x in self._comments[comment]]:
+                if response.get_url() not in [x[0] for x in self._comments[comment]]:
                     self._comments[comment].append((
-                        response.getURL(), response.id))
+                        response.get_url(), response.id))
                     return True
 
         return False

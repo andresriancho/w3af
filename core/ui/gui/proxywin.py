@@ -141,7 +141,7 @@ class ProxiedRequests(entries.RememberingWindow):
         self.fuzzable = None
         self.waitingRequests = False
         self.keepChecking = False
-        self.reloadOptions()
+        self.reload_options()
         gobject.timeout_add(200, self._superviseRequests)
         self.show()
 
@@ -164,7 +164,7 @@ class ProxiedRequests(entries.RememberingWindow):
                          'Tabbed'], _("View of Intercept tab"), "combo"))
         proxyOptions.add(opt_factory("home_tab", ['Intercept',
                          'History', 'Options'], _("Home tab"), "combo"))
-        self.pref.addSection('proxy', _('Proxy Options'), proxyOptions)
+        self.pref.add_section('proxy', _('Proxy Options'), proxyOptions)
         # HTTP editor options
         editorOptions = OptionList()
         editorOptions.add(
@@ -175,19 +175,19 @@ class ProxiedRequests(entries.RememberingWindow):
             "highlight_syntax", True, _("Highlight syntax"), "boolean"))
         editorOptions.add(opt_factory(
             "display_line_num", True, _("Display line numbers"), "boolean"))
-        self.pref.addSection('editor', _('HTTP Editor Options'), editorOptions)
+        self.pref.add_section('editor', _('HTTP Editor Options'), editorOptions)
         # Load values from configfile
-        self.pref.loadValues()
+        self.pref.load_values()
         self.pref.show()
 
-    def configChanged(self, like_initial):
+    def config_changed(self, like_initial):
         """Propagates the change from the options.
 
         @params like_initial: If the config is like the initial one
         """
         self.like_initial = like_initial
 
-    def reloadOptions(self):
+    def reload_options(self):
         """Reload options.
         1. Stop proxy
         2. Try to start proxy with new params
@@ -219,17 +219,17 @@ class ProxiedRequests(entries.RememberingWindow):
                 self.keepChecking = True
         # Test of config
         try:
-            self.proxy.setWhatToTrap(self.pref.get_value('proxy', 'trap'))
-            self.proxy.setWhatNotToTrap(self.pref.get_value('proxy', 'notrap'))
+            self.proxy.set_what_to_trap(self.pref.get_value('proxy', 'trap'))
+            self.proxy.set_what_not_to_trap(self.pref.get_value('proxy', 'notrap'))
             self.proxy.set_methodsToTrap(
                 self.pref.get_value('proxy', 'methodtrap'))
-            self.proxy.setFixContentLength(
+            self.proxy.set_fix_content_length(
                 self.pref.get_value('proxy', 'fixlength'))
         except w3afException, w3:
-            self.showAlert(_("Invalid configuration!\n" + str(w3)))
+            self.show_alert(_("Invalid configuration!\n" + str(w3)))
 
         self._prevIpport = newPort
-        httpeditor = self.reqresp.request.getViewById('HttpRawView')
+        httpeditor = self.reqresp.request.get_view_by_id('HttpRawView')
         httpeditor.set_show_line_numbers(
             self.pref.get_value('editor', 'display_line_num'))
         httpeditor.set_highlight_current_line(
@@ -240,9 +240,9 @@ class ProxiedRequests(entries.RememberingWindow):
         self.pref.save()
 
         if self._layout != self.pref.get_value('proxy', 'trap_view'):
-            self.showAlert(_("Some of options will take effect after you restart proxy tool"))
+            self.show_alert(_("Some of options will take effect after you restart proxy tool"))
 
-    def showAlert(self, msg):
+    def show_alert(self, msg):
         dlg = gtk.MessageDialog(
             None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, msg)
         opt = dlg.run()
@@ -258,7 +258,7 @@ class ProxiedRequests(entries.RememberingWindow):
             self.proxy = localproxy.localproxy(ip, int(port))
         except w3afProxyException, w3:
             if not silent:
-                self.showAlert(_(str(w3)))
+                self.show_alert(_(str(w3)))
             raise w3
         else:
             self.proxy.start()
@@ -269,12 +269,12 @@ class ProxiedRequests(entries.RememberingWindow):
         @return: True to gobject to keep calling it, False when all is done.
         """
         if self.waitingRequests:
-            req = self.proxy.getTrappedRequest()
+            req = self.proxy.get_trapped_request()
             if req is not None:
                 self.waitingRequests = False
                 self.fuzzable = req
                 self.reqresp.request.set_sensitive(True)
-                self.reqresp.request.showObject(req)
+                self.reqresp.request.show_object(req)
                 self.bt_drop.set_sensitive(True)
                 self.bt_send.set_sensitive(True)
                 self.bt_next.set_sensitive(True)
@@ -285,23 +285,23 @@ class ProxiedRequests(entries.RememberingWindow):
 
         @param widget: who sent the signal.
         """
-        self.reqresp.request.clearPanes()
+        self.reqresp.request.clear_panes()
         self.reqresp.request.set_sensitive(False)
         self.waitingRequests = True
-        self.proxy.dropRequest(self.fuzzable)
+        self.proxy.drop_request(self.fuzzable)
 
     def _send(self, widg):
         """Sends the request through the proxy.
 
         @param widget: who sent the signal.
         """
-        request = self.reqresp.request.getObject()
+        request = self.reqresp.request.get_object()
         # if nothing to send
         if not request:
             return
 
-        headers = request.dumpRequestHead()
-        data = request.getData()
+        headers = request.dump_request_head()
+        data = request.get_data()
 
         if data:
             data = str(data)
@@ -313,8 +313,8 @@ class ProxiedRequests(entries.RememberingWindow):
         else:
             self.fuzzable = None
             self.reqresp.response.set_sensitive(True)
-            self.reqresp.response.showObject(httpResp)
-            self.reqresp.focusResponse()
+            self.reqresp.response.show_object(httpResp)
+            self.reqresp.focus_response()
             self.bt_drop.set_sensitive(False)
             self.bt_send.set_sensitive(False)
 
@@ -323,16 +323,16 @@ class ProxiedRequests(entries.RememberingWindow):
 
         @param widget: who sent the signal.
         """
-        resp = self.reqresp.response.getObject()
+        resp = self.reqresp.response.get_object()
         # If there is request to send, let's send it first
         if not resp:
             self._send(None)
-        self.reqresp.request.clearPanes()
+        self.reqresp.request.clear_panes()
         self.reqresp.request.set_sensitive(False)
-        self.reqresp.response.clearPanes()
+        self.reqresp.response.clear_panes()
         self.reqresp.response.set_sensitive(False)
         self.bt_next.set_sensitive(False)
-        self.reqresp.focusRequest()
+        self.reqresp.focus_request()
         self.waitingRequests = True
 
     def _close(self):
@@ -355,11 +355,11 @@ class ProxiedRequests(entries.RememberingWindow):
             return
 
         trapactive = widget.get_active()
-        self.proxy.setTrap(trapactive)
+        self.proxy.set_trap(trapactive)
         # Send all requests in queue if Intercept is switched off
         if not trapactive:
-            res = self.reqresp.response.getObject()
-            req = self.reqresp.request.getObject()
+            res = self.reqresp.response.get_object()
+            req = self.reqresp.request.get_object()
             # If there is request to send, let's send it first
             if req and not res:
                 self._send(None)

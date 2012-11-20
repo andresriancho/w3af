@@ -57,7 +57,7 @@ class Compare(entries.RememberingWindow):
         self.set_icon_from_file('core/ui/gui/data/w3af_icon.png')
         self.w3af = w3af
         self.commHandler = commHandler
-        commHandler.enable(self, self.addElement)
+        commHandler.enable(self, self.add_element)
 
         # toolbar elements
         uimanager = gtk.UIManager()
@@ -176,10 +176,10 @@ class Compare(entries.RememberingWindow):
         self.elements = []
         self.showingPage = None
         self.leftElement = None
-        self.sensitiveAll(False)
+        self.sensitive_all(False)
         self.show_all()
 
-    def sensitiveAll(self, how):
+    def sensitive_all(self, how):
         '''Sets the sensitivity of almost everything.
 
         @param how: how to set it.
@@ -189,7 +189,7 @@ class Compare(entries.RememberingWindow):
             widg.set_sensitive(how)
         self.sendto_box.set_sensitive(how)
 
-    def addElement(self, element):
+    def add_element(self, element):
         '''Adds an element to the comparison.
 
         @param element: the element to add.
@@ -202,8 +202,8 @@ class Compare(entries.RememberingWindow):
         # acciones especiales
         if newlen == 1:
             # first one, turn everything on and put the text also in the left
-            self.sensitiveAll(True)
-            self.comp.setLeftPane(title, realtext)
+            self.sensitive_all(True)
+            self.comp.set_left_pane(title, realtext)
             self.leftElement = element
         else:
             # more than one, we can delete any
@@ -213,9 +213,9 @@ class Compare(entries.RememberingWindow):
             self.clusterbut.set_sensitive(True)
 
         # put the text in the right and adjust the page selector
-        self.comp.setRightPane(title, realtext)
+        self.comp.set_right_pane(title, realtext)
         self.pagesControl.activate(newlen)
-        self.pagesControl.setPage(newlen)
+        self.pagesControl.set_page(newlen)
 
     def _delete(self, widg):
         '''Deletes the page from the comparator.'''
@@ -223,7 +223,7 @@ class Compare(entries.RememberingWindow):
         newlen = len(self.elements)
         self.pagesControl.activate(newlen)
         if self.showingPage == newlen:
-            self.pagesControl.setPage(newlen)
+            self.pagesControl.set_page(newlen)
             self.showingPage = newlen - 1
 
         # if we have only one left, no delete is allowed
@@ -234,7 +234,7 @@ class Compare(entries.RememberingWindow):
             self.clusterbut.set_sensitive(False)
 
         title, realtext = self._getElementText()
-        self.comp.setRightPane(title, realtext)
+        self.comp.set_right_pane(title, realtext)
 
     def _getElementText(self, element=None):
         '''Returns the text of the element.'''
@@ -243,8 +243,8 @@ class Compare(entries.RememberingWindow):
         (reqhead, reqbody, httpResp) = element
         if httpResp is not None:
             title = "Id: %d" % httpResp.id
-            resphead = httpResp.dumpResponseHead()
-            respbody = httpResp.getBody()
+            resphead = httpResp.dump_response_head()
+            respbody = httpResp.get_body()
         else:
             title = 'Error: No HTTP response was found.'
             resphead = ""
@@ -258,13 +258,13 @@ class Compare(entries.RememberingWindow):
         '''Sets the right text in the left pane for comparison.'''
         self.leftElement = self.elements[self.showingPage]
         title, realtext = self._getElementText()
-        self.comp.setLeftPane(title, realtext)
+        self.comp.set_left_pane(title, realtext)
 
     def _pageChange(self, page):
         '''Change the selected page.'''
         self.showingPage = page
         title, realtext = self._getElementText()
-        self.comp.setRightPane(title, realtext)
+        self.comp.set_right_pane(title, realtext)
 
     def _toggle_reqhead(self, action):
         self._toggle_show(0)
@@ -280,8 +280,8 @@ class Compare(entries.RememberingWindow):
 
     def _toggle_show(self, ind):
         self.showText[ind] = not self.showText[ind]
-        self.comp.setLeftPane(*self._getElementText(self.leftElement))
-        self.comp.setRightPane(*self._getElementText())
+        self.comp.set_left_pane(*self._getElementText(self.leftElement))
+        self.comp.set_right_pane(*self._getElementText())
 
     def _help(self, action):
         html_file = "readme/EN/guiHTML/guiUsersGuide.html#Comparing_HTTP_traffic"
@@ -291,11 +291,11 @@ class Compare(entries.RememberingWindow):
     def _clearAll(self, action):
         '''Clear all the panes.'''
         self.elements = []
-        self.comp.setLeftPane("", "")
-        self.comp.setRightPane("", "")
+        self.comp.set_left_pane("", "")
+        self.comp.set_right_pane("", "")
         self.showingPage = None
         self.leftElement = None
-        self.sensitiveAll(False)
+        self.sensitive_all(False)
         self.delbut.set_sensitive(False)
         self.clusterbut.set_sensitive(False)
 

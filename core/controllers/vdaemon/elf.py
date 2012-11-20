@@ -34,10 +34,10 @@ class elf:
         self._arch = arch
         self._shellcode = '\x90'
 
-    def setShellCode(self, sc):
+    def set_shell_code(self, sc):
         self._shellcode = sc
 
-    def getShellCode(self):
+    def get_shell_code(self):
         return self._shellcode
 
     def dump(self):

@@ -331,14 +331,14 @@ class FileDiff(object):
         gobject.idle_add(
             lambda *args: self.load_font())  # hack around Bug 316730
 
-    def setLeftPane(self, title, text):
+    def set_left_pane(self, title, text):
         self.title0.set_markup("<b>%s</b>" % title)
         leftText = text
         buf = self.textview1.get_buffer()
         rightText = buf.get_text(*buf.get_bounds())
         self._set_internal((leftText, rightText))
 
-    def setRightPane(self, title, text):
+    def set_right_pane(self, title, text):
         self.title1.set_markup("<b>%s</b>" % title)
         buf = self.textview0.get_buffer()
         leftText = buf.get_text(*buf.get_bounds())

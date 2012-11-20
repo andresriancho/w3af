@@ -45,8 +45,8 @@ class TestComparator(unittest.TestCase):
         cont0 = 'abc\ndef\nfoo\nbar'
         cont1 = 'abc\nfoo\nbar'
 
-        doc.setLeftPane("Test0", cont0)
-        doc.setRightPane("Test1", cont1)
+        doc.set_left_pane("Test0", cont0)
+        doc.set_right_pane("Test1", cont1)
 
         self.window.add(doc.widget)
         self.window.show()

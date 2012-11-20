@@ -44,7 +44,7 @@ class TestDotListing(PluginTest):
                 'Operating system username and group leak']),
             set([i.get_name() for i in infos]))
         self.assertEqual(set([self.base_url + '.listing'] * 2),
-                         set([i.getURL().url_string for i in infos]))
+                         set([i.get_url().url_string for i in infos]))
 
         urls = self.kb.get('urls', 'url_objects')
         urls = [url.url_string for url in urls]

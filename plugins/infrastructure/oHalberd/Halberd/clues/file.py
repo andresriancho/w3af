@@ -56,7 +56,7 @@ def save(filename, clues):
 
     for clue in clues:
         # Store the most relevant clue information.
-        writer.writerow((clue.getCount(), clue._local, clue.headers))
+        writer.writerow((clue.get_count(), clue._local, clue.headers))
 
     cluefp.close()
 

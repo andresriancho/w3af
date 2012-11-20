@@ -101,13 +101,13 @@ class ConnectionManager(Process):
                     self._reportedConnection = True
                     om.out.console('w3afAgent service is up and running.')
 
-    def isWorking(self):
+    def is_working(self):
         '''
         @return: Did the remote agent connected to me ?
         '''
         return self._reportedConnection
 
-    def getConnection(self):
+    def get_connection(self):
 
         if self._connections:
             self._cmLock.acquire()
@@ -218,7 +218,7 @@ class TCPRelay(Process):
 
                 # Get an active connection from the connection manager and start forwarding data
                 try:
-                    connToW3afClient = self._cm.getConnection()
+                    connToW3afClient = self._cm.get_connection()
                 except KeyboardInterrupt:
                     om.out.information('Exiting.')
                 except:
@@ -243,7 +243,7 @@ class w3afAgentServer(Process):
         self._socks_port = socks_port
 
         #    Internal
-        self._isRunning = False
+        self._is_running = False
         self._error = ''
 
     def run(self):
@@ -264,24 +264,24 @@ class w3afAgentServer(Process):
                 self._error = 'Failed to start TCPRelay inside w3afAgentServer, exception: "%s"' % w3
                 self._cm.stop()
             else:
-                self._isRunning = True
+                self._is_running = True
 
     def stop(self):
-        if self._isRunning:
+        if self._is_running:
             om.out.debug('Stopping w3afAgentServer.')
             self._cm.stop()
             self._TCPRelay.stop()
         else:
             om.out.debug('w3afAgentServer is not running, no need to stop it.')
 
-    def getError(self):
+    def get_error(self):
         return self._error
 
-    def isRunning(self):
-        return self._isRunning
+    def is_running(self):
+        return self._is_running
 
-    def isWorking(self):
-        return self._cm.isWorking()
+    def is_working(self):
+        return self._cm.is_working()
 
 if __name__ == '__main__':
     sys.path.append(os.getcwd())

@@ -81,16 +81,16 @@ class strange_parameters(GrepPlugin):
                             i = info.info()
                             i.set_plugin_name(self.get_name())
                             i.set_name('Strange parameter')
-                            i.setURI(ref)
+                            i.set_uri(ref)
                             i.set_id(response.id)
-                            msg = 'The URI: "' + i.getURI(
+                            msg = 'The URI: "' + i.get_uri(
                             ) + '" has a parameter named: "' + param_name
                             msg += '" with value: "' + qs[param_name][
                                 element_index] + '", which is quite odd.'
                             i.set_desc(msg)
                             i.set_var(param_name)
                             i['parameterValue'] = qs[param_name][element_index]
-                            i.addToHighlight(qs[param_name][element_index])
+                            i.add_to_highlight(qs[param_name][element_index])
 
                             kb.kb.append(self, 'strange_parameters', i)
 
@@ -107,16 +107,16 @@ class strange_parameters(GrepPlugin):
                             v = vuln.vuln()
                             v.set_plugin_name(self.get_name())
                             v.set_name('Parameter has SQL sentence')
-                            v.setURI(ref)
+                            v.set_uri(ref)
                             v.set_id(response.id)
-                            msg = 'The URI: "' + v.getURI(
+                            msg = 'The URI: "' + v.get_uri(
                             ) + '" has a parameter named: "' + param_name
                             msg += '" with value: "' + qs[param_name][
                                 element_index] + '", which is a SQL sentence.'
                             v.set_desc(msg)
                             v.set_var(param_name)
                             v['parameterValue'] = qs[param_name][element_index]
-                            v.addToHighlight(qs[param_name][element_index])
+                            v.add_to_highlight(qs[param_name][element_index])
                             kb.kb.append(self, 'strange_parameters', v)
 
     def end(self):

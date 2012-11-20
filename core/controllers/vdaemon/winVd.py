@@ -50,21 +50,21 @@ class winVd(vdaemon):
         This method should be implemented in winVd and winVd.
         '''
         aH = atHandler(self._exec_method)
-        if not aH.canDelay():
+        if not aH.can_delay():
             om.out.information('Remote user is not allowed to run at! Running command without at, this may cause a timeout.')
             self._exec(self._remote_filename)
         else:
-            waitTime = aH.addToSchedule(self._remote_filename)
+            waitTime = aH.add_to_schedule(self._remote_filename)
 
             om.out.console('"at" entry successfully added. Waiting for shellcode execution.')
             time.sleep(waitTime + 3)
 
             om.out.console(
                 'Payload successfully executed, restoring old "at".')
-            aH.restoreOldSchedule()
+            aH.restore_old_schedule()
 
             om.out.debug(
                 'All done, check metasploit handler console for results.')
 
-    def getOS(self):
+    def get_os(self):
         return 'windows'

@@ -57,12 +57,12 @@ class finger_bing(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
         (among other things) the URL to test.
         '''
-        if not is_private_site(fuzzable_request.getURL().getDomain()):
+        if not is_private_site(fuzzable_request.get_url().get_domain()):
             bingSE = bing(self._uri_opener)
-            self._domain = fuzzable_request.getURL().getDomain()
-            self._domain_root = fuzzable_request.getURL().getRootDomain()
+            self._domain = fuzzable_request.get_url().get_domain()
+            self._domain_root = fuzzable_request.get_url().get_root_domain()
 
-            results = bingSE.getNResults(
+            results = bingSE.get_n_results(
                 '@' + self._domain_root, self._result_limit)
 
             #   Send the requests using threads:
@@ -80,7 +80,7 @@ class finger_bing(InfrastructurePlugin):
             url = page.URL
             om.out.debug('Searching for emails in: %s' % url)
 
-            grep = True if self._domain == url.getDomain() else False
+            grep = True if self._domain == url.get_domain() else False
             response = self._uri_opener.GET(page.URL, cache=True,
                                             grep=grep)
         except w3afMustStopOnUrlError:
@@ -106,7 +106,7 @@ class finger_bing(InfrastructurePlugin):
 
                         i = info.info()
                         i.set_plugin_name(self.get_name())
-                        i.setURL(page.URL)
+                        i.set_url(page.URL)
                         i.set_name(mail)
                         msg = 'The mail account: "' + \
                             mail + '" was found in: "' + page.URL + '"'

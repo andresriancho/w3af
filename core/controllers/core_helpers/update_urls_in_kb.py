@@ -40,9 +40,9 @@ def update_kb(fuzzable_request):
         # TODO: Force this somehow so that this isn't just a warning but
         # something that fails if developers change it.
         url_object_list = get_urls_from_kb()
-        if fuzzable_request.getURL() not in url_object_list:
+        if fuzzable_request.get_url() not in url_object_list:
 
-            url_object_list.append(fuzzable_request.getURL())
+            url_object_list.append(fuzzable_request.get_url())
             kb.kb.save('urls', 'url_objects', url_object_list)
 
         # Update the list of fuzzable requests that lives in the KB

@@ -54,9 +54,9 @@ class hmap(InfrastructurePlugin):
         msg = 'Hmap web server fingerprint is starting, this may take a while.'
         om.out.information(msg)
 
-        url = fuzzable_request.getURL()
-        protocol = url.getProtocol()
-        server = url.getNetLocation()
+        url = fuzzable_request.get_url()
+        protocol = url.get_protocol()
+        server = url.get_net_location()
 
         # Set some defaults that can be overriden later
         if protocol == 'https':

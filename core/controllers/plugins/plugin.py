@@ -152,15 +152,15 @@ class Plugin(Configurable):
         if unique == 'URL':
             reportedURLs = []
             for i in infoObjList:
-                if i.getURL() not in reportedURLs:
-                    reportedURLs.append(i.getURL())
+                if i.get_url() not in reportedURLs:
+                    reportedURLs.append(i.get_url())
                     inform.append(i)
 
         elif unique == 'VAR':
             reportedVARs = []
             for i in infoObjList:
-                if (i.getURL(), i.get_var()) not in reportedVARs:
-                    reportedVARs.append((i.getURL(), i.get_var()))
+                if (i.get_url(), i.get_var()) not in reportedVARs:
+                    reportedVARs.append((i.get_url(), i.get_var()))
                     inform.append(i)
 
         elif unique is None:
@@ -197,7 +197,7 @@ class Plugin(Configurable):
     def get_name(self):
         return self.__class__.__name__
 
-    def handleUrlError(self, url_error):
+    def handle_url_error(self, url_error):
         '''
         Handle UrlError exceptions raised when requests are made.
         Subclasses should redefine this method for a more refined
@@ -239,7 +239,7 @@ class UrlOpenerProxy(object):
                 return attr(*args, **kwargs)
             except w3afMustStopOnUrlError, w3aferr:
                 stopbubbling, result = \
-                    self._plugin_inst.handleUrlError(w3aferr)
+                    self._plugin_inst.handle_url_error(w3aferr)
                 if not stopbubbling:
                     try:
                         exc_info = sys.exc_info()

@@ -42,7 +42,7 @@ class TestDirectoryIndexing(PluginTest):
         vulns = self.kb.get('directory_indexing', 'directory')
         self.assertEquals(1, len(vulns))
         v = vulns[0]
-        self.assertEquals(self.dir_indexing_url, str(v.getURL()))
+        self.assertEquals(self.dir_indexing_url, str(v.get_url()))
         self.assertEquals(severity.LOW, v.get_severity())
         self.assertEquals(
             'Directory indexing - /w3af/grep/directory_indexing/',

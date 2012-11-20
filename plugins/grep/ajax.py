@@ -58,13 +58,13 @@ class ajax(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        url = response.getURL()
+        url = response.get_url()
         if response.is_text_or_html() and url not in self._already_inspected:
 
             # Don't repeat URLs
             self._already_inspected.add(url)
 
-            dom = response.getDOM()
+            dom = response.get_dom()
             # In some strange cases, we fail to normalize the document
             if dom is not None:
 
@@ -80,10 +80,10 @@ class ajax(GrepPlugin):
                             i = info.info()
                             i.set_plugin_name(self.get_name())
                             i.set_name('AJAX code')
-                            i.setURL(url)
+                            i.set_url(url)
                             i.set_desc('The URL: "%s" has an AJAX code.' % url)
                             i.set_id(response.id)
-                            i.addToHighlight(res.group(0))
+                            i.add_to_highlight(res.group(0))
                             kb.kb.append(self, 'ajax', i)
 
     def end(self):

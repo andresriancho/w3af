@@ -54,8 +54,8 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
             raise w3afRunOnce()
         else:
             # Check if there is a wordpress installation in this directory
-            domain_path = fuzzable_request.getURL().getDomainPath()
-            wp_unique_url = domain_path.urlJoin('wp-login.php')
+            domain_path = fuzzable_request.get_url().get_domain_path()
+            wp_unique_url = domain_path.url_join('wp-login.php')
             response = self._uri_opener.GET(wp_unique_url, cache=True)
 
             # If wp_unique_url is not 404, wordpress = true
@@ -80,7 +80,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         wp_root_response = self._uri_opener.GET(domain_path, cache=True)
 
         if not is_404(wp_root_response):
-            response_body = wp_root_response.getBody()
+            response_body = wp_root_response.get_body()
 
             theme_regexp = '%swp-content/themes/(.*)/style.css' % domain_path
             theme = re.search(theme_regexp, response_body, re.IGNORECASE)
@@ -101,18 +101,18 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
         '''
         for pvuln_path in potentially_vulnerable_paths:
 
-            pvuln_url = domain_path.urlJoin(pvuln_path)
+            pvuln_url = domain_path.url_join(pvuln_path)
             response = self._uri_opener.GET(pvuln_url, cache=True)
 
             if is_404(response):
                 continue
 
-            response_body = response.getBody()
+            response_body = response.get_body()
             if 'Fatal error: ' in response_body:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('WordPress path disclosure')
-                i.setURL(pvuln_url)
+                i.set_url(pvuln_url)
                 i.set_id(response.id)
                 desc = 'Analyze the HTTP response body to find the full path'\
                        ' where wordpress was installed.'

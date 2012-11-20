@@ -55,17 +55,17 @@ class un_ssl(AuditPlugin):
             self._run = False
 
             # Define some variables
-            initial_url = freq.getURL()
+            initial_url = freq.get_url()
             insecure_url = initial_url.copy()
             secure_url = initial_url.copy()
 
-            insecure_url.setProtocol('http')
+            insecure_url.set_protocol('http')
             insecure_fr = freq.copy()
-            insecure_fr.setURL(insecure_url)
+            insecure_fr.set_url(insecure_url)
 
-            secure_url.setProtocol('https')
+            secure_url.set_protocol('https')
             secure_fr = freq.copy()
-            secure_fr.setURL(secure_url)
+            secure_fr.set_url(secure_url)
 
             try:
                 insecure_response = self._uri_opener.send_mutant(
@@ -77,14 +77,14 @@ class un_ssl(AuditPlugin):
                 # (because there is nothing listening on that port).
                 pass
             else:
-                if insecure_response.getCode() == secure_response.getCode():
+                if insecure_response.get_code() == secure_response.get_code():
 
-                    if relative_distance_boolean(insecure_response.getBody(),
-                                                 secure_response.getBody(),
+                    if relative_distance_boolean(insecure_response.get_body(),
+                                                 secure_response.get_body(),
                                                  0.95):
                         v = vuln.vuln(freq)
                         v.set_plugin_name(self.get_name())
-                        v.setURL(insecure_response.getURL())
+                        v.set_url(insecure_response.get_url())
                         v.set_name('Secure content over insecure channel')
                         v.set_severity(severity.MEDIUM)
                         msg = 'Secure content can be accesed using the insecure'

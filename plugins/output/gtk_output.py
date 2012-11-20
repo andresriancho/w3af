@@ -128,17 +128,17 @@ class message:
     def set_severity(self, the_severity):
         self._severity = the_severity
 
-    def getMsg(self):
+    def get_msg(self):
         return self._msg
 
     def get_type(self):
         return self._type
 
-    def getNewLine(self):
+    def get_new_line(self):
         return self._newLine
 
-    def getRealTime(self):
+    def get_real_time(self):
         return self._time
 
-    def getTime(self):
+    def get_time(self):
         return time.strftime("%c", time.localtime(self._time))

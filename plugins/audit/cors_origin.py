@@ -71,7 +71,7 @@ class cors_origin(AuditPlugin):
         if not provides_cors_features(freq, self._uri_opener):
             return
 
-        url = freq.getURL()
+        url = freq.get_url()
         self.analyze_cors_security(url)
 
     def analyze_cors_security(self, url):
@@ -135,7 +135,7 @@ class cors_origin(AuditPlugin):
                     self._reported_global.add(section)
 
                     v = vuln.vuln()
-                    v.setURL(analysis_response[0].getURL())
+                    v.set_url(analysis_response[0].get_url())
                     v.set_id(analysis_response[0].get_id())
                     v.set_severity(vuln_severity)
                     v.set_name('Multiple CORS misconfigurations')
@@ -229,7 +229,7 @@ class cors_origin(AuditPlugin):
                     msg = msg % (', '.join(report_strange),)
 
                 v = vuln.vuln()
-                v.setURL(forged_req.getURL())
+                v.set_url(forged_req.get_url())
                 v.set_id(response.get_id())
                 v.set_severity(severity.LOW)
                 v.set_name(name)
@@ -254,7 +254,7 @@ class cors_origin(AuditPlugin):
         if allow_origin == '*':
 
             v = vuln.vuln()
-            v.setURL(forged_req.getURL())
+            v.set_url(forged_req.get_url())
             v.set_id(response.get_id())
             v.set_severity(severity.LOW)
             v.set_name('Access-Control-Allow-Origin set to "*"')
@@ -263,7 +263,7 @@ class cors_origin(AuditPlugin):
                   ' an %s header with the value set to "*" which is insecure'\
                   ' and leaves the application open to Cross-domain attacks.'
             v.set_desc(
-                msg % (forged_req.getURL(), ACCESS_CONTROL_ALLOW_ORIGIN))
+                msg % (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN))
 
             kb.kb.append(self, 'cors_origin', v)
             om.out.vulnerability(msg)
@@ -294,7 +294,7 @@ class cors_origin(AuditPlugin):
             if origin in allow_origin:
 
                 v = vuln.vuln()
-                v.setURL(forged_req.getURL())
+                v.set_url(forged_req.get_url())
                 v.set_id(response.get_id())
 
                 if allow_credentials:
@@ -306,7 +306,7 @@ class cors_origin(AuditPlugin):
                           ' set to "true", which is insecure and leaves the'\
                           ' application open to Cross-domain attacks which can' \
                           ' affect logged-in users.'
-                    msg = msg % (forged_req.getURL(),
+                    msg = msg % (forged_req.get_url(),
                                  ACCESS_CONTROL_ALLOW_ORIGIN,
                                  ACCESS_CONTROL_ALLOW_CREDENTIALS)
 
@@ -317,7 +317,7 @@ class cors_origin(AuditPlugin):
                           ' an %s header with the value set to the value sent in the'\
                           ' request\'s Origin header, which is insecure and leaves'\
                           ' the application open to Cross-domain attacks.'
-                    msg = msg % (forged_req.getURL(),
+                    msg = msg % (forged_req.get_url(),
                                  ACCESS_CONTROL_ALLOW_ORIGIN)
 
                 v.set_severity(sev)
@@ -355,7 +355,7 @@ class cors_origin(AuditPlugin):
         if allow_credentials and allow_origin == '*':
 
             v = vuln.vuln()
-            v.setURL(forged_req.getURL())
+            v.set_url(forged_req.get_url())
             v.set_id(response.get_id())
             v.set_severity(severity.INFORMATION)
             v.set_name('Incorrect withCredentials implementation')
@@ -365,7 +365,7 @@ class cors_origin(AuditPlugin):
                   ' with the value set to "true" which according to Mozilla\'s'\
                   ' documentation is invalid. This implementation error might'\
                   ' affect the application behavior.'
-            v.set_desc(msg % (forged_req.getURL(),
+            v.set_desc(msg % (forged_req.get_url(),
                               ACCESS_CONTROL_ALLOW_ORIGIN,
                               ACCESS_CONTROL_ALLOW_CREDENTIALS))
 

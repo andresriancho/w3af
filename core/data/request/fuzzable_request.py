@@ -50,9 +50,9 @@ class FuzzableRequest(disk_item):
     variable.
 
     Other classes should inherit from this one and change the behaviour of
-    getURI() and getData(). For example: the class HTTPQSRequest should return
-    the _dc in the querystring (getURI) and HTTPPostDataRequest should return
-    the _dc in the POSTDATA (getData()).
+    get_uri() and get_data(). For example: the class HTTPQSRequest should return
+    the _dc in the querystring (get_uri) and HTTPPostDataRequest should return
+    the _dc in the POSTDATA (get_data()).
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -66,7 +66,7 @@ class FuzzableRequest(disk_item):
         self._headers = Headers(headers or ())
         self._cookie = cookie or Cookie()
         self._data = None
-        self.setURI(uri)
+        self.set_uri(uri)
 
         # Set the internal variables
         self._sent_info_comp = None
@@ -80,26 +80,26 @@ class FuzzableRequest(disk_item):
         >>> fr.dump()
         'GET http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\n'
         >>> fr.set_method('POST')
-        >>> fr.setData('D474')
+        >>> fr.set_data('D474')
         >>> fr.dump()
         'POST http://www.w3af.com/ HTTP/1.1\\nHost: www.w3af.com\\n\\nD474'
         '''
-        return "%s%s%s" % (self.dumpRequestHead(),
-                           CRLF, str(self.getData() or ''))
+        return "%s%s%s" % (self.dump_request_head(),
+                           CRLF, str(self.get_data() or ''))
 
-    def getRequestLine(self):
+    def get_request_line(self):
         '''Return request line.'''
         return "%s %s HTTP/1.1%s" % (self.get_method(),
-                                     self.getURI().urlEncode(),
+                                     self.get_uri().url_encode(),
                                      CRLF)
 
-    def dumpRequestHead(self):
+    def dump_request_head(self):
         '''
         @return: A string with the head of the request
         '''
-        return "%s%s" % (self.getRequestLine(), self.dumpHeaders())
+        return "%s%s" % (self.get_request_line(), self.dump_headers())
 
-    def dumpHeaders(self):
+    def dump_headers(self):
         '''
         @return: A string representation of the headers.
         '''
@@ -190,9 +190,9 @@ class FuzzableRequest(disk_item):
         data = self._data or ''
         # This is the easy part. If it was exactly like this in the request
         if data and smth_instng in data or \
-            smth_instng in self.getURI() or \
+            smth_instng in self.get_uri() or \
             smth_instng in unquote(data) or \
-                smth_instng in unicode(self._uri.urlDecode()):
+                smth_instng in unicode(self._uri.url_decode()):
             return True
 
         # Ok, it's not in it but maybe something similar
@@ -259,7 +259,7 @@ class FuzzableRequest(disk_item):
 
     def __repr__(self):
         return '<fuzzable request | %s | %s>' % \
-            (self.get_method(), self.getURI())
+            (self.get_method(), self.get_uri())
 
     def __eq__(self, other):
         '''
@@ -327,7 +327,7 @@ class FuzzableRequest(disk_item):
             return True
         return False
 
-    def setURL(self, url):
+    def set_url(self, url):
         '''
         >>> r = FuzzableRequest('http://www.google.com/')
         Traceback (most recent call last):
@@ -335,7 +335,7 @@ class FuzzableRequest(disk_item):
         TypeError: The "uri" parameter of a FuzzableRequest must be of url.URL type.
         >>> url = URL('http://www.google.com/')
         >>> r = FuzzableRequest(url)
-        >>> r.getURL() == url
+        >>> r.get_url() == url
         True
         '''
         if not isinstance(url, URL):
@@ -345,7 +345,7 @@ class FuzzableRequest(disk_item):
         self._url = URL(url.url_string.replace(' ', '%20'))
         self._uri = self._url
 
-    def setURI(self, uri):
+    def set_uri(self, uri):
         if not isinstance(uri, URL):
             raise TypeError('The "uri" parameter of a %s must be of '
                             'url.URL type.' % type(self).__name__)
@@ -361,10 +361,10 @@ class FuzzableRequest(disk_item):
                             'argument must be a DataContainer instance.')
         self._dc = dataCont
 
-    def setHeaders(self, headers):
+    def set_headers(self, headers):
         self._headers = Headers(headers)
 
-    def setReferer(self, referer):
+    def set_referer(self, referer):
         self._headers['Referer'] = str(referer)
 
     def set_cookie(self, c):
@@ -384,20 +384,20 @@ class FuzzableRequest(disk_item):
             om.out.error(error_str)
             raise w3afException(error_str)
 
-    def getURL(self):
+    def get_url(self):
         return self._url
 
-    def getURI(self):
+    def get_uri(self):
         return self._uri
 
-    def setData(self, d):
+    def set_data(self, d):
         '''
         The data is the string representation of the DataContainer, in most
         cases it wont be set.
         '''
         self._data = d
 
-    def getData(self):
+    def get_data(self):
         '''
         The data is the string representation of the DataContainer, in most
         cases it will be used as the POSTDATA for requests. Sometimes it is
@@ -411,10 +411,10 @@ class FuzzableRequest(disk_item):
     def get_dc(self):
         return self._dc
 
-    def getHeaders(self):
+    def get_headers(self):
         return self._headers
 
-    def getReferer(self):
+    def get_referer(self):
         return self._headers.get('Referer', None)
 
     def get_cookie(self):

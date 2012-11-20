@@ -35,8 +35,8 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_found_at(self):
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addInput([("name", "address"), ("value", "")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
 
         freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
@@ -50,8 +50,8 @@ class TestPostDataMutant(unittest.TestCase):
 
     def test_mutant_creation(self):
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addInput([("name", "address"), ("value", "")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
 
         freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')

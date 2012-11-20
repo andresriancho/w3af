@@ -55,7 +55,7 @@ class hash_analysis(GrepPlugin):
         # This is much faster
         if response.is_text_or_html():
 
-            body = response.getBody()
+            body = response.get_body()
             splitted_body = self._split_re.split(body)
             for possible_hash in splitted_body:
 
@@ -68,14 +68,14 @@ class hash_analysis(GrepPlugin):
 
                         possible_hash = possible_hash.lower()
                         if self._has_hash_distribution(possible_hash):
-                            if (possible_hash, response.getURL()) not in self._already_reported:
+                            if (possible_hash, response.get_url()) not in self._already_reported:
                                 i = info.info()
                                 i.set_plugin_name(self.get_name())
                                 i.set_name(hash_type + 'hash in HTML content')
-                                i.setURL(response.getURL())
-                                i.addToHighlight(possible_hash)
+                                i.set_url(response.get_url())
+                                i.add_to_highlight(possible_hash)
                                 i.set_id(response.id)
-                                msg = 'The URL: "' + response.getURL(
+                                msg = 'The URL: "' + response.get_url(
                                 ) + '" returned a response that may'
                                 msg += ' contain a "' + hash_type + \
                                     '" hash. The hash is: "' + possible_hash
@@ -84,7 +84,7 @@ class hash_analysis(GrepPlugin):
                                 kb.kb.append(self, 'hash_analysis', i)
 
                                 self._already_reported.add(
-                                    (possible_hash, response.getURL()))
+                                    (possible_hash, response.get_url()))
 
     def _has_hash_distribution(self, possible_hash):
         '''

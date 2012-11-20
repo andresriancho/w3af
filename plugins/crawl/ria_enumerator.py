@@ -59,7 +59,7 @@ class ria_enumerator(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
         url_generator = self._url_generator(base_url, self._extensions,
                                             self._wordlist)
 
@@ -80,15 +80,15 @@ class ria_enumerator(CrawlPlugin):
         for ext in extensions:
             for word in file(wordlist):
 
-                manifest_url = base_url.urlJoin(word.strip() + ext)
+                manifest_url = base_url.url_join(word.strip() + ext)
                 yield manifest_url
 
         ### CrossDomain.XML
-        cross_domain_url = base_url.urlJoin('crossdomain.xml')
+        cross_domain_url = base_url.url_join('crossdomain.xml')
         yield cross_domain_url
 
         ### CrossAccessPolicy.XML
-        client_access_url = base_url.urlJoin('clientaccesspolicy.xml')
+        client_access_url = base_url.url_join('clientaccesspolicy.xml')
         yield client_access_url
 
     def _send_and_check(self, url):
@@ -99,7 +99,7 @@ class ria_enumerator(CrawlPlugin):
         if is_404(response):
             return
 
-        file_name = url.getFileName()
+        file_name = url.get_fileName()
 
         om.out.debug('Checking response for %s in ria_enumerator.' % response)
 
@@ -112,7 +112,7 @@ class ria_enumerator(CrawlPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Gears Manifest')
-            i.setURL(url)
+            i.set_url(url)
             i.set_id(response.id)
             desc = 'A gears manifest file was found at: "' + url
             desc += '".  Each file should be manually reviewed for sensitive'
@@ -123,19 +123,19 @@ class ria_enumerator(CrawlPlugin):
 
     def _analyze_crossdomain_clientaccesspolicy(self, url, response, file_name):
         try:
-            dom = xml.dom.minidom.parseString(response.getBody())
+            dom = xml.dom.minidom.parseString(response.get_body())
         except Exception:
             # Report this, it may be interesting for the final user
             # not a vulnerability per-se... but... it's information after all
-            if 'allow-access-from' in response.getBody() or \
-                'cross-domain-policy' in response.getBody() or \
-                    'cross-domain-access' in response.getBody():
+            if 'allow-access-from' in response.get_body() or \
+                'cross-domain-policy' in response.get_body() or \
+                    'cross-domain-access' in response.get_body():
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Invalid ' + file_name)
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 i.set_method('GET')
-                msg = 'The "' + file_name + '" file at: "' + response.getURL()
+                msg = 'The "' + file_name + '" file at: "' + response.get_url()
                 msg += '" is not a valid XML.'
                 i.set_desc(msg)
                 i.set_id(response.id)
@@ -155,12 +155,12 @@ class ria_enumerator(CrawlPlugin):
                 if url == '*':
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
-                    v.setURL(response.getURL())
+                    v.set_url(response.get_url())
                     v.set_method('GET')
                     v.set_name('Insecure "' + file_name + '" settings')
                     v.set_severity(severity.LOW)
                     msg = 'The "' + file_name + \
-                        '" file at "' + response.getURL() + '" allows'
+                        '" file at "' + response.get_url() + '" allows'
                     msg += ' flash/silverlight access from any site.'
                     v.set_desc(msg)
                     v.set_id(response.id)
@@ -171,10 +171,10 @@ class ria_enumerator(CrawlPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Crossdomain allow ACL')
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     i.set_method('GET')
                     msg = 'The "' + file_name + \
-                        '" file at "' + response.getURL() + '" allows'
+                        '" file at "' + response.get_url() + '" allows'
                     msg += ' flash/silverlight access from "' + url + '".'
                     i.set_desc(msg)
                     i.set_id(response.id)

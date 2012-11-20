@@ -93,8 +93,8 @@ class w3afAgentManager(Process):
             # Wait for it to start.
             time.sleep(0.5)
 
-            if not agent_server.isRunning():
-                om.out.error(agent_server.getError())
+            if not agent_server.is_running():
+                om.out.error(agent_server.get_error())
             else:
 
                 #
@@ -102,7 +102,7 @@ class w3afAgentManager(Process):
                 #    to the remote end and run it.
                 #
                 ptf = payload_transfer_factory(self._exec_method)
-                transferHandler = ptf.getTransferHandler(inbound_port)
+                transferHandler = ptf.get_transfer_handler(inbound_port)
 
                 if not transferHandler.can_transfer():
                     raise w3afException('Can\'t transfer w3afAgent client to remote host, can_transfer() returned False.')
@@ -132,7 +132,7 @@ class w3afAgentManager(Process):
                     #
                     #    This checks if the remote server connected back to the agent_server
                     #
-                    if not agent_server.isWorking():
+                    if not agent_server.is_working():
                         om.out.console('Something went wrong, the w3afAgent client failed to connect back.')
                     else:
                         msg = 'A SOCKS proxy is listening on %s:%s' % (
@@ -143,22 +143,22 @@ class w3afAgentManager(Process):
                         msg += ' proxy configuration should look like "socks4    %s     %s"' % (self._ip_address, self._socks_port)
                         om.out.console(msg)
 
-    def isWorking(self):
+    def is_working(self):
         if self._agent_server is None:
             return False
         else:
-            return self._agent_server.isWorking()
+            return self._agent_server.is_working()
 
     def _delayedExecution(self, command):
         dexecf = delayedExecutionFactory(self._exec_method)
-        dH = dexecf.getDelayedExecutionHandler()
+        dH = dexecf.get_delayed_execution_handler()
 
-        if not dH.canDelay():
+        if not dH.can_delay():
             msg = '[w3afAgentManager] Failed to create cron entry.'
             om.out.debug(msg)
             raise w3afException(msg)
         else:
-            waitTime = dH.addToSchedule(command)
+            waitTime = dH.add_to_schedule(command)
 
             om.out.debug(
                 '[w3afAgentManager] Crontab entry successfully added.')
@@ -168,7 +168,7 @@ class w3afAgentManager(Process):
             time.sleep(waitTime)
 
             om.out.debug('[w3afAgentManager] Restoring old crontab.')
-            dH.restoreOldSchedule()
+            dH.restore_old_schedule()
 
     def _select_client(self):
         '''
@@ -218,7 +218,7 @@ class w3afAgentManager(Process):
             om.out.error('Error: ' + str(e))
 
             for p in [8080, 5060, 3306, 1434, 1433, 443, 80, 25, 22]:
-                if self._is_locally_available(p) and es.isAvailable(p, 'TCP'):
+                if self._is_locally_available(p) and es.is_available(p, 'TCP'):
                     msg = 'Using inbound port "%s" without knowing if the remote'
                     msg += ' host will be able to connect back.'
                     om.out.console(msg % p)

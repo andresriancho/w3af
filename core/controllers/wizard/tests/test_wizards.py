@@ -64,16 +64,16 @@ class test_wizards(object):
         assert wid not in self.unique_wizard_ids
         self.unique_wizard_ids.append(wid)
 
-        assert len(wizard_inst.getWizardDescription()) > 30
+        assert len(wizard_inst.get_wizard_description()) > 30
 
         while True:
             question = wizard_inst.next()
             if question is None:
                 break
             else:
-                opt = question.getOptionObjects()
+                opt = question.get_option_objects()
                 filled_opt = self._correctly_fill_options(opt)
-                wizard_inst.setAnswer(filled_opt)
+                wizard_inst.set_answer(filled_opt)
 
     @attr('smoke')
     def _test_wizard_fail(self, wizard_inst):
@@ -88,14 +88,14 @@ class test_wizards(object):
             if question is None:
                 break
             else:
-                opt = question.getOptionObjects()
+                opt = question.get_option_objects()
                 filled_opt = self._incorrectly_fill_options(opt)
                 try:
-                    wizard_inst.setAnswer(filled_opt)
+                    wizard_inst.set_answer(filled_opt)
                 except w3afException:
                     # Now we correctly fill these values
                     filled_opt = self._correctly_fill_options(opt)
-                    wizard_inst.setAnswer(filled_opt)
+                    wizard_inst.set_answer(filled_opt)
                 except Exception:
                     # The idea is that even when the user puts invalid
                     # values in the answer, we handle it with a w3afException
@@ -110,7 +110,7 @@ class test_wizards(object):
         '''
         values = {
             'target': 'http://www.w3af.org',
-            'targetOS': 'Unix',
+            'target_os': 'Unix',
             'targetFramework': 'PHP'
         }
 
@@ -130,7 +130,7 @@ class test_wizards(object):
         '''
         values = {
             'target': 'foo://www.w3af.org',
-            'targetOS': 'Minix',
+            'target_os': 'Minix',
             'targetFramework': 'C++'
         }
 

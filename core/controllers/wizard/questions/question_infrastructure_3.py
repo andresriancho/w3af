@@ -42,7 +42,7 @@ class question_infrastructure_3(question):
         self._question_str = 'This step allows you to select from a group of plugins that'
         self._question_str += ' fingerprint the remote Web server.'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -66,7 +66,7 @@ class question_infrastructure_3(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         plugin_list = []
 
         if options_list[self._d1].get_value():

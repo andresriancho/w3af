@@ -36,7 +36,7 @@ class w3af_core_profiles(object):
     def __init__(self, w3af_core):
         self._w3af_core = w3af_core
 
-    def saveCurrentToNewProfile(self, profile_name, profileDesc=''):
+    def save_current_to_new_profile(self, profile_name, profileDesc=''):
         '''
         Saves current config to a newly created profile.
 
@@ -53,9 +53,9 @@ class w3af_core_profiles(object):
         profile_inst.save(profile_name)
 
         # Save current to profile
-        return self.saveCurrentToProfile(profile_name, profileDesc)
+        return self.save_current_to_profile(profile_name, profileDesc)
 
-    def saveCurrentToProfile(self, profile_name, prof_desc='', prof_path=''):
+    def save_current_to_profile(self, profile_name, prof_desc='', prof_path=''):
         '''
         Save the current configuration of the core to the profile called
         profile_name.
@@ -71,7 +71,7 @@ class w3af_core_profiles(object):
             enabledPlugins = []
             for pName in self._w3af_core.plugins.get_enabled_plugins(pType):
                 enabledPlugins.append(pName)
-            new_profile.setEnabledPlugins(pType, enabledPlugins)
+            new_profile.set_enabled_plugins(pType, enabledPlugins)
 
         # Save the profile options
         for pType in self._w3af_core.plugins.get_plugin_types():
@@ -84,12 +84,12 @@ class w3af_core_profiles(object):
         # Save the profile targets
         targets = cf.cf.get('targets')
         if targets:
-            new_profile.setTarget(' , '.join(t.url_string for t in targets))
+            new_profile.set_target(' , '.join(t.url_string for t in targets))
 
         # Save the misc and http settings
         misc_settings = MiscSettings()
-        new_profile.setMiscSettings(misc_settings.get_options())
-        new_profile.setHttpSettings(
+        new_profile.set_misc_settings(misc_settings.get_options())
+        new_profile.set_http_settings(
             self._w3af_core.uri_opener.settings.get_options())
 
         # Save the profile name and description
@@ -101,7 +101,7 @@ class w3af_core_profiles(object):
 
         return new_profile
 
-    def useProfile(self, profile_name, workdir=None):
+    def use_profile(self, profile_name, workdir=None):
         '''
         Gets all the information from the profile and stores it in the
         w3af core plugins / target attributes for later use.
@@ -120,21 +120,21 @@ class w3af_core_profiles(object):
         # It exists, work with it!
 
         # Set the target settings of the profile to the core
-        self._w3af_core.target.set_options(profile_inst.getTarget())
+        self._w3af_core.target.set_options(profile_inst.get_target())
 
         # Set the misc and http settings
         #
         # IGNORE the following parameters from the profile:
         #   - misc_settings.local_ip_address
         #
-        profile_misc_settings = profile_inst.getMiscSettings()
-        if 'local_ip_address' in profile_inst.getMiscSettings():
+        profile_misc_settings = profile_inst.get_misc_settings()
+        if 'local_ip_address' in profile_inst.get_misc_settings():
             profile_misc_settings['local_ip_address'].set_value(get_local_ip())
 
         misc_settings = MiscSettings()
         misc_settings.set_options(profile_misc_settings)
         self._w3af_core.uri_opener.settings.set_options(
-            profile_inst.getHttpSettings())
+            profile_inst.get_http_settings())
 
         #
         #    Handle plugin options
@@ -186,7 +186,7 @@ class w3af_core_profiles(object):
             msg = error_fmt % (profile_name, '\n    - '.join(error_messages))
             raise w3afException(msg)
 
-    def getProfileList(self, directory=HOME_DIR):
+    def get_profile_list(self, directory=HOME_DIR):
         '''
         @param directory: The directory from which profiles are loaded
 
@@ -196,7 +196,7 @@ class w3af_core_profiles(object):
 
         >>> HOME_DIR = '.'
         >>> p = w3af_core_profiles(None)
-        >>> valid, invalid = p.getProfileList()
+        >>> valid, invalid = p.get_profile_list()
         >>> valid_lower = [prof.get_name().lower() for prof in valid]
         >>> 'owasp_top10' in valid_lower
         True
@@ -219,7 +219,7 @@ class w3af_core_profiles(object):
                 instance_list.append(profile_instance)
         return instance_list, invalid_profiles
 
-    def removeProfile(self, profile_name):
+    def remove_profile(self, profile_name):
         '''
         @return: True if the profile was successfully removed. Else, raise a w3afException.
         '''

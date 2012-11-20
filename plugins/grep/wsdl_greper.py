@@ -53,8 +53,8 @@ class wsdl_greper(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        uri = response.getURI()
-        if response.getCode() == 200 and uri not in self._already_inspected:
+        uri = response.get_uri()
+        if response.get_code() == 200 and uri not in self._already_inspected:
             self._already_inspected.add(uri)
 
             match_list = self._multi_in.query(response.body)
@@ -62,10 +62,10 @@ class wsdl_greper(GrepPlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('WSDL file')
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 i.set_id(response.id)
-                i.addToHighlight(*match_list)
-                msg = 'The URL: "' + i.getURL() + '" is a Web Services '
+                i.add_to_highlight(*match_list)
+                msg = 'The URL: "' + i.get_url() + '" is a Web Services '
                 msg += 'Description Language page.'
                 i.set_desc(msg)
                 kb.kb.append(self, 'wsdl', i)
@@ -79,12 +79,12 @@ class wsdl_greper(GrepPlugin):
             if is_disco:
                 i = info.info()
                 i.set_plugin_name(self.get_name())
-                i.setURL(response.getURL())
-                msg = 'The URL: "' + i.getURL(
+                i.set_url(response.get_url())
+                msg = 'The URL: "' + i.get_url(
                 ) + '" is a DISCO file that contains'
                 msg += ' references to WSDLs.'
                 i.set_desc(msg)
-                i.addToHighlight(disco_string)
+                i.add_to_highlight(disco_string)
                 kb.kb.append(self, 'disco', i)
 
     def get_plugin_deps(self):

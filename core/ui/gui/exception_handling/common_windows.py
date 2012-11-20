@@ -393,7 +393,7 @@ class dlg_ask_credentials(gtk.MessageDialog):
         '''
         ok_button = self.get_widget_for_response(gtk.RESPONSE_OK)
 
-        if self.email_entry.isValid():
+        if self.email_entry.is_valid():
             # Activate OK button
             ok_button.set_sensitive(True)
         else:

@@ -45,22 +45,22 @@ class oracle(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        url = response.getURL()
+        url = response.get_url()
         if response.is_text_or_html() and url not in self._already_analyzed:
             self._already_analyzed.add(url)
 
             for msg in self._get_descriptiveMessages():
                 # Remember that HTTPResponse objects have a faster "__in__" than
-                # the one in strings; so string in response.getBody() is slower than
+                # the one in strings; so string in response.get_body() is slower than
                 # string in response
                 if msg in response:
 
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
-                    i.setURL(url)
+                    i.set_url(url)
                     i.set_id(response.id)
-                    i.addToHighlight(msg)
+                    i.add_to_highlight(msg)
                     msg = 'The URL: "' + url + '" was created using Oracle'
                     msg += ' Application server.'
                     i.set_desc(msg)

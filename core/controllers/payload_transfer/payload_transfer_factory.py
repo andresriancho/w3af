@@ -46,12 +46,12 @@ class payload_transfer_factory(object):
         self._es = extrusionScanner(exec_method)
 
     def estimate_transfer_time(self):
-        if self._es.canScan():
-            return self._es.estimateScanTime() + 1
+        if self._es.can_scan():
+            return self._es.estimate_scan_time() + 1
         else:
             return 1
 
-    def getTransferHandler(self, inbound_port=None):
+    def get_transfer_handler(self, inbound_port=None):
         '''
         Perform an extrusion scan and return a handler that will know how to upload
         files to the remote end. If the caller sends an inbound_port, don't perform
@@ -88,9 +88,9 @@ class payload_transfer_factory(object):
                     self._exec_method, os, inbound_port))
 
             # Test the fastest first and return the fastest one...
-            def sortFunction(x, y):
+            def sort_function(x, y):
                 return cmp(y.get_speed(), x.get_speed())
-            to_test.sort(sortFunction)
+            to_test.sort(sort_function)
 
         for method in to_test:
 

@@ -81,15 +81,15 @@ class FoundObjectsGuardian(gtk.HBox):
     def _update(self):
         '''Updates the objects shown.'''
         # shells
-        shells = kb.kb.getAllShells()
+        shells = kb.kb.get_all_shells()
         self.shll.quant = len(shells)
 
         # infos
-        infos = kb.kb.getAllInfos()
+        infos = kb.kb.get_all_infos()
         self.info.quant = len(infos)
 
         # vulns
-        vulns = kb.kb.getAllVulns()
+        vulns = kb.kb.get_all_vulns()
         self.vuln.quant = len(vulns)
         return True
 

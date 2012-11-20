@@ -35,22 +35,22 @@ class question(object):
 
         self._previously_answered_values = None
 
-    def getQuestionTitle(self):
+    def get_question_title(self):
         return self._question_title
 
-    def setQuestionTitle(self, s):
+    def set_question_title(self, s):
         self._question_title = s
 
-    def getQuestionString(self):
+    def get_question_string(self):
         return self._question_str
 
-    def setQuestionString(self, s):
+    def set_question_string(self, s):
         self._question_str = s
 
-    def getOptionObjects(self):
+    def get_option_objects(self):
         '''
         This is the method that is shown to the user interfaces;
-        while the real information is inside the _getOptionObjects().
+        while the real information is inside the _get_option_objects().
 
         @return: A list of options for this question.
         '''
@@ -58,9 +58,9 @@ class question(object):
             # We get here when the user hits previous
             return self._previously_answered_values
         else:
-            return self._getOptionObjects()
+            return self._get_option_objects()
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         We get here when the user wants to complete this step of the
         wizard, and he didn't pressed Previous.
@@ -70,19 +70,19 @@ class question(object):
         ol = OptionList()
         return ol
 
-    def setPreviouslyAnsweredValues(self, values):
+    def set_previously_answered_values(self, values):
         '''
         This is needed to implement the previous/back feature!
         '''
         self._previously_answered_values = values
 
-    def getQuestionId(self):
+    def get_question_id(self):
         return self._question_id
 
-    def setQuestionId(self, qid):
+    def set_question_id(self, qid):
         self._question_id = qid
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         '''
         @return: The id of the next question that the wizard has to ask to the
                  user, based on the options_list. None if this is the last

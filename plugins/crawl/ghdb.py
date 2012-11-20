@@ -62,7 +62,7 @@ class ghdb(CrawlPlugin):
                                 (among other things) the URL to test.
         '''
         # Get the domain and set some parameters
-        domain = fuzzable_request.getURL().getDomain()
+        domain = fuzzable_request.get_url().get_domain()
         if is_private_site(domain):
             msg = 'There is no point in searching google for "site:%s".' \
                   ' Google doesn\'t index private pages.'
@@ -94,7 +94,7 @@ class ghdb(CrawlPlugin):
         '''
         Perform the searches and store the results in the kb.
         '''
-        google_list = self._google_se.getNResults(search_term, 9)
+        google_list = self._google_se.get_n_results(search_term, 9)
 
         for result in google_list:
             # I found a vuln in the site!
@@ -102,13 +102,13 @@ class ghdb(CrawlPlugin):
             if not is_404(response):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(response.getURL())
+                v.set_url(response.get_url())
                 v.set_method('GET')
                 v.set_name('Google hack database vulnerability')
                 v.set_severity(severity.MEDIUM)
                 msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
                       ' According to GHDB the vulnerability description is "%s".'
-                v.set_desc(msg % (response.getURL(), gh.desc))
+                v.set_desc(msg % (response.get_url(), gh.desc))
                 v.set_id(response.id)
                 kb.kb.append(self, 'vuln', v)
                 om.out.vulnerability(v.get_desc(), severity=severity.LOW)

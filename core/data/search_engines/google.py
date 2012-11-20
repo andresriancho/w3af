@@ -54,7 +54,7 @@ class google(SearchEngine):
         SearchEngine.__init__(self)
         self._uri_opener = uri_opener
 
-    def getNResults(self, query, limit=0):
+    def get_n_results(self, query, limit=0):
         return self.search(query, 0, count=limit)
 
     def search(self, query, start, count=10):
@@ -227,10 +227,10 @@ class GAjaxSearch(GoogleAPISearch):
 
             try:
                 # Parse the response. Convert the json string into a py dict.
-                parsed_resp = json.loads(resp.getBody())
+                parsed_resp = json.loads(resp.get_body())
             except ValueError:
                 # ValueError: No JSON object could be decoded
-                msg = 'Invalid JSON returned by Google, got "%s"' % resp.getBody()
+                msg = 'Invalid JSON returned by Google, got "%s"' % resp.get_body()
                 raise w3afException(msg)
 
             # Expected response code is 200; otherwise raise Exception
@@ -252,7 +252,7 @@ class GAjaxSearch(GoogleAPISearch):
 
         for page in pages:
             # Update results list
-            parsed_page = json.loads(page.getBody())
+            parsed_page = json.loads(page.get_body())
             links += [GoogleResult(URL(res['url'])) for res in
                                   parsed_page['responseData']['results']]
         return links[:self._count]
@@ -297,13 +297,13 @@ class GStandardSearch(GoogleAPISearch):
             response = self._do_GET(google_url_instance, with_rand_ua=False)
 
             # Remember that HTTPResponse objects have a faster "__in__" than
-            # the one in strings; so string in response.getBody() is slower than
+            # the one in strings; so string in response.get_body() is slower than
             # string in response
             if GOOGLE_SORRY_PAGE in response:
                 msg = 'Google is telling us to stop doing automated tests.'
                 raise w3afException(msg)
 
-            if not self._has_more_items(response.getBody()):
+            if not self._has_more_items(response.get_body()):
                 there_is_more = False
 
             # Save the result page
@@ -317,7 +317,7 @@ class GStandardSearch(GoogleAPISearch):
         links = []
 
         for resp in pages:
-            for url in re.findall(self.REGEX_STRING, resp.getBody()):
+            for url in re.findall(self.REGEX_STRING, resp.get_body()):
                 # Parse the URL
                 url = urllib.unquote_plus(url)
 
@@ -391,7 +391,7 @@ class GMobileSearch(GStandardSearch):
                 msg = 'Google is telling us to stop doing automated tests.'
                 raise w3afException(msg)
 
-            if not self._has_more_items(response.getBody()):
+            if not self._has_more_items(response.get_body()):
                 there_is_more = False
 
             res_pages.append(response)

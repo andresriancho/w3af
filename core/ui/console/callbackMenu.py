@@ -39,18 +39,18 @@ class callbackMenu(object):
         self._history = history()
         self._raw = raw
 
-    def isRaw(self=None):
+    def is_raw(self=None):
         #TODO: pull up
         return self._raw
 
-    def getHistory(self):
+    def get_history(self):
         #TODO: pull up
         return self._history
 
     def execute(self, line):
         return self._callback(line)
 
-    def getPath(self):
+    def get_path(self):
         #TODO: pull up
-        p = self._parent and self._parent.getPath() + '/' or ''
+        p = self._parent and self._parent.get_path() + '/' or ''
         return p + self._name

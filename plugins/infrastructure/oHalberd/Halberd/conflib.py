@@ -128,7 +128,7 @@ class ConfReader:
 
         return proxy_serv_addr, keyfile, certfile
 
-    def writeDefault(self, conf_file):
+    def write_default(self, conf_file):
         """Write a bare-bones configuration file
 
         @param conf_file: Target file where the default conf. will be written.

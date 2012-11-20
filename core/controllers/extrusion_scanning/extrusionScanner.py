@@ -84,7 +84,7 @@ class extrusionScanner(object):
         m.update(r)
         return m.hexdigest()
 
-    def isAvailable(self, port, proto):
+    def is_available(self, port, proto):
         try:
             if proto.lower() == 'tcp':
                 serversocket = socket.socket(
@@ -99,7 +99,7 @@ class extrusionScanner(object):
             serversocket.close()
             return True
 
-    def estimateScanTime(self):
+    def estimate_scan_time(self):
         savedResults = kb.kb.get('extrusionScanner', 'extrusions')
         if savedResults:
             return 1
@@ -127,7 +127,7 @@ class extrusionScanner(object):
             'Please wait some seconds while w3af performs an extrusion scan.')
 
         es = extrusionServer(self._tcp_port_list, self._udp_port_list)
-        if not es.canSniff():
+        if not es.can_sniff():
             msg = 'The user running w3af can\'t sniff on the specified'
             msg += ' interface. Hints: Are you root? Does this interface'
             msg += ' exist?'
@@ -137,13 +137,13 @@ class extrusionScanner(object):
             interpreter, remoteFilename = self._sendExtrusionClient()
 
             # This sniffs for packets in a new thread
-            sniff_thread = threading.Thread(target=es.sniffAndAnalyze)
+            sniff_thread = threading.Thread(target=es.sniff_and_analyze)
             sniff_thread.start()
             time.sleep(1)
 
             self._execExtrusionClient(interpreter, remoteFilename)
 
-            res = es.getResult()
+            res = es.get_result()
             om.out.information('Finished extrusion scan.')
 
             if not res:
@@ -165,7 +165,7 @@ class extrusionScanner(object):
 
                 localPorts = []
                 for port, protocol in portList:
-                    if self.isAvailable(port, protocol):
+                    if self.is_available(port, protocol):
                         localPorts.append((port, protocol))
 
                 if not localPorts:
@@ -219,7 +219,7 @@ class extrusionScanner(object):
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 
-    def canScan(self):
+    def can_scan(self):
         try:
             self._selectExtrusionClient()
         except:

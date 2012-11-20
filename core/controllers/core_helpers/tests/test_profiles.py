@@ -31,9 +31,9 @@ from core.controllers.exceptions import w3afException
 class Test_w3afCore_profiles(unittest.TestCase):
 
     @attr('smoke')
-    def test_useProfile(self):
+    def test_use_profile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
+        w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
 
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
 
@@ -43,9 +43,9 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
         self.assertTrue('web_spider' in enabled_plugins['crawl'])
 
-    def test_saveCurrentToNewProfile(self):
+    def test_save_current_to_new_profile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.useProfile('OWASP_TOP10', workdir='.')
+        w3af_core.profiles.use_profile('OWASP_TOP10', workdir='.')
 
         audit = w3af_core.plugins.get_enabled_plugins('audit')
         disabled_plugin = audit[-1]
@@ -55,14 +55,14 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertEquals(set(enabled), set(audit))
         self.assertTrue(disabled_plugin not in enabled)
 
-        w3af_core.profiles.saveCurrentToNewProfile('unittest-OWASP_TOP10')
+        w3af_core.profiles.save_current_to_new_profile('unittest-OWASP_TOP10')
 
         # Get a new, clean instance of the core.
         w3af_core = w3afCore()
         audit = w3af_core.plugins.get_enabled_plugins('audit')
         self.assertEquals(audit, [])
 
-        w3af_core.profiles.useProfile('unittest-OWASP_TOP10')
+        w3af_core.profiles.use_profile('unittest-OWASP_TOP10')
         enabled_plugins = w3af_core.plugins.get_all_enabled_plugins()
 
         self.assertTrue(disabled_plugin not in enabled_plugins['audit'])
@@ -71,20 +71,20 @@ class Test_w3afCore_profiles(unittest.TestCase):
         self.assertTrue('dns_wildcard' in enabled_plugins['infrastructure'])
         self.assertTrue('web_spider' in enabled_plugins['crawl'])
 
-        w3af_core.profiles.removeProfile('unittest-OWASP_TOP10')
+        w3af_core.profiles.remove_profile('unittest-OWASP_TOP10')
 
-    def test_removeProfile(self):
+    def test_remove_profile(self):
         w3af_core = w3afCore()
-        w3af_core.profiles.saveCurrentToNewProfile('unittest-remove')
-        w3af_core.profiles.removeProfile('unittest-remove')
+        w3af_core.profiles.save_current_to_new_profile('unittest-remove')
+        w3af_core.profiles.remove_profile('unittest-remove')
 
         self.assertRaises(
-            w3afException, w3af_core.profiles.useProfile, 'unittest-remove')
+            w3afException, w3af_core.profiles.use_profile, 'unittest-remove')
 
-    def test_removeProfile_not_exists(self):
+    def test_remove_profile_not_exists(self):
         w3af_core = w3afCore()
         self.assertRaises(
-            w3afException, w3af_core.profiles.removeProfile, 'not-exists')
+            w3afException, w3af_core.profiles.remove_profile, 'not-exists')
 
     @attr('smoke')
     def test_use_all_profiles(self):
@@ -110,7 +110,7 @@ class Test_w3afCore_profiles(unittest.TestCase):
         ***************************************************************************
         '''
         w3af_core = w3afCore()
-        valid, invalid = w3af_core.profiles.getProfileList('.')
+        valid, invalid = w3af_core.profiles.get_profile_list('.')
 
         self.assertTrue(len(valid) > 5)
         self.assertEqual(len(invalid), 0)
@@ -118,4 +118,4 @@ class Test_w3afCore_profiles(unittest.TestCase):
         for profile_inst in valid:
             profile_name = profile_inst.get_name()
 
-            w3af_core.profiles.useProfile(profile_name, workdir='.')
+            w3af_core.profiles.use_profile(profile_name, workdir='.')

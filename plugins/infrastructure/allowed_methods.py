@@ -91,7 +91,7 @@ class allowed_methods(InfrastructurePlugin):
         if self._exec_one_time:
             self._exec = False
 
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        domain_path = fuzzable_request.get_url().get_domain_path()
         if domain_path not in self._already_tested:
             self._already_tested.add(domain_path)
             self._check_methods(domain_path)
@@ -109,7 +109,7 @@ class allowed_methods(InfrastructurePlugin):
         # if OPTIONS isn't enabled, do it manually
         try:
             res = self._uri_opener.OPTIONS(url)
-            headers = res.getLowerCaseHeaders()
+            headers = res.get_lower_case_headers()
         except:
             headers = {}
 
@@ -132,12 +132,12 @@ class allowed_methods(InfrastructurePlugin):
             non_exist_response = self._uri_opener.ARGENTINA(url)
             get_response = self._uri_opener.GET(url)
 
-            if non_exist_response.getCode() not in self.BAD_CODES\
-                    and get_response.getBody() == non_exist_response.getBody():
+            if non_exist_response.get_code() not in self.BAD_CODES\
+                    and get_response.get_body() == non_exist_response.get_body():
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Non existent methods default to GET')
-                i.setURL(url)
+                i.set_url(url)
                 i.set_id([non_exist_response.get_id(), get_response.get_id()])
                 msg = 'The remote Web server has a custom configuration, in'\
                       ' which any not implemented methods that are invoked are'\
@@ -163,7 +163,7 @@ class allowed_methods(InfrastructurePlugin):
                 method_functor = getattr(self._uri_opener, method)
                 try:
                     response = apply(method_functor, (url,), {})
-                    code = response.getCode()
+                    code = response.get_code()
                 except:
                     pass
                 else:
@@ -180,7 +180,7 @@ class allowed_methods(InfrastructurePlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url)
-            i.setURL(url)
+            i.set_url(url)
             i.set_id(id_list)
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + \
@@ -194,7 +194,7 @@ class allowed_methods(InfrastructurePlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url)
-            i.setURL(url)
+            i.set_url(url)
             i.set_id(id_list)
             i['methods'] = allowed_methods
             msg = 'The URL "' + url + '" has the following allowed methods:'
@@ -215,12 +215,12 @@ class allowed_methods(InfrastructurePlugin):
         # Now I transform it to something I can use with group_by_min_key
         allMethods = []
         for i in all_info_obj:
-            allMethods.append((i.getURL(), i['methods']))
+            allMethods.append((i.get_url(), i['methods']))
 
         davMethods = []
 
         for i in dav_info_obj:
-            davMethods.append((i.getURL(), i['methods']))
+            davMethods.append((i.get_url(), i['methods']))
 
         # Now I work the data...
         to_show, method_type = davMethods, ' DAV'

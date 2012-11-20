@@ -55,20 +55,20 @@ class BaseParser(object):
 
     def __init__(self, HTTPResponse):
 
-        encoding = HTTPResponse.getCharset()
+        encoding = HTTPResponse.get_charset()
         if not is_known_encoding(encoding):
             raise ValueError('Unknown encoding: %s' % encoding)
 
         # "setBaseUrl"
-        url = HTTPResponse.getURL()
-        redir_url = HTTPResponse.getRedirURL()
+        url = HTTPResponse.get_url()
+        redir_url = HTTPResponse.get_redir_url()
         if redir_url:
             url = redir_url
 
-        self._baseUrl = url
-        self._baseDomain = url.getDomain()
-        self._rootDomain = url.getRootDomain()
-        self._encoding = HTTPResponse.getCharset()
+        self._base_url = url
+        self._baseDomain = url.get_domain()
+        self._rootDomain = url.get_root_domain()
+        self._encoding = HTTPResponse.get_charset()
 
         # To store results
         self._emails = set()
@@ -133,7 +133,7 @@ class BaseParser(object):
         re_urls.update(self._find_relative(doc_str))
 
         # Finally, normalize the urls
-        map(lambda u: u.normalizeURL(), re_urls)
+        map(lambda u: u.normalize_url(), re_urls)
 
     def _filter_false_urls(self, potential_url):
         potential_url = potential_url[0]
@@ -162,7 +162,7 @@ class BaseParser(object):
             match_str = match_tuple[0]
 
             try:
-                url = self._baseUrl.urlJoin(match_str).url_string
+                url = self._base_url.url_join(match_str).url_string
                 url = URL(self._decode_url(url),
                           encoding=self._encoding)
             except ValueError:

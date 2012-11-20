@@ -56,8 +56,8 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(len(request_lst), 1)
 
         fr = request_lst[0]
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertFalse('content-type' in fr.getHeaders())
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertFalse('content-type' in fr.get_headers())
 
     def test_redirect_location(self):
         body = ''
@@ -70,7 +70,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(len(redir_fr), 1)
 
         redir_fr = redir_fr[0]
-        self.assertEqual(redir_fr.getURL().url_string, redir_url)
+        self.assertEqual(redir_fr.get_url().url_string, redir_url)
 
     def test_redirect_uri_relative(self):
         body = ''
@@ -83,7 +83,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(len(redir_fr), 1)
 
         redir_fr = redir_fr[0]
-        self.assertEqual(redir_fr.getURL(
+        self.assertEqual(redir_fr.get_url(
         ).url_string, self.url.url_string[:-1] + redir_url)
 
     def test_body_parse_a(self):
@@ -108,7 +108,7 @@ class TestCreateFuzzableRequests(unittest.TestCase):
         self.assertEqual(len(request_lst), 1)
 
         fr = request_lst[0]
-        self.assertEqual(fr.getURL().url_string, 'http://www.google.com/?id=1')
+        self.assertEqual(fr.get_url().url_string, 'http://www.google.com/?id=1')
 
     def test_body_parse_form(self):
         body = '''<form action="/foo.bar" method="POST">
@@ -124,10 +124,10 @@ class TestCreateFuzzableRequests(unittest.TestCase):
 
         post_request = post_request_lst[0]
         self.assertEqual(
-            post_request.getURL().url_string, 'http://www.w3af.com/foo.bar')
-        self.assertEqual(post_request.getData(), 'a=&b=123')
+            post_request.get_url().url_string, 'http://www.w3af.com/foo.bar')
+        self.assertEqual(post_request.get_data(), 'a=&b=123')
         self.assertEqual(post_request.get_method(), 'POST')
-        self.assertFalse('content-type' in post_request.getHeaders())
+        self.assertFalse('content-type' in post_request.get_headers())
 
     def test_cookie(self):
         body = ''

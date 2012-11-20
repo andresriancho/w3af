@@ -36,7 +36,7 @@ class DBClient(object):
         '''Construct object.'''
         super(DBClient, self).__init__()
 
-    def createTable(self, name, columns=(), primaryKeyColumns=[]):
+    def create_table(self, name, columns=(), primaryKeyColumns=[]):
         '''Create table in convenient way.'''
         #
         # Lets create the table
@@ -51,7 +51,7 @@ class DBClient(object):
         self.execute(sql)
         self.commit()
 
-    def createIndex(self, table, columns):
+    def create_index(self, table, columns):
         '''
         Create index for speed and performance
 
@@ -229,7 +229,7 @@ class DBClientSQLite(Process, DBClient):
         self.filename = None
         self.execute('--close--')
 
-    def getFileName(self):
+    def get_file_name(self):
         '''Return DB filename.'''
         return self.filename
 

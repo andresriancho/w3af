@@ -118,7 +118,7 @@ class os_commanding(AuditPlugin):
         #
         if self._has_no_bug(mutant):
 
-            for file_pattern_match in self._multi_in.query(response.getBody()):
+            for file_pattern_match in self._multi_in.query(response.get_body()):
 
                 if file_pattern_match not in mutant.get_original_response_body():
                     # Search for the correct command and separator
@@ -135,8 +135,8 @@ class os_commanding(AuditPlugin):
                         'OS Commanding was found at: ' + mutant.found_at())
                     v.set_dc(mutant.get_dc())
                     v.set_id(response.id)
-                    v.setURI(response.getURI())
-                    v.addToHighlight(file_pattern_match)
+                    v.set_uri(response.get_uri())
+                    v.add_to_highlight(file_pattern_match)
                     kb.kb.append_uniq(self, 'os_commanding', v)
                     break
 
@@ -185,7 +185,7 @@ class os_commanding(AuditPlugin):
                         'OS Commanding was found at: ' + mutant.found_at())
                     v.set_dc(mutant.get_dc())
                     v.set_id([r.id for r in responses])
-                    v.setURI(r.getURI())
+                    v.set_uri(r.get_uri())
                     kb.kb.append_uniq(self, 'os_commanding', v)
 
                     break
@@ -216,10 +216,10 @@ class os_commanding(AuditPlugin):
         commands.append(
             base_command("run type %SYSTEMROOT%\\win.ini", 'windows', 'run'))
 
-        # Now I filter the commands based on the targetOS:
-        targetOS = cf.cf.get('targetOS').lower()
+        # Now I filter the commands based on the target_os:
+        target_os = cf.cf.get('target_os').lower()
         commands = [c for c in commands if c.get_OS(
-        ) == targetOS or targetOS == 'unknown']
+        ) == target_os or target_os == 'unknown']
 
         return commands
 
@@ -253,10 +253,10 @@ class os_commanding(AuditPlugin):
         commands.append(
             ping_delay('run ping -n %s localhost', 'windows', 'run '))
 
-        # Now I filter the commands based on the targetOS:
-        targetOS = cf.cf.get('targetOS').lower()
+        # Now I filter the commands based on the target_os:
+        target_os = cf.cf.get('target_os').lower()
         commands = [c for c in commands if c.get_OS(
-        ) == targetOS or targetOS == 'unknown']
+        ) == target_os or target_os == 'unknown']
 
         return commands
 

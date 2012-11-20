@@ -161,7 +161,7 @@ class sqli(AuditPlugin):
                     v.set_id(response.id)
                     v.set_name('SQL injection')
                     v.set_severity(severity.HIGH)
-                    v.addToHighlight(sql_error_string)
+                    v.add_to_highlight(sql_error_string)
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
                     v.set_desc('SQL injection in a %s was found at: %s' %

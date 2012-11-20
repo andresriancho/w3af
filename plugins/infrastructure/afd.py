@@ -75,7 +75,7 @@ class afd(InfrastructurePlugin):
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
         original_url_str = fmt % (
-            fuzzable_request.getURL(), rnd_param, rnd_value)
+            fuzzable_request.get_url(), rnd_param, rnd_value)
         original_url = URL(original_url_str)
 
         try:
@@ -85,7 +85,7 @@ class afd(InfrastructurePlugin):
                   ' response for the first request. Can not perform analysis.'
             om.out.error(msg)
         else:
-            original_response_body = http_resp.getBody()
+            original_response_body = http_resp.get_body()
             original_response_body = original_response_body.replace(
                 rnd_param, '')
             original_response_body = original_response_body.replace(
@@ -93,7 +93,7 @@ class afd(InfrastructurePlugin):
 
             tests = []
             for offending_string in self._get_offending_strings():
-                offending_URL = fmt % (fuzzable_request.getURL(),
+                offending_URL = fmt % (fuzzable_request.get_url(),
                                        rnd_param,
                                        offending_string)
                 offending_URL = URL(offending_URL)
@@ -115,7 +115,7 @@ class afd(InfrastructurePlugin):
         '''
         try:
             resp_body = self._uri_opener.GET(
-                offending_URL, cache=False).getBody()
+                offending_URL, cache=False).get_body()
         except w3afException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)

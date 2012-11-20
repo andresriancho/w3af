@@ -106,11 +106,11 @@ class reqResViewer(gtk.VBox):
         self._vpaned.add(self.request)
         self._vpaned.add(self.response)
 
-    def focusResponse(self):
+    def focus_response(self):
         if self.layout == 'Tabbed':
             self.nb.set_current_page(1)
 
-    def focusRequest(self):
+    def focus_request(self):
         if self.layout == 'Tabbed':
             self.nb.set_current_page(0)
 
@@ -208,16 +208,16 @@ class reqResViewer(gtk.VBox):
         # We show a throbber, and start it
         self.throbber.show()
         self.throbber.running(True)
-        request = self.request.getObject()
+        request = self.request.get_object()
         # Now I start the analysis of this request in a new thread,
         # threading game (copied from craftedRequests)
         event = threading.Event()
         impact = ThreadedURLImpact(
             self.w3af, request, plugin_name, plugin_type, event)
         impact.start()
-        gobject.timeout_add(200, self._impactDone, event, impact)
+        gobject.timeout_add(200, self._impact_done, event, impact)
 
-    def _impactDone(self, event, impact):
+    def _impact_done(self, event, impact):
         # Keep calling this from timeout_add until isSet
         if not event.isSet():
             return True
@@ -238,7 +238,7 @@ class reqResViewer(gtk.VBox):
                     for itemId in result.get_id():
                         historyItem = HistoryItem()
                         historyItem.load(itemId)
-                        historyItem.updateTag(
+                        historyItem.update_tag(
                             historyItem.tag + result.plugin_name)
                         historyItem.info = result.get_desc()
                         historyItem.save()
@@ -265,14 +265,14 @@ class reqResViewer(gtk.VBox):
 
         @param func: where to send the request.
         """
-        headers, data = self.request.getBothTexts()
+        headers, data = self.request.get_both_texts()
         func(self.w3af, (headers, data))
 
     def _sendReqResp(self, widg):
         """Sends the texts to the compare tool."""
-        headers, data = self.request.getBothTexts()
+        headers, data = self.request.get_both_texts()
         self.w3af.mainwin.commCompareTool((headers, data,
-                                           self.response.getObject()))
+                                           self.response.get_object()))
 
     def set_sensitive(self, how):
         """Sets the pane on/off."""
@@ -295,7 +295,7 @@ class requestResponsePart(gtk.Notebook):
         self._views = []
         self.enableWidget = enableWidget
 
-    def addView(self, view):
+    def add_view(self, view):
         self._views.append(view)
         self.append_page(view, gtk.Label(view.label))
 
@@ -309,7 +309,7 @@ class requestResponsePart(gtk.Notebook):
         for but in self.childButtons:
             but.set_sensitive(how)
 
-    def getViewById(self, viewId):
+    def get_view_by_id(self, viewId):
         for view in self._views:
             if view.id == viewId:
                 return view
@@ -319,13 +319,13 @@ class requestResponsePart(gtk.Notebook):
         for view in self._views:
             if view.id != viewId:
                 view.initial = True
-                view.showObject(self._obj)
+                view.show_object(self._obj)
                 view.initial = False
         if self.enableWidget:
             for widg in self.enableWidget:
-                widg(bool(len(self._obj.getHeaders())))
+                widg(bool(len(self._obj.get_headers())))
 
-    def clearPanes(self):
+    def clear_panes(self):
         self._obj = None
         ### FIXME: REMOVE ME ###
         self._set_vals.append((False, 'panes_cleared'))
@@ -336,16 +336,16 @@ class requestResponsePart(gtk.Notebook):
             view.clear()
             view.initial = False
 
-    def showError(self, text):
+    def show_error(self, text):
         print text
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         self._obj = obj
 
         # String representation
-        if hasattr(obj, 'getBody'):
+        if hasattr(obj, 'get_body'):
             str_repr_inst = StringRepresentation(
-                obj.getBody(),
+                obj.get_body(),
                 self._parent.draw_area.width,
                 self._parent.draw_area.height
             )
@@ -357,13 +357,13 @@ class requestResponsePart(gtk.Notebook):
         #######################
         self.synchronize()
 
-    def setObject(self, obj):
+    def set_object(self, obj):
         self._obj = obj
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
         #######################
 
-    def getObject(self):
+    def get_object(self):
         return self._obj
 
     def highlight(self, text, sev=severity.MEDIUM):
@@ -377,21 +377,21 @@ class requestPart(requestResponsePart):
         requestResponsePart.__init__(
             self, parent, w3af, enableWidget, editable,
             widgname=widgname + "request")
-        self.addView(HttpRawView(w3af, self, editable))
-        self.addView(HttpHeadersView(w3af, self, editable))
+        self.add_view(HttpRawView(w3af, self, editable))
+        self.add_view(HttpHeadersView(w3af, self, editable))
 
-    def getBothTexts(self):
+    def get_both_texts(self):
         try:
             data = ''
-            if self._obj.getData():
-                data = str(self._obj.getData())
-            return (self._obj.dumpRequestHead(), data)
+            if self._obj.get_data():
+                data = str(self._obj.get_data())
+            return (self._obj.dump_request_head(), data)
         except AttributeError, ae:  # FIXME: REMOVE ME ###
             msg = ("DEBUG_EXCEPTION: %s. Actions were: %s" %
                    (ae, self._set_vals))
             raise AttributeError(msg)
 
-    def showRaw(self, head, body):
+    def show_raw(self, head, body):
         self._obj = HTTPRequestParser(head, body)
         ### FIXME: REMOVE ME ###
         self._set_vals.append((True, str(self._obj)))
@@ -405,18 +405,18 @@ class responsePart(requestResponsePart):
                                      widgname=widgname + "response")
         http = HttpRawView(w3af, self, editable)
         http.is_request = False
-        self.addView(http)
+        self.add_view(http)
         headers = HttpHeadersView(w3af, self, editable)
         headers.is_request = False
-        self.addView(headers)
+        self.add_view(headers)
         try:
             rend = getRenderingView(w3af, self)
-            self.addView(rend)
+            self.add_view(rend)
         except Exception, ex:
             print ex
 
-    def getBothTexts(self):
-        return (self._obj.dumpResponseHead(), str(self._obj.getBody()))
+    def get_both_texts(self):
+        return (self._obj.dump_response_head(), str(self._obj.get_body()))
 
 
 class reqResWindow(RememberingWindow):
@@ -441,8 +441,8 @@ class reqResWindow(RememberingWindow):
         historyItem = HistoryItem()
         historyItem.load(request_id)
         # Set
-        rrViewer.request.showObject(historyItem.request)
-        rrViewer.response.showObject(historyItem.response)
+        rrViewer.request.show_object(historyItem.request)
+        rrViewer.response.show_object(historyItem.response)
         rrViewer.show()
         self.vbox.pack_start(rrViewer)
 

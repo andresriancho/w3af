@@ -123,9 +123,9 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_post_data(self):
         original_form = Form()
-        original_form.addInput([("name", "username"), ("value", "")])
-        original_form.addInput([("name", "address"), ("value", "")])
-        original_form.addFileInput([("name", "file"), ("type", "file")])
+        original_form.add_input([("name", "username"), ("value", "")])
+        original_form.add_input([("name", "address"), ("value", "")])
+        original_form.add_file_input([("name", "file"), ("type", "file")])
 
         freq = HTTPPostDataRequest(self.url, dc=original_form)
 
@@ -198,8 +198,8 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_creation_qs_and_postdata(self):
         original_form = Form()
-        original_form.addInput([("name", "username"), ("value", "")])
-        original_form.addInput([("name", "password"), ("value", "")])
+        original_form.add_input([("name", "username"), ("value", "")])
+        original_form.add_input([("name", "password"), ("value", "")])
 
         url = URL('http://moth/foo.bar?action=login')
 
@@ -217,15 +217,15 @@ class TestMutant(unittest.TestCase):
             Form([('username', ['John8212']), ('password', ['def'])]), ]
 
         created_dc_lst = [i.get_dc() for i in created_mutants]
-        created_urls = [i.getURI() for i in created_mutants]
+        created_urls = [i.get_uri() for i in created_mutants]
 
         self.assertEqual(created_urls, [url, ] * 4)
         self.assertEqual(created_dc_lst, expected_dc_lst)
 
     def test_mutant_smart_fill_simple(self):
         original_form = Form()
-        original_form.addInput([("name", "username"), ("value", "")])
-        original_form.addInput([("name", "address"), ("value", "")])
+        original_form.add_input([("name", "username"), ("value", "")])
+        original_form.add_input([("name", "address"), ("value", "")])
 
         freq = HTTPPostDataRequest(self.url, dc=original_form)
 
@@ -238,9 +238,9 @@ class TestMutant(unittest.TestCase):
 
     def test_mutant_smart_fill_with_file(self):
         original_form = Form()
-        original_form.addInput([("name", "username"), ("value", "")])
-        original_form.addInput([("name", "address"), ("value", "")])
-        original_form.addFileInput([("name", "file"), ("type", "file")])
+        original_form.add_input([("name", "username"), ("value", "")])
+        original_form.add_input([("name", "address"), ("value", "")])
+        original_form.add_file_input([("name", "file"), ("type", "file")])
 
         freq = HTTPPostDataRequest(self.url, dc=original_form)
 

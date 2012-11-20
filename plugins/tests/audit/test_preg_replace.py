@@ -58,7 +58,7 @@ class TestPreg(PluginTest):
             ('preg_section_regex.php', 'search')
         )
 
-        found = [(str(v.getURL()), v.get_var()) for v in vulns]
+        found = [(str(v.get_url()), v.get_var()) for v in vulns]
         expected = [((self.target_url + end), param) for (end,
                     param) in expected_results]
 

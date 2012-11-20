@@ -53,7 +53,7 @@ class bing_spider(CrawlPlugin):
                                     (among other things) the URL to test.
         '''
         bing_se = bing(self._uri_opener)
-        domain = fuzzable_request.getURL().getDomain()
+        domain = fuzzable_request.get_url().get_domain()
 
         if is_private_site(domain):
             msg = 'There is no point in searching Bing for "site:%s".'
@@ -61,7 +61,7 @@ class bing_spider(CrawlPlugin):
             raise w3afException(msg % domain)
 
         try:
-            results = bing_se.getNResults('site:' + domain, self._result_limit)
+            results = bing_se.get_n_results('site:' + domain, self._result_limit)
         except:
             pass
         else:

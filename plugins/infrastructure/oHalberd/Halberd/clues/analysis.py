@@ -179,12 +179,12 @@ def merge(clues):
     Note that each L{Clue} has a starting count of 1
 
     >>> a, b, c = Clue(), Clue(), Clue()
-    >>> sum([x.getCount() for x in [a, b, c]])
+    >>> sum([x.get_count() for x in [a, b, c]])
     3
-    >>> a.incCount(5), b.incCount(11), c.incCount(23)
+    >>> a.inc_count(5), b.inc_count(11), c.inc_count(23)
     (None, None, None)
     >>> merged = merge((a, b, c))
-    >>> merged.getCount()
+    >>> merged.get_count()
     42
     >>> merged == a
     True
@@ -197,7 +197,7 @@ def merge(clues):
     """
     merged = copy.copy(clues[0])
     for clue in clues[1:]:
-        merged.incCount(clue.getCount())
+        merged.inc_count(clue.get_count())
     return merged
 
 
@@ -427,7 +427,7 @@ def hits(clues):
     @return: Total hits.
     @rtype: C{int}
     """
-    return sum([clue.getCount() for clue in clues])
+    return sum([clue.get_count() for clue in clues])
 
 
 def analyze(clues):

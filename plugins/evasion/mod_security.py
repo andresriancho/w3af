@@ -44,7 +44,7 @@ class mod_security(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -56,17 +56,17 @@ class mod_security(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> modsec.modifyRequest( r ).url_object.url_string
+        >>> modsec.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/'
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='' )
-        >>> modsec.modifyRequest( r ).get_data()
+        >>> modsec.modify_request( r ).get_data()
         ''
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='a=b' )
-        >>> modsec.modifyRequest( r ).get_data()
+        >>> modsec.modify_request( r ).get_data()
         '\\x00a=b'
 
         '''
@@ -113,7 +113,7 @@ class mod_security(EvasionPlugin):
         '''
         return []
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

@@ -47,4 +47,4 @@ class TestFrontpageVersion(PluginTest):
 
         self.assertEqual(
             set([self.base_url + path_file for path_file in EXPECTED]),
-            set([i.getURL().url_string for i in infos]))
+            set([i.get_url().url_string for i in infos]))

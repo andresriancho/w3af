@@ -54,12 +54,12 @@ class file_upload(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        url = response.getURL()
+        url = response.get_url()
 
         if response.is_text_or_html() and not url in self._already_inspected:
 
             self._already_inspected.add(url)
-            dom = response.getDOM()
+            dom = response.get_dom()
 
             # In some strange cases, we fail to normalize the document
             if dom is not None:
@@ -69,13 +69,13 @@ class file_upload(GrepPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('File upload form')
-                    i.setURL(url)
+                    i.set_url(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has form with file upload ' \
                         'capabilities.' % url
                     i.set_desc(msg)
                     to_highlight = etree.tostring(input_file)
-                    i.addToHighlight(to_highlight)
+                    i.add_to_highlight(to_highlight)
                     kb.kb.append(self, 'file_upload', i)
 
     def set_options(self, option_list):

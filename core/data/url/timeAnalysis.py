@@ -49,7 +49,7 @@ class timeAnalysis:
         self._incomingResponses = {}
         self._average = 0
 
-    def preRequest(self, uri, method, dc={}):
+    def pre_request(self, uri, method, dc={}):
         '''
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.
@@ -66,7 +66,7 @@ class timeAnalysis:
         else:
             self._registerRequest(uri, method, dc)
 
-    def postRequest(self, uri, method, dc={}):
+    def post_request(self, uri, method, dc={}):
         '''
         It is called before the actual request is done. This method registers all
         outgoing requests with their corresponding time.

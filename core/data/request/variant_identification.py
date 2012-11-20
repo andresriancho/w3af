@@ -36,17 +36,17 @@ def are_variants(uri, other_uri):
     @return: True if the URLs are variants.
 
     '''
-    if uri.getDomain() != other_uri.getDomain():
+    if uri.get_domain() != other_uri.get_domain():
         return False
 
-    if uri.getPath() != other_uri.getPath():
+    if uri.get_path() != other_uri.get_path():
         return False
 
-    if not uri.hasQueryString() and not other_uri.hasQueryString():
+    if not uri.has_query_string() and not other_uri.has_query_string():
         # No QS and same Domain
         return True
 
-    if uri.hasQueryString() and other_uri.hasQueryString():
+    if uri.has_query_string() and other_uri.has_query_string():
         dc = uri.querystring
         odc = other_uri.querystring
 

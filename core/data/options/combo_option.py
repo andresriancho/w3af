@@ -53,7 +53,7 @@ class ComboOption(BaseOption):
         self._help = _help
         self._tabid = tabid
 
-    def getComboOptions(self):
+    def get_combo_options(self):
         return self._combo_options
 
     def set_value(self, value):

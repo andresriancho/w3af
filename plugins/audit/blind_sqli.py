@@ -90,7 +90,7 @@ class blind_sqli(AuditPlugin):
         '''
         sql_injection_list = kb.kb.get('sqli', 'sqli')
         for sql_injection in sql_injection_list:
-            if  sql_injection.getURL() == mutant.getURL() and \
+            if  sql_injection.get_url() == mutant.get_url() and \
                     sql_injection.get_var() == mutant.get_var():
                 return True
 

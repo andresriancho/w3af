@@ -48,7 +48,7 @@ class strange_http_codes(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.getCode() not in self.COMMON_HTTP_CODES:
+        if response.get_code() not in self.COMMON_HTTP_CODES:
 
             # I check if the kb already has a info object with this code:
             strange_code_infos = kb.kb.get(
@@ -56,7 +56,7 @@ class strange_http_codes(GrepPlugin):
 
             corresponding_info = None
             for info_obj in strange_code_infos:
-                if info_obj['code'] == response.getCode():
+                if info_obj['code'] == response.get_code():
                     corresponding_info = info_obj
                     break
 
@@ -71,16 +71,16 @@ class strange_http_codes(GrepPlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name(
-                    'Strange HTTP Response code - ' + str(response.getCode()))
-                i.setURL(response.getURL())
+                    'Strange HTTP Response code - ' + str(response.get_code()))
+                i.set_url(response.get_url())
                 i.set_id(response.id)
-                i['code'] = response.getCode()
+                i['code'] = response.get_code()
                 desc = 'The remote Web server sent a strange HTTP response code: "'
-                desc += str(response.getCode(
-                )) + '" with the message: "' + response.getMsg()
+                desc += str(response.get_code(
+                )) + '" with the message: "' + response.get_msg()
                 desc += '", manual inspection is advised.'
                 i.set_desc(desc)
-                i.addToHighlight(str(response.getCode()), response.getMsg())
+                i.add_to_highlight(str(response.get_code()), response.get_msg())
                 kb.kb.append(self, 'strange_http_codes', i)
 
     def end(self):

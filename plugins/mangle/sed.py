@@ -56,17 +56,17 @@ class sed(ManglePlugin):
         @param request: This is the request to mangle.
         @return: A mangled version of the request.
         '''
-        data = request.getData()
+        data = request.get_data()
         for regex, string in self._req_body_manglers:
             data = regex.sub(string, data)
 
-        header_string = headers_to_string(request.getHeaders())
+        header_string = headers_to_string(request.get_headers())
         for regex, string in self._req_head_manglers:
             header_string = regex.sub(string, header_string)
         header_dict = string_to_headers(header_string)
 
         return create_fuzzable_request(
-            request.getURL(),
+            request.get_url(),
             request.get_method(),
             data, header_dict
         )
@@ -78,19 +78,19 @@ class sed(ManglePlugin):
         @param response: This is the response to mangle.
         @return: A mangled version of the response.
         '''
-        body = response.getBody()
+        body = response.get_body()
 
         for regex, string in self._res_body_manglers:
             body = regex.sub(string, body)
 
-        response.setBody(body)
+        response.set_body(body)
 
-        header_string = headers_to_string(response.getHeaders())
+        header_string = headers_to_string(response.get_headers())
 
         for regex, string in self._res_head_manglers:
             header_string = regex.sub(string, header_string)
 
-        response.setHeaders(string_to_headers(header_string))
+        response.set_headers(string_to_headers(header_string))
 
         if self._res_body_manglers and self._user_option_fix_content_len:
             response = self._fixContentLen(response)
@@ -173,7 +173,7 @@ class sed(ManglePlugin):
         ol.add(o3)
         return ol
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.

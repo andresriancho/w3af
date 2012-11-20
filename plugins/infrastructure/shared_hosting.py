@@ -55,7 +55,7 @@ class shared_hosting(InfrastructurePlugin):
         '''
         bing_wrapper = bing(self._uri_opener)
 
-        domain = fuzzable_request.getURL().getDomain()
+        domain = fuzzable_request.get_url().get_domain()
         if is_private_site(domain):
             msg = 'shared_hosting plugin is not checking for subdomains for '
             msg += 'domain: "' + domain + '" because it is a private address.'
@@ -73,10 +73,10 @@ class shared_hosting(InfrastructurePlugin):
 
         # This is the best way to search, one by one!
         for ip_address in ip_address_list:
-            results = bing_wrapper.getNResults('ip:' + ip_address,
+            results = bing_wrapper.get_n_results('ip:' + ip_address,
                                                self._result_limit)
 
-            results = [r.URL.baseUrl() for r in results]
+            results = [r.URL.base_url() for r in results]
             results = list(set(results))
 
             # not vuln by default
@@ -93,8 +93,8 @@ class shared_hosting(InfrastructurePlugin):
                     # Where www.business.com resolves to 216.244.147.14; so we don't really
                     # have more than one domain in the same server.
                     try:
-                        res0 = socket.gethostbyname(results[0].getDomain())
-                        res1 = socket.gethostbyname(results[1].getDomain())
+                        res0 = socket.gethostbyname(results[0].get_domain())
+                        res1 = socket.gethostbyname(results[1].get_domain())
                     except:
                         pass
                     else:
@@ -104,7 +104,7 @@ class shared_hosting(InfrastructurePlugin):
             if is_vulnerable:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(fuzzable_request.getURL())
+                v.set_url(fuzzable_request.get_url())
                 v.set_id(1)
 
                 v['alsoInHosting'] = results
@@ -113,7 +113,7 @@ class shared_hosting(InfrastructurePlugin):
                       ' web application under test, all point to the same IP' \
                       ' address (%s):\n' % ip_address
                 for url in results:
-                    domain = url.getDomain()
+                    domain = url.get_domain()
                     msg += '- %s\n' % url
                     kb.kb.append(self, 'domains', domain)
                 v.set_desc(msg)

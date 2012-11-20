@@ -454,11 +454,11 @@ def write_console_messages(dlg):
             continue
 
         # Handling new lines
-        text = msg.getMsg()
+        text = msg.get_msg()
         if msg.getNewLine():
             text += '\n'
 
-        dlg.addMessage(text)
+        dlg.add_message(text)
 
     yield False
 

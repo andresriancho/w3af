@@ -59,7 +59,7 @@ class TestEval(PluginTest):
         self.assertEquals(
             'eval() input injection vulnerability', vuln.get_name())
         self.assertEquals("c", vuln.get_var())
-        self.assertEquals(self.target_echo, str(vuln.getURL()))
+        self.assertEquals(self.target_echo, str(vuln.get_url()))
 
     def test_found_eval_delay(self):
         cfg = self._run_configs['delay']
@@ -73,4 +73,4 @@ class TestEval(PluginTest):
         self.assertEquals(
             'eval() input injection vulnerability', vuln.get_name())
         self.assertEquals("c", vuln.get_var())
-        self.assertEquals(self.target_delay, str(vuln.getURL()))
+        self.assertEquals(self.target_delay, str(vuln.get_url()))

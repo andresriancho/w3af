@@ -46,7 +46,7 @@ class info(dict):
 
         # Clone the info object!
         if isinstance(data_obj, info):
-            self.setURI(data_obj.getURI())
+            self.set_uri(data_obj.get_uri())
             self.set_desc(data_obj.get_desc())
             self.set_method(data_obj.get_method())
             self.set_var(data_obj.get_var())
@@ -69,16 +69,16 @@ class info(dict):
     def get_name(self):
         return self._name
 
-    def setURL(self, url):
+    def set_url(self, url):
         '''
         >>> i = info()
-        >>> i.setURL('http://www.google.com/')
+        >>> i.set_url('http://www.google.com/')
         Traceback (most recent call last):
           ...
         TypeError: The URL in the info object must be of url.URL type.
         >>> url = URL('http://www.google.com/')
-        >>> i.setURL(url)
-        >>> i.getURL() == url
+        >>> i.set_url(url)
+        >>> i.get_url() == url
         True
         '''
         if not isinstance(url, URL):
@@ -88,20 +88,20 @@ class info(dict):
         self._url = url.uri2url()
         self._uri = url
 
-    def getURL(self):
+    def get_url(self):
         return self._url
 
-    def setURI(self, uri):
+    def set_uri(self, uri):
         '''
         >>> i = info()
-        >>> i.setURI('http://www.google.com/')
+        >>> i.set_uri('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         TypeError: The URI in the info object must be of url.URL type.
         >>> uri = URL('http://www.google.com/')
         >>> i = info()
-        >>> i.setURI(uri)
-        >>> i.getURI() == uri
+        >>> i.set_uri(uri)
+        >>> i.get_uri() == uri
         True
         '''
         if not isinstance(uri, URL):
@@ -111,7 +111,7 @@ class info(dict):
         self._uri = uri
         self._url = uri.uri2url()
 
-    def getURI(self):
+    def get_uri(self):
         return self._uri
 
     def set_method(self, method):
@@ -267,7 +267,7 @@ class info(dict):
     def get_dc(self):
         return self._dc
 
-    def getToHighlight(self):
+    def get_to_highlight(self):
         '''
         The string match is the string that was used to identify the vulnerability.
         For example, in a SQL injection the string match would look like:
@@ -279,7 +279,7 @@ class info(dict):
         '''
         return self._string_matches
 
-    def addToHighlight(self, *str_match):
+    def add_to_highlight(self, *str_match):
         for s in str_match:
             if s:
                 self._string_matches.add(s)

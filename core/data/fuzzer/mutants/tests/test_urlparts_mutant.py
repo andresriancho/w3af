@@ -43,7 +43,7 @@ class TestURLPartsMutant(unittest.TestCase):
         m = URLPartsMutant(freq)
         m.set_mutant_dc(divided_path)
         m.set_var('modified_part')
-        self.assertEqual(m.getURL().url_string,
+        self.assertEqual(m.get_url().url_string,
                          u'http://www.w3af.com/ping%21/bar')
 
         expected_mod_value = 'The sent urlparts is: "/ping!/bar".'
@@ -92,7 +92,7 @@ class TestURLPartsMutant(unittest.TestCase):
                          URL('http://www.w3af.com/foo/abc'),
                          URL('http://www.w3af.com/foo/def')]
 
-        generated_urls = [m.getURL() for m in generated_mutants]
+        generated_urls = [m.get_url() for m in generated_mutants]
 
         self.assertEqual(expected_urls, generated_urls)
 
@@ -120,6 +120,6 @@ class TestURLPartsMutant(unittest.TestCase):
                          'http://www.w3af.com/foo/ping+127.0.0.1+-c+5',
                          'http://www.w3af.com/foo/ping%2B127.0.0.1%2B-c%2B5']
 
-        generated_urls = [m.getURL().url_string for m in generated_mutants]
+        generated_urls = [m.get_url().url_string for m in generated_mutants]
 
         self.assertEqual(expected_urls, generated_urls)

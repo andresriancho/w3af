@@ -123,7 +123,7 @@ class exec_shell(shell):
         if not self._transfer_handler:
             # Get the fastest transfer method
             ptf = payload_transfer_factory(self.execute)
-            self._transfer_handler = ptf.getTransferHandler()
+            self._transfer_handler = ptf.get_transfer_handler()
 
         if not self._transfer_handler.can_transfer():
             return 'Failed to transfer, the transfer handler failed.'
@@ -300,6 +300,6 @@ class exec_shell(shell):
     def __repr__(self):
         if not self._rOS:
             self._identifyOs()
-        return '<' + self.get_name() + ' object (ruser: "' + self.getRemoteUser() + '" | rsystem: "' + self.getRemoteSystem() + '")>'
+        return '<' + self.get_name() + ' object (ruser: "' + self.get_remote_user() + '" | rsystem: "' + self.get_remote_system() + '")>'
 
     __str__ = __repr__

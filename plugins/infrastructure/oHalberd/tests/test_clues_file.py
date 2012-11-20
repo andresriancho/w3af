@@ -31,7 +31,7 @@ class TestStorage(unittest.TestCase):
 
     def setUp(self):
         self.clue = Clue()
-        self.clue.setTimestamp(100)
+        self.clue.set_timestamp(100)
         self.clue.headers = eval(r"""[
             ('Date', ' Tue, 24 Feb 2004 17:09:05 GMT'),
             ('Server', ' Apache/2.0.48 (Unix) DAV/2 SVN/0.35.1'),
@@ -54,7 +54,7 @@ class TestStorage(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testSimpleSaveAndLoad(self):
+    def test_simpleSaveAndLoad(self):
         try:
             Halberd.clues.file.save(self.filename, [self.clue])
             clues = Halberd.clues.file.load(self.filename)

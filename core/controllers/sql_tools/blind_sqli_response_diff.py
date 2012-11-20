@@ -177,14 +177,14 @@ class blind_sqli_response_diff(object):
                     desc = 'Blind SQL injection was found at: "%s", using'
                     desc += ' HTTP method %s. The injectable parameter is: "%s"'
                     desc = desc % (
-                        v.getURL(), v.get_method(), mutant.get_var())
+                        v.get_url(), v.get_method(), mutant.get_var())
                     v.set_desc(desc)
                     om.out.debug(v.get_desc())
 
                     v['type'] = statement_type
-                    v['trueHtml'] = second_true_response.getBody()
-                    v['falseHtml'] = second_false_response.getBody()
-                    v['errorHtml'] = syntax_error_response.getBody()
+                    v['trueHtml'] = second_true_response.get_body()
+                    v['falseHtml'] = second_false_response.get_body()
+                    v['errorHtml'] = syntax_error_response.get_body()
                     return v
 
         return None
@@ -232,8 +232,8 @@ def get_clean_body(mutant, response):
 
     Definition of clean in this method:
         - input:
-            - response.getURL() == http://host.tld/aaaaaaa/?id=1 OR 23=23
-            - response.getBody() == '...<x>1 OR 23=23</x>...'
+            - response.get_url() == http://host.tld/aaaaaaa/?id=1 OR 23=23
+            - response.get_body() == '...<x>1 OR 23=23</x>...'
 
         - output:
             - self._clean_body( response ) == '...<x></x>...'

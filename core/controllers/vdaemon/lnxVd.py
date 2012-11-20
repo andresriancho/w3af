@@ -52,21 +52,21 @@ class lnxVd(vdaemon):
         @return: None
         '''
         cH = crontabHandler(self._exec_method)
-        if not cH.canDelay():
+        if not cH.can_delay():
             msg = '[lnxVd] Failed to create cron entry.'
             om.out.debug(msg)
             raise w3afException(msg)
         else:
-            waitTime = cH.addToSchedule(remote_filename)
+            waitTime = cH.add_to_schedule(remote_filename)
 
             om.out.console('Crontab entry successfully added. Waiting for shellcode execution.')
             time.sleep(waitTime + 3)
 
             om.out.debug(
                 'Shellcode successfully executed, restoring old crontab.')
-            cH.restoreOldSchedule()
+            cH.restore_old_schedule()
 
             om.out.debug('All done, check metasploit for results.')
 
-    def getOS(self):
+    def get_os(self):
         return 'linux'

@@ -53,8 +53,8 @@ class csv_file(OutputPlugin):
         '''
         Exports the vulnerabilities and informations to the user configured file.
         '''
-        all_vulns = kb.kb.getAllVulns()
-        all_infos = kb.kb.getAllInfos()
+        all_vulns = kb.kb.get_all_vulns()
+        all_infos = kb.kb.get_all_infos()
 
         try:
             csv_writer = csv.writer(
@@ -71,7 +71,7 @@ class csv_file(OutputPlugin):
                 row = [
                     data.get_name(),
                     data.get_method(),
-                    data.getURI(),
+                    data.get_uri(),
                     data.get_var(),
                     data.get_dc(),
                     data.get_id(),

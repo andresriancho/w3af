@@ -43,7 +43,7 @@ class TestCookieMutant(unittest.TestCase):
         m.set_var('foo', 0)
         m.set_mod_value('abc')
 
-        self.assertEqual(m.getURL().url_string, 'http://moth/')
+        self.assertEqual(m.get_url().url_string, 'http://moth/')
         self.assertEqual(str(m.get_cookie()), 'foo=abc; spam=eggs;')
 
         expected_mod_value = 'The cookie data that was sent is: "foo=abc;'\

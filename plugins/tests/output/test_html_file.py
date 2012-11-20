@@ -67,8 +67,8 @@ class TestHTMLOutput(PluginTest):
         self.assertGreaterEqual(len(xss_vulns), 3)
 
         self.assertEquals(
-            set(sorted([v.getURL() for v in xss_vulns])),
-            set(sorted([v.getURL() for v in file_vulns]))
+            set(sorted([v.get_url() for v in xss_vulns])),
+            set(sorted([v.get_url() for v in file_vulns]))
         )
 
     def _from_html_get_vulns(self):
@@ -81,7 +81,7 @@ class TestHTMLOutput(PluginTest):
             if mo:
                 url = URL(mo.group(1))
                 v = vuln.vuln()
-                v.setURL(url)
+                v.set_url(url)
                 vulns.append(v)
 
         return vulns

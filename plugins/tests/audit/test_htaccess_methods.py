@@ -51,4 +51,4 @@ class TestHTAccess(PluginTest):
         vuln = vulns[0]
         self.assertEquals('Misconfigured access control', vuln.get_name())
         self.assertEquals(
-            self.target_url + 'restricted/index.php', str(vuln.getURL()))
+            self.target_url + 'restricted/index.php', str(vuln.get_url()))

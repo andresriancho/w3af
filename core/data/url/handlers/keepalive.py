@@ -342,7 +342,7 @@ class HTTPResponse(httplib.HTTPResponse):
                 break
         return list
 
-    def setBody(self, data):
+    def set_body(self, data):
         '''
         This was added to make my life a lot simpler while implementing mangle
         plugins

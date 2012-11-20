@@ -69,7 +69,7 @@ class ManglePlugin(Plugin):
         '''
         This function is called when sorting mangle plugins.
         '''
-        if self.getPriority() > other.getPriority():
+        if self.get_priority() > other.get_priority():
             return True
         else:
             return False
@@ -84,12 +84,12 @@ class ManglePlugin(Plugin):
         '''
         This function is called when sorting mangle plugins.
         '''
-        if self.getPriority() == other.getPriority():
+        if self.get_priority() == other.get_priority():
             return True
         else:
             return False
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting mangle plugins.
         Each mangle plugin should implement this.
@@ -104,14 +104,14 @@ class ManglePlugin(Plugin):
         update the header.
         '''
         cl = 'Content-Length'
-        for i in response.getHeaders():
+        for i in response.get_headers():
             if i.lower() == 'Content-length'.lower():
                 cl = i
                 break
 
-        headers = response.getHeaders()
-        headers[cl] = str(len(response.getBody()))
-        response.setHeaders(headers)
+        headers = response.get_headers()
+        headers[cl] = str(len(response.get_body()))
+        response.set_headers(headers)
         return response
 
 

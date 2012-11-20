@@ -54,6 +54,6 @@ class TestDigitSum(PluginTest):
                          'index1.php?id=23', 'index1.php?id=20')
 
         self.assertEquals(
-            set(str(fr.getURI()) for fr in frs),
+            set(str(fr.get_uri()) for fr in frs),
             set((self.digit_sum_url + end) for end in EXPECTED_URLS)
         )

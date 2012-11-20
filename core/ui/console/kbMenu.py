@@ -38,21 +38,21 @@ class kbMenu(menu):
     '''
     def __init__(self, name, console, w3afcore, parent=None, **other):
         menu.__init__(self, name, console, w3afcore, parent)
-        self._loadHelp('kb')
+        self._load_help('kb')
 
         # A mapping of KB data types to how to display it.
         # Key of the data type => (KB getter, (column names), (column getters))k
         self.__getters = {
             'vulns': (
-                kb.kb.getAllVulns,
+                kb.kb.get_all_vulns,
                 ['Vulnerabilities'],
                 [vuln.vuln.get_desc]),
             'info': (
-                kb.kb.getAllInfos,
+                kb.kb.get_all_infos,
                 ['Info'],
                 [info.info.get_desc]),
             'shells': (
-                kb.kb.getAllShells,
+                kb.kb.get_all_shells,
                 ['Shells'],
                 [shell.shell.get_desc])
         }
@@ -71,7 +71,7 @@ class kbMenu(menu):
 
             result.append(row)
 
-        self._console.drawTable(result)
+        self._console.draw_table(result)
 
     def _cmd_list(self, params):
         if len(params) > 0:

@@ -261,7 +261,7 @@ class html_file(OutputPlugin):
             '</tr>')
 
         # Writes the vulnerabilities and informations to the results table
-        infos = kb.kb.getAllInfos()
+        infos = kb.kb.get_all_infos()
 
         for i in infos:
 
@@ -269,10 +269,10 @@ class html_file(OutputPlugin):
             desc = cgi.escape(i.get_desc())
             severity = cgi.escape(i.get_severity())
 
-            if i.getURL() is not None:
-                port = str(i.getURL().getPort())
+            if i.get_url() is not None:
+                port = str(i.get_url().get_port())
                 port = 'tcp/' + port
-                escaped_url = cgi.escape(i.getURL().url_string)
+                escaped_url = cgi.escape(i.get_url().url_string)
             else:
                 port = 'There is no port associated with this item.'
                 escaped_url = 'There is no URL associated with this item.'

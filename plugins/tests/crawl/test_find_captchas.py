@@ -45,4 +45,4 @@ class TestFindCAPTCHAS(PluginTest):
 
         self.assertEquals(info.get_name(), 'Captcha image detected')
         self.assertEquals(
-            info.getURL().url_string, self.base_url + 'securimage_show.php')
+            info.get_url().url_string, self.base_url + 'securimage_show.php')

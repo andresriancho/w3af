@@ -63,10 +63,10 @@ class ssl_certificate(AuditPlugin):
 
         @param freq: A FuzzableRequest
         '''
-        url = freq.getURL()
-        domain = url.getDomain()
+        url = freq.get_url()
+        domain = url.get_domain()
 
-        if 'HTTPS' != url.getProtocol().upper() or domain in self._already_tested:
+        if 'HTTPS' != url.get_protocol().upper() or domain in self._already_tested:
             return
 
         self._already_tested.add(domain)
@@ -78,13 +78,13 @@ class ssl_certificate(AuditPlugin):
             ssl_sock = ssl.wrap_socket(s,
                                        cert_reqs=ssl.CERT_NONE,
                                        ssl_version=ssl.PROTOCOL_SSLv2)
-            ssl_sock.connect((domain, url.getPort()))
+            ssl_sock.connect((domain, url.get_port()))
         except Exception, e:
             pass
         else:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(url)
+            v.set_url(url)
             v.set_severity(severity.LOW)
             v.set_name('Insecure SSL version')
             desc = 'The target host "%s" has SSL version 2 enabled which is'
@@ -99,7 +99,7 @@ class ssl_certificate(AuditPlugin):
                                        ca_certs=self._ca_file,
                                        cert_reqs=ssl.CERT_REQUIRED,
                                        ssl_version=ssl.PROTOCOL_SSLv23)
-            ssl_sock.connect((domain, url.getPort()))
+            ssl_sock.connect((domain, url.get_port()))
             match_hostname(ssl_sock.getpeercert(), domain)
         except (ssl.SSLError, CertificateError), e:
             invalid_cert = isinstance(e, CertificateError)
@@ -128,7 +128,7 @@ class ssl_certificate(AuditPlugin):
 
             v.set_desc(desc % (domain, details))
             v.set_plugin_name(self.get_name())
-            v.setURL(url)
+            v.set_url(url)
             kb.kb.append(self, tag, v)
             om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
             return
@@ -147,7 +147,7 @@ class ssl_certificate(AuditPlugin):
                        exp_date.tm_mday) - date.today()).days
         if expire_days < self._min_expire_days:
             i = info.info()
-            i.setURL(url)
+            i.set_url(url)
             i.set_plugin_name(self.get_name())
             i.set_name('Soon expire SSL certificate')
             i.set_desc('The certificate for "%s" will expire soon.' % domain)
@@ -159,7 +159,7 @@ class ssl_certificate(AuditPlugin):
         desc += self._dump_ssl_info(cert, cert_der, cipher)
         om.out.information(desc)
         i = info.info()
-        i.setURL(url)
+        i.set_url(url)
         i.set_plugin_name(self.get_name())
         i.set_name('SSL Certificate')
         i.set_desc(desc)

@@ -77,10 +77,10 @@ class wordpress_fingerprint(CrawlPlugin):
             #
             # Check if the server is running wp
             #
-            domain_path = fuzzable_request.getURL().getDomainPath()
+            domain_path = fuzzable_request.get_url().get_domain_path()
 
             # Main scan URL passed from w3af + unique wp file
-            wp_unique_url = domain_path.urlJoin('wp-login.php')
+            wp_unique_url = domain_path.url_join('wp-login.php')
             response = self._uri_opener.GET(wp_unique_url, cache=True)
 
             # If wp_unique_url is not 404, wordpress = true
@@ -115,8 +115,8 @@ class wordpress_fingerprint(CrawlPlugin):
 
         [0] http://wordpress.org/download/release-archive/
         '''
-        zip_url = domain_path.urlJoin('latest.zip')
-        tar_gz_url = domain_path.urlJoin('latest.tar.gz')
+        zip_url = domain_path.url_join('latest.zip')
+        tar_gz_url = domain_path.url_join('latest.tar.gz')
         install_urls = [zip_url, tar_gz_url]
 
         for install_url in install_urls:
@@ -125,7 +125,7 @@ class wordpress_fingerprint(CrawlPlugin):
 
             # md5sum the response body
             m = hashlib.md5()
-            m.update(response.getBody())
+            m.update(response.get_body())
             remote_release_hash = m.hexdigest()
 
             release_db = self._release_db
@@ -143,7 +143,7 @@ class wordpress_fingerprint(CrawlPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('WordPress version')
-                    i.setURL(install_url)
+                    i.set_url(install_url)
                     i.set_id(response.id)
                     msg = 'The sysadmin used WordPress version "%s" during the'
                     msg += ' installation, which was found by matching the contents'
@@ -158,12 +158,12 @@ class wordpress_fingerprint(CrawlPlugin):
         '''
         GET the readme.html file and extract the version information from there.
         '''
-        wp_readme_url = domain_path.urlJoin('readme.html')
+        wp_readme_url = domain_path.url_join('readme.html')
         response = self._uri_opener.GET(wp_readme_url, cache=True)
 
         # Find the string in the response html
         find = '<br /> Version (\d\.\d\.?\d?)'
-        m = re.search(find, response.getBody())
+        m = re.search(find, response.get_body())
 
         # If string found, group version
         if m:
@@ -173,7 +173,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
-            i.setURL(wp_readme_url)
+            i.set_url(wp_readme_url)
             i.set_id(response.id)
             msg = 'WordPress version "%s" found in the readme.html file.'
             i.set_desc(msg % version)
@@ -185,12 +185,12 @@ class wordpress_fingerprint(CrawlPlugin):
         Check if the wp version is in index header
         '''
         # Main scan URL passed from w3af + wp index page
-        wp_index_url = domain_path.urlJoin('index.php')
+        wp_index_url = domain_path.url_join('index.php')
         response = self._uri_opener.GET(wp_index_url, cache=True)
 
         # Find the string in the response html
         find = '<meta name="generator" content="[Ww]ord[Pp]ress (\d\.\d\.?\d?)" />'
-        m = re.search(find, response.getBody())
+        m = re.search(find, response.get_body())
 
         # If string found, group version
         if m:
@@ -200,7 +200,7 @@ class wordpress_fingerprint(CrawlPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
-            i.setURL(wp_index_url)
+            i.set_url(wp_index_url)
             i.set_id(response.id)
             msg = 'WordPress version "%s" found in the index header.'
             i.set_desc(msg % version)
@@ -214,13 +214,13 @@ class wordpress_fingerprint(CrawlPlugin):
         version = 'lower than 2.2'
 
         for url, match_string, wp_version in self.WP_FINGERPRINT:
-            test_url = domain_path.urlJoin(url)
+            test_url = domain_path.url_join(url)
             response = self._uri_opener.GET(test_url, cache=True)
 
             if match_string == '200' and not is_404(response):
                 version = wp_version
                 break
-            elif match_string in response.getBody():
+            elif match_string in response.get_body():
                 version = wp_version
                 break
 
@@ -228,7 +228,7 @@ class wordpress_fingerprint(CrawlPlugin):
         i = info.info()
         i.set_plugin_name(self.get_name())
         i.set_name('WordPress version')
-        i.setURL(test_url)
+        i.set_url(test_url)
         i.set_id(response.id)
         i.set_desc('WordPress version "' + version + '" found from data.')
         kb.kb.append(self, 'info', i)

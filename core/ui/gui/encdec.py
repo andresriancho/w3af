@@ -59,7 +59,7 @@ class SimpleTextView(gtk.TextView):
                 res += c
         return res
 
-    def setText(self, newtext, use_repr=False):
+    def set_text(self, newtext, use_repr=False):
         '''Sets a new text in the pane, repr'ing it if needed.
 
         @param use_repr: Use similar to repr() or not. We don't use repr() because repr() also
@@ -88,7 +88,7 @@ class SimpleTextView(gtk.TextView):
 
         self.buffer.insert(iterl, newtext)
 
-    def getText(self):
+    def get_text(self):
         '''Gets the text of the pane, un-repr'ing it.
 
         @returns: The text of the pane.
@@ -162,7 +162,7 @@ class EncodeDecode(entries.RememberingWindow):
         @param func: the processing function.
         '''
         # clear the output text, this will introduce a small blink
-        out.setText(u"")
+        out.set_text(u"")
         # go busy
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
                               gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD, 0, gtk.gdk.INPUT_ONLY)
@@ -172,26 +172,26 @@ class EncodeDecode(entries.RememberingWindow):
             gtk.main_iteration()
         # threading game
         event = threading.Event()
-        txt = inp.getText()
+        txt = inp.get_text()
         proc = ThreadedProc(event, func, txt)
 
-        def procDone():
+        def proc_done():
             if not event.isSet():
                 return True
             busy.destroy()
 
             if proc.ok:
-                out.setText(proc.result, use_repr)
+                out.set_text(proc.result, use_repr)
             else:
                 msg = _("An error was generated during the execution:\n\t\t- Invalid input for that operation.\n\n")
                 msg += _("The string that you are trying to encode/decode can\'t be encoded/decoded using this algorithm.")
                 msg += _(" A detailed error follows:\n\t\t- ")
-                out.setText(msg + str(proc.exception), use_repr=False)
+                out.set_text(msg + str(proc.exception), use_repr=False)
                 self.w3af.mainwin.sb(_("Problem processing that string!"))
             return False
 
         proc.start()
-        gobject.timeout_add(200, procDone)
+        gobject.timeout_add(200, proc_done)
 
     def _encode(self, widg, combo):
         '''Encodes the upper text.'''

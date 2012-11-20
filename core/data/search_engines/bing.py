@@ -72,7 +72,7 @@ class bing(SearchEngine):
         # This regex might become outdated, but the good thing is that we have
         # test_bing.py which is going to fail and tell us that it's outdated
         re_match = re.findall('<a href="((http|https)(.*?))" h="ID=SERP,',
-                              response.getBody())
+                              response.get_body())
 
         results = []
 
@@ -82,7 +82,7 @@ class bing(SearchEngine):
             except:
                 pass
             else:
-                if url.getDomain() not in self.BLACKLISTED_DOMAINS:
+                if url.get_domain() not in self.BLACKLISTED_DOMAINS:
                     results.append(BingResult(url))
 
         return results

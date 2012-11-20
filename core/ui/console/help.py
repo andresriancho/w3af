@@ -50,7 +50,7 @@ class helpRepository(object):
         for t in topics:
             self.__map[str(t.attrib['name'])] = t
 
-    def loadHelp(self, topic, obj=None, vars=None):
+    def load_help(self, topic, obj=None, vars=None):
         '''
         Loads an object from the repository.
         @param topic: the name of a context (for example, menu)
@@ -95,7 +95,7 @@ class helpRepository(object):
                 if full:
                     full = full.replace('\n', '\r\n')
 
-                obj.addHelpEntry(itemName, (short, full), catName)
+                obj.add_help_entry(itemName, (short, full), catName)
 
         return obj
 
@@ -112,7 +112,7 @@ class HelpContainer(object):
         self._subj2Gat = {}
         self._cat2Subj = {}
 
-    def addHelpEntry(self, subj, content, cat=''):
+    def add_help_entry(self, subj, content, cat=''):
         '''
         Adds the help entry.
         @param content: usually a tuple like (head, body)
@@ -133,12 +133,12 @@ class HelpContainer(object):
 
         d.append(subj)
 
-    def getCategories(self):
+    def get_categories(self):
         return self._subj2Gat.keys()
 
-    def addHelp(self, table, cat=''):
+    def add_help(self, table, cat=''):
         for subj in table:
-            self.addHelpEntry(subj, table[subj], cat)
+            self.add_help_entry(subj, table[subj], cat)
 
     def get_help(self, subj):
         if subj not in self._table:
@@ -146,10 +146,10 @@ class HelpContainer(object):
 
         return self._table[subj]
 
-    def getItems(self):
+    def get_items(self):
         return self._table.keys()
 
-    def getPlainHelpTable(self, separators=True, cat=None):
+    def get_plain_help_table(self, separators=True, cat=None):
         '''
         Returns a table of format 'subject -> head'
         to display with the table.py module

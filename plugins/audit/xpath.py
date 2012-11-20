@@ -122,7 +122,7 @@ class xpath(AuditPlugin):
                     v.set_desc(
                         'XPATH injection was found at: ' + mutant.found_at())
                     v.set_id(response.id)
-                    v.addToHighlight(xpath_error)
+                    v.add_to_highlight(xpath_error)
                     kb.kb.append(self, 'xpath', v)
                     break
 

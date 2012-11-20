@@ -46,17 +46,17 @@ class urllist_txt(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
-        urllist_url = base_url.urlJoin('urllist.txt')
+        base_url = fuzzable_request.get_url().base_url()
+        urllist_url = base_url.url_join('urllist.txt')
         http_response = self._uri_opener.GET(urllist_url, cache=True)
 
         if not is_404(http_response):
-            if self._is_urllist_txt(base_url, http_response.getBody()):
+            if self._is_urllist_txt(base_url, http_response.get_body()):
                 # Save it to the kb!
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('urllist.txt file')
-                i.setURL(urllist_url)
+                i.set_url(urllist_url)
                 i.set_id(http_response.id)
                 i.set_desc(
                     'A urllist.txt file was found at: "%s".' % urllist_url)
@@ -68,7 +68,7 @@ class urllist_txt(CrawlPlugin):
             # from the file as if it is a valid urllist.txt
 
             url_generator = self._extract_urls_generator(base_url,
-                                                         http_response.getBody())
+                                                         http_response.get_body())
 
             # Send the requests using threads:
             self._tm.threadpool.map(self._get_and_parse, url_generator)
@@ -84,7 +84,7 @@ class urllist_txt(CrawlPlugin):
 
             if not line.startswith('#') and line:
                 try:
-                    base_url.urlJoin(line)
+                    base_url.url_join(line)
                 except:
                     is_urllist -= 1
 
@@ -101,7 +101,7 @@ class urllist_txt(CrawlPlugin):
 
             if not line.startswith('#') and line:
                 try:
-                    url = base_url.urlJoin(line)
+                    url = base_url.url_join(line)
                 except:
                     pass
                 else:

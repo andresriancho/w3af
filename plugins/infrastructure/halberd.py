@@ -73,7 +73,7 @@ class halberd(InfrastructurePlugin):
         msg += 'Juan M. Bello Rivas; http://halberd.superadditive.com/'
         om.out.information(msg)
 
-        self._main(fuzzable_request.getURL().baseUrl().url_string)
+        self._main(fuzzable_request.get_url().base_url().url_string)
 
     def _main(self, url):
         '''
@@ -90,8 +90,8 @@ class halberd(InfrastructurePlugin):
         scantask.save = ''
         scantask.output = ''
 
-        halberd_logger.setError()
-        scantask.readConf()
+        halberd_logger.set_error()
+        scantask.read_conf()
 
         # UniScan
         scantask.url = url
@@ -160,7 +160,7 @@ class halberd(InfrastructurePlugin):
                 om.out.information('difference: %d seconds' % clue.diff)
 
                 om.out.information('successful requests: %d hits (%.2f%%)'
-                                   % (clue.getCount(), clue.getCount() * 100 / float(hits)))
+                                   % (clue.get_count(), clue.get_count() * 100 / float(hits)))
 
                 if info['contloc']:
                     om.out.information(

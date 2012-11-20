@@ -40,7 +40,7 @@ class XMLRPCRequest(HTTPPostDataRequest):
         HTTPPostDataRequest.__init__(self, uri)
         self._xml = xml
 
-    def getData(self):
+    def get_data(self):
         '''
         @return: A string that represents the XMLRPC data saved in the dc.
         '''
@@ -62,4 +62,4 @@ class XMLRPCRequest(HTTPPostDataRequest):
         self._dc = data_container
 
     def __repr__(self):
-        return '<XMLRPC fuzzable request | ' + self.get_method() + ' | ' + self.getURI() + ' >'
+        return '<XMLRPC fuzzable request | ' + self.get_method() + ' | ' + self.get_uri() + ' >'

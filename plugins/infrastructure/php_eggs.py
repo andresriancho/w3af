@@ -234,7 +234,7 @@ class php_eggs(InfrastructurePlugin):
                                     (among other things) the URL to test.
         '''
         # Get the extension of the URL (.html, .php, .. etc)
-        ext = fuzzable_request.getURL().getExtension()
+        ext = fuzzable_request.get_url().get_extension()
 
         # Only perform this analysis if we haven't already analyzed this type
         # of extension OR if we get an URL like http://f00b5r/4/     (Note that
@@ -260,7 +260,7 @@ class php_eggs(InfrastructurePlugin):
         @return: A list with the HTTP response objects
         '''
         def http_get(fuzzable_request, (egg_url, egg_desc)):
-            egg_URL = fuzzable_request.getURL().uri2url().urlJoin(egg_url)
+            egg_URL = fuzzable_request.get_url().uri2url().url_join(egg_url)
             try:
                 response = self._uri_opener.GET(egg_URL, cache=True)
             except w3afException, w3:
@@ -286,7 +286,7 @@ class php_eggs(InfrastructurePlugin):
         Now I analyze if this is really a PHP eggs thing, or simply a response that
         changes a lot on each request. Before, I had something like this:
 
-            if relative_distance(original_response.getBody(), response.getBody()) < 0.1:
+            if relative_distance(original_response.get_body(), response.get_body()) < 0.1:
 
         But I got some reports about false positives with this approach, so now I'm
         changing it to something a little bit more specific.
@@ -307,7 +307,7 @@ class php_eggs(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('PHP Egg - ' + egg_desc)
-                i.setURL(egg_URL)
+                i.set_url(egg_URL)
                 desc = 'The PHP framework running on the remote server has a "'
                 desc += egg_desc + \
                     '" easter egg, access to the PHP egg is possible'
@@ -330,7 +330,7 @@ class php_eggs(InfrastructurePlugin):
         else:
             cmp_list = []
             for r in response:
-                hash_str = hashlib.md5(r[0].getBody()).hexdigest()
+                hash_str = hashlib.md5(r[0].get_body()).hexdigest()
                 cmp_list.append((hash_str, r[1]))
             cmp_set = set(cmp_list)
 

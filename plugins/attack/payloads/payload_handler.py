@@ -66,7 +66,7 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
         #    The import needs to be here, don't ask why :P
         import core.data.kb.knowledge_base as kb
 
-        available_shells = kb.kb.getAllShells()
+        available_shells = kb.kb.get_all_shells()
         for shell in available_shells:
             if payload_name in runnable_payloads(shell):
                 shell_obj = shell

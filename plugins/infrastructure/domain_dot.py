@@ -50,8 +50,8 @@ class domain_dot(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         '''
-        domain = fuzzable_request.getURL().getDomain()
-        extension = fuzzable_request.getURL().getExtension()
+        domain = fuzzable_request.get_url().get_domain()
+        extension = fuzzable_request.get_url().get_extension()
 
         if (domain, extension) not in self._already_tested:
 
@@ -60,7 +60,7 @@ class domain_dot(InfrastructurePlugin):
 
             # Generate the new URL
             domain_dot = domain + '.'
-            orig_url = fuzzable_request.getURL()
+            orig_url = fuzzable_request.get_url()
             try:
                 # GET the original response
                 original_response = self._uri_opener.GET(orig_url,
@@ -82,7 +82,7 @@ class domain_dot(InfrastructurePlugin):
         @param resp: The HTTPResponse object that holds the content of
                          the response to analyze.
         '''
-        if relative_distance_lt(original_resp.getBody(), resp.getBody(), 0.7):
+        if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
             i = info.info(resp)
             i.set_plugin_name(self.get_name())
             i.set_id([original_resp.id, resp.id])

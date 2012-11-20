@@ -52,12 +52,12 @@ class cross_domain_js(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        url = response.getURL()
+        url = response.get_url()
 
         if response.is_text_or_html() and not url in self._already_inspected:
 
             self._already_inspected.add(url)
-            dom = response.getDOM()
+            dom = response.get_dom()
 
             # In some strange cases, we fail to normalize the document
             if dom is not None:
@@ -71,14 +71,14 @@ class cross_domain_js(GrepPlugin):
                         continue
 
                     script_src = script_src_tag.attrib['src']
-                    script_full_url = response.getURL().urlJoin(script_src)
-                    script_domain = script_full_url.getDomain()
+                    script_full_url = response.get_url().url_join(script_src)
+                    script_domain = script_full_url.get_domain()
 
-                    if script_domain != response.getURL().getDomain():
+                    if script_domain != response.get_url().get_domain():
                         i = info.info()
                         i.set_plugin_name(self.get_name())
                         i.set_name('Cross-domain javascript source')
-                        i.setURL(url)
+                        i.set_url(url)
                         i.set_id(response.id)
                         msg = 'The URL: "%s" has script tag with a source that points' \
                               ' to a third party site ("%s"). This practice is not' \
@@ -86,7 +86,7 @@ class cross_domain_js(GrepPlugin):
                               ' delegated to that entity.'
                         i.set_desc(msg)
                         to_highlight = etree.tostring(script_src_tag)
-                        i.addToHighlight(to_highlight)
+                        i.add_to_highlight(to_highlight)
                         kb.kb.append(self, 'cross_domain_js', i)
 
     def end(self):

@@ -167,7 +167,7 @@ class xUrllib(object):
             self.settings.build_openers()
             self._opener = self.settings.get_custom_opener()
 
-    def getHeaders(self, uri):
+    def get_headers(self, uri):
         '''
         @param uri: The URI we want to know the request headers
 
@@ -222,7 +222,7 @@ class xUrllib(object):
 
         # Fix the content length
         if fix_content_len:
-            headers = fuzz_req.getHeaders()
+            headers = fuzz_req.get_headers()
             fixed = False
             for h in headers:
                 if h.lower() == 'content-length':
@@ -230,12 +230,12 @@ class xUrllib(object):
                     fixed = True
             if not fixed and postdata:
                 headers['content-length'] = str(len(postdata))
-            fuzz_req.setHeaders(headers)
+            fuzz_req.set_headers(headers)
 
         # Send it
         function_reference = getattr(self, fuzz_req.get_method())
-        return function_reference(fuzz_req.getURI(), data=fuzz_req.getData(),
-                                  headers=fuzz_req.getHeaders(), cache=False,
+        return function_reference(fuzz_req.get_uri(), data=fuzz_req.get_data(),
+                                  headers=fuzz_req.get_headers(), cache=False,
                                   grep=False)
 
     def send_mutant(self, mutant, callback=None, grep=True, cache=True,
@@ -254,11 +254,11 @@ class xUrllib(object):
         # IMPORTANT NOTE: If you touch something here, the whole framework may
         # stop working!
         #
-        uri = mutant.getURI()
-        data = mutant.getData()
+        uri = mutant.get_uri()
+        data = mutant.get_data()
 
         # Also add the cookie header; this is needed by the CookieMutant
-        headers = mutant.getHeaders()
+        headers = mutant.get_headers()
         cookie = mutant.get_cookie()
         if cookie:
             headers['Cookie'] = str(cookie)
@@ -427,7 +427,7 @@ class xUrllib(object):
         req = self._add_headers(req, headers)
         return self._send(req, grep=grep)
 
-    def getRemoteFileSize(self, req, cache=True):
+    def get_remote_file_size(self, req, cache=True):
         '''
         This method was previously used in the framework to perform a HEAD
         request before each GET/POST (ouch!) and get the size of the response.
@@ -443,15 +443,15 @@ class xUrllib(object):
                         data=req.get_data(), cache=cache)
 
         resource_length = None
-        for i in res.getHeaders():
+        for i in res.get_headers():
             if i.lower() == 'content-length':
-                resource_length = res.getHeaders()[i]
+                resource_length = res.get_headers()[i]
                 if resource_length.isdigit():
                     resource_length = int(resource_length)
                 else:
                     msg = 'The content length header value of the response wasn\'t an integer...'
                     msg += ' this is strange... The value is: "' + \
-                        res.getHeaders()[i] + '"'
+                        res.get_headers()[i] + '"'
                     om.out.error(msg)
                     raise w3afException(msg)
 
@@ -711,7 +711,7 @@ class xUrllib(object):
         '''
         req_id = id(req)
         if self._error_count.setdefault(req_id, 1) <= \
-                self.settings.getMaxRetrys():
+                self.settings.get_max_retrys():
             # Increment the error count of this particular request.
             self._error_count[req_id] += 1
             om.out.debug('Re-sending request...')
@@ -827,9 +827,9 @@ class xUrllib(object):
 
     def set_evasion_plugins(self, evasion_plugins):
         # I'm sorting evasion plugins based on priority
-        def sortFunc(x, y):
-            return cmp(x.getPriority(), y.getPriority())
-        evasion_plugins.sort(sortFunc)
+        def sort_func(x, y):
+            return cmp(x.get_priority(), y.get_priority())
+        evasion_plugins.sort(sort_func)
 
         # Save the info
         self._evasion_plugins = evasion_plugins
@@ -841,7 +841,7 @@ class xUrllib(object):
         '''
         for eplugin in self._evasion_plugins:
             try:
-                request = eplugin.modifyRequest(request)
+                request = eplugin.modify_request(request)
             except w3afException, e:
                 msg = 'Evasion plugin "%s" failed to modify the request. Exception: "%s"'
                 om.out.error(msg % (eplugin.get_name(), e))
@@ -851,10 +851,10 @@ class xUrllib(object):
     def _grep(self, request, response):
 
         url_instance = request.url_object
-        domain = url_instance.getDomain()
+        domain = url_instance.get_domain()
 
         if self._grep_queue_put is not None and\
-                domain in cf.cf.get('targetDomains'):
+                domain in cf.cf.get('target_domains'):
 
             # Create a fuzzable request based on the urllib2 request object
             fr = create_fuzzable_request(

@@ -33,7 +33,7 @@ class get_source_code(base_payload):
         for webroot in webroot_list:
             for url in url_list:
 
-                path_and_file = url.getPath()
+                path_and_file = url.get_path()
                 relative_path_file = path_and_file[1:]
                 remote_full_path = os.path.join(webroot, relative_path_file)
 

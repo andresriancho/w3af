@@ -63,11 +63,11 @@ class oracle_discovery(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
 
         for url, re_obj in self.ORACLE_DATA:
 
-            oracle_discovery_URL = base_url.urlJoin(url)
+            oracle_discovery_URL = base_url.url_join(url)
             response = self._uri_opener.GET(oracle_discovery_URL, cache=True)
 
             if not is_404(response):
@@ -76,16 +76,16 @@ class oracle_discovery(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
 
-                mo = re_obj.search(response.getBody(), re.DOTALL)
+                mo = re_obj.search(response.get_body(), re.DOTALL)
 
                 if mo:
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     desc = '"%s" version "%s" was detected at "%s".'
                     desc = desc % (mo.group(1).title(), mo.group(2).title(),
-                                   response.getURL())
+                                   response.get_url())
                     i.set_desc(desc)
                     i.set_id(response.id)
                     kb.kb.append(self, 'oracle_discovery', i)
@@ -94,8 +94,8 @@ class oracle_discovery(CrawlPlugin):
                     msg = 'oracle_discovery found the URL: "%s" but failed to'\
                           ' parse it as an Oracle page. The first 50 bytes of'\
                           ' the response body is: "%s".'
-                    body_start = response.getBody()[:50]
-                    om.out.debug(msg % (response.getURL(), body_start))
+                    body_start = response.get_body()[:50]
+                    om.out.debug(msg % (response.get_url(), body_start))
 
     def get_long_desc(self):
         '''

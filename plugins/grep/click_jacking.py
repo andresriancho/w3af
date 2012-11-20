@@ -51,13 +51,13 @@ class click_jacking(GrepPlugin):
 
         self._total_count += 1
 
-        headers = response.getLowerCaseHeaders()
+        headers = response.get_lower_case_headers()
         x_frame_options = headers.get('x-frame-options', '')
 
         if not x_frame_options.lower() in ('deny', 'sameorigin'):
             self._vuln_count += 1
-            if response.getURL() not in self._vulns:
-                self._vulns.append(response.getURL())
+            if response.get_url() not in self._vulns:
+                self._vulns.append(response.get_url())
                 self._ids.append(response.id)
 
     def end(self):

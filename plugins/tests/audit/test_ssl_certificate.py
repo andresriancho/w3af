@@ -62,7 +62,7 @@ class TestSSLCertificate(PluginTest):
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals('Invalid SSL certificate', vuln.get_name())
-        self.assertEquals(self.target_url, str(vuln.getURL()))
+        self.assertEquals(self.target_url, str(vuln.get_url()))
 
 
 HTTP_RESPONSE = '''HTTP/1.1 200 Ok\r\nConnection: close\r\nContent-Length: 3\r\n\r\nabc'''

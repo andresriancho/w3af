@@ -56,7 +56,7 @@ class xst(AuditPlugin):
             # Only run once
             self._exec = False
 
-            uri = freq.getURL().getDomainPath()
+            uri = freq.get_url().get_domain_path()
             method = 'TRACE'
             headers = Headers()
             headers['FakeHeader'] = 'XST'
@@ -70,7 +70,7 @@ class xst(AuditPlugin):
 
             # create a regex to test the response.
             regex = re.compile("FakeHeader: *?XST", re.IGNORECASE)
-            if re.search(regex, response.getBody()):
+            if re.search(regex, response.get_body()):
                 # If vulnerable record it. This will now become visible on the KB Browser
                 v = vuln.vuln(freq)
                 v.set_plugin_name(self.get_name())
@@ -78,7 +78,7 @@ class xst(AuditPlugin):
                 v.set_severity(severity.LOW)
                 v.set_name('Cross site tracing vulnerability')
                 msg = 'The web server at "' + \
-                    response.getURL() + '" is vulnerable to'
+                    response.get_url() + '" is vulnerable to'
                 msg += ' Cross Site Tracing.'
                 v.set_desc(msg)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())

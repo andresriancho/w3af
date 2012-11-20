@@ -58,9 +58,9 @@ class server_header(InfrastructurePlugin):
         '''
         HTTP GET and analyze response for server header
         '''
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
 
-        for hname, hvalue in response.getLowerCaseHeaders().iteritems():
+        for hname, hvalue in response.get_lower_case_headers().iteritems():
             if hname == 'server':
                 server = hvalue
                 i = info.info()
@@ -70,7 +70,7 @@ class server_header(InfrastructurePlugin):
                 i.set_desc('The server header for the remote web server is: "' + server + '".')
                 i['server'] = server
                 om.out.information(i.get_desc())
-                i.addToHighlight(hname + ':')
+                i.add_to_highlight(hname + ':')
 
                 # Save the results in the KB so the user can look at it
                 kb.kb.append(self, 'server', i)
@@ -102,12 +102,12 @@ class server_header(InfrastructurePlugin):
         '''
         Analyze X-Powered-By header.
         '''
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
 
-        for header_name in response.getHeaders().keys():
+        for header_name in response.get_headers().keys():
             for i in ['ASPNET', 'POWERED']:
                 if i in header_name.upper() or header_name.upper() in i:
-                    powered_by = response.getHeaders()[header_name]
+                    powered_by = response.get_headers()[header_name]
 
                     # Only get the first one
                     self._x_powered = False
@@ -132,7 +132,7 @@ class server_header(InfrastructurePlugin):
                         i.set_desc(msg)
                         i['poweredBy'] = powered_by
                         om.out.information(i.get_desc())
-                        i.addToHighlight(header_name + ':')
+                        i.add_to_highlight(header_name + ':')
 
                         # Save the results in the KB so that other plugins can
                         # use this information. Before knowing that some servers

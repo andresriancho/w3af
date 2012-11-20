@@ -72,7 +72,7 @@ class TestGHDB(PluginTest):
 
         pmodule = 'plugins.crawl.ghdb.%s'
         with patch(pmodule % 'is_private_site') as private_site_mock:
-            with patch.object(google, 'getNResults') as google_mock_method:
+            with patch.object(google, 'get_n_results') as google_mock_method:
 
                 # Mock
                 private_site_mock.return_value = False
@@ -92,7 +92,7 @@ class TestGHDB(PluginTest):
 
         vuln = vulns[0]
         self.assertEqual(
-            vuln.getURL().url_string, 'http://moth/w3af/crawl/ghdb/')
+            vuln.get_url().url_string, 'http://moth/w3af/crawl/ghdb/')
         self.assertEqual(vuln.get_severity(), severity.MEDIUM)
         self.assertEqual(vuln.get_name(), 'Google hack database vulnerability')
 

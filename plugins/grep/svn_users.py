@@ -56,17 +56,17 @@ class svn_users(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        uri = response.getURI()
+        uri = response.get_uri()
         if response.is_text_or_html() and uri not in self._already_inspected:
 
             # Don't repeat URLs
             self._already_inspected.add(uri)
 
             for regex in self._regex_list:
-                for m in regex.findall(response.getBody()):
+                for m in regex.findall(response.get_body()):
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
-                    v.setURI(uri)
+                    v.set_uri(uri)
                     v.set_id(response.id)
                     msg = 'The URL: "' + uri + '" contains a SVN versioning '
                     msg += 'signature with the username: "' + m[0] + '" .'
@@ -74,7 +74,7 @@ class svn_users(GrepPlugin):
                     v['user'] = m[0]
                     v.set_severity(severity.LOW)
                     v.set_name('SVN user disclosure vulnerability')
-                    v.addToHighlight(m[0])
+                    v.add_to_highlight(m[0])
                     kb.kb.append(self, 'users', v)
 
     def end(self):

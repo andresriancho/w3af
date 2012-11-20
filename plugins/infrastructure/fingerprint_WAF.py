@@ -81,16 +81,16 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if SecureIIS is installed or not.
         '''
         # And now a final check for SecureIIS
-        headers = fuzzable_request.getHeaders()
+        headers = fuzzable_request.get_headers()
         headers['Transfer-Encoding'] = rand_alpha(1024 + 1)
         try:
-            lock_response2 = self._uri_opener.GET(fuzzable_request.getURL(),
+            lock_response2 = self._uri_opener.GET(fuzzable_request.get_url(),
                                                   headers=headers, cache=True)
         except w3afException, w3:
             om.out.debug(
                 'Failed to identify secure IIS, exception: ' + str(w3))
         else:
-            if lock_response2.getCode() == 404:
+            if lock_response2.get_code() == 404:
                 self._report_finding('SecureIIS', lock_response2)
 
     def _fingerprint_ModSecurity(self, fuzzable_request):
@@ -105,10 +105,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if Airlock is present.
         '''
         om.out.debug('detect Airlock')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^AL[_-]?(SESS|LB)=', protected_by):
                     self._report_finding('Airlock', response, protected_by)
                     return
@@ -120,11 +120,11 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if Barracuda is present.
         '''
         om.out.debug('detect Barracuda')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
                 # ToDo: not sure if this is always there (08jul08 Achim)
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^barra_counter_session=', protected_by):
                     self._report_finding('Barracuda', protected_by)
                     return
@@ -136,10 +136,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if Deny All rWeb is present.
         '''
         om.out.debug('detect Deny All')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^sessioncookie=', protected_by):
                     self._report_finding(
                         'Deny All rWeb', response, protected_by)
@@ -152,10 +152,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if F5 ASM (also TrafficShield) is present.
         '''
         om.out.debug('detect F5 ASM or TrafficShield')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^TS[a-zA-Z0-9]{3,6}=', protected_by):
                     self._report_finding('F5 ASM', response, protected_by)
                     return
@@ -169,10 +169,10 @@ class fingerprint_WAF(InfrastructurePlugin):
 
         '''
         om.out.debug('detect the older version F5 TrafficShield')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^ASINFO=', protected_by):
                     self._report_finding(
                         'F5 TrafficShield', response, protected_by)
@@ -187,10 +187,10 @@ class fingerprint_WAF(InfrastructurePlugin):
 
         '''
         om.out.debug('detect TEROS')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^st8id=', protected_by):
                     self._report_finding('TEROS', response, protected_by)
                     return
@@ -204,10 +204,10 @@ class fingerprint_WAF(InfrastructurePlugin):
 
         '''
         om.out.debug('detect NetContinuum')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^NCI__SessionId=', protected_by):
                     self._report_finding(
                         'NetContinuum', response, protected_by)
@@ -220,10 +220,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if BinarySec is present.
         '''
         om.out.debug('detect BinarySec')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'server':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('BinarySec', protected_by, re.IGNORECASE):
                     self._report_finding('BinarySec', response, protected_by)
                     return
@@ -235,10 +235,10 @@ class fingerprint_WAF(InfrastructurePlugin):
         Try to verify if HyperGuard is present.
         '''
         om.out.debug('detect HyperGuard')
-        response = self._uri_opener.GET(fuzzable_request.getURL(), cache=True)
-        for header_name in response.getHeaders().keys():
+        response = self._uri_opener.GET(fuzzable_request.get_url(), cache=True)
+        for header_name in response.get_headers().keys():
             if header_name.lower() == 'set-cookie':
-                protected_by = response.getHeaders()[header_name]
+                protected_by = response.get_headers()[header_name]
                 if re.match('^WODSESSION=', protected_by):
                     self._report_finding('HyperGuard', response, protected_by)
                     return
@@ -252,36 +252,36 @@ class fingerprint_WAF(InfrastructurePlugin):
         # detect using GET
         # Get the original response
         orig_response = self._uri_opener.GET(
-            fuzzable_request.getURL(), cache=True)
-        if orig_response.getCode() != 404:
+            fuzzable_request.get_url(), cache=True)
+        if orig_response.get_code() != 404:
             # Now add the if header and try again
-            headers = fuzzable_request.getHeaders()
+            headers = fuzzable_request.get_headers()
             headers['If'] = rand_alpha(8)
-            if_response = self._uri_opener.GET(fuzzable_request.getURL(),
+            if_response = self._uri_opener.GET(fuzzable_request.get_url(),
                                                headers=headers,
                                                cache=True)
-            headers = fuzzable_request.getHeaders()
+            headers = fuzzable_request.get_headers()
             headers['Translate'] = rand_alpha(8)
             translate_response = self._uri_opener.GET(
-                fuzzable_request.getURL(),
+                fuzzable_request.get_url(),
                 headers=headers,
                 cache=True)
 
-            headers = fuzzable_request.getHeaders()
+            headers = fuzzable_request.get_headers()
             headers['Lock-Token'] = rand_alpha(8)
-            lock_response = self._uri_opener.GET(fuzzable_request.getURL(),
+            lock_response = self._uri_opener.GET(fuzzable_request.get_url(),
                                                  headers=headers,
                                                  cache=True)
 
-            headers = fuzzable_request.getHeaders()
+            headers = fuzzable_request.get_headers()
             headers['Transfer-Encoding'] = rand_alpha(8)
             transfer_enc_response = self._uri_opener.GET(
-                fuzzable_request.getURL(),
+                fuzzable_request.get_url(),
                 headers=headers,
                 cache=True)
 
-            if if_response.getCode() == 404 or translate_response.getCode() == 404 or\
-                    lock_response.getCode() == 404 or transfer_enc_response.getCode() == 404:
+            if if_response.get_code() == 404 or translate_response.get_code() == 404 or\
+                    lock_response.get_code() == 404 or transfer_enc_response.get_code() == 404:
                 self._report_finding('URLScan', lock_response)
 
     def _report_finding(self, name, response, protected_by=None):
@@ -295,7 +295,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         '''
         i = info.info()
         i.set_plugin_name(self.get_name())
-        i.setURL(response.getURL())
+        i.set_url(response.get_url())
         i.set_id(response.id)
         msg = 'The remote network seems to have a "' + name + '" WAF deployed to' \
               ' protect access to the web server.'

@@ -66,7 +66,7 @@ class phishtank(CrawlPlugin):
         if self._update_DB:
             self._do_update()
 
-        to_check = self._get_to_check(fuzzable_request.getURL())
+        to_check = self._get_to_check(fuzzable_request.get_url())
 
         # I found some URLs, create fuzzable requests
         phishtank_matches = self._is_in_phishtank(to_check)
@@ -79,7 +79,7 @@ class phishtank(CrawlPlugin):
         if phishtank_matches:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(ptm.url)
+            v.set_url(ptm.url)
             v.set_id(response.id)
             v.set_name('Phishing scam')
             v.set_severity(severity.MEDIUM)
@@ -95,13 +95,13 @@ class phishtank(CrawlPlugin):
         @return: From the domain, get a list of FQDN, rootDomain and IP address.
         '''
         def addrinfo(url):
-            return [x[4][0] for x in socket.getaddrinfo(url.getDomain(), 0)]
+            return [x[4][0] for x in socket.getaddrinfo(url.get_domain(), 0)]
 
         def getfqdn(url):
-            return [socket.getfqdn(url.getDomain()), ]
+            return [socket.getfqdn(url.get_domain()), ]
 
         def root_domain(url):
-            return [url.getRootDomain(), ]
+            return [url.get_root_domain(), ]
 
         res = set()
         for func in (addrinfo, getfqdn, root_domain):
@@ -158,7 +158,7 @@ class phishtank(CrawlPlugin):
                 self.inside_detail = False
                 self.matches = []
 
-            def startElement(self, name, attrs):
+            def start_element(self, name, attrs):
                 if name == 'entry':
                     self.inside_entry = True
                 elif name == 'url':
@@ -191,8 +191,8 @@ class phishtank(CrawlPlugin):
                             phish_url = URL(self.url)
                             target_host_url = URL(target_host)
 
-                            if target_host_url.getDomain() == phish_url.getDomain() or \
-                                    phish_url.getDomain().endswith('.' + target_host_url.getDomain()):
+                            if target_host_url.get_domain() == phish_url.get_domain() or \
+                                    phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
 
                                 phish_detail_url = URL(self.phish_detail_url)
                                 ptm = PhishTankMatch(
@@ -262,7 +262,7 @@ class phishtank(CrawlPlugin):
         om.out.information('Download complete, writing to the database file.')
 
         try:
-            file_handler.write(res.getBody())
+            file_handler.write(res.get_body())
             file_handler.close()
         except Exception, e:
             msg = 'Failed to write to file: "%s", error: "%s".'

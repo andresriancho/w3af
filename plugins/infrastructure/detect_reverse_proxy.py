@@ -52,7 +52,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         # detect using GET
         if not kb.kb.get('detect_transparent_proxy', 'detect_transparent_proxy'):
             response = self._uri_opener.GET(
-                fuzzable_request.getURL(), cache=True)
+                fuzzable_request.get_url(), cache=True)
             if self._has_proxy_headers(response):
                 self._report_finding(response)
 
@@ -60,7 +60,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         # only if I wasn't able to do it with GET
         if not kb.kb.get('detect_reverse_proxy', 'detect_reverse_proxy'):
             response = self._uri_opener.TRACE(
-                fuzzable_request.getURL(), cache=True)
+                fuzzable_request.get_url(), cache=True)
             if self._has_proxy_content(response):
                 self._report_finding(response)
 
@@ -79,7 +79,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         # ....
         if not kb.kb.get('detect_reverse_proxy', 'detect_reverse_proxy'):
             response = self._uri_opener.TRACK(
-                fuzzable_request.getURL(), cache=True)
+                fuzzable_request.get_url(), cache=True)
             if self._has_proxy_content(response):
                 self._report_finding(response)
 
@@ -97,7 +97,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         i.set_plugin_name(self.get_name())
         i.set_name('Reverse proxy')
         i.set_id(response.get_id())
-        i.setURL(response.getURL())
+        i.set_url(response.get_url())
         i.set_desc(
             'The remote web server seems to have a reverse proxy installed.')
         i.set_name('Found reverse proxy')
@@ -110,7 +110,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @return: True if the remote web server has a reverse proxy
         '''
         for proxy_header in self._proxy_header_list:
-            for response_header in response.getHeaders():
+            for response_header in response.get_headers():
                 if proxy_header.upper() == response_header.upper():
                     return True
         return False
@@ -122,7 +122,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
         @param response: The HTTP response object to analyze
         @return: True if the remote web server has a reverse proxy
         '''
-        response_body = response.getBody().upper()
+        response_body = response.get_body().upper()
         #remove duplicated spaces from body
         whitespace = re.compile('\s+')
         response_body = re.sub(whitespace, ' ', response_body)

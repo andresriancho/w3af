@@ -49,7 +49,7 @@ class rootMenu(menu):
 
     def __init__(self, name, console, core, parent=None):
         menu.__init__(self, name, console, core, parent)
-        self._loadHelp('root')
+        self._load_help('root')
 
         #   At first, there is no scan thread
         self._scan_thread = None

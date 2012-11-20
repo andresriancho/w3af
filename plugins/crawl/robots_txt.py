@@ -50,8 +50,8 @@ class robots_txt(CrawlPlugin):
         '''
         dirs = []
 
-        base_url = fuzzable_request.getURL().baseUrl()
-        robots_url = base_url.urlJoin('robots.txt')
+        base_url = fuzzable_request.get_url().base_url()
+        robots_url = base_url.url_join('robots.txt')
         http_response = self._uri_opener.GET(robots_url, cache=True)
 
         if not is_404(http_response):
@@ -59,7 +59,7 @@ class robots_txt(CrawlPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('robots.txt file')
-            i.setURL(robots_url)
+            i.set_url(robots_url)
             i.set_id(http_response.id)
             i.set_desc(
                 'A robots.txt file was found at: "' + robots_url + '".')
@@ -68,7 +68,7 @@ class robots_txt(CrawlPlugin):
 
             # Work with it...
             dirs.append(robots_url)
-            for line in http_response.getBody().split('\n'):
+            for line in http_response.get_body().split('\n'):
 
                 line = line.strip()
 
@@ -79,7 +79,7 @@ class robots_txt(CrawlPlugin):
                     url = line[line.find(':') + 1:]
                     url = url.strip()
                     try:
-                        url = base_url.urlJoin(url)
+                        url = base_url.url_join(url)
                     except:
                         # Simply ignore the invalid URL
                         pass

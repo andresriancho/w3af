@@ -37,11 +37,11 @@ class FileNameMutant(URLPartsMutant):
     def get_mutant_type(self):
         return 'url filename'
 
-    def getURL(self):
+    def get_url(self):
         '''
         @return: The URL, as modified by "set_mod_value()"
                 '''
-        domain_path = self._freq.getURL().getDomainPath()
+        domain_path = self._freq.get_url().get_domain_path()
 
         # Please note that this double encoding is needed if we want to work
         # with mod_rewrite
@@ -50,13 +50,13 @@ class FileNameMutant(URLPartsMutant):
         if self._double_encoding:
             encoded = urllib.quote_plus(encoded, safe=self._safe_encode_chars)
 
-        domain_path.setFileName(self._mutant_dc['start'] + encoded +
+        domain_path.set_file_name(self._mutant_dc['start'] + encoded +
                                 self._mutant_dc['end'])
         return domain_path
 
-    getURI = getURL
+    get_uri = get_url
 
-    def getData(self):
+    def get_data(self):
         return None
 
     def print_mod_value(self):
@@ -70,7 +70,7 @@ class FileNameMutant(URLPartsMutant):
     def get_mod_value(self):
         return self._mutant_dc['modified_part']
 
-    def setURL(self, u):
+    def set_url(self, u):
         msg = 'You can\'t change the value of the URL in a FileNameMutant'\
               ' instance.'
         raise ValueError(msg)
@@ -81,7 +81,7 @@ class FileNameMutant(URLPartsMutant):
         '''
         fmt = '"%s", using HTTP method %s. The modified parameter was the URL'\
               ' filename, with value: "%s".'
-        return fmt % (self.getURL(), self.get_method(), self.get_mod_value())
+        return fmt % (self.get_url(), self.get_method(), self.get_mod_value())
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,
@@ -97,7 +97,7 @@ class FileNameMutant(URLPartsMutant):
             return []
 
         res = []
-        fname = freq.getURL().getFileName()
+        fname = freq.get_url().get_file_name()
         fname_chunks = [x for x in re.split(r'([a-zA-Z0-9]+)', fname) if x]
 
         for idx, fn_chunk in enumerate(fname_chunks):
@@ -113,7 +113,7 @@ class FileNameMutant(URLPartsMutant):
                         urllib.quote_plus(mutant_str)
 
                     freq_copy = freq.copy()
-                    freq_copy.setURL(freq.getURL())
+                    freq_copy.set_url(freq.get_url())
 
                     # Create the mutant
                     m = FileNameMutant(freq_copy)
@@ -130,6 +130,6 @@ class FileNameMutant(URLPartsMutant):
                     m2 = m.copy()
                     m2.set_safe_encode_chars('/')
 
-                    if m2.getURL() != m.getURL():
+                    if m2.get_url() != m.get_url():
                         res.append(m2)
         return res

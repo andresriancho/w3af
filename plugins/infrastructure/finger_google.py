@@ -57,10 +57,10 @@ class finger_google(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        if not is_private_site(fuzzable_request.getURL().getDomain()):
+        if not is_private_site(fuzzable_request.get_url().get_domain()):
             self._google = google(self._uri_opener)
-            self._domain = domain = fuzzable_request.getURL().getDomain()
-            self._domain_root = fuzzable_request.getURL().getRootDomain()
+            self._domain = domain = fuzzable_request.get_url().get_domain()
+            self._domain_root = fuzzable_request.get_url().get_root_domain()
 
             if self._fast_search:
                 self._do_fast_search(domain)
@@ -75,7 +75,7 @@ class finger_google(InfrastructurePlugin):
         '''
         search_string = '@' + self._domain_root
         try:
-            result_page_objects = self._google.getNResultPages(
+            result_page_objects = self._google.get_n_result_pages(
                 search_string,
                 self._result_limit
             )
@@ -94,7 +94,7 @@ class finger_google(InfrastructurePlugin):
         '''
         search_string = '@' + self._domain_root
         try:
-            result_page_objects = self._google.getNResultPages(
+            result_page_objects = self._google.get_n_result_pages(
                 search_string,
                 self._result_limit
             )
@@ -113,10 +113,10 @@ class finger_google(InfrastructurePlugin):
         @return: A list of valid accounts
         '''
         try:
-            gpuri = googlePage.getURI()
+            gpuri = googlePage.get_uri()
             om.out.debug('Searching for emails in: ' + gpuri)
 
-            grep_res = True if (gpuri.getDomain() == self._domain) else False
+            grep_res = True if (gpuri.get_domain() == self._domain) else False
             response = self._uri_opener.GET(gpuri, cache=True,
                                             grep=grep_res)
         except w3afException, w3:
@@ -145,13 +145,13 @@ class finger_google(InfrastructurePlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name(mail)
-                    i.setURL(response.getURI())
+                    i.set_url(response.get_uri())
                     msg = 'The mail account: "' + mail + '" was found in: "'
-                    msg += response.getURI() + '"'
+                    msg += response.get_uri() + '"'
                     i.set_desc(msg)
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
-                    i['url_list'] = [response.getURI(), ]
+                    i['url_list'] = [response.get_uri(), ]
                     kb.kb.append('emails', 'emails', i)
                     kb.kb.append(self, 'emails', i)
 

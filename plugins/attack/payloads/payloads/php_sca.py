@@ -61,8 +61,8 @@ class php_sca(base_payload):
                 v = vuln.vuln()
                 v.set_severity(vulndata['severity'])
                 v.set_name(vulndata['name'])
-                v.setURL(url)
-                v.setURI(url)
+                v.set_url(url)
+                v.set_uri(url)
                 v.set_var(f.vulnsources[0])
                 v.set_desc(vulndata['name'])
                 args = list(vulndata['kb_key']) + [v]

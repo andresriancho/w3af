@@ -81,9 +81,9 @@ class lfi(AuditPlugin):
 
         # Which payloads do I want to send to the remote end?
         local_files = []
-        local_files.append(freq.getURL().getFileName())
+        local_files.append(freq.get_url().get_fileName())
         if not self._open_basedir:
-            local_files.extend(self._get_local_file_list(freq.getURL()))
+            local_files.extend(self._get_local_file_list(freq.get_url()))
 
         mutants = create_mutants(freq, local_files, orig_resp=orig_resp)
 
@@ -100,13 +100,13 @@ class lfi(AuditPlugin):
         '''
         local_files = []
 
-        extension = origUrl.getExtension()
+        extension = origUrl.get_extension()
 
         # I will only try to open these files, they are easy to identify of they
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
         # Feel free to mail me ( Andres Riancho ) if you know about other default files that
         # could be installed on AIX ? Solaris ? and are not /etc/passwd
-        if cf.cf.get('targetOS') in ['unix', 'unknown']:
+        if cf.cf.get('target_os') in ['unix', 'unknown']:
             local_files.append("../" * 15 + "etc/passwd")
             local_files.append("../" * 15 + "etc/passwd\0")
             local_files.append("../" * 15 + "etc/passwd\0.html")
@@ -122,7 +122,7 @@ class lfi(AuditPlugin):
                 local_files.append("/etc/passwd%00." + extension)
                 local_files.append("../" * 15 + "etc/passwd%00." + extension)
 
-        if cf.cf.get('targetOS') in ['windows', 'unknown']:
+        if cf.cf.get('target_os') in ['windows', 'unknown']:
             local_files.append("../" * 15 + "boot.ini\0")
             local_files.append("../" * 15 + "boot.ini\0.html")
             local_files.append("C:\\boot.ini")
@@ -175,7 +175,7 @@ class lfi(AuditPlugin):
                 v.set_desc(
                     'Local File Inclusion was found at: ' + mutant.found_at())
                 v['file_pattern'] = file_pattern_match
-                v.addToHighlight(file_pattern_match)
+                v.add_to_highlight(file_pattern_match)
                 kb.kb.append_uniq(self, 'lfi', v)
                 return
 
@@ -185,8 +185,8 @@ class lfi(AuditPlugin):
         #   (note that this is run if no vulns were identified)
         #
         #   http://host.tld/show_user.php?id=show_user.php
-        if mutant.get_mod_value() == mutant.getURL().getFileName():
-            match, lang = is_source_file(response.getBody())
+        if mutant.get_mod_value() == mutant.get_url().get_fileName():
+            match, lang = is_source_file(response.get_body())
             if match:
                 #   We were able to read the source code of the file that is vulnerable to
                 #   local file read
@@ -213,7 +213,7 @@ class lfi(AuditPlugin):
         #
         for regex in self.get_include_errors():
 
-            match = regex.search(response.getBody())
+            match = regex.search(response.get_body())
 
             if match and not regex.search(mutant.get_original_response_body()):
                 i = info.info(mutant)
@@ -240,7 +240,7 @@ class lfi(AuditPlugin):
         @return: A list of errors found on the page
         '''
         res = []
-        for file_pattern_match in self._multi_in.query(response.getBody()):
+        for file_pattern_match in self._multi_in.query(response.get_body()):
             res.append(file_pattern_match)
 
         if len(res) == 1:

@@ -47,7 +47,7 @@ class pks(SearchEngine):
         '''
         if hostname.count('//'):
             msg = 'You must provide the PKS search engine with a root domain'
-            msg += ' name (as returned by URL.getRootDomain).'
+            msg += ' name (as returned by URL.get_root_domain).'
             raise w3afException(msg)
 
         res = self.met_search(hostname)
@@ -69,7 +69,7 @@ class pks(SearchEngine):
 
         response = self._uri_opener.GET(url, headers=self._headers,
                                         cache=True, grep=False)
-        content = response.getBody()
+        content = response.get_body()
 
         content = re.sub('(<.*?>|&lt;|&gt;)', '', content)
 

@@ -103,7 +103,7 @@ class analyze_cookies(GrepPlugin):
         #
         # Analyze the response headers and find cookies
         #
-        headers = response.getHeaders()
+        headers = response.get_headers()
 
         for header_name in headers:
             if header_name.lower() in self.COOKIE_HEADERS:
@@ -142,7 +142,7 @@ class analyze_cookies(GrepPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Cookie')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
 
             self._set_cookie_to_rep(i, cstr=cookie_header_value)
 
@@ -159,9 +159,9 @@ class analyze_cookies(GrepPlugin):
             '''
             i['persistent'] = 'expires' in cookie_object
             i.set_id(response.id)
-            i.addToHighlight(i['cookie-string'])
+            i.add_to_highlight(i['cookie-string'])
             msg = 'The URL: "%s" sent the cookie: "%s".'
-            i.set_desc(msg % (i.getURL(), i['cookie-string']))
+            i.set_desc(msg % (i.get_url(), i['cookie-string']))
             kb.kb.append(self, 'cookies', i)
 
     def _parse_cookie(self, request, response, cookie_header_value):
@@ -187,7 +187,7 @@ class analyze_cookies(GrepPlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Invalid cookie')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
 
             self._set_cookie_to_rep(i, cstr=cookie_header_value)
 
@@ -237,7 +237,7 @@ class analyze_cookies(GrepPlugin):
 
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(response.getURL())
+            v.set_url(response.get_url())
             v.set_id(response.get_id())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
 
@@ -249,7 +249,7 @@ class analyze_cookies(GrepPlugin):
                   ' "%s". The HttpOnly flag prevents potential intruders from' \
                   ' accessing the cookie value through Cross-Site Scripting' \
                   ' attacks.'
-            v.set_desc(msg % response.getURL())
+            v.set_desc(msg % response.get_url())
             kb.kb.append(self, 'security', v)
 
     def _ssl_cookie_via_http(self, request, response):
@@ -259,10 +259,10 @@ class analyze_cookies(GrepPlugin):
             Login is done over SSL
             The rest of the page is HTTP
         '''
-        if request.getURL().getProtocol().lower() == 'http':
+        if request.get_url().get_protocol().lower() == 'http':
             for cookie in kb.kb.get('analyze_cookies', 'cookies'):
-                if cookie.getURL().getProtocol().lower() == 'https' and \
-                        request.getURL().getDomain() == cookie.getURL().getDomain():
+                if cookie.get_url().get_protocol().lower() == 'https' and \
+                        request.get_url().get_domain() == cookie.get_url().get_domain():
                     # The cookie was sent using SSL, I'll check if the current
                     # request, is using this values in the POSTDATA / QS / COOKIE
                     for key in cookie['cookie-object'].keys():
@@ -271,13 +271,13 @@ class analyze_cookies(GrepPlugin):
                                 cookie['cookie-object'][key] in request.dump():
                             v = vuln.vuln()
                             v.set_plugin_name(self.get_name())
-                            v.setURL(response.getURL())
+                            v.set_url(response.get_url())
                             v.set_severity(severity.HIGH)
                             v.set_id(response.id)
                             v.set_name('Secure cookies over insecure channel')
                             msg = 'Cookie values that were set over HTTPS, are' \
                                   ' then sent over an insecure channel in a request' \
-                                  ' to "%s".' % request.getURL()
+                                  ' to "%s".' % request.get_url()
                             v.set_desc(msg)
                             self._set_cookie_to_rep(v, cobj=cookie)
                             kb.kb.append(self, 'security', v)
@@ -298,13 +298,13 @@ class analyze_cookies(GrepPlugin):
                     i.set_plugin_name(self.get_name())
                     i.set_id(response.id)
                     i.set_name('Identified cookie')
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     self._set_cookie_to_rep(i, cobj=cookie_obj)
                     i['httpd'] = system_name
                     i.set_desc('A cookie matching the cookie fingerprint DB'
                                ' has been found when requesting "%s".'
                                ' The remote platform is: "%s".'
-                               % (response.getURL(), system_name))
+                               % (response.get_url(), system_name))
                     kb.kb.append(self, 'security', i)
                     self._already_reported_server.append(system_name)
                     return True
@@ -342,10 +342,10 @@ class analyze_cookies(GrepPlugin):
 
         # And now, the code:
         if self.SECURE_RE.search(cookie_header_value) and \
-                response.getURL().getProtocol().lower() == 'http':
+                response.get_url().get_protocol().lower() == 'http':
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(response.getURL())
+            v.set_url(response.get_url())
             v.set_id(response.get_id())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             v.set_severity(severity.HIGH)
@@ -355,7 +355,7 @@ class analyze_cookies(GrepPlugin):
                   ' "%s", this usually means that the Web application was'\
                   ' designed to run over SSL and was deployed without security'\
                   ' or that the developer does not understand the "secure" flag.'
-            v.set_desc(msg % response.getURL())
+            v.set_desc(msg % response.get_url())
             kb.kb.append(self, 'security', v)
 
     def _not_secure_over_https(self, request, response, cookie_obj,
@@ -371,11 +371,11 @@ class analyze_cookies(GrepPlugin):
         '''
         # BUGBUG: See other reference in this file for http://bugs.python.org/issue1028088
 
-        if response.getURL().getProtocol().lower() == 'https' and \
+        if response.get_url().get_protocol().lower() == 'https' and \
                 not self.SECURE_RE.search(cookie_header_value):
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(response.getURL())
+            v.set_url(response.get_url())
             v.set_id(response.get_id())
             self._set_cookie_to_rep(v, cobj=cookie_obj)
             v.set_severity(severity.HIGH)
@@ -385,7 +385,7 @@ class analyze_cookies(GrepPlugin):
                   ' from sending a "secure" cookie over an insecure HTTP' \
                   ' channel, thus preventing potential session hijacking' \
                   ' attacks.'
-            v.set_desc(msg % response.getURL())
+            v.set_desc(msg % response.get_url())
             kb.kb.append(self, 'security', v)
 
     def end(self):
@@ -394,7 +394,7 @@ class analyze_cookies(GrepPlugin):
         '''
         cookies = kb.kb.get('analyze_cookies', 'cookies')
 
-        tmp = list(set([(c['cookie-string'], c.getURL()) for c in cookies]))
+        tmp = list(set([(c['cookie-string'], c.get_url()) for c in cookies]))
         res_dict, item_idx = group_by_min_key(tmp)
         if not item_idx:
             # Grouped by URLs
@@ -418,7 +418,7 @@ class analyze_cookies(GrepPlugin):
 
         if cstr is not None:
             info_inst['cookie-string'] = cstr
-            info_inst.addToHighlight(cstr)
+            info_inst.add_to_highlight(cstr)
 
     def get_long_desc(self):
         '''

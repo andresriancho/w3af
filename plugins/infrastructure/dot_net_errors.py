@@ -52,10 +52,10 @@ class dot_net_errors(InfrastructurePlugin):
                                     (among other things) the URL to test.
         '''
         if len(self._already_tested) < self.MAX_TESTS \
-                and fuzzable_request.getURL() not in self._already_tested:
-            self._already_tested.add(fuzzable_request.getURL())
+                and fuzzable_request.get_url() not in self._already_tested:
+            self._already_tested.add(fuzzable_request.get_url())
 
-            test_generator = self._generate_URLs(fuzzable_request.getURL())
+            test_generator = self._generate_URLs(fuzzable_request.get_url())
 
             self._tm.threadpool.map(self._send_and_check,
                                     test_generator,
@@ -70,7 +70,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         special_chars = ['|', '~']
 
-        filename = original_url.getFileName()
+        filename = original_url.get_fileName()
         if filename != '' and '.' in filename:
             splitted_filename = filename.split('.')
             extension = splitted_filename[-1:][0]
@@ -78,7 +78,7 @@ class dot_net_errors(InfrastructurePlugin):
 
             for char in special_chars:
                 new_filename = name + char + '.' + extension
-                new_url = original_url.urlJoin(new_filename)
+                new_url = original_url.url_join(new_filename)
                 yield new_url
 
     def _send_and_check(self, url):
@@ -102,7 +102,7 @@ class dot_net_errors(InfrastructurePlugin):
             msg = 'Detailed information about ASP.NET error messages can be'
             msg += ' viewed from remote sites. The URL: "%s" discloses detailed'
             msg += ' error messages.'
-            v.set_desc(msg % response.getURL())
+            v.set_desc(msg % response.get_url())
             kb.kb.append(self, 'dot_net_errors', v)
 
     def get_plugin_deps(self):

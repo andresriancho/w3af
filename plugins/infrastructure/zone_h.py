@@ -50,7 +50,7 @@ class zone_h(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        target_domain = fuzzable_request.getURL().getRootDomain()
+        target_domain = fuzzable_request.get_url().get_root_domain()
 
         # Example URL:
         # http://www.zone-h.org/archive/domain=cyprus-stones.com
@@ -86,7 +86,7 @@ class zone_h(InfrastructurePlugin):
         # This is the string I have to parse:
         # in the zone_h response, they are two like this, the first has to be ignored!
         regex = 'Total notifications: <b>(\d*)</b> of which <b>(\d*)</b> single ip and <b>(\d*)</b> mass'
-        regex_result = re.findall(regex, response.getBody())
+        regex_result = re.findall(regex, response.get_body())
 
         try:
             total_attacks = int(regex_result[0][0])
@@ -99,11 +99,11 @@ class zone_h(InfrastructurePlugin):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.set_name('Previous defacements')
-                v.setURL(response.getURL())
+                v.set_url(response.get_url())
                 v.set_severity(severity.MEDIUM)
                 msg = 'The target site was defaced more than one time in the past. For more'
                 msg += ' information please visit the following URL: "' + \
-                    response.getURL()
+                    response.get_url()
                 msg += '".'
                 v.set_desc(msg)
                 kb.kb.append(self, 'defacements', v)
@@ -112,10 +112,10 @@ class zone_h(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Previous defacement')
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 msg = 'The target site was defaced in the past. For more information'
                 msg += ' please visit the following URL: "' + \
-                    response.getURL() + '".'
+                    response.get_url() + '".'
                 i.set_desc(msg)
                 kb.kb.append(self, 'defacements', i)
                 om.out.information(i.get_desc())

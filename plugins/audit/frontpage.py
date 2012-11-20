@@ -55,7 +55,7 @@ class frontpage(AuditPlugin):
 
         @param freq: A FuzzableRequest
         '''
-        domain_path = freq.getURL().getDomainPath()
+        domain_path = freq.get_url().get_domain_path()
 
         if self._stop_on_first and kb.kb.get(self, 'frontpage'):
             # Nothing to do, I have found vuln(s) and I should stop on first
@@ -72,7 +72,7 @@ class frontpage(AuditPlugin):
             # Find a file that doesn't exist and then try to upload it
             for _ in xrange(3):
                 rand_file = rand_alpha(5) + '.html'
-                rand_path_file = domain_path.urlJoin(rand_file)
+                rand_path_file = domain_path.url_join(rand_file)
                 res = self._uri_opener.GET(rand_path_file)
                 if is_404(res):
                     upload_id = self._upload_file(domain_path, rand_file)
@@ -90,7 +90,7 @@ class frontpage(AuditPlugin):
         @param domain_path: http://localhost/f00/
         @param rand_file: fj01afka.html
         '''
-        file_path = domain_path.getPath() + rand_file
+        file_path = domain_path.get_path() + rand_file
 
         # TODO: The frontpage version should be obtained from the information saved in the kb
         # by the infrastructure.frontpage_version plugin!
@@ -106,7 +106,7 @@ class frontpage(AuditPlugin):
 
         # TODO: The _vti_bin and _vti_aut directories should be PARSED from the _vti_inf file
         # inside the infrastructure.frontpage_version plugin, and then used here
-        target_url = domain_path.urlJoin('_vti_bin/_vti_aut/author.dll')
+        target_url = domain_path.url_join('_vti_bin/_vti_aut/author.dll')
 
         try:
             res = self._uri_opener.POST(target_url, data=content)
@@ -114,7 +114,7 @@ class frontpage(AuditPlugin):
             om.out.debug(
                 'Exception while uploading file using author.dll: ' + str(e))
         else:
-            if res.getCode() in [200]:
+            if res.get_code() in [200]:
                 msg = 'frontpage plugin seems to have successfully uploaded a file to'
                 msg += ' the remote server.'
                 om.out.debug(msg)
@@ -130,7 +130,7 @@ class frontpage(AuditPlugin):
         @param rand_file: The filename that was supposingly uploaded
         @param upload_id: The id of the POST request to author.dll
         '''
-        target_url = domain_path.urlJoin(rand_file)
+        target_url = domain_path.url_join(rand_file)
 
         try:
             res = self._uri_opener.GET(target_url)
@@ -140,10 +140,10 @@ class frontpage(AuditPlugin):
             om.out.debug(msg)
         else:
             # The file we uploaded has the reversed filename as body
-            if res.getBody() == rand_file[::-1] and not is_404(res):
+            if res.get_body() == rand_file[::-1] and not is_404(res):
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(target_url)
+                v.set_url(target_url)
                 v.set_id([upload_id, res.id])
                 v.set_severity(severity.HIGH)
                 v.set_name('Insecure Frontpage extensions configuration')

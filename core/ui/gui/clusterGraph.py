@@ -62,7 +62,7 @@ EXAMPLE_FUNCTION = """def customized_distance(a, b):
     @param b: An HTTP response object.
     @return: The the distance between "a" and "b", where 0 means equal and 1 means totally different.
     '''
-    if 'error' in b.getBody().lower() and 'error' in a.getBody().lower():
+    if 'error' in b.get_body().lower() and 'error' in a.get_body().lower():
         # They are both error pages
         return 0.1
 
@@ -344,7 +344,7 @@ class clusterGraphWidget(w3afDotWindow):
 
         @return: The distance
         '''
-        return 1 - relative_distance(a.getBody(), b.getBody())
+        return 1 - relative_distance(a.get_body(), b.get_body())
 
     def _http_code_distance(self, a, b):
         '''
@@ -354,7 +354,7 @@ class clusterGraphWidget(w3afDotWindow):
         '''
         distance = 0.1
         for i in [100, 200, 300, 400, 500]:
-            if a.getCode() in xrange(i, i + 100) and not b.getCode() in xrange(i, i + 100):
+            if a.get_code() in xrange(i, i + 100) and not b.get_code() in xrange(i, i + 100):
                 distance = 1
                 return distance
         return distance
@@ -365,7 +365,7 @@ class clusterGraphWidget(w3afDotWindow):
 
         @return: The distance
         '''
-        distance = abs(len(b.getBody()) - len(a.getBody()))
+        distance = abs(len(b.get_body()) - len(a.get_body()))
         distance = distance % 100
         distance = distance / 100.0
 

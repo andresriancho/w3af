@@ -81,7 +81,7 @@ class w3af_core_plugins(object):
         #
         # Some extra init steps for mangle plugins
         #
-        self._w3af_core.uri_opener.settings.setManglePlugins(
+        self._w3af_core.uri_opener.settings.set_mangle_plugins(
             self.plugins['mangle'])
 
     def set_plugin_options(self, plugin_type, plugin_name, plugin_options):

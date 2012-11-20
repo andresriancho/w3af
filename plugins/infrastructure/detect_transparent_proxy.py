@@ -51,7 +51,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Transparent proxy detected')
-            i.setURL(fuzzable_request.getURL())
+            i.set_url(fuzzable_request.get_url())
             msg = 'Your ISP seems to have a transparent proxy installed, this can influence'
             msg += ' w3af results.'
             i.set_desc(msg)

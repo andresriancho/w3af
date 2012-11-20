@@ -141,12 +141,12 @@ class rfi(AuditPlugin):
             return
 
         is_listen_priv = is_private_site(self._listen_address)
-        is_target_priv = is_private_site(freq.getURL().getDomain())
+        is_target_priv = is_private_site(freq.get_url().get_domain())
 
         if (is_listen_priv and is_target_priv) or \
                 not (is_listen_priv or is_target_priv):
             om.out.debug(
-                'RFI test using local web server for URL: ' + freq.getURL())
+                'RFI test using local web server for URL: ' + freq.get_url())
             om.out.debug('w3af is running a webserver')
             try:
                 # Create file for remote inclusion
@@ -230,11 +230,11 @@ class rfi(AuditPlugin):
 
         # url without protocol
         url_str = orig_url.url_string.replace(
-            orig_url.getProtocol() + '://', '', 1)
+            orig_url.get_protocol() + '://', '', 1)
         result.append(url_str)
 
         # url without case insensitive protocol
-        orig_proto = orig_url.getProtocol()
+        orig_proto = orig_url.get_protocol()
         mutated_proto = orig_proto.replace('http', 'hTtP')
         url_str = orig_url.url_string.replace(orig_proto, mutated_proto, 1)
         result.append(url_str)
@@ -282,7 +282,7 @@ class rfi(AuditPlugin):
                     v.set_plugin_name(self.get_name())
                     v.set_id(response.id)
                     v.set_severity(severity.LOW)
-                    v.addToHighlight(error)
+                    v.add_to_highlight(error)
                     v.set_name('Potential remote file inclusion')
                     msg = 'A potential remote file inclusion vulnerability' \
                           ' was identified by the means of application error' \

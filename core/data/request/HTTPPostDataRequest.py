@@ -44,7 +44,7 @@ class HTTPPostDataRequest(FuzzableRequest):
 
         FuzzableRequest.__init__(self, uri, method, headers, cookie, dc)
 
-    def getData(self):
+    def get_data(self):
         '''
         @return: A string representation of the DataContainer. There is a
         special case, in which the DataContainer has a file inside, in which
@@ -78,4 +78,4 @@ class HTTPPostDataRequest(FuzzableRequest):
 
     def __repr__(self):
         return '<postdata fuzzable request | %s | %s>' % \
-            (self.get_method(), self.getURI())
+            (self.get_method(), self.get_uri())

@@ -52,7 +52,7 @@ class form_auth(BruteforcePlugin):
 
         @param freq: A FuzzableRequest
         '''
-        freq_url = freq.getURL()
+        freq_url = freq.get_url()
 
         if self._is_login_form(freq) and freq_url not in self._already_tested:
 
@@ -128,7 +128,7 @@ class form_auth(BruteforcePlugin):
 
             response = self._uri_opener.send_mutant(freq, grep=False)
 
-            body = response.getBody()
+            body = response.get_body()
             body = body.replace(user, '')
             body = body.replace(passwd, '')
 
@@ -150,7 +150,7 @@ class form_auth(BruteforcePlugin):
             freq.set_dc(data_container)
             response = self._uri_opener.send_mutant(freq, grep=False)
 
-            body = response.getBody()
+            body = response.get_body()
             body = body.replace(user, '')
             body = body.replace(passwd, '')
 
@@ -197,7 +197,7 @@ class form_auth(BruteforcePlugin):
                 return True
             elif text == 0 and passwd == 1:
                 msg = 'Identified a form with a password field and no username field: "'
-                msg += freq.getURL() + '".'
+                msg += freq.get_url() + '".'
                 om.out.information(msg)
                 return True
 
@@ -205,10 +205,10 @@ class form_auth(BruteforcePlugin):
             #   These we don't
             #
             elif passwd == 2:
-                om.out.information(freq.getURL() + ' is a registration form.')
+                om.out.information(freq.get_url() + ' is a registration form.')
             elif passwd == 3:
                 om.out.information(
-                    freq.getURL() + ' is a password change form.')
+                    freq.get_url() + ' is a password change form.')
             return False
 
     def _get_login_field_names(self, freq):
@@ -256,7 +256,7 @@ class form_auth(BruteforcePlugin):
         @param combination: A tuple with (user, pass) or a pass if this is a
                                 password only form.
         '''
-        if freq.getURL() not in self._found or not self._stop_on_first:
+        if freq.get_url() not in self._found or not self._stop_on_first:
             freq = freq.copy()
             data_container = freq.get_dc()
             data_container = self._true_extra_fields(
@@ -280,7 +280,7 @@ class form_auth(BruteforcePlugin):
             except w3afMustStopOnUrlError:
                 return
             else:
-                body = resp.getBody()
+                body = resp.get_body()
                 body = body.replace(user, '').replace(pwd, '')
 
                 if not self._matches_failed_login(body, login_failed_result_list):
@@ -291,16 +291,16 @@ class form_auth(BruteforcePlugin):
                     freq.set_dc(data_container)
                     verif_resp = self._uri_opener.send_mutant(
                         freq, cookies=False, grep=False)
-                    body = verif_resp.getBody()
+                    body = verif_resp.get_body()
                     body = body.replace(user, '').replace(pwd, '')
 
                     if self._matches_failed_login(body, login_failed_result_list):
-                        freq_url = freq.getURL()
+                        freq_url = freq.get_url()
                         self._found.add(freq_url)
                         v = vuln.vuln()
                         v.set_id(resp.id)
                         v.set_plugin_name(self.get_name())
-                        v.setURL(freq.getURL())
+                        v.set_url(freq.get_url())
                         if user_field is not None:
                             msg = ('Found authentication credentials to: '
                                    '"%s". A correct user and password combination'

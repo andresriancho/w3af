@@ -119,7 +119,7 @@ class ValidatedEntry(gtk.Entry):
         '''
         raise NotImplementedError
 
-    def isValid(self):
+    def is_valid(self):
         '''Checks if the widget value is valid.
 
         @return: True if the widget is in a valid state.
@@ -132,7 +132,7 @@ class ModifiedMixIn(object):
 
     This class adds the functionality of alerting to something each
     time the widget is modified, telling it if the widget has the initial
-    value or not. It also provides a revertValue method to revert the
+    value or not. It also provides a revert_value method to revert the
     value of the widget to its initial state.
 
     @param alert: the function it will call to alert about a change
@@ -166,7 +166,7 @@ class ModifiedMixIn(object):
         '''
         self.alert(self, self.getfunct() == self.initvalue)
 
-    def revertValue(self):
+    def revert_value(self):
         '''Returns the widget to its last saved state.'''
         self.setfunct(self.initvalue)
 
@@ -237,7 +237,7 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         liststore = gtk.ListStore(str)
         optselected = opt.get_value_str()
         indselected = 0
-        for i, option in enumerate(opt.getComboOptions()):
+        for i, option in enumerate(opt.get_combo_options()):
             if optselected == option:
                 indselected = i
             liststore.append([option])
@@ -271,7 +271,7 @@ class ComboBoxInput(gtk.ComboBox, ModifiedMixIn):
         @param text: the text to validate
         @return True if the text is ok.
         '''
-        if text in self._opt.getComboOptions():
+        if text in self._opt.get_combo_options():
             return True
         else:
             return False
@@ -324,7 +324,7 @@ class SemiStockButton(gtk.Button):
         if tooltip is not None:
             self.set_tooltip_text(tooltip)
 
-    def changeInternals(self, newtext, newimage, tooltip=None):
+    def change_internals(self, newtext, newimage, tooltip=None):
         '''Changes the image and label of the widget.
 
         @param newtext: the text that will be used for the label
@@ -350,7 +350,7 @@ class ToolbuttonWrapper(object):
         if self.toolbut is None:
             raise ValueError("The toolbar does not have a button in position %d" % position)
 
-    def changeInternals(self, newlabel, newimage, newtooltip):
+    def change_internals(self, newlabel, newimage, newtooltip):
         '''Changes the image and label of the widget.
 
         @param newlabel: the text that will be used for the label
@@ -400,7 +400,7 @@ class AdvisedEntry(gtk.Entry):
 
             completion = gtk.EntryCompletion()
             self.liststore = gtk.ListStore(str)
-            self.histtexts = self.hist.getTexts()
+            self.histtexts = self.hist.get_texts()
             for s in self.histtexts:
                 self.liststore.append([s])
 
@@ -429,7 +429,7 @@ class AdvisedEntry(gtk.Entry):
         texto = self.liststore[iterl][0]
         return entrystr in texto
 
-    def setText(self, message):
+    def set_text(self, message):
         '''Sets the widget text.'''
         self.firstfocus = False
         self._current_message = message
@@ -441,7 +441,7 @@ class AdvisedEntry(gtk.Entry):
         self._current_message = self.origMessage
         self.set_text(self.origMessage)
 
-    def insertURL(self, *w):
+    def insert_url(self, *w):
         '''Saves the URL in the history infrastructure.'''
         if self.hist is not None:
             txt = self.get_text()
@@ -578,7 +578,7 @@ class TextDialog(gtk.Dialog):
         sw.add(textview)
         return (sw, textview)
 
-    def addMessage(self, text, page_num=0):
+    def add_message(self, text, page_num=0):
         '''Adds a message to the textview.
 
         @param text: the message to add.
@@ -649,9 +649,9 @@ class RememberingWindow(gtk.Window):
 
         self.set_title(title)
         self.connect("delete_event", self.quit)
-        self.connect('key_press_event', self.helpF1)
+        self.connect('key_press_event', self.help_f1)
 
-    def helpF1(self, widget, event):
+    def help_f1(self, widget, event):
         if event.keyval != 65470:  # F1, check: gtk.gdk.keyval_name(event.keyval)
             return
 
@@ -689,7 +689,7 @@ class PagesEntry(ValidatedEntry):
         self.default_value = "1"
         ValidatedEntry.__init__(self, "1")
 
-    def setMax(self, maxval):
+    def set_max(self, maxval):
         '''Sets the max value for the entry.'''
         self.maxval = maxval
         self.reset()
@@ -763,18 +763,18 @@ class PagesControl(gtk.HBox):
     def activate(self, maxpages):
         self.maxpages = maxpages
         self.total.set_text(" of %d " % maxpages)
-        self.pageentry.setMax(maxpages)
+        self.pageentry.set_max(maxpages)
         self.set_sensitive(True)
         self._arrow()
 
     def _textpage(self, widg):
         val = self.pageentry.get_text()
-        if not self.pageentry.isValid():
+        if not self.pageentry.is_valid():
             self.w3af.mainwin.sb(_("%r is not a good value!") % val)
             return
-        self.setPage(int(val))
+        self.set_page(int(val))
 
-    def setPage(self, page):
+    def set_page(self, page):
         self.page = page
         self._arrow()
 
@@ -809,7 +809,7 @@ class EasyTable(gtk.Table):
         self.auto_rowcounter = 0
         self.set_row_spacings(1)
 
-    def autoAddRow(self, *widgets):
+    def auto_add_row(self, *widgets):
         '''Simple way to add rows to a table.
 
         @param widgets: all the widgets to the row
@@ -851,7 +851,7 @@ class _RememberingPane(object):
                            (overrides "half of the screen").
     '''
     def __init__(self, w3af, widgname, dimension, defaultInitPos=None):
-        self.connect("notify", self.moveHandle)
+        self.connect("notify", self.move_handle)
         self.winconfig = w3af.mainwin.generalconfig
         self.widgname = widgname
         self.dimension = dimension
@@ -866,7 +866,7 @@ class _RememberingPane(object):
         else:
             self.signal = self.connect("expose-event", self.exposed)
 
-    def moveHandle(self, widg, what):
+    def move_handle(self, widg, what):
         '''Adjust the record every time the handle is moved.'''
         if what.name == "position-set":
             pos = self.get_position()
@@ -953,7 +953,7 @@ class StatusBar(gtk.Statusbar):
 class ConfigOptions(gtk.VBox, Preferences):
     """Configuration class.
     @param w3af: The Core
-    @param parentWidg: The parentWidg widget with *reloadOptions* method
+    @param parentWidg: The parentWidg widget with *reload_options* method
     """
     def __init__(self, w3af, parentWidg, label='config'):
         gtk.VBox.__init__(self)
@@ -1010,7 +1010,7 @@ class ConfigOptions(gtk.VBox, Preferences):
                     widg.set_width_chars(50)
                 opt.widg = widg
                 widg.set_tooltip_text(opt.get_help())
-                table.autoAddRow(titl, widg)
+                table.auto_add_row(titl, widg)
                 self.widgets_status[widg] = (
                     titl, opt.get_desc(), "<b>%s</b>" % opt.get_desc())
                 table.show()
@@ -1066,8 +1066,8 @@ class ConfigOptions(gtk.VBox, Preferences):
         invalid = []
         for section, optList in self.options.items():
             for opt in optList:
-                if hasattr(opt.widg, "isValid"):
-                    if not opt.widg.isValid():
+                if hasattr(opt.widg, "is_valid"):
+                    if not opt.widg.is_valid():
                         invalid.append(opt.get_name())
         if invalid:
             msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
@@ -1088,15 +1088,15 @@ class ConfigOptions(gtk.VBox, Preferences):
             for opt in optList:
                 opt.widg.save()
         self.w3af.mainwin.sb(_("Configuration saved successfully"))
-        self.parentWidg.reloadOptions()
+        self.parentWidg.reload_options()
 
     def _revertPanel(self, *vals):
         """Revert all widgets to their initial state."""
         for widg in self.widgets_status:
-            widg.revertValue()
+            widg.revert_value()
         self.w3af.mainwin.sb(
             _("The configuration was reverted to its last saved state"))
-        self.parentWidg.reloadOptions()
+        self.parentWidg.reload_options()
 
     def _showHelp(self, widg, helpmsg):
         """Shows a dialog with the help message of the config option.

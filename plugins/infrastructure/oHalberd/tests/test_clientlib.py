@@ -36,7 +36,7 @@ class TestHTTPClient(unittest.TestCase):
     def setUp(self):
         self.client = clientlib.HTTPClient()
 
-    def testGetHostAndPort(self):
+    def test_get_host_and_port(self):
         self.failUnlessEqual(self.client._getHostAndPort('localhost:8080'),
                              ('localhost', 8080))
 
@@ -46,7 +46,7 @@ class TestHTTPClient(unittest.TestCase):
         self.assertRaises(clientlib.InvalidURL,
                           self.client._getHostAndPort, 'localhost:abc')
 
-    def testFillTemplate(self):
+    def test_fill_template(self):
         def get_request(url):
             scheme, netloc, url, params, query, fragment = \
                 urlparse.urlparse(url)
@@ -67,33 +67,33 @@ class TestHTTPClient(unittest.TestCase):
         req = get_request('http://localhost:8080')
         self.failUnless(req.splitlines()[0] == 'GET / HTTP/1.1')
 
-    def testAntiCache(self):
+    def test_anti_cache(self):
         req = self.client._fillTemplate('localhost', 80, '/index.html')
         self.failUnless(req.splitlines()[2:4] ==
                         ['Pragma: no-cache', 'Cache-control: no-cache'])
 
-    def testSendRequestSanityCheck(self):
+    def test_send_request_sanity_check(self):
         self.failUnlessRaises(clientlib.InvalidURL,
                               self.client._putRequest, '127.0.0.1',
                                                        'gopher://blop')
 
-    def testSendRequestToLocal(self):
+    def test_send_request_to_local(self):
         try:
             self.client._putRequest('127.0.0.1', 'http://localhost:8000')
         except clientlib.ConnectionRefused:
             return
 
-    def testSendRequestToRemote(self):
+    def test_send_request_to_remote(self):
         self.client._putRequest('66.35.250.203', 'http://www.sourceforge.net')
         timestamp, headers = self.client._getReply()
         self.failUnless(headers and headers.startswith('HTTP/'))
 
-    def testGetHeaders(self):
+    def test_get_headers(self):
         addr, url = '66.35.250.203', 'http://www.sourceforge.net'
-        reply = self.client.getHeaders(addr, url)
+        reply = self.client.get_headers(addr, url)
         self.failUnless(reply != (None, None))
 
-    def testIncorrectReading(self):
+    def test_incorrect_reading(self):
         """Check for bug in _getReply (issue 60)
         Incorrect reading procedure in Halberd.clientlib.HTTPClient._getReply
         """
@@ -113,24 +113,24 @@ class TestHTTPSClient(unittest.TestCase):
     def setUp(self):
         self.client = clientlib.HTTPSClient()
 
-    def testGetHostAndPort(self):
+    def test_get_host_and_port(self):
         self.failUnlessEqual(self.client._getHostAndPort('secure'),
                              ('secure', self.client.default_port))
 
         self.failUnlessEqual(self.client._getHostAndPort('secure:777'),
                              ('secure', 777))
 
-    def testConnect(self):
+    def test_connect(self):
         clientlib.HTTPSClient()._connect(('www.sourceforge.net', 443))
 
-    def testInvalidConnect(self):
+    def test_invalid_connect(self):
         self.failUnlessRaises(clientlib.HTTPSError,
                               clientlib.HTTPSClient()._connect,
                               ('localhost', 80))
 
         # XXX For better testing a keyfile and a certificate should be used.
 
-    def testSendRequestToRemote(self):
+    def test_send_request_to_remote(self):
         self.client._putRequest('66.35.250.203', 'https://www.sourceforge.net')
         timestamp, headers = self.client._getReply()
         self.failUnless(headers is not None and headers.startswith('HTTP/'))

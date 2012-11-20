@@ -57,7 +57,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPHandler.handler_order - 10
 
     def http_request(self, request):
-        # Please note that getData() in HTTPPostDataRequest is the only one that
+        # Please note that get_data() in HTTPPostDataRequest is the only one that
         # in some cases will return something that is NOT a basestring.
         data = request.get_data()
 

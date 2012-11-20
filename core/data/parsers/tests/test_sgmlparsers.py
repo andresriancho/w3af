@@ -176,7 +176,7 @@ class TestSGMLParser(unittest.TestCase):
         resp = _build_http_response(URL_INST, body)
         p = _SGMLParser(resp)
         p._parse(resp)
-        self.assertEquals(URL('http://www.w3afbase.com/'), p._baseUrl)
+        self.assertEquals(URL('http://www.w3afbase.com/'), p._base_url)
 
     def test_regex_urls(self):
         u1 = u'http://w3af.com/tréasure.php?id=ÓRÓª'
@@ -355,11 +355,11 @@ class TestHTMLParser(unittest.TestCase):
         resp = _build_http_response(URL_INST, body)
         p = _HTMLParser(resp)
         p._parse(resp)
-        self.assertEquals(URL_INST, p.forms[0].getAction())
+        self.assertEquals(URL_INST, p.forms[0].get_action())
 
     def test_form_with_invalid_url_in_action(self):
         '''
-        If an invalid url is detected in the form's action then use baseUrl
+        If an invalid url is detected in the form's action then use base_url
         '''
         body = '''
         <html>
@@ -369,7 +369,7 @@ class TestHTMLParser(unittest.TestCase):
         r = _build_http_response(URL_INST, body)
         p = _HTMLParser(r)
         p._parse(r)
-        self.assertEquals(URL_INST, p.forms[0].getAction())
+        self.assertEquals(URL_INST, p.forms[0].get_action())
 
     def test_inputs_in_out_form(self):
         # We expect that the form contains all the inputs (both those declared

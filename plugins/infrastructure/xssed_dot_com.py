@@ -57,10 +57,10 @@ class xssed_dot_com(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        target_domain = fuzzable_request.getURL().getRootDomain()
+        target_domain = fuzzable_request.get_url().get_root_domain()
 
         try:
-            check_url = self._xssed_url.urlJoin(
+            check_url = self._xssed_url.url_join(
                 "/search?key=." + target_domain)
             response = self._uri_opener.GET(check_url)
         except w3afException, e:
@@ -102,7 +102,7 @@ class xssed_dot_com(InfrastructurePlugin):
 
         @return: Fuzzable requests pointing to the XSS (if any)
         '''
-        html_body = response.getBody()
+        html_body = response.get_body()
 
         if "<b>XSS:</b>" in html_body:
             #
@@ -112,16 +112,16 @@ class xssed_dot_com(InfrastructurePlugin):
                 "<a href='(/mirror/\d*/)' target='_blank'>", html_body)
             for mirror_relative_link in regex_many_vulns:
 
-                mirror_url = self._xssed_url.urlJoin(mirror_relative_link)
+                mirror_url = self._xssed_url.url_join(mirror_relative_link)
                 xss_report_response = self._uri_opener.GET(mirror_url)
-                matches = re.findall("URL:.+", xss_report_response.getBody())
+                matches = re.findall("URL:.+", xss_report_response.get_body())
 
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
                 v.set_name('Possible XSS vulnerability')
-                v.setURL(mirror_url)
+                v.set_url(mirror_url)
 
-                if self._fixed in xss_report_response.getBody():
+                if self._fixed in xss_report_response.get_body():
                     v.set_severity(severity.LOW)
                     msg = 'This script contained a XSS vulnerability: "'
                     msg += self._decode_xssed_url(

@@ -44,20 +44,20 @@ class shell(vuln, ExploitResult):
         self._rSystemName = None
         self.id = 0
 
-    def getRemoteOs(self):
+    def get_remote_os(self):
         return self._rOS
 
-    def getRemoteSystem(self):
+    def get_remote_system(self):
         '''
         @return: dz0@sock3t:~/w3af$ uname -o -r -n -m -s
         Linux sock3t 2.6.15-27-686 i686 GNU/Linux
         '''
         return self._rSystem
 
-    def getRemoteUser(self):
+    def get_remote_user(self):
         return self._rUser
 
-    def getRemoteSystemName(self):
+    def get_remote_systemName(self):
         '''
         @return: dz0@sock3t:~/w3af$ uname -n
         sock3t
@@ -67,7 +67,7 @@ class shell(vuln, ExploitResult):
     def set_url_opener(self, uo):
         self._uri_opener = uo
 
-    def getUrlOpener(self):
+    def get_url_opener(self):
         return self._uri_opener
 
     def help(self, command):
@@ -259,7 +259,7 @@ class shell(vuln, ExploitResult):
         if not self._rOS:
             self._identifyOs()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
-        return fmt % (self.get_name(), self.getRemoteUser(),
-                      self.getRemoteSystem())
+        return fmt % (self.get_name(), self.get_remote_user(),
+                      self.get_remote_system())
 
     __str__ = __repr__

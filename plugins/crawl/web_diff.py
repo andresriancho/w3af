@@ -154,12 +154,12 @@ class web_diff(CrawlPlugin):
             relative_dir += '/'
 
         remote_root = self._remote_url_path
-        remote_root_with_local_path = remote_root.urlJoin(relative_dir)
+        remote_root_with_local_path = remote_root.url_join(relative_dir)
 
         for fname in flist:
             if os.path.isfile(directory + os.path.sep + fname):
 
-                url = remote_root_with_local_path.urlJoin(fname)
+                url = remote_root_with_local_path.url_join(fname)
                 response = self._uri_opener.GET(url, cache=True)
 
                 if not is_404(response):
@@ -188,10 +188,10 @@ class web_diff(CrawlPlugin):
                 except:
                     om.out.debug('Failed to open file: "%s".' % file_name)
                 else:
-                    if local_content == response.getBody():
-                        self._eq_content.append(response.getURL())
+                    if local_content == response.get_body():
+                        self._eq_content.append(response.get_url())
                     else:
-                        self._not_eq_content.append(response.getURL())
+                        self._not_eq_content.append(response.get_url())
 
     def get_options(self):
         '''
@@ -228,7 +228,7 @@ class web_diff(CrawlPlugin):
         @return: No value is returned.
         '''
         url = options_list['remote_url_path'].get_value()
-        self._remote_url_path = url.getDomainPath()
+        self._remote_url_path = url.get_domain_path()
 
         local_dir = options_list['local_dir'].get_value()
         if os.path.isdir(local_dir):

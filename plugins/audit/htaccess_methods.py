@@ -50,10 +50,10 @@ class htaccess_methods(AuditPlugin):
 
         @param freq: A FuzzableRequest
         '''
-        response = self._uri_opener.GET(freq.getURL(), cache=True)
+        response = self._uri_opener.GET(freq.get_url(), cache=True)
 
-        if response.getCode() in self.BAD_METHODS:
-            for url in filter(self._uniq, self._generate_urls(freq.getURL())):
+        if response.get_code() in self.BAD_METHODS:
+            for url in filter(self._uniq, self._generate_urls(freq.get_url())):
                 self._check_methods(url)
 
     def _uniq(self, url):
@@ -102,19 +102,19 @@ class htaccess_methods(AuditPlugin):
         '''
         yield url
 
-        if url.getExtension():
+        if url.get_extension():
             tmp_url = url.copy()
-            tmp_url.setExtension('php')
+            tmp_url.set_extension('php')
             yield tmp_url
 
-        if url.getFileName():
+        if url.get_fileName():
             tmp_url = url.copy()
-            tmp_url.setExtension('php')
-            tmp_url.setFileName('index')
+            tmp_url.set_extension('php')
+            tmp_url.set_file_name('index')
             yield tmp_url
         else:
             tmp_url = url.copy()
-            yield tmp_url.urlJoin('index.php')
+            yield tmp_url.url_join('index.php')
 
     def _check_methods(self, url):
         '''
@@ -126,7 +126,7 @@ class htaccess_methods(AuditPlugin):
             method_functor = getattr(self._uri_opener, method)
             try:
                 response = apply(method_functor, (url,), {})
-                code = response.getCode()
+                code = response.get_code()
             except:
                 pass
             else:
@@ -136,7 +136,7 @@ class htaccess_methods(AuditPlugin):
         if len(allowed_methods) > 0:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
-            v.setURL(url)
+            v.set_url(url)
             v.set_id([i for m, i in allowed_methods])
             v.set_name('Misconfigured access control')
             v.set_severity(severity.MEDIUM)

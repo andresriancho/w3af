@@ -133,7 +133,7 @@ class text_file(OutputPlugin):
 
         if self._show_caller:
             timestamp = '[%s - %s - %s] ' % (
-                the_time, log_type, self.getCaller())
+                the_time, log_type, self.get_caller())
         else:
             timestamp = '[%s - %s] ' % (the_time, log_type)
 

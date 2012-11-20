@@ -41,7 +41,7 @@ class question_infrastructure_internet_1(question):
 
         self._question_str = 'Please choose from the options below:'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -53,7 +53,7 @@ class question_infrastructure_internet_1(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         plugin_list = []
 
         if options_list[self._d1].get_value():

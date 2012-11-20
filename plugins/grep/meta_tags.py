@@ -65,7 +65,7 @@ class meta_tags(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        uri = response.getURI()
+        uri = response.get_uri()
 
         if response.is_text_or_html() and not is_404(response) \
                 and uri not in self._already_inspected:
@@ -104,14 +104,14 @@ class meta_tags(GrepPlugin):
                                 i = info.info()
                                 i.set_plugin_name(self.get_name())
                                 i.set_name('Interesting META tag')
-                                i.setURI(response.getURI())
+                                i.set_uri(response.get_uri())
                                 i.set_id(response.id)
                                 msg = 'The URI: "' + \
-                                    i.getURI() + '" sent a META tag with '
+                                    i.get_uri() + '" sent a META tag with '
                                 msg += 'attribute ' + \
                                     where + ' "' + content + '" which'
                                 msg += ' looks interesting.'
-                                i.addToHighlight(where, content)
+                                i.add_to_highlight(where, content)
                                 if self.INTERESTING_WORDS.get(tag_name, None):
                                     msg += ' The tag is used for '
                                     msg += self.INTERESTING_WORDS[

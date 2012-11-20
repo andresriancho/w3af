@@ -69,19 +69,19 @@ class http_vs_https_dist(InfrastructurePlugin):
             inf.set_desc(desc)
             kb.kb.append(self, 'http_vs_https_dist', inf)
 
-        target_url = fuzzable_request.getURL()
-        domain = target_url.getDomain()
+        target_url = fuzzable_request.get_url()
+        domain = target_url.get_domain()
         http_port = self._http_port
         https_port = self._https_port
 
         # Use target port if specified
-        netloc = target_url.getNetLocation()
+        netloc = target_url.get_net_location()
         try:
             port = int(netloc.split(':')[-1])
         except ValueError:
             pass  # Nothing to do.
         else:
-            protocol = target_url.getProtocol()
+            protocol = target_url.get_protocol()
             if protocol == 'https':
                 https_port = port
             else:  # it has to be 'http'

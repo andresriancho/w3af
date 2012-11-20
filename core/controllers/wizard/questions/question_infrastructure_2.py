@@ -40,7 +40,7 @@ class question_infrastructure_2(question):
         self._question_str += ' identify network and HTTP appliances that may be between'
         self._question_str += ' w3af and the target Web Application.'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -64,7 +64,7 @@ class question_infrastructure_2(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         plugin_list = []
 
         if options_list[self._d1].get_value():

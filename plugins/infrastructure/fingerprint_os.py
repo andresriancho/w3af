@@ -60,9 +60,9 @@ class fingerprint_os(InfrastructurePlugin):
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
         found_os = False
-        freq_url = fuzzable_request.getURL()
-        filename = freq_url.getFileName()
-        dirs = freq_url.getDirectories()[:-1]  # Skipping "domain level" dir.
+        freq_url = fuzzable_request.get_url()
+        filename = freq_url.get_fileName()
+        dirs = freq_url.get_directories()[:-1]  # Skipping "domain level" dir.
 
         if dirs and filename:
 
@@ -75,12 +75,12 @@ class fingerprint_os(InfrastructurePlugin):
             original_response = self._uri_opener.GET(freq_url)
             found_os = True
 
-            if relative_distance_ge(original_response.getBody(),
-                                    windows_response.getBody(), 0.98):
+            if relative_distance_ge(original_response.get_body(),
+                                    windows_response.get_body(), 0.98):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
-                i.setURL(windows_response.getURL())
+                i.set_url(windows_response.get_url())
                 i.set_method('GET')
                 i.set_desc(
                     'Fingerprinted this host as a Microsoft Windows system.')
@@ -92,7 +92,7 @@ class fingerprint_os(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
-                i.setURL(original_response.getURL())
+                i.set_url(original_response.get_url())
                 i.set_method('GET')
                 msg = 'Fingerprinted this host as a *nix system. Detection for'
                 msg += '  this operating system is weak, "if not windows: is linux".'

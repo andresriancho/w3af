@@ -41,7 +41,7 @@ class question_infrastructure_1(question):
         self._question_str += ' Remember that you can separate different URLs with commas like this: \n'
         self._question_str += '    - http://host.tld/a.php , http://host.tld/b.php'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -53,9 +53,9 @@ class question_infrastructure_1(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         # I don't care about the target OS for these tests, so I add them here with the default value
-        o2 = opt_factory('targetOS', 'unknown', '', 'string')
+        o2 = opt_factory('target_os', 'unknown', '', 'string')
         o3 = opt_factory('targetFramework', 'unknown', '', 'string')
 
         #   Manually copy the OptionList... the copy.deepcopy method fails :(

@@ -38,12 +38,12 @@ class pe:
         self._templateFileName = 'core' + os.path.sep + 'controllers' + \
             os.path.sep + 'vdaemon' + os.path.sep + 'peTemplate.dat'
 
-    def setShellCode(self, sc):
+    def set_shell_code(self, sc):
         if len(sc) > self._maxPayloadLen:
             raise w3afException('Payload to long!')
         self._shellcode = sc
 
-    def getShellCode(self):
+    def get_shell_code(self):
         return self._shellcode
 
     def dump(self):

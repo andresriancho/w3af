@@ -128,7 +128,7 @@ class HTTPClient:
 
         self._recv = self._sock.recv
 
-    def getHeaders(self, address, urlstr):
+    def get_headers(self, address, urlstr):
         """Talk to the target webserver and fetch MIME headers.
 
         @param address: The target's network address.

@@ -32,7 +32,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
 cf.cf.save('targets', [])
-cf.cf.save('targetDomains', set())
+cf.cf.save('target_domains', set())
 cf.cf.save('baseURLs', [])
 
 
@@ -53,9 +53,9 @@ class w3af_core_target(Configurable):
 
     def clear(self):
         cf.cf.save('targets', [])
-        cf.cf.save('targetOS', 'unknown')
+        cf.cf.save('target_os', 'unknown')
         cf.cf.save('targetFramework', 'unknown')
-        cf.cf.save('targetDomains', set())
+        cf.cf.save('target_domains', set())
         cf.cf.save('baseURLs', [])
         cf.cf.save('session_name', 'defaultSession' + '-' +
                    time.strftime('%Y-%b-%d_%H-%M-%S'))
@@ -78,9 +78,9 @@ class w3af_core_target(Configurable):
         # This list "hack" has to be done becase the default value is the one
         # in the first position on the list
         tmp_list = self._operating_systems[:]
-        tmp_list.remove(cf.cf.get('targetOS'))
-        tmp_list.insert(0, cf.cf.get('targetOS'))
-        o = opt_factory('targetOS', tmp_list, d, 'combo', help=h)
+        tmp_list.remove(cf.cf.get('target_os'))
+        tmp_list.insert(0, cf.cf.get('target_os'))
+        o = opt_factory('target_os', tmp_list, d, 'combo', help=h)
         ol.add(o)
 
         d = 'Target programming framework (' + '/'.join(
@@ -118,9 +118,9 @@ class w3af_core_target(Configurable):
         except ValueError:
             is_invalid = True
         else:
-            protocol = target_url.getProtocol()
+            protocol = target_url.get_protocol()
             aFile = fileTarget and protocol == 'file' and \
-                target_url.getDomain() or ''
+                target_url.get_domain() or ''
             aHTTP = protocol in ('http', 'https') and \
                 target_url.is_valid_domain()
             is_invalid = not (aFile or aHTTP)
@@ -164,7 +164,7 @@ class w3af_core_target(Configurable):
 
         # Now we perform a check to see if the user has specified more than one target
         # domain, for example: "http://google.com, http://yahoo.com".
-        domain_list = [target_url.getNetLocation(
+        domain_list = [target_url.get_net_location(
         ) for target_url in target_url_objects]
         domain_list = list(set(domain_list))
         if len(domain_list) > 1:
@@ -175,12 +175,12 @@ class w3af_core_target(Configurable):
 
         # Save in the config, the target URLs, this may be usefull for some plugins.
         cf.cf.save('targets', target_url_objects)
-        cf.cf.save('targetDomains', set([u.getDomain()
+        cf.cf.save('target_domains', set([u.get_domain()
                    for u in target_url_objects]))
-        cf.cf.save('baseURLs', [i.baseUrl() for i in target_url_objects])
+        cf.cf.save('baseURLs', [i.base_url() for i in target_url_objects])
 
         if target_url_objects:
-            sessName = [x.getNetLocation() for x in target_url_objects]
+            sessName = [x.get_net_location() for x in target_url_objects]
             sessName = '-'.join(sessName)
         else:
             sessName = 'noTarget'
@@ -189,9 +189,9 @@ class w3af_core_target(Configurable):
             '%Y-%b-%d_%H-%M-%S'))
 
         # Advanced target selection
-        os = options_list['targetOS'].get_value_str()
+        os = options_list['target_os'].get_value_str()
         if os.lower() in self._operating_systems:
-            cf.cf.save('targetOS', os.lower())
+            cf.cf.save('target_os', os.lower())
         else:
             raise w3afException('Unknown target operating system: ' + os)
 

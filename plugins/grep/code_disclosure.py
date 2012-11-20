@@ -53,38 +53,38 @@ class code_disclosure(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html() and response.getURL() not in self._already_added:
+        if response.is_text_or_html() and response.get_url() not in self._already_added:
 
-            match, lang = is_source_file(response.getBody())
+            match, lang = is_source_file(response.get_body())
 
             if match:
                 # Check also for 404
                 if not is_404(response):
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
-                    v.setURL(response.getURL())
+                    v.set_url(response.get_url())
                     v.set_id(response.id)
                     v.set_severity(severity.LOW)
                     v.set_name(lang + ' code disclosure vulnerability')
-                    v.addToHighlight(match.group())
+                    v.add_to_highlight(match.group())
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
-                    v.set_desc(fmt % (v.getURL(), lang))
+                    v.set_desc(fmt % (v.get_url(), lang))
                     kb.kb.append(self, 'code_disclosure', v)
-                    self._already_added.add(response.getURL())
+                    self._already_added.add(response.get_url())
 
                 else:
                     self._first_404 = False
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
-                    v.setURL(response.getURL())
+                    v.set_url(response.get_url())
                     v.set_id(response.id)
                     v.set_severity(severity.LOW)
-                    v.addToHighlight(match.group())
+                    v.add_to_highlight(match.group())
                     v.set_name(
                         lang + ' code disclosure vulnerability in 404 page')
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability'\
                           ' in the customized 404 script.'
-                    v.set_desc(fmt % (v.getURL(), lang))
+                    v.set_desc(fmt % (v.get_url(), lang))
                     kb.kb.append(self, 'code_disclosure', v)
 
     def end(self):

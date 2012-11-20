@@ -148,7 +148,7 @@ withoutMOTW = False
 [grep.lang]
 
 [grep.get_emails]
-onlyTargetDomain = True
+only_target_domain = True
 
 [grep.meta_tags]
 

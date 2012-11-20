@@ -90,12 +90,12 @@ class strange_reason(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        response_code = response.getCode()
+        response_code = response.get_code()
         msg_list = self.W3C_REASONS.get(response_code, None)
 
         if msg_list is not None:
 
-            response_reason = response.getMsg().lower()
+            response_reason = response.get_msg().lower()
 
             if response_reason not in msg_list:
                 #
@@ -106,7 +106,7 @@ class strange_reason(GrepPlugin):
 
                 corresponding_info = None
                 for info_obj in strange_reason_infos:
-                    if info_obj['reason'] == response.getMsg():
+                    if info_obj['reason'] == response.get_msg():
                         corresponding_info = info_obj
                         break
 
@@ -121,15 +121,15 @@ class strange_reason(GrepPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Strange HTTP Reason message - ' +
-                               str(response.getMsg()))
-                    i.setURL(response.getURL())
+                               str(response.get_msg()))
+                    i.set_url(response.get_url())
                     i.set_id(response.id)
-                    i['reason'] = response.getMsg()
+                    i['reason'] = response.get_msg()
                     desc = 'The remote Web server sent a strange HTTP reason message: "'
                     desc += str(
-                        response.getMsg()) + '" manual inspection is advised.'
+                        response.get_msg()) + '" manual inspection is advised.'
                     i.set_desc(desc)
-                    i.addToHighlight(response.getMsg())
+                    i.add_to_highlight(response.get_msg())
                     kb.kb.append(self, 'strange_reason', i)
 
     def end(self):

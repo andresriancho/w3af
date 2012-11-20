@@ -47,7 +47,7 @@ class HistorySuggestion(object):
                 self.history = {}
             fileh.close()
 
-    def getTexts(self):
+    def get_texts(self):
         '''Provides the texts, ordered by relevance.
 
         @return: a generator with the texts

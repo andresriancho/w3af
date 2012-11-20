@@ -72,7 +72,7 @@ class password_profiling(GrepPlugin):
         lang = kb.kb.get('lang', 'lang') or 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
-        if response.getCode() not in [500, 401, 403, 404] \
+        if response.get_code() not in [500, 401, 403, 404] \
             and not is_404(response) \
                 and request.get_method() in ['POST', 'GET']:
 
@@ -134,7 +134,7 @@ class password_profiling(GrepPlugin):
 
         res = {}
         for plugin in self._plugins:
-            wordMap = plugin.getWords(response)
+            wordMap = plugin.get_words(response)
             if wordMap is not None:
                 # If a plugin returned something thats not None, then we are done.
                 # this plugins only return a something different of None of they

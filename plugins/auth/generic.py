@@ -81,7 +81,7 @@ class generic(AuthPlugin):
         try:
             http_response = self._uri_opener.GET(self.check_url, grep=False,
                                                  cache=False)
-            body = http_response.getBody()
+            body = http_response.get_body()
             logged_in = self.check_string in body
 
             msg_yes = 'User "%s" is currently logged into the application'

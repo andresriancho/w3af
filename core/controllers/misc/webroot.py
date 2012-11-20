@@ -36,7 +36,7 @@ def get_webroot_dirs(domain=None):
         result.append(obtained_webroot)
 
     if domain:
-        root_domain = URL('http://' + domain).getRootDomain()
+        root_domain = URL('http://' + domain).get_root_domain()
 
         result.append('/var/www/' + domain)
         result.append('/var/www/' + domain + '/www/')

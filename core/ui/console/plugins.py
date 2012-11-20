@@ -43,15 +43,15 @@ class pluginsMenu(menu):
         types = w3af.plugins.get_plugin_types()
         self._children = {}
 
-        self._loadHelp('plugins')
+        self._load_help('plugins')
 
         for t in types:
             self.addChild(t, pluginsTypeMenu)
-#            self._help.addHelpEntry(t, "List %s plugins" % t, 'plugins')
+#            self._help.add_help_entry(t, "List %s plugins" % t, 'plugins')
         self.__loadPluginTypesHelp(types)
 
-#        self._help.addHelpEntry('list', "List plugins by their type", 'commands')
-#        self._help.addHelpEntry('config', "Config plugins (same as <type> config>)", 'commands')
+#        self._help.add_help_entry('list', "List plugins by their type", 'commands')
+#        self._help.add_help_entry('config', "Config plugins (same as <type> config>)", 'commands')
 
     def __loadPluginTypesHelp(self, types):
         vars = {}
@@ -62,9 +62,9 @@ class pluginsMenu(menu):
             vars['PLUGIN1'], vars['PLUGIN2'] = p1, p2
             vars['TYPE'] = t
 
-            self._loadHelp('plugin_type', vars=vars)
+            self._load_help('plugin_type', vars=vars)
 
-    def getChildren(self):
+    def get_children(self):
         return self._children
 
     def execute(self, tokens):
@@ -128,27 +128,27 @@ class pluginsTypeMenu(menu):
                 self._plugins[p] = len(options)
         self._configs = {}
 
-    def suggestCommands(self, part, *skip):
+    def suggest_commands(self, part, *skip):
         return suggest(self._plugins.keys() + ['all'], part.lstrip('!')) + \
-            suggest(self.getCommands(), part)
+            suggest(self.get_commands(), part)
 
-    def suggestParams(self, command, params, part):
-        if command in self.getCommands():
-            return menu.suggestParams(self, command, params, part)
+    def suggest_params(self, command, params, part):
+        if command in self.get_commands():
+            return menu.suggest_params(self, command, params, part)
 
         alreadySel = [s.lstrip('!') for s in [command] + params]
 
         plugins = self._plugins.keys()
         return suggest(plugins, part.lstrip('!'), alreadySel)
 
-    def getCommands(self):
+    def get_commands(self):
         return ['config', 'desc']
 
     def execute(self, tokens):
         if len(tokens) > 0:
             command, params = tokens[0], tokens[1:]
-            #print "command: " + command + "; " + str(self.getCommands())
-            if command in self.getCommands():
+            #print "command: " + command + "; " + str(self.get_commands())
+            if command in self.get_commands():
                 return menu.execute(self, tokens)
             else:
                 self._enablePlugins(','.join(tokens).split(','))
@@ -259,7 +259,7 @@ class pluginsTypeMenu(menu):
             row.append(str(plugin.get_desc()))
 
             table.append(row)
-        self._console.drawTable(table, True)
+        self._console.draw_table(table, True)
 
     def _cmd_config(self, params):
 

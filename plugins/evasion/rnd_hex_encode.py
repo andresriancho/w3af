@@ -35,7 +35,7 @@ class rnd_hex_encode(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -47,22 +47,22 @@ class rnd_hex_encode(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> rhe.modifyRequest( r ).url_object.url_string
+        >>> rhe.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/'
 
         >>> u = URL('http://www.w3af.com/a/')
         >>> r = HTTPRequest( u )
-        >>> rhe.modifyRequest( r ).url_object.getPath() in ['/a/','/%61/']
+        >>> rhe.modify_request( r ).url_object.get_path() in ['/a/','/%61/']
         True
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u, data='a=b' )
-        >>> rhe.modifyRequest( r ).get_data() in ['a=b','%61=b','a=%62','%61=%62']
+        >>> rhe.modify_request( r ).get_data() in ['a=b','%61=b','a=%62','%61=%62']
         True
 
         >>> u = URL('http://www.w3af.com/aa/')
         >>> r = HTTPRequest( u )
-        >>> rhe.modifyRequest( r ).url_object.getPath() in ['/aa/','/%61a/','/a%61/','/%61%61/']
+        >>> rhe.modify_request( r ).url_object.get_path() in ['/aa/','/%61a/','/a%61/','/%61%61/']
         True
 
         >>> #
@@ -73,12 +73,12 @@ class rnd_hex_encode(EvasionPlugin):
 
         '''
         # First we mangle the URL
-        path = request.url_object.getPath()
+        path = request.url_object.get_path()
         path = self._mutate(path)
 
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath(path)
+        new_url.set_path(path)
 
         # Mangle the postdata
         data = request.get_data()
@@ -111,7 +111,7 @@ class rnd_hex_encode(EvasionPlugin):
             new_data += char
         return new_data
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

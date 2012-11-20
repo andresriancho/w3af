@@ -51,8 +51,8 @@ class objects(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        url = response.getURL()
-        dom = response.getDOM()
+        url = response.get_url()
+        dom = response.get_dom()
 
         if response.is_text_or_html() and dom is not None \
                 and url not in self._already_analyzed:
@@ -67,13 +67,13 @@ class objects(GrepPlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name(tag_name.title() + ' tag')
-                i.setURL(url)
+                i.set_url(url)
                 i.set_id(response.id)
                 msg = 'The URL: "%s" has an "%s" tag. We recommend you download' \
                       ' the client side code and analyze it manually.'
-                msg = msg % (i.getURI(), tag_name)
+                msg = msg % (i.get_uri(), tag_name)
                 i.set_desc(msg)
-                i.addToHighlight(tag_name)
+                i.add_to_highlight(tag_name)
 
                 kb.kb.append(self, tag_name, i)
 

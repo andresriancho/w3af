@@ -87,12 +87,12 @@ class find_vhosts(InfrastructurePlugin):
                 reported.add(vhost)
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(fuzzable_request.getURL())
+                v.set_url(fuzzable_request.get_url())
                 v.set_method('GET')
                 v.set_name('Shared hosting')
                 v.set_severity(severity.LOW)
 
-                domain = fuzzable_request.getURL().getDomain()
+                domain = fuzzable_request.get_url().get_domain()
 
                 msg = 'Found a new virtual host at the target web server, the ' \
                       'virtual host name is: "' + vhost + '". To access this site' \
@@ -113,11 +113,11 @@ class find_vhosts(InfrastructurePlugin):
         or something...)
         '''
         # Get some responses to compare later
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
         original_response = self._uri_opener.GET(
-            fuzzable_request.getURI(), cache=True)
+            fuzzable_request.get_uri(), cache=True)
         base_response = self._uri_opener.GET(base_url, cache=True)
-        base_resp_body = base_response.getBody()
+        base_resp_body = base_response.get_body()
 
         try:
             dp = dpCache.dpc.get_document_parser_for(original_response)
@@ -127,7 +127,7 @@ class find_vhosts(InfrastructurePlugin):
 
         # Set the non existant response
         non_existant_response = self._get_non_exist(fuzzable_request)
-        nonexist_resp_body = non_existant_response.getBody()
+        nonexist_resp_body = non_existant_response.get_body()
 
         # Note:
         # - With parsed_references I'm 100% that it's really something in the HTML
@@ -147,7 +147,7 @@ class find_vhosts(InfrastructurePlugin):
 
         for domain, vhost_response in self._send_in_threads(base_url, vhosts):
 
-            vhost_resp_body = vhost_response.getBody()
+            vhost_resp_body = vhost_response.get_body()
 
             if relative_distance_lt(vhost_resp_body, base_resp_body, 0.35) and \
                     relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
@@ -156,11 +156,11 @@ class find_vhosts(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Internal hostname in HTML link')
-                i.setURL(fuzzable_request.getURL())
+                i.set_url(fuzzable_request.get_url())
                 i.set_method('GET')
                 i.set_id(original_response.id)
                 msg = 'The content of "' + \
-                    fuzzable_request.getURL() + '" references a non '
+                    fuzzable_request.get_url() + '" references a non '
                 msg += 'existant domain: "' + domain + \
                     '". This may be a broken link, or an'
                 msg += ' internal domain name.'
@@ -176,7 +176,7 @@ class find_vhosts(InfrastructurePlugin):
         be resolved using DNS.
         '''
         for link in parsed_references:
-            domain = link.getDomain()
+            domain = link.get_domain()
 
             if domain not in self._already_queried:
                 self._already_queried.add(domain)
@@ -193,18 +193,18 @@ class find_vhosts(InfrastructurePlugin):
         Test some generic virtual hosts, only do this once.
         '''
         # Get some responses to compare later
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
         original_response = self._uri_opener.GET(base_url, cache=True)
-        orig_resp_body = original_response.getBody()
+        orig_resp_body = original_response.get_body()
 
         non_existant_response = self._get_non_exist(fuzzable_request)
-        nonexist_resp_body = non_existant_response.getBody()
+        nonexist_resp_body = non_existant_response.get_body()
 
         res = []
         vhosts = self._get_common_virtualhosts(base_url)
 
         for vhost, vhost_response in self._send_in_threads(base_url, vhosts):
-            vhost_resp_body = vhost_response.getBody()
+            vhost_resp_body = vhost_response.get_body()
 
             # If they are *really* different (not just different by some chars)
             if relative_distance_lt(vhost_resp_body, orig_resp_body, 0.35) and \
@@ -233,7 +233,7 @@ class find_vhosts(InfrastructurePlugin):
                                     headers=headers)
 
     def _get_non_exist(self, fuzzable_request):
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
         non_existant_domain = 'iDoNotExistPleaseGoAwayNowOrDie' + rand_alnum(4)
         return self._http_get_vhost(base_url, non_existant_domain)
 
@@ -246,8 +246,8 @@ class find_vhosts(InfrastructurePlugin):
         server that "domain".
 
         '''
-        domain = base_url.getDomain()
-        root_domain = base_url.getRootDomain()
+        domain = base_url.get_domain()
+        root_domain = base_url.get_root_domain()
 
         common_virtual_hosts = ['intranet', 'intra', 'extranet', 'extra',
                                 'test', 'test1', 'old', 'new', 'admin',

@@ -70,7 +70,7 @@ class url_fuzzer(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        url = fuzzable_request.getURL()
+        url = fuzzable_request.get_url()
         self._headers = Headers([('Referer', url.url_string)])
 
         if self._first_time:
@@ -111,35 +111,35 @@ class url_fuzzer(CrawlPlugin):
             mutant, cache=True, headers=self._headers)
 
         if not (is_404(response) or
-                response.getCode() in (403, 401) or
+                response.get_code() in (403, 401) or
                 self._return_without_eval(mutant)):
             for fr in self._create_fuzzable_requests(response):
                 self.output_queue.put(fr)
             #
             #   Save it to the kb (if new)!
             #
-            if response.getURL() not in self._seen and response.getURL().getFileName():
+            if response.get_url() not in self._seen and response.get_url().get_fileName():
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Potentially interesting file')
-                i.setURL(response.getURL())
+                i.set_url(response.get_url())
                 i.set_id(response.id)
                 desc = 'A potentially interesting file was found at: "%s".'
-                i.set_desc(desc % response.getURL())
+                i.set_desc(desc % response.get_url())
                 kb.kb.append(self, 'files', i)
                 om.out.information(i.get_desc())
 
                 # Report only once
-                self._seen.add(response.getURL())
+                self._seen.add(response.get_url())
 
     def _return_without_eval(self, uri):
         '''
         This method tries to lower the false positives.
         '''
-        if not uri.hasQueryString():
+        if not uri.has_query_string():
             return False
 
-        uri.setFileName(uri.getFileName() + rand_alnum(7))
+        uri.set_file_name(uri.get_fileName() + rand_alnum(7))
 
         try:
             response = self._uri_opener.GET(uri, cache=True,
@@ -180,8 +180,8 @@ class url_fuzzer(CrawlPlugin):
         True
 
         '''
-        domain = url.getDomain()
-        domain_path = url.getDomainPath()
+        domain = url.get_domain()
+        domain_path = url.get_domain_path()
 
         splitted_domain = domain.split('.')
         for i in xrange(len(splitted_domain)):
@@ -191,7 +191,7 @@ class url_fuzzer(CrawlPlugin):
                 filename_ext = filename + '.' + extension
 
                 domain_path_copy = domain_path.copy()
-                domain_path_copy.setFileName(filename_ext)
+                domain_path_copy.set_file_name(filename_ext)
                 yield domain_path_copy
 
     def _mutate_by_appending(self, url):
@@ -229,9 +229,9 @@ class url_fuzzer(CrawlPlugin):
             #
             for to_append in self._appendables:
                 url_copy = url.copy()
-                filename = url_copy.getFileName()
+                filename = url_copy.get_fileName()
                 filename += to_append
-                url_copy.setFileName(filename)
+                url_copy.set_file_name(filename)
                 yield url_copy
 
     def _mutate_file_type(self, url):
@@ -259,11 +259,11 @@ class url_fuzzer(CrawlPlugin):
         True
 
         '''
-        extension = url.getExtension()
+        extension = url.get_extension()
         if extension:
             for filetype in chain(self._backup_exts, self._file_types):
                 url_copy = url.copy()
-                url_copy.setExtension(filetype)
+                url_copy.set_extension(filetype)
                 yield url_copy
 
     def _mutate_path(self, url):

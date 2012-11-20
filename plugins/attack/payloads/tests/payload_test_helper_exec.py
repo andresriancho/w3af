@@ -58,7 +58,7 @@ class PayloadTestHelperExec(PluginTest):
 
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'rfi')
 
-        self.assertTrue(plugin.canExploit(vuln_to_exploit_id))
+        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
 
         exploit_result = plugin.exploit(vuln_to_exploit_id)
 
@@ -69,5 +69,5 @@ class PayloadTestHelperExec(PluginTest):
 
     def setUp(self):
         super(PayloadTestHelperExec, self).setUp()
-        cf.cf.save('targetOS', 'unix')
+        cf.cf.save('target_os', 'unix')
         self.shell = self._get_shell()

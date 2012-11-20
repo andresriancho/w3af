@@ -37,7 +37,7 @@ class PostDataMutant(Mutant):
         '''
         @return: A string representing WHAT was fuzzed.
         '''
-        res = '"' + self.getURI() + '", using HTTP method '
+        res = '"' + self.get_uri() + '", using HTTP method '
         res += self.get_method() + '. The sent post-data was: "'
 
         # Depending on the data container, print different things:

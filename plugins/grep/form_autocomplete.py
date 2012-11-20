@@ -67,8 +67,8 @@ class form_autocomplete(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        url = response.getURL()
-        dom = response.getDOM()
+        url = response.get_url()
+        dom = response.get_dom()
 
         if response.is_text_or_html() and dom is not None \
                 and not url in self._already_inspected:
@@ -90,14 +90,14 @@ class form_autocomplete(GrepPlugin):
 
                     i = info()
                     i.set_name('Auto-completable form')
-                    i.setURL(url)
+                    i.set_url(url)
                     i.set_id(response.id)
                     msg = 'The URL: "%s" has a "<form>" element with ' \
                         'auto-complete enabled.' % url
                     i.set_desc(msg)
                     form_str = etree.tostring(form)
                     to_highlight = form_str[:(form_str).find('>') + 1]
-                    i.addToHighlight(to_highlight)
+                    i.add_to_highlight(to_highlight)
 
                     # Store and print
                     kb.kb.append(self, 'form_autocomplete', i)

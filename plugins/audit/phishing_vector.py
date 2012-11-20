@@ -77,7 +77,7 @@ class phishing_vector(AuditPlugin):
         '''
         Find the phishing vectors!
         '''
-        dom = response.getDOM()
+        dom = response.get_dom()
         res = []
 
         if response.is_text_or_html() and dom is not None:
@@ -101,7 +101,7 @@ class phishing_vector(AuditPlugin):
                         v.set_name('Phishing vector')
                         v.set_desc('A phishing vector was found at: ' +
                                    mutant.found_at())
-                        v.addToHighlight(src_attr)
+                        v.add_to_highlight(src_attr)
                         res.append(v)
 
         return res

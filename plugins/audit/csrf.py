@@ -62,13 +62,13 @@ class csrf(AuditPlugin):
 
         # Referer/Origin check
         if self._is_origin_checked(freq, orig_response):
-            om.out.debug('Origin for %s is checked' % freq.getURL())
+            om.out.debug('Origin for %s is checked' % freq.get_url())
             return
 
         # Does request has CSRF token in query string or POST payload?
         token = self._find_csrf_token(freq, orig_response)
         if token and self._is_token_checked(freq, token):
-            om.out.debug('Token for %s is exist and checked' % freq.getURL())
+            om.out.debug('Token for %s is exist and checked' % freq.get_url())
             return
 
         # Ok, we have found vulnerable to CSRF attack request
@@ -77,7 +77,7 @@ class csrf(AuditPlugin):
         v.set_id(orig_response.id)
         v.set_name('CSRF vulnerability')
         v.set_severity(severity.HIGH)
-        msg = 'Cross Site Request Forgery has been found at: ' + freq.getURL()
+        msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
         v.set_desc(msg)
         kb.kb.append(self, 'csrf', v)
 
@@ -85,7 +85,7 @@ class csrf(AuditPlugin):
         '''
         @see: unittest for this method in test_csrf.py
         '''
-        if res1.getCode() != res2.getCode():
+        if res1.get_code() != res2.get_code():
             return False
 
         if not relative_distance_boolean(res1.body, res2.body, self._equal_limit):
@@ -101,7 +101,7 @@ class csrf(AuditPlugin):
         @return: True if the request can have a CSRF vulnerability
         '''
         for cookie in self._uri_opener.get_cookies():
-            if cookie.domain == freq.getURL().getDomain():
+            if cookie.domain == freq.get_url().get_domain():
                 break
         else:
             return False, None
@@ -111,7 +111,7 @@ class csrf(AuditPlugin):
             return False, None
 
         # Payload?
-        if not ((freq.get_method() == 'GET' and freq.getURI().hasQueryString())
+        if not ((freq.get_method() == 'GET' and freq.get_uri().has_query_string())
                 or (freq.get_method() == 'POST' and len(freq.get_dc()))):
                 return False, None
 
@@ -123,15 +123,15 @@ class csrf(AuditPlugin):
             return False, None
 
         orig_response = response1
-        om.out.debug('%s is suitable for CSRF attack' % freq.getURL())
+        om.out.debug('%s is suitable for CSRF attack' % freq.get_url())
         return True, orig_response
 
     def _is_origin_checked(self, freq, orig_response):
-        om.out.debug('Testing %s for Referer/Origin checks' % freq.getURL())
+        om.out.debug('Testing %s for Referer/Origin checks' % freq.get_url())
         fake_ref = 'http://www.w3af.org/'
         mutant = HeadersMutant(freq.copy())
         mutant.set_var('Referer')
-        mutant.set_original_value(freq.getReferer())
+        mutant.set_original_value(freq.get_referer())
         mutant.set_mod_value(fake_ref)
         mutant_response = self._uri_opener.send_mutant(mutant)
         if not self._is_resp_equal(orig_response, mutant_response):
@@ -139,19 +139,19 @@ class csrf(AuditPlugin):
         return False
 
     def _find_csrf_token(self, freq):
-        om.out.debug('Testing for token in %s' % freq.getURL())
+        om.out.debug('Testing for token in %s' % freq.get_url())
         result = DataContainer()
         dc = freq.get_dc()
         for k in dc:
             if self.is_csrf_token(k, dc[k][0]):
                 result[k] = dc[k]
                 om.out.debug(
-                    'Found token %s for %s: ' % (freq.getURL(), str(result)))
+                    'Found token %s for %s: ' % (freq.get_url(), str(result)))
                 break
         return result
 
     def _is_token_checked(self, freq, token, orig_response):
-        om.out.debug('Testing for validation of token in %s' % freq.getURL())
+        om.out.debug('Testing for validation of token in %s' % freq.get_url())
         mutants = create_mutants(freq, ['123'], False, token.keys())
         for mutant in mutants:
             mutant_response = self._sendMutant(mutant, analyze=False)

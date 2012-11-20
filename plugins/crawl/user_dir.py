@@ -58,12 +58,12 @@ class user_dir(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
         self._headers = Headers([('Referer', base_url.url_string)])
 
         # Create a response body to compare with the others
         non_existent_user = '~_w_3_a_f_/'
-        test_URL = base_url.urlJoin(non_existent_user)
+        test_URL = base_url.url_join(non_existent_user)
         try:
             response = self._uri_opener.GET(test_URL, cache=True,
                                             headers=self._headers)
@@ -71,7 +71,7 @@ class user_dir(CrawlPlugin):
             raise w3afException(
                 'user_dir failed to create a non existent signature.')
 
-        response_body = response.getBody()
+        response_body = response.get_body()
         self._non_existent = response_body.replace(non_existent_user, '')
 
         # Check the users to see if they exist
@@ -103,8 +103,8 @@ class user_dir(CrawlPlugin):
         except KeyboardInterrupt, e:
             raise e
         else:
-            path = mutated_url.getPath()
-            response_body = response.getBody().replace(path, '')
+            path = mutated_url.get_path()
+            response_body = response.get_body().replace(path, '')
 
             if relative_distance_lt(response_body, self._non_existent, 0.7):
 
@@ -112,11 +112,11 @@ class user_dir(CrawlPlugin):
                 if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
                     i = info.info()
                     i.set_plugin_name(self.get_name())
-                    i.set_name('User directory: ' + response.getURL())
+                    i.set_name('User directory: ' + response.get_url())
                     i.set_id(response.id)
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     i.set_desc('A user directory was found at: ' +
-                               response.getURL())
+                               response.get_url())
                     i['user'] = user
 
                     kb.kb.append(self, 'users', i)
@@ -301,8 +301,8 @@ class user_dir(CrawlPlugin):
             user_list = self._get_users()
 
         for user in user_list:
-            res.append((url.urlJoin('/' + user + '/'), user))
-            res.append((url.urlJoin('/~' + user + '/'), user))
+            res.append((url.url_join('/' + user + '/'), user))
+            res.append((url.url_join('/~' + user + '/'), user))
         return res
 
     def _get_users(self):

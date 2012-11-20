@@ -35,11 +35,11 @@ class TestExtrusionScanner(unittest.TestCase):
     def test_basic(self):
         es = extrusionScanner(commands.getoutput)
 
-        self.assertTrue(es.canScan())
+        self.assertTrue(es.can_scan())
 
-        self.assertTrue(es.estimateScanTime() >= 8)
+        self.assertTrue(es.estimate_scan_time() >= 8)
 
-        self.assertTrue(es.isAvailable(54545, 'tcp'))
+        self.assertTrue(es.is_available(54545, 'tcp'))
 
     @onlyroot
     def test_scan(self):

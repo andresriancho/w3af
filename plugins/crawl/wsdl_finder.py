@@ -50,7 +50,7 @@ class wsdl_finder(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        url = fuzzable_request.getURL().uri2url()
+        url = fuzzable_request.get_url().uri2url()
         url_string = url.url_string
 
         if url_string not in self._already_tested:

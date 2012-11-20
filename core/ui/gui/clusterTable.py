@@ -138,14 +138,14 @@ class ClusterCellWindow(entries.RememberingWindow):
             self._level -= 10
         self._distanceLabelNumber.set_text(str(self._level))
         # Load the new level
-        self._cl_data_widget.setNewLevel(self._level)
+        self._cl_data_widget.set_new_level(self._level)
 
     def _go_forward(self, i):
         if self._level != 100:
             self._level += 10
         self._distanceLabelNumber.set_text(str(self._level))
         # Load the new level
-        self._cl_data_widget.setNewLevel(self._level)
+        self._cl_data_widget.set_new_level(self._level)
 
     def delete_event(self, widget, event, data=None):
         #gtk.main_quit()
@@ -164,14 +164,14 @@ class clusterCellData(gtk.TreeView):
         # A cache of distances between HTTPResponses
         self._distance_cache = {}
 
-        self.setNewLevel(level)
+        self.set_new_level(level)
 
         self._add_tooltip_support()
 
         # Show it ! =)
         self.show_all()
 
-    def setNewLevel(self, level):
+    def set_new_level(self, level):
         # Create the clusters
         cl = HierarchicalClustering(self._data, self._relative_levenshtein)
         clusteredData = cl.getlevel(level)
@@ -227,8 +227,8 @@ class clusterCellData(gtk.TreeView):
             return in_cache
 
         # Not in cache, perform calculations...
-        a_str = a.getBody()
-        b_str = b.getBody()
+        a_str = a.get_body()
+        b_str = b.get_body()
 
         m, n = (len(a_str), a_str), (len(b_str), b_str)
         #ensure that the 'm' tuple holds the longest string
@@ -272,16 +272,16 @@ class clusterCellData(gtk.TreeView):
                                gobject.TYPE_BOOLEAN, (gtk.gdk.Event,))
 
         self.connect(
-            "leave-notify-event", self.onTreeviewLeaveNotify, popup_win)
-        self.connect("motion-notify-event", self.onTreeviewMotionNotify)
+            "leave-notify-event", self.on_treeview_leave_notify, popup_win)
+        self.connect("motion-notify-event", self.on_treeview_motion_notify)
 
-        self.connect("path-cross-event", self.emitCellCrossSignal)
-        self.connect("column-cross-event", self.emitCellCrossSignal)
+        self.connect("path-cross-event", self.emit_cell_cross_signal)
+        self.connect("column-cross-event", self.emit_cell_cross_signal)
 
-        self.connect("cell-cross-event", self.handlePopup, popup_win)
+        self.connect("cell-cross-event", self.handle_popup, popup_win)
 
         # Handle double click on a row
-        self.connect("row-activated", self.handleDoubleClick)
+        self.connect("row-activated", self.handle_double_click)
 
     def _parse(self, clusteredData):
         '''
@@ -339,14 +339,14 @@ class clusterCellData(gtk.TreeView):
                 resList[y][x] = str(paddedItem)
         return resList
 
-    def onTreeviewLeaveNotify(self, treeview, event, popup_win):
+    def on_treeview_leave_notify(self, treeview, event, popup_win):
         self.current_column = None
         self.current_path = None
         popup_win.hide()
 
-    def onTreeviewMotionNotify(self, treeview, event):
+    def on_treeview_motion_notify(self, treeview, event):
 
-        current_path, current_column = self.getCurrentCellData(
+        current_path, current_column = self.get_current_cell_data(
             treeview, event)[:2]
 
         if self.current_path != current_path:
@@ -357,7 +357,7 @@ class clusterCellData(gtk.TreeView):
             self.current_column = current_column
             treeview.emit("column-cross-event", event)
 
-    def getCurrentCellData(self, treeview, event):
+    def get_current_cell_data(self, treeview, event):
 
         try:
             current_path, current_column = treeview.get_path_at_pos(
@@ -377,7 +377,7 @@ class clusterCellData(gtk.TreeView):
 
         return (current_path, current_column, cell_x, cell_y, cell_x_, cell_y_)
 
-    def handleDoubleClick(self, treeview, path, view_column):
+    def handle_double_click(self, treeview, path, view_column):
         # FIXME: I'm sure there is another way to do this... but...
         # what a hell... nobody reads the code ;)
         # I'm talking about the self._colDict[ current_column ]!
@@ -396,11 +396,11 @@ class clusterCellData(gtk.TreeView):
         else:
             msg = '<b><i>Code: </i></b>%s\n<b><i>Message: </i></b>%s' \
                   '\n<b><i>URI: </i></b>%s'
-            return msg % (obj.getCode(), obj.getMsg(), obj.getURI())
+            return msg % (obj.get_code(), obj.get_msg(), obj.get_uri())
 
-    def handlePopup(self, treeview, event, popup_win):
+    def handle_popup(self, treeview, event, popup_win):
         current_path, current_column, cell_x, cell_y, cell_x_, cell_y_ = \
-            self.getCurrentCellData(treeview, event)
+            self.get_current_cell_data(treeview, event)
 
         if cell_x is not None:
             # Search the Id and show the data
@@ -417,7 +417,7 @@ class clusterCellData(gtk.TreeView):
                 # Use the info and display the window
                 popup_win.get_child().set_markup(info)
                 popup_width, popup_height = popup_win.get_size()
-                pos_x, pos_y = self.computeTooltipPosition(
+                pos_x, pos_y = self.compute_tooltip_position(
                     treeview, cell_x, cell_y,
                     cell_x_, cell_y_,
                     popup_width,
@@ -427,10 +427,10 @@ class clusterCellData(gtk.TreeView):
         else:
             popup_win.hide()
 
-    def emitCellCrossSignal(self, treeview, event):
+    def emit_cell_cross_signal(self, treeview, event):
         treeview.emit("cell-cross-event", event)
 
-    def computeTooltipPosition(
+    def compute_tooltip_position(
         self, treeview, cell_x, cell_y, cell_x_, cell_y_,
             popup_width, popup_height, event):
         screen_width = gtk.gdk.screen_width()

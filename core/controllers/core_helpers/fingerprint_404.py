@@ -89,8 +89,8 @@ class fingerprint_404:
                 '404 fingerprint database was incorrectly initialized.')
 
         # Get the filename extension and create a 404 for it
-        extension = url.getExtension()
-        domain_path = url.getDomainPath()
+        extension = url.get_extension()
+        domain_path = url.get_domain_path()
 
         # the result
         self._response_body_list = []
@@ -111,7 +111,7 @@ class fingerprint_404:
 
         for extension in handlers:
             rand_alnum_file = rand_alnum(8) + '.' + extension
-            url404 = domain_path.urlJoin(rand_alnum_file)
+            url404 = domain_path.url_join(rand_alnum_file)
             args_list.append(url404)
 
         thread_manager.threadpool.map(self._send_404, args_list)
@@ -187,7 +187,7 @@ class fingerprint_404:
         #
         #   First we handle the user configured exceptions:
         #
-        domain_path = http_response.getURL().getDomainPath()
+        domain_path = http_response.get_url().get_domain_path()
         if domain_path in cf.cf.get('always404'):
             return True
         elif domain_path in cf.cf.get('never404'):
@@ -207,7 +207,7 @@ class fingerprint_404:
         #   are screwed, but this is open source, and the pentester working on
         #   that site can modify these lines.
         #
-        if http_response.getCode() == 404:
+        if http_response.get_code() == 404:
             return True
 
         #
@@ -216,19 +216,19 @@ class fingerprint_404:
         #    then we're return False!
         #
         if domain_path in self._directory_uses_404_codes and \
-                http_response.getCode() != 404:
+                http_response.get_code() != 404:
             return False
 
         #
         #   Before actually working, I'll check if this response is in the LRU,
         #   if it is I just return the value stored there.
         #
-        if http_response.getURL().getPath() in self.is_404_LRU:
-            return self.is_404_LRU[http_response.getURL().getPath()]
+        if http_response.get_url().get_path() in self.is_404_LRU:
+            return self.is_404_LRU[http_response.get_url().get_path()]
 
         with self._lock:
             if self.need_analysis():
-                self.generate_404_knowledge(http_response.getURL())
+                self.generate_404_knowledge(http_response.get_url())
 
         # self._404_body was already cleaned inside generate_404_knowledge
         # so we need to clean this one in order to have a fair comparison
@@ -246,7 +246,7 @@ class fingerprint_404:
             if relative_distance_ge(body_404_db, html_body, IS_EQUAL_RATIO):
                 msg = '"%s" (id:%s) is a 404 [similarity_index > %s]'
                 fmt = (
-                    http_response.getURL(), http_response.id, IS_EQUAL_RATIO)
+                    http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
                 om.out.debug(msg % fmt)
                 return self._fingerprinted_as_404(http_response)
 
@@ -261,22 +261,22 @@ class fingerprint_404:
             #    Because we want to reduce the amount of "false positives" that
             #    this method returns, we'll perform one extra check before saying
             #    that this is NOT a 404.
-            if http_response.getURL().getDomainPath() not in self._fingerprinted_paths:
+            if http_response.get_url().get_domain_path() not in self._fingerprinted_paths:
                 if self._single_404_check(http_response, html_body):
                     self._404_bodies.append(html_body)
                     self._fingerprinted_paths.add(
-                        http_response.getURL().getDomainPath())
+                        http_response.get_url().get_domain_path())
 
                     msg = '"%s" (id:%s) is a 404 (similarity_index > %s). Adding new'
                     msg += ' knowledge to the 404_bodies database (length=%s).'
-                    fmt = (http_response.getURL(), http_response.id,
+                    fmt = (http_response.get_url(), http_response.id,
                            IS_EQUAL_RATIO, len(self._404_bodies))
                     om.out.debug(msg % fmt)
 
                     return self._fingerprinted_as_404(http_response)
 
             msg = '"%s" (id:%s) is NOT a 404 [similarity_index < %s].'
-            fmt = (http_response.getURL(), http_response.id, IS_EQUAL_RATIO)
+            fmt = (http_response.get_url(), http_response.id, IS_EQUAL_RATIO)
             om.out.debug(msg % fmt)
             return self._fingerprinted_as_200(http_response)
 
@@ -285,7 +285,7 @@ class fingerprint_404:
         Convenience function so that I don't forget to update the LRU
         @return: True
         '''
-        self.is_404_LRU[http_response.getURL().getPath()] = True
+        self.is_404_LRU[http_response.get_url().get_path()] = True
         return True
 
     def _fingerprinted_as_200(self, http_response):
@@ -293,7 +293,7 @@ class fingerprint_404:
         Convenience function so that I don't forget to update the LRU
         @return: False
         '''
-        self.is_404_LRU[http_response.getURL().getPath()] = False
+        self.is_404_LRU[http_response.get_url().get_path()] = False
         return False
 
     def _single_404_check(self, http_response, html_body):
@@ -310,21 +310,21 @@ class fingerprint_404:
 
         @return: True if the original response was a 404 !
         '''
-        response_url = http_response.getURL()
-        filename = response_url.getFileName()
+        response_url = http_response.get_url()
+        filename = response_url.get_file_name()
         if not filename:
             relative_url = '../%s/' % rand_alnum(8)
-            url_404 = response_url.urlJoin(relative_url)
+            url_404 = response_url.url_join(relative_url)
         else:
             relative_url = 'not-%s' % filename
-            url_404 = response_url.urlJoin(relative_url)
+            url_404 = response_url.url_join(relative_url)
 
         response_404 = self._send_404(url_404, store=False)
         clean_response_404_body = get_clean_body(response_404)
 
-        if response_404.getCode() == 404 and \
-                url_404.getDomainPath() not in self._directory_uses_404_codes:
-            self._directory_uses_404_codes.add(url_404.getDomainPath())
+        if response_404.get_code() == 404 and \
+                url_404.get_domain_path() not in self._directory_uses_404_codes:
+            self._directory_uses_404_codes.add(url_404.get_domain_path())
 
         return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
 
@@ -353,8 +353,8 @@ def get_clean_body(response):
 
     Definition of clean in this method:
         - input:
-            - response.getURL() == http://host.tld/aaaaaaa/
-            - response.getBody() == 'spam aaaaaaa eggs'
+            - response.get_url() == http://host.tld/aaaaaaa/
+            - response.get_body() == 'spam aaaaaaa eggs'
 
         - output:
             - self._clean_body( response ) == 'spam  eggs'
@@ -369,7 +369,7 @@ def get_clean_body(response):
     body = response.body
 
     if response.is_text_or_html():
-        url = response.getURL()
+        url = response.get_url()
         to_replace = url.url_string.split('/')
         to_replace.append(url.url_string)
 

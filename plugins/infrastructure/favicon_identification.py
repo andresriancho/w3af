@@ -61,12 +61,12 @@ class favicon_identification(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         '''
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        domain_path = fuzzable_request.get_url().get_domain_path()
 
         # TODO: Maybe I should also parse the html to extract the favicon location?
-        favicon_url = domain_path.urlJoin('favicon.ico')
+        favicon_url = domain_path.url_join('favicon.ico')
         response = self._uri_opener.GET(favicon_url, cache=True)
-        remote_fav_md5 = hashlib.md5(response.getBody()).hexdigest()
+        remote_fav_md5 = hashlib.md5(response.get_body()).hexdigest()
 
         if not is_404(response):
 
@@ -78,7 +78,7 @@ class favicon_identification(InfrastructurePlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Favicon identification')
-                    i.setURL(favicon_url)
+                    i.set_url(favicon_url)
                     i.set_id(response.id)
                     desc = 'Favicon.ico file was identified as "%s".' % favicon_desc
                     i.set_desc(desc)
@@ -93,7 +93,7 @@ class favicon_identification(InfrastructurePlugin):
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Favicon identification failed')
-                i.setURL(favicon_url)
+                i.set_url(favicon_url)
                 i.set_id(response.id)
                 desc = 'Favicon identification failed. If the remote site is'  \
                        ' using framework that is being exposed by its favicon,'\

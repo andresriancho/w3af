@@ -81,7 +81,7 @@ class response_splitting(AuditPlugin):
 
                 if error in response:
                     msg = 'The variable "' + \
-                        mutant.get_var() + '" of the URL ' + mutant.getURL()
+                        mutant.get_var() + '" of the URL ' + mutant.get_url()
                     msg += ' modifies the headers of the response, but this error was sent while'
                     msg += ' testing for response splitting: "' + error + '"'
 
@@ -89,7 +89,7 @@ class response_splitting(AuditPlugin):
                     i.set_plugin_name(self.get_name())
                     i.set_desc(msg)
                     i.set_var(mutant.get_var())
-                    i.setURI(mutant.getURI())
+                    i.set_uri(mutant.get_uri())
                     i.set_dc(mutant.get_dc())
                     i.set_id(response.id)
                     i.set_name('Parameter modifies headers')
@@ -123,7 +123,7 @@ class response_splitting(AuditPlugin):
         @return: True / False
         '''
         # Get the lower case headers
-        headers = response.getLowerCaseHeaders()
+        headers = response.get_lower_case_headers()
 
         # Analyze injection
         for header, value in headers.items():

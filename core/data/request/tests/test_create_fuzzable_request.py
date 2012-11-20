@@ -44,16 +44,16 @@ class TestCreateFuzzableRequest(unittest.TestCase):
     def test_simplest(self):
         fr = create_fuzzable_request(self.url)
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), Headers())
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), Headers())
         self.assertEqual(fr.get_method(), 'GET')
 
     def test_headers(self):
         hdr = Headers([('foo', 'bar')])
         fr = create_fuzzable_request(self.url, add_headers=hdr)
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'GET')
 
     def test_headers_method(self):
@@ -61,15 +61,15 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, method='PUT',
                                      add_headers=hdr)
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'PUT')
 
     def test_from_HTTPRequest(self):
         request = HTTPRequest(self.url)
         fr = create_fuzzable_request(request)
 
-        self.assertEqual(fr.getURL(), self.url)
+        self.assertEqual(fr.get_url(), self.url)
         self.assertEqual(fr.get_method(), 'GET')
 
     def test_from_HTTPRequest_headers(self):
@@ -77,8 +77,8 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         request = HTTPRequest(self.url, headers=hdr)
         fr = create_fuzzable_request(request)
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'GET')
         self.assertIsInstance(fr, HTTPQSRequest)
 
@@ -89,10 +89,10 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, add_headers=hdr,
                                      post_data=post_data, method='POST')
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'POST')
-        self.assertFalse('content-type' in fr.getHeaders())
+        self.assertFalse('content-type' in fr.get_headers())
         self.assertIsInstance(fr, HTTPPostDataRequest)
 
     def test_json_post(self):
@@ -102,8 +102,8 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, add_headers=hdr,
                                      post_data=post_data, method='POST')
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), hdr)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), hdr)
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIsInstance(fr, JSONPostDataRequest)
 
@@ -118,8 +118,8 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), headers)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), headers)
         self.assertEqual(fr.get_method(), 'POST')
         self.assertIsInstance(fr, XMLRPCRequest)
 
@@ -132,10 +132,10 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), headers)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), headers)
         self.assertTrue(
-            'multipart/form-data' in fr.getHeaders()['content-type'])
+            'multipart/form-data' in fr.get_headers()['content-type'])
         self.assertEqual(fr.get_method(), 'POST')
         self.assertEqual(fr.get_dc(), {'a': ['bcd', ]})
         self.assertIsInstance(fr, HTTPPostDataRequest)
@@ -151,12 +151,12 @@ class TestCreateFuzzableRequest(unittest.TestCase):
         fr = create_fuzzable_request(self.url, add_headers=headers,
                                      post_data=post_data, method='POST')
 
-        self.assertEqual(fr.getURL(), self.url)
-        self.assertEqual(fr.getHeaders(), headers)
+        self.assertEqual(fr.get_url(), self.url)
+        self.assertEqual(fr.get_headers(), headers)
         self.assertEqual(fr.get_method(), 'POST')
 
         # And this is how it affects the result:
-        self.assertEqual(fr.getData(), '')
+        self.assertEqual(fr.get_data(), '')
         self.assertEqual(fr.get_dc(), {})
 
         self.assertIsInstance(fr, HTTPPostDataRequest)

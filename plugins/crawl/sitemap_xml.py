@@ -48,12 +48,12 @@ class sitemap_xml(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                    (among other things) the URL to test.
         '''
-        base_url = fuzzable_request.getURL().baseUrl()
-        sitemap_url = base_url.urlJoin('sitemap.xml')
+        base_url = fuzzable_request.get_url().base_url()
+        sitemap_url = base_url.url_join('sitemap.xml')
         response = self._uri_opener.GET(sitemap_url, cache=True)
 
         # Remember that HTTPResponse objects have a faster "__in__" than
-        # the one in strings; so string in response.getBody() is slower than
+        # the one in strings; so string in response.get_body() is slower than
         # string in response
         if '</urlset>' in response and not is_404(response):
             om.out.debug('Analyzing sitemap.xml file.')
@@ -63,7 +63,7 @@ class sitemap_xml(CrawlPlugin):
 
             om.out.debug('Parsing xml file with xml.dom.minidom.')
             try:
-                dom = xml.dom.minidom.parseString(response.getBody())
+                dom = xml.dom.minidom.parseString(response.get_body())
             except:
                 raise w3afException('Error while parsing sitemap.xml')
             else:

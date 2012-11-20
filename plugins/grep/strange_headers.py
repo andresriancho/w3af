@@ -86,7 +86,7 @@ class strange_headers(GrepPlugin):
         '''
 
         # Check if the header names are common or not
-        for header_name in response.getHeaders().keys():
+        for header_name in response.get_headers().keys():
             if header_name.upper() not in self.COMMON_HEADERS:
 
                 # Check if the kb already has a info object with this code:
@@ -105,17 +105,17 @@ class strange_headers(GrepPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Strange header')
-                    i.setURL(response.getURL())
+                    i.set_url(response.get_url())
                     i.set_id(response.id)
                     msg = 'The remote web server sent the HTTP header: "' + \
                         header_name
                     msg += '" with value: "' + \
-                        response.getHeaders()[header_name] + '".'
+                        response.get_headers()[header_name] + '".'
                     i.set_desc(msg)
                     i['header_name'] = header_name
-                    hvalue = response.getHeaders()[header_name]
+                    hvalue = response.get_headers()[header_name]
                     i['header_value'] = hvalue
-                    i.addToHighlight(hvalue, header_name)
+                    i.add_to_highlight(hvalue, header_name)
                     kb.kb.append(self, 'strange_headers', i)
 
         # Now check for protocol anomalies
@@ -128,22 +128,22 @@ class strange_headers(GrepPlugin):
 
         @return: None, all results are saved in the kb.
         '''
-        if 'content-location' in response.getLowerCaseHeaders() \
-                and response.getCode() not in xrange(300, 310):
+        if 'content-location' in response.get_lower_case_headers() \
+                and response.get_code() not in xrange(300, 310):
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Content-Location HTTP header anomaly')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
-            msg = 'The URL: "' + i.getURL(
+            msg = 'The URL: "' + i.get_url(
             ) + '" sent the HTTP header: "content-location"'
             msg += ' with value: "' + \
-                response.getLowerCaseHeaders()['content-location']
+                response.get_lower_case_headers()['content-location']
             msg += '" in an HTTP response with code ' + str(
-                response.getCode()) + ' which is'
+                response.get_code()) + ' which is'
             msg += ' a violation to the RFC.'
             i.set_desc(msg)
-            i.addToHighlight('content-location')
+            i.add_to_highlight('content-location')
             kb.kb.append(self, 'anomaly', i)
 
     def end(self):
@@ -153,12 +153,12 @@ class strange_headers(GrepPlugin):
         headers = kb.kb.get('strange_headers', 'strange_headers')
         # This is how I saved the data:
         #    i['header_name'] = header_name
-        #    i['header_value'] = response.getHeaders()[header_name]
+        #    i['header_value'] = response.get_headers()[header_name]
 
         # Group correctly
         tmp = []
         for i in headers:
-            tmp.append((i['header_name'], i.getURL()))
+            tmp.append((i['header_name'], i.get_url()))
 
         # And don't print duplicates
         tmp = list(set(tmp))

@@ -97,7 +97,7 @@ class find_dvcs(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        domain_path = fuzzable_request.get_url().get_domain_path()
 
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add(domain_path)
@@ -114,7 +114,7 @@ class find_dvcs(CrawlPlugin):
         @return: URLs
         '''
         for repo in self._dvcs.keys():
-            repo_url = domain_path.urlJoin(self._dvcs[repo]['filename'])
+            repo_url = domain_path.url_join(self._dvcs[repo]['filename'])
             function = self._dvcs[repo]['function']
             yield repo_url, function, repo, domain_path
 
@@ -148,12 +148,12 @@ class find_dvcs(CrawlPlugin):
 
         if not is_404(http_response):
 
-            filenames = repo_get_files(http_response.getBody())
+            filenames = repo_get_files(http_response.get_body())
 
             parsed_url_set = set()
 
             for filename in self._clean_filenames(filenames):
-                test_url = domain_path.urlJoin(filename)
+                test_url = domain_path.url_join(filename)
                 if test_url not in self._analyzed_filenames:
                     parsed_url_set.add(test_url)
                     self._analyzed_filenames.add(filename)
@@ -166,11 +166,11 @@ class find_dvcs(CrawlPlugin):
                 v.set_id(http_response.id)
                 v.set_name(repo + ' found')
                 v.set_severity(severity.MEDIUM)
-                v.setURL(http_response.getURL())
+                v.set_url(http_response.get_url())
                 msg = ('A %s was found at: "%s"; this could'
                        ' indicate that a %s is accessible. You might'
                        ' be able to download the Web application source code.')
-                v.set_desc(msg % (repo, v.getURL(), repo))
+                v.set_desc(msg % (repo, v.get_url(), repo))
                 kb.kb.append(self, repo, v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 

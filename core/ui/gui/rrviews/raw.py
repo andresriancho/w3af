@@ -40,11 +40,11 @@ class HttpRawView(HttpEditor):
             buf = self.textView.get_buffer()
             buf.connect("changed", self._changed)
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in textview.'''
         self.set_text(obj.dump())
 
-    def getObject(self):
+    def get_object(self):
         '''Return object (request or resoponse).'''
         head, body = self.get_text(splitted=True)
         if self.is_request:
@@ -56,10 +56,10 @@ class HttpRawView(HttpEditor):
         '''Synchronize changes with other views (callback).'''
         if not self.initial:
             try:
-                obj = self.getObject()
+                obj = self.get_object()
                 self.reset_bg_color()
             except w3afException, ex:
                 self.set_bg_color(gtk.gdk.color_parse("#FFCACA"))
                 return
-            self.parentView.setObject(obj)
+            self.parentView.set_object(obj)
             self.parentView.synchronize(self.id)

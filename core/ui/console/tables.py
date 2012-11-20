@@ -50,13 +50,13 @@ class table(object):
         self._tableWidth = sum(self._widthes) + \
             self._colsNum * (sl + 2) + sl
 
-        self.drawBr()
+        self.draw_br()
         for row in self._rows:
-            self.drawRow(row)
+            self.draw_row(row)
             if header:
-                self.drawBr()
+                self.draw_br()
             header = False
-        self.drawBr()
+        self.draw_br()
 
     def _initRelWidthes(self, termWidth):
 
@@ -114,14 +114,14 @@ class table(object):
         for i in self._colsRange:
             self._widthes[i] += delta[i]
 
-    def drawBr(self, char='-'):
+    def draw_br(self, char='-'):
         ls = len(self._separator)
         om.out.console(self._separator + char * (self._tableWidth -
                        2 * ls) + self._separator)
 
-    def drawRow(self, row):
+    def draw_row(self, row):
         if len(row) == 0:
-            self.drawBr()
+            self.draw_br()
             return
         columns = [formatParagraph(col, w) for col, w in zip(row,
                                                              self._widthes)]

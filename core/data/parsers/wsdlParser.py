@@ -62,7 +62,7 @@ class wsdlParser:
         else:
             return False
 
-    def setWsdl(self, xmlData):
+    def set_wsdl(self, xmlData):
         '''
         @param xmlData: The WSDL to parse. At this point, we really don't know if it really is a WSDL document.
         '''
@@ -79,7 +79,7 @@ class wsdlParser:
                 om.out.debug(msg)
                 raise w3afException(msg)
 
-    def getNS(self, method):
+    def get_ns(self, method):
         '''
         @method: The method name
         @return: The namespace of the WSDL
@@ -89,7 +89,7 @@ class wsdlParser:
         else:
             raise w3afException('Unknown method name.')
 
-    def getAction(self, methodName):
+    def get_action(self, methodName):
         '''
         @methodName: The method name
         @return: The soap action as a URL object
@@ -101,7 +101,7 @@ class wsdlParser:
         else:
             raise w3afException('Unknown method name.')
 
-    def getLocation(self, methodName):
+    def get_location(self, methodName):
         '''
         @methodName: The method name
         @return: The soap action.
@@ -122,10 +122,10 @@ class wsdlParser:
         for methodName in self._proxy.methods.keys():
             remoteMethodObject = remoteMethod()
             remoteMethodObject.set_methodName(str(methodName))
-            remoteMethodObject.set_namespace(self.getNS(methodName))
-            remoteMethodObject.setAction(self.getAction(methodName))
-            remoteMethodObject.setLocation(self.getLocation(methodName))
-            remoteMethodObject.setParameters(
+            remoteMethodObject.set_namespace(self.get_ns(methodName))
+            remoteMethodObject.set_action(self.get_action(methodName))
+            remoteMethodObject.set_location(self.get_location(methodName))
+            remoteMethodObject.set_parameters(
                 self.get_methodParams(methodName))
             res.append(remoteMethodObject)
         return res
@@ -145,7 +145,7 @@ class wsdlParser:
                 parameterObject = parameter()
                 parameterObject.set_name(str(details.name))
                 parameterObject.set_type(str(details.type[1]))
-                parameterObject.setNs(str(details.type[0]))
+                parameterObject.set_ns(str(details.type[0]))
                 res.append(parameterObject)
             return res
 
@@ -165,10 +165,10 @@ class parameter:
     def set_name(self, name):
         self._name = name
 
-    def getNs(self):
+    def get_ns(self):
         return self._ns
 
-    def setNs(self, namespace):
+    def set_ns(self, namespace):
         self._ns = namespace
 
     def get_type(self):
@@ -195,16 +195,16 @@ class remoteMethod:
     def set_methodName(self, name):
         self._name = name
 
-    def getAction(self):
+    def get_action(self):
         return self._action
 
-    def setAction(self, action):
+    def set_action(self, action):
         self._action = action
 
-    def getLocation(self):
+    def get_location(self):
         return self._location
 
-    def setLocation(self, location):
+    def set_location(self, location):
         self._location = location
 
     def get_namespace(self):
@@ -213,8 +213,8 @@ class remoteMethod:
     def set_namespace(self, namespace):
         self._namespace = namespace
 
-    def getParameters(self):
+    def get_parameters(self):
         return self._inParameters
 
-    def setParameters(self, inparams):
+    def set_parameters(self, inparams):
         self._inParameters = inparams

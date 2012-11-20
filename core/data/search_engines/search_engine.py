@@ -40,7 +40,7 @@ class SearchEngine(object):
                  'Googlebot/3.1 (+http://www.googlebot.com/bot.html)')]
         self._headers = Headers(hdrs)
 
-    def getNResults(self, query, limit=0):
+    def get_n_results(self, query, limit=0):
         '''
         Return a list of URLs ; that represent the result to all the search.
         '''
@@ -73,7 +73,7 @@ class SearchEngine(object):
 
         return result
 
-    def getNResultPages(self, query, limit=0):
+    def get_n_result_pages(self, query, limit=0):
         '''
         Return a list of httpresponses that represent the pages returned by
         the search engine when w3af performs a search.
@@ -87,7 +87,7 @@ class SearchEngine(object):
                 om.out.debug(str(w3))
                 raise
             except Exception, e:
-                msg = 'Unhandled exception in SearchEngine.getNResultPages(): "%s"'
+                msg = 'Unhandled exception in SearchEngine.get_n_result_pages(): "%s"'
                 om.out.debug(msg % e)
                 raise
             else:
@@ -98,7 +98,7 @@ class SearchEngine(object):
 
         return result
 
-    def numberOfResults(self, query):
+    def number_of_results(self, query):
         '''
         Return the number of results for a given search.
         '''

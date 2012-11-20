@@ -45,21 +45,21 @@ class blank_body(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.getBody() == '' and request.get_method() in ['GET', 'POST']\
-            and response.getCode() not in [401, 304, 302, 301, 204]\
-            and 'location' not in response.getLowerCaseHeaders()\
-                and response.getURL() not in self._already_reported:
+        if response.get_body() == '' and request.get_method() in ['GET', 'POST']\
+            and response.get_code() not in [401, 304, 302, 301, 204]\
+            and 'location' not in response.get_lower_case_headers()\
+                and response.get_url() not in self._already_reported:
 
             #   report these informations only once
-            self._already_reported.add(response.getURL())
+            self._already_reported.add(response.get_url())
 
             #   append the info object to the KB.
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Blank body')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             i.set_id(response.id)
-            msg = 'The URL: "' + response.getURL() + \
+            msg = 'The URL: "' + response.get_url() + \
                 '" returned an empty body. '
             msg += 'This could indicate an error.'
             i.set_desc(msg)

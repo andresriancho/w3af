@@ -50,26 +50,26 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
         self._sslKeyFile = None
         om.out.debug('Called __init__ of certHTTPSHandler.')
 
-    def getSSLKeyFile(self):
+    def get_ssl_key_file(self):
         '''
         @return: A string with the SSL key path and filename.
         '''
         return self._sslKeyFile
 
-    def setSSLKeyFile(self, keyFile):
+    def set_ssl_key_file(self, keyFile):
         '''
         @param keyFile: A string with the SSL key path and filename.
         @return: None
         '''
         self._sslKeyFile = keyFile
 
-    def getSSLCertFile(self):
+    def get_ssl_cert_file(self):
         '''
         @return: A string with the SSL cert path and filename.
         '''
         return self._sslCertFile
 
-    def setSSLCertFile(self, file):
+    def set_ssl_cert_file(self, file):
         '''
         @param file: A string with the SSL cert path and filename.
         @return: None
@@ -81,6 +81,6 @@ class certHTTPSHandler(urllib2.HTTPSHandler):
         #return self.do_open(httplib.HTTPSConnection, req)
 
         # My version :P
-        certHTTPSConnection.cert_file = self.getSSLCertFile()
-        certHTTPSConnection.key_file = self.getSSLKeyFile()
+        certHTTPSConnection.cert_file = self.get_ssl_cert_file()
+        certHTTPSConnection.key_file = self.get_ssl_key_file()
         return self.do_open(certHTTPSConnection, req)

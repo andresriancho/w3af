@@ -39,7 +39,7 @@ class crontabHandler(delayedExecution):
         self._execMethod = execMethod
         self._cronFile = get_remote_temp_file(self._execMethod)
 
-    def canDelay(self):
+    def can_delay(self):
         '''
         @return: True if the remote user can add entries to his crontab
         '''
@@ -51,7 +51,7 @@ class crontabHandler(delayedExecution):
             om.out.debug('[crontabHandler] The user can create a cron entry.')
             return True
 
-    def addToSchedule(self, commandToExec):
+    def add_to_schedule(self, commandToExec):
         '''
         Adds a command to the cron.
         '''
@@ -88,7 +88,7 @@ class crontabHandler(delayedExecution):
 
         return waitTime
 
-    def restoreOldSchedule(self):
+    def restore_old_schedule(self):
         self._exec('/bin/echo -e ' + self._oldCron + ' > ' + self._cronFile)
         self._exec('crontab ' + self._cronFile)
         self._exec('/bin/rm ' + self._cronFile)

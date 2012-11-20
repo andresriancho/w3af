@@ -120,18 +120,18 @@ class sqlmap(AttackPlugin):
         '''
         return 'shell'
 
-    def getExploitableVulns(self):
+    def get_exploitable_vulns(self):
         vulns = list(kb.kb.get('blind_sqli', 'blind_sqli'))
         vulns.extend(kb.kb.get('sqli', 'sqli'))
         return vulns
 
-    def canExploit(self, vulnToExploit=None):
+    def can_exploit(self, vulnToExploit=None):
         '''
         Searches the kb for vulnerabilities that the plugin can exploit.
 
         @return: True if plugin knows how to exploit a found vuln.
         '''
-        vulns = self.getExploitableVulns()
+        vulns = self.get_exploitable_vulns()
 
         if vulnToExploit is not None:
             vulns = [v for v in vulns if v.get_id() == vulnToExploit]
@@ -152,7 +152,7 @@ class sqlmap(AttackPlugin):
 
         @return: True if the shell is working and the user can start calling specific_user_input
         '''
-        if not self.canExploit():
+        if not self.can_exploit():
             return []
         else:
             vulns = kb.kb.get('blind_sqli', 'blind_sqli')
@@ -175,7 +175,7 @@ class sqlmap(AttackPlugin):
 
                 # The user didn't selected anything, or we are in the selected vuln!
                 om.out.debug(
-                    'Verifying vulnerability in URL: "' + v.getURL() + '".')
+                    'Verifying vulnerability in URL: "' + v.get_url() + '".')
                 vuln_obj = bsql.is_injectable(v.get_mutant())
 
                 if vuln_obj:
@@ -214,14 +214,14 @@ class sqlmap(AttackPlugin):
         bsql.set_eq_limit(self._eq_limit)
 
         dbBuilder = dbDriverBuilder(self._uri_opener, bsql.equal_with_limit)
-        driver = dbBuilder.getDriverForVuln(vuln_obj)
+        driver = dbBuilder.get_driver_for_vuln(vuln_obj)
         if driver is None:
             return None
         else:
             # Create the shell object
             shell_obj = sqlShellObj(vuln_obj)
-            shell_obj.setGoodSamaritan(self._goodSamaritan)
-            shell_obj.setDriver(driver)
+            shell_obj.set_good_samaritan(self._goodSamaritan)
+            shell_obj.set_driver(driver)
             kb.kb.append(self, 'shells', shell_obj)
             return shell_obj
 
@@ -322,13 +322,13 @@ class sqlmap(AttackPlugin):
 
 class sqlShellObj(shell):
 
-    def setDriver(self, driver):
+    def set_driver(self, driver):
         '''
         @param driver: The DB driver from sqlmap.
         '''
         self._driver = driver
 
-    def setGoodSamaritan(self, good_samaritan):
+    def set_good_samaritan(self, good_samaritan):
         '''
         @param good_samaritan: A boolean that indicates if we are going to use it or not.
         '''
@@ -349,25 +349,25 @@ class sqlShellObj(shell):
             raise w3afException('No driver could be created.')
 
         _method_map = {}
-        _method_map['fingerprint'] = self._driver.getFingerprint
-        _method_map['banner'] = self._driver.getBanner
-        _method_map['current-user'] = self._driver.getCurrentUser
-        _method_map['current-db'] = self._driver.getCurrentDb
-        _method_map['users'] = self._driver.getUsers
-        _method_map['dbs'] = self._driver.getDbs
-        _method_map['tables'] = self._driver.auxGetTables
-        _method_map['columns'] = self._driver.auxGetColumns
-        _method_map['dump'] = self._driver.auxDump
-        _method_map['file'] = self._driver.getFile
-        _method_map['expression'] = self._driver.getExpr
-        _method_map['union-check'] = self._driver.unionCheck
+        _method_map['fingerprint'] = self._driver.get_fingerprint
+        _method_map['banner'] = self._driver.get_banner
+        _method_map['current-user'] = self._driver.get_current_user
+        _method_map['current-db'] = self._driver.get_current_db
+        _method_map['users'] = self._driver.get_users
+        _method_map['dbs'] = self._driver.get_dbs
+        _method_map['tables'] = self._driver.aux_get_tables
+        _method_map['columns'] = self._driver.aux_get_columns
+        _method_map['dump'] = self._driver.aux_dump
+        _method_map['file'] = self._driver.get_file
+        _method_map['expression'] = self._driver.get_expr
+        _method_map['union-check'] = self._driver.union_check
         _method_map['help'] = self.help
 
         if command in _method_map:
             method = _method_map[command]
         else:
-            if self._goodSamaritan and self._driver.isRunningGoodSamaritan():
-                self._driver.goodSamaritanContribution(command)
+            if self._goodSamaritan and self._driver.is_running_good_samaritan():
+                self._driver.good_samaritan_contribution(command)
                 return None
             else:
                 om.out.console(
@@ -384,7 +384,7 @@ class sqlShellObj(shell):
         args = tuple(parameters)
 
         if self._goodSamaritan and command.strip() != 'help':
-            self._driver.startGoodSamaritan()
+            self._driver.start_good_samaritan()
 
         try:
             res = apply(method, args)
@@ -400,7 +400,7 @@ class sqlShellObj(shell):
             res = res.replace('\n', '\r\n')
 
         # Always stop the good samaritan
-        self._driver.stopGoodSamaritan()
+        self._driver.stop_good_samaritan()
         om.out.console('\r\n' + res)
         self._showPrompt()
 
@@ -431,10 +431,10 @@ class sqlShellObj(shell):
 
     def _identifyOs(self):
         # hmmm....
-        self._rSystem = self._rSystemName = self._dbms = self._driver.getFingerprint()
-        self._rUser = self._driver.getCurrentUser()
+        self._rSystem = self._rSystemName = self._dbms = self._driver.get_fingerprint()
+        self._rUser = self._driver.get_current_user()
 
-    def getRemoteSystem(self):
+    def get_remote_system(self):
         return self._dbms
 
     def __repr__(self):
@@ -460,7 +460,7 @@ class sqlShellObj(shell):
         In some other cases, the shell prints something to the console and then exists,
         or maybe some other, more complex, thing.
         '''
-        if self._goodSamaritan and self._driver.isRunningGoodSamaritan():
+        if self._goodSamaritan and self._driver.is_running_good_samaritan():
             # Keep the user locked inside this shell until the good samaritan ain't working
             # anymore
             #print 'a' * 33

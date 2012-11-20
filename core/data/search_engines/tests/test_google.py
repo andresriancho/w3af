@@ -53,20 +53,20 @@ class test_google(unittest.TestCase):
         self.gse = google(opener)
 
     def test_get_links_results_len(self):
-        results = self.gse.getNResults(self.query, self.limit)
+        results = self.gse.get_n_results(self.query, self.limit)
 
         self.assertEqual(len(results), self.limit)
 
         # Results need to be from at least three different domains, this is an
         # easy way to verify that the REGEX is working as expected
         self.assertTrue(
-            len(set([r.URL.getDomain() for r in results])) >= 3, results)
+            len(set([r.URL.get_domain() for r in results])) >= 3, results)
 
         # URLs should be unique
         self.assertTrue(len(results) == len(set([r.URL for r in results])))
 
     def test_page_body(self):
-        responses = self.gse.getNResultPages(self.query, self.limit)
+        responses = self.gse.get_n_result_pages(self.query, self.limit)
 
         #
         # Verify that responses' body contains at least one word in query
@@ -75,7 +75,7 @@ class test_google(unittest.TestCase):
 
         for resp in responses:
             found = False
-            html_text = resp.getBody()
+            html_text = resp.get_body()
             for word in words:
                 if word in html_text:
                     found = True
@@ -155,7 +155,7 @@ class BaseGoogleAPISearchTest(object):
         self.assertEqual(len(searcher.links), self.COUNT, msg)
 
         for link in searcher.links:
-            link_domain = link.URL.getDomain()
+            link_domain = link.URL.get_domain()
             msg = "Current link domain is '%s'. Expected: '%s'" % (
                 link_domain, domain)
             self.assertEqual(link_domain, domain, msg)

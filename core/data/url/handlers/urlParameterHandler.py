@@ -42,7 +42,7 @@ class URLParameterHandler(urllib2.BaseHandler):
 
     def http_request(self, req):
         url_instance = URL(req.get_full_url())
-        url_instance.setParam(self._url_parameter)
+        url_instance.set_param(self._url_parameter)
 
         new_request = HTTPRequest(url_instance, headers=req.headers,
                                   origin_req_host=req.get_origin_req_host(),

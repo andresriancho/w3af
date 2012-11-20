@@ -81,18 +81,18 @@ class web_spider(CrawlPlugin):
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [i.getDomainPath(
+            self._target_urls = [i.get_domain_path(
             ) for i in cf.cf.get('targets')]
 
             #    The following line triggered lots of bugs when the "stop" button
             #    was pressed and the core did this: "cf.cf.save('targets', [])"
-            #self._target_domain = cf.cf.get('targets')[0].getDomain()
+            #self._target_domain = cf.cf.get('targets')[0].get_domain()
             #    Changing it to something awful but bug-free.
             targets = cf.cf.get('targets')
             if not targets:
                 return []
             else:
-                self._target_domain = targets[0].getDomain()
+                self._target_domain = targets[0].get_domain()
 
         #
         # If it is a form, then smart_fill the parameters to send something that
@@ -100,7 +100,7 @@ class web_spider(CrawlPlugin):
         #
         if isinstance(fuzzable_req, HTTPPostDataRequest):
 
-            if fuzzable_req.getURL() in self._already_filled_form:
+            if fuzzable_req.get_url() in self._already_filled_form:
                 return []
 
             fuzzable_req = self._fill_form(fuzzable_req)
@@ -110,7 +110,7 @@ class web_spider(CrawlPlugin):
                                             follow_redir=False)
 
         # Nothing to do here...
-        if resp.getCode() == 401:
+        if resp.get_code() == 401:
             return []
 
         fuzz_req_list = self._create_fuzzable_requests(
@@ -137,7 +137,7 @@ class web_spider(CrawlPlugin):
         # the SGML parser to analyze a image file, its useless and
         # consumes CPU power.
         if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
-            original_url = resp.getRedirURI()
+            original_url = resp.get_redir_uri()
             try:
                 doc_parser = dpCache.dpc.get_document_parser_for(resp)
             except w3afException, w3:
@@ -161,7 +161,7 @@ class web_spider(CrawlPlugin):
                 # http://localhost/a/
                 # http://localhost/
                 # And analyze the responses...
-                dirs = resp.getURL().getDirectories()
+                dirs = resp.get_url().get_directories()
                 only_re_refs = set(re_refs) - set(dirs + parsed_refs)
 
                 all_refs = itertools.chain(dirs, parsed_refs, re_refs)
@@ -169,7 +169,7 @@ class web_spider(CrawlPlugin):
                 for ref in unique_justseen(sorted(all_refs)):
 
                     # I don't want w3af sending requests to 3rd parties!
-                    if ref.getDomain() != self._target_domain:
+                    if ref.get_domain() != self._target_domain:
                         continue
 
                     # Filter the URL's according to the configured regexs
@@ -209,7 +209,7 @@ class web_spider(CrawlPlugin):
         Fill the HTTP request form that is passed as fuzzable_req.
         @return: A filled form
         '''
-        self._already_filled_form.add(fuzzable_req.getURL())
+        self._already_filled_form.add(fuzzable_req.get_url())
 
         to_send = fuzzable_req.get_dc().copy()
 
@@ -276,7 +276,7 @@ class web_spider(CrawlPlugin):
         # But this does not, and it is friendlier that simply ignoring the
         # referer
         #
-        referer = original_url.baseUrl().url_string
+        referer = original_url.base_url().url_string
         headers = Headers([('Referer', referer)])
 
         try:
@@ -298,11 +298,11 @@ class web_spider(CrawlPlugin):
                 # add_self will be False in all the other cases, for example
                 # in the case where the response code is a 404, because we don't
                 # want to return a 404 to the core.
-                add_self = resp.getCode() in self.NOT_404
+                add_self = resp.get_code() in self.NOT_404
                 fuzz_req_list = self._create_fuzzable_requests(resp,
                                                                request=original_request, add_self=add_self)
                 if not possibly_broken and not add_self:
-                    t = (resp.getURL(), original_request.getURI())
+                    t = (resp.get_url(), original_request.get_uri())
                     self._broken_links.add(t)
             else:
                 om.out.debug('Adding relative reference "%s" '
@@ -313,7 +313,7 @@ class web_spider(CrawlPlugin):
 
             # Process the list.
             for fuzz_req in fuzz_req_list:
-                fuzz_req.setReferer(referer)
+                fuzz_req.set_referer(referer)
                 self.output_queue.put(fuzz_req)
 
     def end(self):

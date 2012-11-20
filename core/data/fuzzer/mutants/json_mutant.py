@@ -142,7 +142,7 @@ class JSONMutant(PostDataMutant):
     def get_mutant_type(self):
         return 'JSON data'
 
-    def getHeaders(self):
+    def get_headers(self):
         headers = self._headers
         # TODO: Verify this, I had no internet while adding the next line
         headers['Content-Type'] = 'application/json'
@@ -157,7 +157,7 @@ class JSONMutant(PostDataMutant):
         @return: A string representing WHAT was fuzzed.
         '''
         res = ''
-        res += '"' + self.getURL() + '", using HTTP method '
+        res += '"' + self.get_url() + '", using HTTP method '
         res += self.get_method() + '. The sent JSON-data was: "'
         res += str(self.get_dc())
         res += '"'
@@ -173,11 +173,11 @@ class JSONMutant(PostDataMutant):
         if not isinstance(freq, HTTPPostDataRequest):
             return []
 
-        if not is_json(freq.getData()):
+        if not is_json(freq.get_data()):
             return []
 
         # Now, fuzz the parsed JSON data...
-        post_data = freq.getData()
+        post_data = freq.get_data()
         parsed_json_inst = json.loads(post_data)
         return _make_json_mutants(freq, mutant_str_list,
                                   fuzzable_param_list,

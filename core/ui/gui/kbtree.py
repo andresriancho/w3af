@@ -196,7 +196,7 @@ class KBTree(gtk.TreeView):
                     holdplugin, helpers.KB_COLORS[maxpluginlevel])
         return filteredkb
 
-    def setFilter(self, active):
+    def set_filter(self, active):
         '''Sets a new filter and update the tree.
 
         @param active: which types should be shown.
@@ -348,14 +348,14 @@ class KBTree(gtk.TreeView):
         #    menu.append(opc)
         #    menu.popup(None, None, None, event.button, event.time)
         #    # get instance
-        #    vuln = self.getInstance(path)
+        #    vuln = self.get_instance(path)
         #    if isinstance(vuln, core.data.kb.vuln.vuln):
         #        vulnid = vuln.get_id()
         #
-        #        def goLog(w):
-        #            self.w3af.mainwin.httplog.showReqResById(vulnid)
+        #        def go_log(w):
+        #            self.w3af.mainwin.httplog.show_req_res_by_id(vulnid)
         #            self.w3af.mainwin.nb.set_current_page(4)
-        #        opc.connect('activate', goLog)
+        #        opc.connect('activate', go_log)
         #    else:
         #        opc.set_sensitive(False)
         #    menu.show_all()
@@ -374,7 +374,7 @@ class KBTree(gtk.TreeView):
             # Make the X coord relative to the cell
             x_cell -= self.get_cell_area(path, tv_column).x
             # Get the potential vuln object
-            vuln = self.getInstance(path)
+            vuln = self.get_instance(path)
 
             # Is the cursor over an 'exploit' icon?
             if vuln is not None and self._isExploitable(vuln) \
@@ -395,7 +395,7 @@ class KBTree(gtk.TreeView):
             # Make the X coord relative to the cell
             x_cell -= self.get_cell_area(path, tv_column).x
             # Get the potential vuln object
-            vuln = self.getInstance(path)
+            vuln = self.get_instance(path)
 
             if vuln is not None and self._isExploitable(vuln) \
                     and 0 <= x_cell <= 18:
@@ -412,7 +412,7 @@ class KBTree(gtk.TreeView):
         # TODO: Implement this.
         return False
 
-    def getInstance(self, path):
+    def get_instance(self, path):
         '''Extracts the instance from the tree.
 
         @param path: where the user is in the tree
@@ -457,7 +457,7 @@ class KBTree(gtk.TreeView):
             for exploit_name in self.w3af.plugins.get_plugin_list("attack"):
                 exploit = self.w3af.plugins.get_plugin_inst(
                     "attack", exploit_name)
-                if exploit.canExploit(vuln_id):
+                if exploit.can_exploit(vuln_id):
                     exploits.append(exploit_name)
             # If found at least one exploit, add entry
             if exploits:

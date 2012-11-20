@@ -88,7 +88,7 @@ class wmlParser(SGMLParser):
         u'http://www.w3af.com/index.aspx'
         '''
         SGMLParser._pre_parse(self, HTTPResponse)
-        assert self._baseUrl is not None, 'The base URL must be set.'
+        assert self._base_url is not None, 'The base URL must be set.'
 
     def _handle_go_tag_start(self, tag, attrs):
 
@@ -99,13 +99,13 @@ class wmlParser(SGMLParser):
         action = attrs.get('href', '')
         if action:
             self._inside_form = True
-            action = unicode(self._baseUrl.urlJoin(action))
+            action = unicode(self._base_url.url_join(action))
             action = URL(self._decode_url(action),
                          encoding=self._encoding)
             # Create the form
             f = form.Form(encoding=self._encoding)
             f.set_method(method)
-            f.setAction(action)
+            f.set_action(action)
             self._forms.append(f)
         else:
             om.out.debug('wmlParser found a form without an action. '
@@ -118,7 +118,7 @@ class wmlParser(SGMLParser):
         if self._inside_form:
             # We are working with the last form
             f = self._forms[-1]
-            f.addInput(attrs.items())
+            f.add_input(attrs.items())
 
     _handle_postfield_tag_start = \
         _handle_setvar_tag_start = _handle_input_tag_start
@@ -139,4 +139,4 @@ class wmlParser(SGMLParser):
             # Working with the last form in the list
             f = self._forms[-1]
             attrs['name'] = self._select_tag_name
-            f.addInput(attrs.items())
+            f.add_input(attrs.items())

@@ -77,7 +77,7 @@ class find_jboss(InfrastructurePlugin):
         Also verifies some vulnerabilities.
         '''
         fuzzable_requests_to_return = []
-        base_url = fuzzable_request.getURL().baseUrl()
+        base_url = fuzzable_request.get_url().base_url()
 
         args_iter = izip(repeat(base_url), self.JBOSS_VULNS)
         otm_send_request = one_to_many(self.send_request)
@@ -88,13 +88,13 @@ class find_jboss(InfrastructurePlugin):
 
             if not is_404(response):
 
-                vuln_url = base_url.urlJoin(vuln_db_instance['url'])
+                vuln_url = base_url.url_join(vuln_db_instance['url'])
 
                 if vuln_db_instance['type'] == 'info':
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name(vuln_db_instance['name'])
-                    i.setURL(vuln_url)
+                    i.set_url(vuln_url)
                     i.set_id(response.id)
                     i.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', i)
@@ -103,7 +103,7 @@ class find_jboss(InfrastructurePlugin):
                     v = vuln.vuln()
                     v.set_plugin_name(self.get_name())
                     v.set_name(vuln_db_instance['name'])
-                    v.setURL(vuln_url)
+                    v.set_url(vuln_url)
                     v.set_id(response.id)
                     v.set_desc(vuln_db_instance['desc'])
                     kb.kb.append(self, 'find_jboss', v)
@@ -114,11 +114,11 @@ class find_jboss(InfrastructurePlugin):
         return fuzzable_requests_to_return
 
     def send_request(self, base_url, vuln_db_instance):
-        vuln_url = base_url.urlJoin(vuln_db_instance['url'])
+        vuln_url = base_url.url_join(vuln_db_instance['url'])
         response = self._uri_opener.GET(vuln_url)
         return vuln_db_instance, response
 
-    def handleUrlError(self, url_error):
+    def handle_url_error(self, url_error):
         return (True, None)
 
     def get_long_desc(self):

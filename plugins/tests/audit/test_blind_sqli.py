@@ -47,7 +47,7 @@ class TestBlindSQLI(PluginTest):
             "Blind SQL injection vulnerability", vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals("numeric", vuln['type'])
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_single_quote(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string.php'
@@ -63,7 +63,7 @@ class TestBlindSQLI(PluginTest):
             "Blind SQL injection vulnerability", vuln.get_name())
         self.assertFalse('time delays' in vuln.get_desc())
         self.assertEquals("stringsingle", vuln['type'])
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_single_quote_random(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/bsqli_string_rnd.php'
@@ -77,7 +77,7 @@ class TestBlindSQLI(PluginTest):
         vuln = vulns[0]
         self.assertEquals(
             vuln.get_name(), 'Blind SQL injection vulnerability')
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_delay_integer(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_integer.php'
@@ -92,7 +92,7 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(
             'Blind SQL injection vulnerability', vuln.get_name())
         self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_delay_string_single(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_single.php'
@@ -107,7 +107,7 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(
             'Blind SQL injection vulnerability', vuln.get_name())
         self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_delay_string_double(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/completely_bsqli_double.php'
@@ -122,7 +122,7 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(
             'Blind SQL injection vulnerability', vuln.get_name())
         self.assertTrue('time delays' in vuln.get_desc())
-        self.assertEquals(target_url, str(vuln.getURL()))
+        self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_single_quote_form(self):
         target_url = 'http://moth/w3af/audit/blind_sql_injection/test_forms.html'
@@ -138,7 +138,7 @@ class TestBlindSQLI(PluginTest):
             'Blind SQL injection vulnerability', vuln.get_name())
         self.assertEquals("stringsingle", vuln['type'])
         self.assertFalse('time delays' in vuln.get_desc())
-        self.assertEquals(action_url, str(vuln.getURL()))
+        self.assertEquals(action_url, str(vuln.get_url()))
 
     def test_false_positives(self):
         target_path = 'http://moth/w3af/audit/blind_sql_injection/'

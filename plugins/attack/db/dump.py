@@ -11,11 +11,11 @@ class SQLMapDump:
         elif method == 'dbs':
             return self.list('Available databases: ', response)
         elif method == 'tables':
-            return self.dbTables(response)
+            return self.db_tables(response)
         elif method == 'columns':
-            return self.dbTableColumns(response)
+            return self.db_table_columns(response)
         elif method == 'dump':
-            return self.dbTableValues(response)
+            return self.db_table_values(response)
 
         return self.string(method, response)
 
@@ -41,17 +41,17 @@ class SQLMapDump:
             res += "[*] %s\n" % element
         return res.strip()
 
-    def dbTables(self, dbTables):
+    def db_tables(self, db_tables):
         res = ''
         maxlength = 0
 
-        for tables in dbTables.values():
+        for tables in db_tables.values():
             for table in tables:
                 maxlength = max(maxlength, len(table))
 
         lines = "-" * (int(maxlength) + 2)
 
-        for db, tables in dbTables.items():
+        for db, tables in db_tables.items():
             res += "Database: %s\n" % db
 
             if len(tables) == 1:
@@ -69,7 +69,7 @@ class SQLMapDump:
 
         return res.strip()
 
-    def dbTableColumns(self, tableColumns):
+    def db_table_columns(self, tableColumns):
         res = ''
         for db, tables in tableColumns.items():
             if not db:
@@ -114,7 +114,7 @@ class SQLMapDump:
 
         return res.strip()
 
-    def dbTableValues(self, tableValues):
+    def db_table_values(self, tableValues):
         res = ''
 
         db = tableValues["__infos__"]["db"]

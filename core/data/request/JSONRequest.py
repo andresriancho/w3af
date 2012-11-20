@@ -32,7 +32,7 @@ class JSONPostDataRequest(HTTPPostDataRequest):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def getData(self):
+    def get_data(self):
         '''
         @return: A string that represents the JSON data saved in the dc.
         '''
@@ -54,4 +54,4 @@ class JSONPostDataRequest(HTTPPostDataRequest):
         self._dc = data_cont
 
     def __repr__(self):
-        return '<JSON fuzzable request | ' + self.get_method() + ' | ' + self.getURI() + ' >'
+        return '<JSON fuzzable request | ' + self.get_method() + ' | ' + self.get_uri() + ' >'

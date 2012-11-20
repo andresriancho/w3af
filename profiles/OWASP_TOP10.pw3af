@@ -101,7 +101,7 @@ caFileName = plugins/audit/ssl_certificate/ca.pem
 [grep.analyze_cookies]
 
 [grep.get_emails]
-onlyTargetDomain = True
+only_target_domain = True
 
 [grep.oracle]
 

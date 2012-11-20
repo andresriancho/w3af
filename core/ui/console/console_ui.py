@@ -209,7 +209,7 @@ class ConsoleUI(object):
     def term_width(self):
         return term.terminal_size()[0]
 
-    def drawTable(self, lines, header=False):
+    def draw_table(self, lines, header=False):
         table = tables.table(lines)
         table.draw(self.term_width(), header)
 
@@ -224,17 +224,17 @@ class ConsoleUI(object):
         self._line = []
 #        self._showPrompt()
 
-    def inRawLineMode(self):
-        return hasattr(self._context, 'isRaw') and self._context.isRaw()
+    def in_raw_line_mode(self):
+        return hasattr(self._context, 'is_raw') and self._context.is_raw()
 
     def exit(self):
         self._active = False
 
-    def _getHistory(self):
-        return self._context.getHistory()
+    def _get_history(self):
+        return self._context.get_history()
 
     def _setHistory(self, hist):
-        path = self._context.getPath()
+        path = self._context.get_path()
         self._history[path] = (hist, [])
 
     def _handleKey(self, key):
@@ -248,7 +248,7 @@ class ConsoleUI(object):
 
     def _backOrExit(self):
         exit = len(self._trace) == 0
-        if self.inRawLineMode():
+        if self.in_raw_line_mode():
             # temporary hack for exploit interaction mode
             # possibly, menu should have it's 'exit' method
             self._context = self.back()
@@ -296,12 +296,12 @@ class ConsoleUI(object):
         om.out.console('')
         if len(line) and not line.isspace():
 
-            self._getHistory().remember(self._line)
+            self._get_history().remember(self._line)
 
             try:
                 # New menu is the result of any command.
                 # If None, the menu is not changed.
-                params = self.inRawLineMode() and line or self._parseLine(line)
+                params = self.in_raw_line_mode() and line or self._parseLine(line)
                 menu = self._context.execute(params)
             except w3afMustStopException:
                 menu = None
@@ -367,7 +367,7 @@ class ConsoleUI(object):
         '''
 
         # TODO: autocomplete for raw menu
-        if self.inRawLineMode():
+        if self.in_raw_line_mode():
             return
 
         line = self._getLineStr(
@@ -413,7 +413,7 @@ class ConsoleUI(object):
             term.bell()
 
     def _onUp(self):
-        history = self._getHistory()
+        history = self._get_history()
         newLine = history.back(self._line)
 
         if newLine is not None:
@@ -422,7 +422,7 @@ class ConsoleUI(object):
             term.bell()
 
     def _onDown(self):
-        history = self._getHistory()
+        history = self._get_history()
         newLine = history.forward()
         if newLine is not None:
             self._setLine(newLine)
@@ -481,7 +481,7 @@ class ConsoleUI(object):
         term.moveBack(len(tail))
 
     def _showPrompt(self):
-        term.write(self._context.getPath() + ">>> ")
+        term.write(self._context.get_path() + ">>> ")
 
     def _showLine(self):
         strLine = self._getLineStr()

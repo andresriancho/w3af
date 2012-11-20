@@ -52,8 +52,8 @@ class wordpress_enumerate_users(CrawlPlugin):
             raise w3afRunOnce()
         else:
             # Check if there is a wordpress installation in this directory
-            domain_path = fuzzable_request.getURL().getDomainPath()
-            wp_unique_url = domain_path.urlJoin('wp-login.php')
+            domain_path = fuzzable_request.get_url().get_domain_path()
+            wp_unique_url = domain_path.url_join('wp-login.php')
             response = self._uri_opener.GET(wp_unique_url, cache=True)
 
             # If wp_unique_url is not 404, wordpress = true
@@ -73,7 +73,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         gap_tolerance = 10
         gap = 0
 
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        domain_path = fuzzable_request.get_url().get_domain_path()
 
         # Loop into authors and increment user ID
         while (gap <= gap_tolerance):
@@ -108,7 +108,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         #    <title>admin | moth</title>
         #    <title>admin | Bonsai - Information Security Blog</title>
         title_search = re.search('<title>(.*?)</title>',
-                                 response_author.getBody(), re.I)
+                                 response_author.get_body(), re.I)
         if title_search:
             title = title_search.group(1)
             # If the title is the same than the last user
@@ -119,18 +119,18 @@ class wordpress_enumerate_users(CrawlPlugin):
                 # The title changed, username probably found
                 self._title_cache = title
                 username = title.split(' ')[0]
-                self._kb_info_user(self.get_name(), response_author.getURL(),
+                self._kb_info_user(self.get_name(), response_author.get_url(),
                                    response_author.id, username)
                 return True
 
         return False
 
     def _extract_from_redir(self, response_author):
-        path = response_author.getRedirURI().getPath()
+        path = response_author.get_redir_uri().get_path()
         if 'author' in path:
             # A redirect to /author/<username> was made, username probably found
             username = path.split("/")[-2]
-            self._kb_info_user(self.get_name(), response_author.getURI(),
+            self._kb_info_user(self.get_name(), response_author.get_uri(),
                                response_author.id, username)
 
             return True
@@ -145,7 +145,7 @@ class wordpress_enumerate_users(CrawlPlugin):
         i = info.info()
         i.set_plugin_name(p_name)
         i.set_name('WordPress user "%s" found' % username)
-        i.setURL(url)
+        i.set_url(url)
         i.set_id(response_id)
         msg = 'WordPress user "%s" found during username enumeration.'
         i.set_desc(msg % username)

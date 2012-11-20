@@ -70,14 +70,14 @@ class RenderingView(gtk.VBox):
         self.label = 'Rendered'
         self.parentView = parentView
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in view.'''
         raise w3afException('Child MUST implment a clear() method.')
 
     def clear(self):
         raise w3afException('Child MUST implment a clear() method.')
 
-    def getObject(self):
+    def get_object(self):
         '''Return object (request or resoponse).'''
         pass
 
@@ -97,19 +97,19 @@ class GtkHtmlRenderingView(RenderingView):
         swRenderedHTML.show_all()
         self.pack_start(swRenderedHTML)
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in view.'''
         # It doesn't make sense to render something empty
         if not obj.is_text_or_html():
             return
-        if not len(obj.getBody()):
+        if not len(obj.get_body()):
             return
         mimeType = 'text/html'
         try:
             document = gtkhtml2.Document()
             document.clear()
             document.open_stream(mimeType)
-            document.write_stream(obj.getBody())
+            document.write_stream(obj.get_body())
             document.close_stream()
             self._renderingWidget.set_document(document)
         except ValueError, ve:
@@ -138,13 +138,13 @@ class MozRenderingView(RenderingView):
         swRenderedHTML.show_all()
         self.pack_start(swRenderedHTML)
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in view.'''
         mimeType = 'text/html'
         # mimeType = obj.content_type
         if obj.is_text_or_html():
-            self._renderingWidget.render_data(obj.getBody(
-            ), long(len(obj.getBody())), str(obj.getURI()), mimeType)
+            self._renderingWidget.render_data(obj.get_body(
+            ), long(len(obj.get_body())), str(obj.get_uri()), mimeType)
 
     def clear(self):
         '''Clear view.'''
@@ -166,7 +166,7 @@ class WebKitRenderingView(RenderingView):
         swRenderedHTML.show_all()
         self.pack_start(swRenderedHTML)
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in view.'''
         mimeType = 'text/html'
         load_string = self._renderingWidget.load_string
@@ -174,8 +174,8 @@ class WebKitRenderingView(RenderingView):
         try:
             if obj.is_text_or_html():
 
-                body = obj.getBody()
-                uri = obj.getURI().url_string
+                body = obj.get_body()
+                uri = obj.get_uri().url_string
                 try:
                     load_string(body, mimeType, UTF8, uri)
                 except Exception:

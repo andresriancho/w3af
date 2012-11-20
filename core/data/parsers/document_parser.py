@@ -62,7 +62,7 @@ class DocumentParser(object):
         elif self._is_swf(http_resp):
             parser = swfParser.swfParser(http_resp)
         else:
-            msg = 'There is no parser for "%s".' % http_resp.getURL()
+            msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise w3afException(msg)
 
         self._parser = parser
@@ -103,7 +103,7 @@ class DocumentParser(object):
         '''
         if http_resp.content_type == 'application/x-shockwave-flash':
 
-            body = http_resp.getBody()
+            body = http_resp.get_body()
 
             if len(body) > 5:
                 magic = body[:3]
@@ -126,7 +126,7 @@ class DocumentParser(object):
         '''
         if http_resp.content_type == 'text/vnd.wap.wml':
 
-            document = http_resp.getBody()
+            document = http_resp.get_body()
 
             if self.WML_RE.search(document):
                 return True

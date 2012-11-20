@@ -82,21 +82,21 @@ class credit_cards(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html() and response.getCode() == 200 \
-                and response.getClearTextBody() is not None:
+        if response.is_text_or_html() and response.get_code() == 200 \
+                and response.get_clear_text_body() is not None:
 
-            found_cards = self._find_card(response.getClearTextBody())
+            found_cards = self._find_card(response.get_clear_text_body())
 
             for card in found_cards:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURL(response.getURL())
+                v.set_url(response.get_url())
                 v.set_id(response.id)
                 v.set_severity(severity.LOW)
                 v.set_name('Credit card number disclosure')
-                v.addToHighlight(card)
+                v.add_to_highlight(card)
                 msg = 'The URL: "%s" discloses the credit card number: "%s"'
-                v.set_desc(msg % (v.getURL(), card))
+                v.set_desc(msg % (v.get_url(), card))
                 kb.kb.append(self, 'credit_cards', v)
 
     def _find_card(self, body):

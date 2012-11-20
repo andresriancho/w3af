@@ -35,7 +35,7 @@ class swfParser(BaseParser):
         BaseParser.__init__(self, HTTPResponse)
 
         # work !
-        swf = HTTPResponse.getBody()
+        swf = HTTPResponse.get_body()
         if self._is_compressed(swf):
             try:
                 swf = self._inflate(swf)

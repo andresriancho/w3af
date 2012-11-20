@@ -60,16 +60,16 @@ class http_in_body (GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        uri = response.getURI()
+        uri = response.get_uri()
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        if response.getCode() != 501 and uri not in self._already_inspected \
+        if response.get_code() != 501 and uri not in self._already_inspected \
                 and response.is_text_or_html():
             # Don't repeat URLs
             self._already_inspected.add(uri)
 
-            body_without_tags = response.getClearTextBody()
+            body_without_tags = response.get_clear_text_body()
             if body_without_tags is None:
                 return
 
@@ -79,20 +79,20 @@ class http_in_body (GrepPlugin):
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Request in HTTP body')
-                    i.setURI(uri)
+                    i.set_uri(uri)
                     i.set_id(response.id)
                     i.set_desc('An HTTP request was found in the HTTP body of a response')
-                    i.addToHighlight(match.group(0))
+                    i.add_to_highlight(match.group(0))
                     kb.kb.append(self, 'request', i)
 
                 if reqres == 'RESPONSE':
                     i = info.info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Response in HTTP body')
-                    i.setURI(uri)
+                    i.set_uri(uri)
                     i.set_id(response.id)
                     i.set_desc('An HTTP response was found in the HTTP body of a response')
-                    i.addToHighlight(match.group(0))
+                    i.add_to_highlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 
     def set_options(self, options_list):
@@ -117,7 +117,7 @@ class http_in_body (GrepPlugin):
                 om.out.information(msg)
                 for i in kb.kb.get('http_in_body', info_type):
                     om.out.information(
-                        '- ' + i.getURI() + '  (id:' + str(i.get_id()) + ')')
+                        '- ' + i.get_uri() + '  (id:' + str(i.get_id()) + ')')
 
     def get_plugin_deps(self):
         '''

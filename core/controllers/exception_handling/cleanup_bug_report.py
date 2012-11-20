@@ -53,8 +53,8 @@ def cleanup_bug_report(_input):
 
     targets = cf.cf.get('targets')
     if targets is not None:
-        domains = [url.getDomain() for url in targets]
-        paths = [url.getPath() for url in targets if url.getPath() != '/']
+        domains = [url.get_domain() for url in targets]
+        paths = [url.get_path() for url in targets if url.get_path() != '/']
 
         for domain in domains:
             _input = _input.replace(domain, 'domain')

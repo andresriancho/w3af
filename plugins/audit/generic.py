@@ -64,7 +64,7 @@ class generic(AuditPlugin):
             # First I check that the current modified parameter in the mutant
             # doesn't have an already reported vulnerability. I don't want to
             # report vulnerabilities more than once.
-            if (m.getURL(), m.get_var()) in self._already_reported:
+            if (m.get_url(), m.get_var()) in self._already_reported:
                 continue
 
             # Now, we request the limit (something that doesn't exist)
@@ -108,11 +108,11 @@ class generic(AuditPlugin):
         @return: None
         '''
         original_to_error = relative_distance(
-            orig_resp.getBody(), error_response.getBody())
+            orig_resp.get_body(), error_response.get_body())
         limit_to_error = relative_distance(
-            limit_response.getBody(), error_response.getBody())
+            limit_response.get_body(), error_response.get_body())
         original_to_limit = relative_distance(
-            limit_response.getBody(), orig_resp.getBody())
+            limit_response.get_body(), orig_resp.get_body())
 
         ratio = self._diff_ratio + (1 - original_to_limit)
 
@@ -130,7 +130,7 @@ class generic(AuditPlugin):
 
             id_list = [orig_resp.id, limit_response.id, error_response.id]
 
-            if relative_distance(limit_response2.getBody(), limit_response.getBody()) > \
+            if relative_distance(limit_response2.get_body(), limit_response.get_body()) > \
                     1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
@@ -143,7 +143,7 @@ class generic(AuditPlugin):
                            mutant.found_at())
                 kb.kb.append(self, 'generic', v)
                 self._already_reported.append(
-                    (mutant.getURL(), mutant.get_var()))
+                    (mutant.get_url(), mutant.get_var()))
             else:
                 # *maybe* and just *maybe* this is a vulnerability
                 i = info.info(mutant)
@@ -155,7 +155,7 @@ class generic(AuditPlugin):
                 i.set_desc(msg)
                 kb.kb.append(self, 'generic', i)
                 self._already_reported.append(
-                    (mutant.getURL(), mutant.get_var()))
+                    (mutant.get_url(), mutant.get_var()))
 
     def _get_limit_response(self, m):
         '''
@@ -184,8 +184,8 @@ class generic(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        vulnsAndInfos = kb.kb.getAllVulns()
-        vulnsAndInfos.extend(kb.kb.getAllInfos())
+        vulnsAndInfos = kb.kb.get_all_vulns()
+        vulnsAndInfos.extend(kb.kb.get_all_infos())
         self.print_uniq(vulnsAndInfos, 'VAR')
 
     def get_options(self):

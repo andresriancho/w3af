@@ -37,7 +37,7 @@ class bug_report_menu(menu):
     '''
     def __init__(self, name, console, w3af_core, parent=None, **other):
         menu.__init__(self, name, console, w3af_core, parent)
-        self._loadHelp('bug-report')
+        self._load_help('bug-report')
 
     def _cmd_summary(self, params):
         summary = self._w3af.exception_handler.generate_summary_str()
@@ -66,7 +66,7 @@ class bug_report_menu(menu):
                 table.append(table_line)
             eid += 1
 
-        self._console.drawTable(table)
+        self._console.draw_table(table)
 
     def _cmd_details(self, params):
         '''

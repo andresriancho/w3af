@@ -133,14 +133,14 @@ class find_backdoors(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        domain_path = fuzzable_request.getURL().getDomainPath()
+        domain_path = fuzzable_request.get_url().get_domain_path()
 
         if domain_path not in self._analyzed_dirs:
             self._analyzed_dirs.add(domain_path)
 
             #   Send the requests using threads:
             self._tm.threadpool.map(self._check_if_exists,
-                                    (domain_path.urlJoin(
+                                    (domain_path.url_join(
                                         fname) for fname in WEB_SHELLS)
                                     )
 
@@ -161,9 +161,9 @@ class find_backdoors(CrawlPlugin):
                 v.set_id(response.id)
                 v.set_name('Possible web backdoor')
                 v.set_severity(severity.HIGH)
-                v.setURL(response.getURL())
+                v.set_url(response.get_url())
                 msg = 'A web backdoor was found at: "%s"; this could ' \
-                    'indicate that the server was hacked.' % v.getURL()
+                    'indicate that the server was hacked.' % v.get_url()
                 v.set_desc(msg)
                 kb.kb.append(self, 'backdoors', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
@@ -180,8 +180,8 @@ class find_backdoors(CrawlPlugin):
         @return: A bool value
         '''
         if not is_404(response):
-            body_text = response.getBody()
-            dom = response.getDOM()
+            body_text = response.get_body()
+            dom = response.get_dom()
             if dom is not None:
                 for ele, attrs in BACKDOOR_COLLECTION.iteritems():
                     for attrname, attr_vals in attrs.iteritems():

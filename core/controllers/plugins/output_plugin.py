@@ -137,7 +137,7 @@ class OutputPlugin(Plugin):
             string_to_clean = string_to_clean.replace(char, replace)
         return string_to_clean
 
-    def getCaller(self, which_stack_item=4):
+    def get_caller(self, which_stack_item=4):
         '''
         What I'm going to do is:
             - inspect the stack and try to find a reference to a plugin
@@ -146,8 +146,8 @@ class OutputPlugin(Plugin):
               specified by which_stack_item
 
         Maybe you are asking yourself why which_stack_item == 4, well, this is why:
-            I know that getCaller method will be in the stack
-            I also know that the method that calls getCaller will be in the stack
+            I know that get_caller method will be in the stack
+            I also know that the method that calls get_caller will be in the stack
             I also know that the om.out.XYZ method will be in the stack
             That's 3... so... number 4 is the one that really called me.
 
@@ -155,7 +155,7 @@ class OutputPlugin(Plugin):
                  more readable.
 
         >>> bop = OutputPlugin()
-        >>> bop.getCaller()
+        >>> bop.get_caller()
         'doctest'
 
         '''

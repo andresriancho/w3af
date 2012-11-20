@@ -34,7 +34,7 @@ class HTTPQSRequest(FuzzableRequest):
     def __init__(self, uri, method='GET', headers=Headers(), cookie=None):
         super(HTTPQSRequest, self).__init__(uri, method, headers, cookie)
 
-    def setURI(self, uri):
+    def set_uri(self, uri):
         '''
         >>> r = HTTPQSRequest('http://www.w3af.com/')
         Traceback (most recent call last):
@@ -43,29 +43,29 @@ class HTTPQSRequest(FuzzableRequest):
         >>> from core.data.parsers.url import URL
         >>> r = HTTPQSRequest(URL('http://www.w3af.com/'))
         >>> uri = URL('http://www.w3af.com/scan')
-        >>> r.setURI(uri)
-        >>> r.getURI() == uri
+        >>> r.set_uri(uri)
+        >>> r.get_uri() == uri
         True
         '''
-        super(HTTPQSRequest, self).setURI(uri)
+        super(HTTPQSRequest, self).set_uri(uri)
         self._dc = self._uri.querystring
 
-    def getURI(self):
+    def get_uri(self):
         uri = self._url.copy()
         if self._dc:
             uri.querystring = self._dc
         return uri
 
-    def setData(self, d):
+    def set_data(self, d):
         pass
 
     def set_method(self, meth):
         pass
 
-    def getData(self):
+    def get_data(self):
         # The postdata
         return None
 
     def __repr__(self):
         return ('<QS fuzzable request | %s | %s>' %
-                (self.get_method(), self.getURI()))
+                (self.get_method(), self.get_uri()))

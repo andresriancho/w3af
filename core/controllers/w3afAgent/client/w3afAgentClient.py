@@ -129,7 +129,7 @@ class logger:
     def __init__(self, printDebug=False):
         self._printDebug = printDebug
 
-    def parseMsg(self, msg):
+    def parse_msg(self, msg):
         try:
             msg = ' '.join([str(x) for x in list(msg)])
             return msg
@@ -137,17 +137,17 @@ class logger:
             return msg
 
     def info(self, *msg):
-        msg = self.parseMsg(msg)
+        msg = self.parse_msg(msg)
         msg = '[ ' + now() + ' ][info] ' + msg + '\n'
         sys.stdout.write(msg)
 
     def error(self, *msg):
-        msg = self.parseMsg(msg)
+        msg = self.parse_msg(msg)
         msg = '[ ' + now() + ' ][error] ' + msg + '\n'
         sys.stderr.write(msg)
 
     def debug(self, *msg):
-        msg = self.parseMsg(msg)
+        msg = self.parse_msg(msg)
         msg = '[ ' + now() + ' ][debug] ' + msg + '\n'
         if self._printDebug:
             sys.stdout.write(msg)
@@ -224,7 +224,7 @@ class w3afAgentClient(threading.Thread):
         # Start the connection manager
         cm = ConnectionManager(
             self._w3afAgentServer_address, self._w3afAgentServer_port)
-        cm.setBindAddress(self.socks_bind_address)
+        cm.set_bind_address(self.socks_bind_address)
         cm.start()
 
 
@@ -240,12 +240,12 @@ class ConnectionManager(threading.Thread):
         self._w3afAgentServer_address = w3afAgentServer_address
         self._w3afAgentServer_port = w3afAgentServer_port
         self._connectionPoolLen = connectionPoolLen
-        self.genConnections(connectionPoolLen)
+        self.gen_connections(connectionPoolLen)
 
-    def setBindAddress(self, bindAddy):
+    def set_bind_address(self, bindAddy):
         self._bindAddy = bindAddy
 
-    def genConnections(self, number):
+    def gen_connections(self, number):
         # Connect to the w3afAgentServer and store the connections in the
         # connection pool
         for i in xrange(number - len(self._connections)):
@@ -275,11 +275,11 @@ class ConnectionManager(threading.Thread):
             for sock in ready_to_read:
                 req = self.decode_request(sock.recv(1024))
                 handler = SocksHandler(sock, req)
-                handler.setBindAddress(self._bindAddy)
+                handler.set_bind_address(self._bindAddy)
                 handler.start()
                 self._connections.remove(sock)
 
-            self.genConnections(self._connectionPoolLen)
+            self.gen_connections(self._connectionPoolLen)
 
     def decode_request(self, data):
         """This function reads the request socket for the request data, decodes
@@ -329,7 +329,7 @@ class SocksHandler(threading.Thread):
     def run(self):
         self.handle(self.request)
 
-    def setBindAddress(self, bindAddy):
+    def set_bind_address(self, bindAddy):
         self._bindAddy = bindAddy
 
     def handle(self, req):

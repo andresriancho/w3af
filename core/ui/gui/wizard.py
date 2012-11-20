@@ -33,7 +33,7 @@ class Quest(object):
         self.ptype = self.pname = None
 
     def get_options(self):
-        opts = self.quest.getOptionObjects()
+        opts = self.quest.get_option_objects()
         return opts
 
 
@@ -49,7 +49,7 @@ class QuestOptions(gtk.VBox):
 
         self.show_all()
 
-    def saveOptions(self):
+    def save_options(self):
         '''Saves the changed options.'''
         options = self.widg.options
         invalid = []
@@ -65,8 +65,8 @@ class QuestOptions(gtk.VBox):
                 raise Exception(str(e) + ' || ' + opt.get_name())
             # end of debugging code
 
-            if hasattr(opt.widg, "isValid"):
-                if not opt.widg.isValid():
+            if hasattr(opt.widg, "is_valid"):
+                if not opt.widg.is_valid():
                     invalid.append(opt.get_name())
         if invalid:
             msg = "The configuration can't be saved, there is a problem in the"
@@ -82,23 +82,23 @@ class QuestOptions(gtk.VBox):
             opt.set_value(opt.widg.get_value())
 
         try:
-            helpers.coreWrap(self.wizard.setAnswer, options)
+            helpers.coreWrap(self.wizard.set_answer, options)
         except w3afException:
             return
         return True
 
-    def configChanged(self, flag):
+    def config_changed(self, flag):
         # just to comply with API
         pass
 
-    def setQuestOptions(self, quest):
+    def set_quest_options(self, quest):
         self.activeQuestion = quest
         self.remove(self.widg)
         self.widg = confpanel.OnlyOptions(
             self, self.w3af, Quest(quest), gtk.Button(), gtk.Button())
         self.pack_start(self.widg)
 
-    def askFinal(self):
+    def ask_final(self):
         # the text entries
         table = gtk.Table(2, 2)
         for row, tit in enumerate(("Name", "Description")):
@@ -181,12 +181,12 @@ class Wizard(entries.RememberingWindow):
 
         filename = cgi.escape(filename)
         try:
-            helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile,
+            helpers.coreWrap(self.w3af.profiles.save_current_to_new_profile,
                              filename, description)
         except w3afException:
             self.w3af.mainwin.sb(_("There was a problem saving the profile!"))
             return
-        self.w3af.mainwin.profiles.loadProfiles(filename)
+        self.w3af.mainwin.profiles.load_profiles(filename)
         self.w3af.mainwin.sb(_("New profile created"))
         self.destroy()
 
@@ -195,7 +195,7 @@ class Wizard(entries.RememberingWindow):
         if self.finalQ:
             self._saveEverything()
             return
-        if not self.panel.saveOptions():
+        if not self.panel.save_options():
             return
         quest = self.wizard.next()
         self.prevbtn.set_sensitive(True)
@@ -207,7 +207,7 @@ class Wizard(entries.RememberingWindow):
     def _goBack(self, widg):
         '''Shows the previous question.'''
         if not self.finalQ:
-            if not self.panel.saveOptions():
+            if not self.panel.save_options():
                 return
         self.finalQ = False
         quest = self.wizard.previous()
@@ -220,9 +220,9 @@ class Wizard(entries.RememberingWindow):
 
         @param question: the question with the info to build.
         '''
-        self.qtitle.set_markup("<b>%s</b>" % question.getQuestionTitle())
-        self.quest.set_text(question.getQuestionString())
-        self.panel.setQuestOptions(question)
+        self.qtitle.set_markup("<b>%s</b>" % question.get_question_title())
+        self.quest.set_text(question.get_question_string())
+        self.panel.set_quest_options(question)
         self.nextbtn.set_label("  Next  ")
         self.finalQ = False
 
@@ -232,7 +232,7 @@ class Wizard(entries.RememberingWindow):
         self.quest.set_text("There are no more questions, you correctly created a new "
                             "configuration for w3af.\n\nPlease provide a name and a "
                             "description for the new profile:")
-        self.panel.askFinal()
+        self.panel.ask_final()
         self.nextbtn.set_label("  Save  ")
         self.finalQ = True
 
@@ -296,7 +296,7 @@ class WizardChooser(entries.RememberingWindow):
         initlabel = None
         for wiz in self._getWizards():
             if initlabel is None:
-                initlabel = wiz.getWizardDescription()
+                initlabel = wiz.get_wizard_description()
             self.rbuts.add(wiz.get_name(), wiz)
         innerbox.pack_start(self.rbuts, True, False)
 
@@ -316,7 +316,7 @@ class WizardChooser(entries.RememberingWindow):
 
     def _changedRB(self, widget):
         '''The radiobutton changed.'''
-        self.wizdesc.set_label(widget.getWizardDescription())
+        self.wizdesc.set_label(widget.get_wizard_description())
 
     def _goWizard(self, widget):
         '''Runs the selected wizard.'''

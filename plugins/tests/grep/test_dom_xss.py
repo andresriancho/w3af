@@ -55,4 +55,4 @@ class TestDOMXSS(PluginTest):
         self.assertEquals(len(v.get_id()), 1)
         self.assertTrue('document.URL' in v.get_desc())
         self.assertEqual(
-            self.dom_xss_url + 'dom_xss_trivial.html', v.getURL().url_string)
+            self.dom_xss_url + 'dom_xss_trivial.html', v.get_url().url_string)

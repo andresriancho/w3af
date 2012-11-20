@@ -88,7 +88,7 @@ class mx_injection(AuditPlugin):
                     v.set_desc(
                         'MX injection was found at: ' + mutant.found_at())
                     v.set_id(response.id)
-                    v.addToHighlight(mx_error)
+                    v.add_to_highlight(mx_error)
                     kb.kb.append_uniq(self, 'mx_injection', v)
                     break
 

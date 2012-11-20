@@ -63,7 +63,7 @@ class TestFuzzer(unittest.TestCase):
 
         expected_urls = ['http://moth/?id=abc',
                          'http://moth/?id=def']
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
         self.assertTrue(
@@ -87,7 +87,7 @@ class TestFuzzer(unittest.TestCase):
                          'http://moth/?id=def',
                          'http://moth/?id=1',
                          'http://moth/?id=1', ]
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
 
@@ -96,7 +96,7 @@ class TestFuzzer(unittest.TestCase):
                             Headers([('Referer', 'abc')]),
                             Headers([('Referer', 'def')]), ]
 
-        generated_headers = [m.getHeaders() for m in generated_mutants]
+        generated_headers = [m.get_headers() for m in generated_mutants]
 
         self.assertEqual(expected_headers, generated_headers)
 
@@ -122,7 +122,7 @@ class TestFuzzer(unittest.TestCase):
                          'http://moth/?id=def',
                          'http://moth/?id=1',
                          'http://moth/?id=1', ]
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
         self.assertEqual(generated_urls, expected_urls)
 
         expected_headers = [Headers(
@@ -131,7 +131,7 @@ class TestFuzzer(unittest.TestCase):
                       'http://moth/foo/bar/'), ('Foo', 'Bar')]),
             Headers([('Referer', 'abc'), ('Foo', 'Bar')]),
             Headers([('Referer', 'def'), ('Foo', 'Bar')]), ]
-        generated_headers = [m.getHeaders() for m in generated_mutants]
+        generated_headers = [m.get_headers() for m in generated_mutants]
         self.assertEqual(expected_headers, generated_headers)
 
         self.assertTrue(all(isinstance(m, QSMutant) or isinstance(m, HeadersMutant)
@@ -152,7 +152,7 @@ class TestFuzzer(unittest.TestCase):
 
         expected_urls = ['http://moth/?id=abc',
                          'http://moth/?id=def']
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
         #self.assertTrue( all(isinstance(m, QSMutant) for m in generated_mutants) )
@@ -176,7 +176,7 @@ class TestFuzzer(unittest.TestCase):
                          u'http://moth/?id=1',
                          u'http://moth/?id=1']
 
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
 
@@ -226,7 +226,7 @@ class TestFuzzer(unittest.TestCase):
                          u'http://moth/foo.def',
                          ]
 
-        generated_urls = [m.getURI().url_string for m in generated_mutants]
+        generated_urls = [m.get_uri().url_string for m in generated_mutants]
 
         self.assertEqual(generated_urls, expected_urls)
 
@@ -256,15 +256,15 @@ class TestFuzzer(unittest.TestCase):
         cf.cf.save('fuzz_url_parts', False)
 
         form = Form()
-        form.addInput([("name", "username"), ("value", "")])
-        form.addInput([("name", "address"), ("value", "")])
+        form.add_input([("name", "username"), ("value", "")])
+        form.add_input([("name", "address"), ("value", "")])
 
         freq = HTTPPostDataRequest(URL('http://www.w3af.com/?id=3'), dc=form,
                                    method='PUT')
 
         generated_mutants = create_mutants(freq, self.payloads)
 
-        self.assertTrue(all('http://www.w3af.com/?id=3' == m.getURI().url_string
+        self.assertTrue(all('http://www.w3af.com/?id=3' == m.get_uri().url_string
                             for m in generated_mutants))
 
         self.assertTrue(all(isinstance(m, PostDataMutant)
@@ -311,7 +311,7 @@ class TestFuzzer(unittest.TestCase):
         freq = HTTPQSRequest(url)
         generated_mutants = create_mutants(freq, self.payloads)
 
-        generated_uris = [m.getURI().url_string for m in generated_mutants]
+        generated_uris = [m.get_uri().url_string for m in generated_mutants]
         expected_uris = [
             'http://moth/foo/bar.htm?id=abc',
             'http://moth/foo/bar.htm?id=def',

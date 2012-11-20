@@ -53,7 +53,7 @@ class TestDav(PluginTest):
                           set([v.get_method() for v in vulns]))
 
         self.assertTrue(all([self.target_vuln_all == str(
-            v.getURL().getDomainPath()) for v in vulns]))
+            v.get_url().get_domain_path()) for v in vulns]))
 
     def test_no_privileges(self):
         '''
@@ -73,7 +73,7 @@ class TestDav(PluginTest):
                           vuln.get_name())
 
         self.assertEquals(self.target_no_privs,
-                          str(vuln.getURL().getDomainPath()))
+                          str(vuln.get_url().get_domain_path()))
 
     def test_not_found_dav(self):
         cfg = self._run_configs['cfg']

@@ -46,7 +46,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._lastId = 0
         self._historyItem = HistoryItem()
         if time_refresh:
-            gobject.timeout_add(1000, self.refreshResults)
+            gobject.timeout_add(1000, self.refresh_results)
         # Create the main container
         mainvbox = gtk.VBox()
         mainvbox.set_spacing(self._padding)
@@ -140,7 +140,7 @@ class httpLogTab(entries.RememberingHPaned):
         """Init Search box."""
         # The search entry
         self._searchText = gtk.Entry()
-        self._searchText.connect("activate", self.findRequestResponse)
+        self._searchText.connect("activate", self.find_request_response)
         # The button that is used to advanced search
         filterBtn = gtk.ToggleButton(label=_("_Filter Options"))
         filterBtn.connect("toggled", self._showHideFilterBox)
@@ -177,11 +177,11 @@ class httpLogTab(entries.RememberingHPaned):
         for method in self._filterMethods:
             filterMethods.add(
                 opt_factory(method[0], method[2], method[1], "boolean"))
-        self.pref.addSection('methods', _('Request Method'), filterMethods)
+        self.pref.add_section('methods', _('Request Method'), filterMethods)
         filterId = OptionList()
         filterId.add(opt_factory("min", "0", "Min ID", "string"))
         filterId.add(opt_factory("max", "0", "Max ID", "string"))
-        self.pref.addSection('trans_id', _('Transaction ID'), filterId)
+        self.pref.add_section('trans_id', _('Transaction ID'), filterId)
         filterCodes = OptionList()
         codes = [
             ("1xx", "1xx", False),
@@ -192,12 +192,12 @@ class httpLogTab(entries.RememberingHPaned):
         ]
         for code in codes:
             filterCodes.add(opt_factory(code[0], code[2], code[1], "boolean"))
-        self.pref.addSection('codes', _('Response Code'), filterCodes)
+        self.pref.add_section('codes', _('Response Code'), filterCodes)
         filterMisc = OptionList()
         filterMisc.add(opt_factory("tag", False, "Tag", "boolean"))
         filterMisc.add(opt_factory(
             "has_qs", False, "Request has Query String", "boolean"))
-        self.pref.addSection('misc', _('Misc'), filterMisc)
+        self.pref.add_section('misc', _('Misc'), filterMisc)
         filterTypes = OptionList()
         self._filterTypes = [
             ('html', 'HTML', False),
@@ -210,10 +210,10 @@ class httpLogTab(entries.RememberingHPaned):
         for filterType in self._filterTypes:
             filterTypes.add(opt_factory(
                 filterType[0], filterType[2], filterType[1], "boolean"))
-        self.pref.addSection('types', _('Response Content Type'), filterTypes)
+        self.pref.add_section('types', _('Response Content Type'), filterTypes)
         filterSize = OptionList()
         filterSize.add(opt_factory("resp_size", False, "Not Null", "boolean"))
-        self.pref.addSection('sizes', _('Response Size'), filterSize)
+        self.pref.add_section('sizes', _('Response Size'), filterSize)
         self.pref.show()
         self._advSearchBox.pack_start(self.pref, False, False)
         self._advSearchBox.hide_all()
@@ -233,7 +233,7 @@ class httpLogTab(entries.RememberingHPaned):
         '''
         renderer = gtk.CellRendererToggle()
         renderer.set_property('activatable', True)
-        renderer.connect('toggled', self.toggleBookmark, model)
+        renderer.connect('toggled', self.toggle_bookmark, model)
         column = gtk.TreeViewColumn(_('B'), renderer)
         column.add_attribute(renderer, "active", 1)
         column.set_sort_column_id(1)
@@ -257,7 +257,7 @@ class httpLogTab(entries.RememberingHPaned):
         renderer = gtk.CellRendererText()
         #renderer.set_property('ellipsize', pango.ELLIPSIZE_END)
         renderer.set_property('editable', True)
-        renderer.connect('edited', self.editTag, model)
+        renderer.connect('edited', self.edit_tag, model)
         column = gtk.TreeViewColumn(_('Tag'), renderer, text=4)
         column.set_sort_column_id(4)
         column.set_resizable(True)
@@ -275,20 +275,20 @@ class httpLogTab(entries.RememberingHPaned):
             column.set_sort_column_id(n)
             treeview.append_column(column)
 
-    def toggleBookmark(self, cell, path, model):
+    def toggle_bookmark(self, cell, path, model):
         """Toggle bookmark."""
         model[path][1] = not model[path][1]
         historyItem = HistoryItem()
         historyItem.load(model[path][0])
-        historyItem.toggleMark(True)
+        historyItem.toggle_mark(True)
         return
 
-    def editTag(self, cell, path, new_text, model):
+    def edit_tag(self, cell, path, new_text, model):
         """Edit tag."""
         model[path][4] = new_text
         historyItem = HistoryItem()
         historyItem.load(model[path][0])
-        historyItem.updateTag(new_text, True)
+        historyItem.update_tag(new_text, True)
         return
 
     def _showHideFilterBox(self, widget):
@@ -302,16 +302,16 @@ class httpLogTab(entries.RememberingHPaned):
         """Show all results."""
         self._searchText.set_text("")
         try:
-            self.findRequestResponse()
+            self.find_request_response()
         except w3afException, w3:
             self._emptyResults()
         return
 
-    def refreshResults(self):
-        self.findRequestResponse(refresh=True)
+    def refresh_results(self):
+        self.find_request_response(refresh=True)
         return True
 
-    def findRequestResponse(self, widget=None, refresh=False):
+    def find_request_response(self, widget=None, refresh=False):
         """Find entries (req/res)."""
         searchText = self._searchText.get_text()
         searchText = searchText.strip()
@@ -356,7 +356,7 @@ class httpLogTab(entries.RememberingHPaned):
         # Tags
         if self.pref.get_value('misc', 'tag'):
             searchData.append(('tag', '', "!="))
-        # hasQueryString
+        # has_query_string
         if self.pref.get_value('misc', 'has_qs'):
             searchData.append(('has_qs', 0, ">"))
         # Content type
@@ -406,8 +406,8 @@ class httpLogTab(entries.RememberingHPaned):
 
     def _emptyResults(self):
         """Empty all panes."""
-        self._reqResViewer.request.clearPanes()
-        self._reqResViewer.response.clearPanes()
+        self._reqResViewer.request.clear_panes()
+        self._reqResViewer.response.clear_panes()
         self._reqResViewer.set_sensitive(False)
         self._sw.set_sensitive(False)
         self._lstore.clear()
@@ -445,17 +445,17 @@ class httpLogTab(entries.RememberingHPaned):
         # Now I have the item number in the lstore,
         # the next step is to get the id of that item in the lstore
         iid = self._lstore[itemNumber][0]
-        self.showReqResById(iid)
+        self.show_req_res_by_id(iid)
 
-    def showReqResById(self, search_id):
+    def show_req_res_by_id(self, search_id):
         """This method should be called by other tabs when
         they want to show what request/response pair
         is related to the vulnerability.
         """
         historyItem = self._historyItem.read(search_id)
         if historyItem:
-            self._reqResViewer.request.showObject(historyItem.request)
-            self._reqResViewer.response.showObject(historyItem.response)
+            self._reqResViewer.request.show_object(historyItem.request)
+            self._reqResViewer.response.show_object(historyItem.response)
             if historyItem.info:
                 buff = self._reqResViewer.info.get_buffer()
                 buff.set_text(historyItem.info)
@@ -499,7 +499,7 @@ class FilterOptions(gtk.HBox, Preferences):
                 titl.set_mnemonic_widget(widg)
                 opt.widg = widg
                 widg.set_tooltip_text(opt.get_help())
-                table.autoAddRow(titl, widg)
+                table.auto_add_row(titl, widg)
                 table.show()
             frame.add(table)
             self.pack_start(frame, False, False)
@@ -509,8 +509,8 @@ class FilterOptions(gtk.HBox, Preferences):
         invalid = []
         for section, optList in self.options.items():
             for opt in optList:
-                if hasattr(opt.widg, "isValid"):
-                    if not opt.widg.isValid():
+                if hasattr(opt.widg, "is_valid"):
+                    if not opt.widg.is_valid():
                         invalid.append(opt.get_name())
         if invalid:
             msg = _("The configuration can't be saved, there is a problem in the following parameter(s):\n\n")
@@ -526,4 +526,4 @@ class FilterOptions(gtk.HBox, Preferences):
         for section, optList in self.options.items():
             for opt in optList:
                 opt.set_value(opt.widg.get_value())
-        self.parentWidg.findRequestResponse()
+        self.parentWidg.find_request_response()

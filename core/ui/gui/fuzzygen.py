@@ -58,7 +58,7 @@ class FuzzyGenerator(object):
         # check validity
         self._genGenerators()
 
-    def calculateQuantity(self):
+    def calculate_quantity(self):
         combin = 1
         genr1, genr2 = self._genGenerators()
         for elem in genr1 + genr2:

@@ -63,28 +63,28 @@ class test_symfony(unittest.TestCase):
     def test_symfony_positive(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue(self.plugin.symfonyDetected(response))
+        self.assertTrue(self.plugin.symfony_detected(response))
 
     def test_symfony_negative(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
-        self.assertFalse(self.plugin.symfonyDetected(response))
+        self.assertFalse(self.plugin.symfony_detected(response))
 
     def test_symfony_override(self):
         self.plugin._override = True
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue(self.plugin.symfonyDetected(response))
+        self.assertTrue(self.plugin.symfony_detected(response))
 
     def test_symfony_csrf_positive(self):
         response = self.http_resp(
             read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertTrue(self.plugin.csrfDetected(response.getDOM()))
+        self.assertTrue(self.plugin.csrf_detected(response.get_dom()))
 
     def test_symfony_csrf_negative(self):
         response = self.http_resp(
             read=self.UNPROTECTED_BODY, headers=self.SYMFONY_HEADERS)
-        self.assertFalse(self.plugin.csrfDetected(response.getDOM()))
+        self.assertFalse(self.plugin.csrf_detected(response.get_dom()))
 
     def test_symfony_protected(self):
         response = self.http_resp(

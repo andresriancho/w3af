@@ -39,7 +39,7 @@ class rnd_param(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -51,23 +51,23 @@ class rnd_param(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.querystring
+        >>> qs = rp.modify_request( r ).url_object.querystring
         >>> len(qs)
         1
 
         >>> u = URL('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u )
-        >>> qs = rp.modifyRequest( r ).url_object.querystring
+        >>> qs = rp.modify_request( r ).url_object.querystring
         >>> len(qs)
         2
 
         >>> u = URL('http://www.w3af.com/?id=1')
         >>> r = HTTPRequest( u, data='a=b' )
-        >>> data = parse_qs( rp.modifyRequest( r ).get_data() )
+        >>> data = parse_qs( rp.modify_request( r ).get_data() )
         >>> len(data)
         2
 
-        >>> data = rp.modifyRequest( r ).url_object.querystring
+        >>> data = rp.modify_request( r ).url_object.querystring
         >>> len(data)
         2
 
@@ -133,7 +133,7 @@ class rnd_param(EvasionPlugin):
         '''
         return []
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

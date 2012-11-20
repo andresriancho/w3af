@@ -68,11 +68,11 @@ class LogGraph(gtk.DrawingArea):
         self._redrawGen = None
 
         # schedule the message adding, and go live!
-        gobject.timeout_add(500, self.addMessage().next)
+        gobject.timeout_add(500, self.add_message().next)
         self.connect("expose-event", self.area_expose_cb)
         self.show()
 
-    def addMessage(self):
+    def add_message(self):
         '''Adds a message to the graph.
 
         @returns: True to keep calling it, and False when all it's done.

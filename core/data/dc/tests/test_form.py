@@ -328,7 +328,7 @@ class test_form(unittest.TestCase):
         form_data = [{'tagname': 'input', 'type':'text', 'name':'v', 'value':'áéíóú'},
                      {'tagname': 'input', 'type':'hidden', 'name':'c', 'value':'ñçÑÇ'}]
         new_form = create_form_helper(form_data)
-        new_form.addSubmit('address', 'bsas')
+        new_form.add_submit('address', 'bsas')
         self.assertEqual(urllib.unquote(str(new_form)).decode('utf-8'),
                          u'c=ñçÑÇ&address=bsas&v=áéíóú')
 
@@ -371,13 +371,13 @@ def create_form_helper(form_data):
             _type = elem_data['type']
 
             if _type == 'radio':
-                new_form.addRadio(attrs)
+                new_form.add_radio(attrs)
             elif _type == 'checkbox':
-                new_form.addCheckBox(attrs)
+                new_form.add_check_box(attrs)
             elif _type in ('text', 'hidden'):
-                new_form.addInput(attrs)
+                new_form.add_input(attrs)
 
         elif elem_type == 'select':
-            new_form.addSelect(elem_data['name'], elem_data['options'])
+            new_form.add_select(elem_data['name'], elem_data['options'])
 
     return new_form

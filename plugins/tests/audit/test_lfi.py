@@ -63,4 +63,4 @@ class TestLFI(PluginTest):
             True)
 
         self.assertEqual(set(EXPECTED),
-                         set([(v.getURL().getFileName(), v.get_mutant().get_var()) for v in vulns]))
+                         set([(v.get_url().get_fileName(), v.get_mutant().get_var()) for v in vulns]))

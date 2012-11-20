@@ -38,7 +38,7 @@ class infrastructure(wizard):
                                                   'infrastructure_internet_1'],
                                                  w3af_core)
 
-    def getWizardDescription(self):
+    def get_wizard_description(self):
         '''
         This method should be overwritten by the actual wizards.
 

@@ -48,7 +48,7 @@ class configMenu(menu):
             self._plainOptions[k] = v
             self._optDict[k] = o
         self._groupOptionsByTabId()
-        self._loadHelp('config')
+        self._load_help('config')
 
     def _cmd_view(self, params):
         #col1Len = max([len(o) for o in self._options.keys()]) + 4
@@ -61,7 +61,7 @@ class configMenu(menu):
             table.append([])
         if len(table) > 1:
             table.pop()
-        self._console.drawTable(table, True)
+        self._console.draw_table(table, True)
 
     def _groupOptionsByTabId(self):
         self._tabbedOptions = {}

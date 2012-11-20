@@ -120,10 +120,10 @@ class ManualRequests(entries.RememberingWindow):
         self.vbox.pack_start(self.reqresp, True, True)
         # Add a default request
         if initialRequest is None:
-            self.reqresp.request.showRaw(manual_request_example, '')
+            self.reqresp.request.show_raw(manual_request_example, '')
         else:
             (initialUp, initialDn) = initialRequest
-            self.reqresp.request.showRaw(initialUp, initialDn)
+            self.reqresp.request.show_raw(initialUp, initialDn)
 
         # Show all!
         self.show()
@@ -133,7 +133,7 @@ class ManualRequests(entries.RememberingWindow):
 
         @param widget: who sent the signal.
         '''
-        (tsup, tlow) = self.reqresp.request.getBothTexts()
+        (tsup, tlow) = self.reqresp.request.get_both_texts()
 
         busy = gtk.gdk.Window(self.window, gtk.gdk.screen_width(),
                               gtk.gdk.screen_height(), gtk.gdk.WINDOW_CHILD,
@@ -152,14 +152,14 @@ class ManualRequests(entries.RememberingWindow):
         impact = ThreadedURLImpact(
             self.w3af, tsup, tlow, event, fixContentLength)
 
-        def impactDone():
+        def impact_done():
             if not event.isSet():
                 return True
             busy.destroy()
 
             if impact.ok:
                 self.reqresp.response.set_sensitive(True)
-                self.reqresp.response.showObject(impact.httpResp)
+                self.reqresp.response.show_object(impact.httpResp)
                 self.reqresp.nb.next_page()
             elif hasattr(impact, 'exception'):
                 e_kls = impact.exception.__class__
@@ -171,7 +171,7 @@ class ManualRequests(entries.RememberingWindow):
                         impact.exception)
                 else:
                     raise impact.exception
-                self.reqresp.response.clearPanes()
+                self.reqresp.response.clear_panes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
                 helpers.friendlyException(msg)
@@ -179,7 +179,7 @@ class ManualRequests(entries.RememberingWindow):
             else:
                 # This is a very strange case, because impact.ok == False
                 # but impact.exception does not exist!
-                self.reqresp.response.clearPanes()
+                self.reqresp.response.clear_panes()
                 self.reqresp.response.set_sensitive(False)
                 gtk.gdk.threads_enter()
                 helpers.friendlyException(
@@ -189,7 +189,7 @@ class ManualRequests(entries.RememberingWindow):
             return False
 
         impact.start()
-        gobject.timeout_add(200, impactDone)
+        gobject.timeout_add(200, impact_done)
 
 
 class PreviewWindow(entries.RememberingWindow):
@@ -213,7 +213,7 @@ class PreviewWindow(entries.RememberingWindow):
 
         # the ok button
         centerbox = gtk.HBox()
-        quant = fg.calculateQuantity()
+        quant = fg.calculate_quantity()
         self.pagesControl = entries.PagesControl(w3af, self._pageChange, quant)
         centerbox.pack_start(self.pagesControl, True, False)
         centerbox.show()
@@ -229,7 +229,7 @@ class PreviewWindow(entries.RememberingWindow):
             it = self.generator.next()
             self.pages.append(it)
         (txtup, txtdn) = self.pages[page]
-        self.panes.showRaw(txtup, txtdn)
+        self.panes.show_raw(txtup, txtdn)
 
 
 FUZZYHELP = """\
@@ -310,13 +310,13 @@ class FuzzyRequests(entries.RememberingWindow):
                                                     editable=True, widgname="fuzzyrequest")
 
         if initialRequest is None:
-            self.originalReq.showRaw(fuzzy_request_example, '')
+            self.originalReq.show_raw(fuzzy_request_example, '')
         else:
             (initialUp, initialDn) = initialRequest
-            self.originalReq.showRaw(initialUp, initialDn)
+            self.originalReq.show_raw(initialUp, initialDn)
 
         # Add the right button popup menu to the text widgets
-        rawTextView = self.originalReq.getViewById('HttpRawView')
+        rawTextView = self.originalReq.get_view_by_id('HttpRawView')
         rawTextView.textView.connect("populate-popup", self._populate_popup)
 
         # help
@@ -420,8 +420,8 @@ class FuzzyRequests(entries.RememberingWindow):
     def _clearResponses(self, widg):
         '''Clears all the responses from the fuzzy window.'''
         self.responses = []
-        self.resultReqResp.request.clearPanes()
-        self.resultReqResp.response.clearPanes()
+        self.resultReqResp.request.clear_panes()
+        self.resultReqResp.response.clear_panes()
         self.resultReqResp.set_sensitive(False)
         self.clusterButton.set_sensitive(False)
         self.clearButton.set_sensitive(False)
@@ -448,13 +448,13 @@ class FuzzyRequests(entries.RememberingWindow):
 
     def _analyze(self, widg):
         '''Handles the Analyze part.'''
-        (request, postbody) = self.originalReq.getBothTexts()
+        (request, postbody) = self.originalReq.get_both_texts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
             return
 
-        self.analyzefb.set_text("%d requests" % fg.calculateQuantity())
+        self.analyzefb.set_text("%d requests" % fg.calculate_quantity())
         self.analyzefb.set_sensitive(True)
 
         # raise the window only if preview is active
@@ -464,7 +464,7 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_stop(self, widg=None):
         '''Stop the requests being sent.'''
         self._sendStopped = True
-        self.sendPlayBut.changeInternals(
+        self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_start)
@@ -474,7 +474,7 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_pause(self, widg):
         '''Pause the requests being sent.'''
         self._sendPaused = True
-        self.sendPlayBut.changeInternals(
+        self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PLAY, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_play)
@@ -483,7 +483,7 @@ class FuzzyRequests(entries.RememberingWindow):
     def _send_play(self, widg):
         '''Continue sending the requests.'''
         self._sendPaused = False
-        self.sendPlayBut.changeInternals(
+        self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PAUSE, "Sends the pending requests")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
@@ -491,13 +491,13 @@ class FuzzyRequests(entries.RememberingWindow):
 
     def _send_start(self, widg):
         '''Start sending the requests.'''
-        (request, postbody) = self.originalReq.getBothTexts()
+        (request, postbody) = self.originalReq.get_both_texts()
         try:
             fg = helpers.coreWrap(fuzzygen.FuzzyGenerator, request, postbody)
         except fuzzygen.FuzzyError:
             return
 
-        quant = fg.calculateQuantity()
+        quant = fg.calculate_quantity()
         if quant > 20:
             msg = "Are you sure you want to send %d requests?" % quant
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO, msg)
@@ -517,7 +517,7 @@ class FuzzyRequests(entries.RememberingWindow):
         requestGenerator = fg.generate()
 
         # change the buttons
-        self.sendPlayBut.changeInternals(
+        self.sendPlayBut.change_internals(
             "", gtk.STOCK_MEDIA_PAUSE, "Pauses the requests sending")
         self.sendPlayBut.disconnect(self.sPB_signal)
         self.sPB_signal = self.sendPlayBut.connect("clicked", self._send_pause)
@@ -610,16 +610,16 @@ class FuzzyRequests(entries.RememberingWindow):
                 # TODO: Investigate this further...
                 #
                 error_msg = 'Error searching the request database'
-                self.resultReqResp.request.showRaw(error_msg, error_msg)
-                self.resultReqResp.response.showError(error_msg)
+                self.resultReqResp.request.show_raw(error_msg, error_msg)
+                self.resultReqResp.response.show_error(error_msg)
                 self.title0.set_markup("<b>Error</b>")
             else:
-                self.resultReqResp.request.showObject(historyItem.request)
-                self.resultReqResp.response.showObject(historyItem.response)
+                self.resultReqResp.request.show_object(historyItem.request)
+                self.resultReqResp.response.show_object(historyItem.response)
                 self.title0.set_markup("<b>Id: %d</b>" % reqid)
         else:
             # the request brought problems
             realreq, realbody, errorMsg = info[1:]
-            self.resultReqResp.request.showRaw(realreq, realbody)
-            self.resultReqResp.response.showError(errorMsg)
+            self.resultReqResp.request.show_raw(realreq, realbody)
+            self.resultReqResp.response.show_error(errorMsg)
             self.title0.set_markup("<b>Error</b>")

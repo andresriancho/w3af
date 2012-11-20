@@ -38,9 +38,9 @@ class WebServiceRequest(HTTPPostDataRequest):
         self._action = action
         self._NS = ns
         self._name = meth_name
-        self.setParameters(params)
+        self.set_parameters(params)
 
-    def getData(self):
+    def get_data(self):
         '''
         @return: XML with the remote method call
 
@@ -65,9 +65,9 @@ class WebServiceRequest(HTTPPostDataRequest):
         res += '<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema">\n'
         res += '<SOAP-ENV:Body>\n'
         res += '<ns1:' + self.get_methodName(
-        ) + ' xmlns:ns1="' + self.getNS() + '" SOAP-ENC:root="1">\n'
+        ) + ' xmlns:ns1="' + self.get_ns() + '" SOAP-ENC:root="1">\n'
         count = 0
-        for param in self.getParameters():
+        for param in self.get_parameters():
             count += 1
             res += '<v' + str(count) + ' xsi:type="xsd:' + param.get_type() + '">' + \
                 cgi.escape(
@@ -78,26 +78,26 @@ class WebServiceRequest(HTTPPostDataRequest):
         res += '</SOAP-ENV:Envelope>\n'
         return res
 
-    def getHeaders(self):
+    def get_headers(self):
         '''
         web service calls MUST send a header with the action:
             -   SOAPAction: "urn:xmethodsBabelFish#BabelFish"
         '''
-        self._headers['SOAPAction'] = '"' + self.getAction() + '"'
+        self._headers['SOAPAction'] = '"' + self.get_action() + '"'
         self._headers['Content-Type'] = 'text/xml'
 
         return self._headers
 
-    def getNS(self):
+    def get_ns(self):
         return self._NS
 
-    def setNS(self, ns):
+    def set_ns(self, ns):
         self._NS = ns
 
-    def getAction(self):
+    def get_action(self):
         return self._action
 
-    def setAction(self, a):
+    def set_action(self, a):
         self._action = a
 
     def get_methodName(self):
@@ -106,10 +106,10 @@ class WebServiceRequest(HTTPPostDataRequest):
     def set_methodName(self, name):
         self._name = name
 
-    def getParameters(self):
+    def get_parameters(self):
         return self._parameters
 
-    def setParameters(self, par):
+    def set_parameters(self, par):
         # Fixed bug #1958368, we have to save this!
         self._parameters = par
         # And now save it so we can fuzz it.
@@ -133,4 +133,4 @@ class WebServiceRequest(HTTPPostDataRequest):
 
     def __repr__(self):
         return '<WS fuzzable request | %s | %s >' % (self.get_method(),
-                                                     self.getURI())
+                                                     self.get_uri())

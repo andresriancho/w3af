@@ -41,7 +41,7 @@ class question_infrastructure_4(question):
         self._question_str += ' application using Internet search engines. In order to enable or'
         self._question_str += ' disable those plugins, we need to know the following:'
 
-    def _getOptionObjects(self):
+    def _get_option_objects(self):
         '''
         @return: A list of options for this question.
         '''
@@ -54,7 +54,7 @@ class question_infrastructure_4(question):
 
         return ol
 
-    def getNextQuestionId(self, options_list):
+    def get_next_question_id(self, options_list):
         cf.cf.save(
             'reachable_from_internet', options_list[self._d1].get_value())
 

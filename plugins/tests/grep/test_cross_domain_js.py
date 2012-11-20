@@ -50,7 +50,7 @@ class TestErrorPages(PluginTest):
         EXPECTED = set(['cross_domain_script_mixed.html',
                         'cross_domain_script_with_type.html',
                         'cross_domain_script.html'])
-        found_fnames = set([i.getURL().getFileName() for i in infos])
+        found_fnames = set([i.get_url().get_fileName() for i in infos])
 
         self.assertEquals(EXPECTED,
                           found_fnames)

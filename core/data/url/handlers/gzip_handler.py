@@ -60,7 +60,7 @@ class HTTPGzipProcessor(urllib2.BaseHandler):
                     return response
                 else:
                     # The response was successfully unzipped
-                    response.setBody(data)
+                    response.set_body(data)
                     return response
         return response
 

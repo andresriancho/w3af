@@ -114,13 +114,13 @@ class proxy(Process):
             raise w3afProxyException(
                 'Socket error while starting proxy: "%s"' % se.strerror)
 
-    def getBindIP(self):
+    def get_bind_ip(self):
         '''
         @return: The IP address where the proxy will listen.
         '''
         return self._ip
 
-    def getBindPort(self):
+    def get_bind_port(self):
         '''
         @return: The TCP port where the proxy will listen.
         '''
@@ -149,7 +149,7 @@ class proxy(Process):
             om.out.debug(
                 'You called stop() on a proxy daemon that isn\'t running.')
 
-    def isRunning(self):
+    def is_running(self):
         '''
         @return: True if the proxy daemon is running
         '''
@@ -254,7 +254,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         )
         post_data = self._get_post_data()
         if post_data:
-            fuzzable_request.setData(post_data)
+            fuzzable_request.set_data(post_data)
         return fuzzable_request
 
     def do_ALL(self):
@@ -384,7 +384,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         '''
         send_header = self.send_header
         try:
-            self.send_response(res.getCode())
+            self.send_response(res.get_code())
 
             what_to_send = res.body
             if res.is_text_or_html():
@@ -395,7 +395,7 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             send_header('content-length', str(len(what_to_send)))
             send_header('connection', 'close')
 
-            for header, value in res.getLowerCaseHeaders().items():
+            for header, value in res.get_lower_case_headers().items():
                 # Ignore these headers:
                 #   - 'content-length', as it has been overwritten before
                 #   - 'transfer-encoding', when 'chunked' as the

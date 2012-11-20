@@ -39,7 +39,7 @@ class backspace_between_dots(EvasionPlugin):
     def __init__(self):
         EvasionPlugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         Mangles the request
 
@@ -51,17 +51,17 @@ class backspace_between_dots(EvasionPlugin):
 
         >>> u = URL('http://www.w3af.com/')
         >>> r = HTTPRequest( u )
-        >>> bbd.modifyRequest( r ).url_object.url_string
+        >>> bbd.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/'
 
         >>> u = URL('http://www.w3af.com/../')
         >>> r = HTTPRequest( u )
-        >>> bbd.modifyRequest( r ).url_object.url_string
+        >>> bbd.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/.%41%08./'
 
         >>> u = URL('http://www.w3af.com/abc/def/.././jkl.htm')
         >>> r = HTTPRequest( u )
-        >>> bbd.modifyRequest( r ).url_object.url_string
+        >>> bbd.modify_request( r ).url_object.url_string
         u'http://www.w3af.com/abc/def/.%41%08././jkl.htm'
         >>> #
         >>> #    The plugins should not modify the original request
@@ -71,12 +71,12 @@ class backspace_between_dots(EvasionPlugin):
 
         '''
         # We mangle the URL
-        path = request.url_object.getPath()
+        path = request.url_object.get_path()
         path = path.replace('/../', '/.%41%08./')
 
         # Finally, we set all the mutants to the request in order to return it
         new_url = request.url_object.copy()
-        new_url.setPath(path)
+        new_url.set_path(path)
         new_req = HTTPRequest(new_url, request.get_data(),
                               request.headers, request.get_origin_req_host())
 
@@ -106,7 +106,7 @@ class backspace_between_dots(EvasionPlugin):
         '''
         return []
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.

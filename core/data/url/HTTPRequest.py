@@ -50,7 +50,7 @@ class HTTPRequest(urllib2.Request):
         headers = dict(headers)
 
         # Call the base class
-        urllib2.Request.__init__(self, url.urlEncode(), data,
+        urllib2.Request.__init__(self, url.url_encode(), data,
                                  headers, origin_req_host, unverifiable)
 
     def copy(self):

@@ -153,7 +153,7 @@ class file_upload(AuditPlugin):
         if self._has_no_bug(mutant):
 
             # Gen expr for directories where I can search for the uploaded file
-            domain_path_list = set(u.getDomainPath() for u in
+            domain_path_list = set(u.get_domain_path() for u in
                                    kb.kb.get('urls', 'url_objects'))
 
             # FIXME: Note that in all cases where I'm using kb's url_object info
@@ -191,7 +191,7 @@ class file_upload(AuditPlugin):
             v.set_id([http_response.id, get_response.id])
             v.set_severity(severity.HIGH)
             v.set_name('Insecure file upload')
-            v['fileDest'] = get_response.getURL()
+            v['fileDest'] = get_response.get_url()
             v['fileVars'] = mutant.get_file_vars()
             msg = ('A file upload to a directory inside the '
                    'webroot was found at: ' + mutant.found_at())
@@ -216,9 +216,9 @@ class file_upload(AuditPlugin):
 
         for url in domain_path_list:
             for default_path in tmp:
-                for sub_url in url.getDirectories():
-                    possible_location = sub_url.urlJoin(default_path + '/')
-                    possible_location = possible_location.urlJoin(
+                for sub_url in url.get_directories():
+                    possible_location = sub_url.url_join(default_path + '/')
+                    possible_location = possible_location.url_join(
                         uploaded_file_name)
                     yield possible_location
 

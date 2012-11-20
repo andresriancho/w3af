@@ -79,7 +79,7 @@ class TestCORSOrigin(PluginTest):
         self.assertEqual([v.get_name() for v in vulns],
                          EXPECTED_NAMES)
 
-        self.assertTrue(all([v.getURL().url_string.startswith(self.target_url)
+        self.assertTrue(all([v.get_url().url_string.startswith(self.target_url)
                              for v in vulns]))
 
     def test_allow_methods_no(self):

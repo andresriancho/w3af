@@ -54,28 +54,28 @@ class ssn(GrepPlugin):
         @param response: The HTTP response object
         @return: None.
         '''
-        uri = response.getURI()
+        uri = response.get_uri()
 
-        if response.is_text_or_html() and response.getCode() == 200 \
-            and response.getClearTextBody() is not None \
+        if response.is_text_or_html() and response.get_code() == 200 \
+            and response.get_clear_text_body() is not None \
                 and uri not in self._already_inspected:
 
             # Don't repeat URLs
             self._already_inspected.add(uri)
 
             found_ssn, validated_ssn = self._find_SSN(
-                response.getClearTextBody())
+                response.get_clear_text_body())
             if validated_ssn:
                 v = vuln.vuln()
                 v.set_plugin_name(self.get_name())
-                v.setURI(uri)
+                v.set_uri(uri)
                 v.set_id(response.id)
                 v.set_severity(severity.LOW)
                 v.set_name('US Social Security Number disclosure')
                 msg = 'The URL: "' + uri + '" possibly discloses a US '
                 msg += 'Social Security Number: "' + validated_ssn + '"'
                 v.set_desc(msg)
-                v.addToHighlight(found_ssn)
+                v.add_to_highlight(found_ssn)
                 kb.kb.append(self, 'ssn', v)
 
     def _find_SSN(self, body_without_tags):

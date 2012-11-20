@@ -55,7 +55,7 @@ class dot_listing(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        for domain_path in fuzzable_request.getURL().getDirectories():
+        for domain_path in fuzzable_request.get_url().get_directories():
             if domain_path not in self._analyzed_dirs:
                 self._analyzed_dirs.add(domain_path)
                 self._check_and_analyze(domain_path)
@@ -66,7 +66,7 @@ class dot_listing(CrawlPlugin):
         @return: None, everything is saved to the self.out_queue.
         '''
         # Request the file
-        url = domain_path.urlJoin('.listing')
+        url = domain_path.url_join('.listing')
         try:
             response = self._uri_opener.GET(url, cache=True)
         except w3afException, w3:
@@ -83,9 +83,9 @@ class dot_listing(CrawlPlugin):
                 users = set()
                 groups = set()
 
-                for username, group, filename in self._extract_info_from_listing(response.getBody()):
+                for username, group, filename in self._extract_info_from_listing(response.get_body()):
                     if filename != '.' and filename != '..':
-                        parsed_url_set.add(domain_path.urlJoin(filename))
+                        parsed_url_set.add(domain_path.url_join(filename))
                         users.add(username)
                         groups.add(group)
 
@@ -97,10 +97,10 @@ class dot_listing(CrawlPlugin):
                     v.set_id(response.id)
                     v.set_name('.listing file found')
                     v.set_severity(severity.LOW)
-                    v.setURL(response.getURL())
+                    v.set_url(response.get_url())
                     msg = ('A .listing file was found at: "%s". The contents'
                            ' of this file disclose filenames.')
-                    v.set_desc(msg % (v.getURL()))
+                    v.set_desc(msg % (v.get_url()))
                     kb.kb.append(self, 'dot_listing', v)
                     om.out.vulnerability(
                         v.get_desc(), severity=v.get_severity())
@@ -114,13 +114,13 @@ class dot_listing(CrawlPlugin):
                     v.set_id(response.id)
                     v.set_name('Operating system username and group leak')
                     v.set_severity(severity.LOW)
-                    v.setURL(response.getURL())
+                    v.set_url(response.get_url())
                     msg = 'A .listing file which leaks operating system usernames' \
                           ' and groups was identified at %s. The leaked users are %s,' \
                           ' and the groups are %s. This information can be used' \
                           ' during a bruteforce attack to the Web application,' \
                           ' SSH or FTP services.'
-                    v.set_desc(msg % (v.getURL(
+                    v.set_desc(msg % (v.get_url(
                     ), ', '.join(real_users), ', '.join(real_groups)))
                     kb.kb.append(self, 'dot_listing', v)
                     om.out.vulnerability(

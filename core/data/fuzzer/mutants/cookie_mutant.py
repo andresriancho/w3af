@@ -33,9 +33,9 @@ class CookieMutant(Mutant):
     def get_mutant_type(self):
         return 'cookie'
 
-    def getURL(self):
+    def get_url(self):
         '''
-        The next methods (getURL and getURI) are really simple, but they override
+        The next methods (get_url and get_uri) are really simple, but they override
         the URL creation algorithm of HTTPQSRequest, that uses the self._dc
         attribute. If I don't have these methods, I end up with something like
         this:
@@ -50,7 +50,7 @@ class CookieMutant(Mutant):
         '''
         return self._url
 
-    def getURI(self):
+    def get_uri(self):
         return self._uri
 
     def set_dc(self, c):
@@ -91,7 +91,7 @@ class CookieMutant(Mutant):
         else:
             cookie_str = str(self.get_dc())
 
-        return fmt % (self.getURI(), self.get_method(), cookie_str)
+        return fmt % (self.get_uri(), self.get_method(), cookie_str)
 
     def print_mod_value(self):
         fmt = 'The cookie data that was sent is: "%s".'

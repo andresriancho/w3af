@@ -57,7 +57,7 @@ def setDebug():
     logger.setLevel(logging.DEBUG)
 
 
-def setError():
+def set_error():
     """Set the logging level to C{error}.
     """
     logger = getLogger()

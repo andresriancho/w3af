@@ -108,7 +108,7 @@ class xml_file(OutputPlugin):
         for error messages.
         '''
         messageNode = self._xmldoc.createElement("error")
-        messageNode.setAttribute("caller", str(self.getCaller()))
+        messageNode.setAttribute("caller", str(self.get_caller()))
         description = self._xmldoc.createTextNode(message)
         messageNode.appendChild(description)
 
@@ -197,13 +197,13 @@ class xml_file(OutputPlugin):
                    'xop+xml']
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
         if isinstance(action, FuzzableRequest):
-            headers = action.getHeaders()
-            body = str(action.getData() or '')
-            status = action.getRequestLine()
+            headers = action.get_headers()
+            body = str(action.get_data() or '')
+            status = action.get_request_line()
         else:
             headers = action.headers
             body = str(action.body or '')
-            status = action.getStatusLine()
+            status = action.get_status_line()
 
         # Put out the status as an element
         actionStatusNode = self._xmldoc.createElement("status")
@@ -271,12 +271,12 @@ class xml_file(OutputPlugin):
         #escape_nulls = lambda str: str.replace('\0', 'NULL')
 
         # Add the vulnerability results
-        vulns = kb.kb.getAllVulns()
+        vulns = kb.kb.get_all_vulns()
         for i in vulns:
             messageNode = self._xmldoc.createElement("vulnerability")
             messageNode.setAttribute("severity", str(i.get_severity()))
             messageNode.setAttribute("method", str(i.get_method()))
-            messageNode.setAttribute("url", str(i.getURL()))
+            messageNode.setAttribute("url", str(i.get_url()))
             messageNode.setAttribute("var", str(i.get_var()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.get_plugin_name()))
@@ -310,10 +310,10 @@ class xml_file(OutputPlugin):
             self._topElement.appendChild(messageNode)
 
         # Add the information results
-        infos = kb.kb.getAllInfos()
+        infos = kb.kb.get_all_infos()
         for i in infos:
             messageNode = self._xmldoc.createElement("information")
-            messageNode.setAttribute("url", str(i.getURL()))
+            messageNode.setAttribute("url", str(i.get_url()))
             messageNode.setAttribute("name", str(i.get_name()))
             messageNode.setAttribute("plugin", str(i.get_plugin_name()))
             # Wrap the description in a description element and put it above

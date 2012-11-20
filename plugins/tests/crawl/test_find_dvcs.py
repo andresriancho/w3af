@@ -60,11 +60,11 @@ class TestFindDVCS(PluginTest):
 
             expected_url_1 = self.base_url + repo
             expected_url_2 = self.base_url + '.' + repo
-            url_start = vuln_repo.getURL().url_string.startswith(expected_url_1) or \
-                vuln_repo.getURL(
+            url_start = vuln_repo.get_url().url_string.startswith(expected_url_1) or \
+                vuln_repo.get_url(
                 ).url_string.startswith(expected_url_2)
 
-            self.assertTrue(url_start, vuln_repo.getURL().url_string)
+            self.assertTrue(url_start, vuln_repo.get_url().url_string)
 
             self.assertEqual(vuln_repo.get_severity(), severity.MEDIUM)
             self.assertEqual(vuln_repo.get_name(), repo + ' repository found')

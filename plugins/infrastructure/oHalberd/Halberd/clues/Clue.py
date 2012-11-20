@@ -143,7 +143,7 @@ class Clue:
         """
         self.diff = int(self._local - self._remote)
 
-    def incCount(self, num=1):
+    def inc_count(self, num=1):
         """Increase the times this clue has been found.
 
         @param num: A positive non-zero number of hits to increase.
@@ -155,7 +155,7 @@ class Clue:
             raise ValueError
         self._count += num
 
-    def getCount(self):
+    def get_count(self):
         """Retrieve the number of times the clue has been found
 
         @return: Number of hits.
@@ -163,7 +163,7 @@ class Clue:
         """
         return self._count
 
-    def setTimestamp(self, timestamp):
+    def set_timestamp(self, timestamp):
         """Sets the local clock attribute.
 
         @param timestamp: The local time (expressed in seconds since the Epoch)

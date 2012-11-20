@@ -53,12 +53,12 @@ class get_emails(GrepPlugin):
         @param request: The HTTP response
         @return: None
         '''
-        uri = response.getURI()
+        uri = response.get_uri()
         if uri not in self._already_inspected:
             self._already_inspected.add(uri)
 
             self._grep_worker(request, response, 'emails',
-                              response.getURL().getRootDomain())
+                              response.get_url().get_root_domain())
 
             if not self._only_target_domain:
                 self._grep_worker(request, response, 'external_emails')
@@ -78,7 +78,7 @@ class get_emails(GrepPlugin):
         except w3afException:
             msg = 'If I can\'t parse the document, I won\'t be able to find any'
             msg += ' emails. Ignoring the response for "%s".'
-            om.out.debug(msg % response.getURL())
+            om.out.debug(msg % response.get_url())
             return
 
         emails = dp.get_emails(domain)
@@ -90,7 +90,7 @@ class get_emails(GrepPlugin):
 
             # Email address are case insensitive
             mail_address = mail_address.lower()
-            url = response.getURL()
+            url = response.get_url()
 
             email_map = {}
             for info_obj in kb.kb.get('emails', 'emails'):
@@ -101,7 +101,7 @@ class get_emails(GrepPlugin):
                 # Create a new info object, and report it
                 i = info.info()
                 i.set_plugin_name(self.get_name())
-                i.setURL(url)
+                i.set_url(url)
                 i.set_id(response.id)
                 i.set_name(mail_address)
                 desc = 'The mail account: "' + \
@@ -112,7 +112,7 @@ class get_emails(GrepPlugin):
                 i['mail'] = mail_address
                 i['url_list'] = [url]
                 i['user'] = mail_address.split('@')[0]
-                i.addToHighlight(mail_address)
+                i.add_to_highlight(mail_address)
                 kb.kb.append('emails', kb_key, i)
 
             else:
@@ -127,7 +127,7 @@ class get_emails(GrepPlugin):
                     id_list_of_info = i.get_id()
                     id_list_of_info.append(response.id)
                     i.set_id(id_list_of_info)
-                    i.setURL(url)
+                    i.set_url(url)
                     desc = i.get_desc()
                     desc += '\n- ' + url
                     desc += ' - In request with id: ' + str(response.id)
@@ -135,7 +135,7 @@ class get_emails(GrepPlugin):
                     i['url_list'].append(url)
 
     def set_options(self, options_list):
-        self._only_target_domain = options_list['onlyTargetDomain'].get_value()
+        self._only_target_domain = options_list['only_target_domain'].get_value()
 
     def get_options(self):
         '''
@@ -145,7 +145,7 @@ class get_emails(GrepPlugin):
 
         d1 = 'When greping, only search emails for domain of target'
         o1 = opt_factory(
-            'onlyTargetDomain', self._only_target_domain, d1, 'boolean')
+            'only_target_domain', self._only_target_domain, d1, 'boolean')
         ol.add(o1)
 
         return ol

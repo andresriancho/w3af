@@ -37,7 +37,7 @@ class TestRIAEnumerator(PluginTest):
         infos = self.kb.get('ria_enumerator', 'info')
         self.assertEqual(len(infos), 2)
 
-        urls = [i.getURL().url_string for i in infos]
+        urls = [i.get_url().url_string for i in infos]
         self.assertTrue(self.base_url + 'crossdomain.xml' in urls)
 
         vulns = self.kb.get('ria_enumerator', 'vuln')

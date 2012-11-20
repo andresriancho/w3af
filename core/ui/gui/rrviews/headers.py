@@ -162,7 +162,7 @@ class HttpHeadersView(RememberingVPaned):
     def _changed(self, widg=None):
         '''Synchronize changes with other views (callback).'''
         if not self.initial:
-            self.parentView.setObject(self.getObject())
+            self.parentView.set_object(self.get_object())
             self.parentView.synchronize(self.id)
 
     def clear(self):
@@ -175,21 +175,21 @@ class HttpHeadersView(RememberingVPaned):
         '''Highlight word in thetext.'''
         self._raw.highlight(text, tag)
 
-    def showObject(self, obj):
+    def show_object(self, obj):
         '''Show object in view.'''
         if self.is_request:
-            self.startLine = obj.getRequestLine()
-            self._updateHeadersTab(obj.getHeaders())
+            self.startLine = obj.get_request_line()
+            self._updateHeadersTab(obj.get_headers())
             data = ''
-            if obj.getData():
-                data = str(obj.getData())
+            if obj.get_data():
+                data = str(obj.get_data())
             self._raw.set_text(data)
         else:
-            self.startLine = obj.getStatusLine()
-            self._updateHeadersTab(obj.getHeaders())
-            self._raw.set_text(obj.getBody())
+            self.startLine = obj.get_status_line()
+            self._updateHeadersTab(obj.get_headers())
+            self._raw.set_text(obj.get_body())
 
-    def getObject(self):
+    def get_object(self):
         '''Return object (request or resoponse).'''
         head = self.startLine
         for header in self._headersStore:

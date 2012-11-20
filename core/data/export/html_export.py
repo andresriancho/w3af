@@ -42,10 +42,10 @@ def html_export(request_string):
         <title>Exported HTTP Request from w3af</title>
     </head>
     <body>\n'''
-    res += '<form action="' + cgi.escape(http_request.getURI()
+    res += '<form action="' + cgi.escape(http_request.get_uri()
                                          .url_string, True)
     res += '" method="' + cgi.escape(http_request.get_method(), True) + '">\n'
-    if http_request.getData() and http_request.getData() != '\n':
+    if http_request.get_data() and http_request.get_data() != '\n':
         post_data = http_request.get_dc()
         for param_name in post_data:
             for value in post_data[param_name]:

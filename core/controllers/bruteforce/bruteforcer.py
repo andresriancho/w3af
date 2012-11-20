@@ -62,8 +62,8 @@ class password_bruteforcer(object):
                     yield pwd
 
     def _special_passwords(self):
-        yield self._url.getDomain()
-        yield self._url.getRootDomain()
+        yield self._url.get_domain()
+        yield self._url.get_root_domain()
         for pwd in get_profiling_results(self.profiling_number):
             yield pwd
 
@@ -140,7 +140,7 @@ class user_password_bruteforcer(object):
         '''
         Generate special passwords from URL, password profiling, etc.
         '''
-        yield self._url.getDomain()
+        yield self._url.get_domain()
 
         if self.use_emails:
             emails = kb.kb.get('emails', 'emails')

@@ -78,12 +78,12 @@ class TestImportResults(PluginTest):
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
-        self.assertEqual(post_fr.getURL(
+        self.assertEqual(post_fr.get_url(
         ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
         self.assertEqual(post_fr.get_dc(), {'firstname': ['abc']})
-        self.assertEqual(post_fr.getData(), 'firstname=abc')
+        self.assertEqual(post_fr.get_data(), 'firstname=abc')
 
-        urls = [fr.getURI().url_string for fr in fr_list if not isinstance(
+        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
             fr, HTTPPostDataRequest)]
 
         EXPECTED_URLS = set(
@@ -101,13 +101,13 @@ class TestImportResults(PluginTest):
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
-        self.assertEqual(post_fr.getURL(
+        self.assertEqual(post_fr.get_url(
         ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
         self.assertEqual(
             post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
-        self.assertEqual(post_fr.getData(), 'user=afsfasf&firstname=asf')
+        self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
 
-        urls = [fr.getURI().url_string for fr in fr_list if not isinstance(
+        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
             fr, HTTPPostDataRequest)]
 
         EXPECTED_URLS = set(['http://moth/w3af/', 'http://moth/w3af/?id=1'])
@@ -124,13 +124,13 @@ class TestImportResults(PluginTest):
         post_fr = [fr for fr in fr_list if isinstance(fr, HTTPPostDataRequest)]
         self.assertEqual(len(post_fr), 1)
         post_fr = post_fr[0]
-        self.assertEqual(post_fr.getURL(
+        self.assertEqual(post_fr.get_url(
         ).url_string, 'http://moth/w3af/audit/xss/dataReceptor.php')
         self.assertEqual(
             post_fr.get_dc(), {u'user': [u'afsfasf'], u'firstname': [u'asf']})
-        self.assertEqual(post_fr.getData(), 'user=afsfasf&firstname=asf')
+        self.assertEqual(post_fr.get_data(), 'user=afsfasf&firstname=asf')
 
-        urls = [fr.getURI().url_string for fr in fr_list if not isinstance(
+        urls = [fr.get_uri().url_string for fr in fr_list if not isinstance(
             fr, HTTPPostDataRequest)]
 
         EXPECTED_URLS = set(['http://moth/w3af/', 'http://moth/w3af/?id=1'])

@@ -57,7 +57,7 @@ class frontpage_version(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        for domain_path in fuzzable_request.getURL().getDirectories():
+        for domain_path in fuzzable_request.get_url().get_directories():
 
             if domain_path not in self._analyzed_dirs:
 
@@ -65,7 +65,7 @@ class frontpage_version(InfrastructurePlugin):
                 self._analyzed_dirs.add(domain_path)
 
                 # Request the file
-                frontpage_info_url = domain_path.urlJoin("_vti_inf.html")
+                frontpage_info_url = domain_path.url_join("_vti_inf.html")
                 try:
                     response = self._uri_opener.GET(
                         frontpage_info_url, cache=True)
@@ -88,9 +88,9 @@ class frontpage_version(InfrastructurePlugin):
         @param response: The http response object for the _vti_inf file.
         @return: None. All the info is saved to the kb.
         '''
-        version_mo = self.VERSION_RE.search(response.getBody())
-        admin_mo = self.ADMIN_URL_RE.search(response.getBody())
-        author_mo = self.AUTHOR_URL_RE.search(response.getBody())
+        version_mo = self.VERSION_RE.search(response.get_body())
+        admin_mo = self.ADMIN_URL_RE.search(response.get_body())
+        author_mo = self.AUTHOR_URL_RE.search(response.get_body())
 
         if version_mo and admin_mo and author_mo:
             #Set the self._exec to false
@@ -100,9 +100,9 @@ class frontpage_version(InfrastructurePlugin):
             i.set_plugin_name(self.get_name())
             i.set_id(response.id)
             i.set_name('FrontPage Configuration Information')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             desc = 'The FrontPage Configuration Information file was found at: "'
-            desc += i.getURL()
+            desc += i.get_url()
             desc += '" and the version of FrontPage Server Extensions is: "'
             desc += version_mo.group(1) + '". '
             i.set_desc(desc)
@@ -127,9 +127,9 @@ class frontpage_version(InfrastructurePlugin):
             i.set_plugin_name(self.get_name())
             i.set_id(response.id)
             i.set_name('Fake FrontPage Configuration Information')
-            i.setURL(response.getURL())
+            i.set_url(response.get_url())
             desc = 'A fake FrontPage Configuration Information file was found at: "'
-            desc += i.getURL()
+            desc += i.get_url()
             desc += '". This may be an indication of a honeypot, a WAF or an IPS.'
             i.set_desc(desc)
             kb.kb.append(self, 'fake_frontpage', i)
@@ -143,12 +143,12 @@ class frontpage_version(InfrastructurePlugin):
         @param frontpage_admin: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
-        admin_location = response.getURL().getDomainPath().urlJoin(
+        admin_location = response.get_url().get_domain_path().url_join(
             frontpage_admin.group(1))
         i = info.info()
         i.set_plugin_name(self.get_name())
         i.set_id(response.id)
-        i.setURL(admin_location)
+        i.set_url(admin_location)
 
         # Check for anomalies in the location of admin.exe
         if frontpage_admin.group(1) != '_vti_bin/_vti_adm/admin.exe':
@@ -179,13 +179,13 @@ class frontpage_version(InfrastructurePlugin):
         @param frontpage_author: A regex match object.
         @return: None. All the info is saved to the kb.
         '''
-        author_location = response.getURL().getDomainPath().urlJoin(
+        author_location = response.get_url().get_domain_path().url_join(
             frontpage_author.group(1))
 
         i = info.info()
         i.set_plugin_name(self.get_name())
         i.set_id(response.id)
-        i.setURL(author_location)
+        i.set_url(author_location)
         # Check for anomalies in the location of author.exe
         if frontpage_author.group(1) != '_vti_bin/_vti_aut/author.exe':
             name = 'Uncommon FrontPage configuration'

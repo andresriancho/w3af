@@ -54,14 +54,14 @@ class google_spider(CrawlPlugin):
         '''
         google_se = google(self._uri_opener)
 
-        domain = fuzzable_request.getURL().getDomain()
+        domain = fuzzable_request.get_url().get_domain()
         if is_private_site(domain):
             msg = 'There is no point in searching google for "site:%s".'
             msg += ' Google does\'nt index private pages.'
             raise w3afException(msg % domain)
 
         try:
-            g_results = google_se.getNResults(
+            g_results = google_se.get_n_results(
                 'site:' + domain, self._result_limit)
         except:
             pass

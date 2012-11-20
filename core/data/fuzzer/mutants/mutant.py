@@ -108,11 +108,11 @@ class Mutant(object):
 
     def print_mod_value(self):
         fmt = 'The data that was sent is: "%s".'
-        return fmt % self.getData()
+        return fmt % self.get_data()
 
     def __repr__(self):
         fmt = '<mutant-%s | %s | %s >'
-        return fmt % (self.get_mutant_type(), self.get_method(), self.getURI())
+        return fmt % (self.get_mutant_type(), self.get_method(), self.get_uri())
 
     def copy(self):
         return copy.deepcopy(self)
@@ -149,7 +149,7 @@ class Mutant(object):
                         ' was found at: ' + mutant.found_at())
         '''
         res = ['"%s", using HTTP method %s. The sent data was: "'
-               % (self.getURL(), self.get_method())]
+               % (self.get_url(), self.get_method())]
 
         # Depending on the data container, print different things:
         dc = self.get_dc()

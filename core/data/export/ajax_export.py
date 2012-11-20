@@ -85,7 +85,7 @@ affect how and if this request is sent by the browser */
     # Set the method and the path
     res += 'xmlhttp.open("' + http_request.get_method() + '", "'
     res += ajax_escape_string(
-        http_request.getURI().url_string) + '", true);\n'
+        http_request.get_uri().url_string) + '", true);\n'
 
     # For debugging
     res += '''
@@ -103,16 +103,16 @@ make the request fail */
 '''
 
     # Now I add the headers:
-    headers = http_request.getHeaders()
+    headers = http_request.get_headers()
     for header_name, header_value in headers.iteritems():
         res += 'xmlhttp.setRequestHeaders("' + ajax_escape_string(
             header_name) + '", "'
         res += ajax_escape_string(header_value) + '");\n'
 
     # And finally the post data (if any)
-    if http_request.getData() and http_request.getData() != '\n':
+    if http_request.get_data() and http_request.get_data() != '\n':
         res += 'var post_data = (<r><![CDATA[' + str(
-            http_request.getData()) + ']]></r>).toString();\n'
+            http_request.get_data()) + ']]></r>).toString();\n'
         res += 'xmlhttp.send(post_data);\n'
     else:
         res += 'xmlhttp.send(null);\n'

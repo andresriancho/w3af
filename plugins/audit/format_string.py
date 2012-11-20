@@ -81,7 +81,7 @@ class format_string(AuditPlugin):
                     msg += ' string vulnerability was found at: '
                     msg += mutant.found_at()
                     v.set_desc(msg)
-                    v.addToHighlight(error)
+                    v.add_to_highlight(error)
                     kb.kb.append_uniq(self, 'format_string', v)
                     break
 

@@ -67,8 +67,8 @@ class TestXMLOutput(PluginTest):
         self.assertEqual(len(kb_vulns), 1, kb_vulns)
 
         self.assertEquals(
-            set(sorted([v.getURL() for v in kb_vulns])),
-            set(sorted([v.getURL() for v in file_vulns]))
+            set(sorted([v.get_url() for v in kb_vulns])),
+            set(sorted([v.get_url() for v in file_vulns]))
         )
 
         self.assertEquals(
@@ -111,7 +111,7 @@ class XMLParser:
             v = vuln.vuln()
             v.set_plugin_name(attrib['plugin'])
             v.set_name(attrib['name'])
-            v.setURL(URL(attrib['url']))
+            v.set_url(URL(attrib['url']))
             self.vulns.append(v)
 
     def close(self):

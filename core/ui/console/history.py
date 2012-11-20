@@ -30,7 +30,7 @@ class historyTable(object):
     def __init__(self):
         self._table = {}
 
-    def getHistory(self, key):
+    def get_history(self, key):
         '''
         Returns a history object for the key (which is a menu name).
         If no object exist yet, a new one is created and registered.

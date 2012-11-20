@@ -104,21 +104,21 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         so we are going to fix that problem.
         '''
         fuzzable_request = HTTPRequestParser(head, postdata)
-        headers = fuzzable_request.getHeaders()
+        headers = fuzzable_request.get_headers()
 
-        headers['content-length'] = [str(len(fuzzable_request.getData())), ]
+        headers['content-length'] = [str(len(fuzzable_request.get_data())), ]
 
-        fuzzable_request.setHeaders(headers)
-        head = fuzzable_request.dumpRequestHead()
+        fuzzable_request.set_headers(headers)
+        head = fuzzable_request.dump_request_head()
         return head, postdata
 
     def _sendFuzzableRequest(self, fuzzable_request):
         '''
         Sends a fuzzable request to the remote web server.
         '''
-        uri = fuzzable_request.getURI()
-        data = fuzzable_request.getData()
-        headers = fuzzable_request.getHeaders()
+        uri = fuzzable_request.get_uri()
+        data = fuzzable_request.get_data()
+        headers = fuzzable_request.get_headers()
         method = fuzzable_request.get_method()
         # Also add the cookie header.
         cookie = fuzzable_request.get_cookie()
@@ -151,10 +151,10 @@ class w3afLocalProxyHandler(w3afProxyHandler):
                 fuzzable_request.get_method() not in self.server.w3afLayer._methodsToTrap:
             return False
 
-        if self.server.w3afLayer._whatNotToTrap.search(fuzzable_request.getURL().url_string):
+        if self.server.w3afLayer._whatNotToTrap.search(fuzzable_request.get_url().url_string):
             return False
 
-        if not self.server.w3afLayer._whatToTrap.search(fuzzable_request.getURL().url_string):
+        if not self.server.w3afLayer._whatToTrap.search(fuzzable_request.get_url().url_string):
             return False
 
         return True
@@ -189,7 +189,7 @@ class localproxy(proxy):
         self._trap = False
         self._fixContentLength = True
 
-    def getTrappedRequest(self):
+    def get_trapped_request(self):
         '''
         To be called by the gtk user interface every 400ms.
         @return: A fuzzable request object, or None if the queue is empty.
@@ -201,7 +201,7 @@ class localproxy(proxy):
         else:
             return res
 
-    def setWhatToTrap(self, regex):
+    def set_what_to_trap(self, regex):
         '''Set regular expression that indicates what URLs NOT TO trap.'''
         try:
             self._whatToTrap = re.compile(regex)
@@ -216,7 +216,7 @@ class localproxy(proxy):
         '''
         self._methodsToTrap = [i.upper() for i in methods]
 
-    def setWhatNotToTrap(self, regex):
+    def set_what_not_to_trap(self, regex):
         '''Set regular expression that indicates what URLs TO trap.'''
         try:
             self._whatNotToTrap = re.compile(regex)
@@ -224,24 +224,24 @@ class localproxy(proxy):
             raise w3afException(
                 'The regular expression you configured is invalid.')
 
-    def setTrap(self, trap):
+    def set_trap(self, trap):
         '''
         @param trap: True if we want to trap requests.
         '''
         self._trap = trap
 
-    def getTrap(self):
+    def get_trap(self):
         return self._trap
 
-    def setFixContentLength(self, fix):
+    def set_fix_content_length(self, fix):
         '''Set Fix Content Length flag.'''
         self._fixContentLength = fix
 
-    def getFixContentLength(self):
+    def get_fix_content_length(self):
         '''Get Fix Content Length flag.'''
         return self._fixContentLength
 
-    def dropRequest(self, orig_fuzzable_req):
+    def drop_request(self, orig_fuzzable_req):
         '''Let the handler know that the request was dropped.'''
         self._editedRequests[id(orig_fuzzable_req)] = (None, None)
 
@@ -272,10 +272,10 @@ if __name__ == '__main__':
 
     for i in xrange(10):
         time.sleep(1)
-        tr = lp.getTrappedRequest()
+        tr = lp.get_trapped_request()
         if tr:
             print tr
-            print lp.send_raw_request(tr, tr.dumpRequestHead(), tr.getData())
+            print lp.send_raw_request(tr, tr.dump_request_head(), tr.get_data())
         else:
             print 'Waiting...'
 

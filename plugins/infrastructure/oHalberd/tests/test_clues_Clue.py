@@ -33,17 +33,17 @@ class TestClue(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testCount(self):
-        self.failUnlessEqual(self.clue.getCount(), 1)
-        self.clue.incCount()
-        self.failUnlessEqual(self.clue.getCount(), 2)
-        self.clue.incCount(21)
-        self.failUnlessEqual(self.clue.getCount(), 23)
+    def test_count(self):
+        self.failUnlessEqual(self.clue.get_count(), 1)
+        self.clue.inc_count()
+        self.failUnlessEqual(self.clue.get_count(), 2)
+        self.clue.inc_count(21)
+        self.failUnlessEqual(self.clue.get_count(), 23)
 
-        self.failUnlessRaises(ValueError, self.clue.incCount, 0)
-        self.failUnlessRaises(ValueError, self.clue.incCount, -7)
+        self.failUnlessRaises(ValueError, self.clue.inc_count, 0)
+        self.failUnlessRaises(ValueError, self.clue.inc_count, -7)
 
-    def testNormalize(self):
+    def test_normalize(self):
         value = '123content-location*23'
         self.failUnless(Clue.normalize(value) == 'content_location_23')
         value = 'content/location'
@@ -51,7 +51,7 @@ class TestClue(unittest.TestCase):
         value = '*content/location123'
         self.failUnless(Clue.normalize(value) == '_content_location123')
 
-    def testRecompute(self):
+    def test_recompute(self):
         # Check for invalid digest computations.
         self.clue.parse('Test: abc\r\nSomething: blah\r\n\r\n')
         self.assertRaises(AssertionError, self.clue._updateDigest, )

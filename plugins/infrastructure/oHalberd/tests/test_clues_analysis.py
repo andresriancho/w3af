@@ -34,14 +34,14 @@ class TestAnalysis(unittest.TestCase):
         self.threshold = Halberd.ScanTask.default_ratio_threshold
 
     def _hits(self, clues):
-        return sum(map(lambda c: c.getCount(), clues))
+        return sum(map(lambda c: c.get_count(), clues))
 
-    def _getClues(self, filename):
+    def _get_clues(self, filename):
         fname = os.path.join('tests', 'data', filename + '.clu')
         return Halberd.clues.file.load(fname)
 
     def analyze(self, filename, expected_raw, expected_analyzed):
-        clues = self._getClues(filename)
+        clues = self._get_clues(filename)
         self.failUnless(len(clues) >= expected_raw)
 
         analyzed = analysis.analyze(clues)
@@ -53,58 +53,58 @@ class TestAnalysis(unittest.TestCase):
 
         self.failUnlessEqual(total_before, total_after)
 
-    def testSimple(self):
+    def test_simple(self):
         self.analyze('agartha', 2, 1)
 
-    def testSynnergy(self):
+    def test_synnergy(self):
         self.analyze('www.synnergy.net', 2, 1)
 
-    def testTripod(self):
+    def test_tripod(self):
         self.analyze('www.tripod.com', 9, 5)
 
-    def testEbay(self):
+    def test_ebay(self):
         self.analyze('www.ebay.com', 2, 1)
 
-    def testBarclays(self):
+    def test_barclays(self):
         self.analyze('www.barclays.es', 3, 2)
 
-    def testSohu(self):
+    def test_sohu(self):
         self.analyze('www.sohu.com', 15, 2)
 
-    def testDmoz(self):
+    def test_dmoz(self):
         self.analyze('www.dmoz.org', 15, 3)
 
-    def testExcite(self):
+    def test_excite(self):
         self.analyze('email.excite.com', 30, 20)
 
-    def testRegister(self):
+    def test_register(self):
         self.analyze('www.register.com', 20, 1)
 
-    def testPricegrabber(self):
+    def test_pricegrabber(self):
         self.analyze('www.pricegrabber.com', 20, 1)
 
-    def testYesky(self):
+    def test_yesky(self):
         self.analyze('www.yesky.com', 20, 1)
 
-    def testPogo(self):
+    def test_pogo(self):
         self.analyze('www.pogo.com', 20, 1)
 
-    def testMacromedia(self):
+    def test_macromedia(self):
         self.analyze('www.macromedia.com', 7, 4)
 
-    def testAsk(self):
+    def test_ask(self):
         self.analyze('www.ask.com', 3, 1)
 
-    def testComcast(self):
+    def test_comcast(self):
         self.analyze('www.comcast.net', 5, 2)
 
-    def testHotwired(self):
+    def test_hotwired(self):
         self.analyze('hotwired.lycos.com', 6, 3)
 
-    def testPassport(self):
+    def test_passport(self):
         self.analyze('login.passport.net', 4, 2)
 
-    def testCdrom(self):
+    def test_cdrom(self):
         self.analyze('www.cdrom.com', 4, 2)
 
 

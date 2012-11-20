@@ -36,10 +36,10 @@ class profilesMenu(menu):
     def __init__(self, name, console, w3af, parent=None):
         menu.__init__(self, name, console, w3af, parent)
         self._profiles = {}
-        instance_list, invalid_profiles = w3af.profiles.getProfileList()
+        instance_list, invalid_profiles = w3af.profiles.get_profile_list()
         for profile in instance_list:
             self._profiles[profile.get_name()] = profile
-        self._loadHelp('profiles')
+        self._load_help('profiles')
 
     def _cmd_use(self, params):
         '''
@@ -60,7 +60,7 @@ class profilesMenu(menu):
                 workdir = None
 
             try:
-                self._w3af.profiles.useProfile(profile, workdir=workdir)
+                self._w3af.profiles.use_profile(profile, workdir=workdir)
             except w3afException, w3:
                 om.out.console(str(w3))
 
@@ -77,7 +77,7 @@ class profilesMenu(menu):
                 table.append(
                     [profileInstance.get_name(), profileInstance.get_desc()])
 
-            self._console.drawTable(table)
+            self._console.draw_table(table)
 
     def _para_use(self, params, part):
         if not params:

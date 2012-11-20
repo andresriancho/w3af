@@ -90,7 +90,7 @@ class lang(GrepPlugin):
                 kb.kb.save(self, 'lang', 'unknown')
 
                 matches = {}
-                body = response.getClearTextBody().lower()
+                body = response.get_clear_text_body().lower()
 
                 for lang_string, m_in_obj in self.PREPOSITIONS.iteritems():
                     matches[lang_string] = len(m_in_obj.query(body))
@@ -112,7 +112,7 @@ class lang(GrepPlugin):
 
                 else:
                     msg = 'Could not determine the page language using ' + \
-                        response.getURL()
+                        response.get_url()
                     msg += ', not enough text to make a good analysis.'
                     om.out.debug(msg)
                     # Keep running until giving a good response...

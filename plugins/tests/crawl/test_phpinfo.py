@@ -49,7 +49,7 @@ class TestPHPInfo(PluginTest):
             'session.hash_function:md5',
         )
 
-        info_urls = [i.getURL().url_string for i in infos]
+        info_urls = [i.get_url().url_string for i in infos]
         self.assertTrue(self.base_url + 'phpinfo.php' in info_urls)
 
         for e_info_name in EXPECTED_INFOS:

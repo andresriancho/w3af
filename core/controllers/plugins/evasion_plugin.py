@@ -27,7 +27,7 @@ class EvasionPlugin(Plugin):
     '''
     This is the base class for evasion plugins, all evasion plugins should inherit from it
     and implement the following methods :
-        1. modifyRequest(...)
+        1. modify_request(...)
         2. set_options( OptionList )
         3. get_options()
 
@@ -37,7 +37,7 @@ class EvasionPlugin(Plugin):
     def __init__(self):
         Plugin.__init__(self)
 
-    def modifyRequest(self, request):
+    def modify_request(self, request):
         '''
         This method mangles the request in order to evade simple IDSs.
 
@@ -47,12 +47,12 @@ class EvasionPlugin(Plugin):
         @return: A fuzzed version of the Request.
         '''
         raise w3afException(
-            'Plugin is not implementing required method modifyRequest')
+            'Plugin is not implementing required method modify_request')
 
     def set_url_opener(self, foo):
         pass
 
-    def getPriority(self):
+    def get_priority(self):
         '''
         This function is called when sorting evasion plugins.
         Each evasion plugin should implement this.
@@ -60,7 +60,7 @@ class EvasionPlugin(Plugin):
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
         raise w3afException(
-            'Plugin is not implementing required method getPriority')
+            'Plugin is not implementing required method get_priority')
 
     def get_type(self):
         return 'evasion'

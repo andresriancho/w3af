@@ -34,7 +34,7 @@ class short_wizard(wizard):
         self._question_lst = self._get_instances(['target_1', 'target_2'],
                                                  w3af_core)
 
-    def getWizardDescription(self):
+    def get_wizard_description(self):
         '''
         This method should be overwritten by the actual wizards.
 

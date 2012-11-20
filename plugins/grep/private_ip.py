@@ -64,17 +64,17 @@ class private_ip(GrepPlugin):
         if self._ignore_if_match is None:
             self._generate_ignores(response)
 
-        if not (request.getURL(), request.getData()) in self._already_inspected:
+        if not (request.get_url(), request.get_data()) in self._already_inspected:
 
             #   Only run this once for each combination of URL and data sent to that URL
             self._already_inspected.add(
-                (request.getURL(), request.getData()))
+                (request.get_url(), request.get_data()))
 
             #
             #   Search for IP addresses in HTTP headers
             #   Get the headers string
             #
-            headers_string = response.dumpHeaders()
+            headers_string = response.dump_headers()
 
             #   Match the regular expressions
             for regex in self._regex_list:
@@ -85,17 +85,17 @@ class private_ip(GrepPlugin):
                     if match not in self._ignore_if_match:
                         v = vuln.vuln()
                         v.set_plugin_name(self.get_name())
-                        v.setURL(response.getURL())
+                        v.set_url(response.get_url())
                         v.set_id(response.id)
                         v.set_severity(severity.LOW)
                         v.set_name('Private IP disclosure vulnerability')
 
                         msg = 'The URL: "' + \
-                            v.getURL() + '" returned an HTTP header '
+                            v.get_url() + '" returned an HTTP header '
                         msg += 'with an IP address: "' + match + '".'
                         v.set_desc(msg)
                         v['IP'] = match
-                        v.addToHighlight(match)
+                        v.add_to_highlight(match)
                         kb.kb.append(self, 'header', v)
 
             #
@@ -109,12 +109,12 @@ class private_ip(GrepPlugin):
                     return
 
                 for regex in self._regex_list:
-                    for match in regex.findall(response.getBody()):
+                    for match in regex.findall(response.get_body()):
                         match = match.strip()
 
                         # Some proxy servers will return errors that include headers in the body
                         # along with the client IP which we want to ignore
-                        if re.search("^.*X-Forwarded-For: .*%s" % match, response.getBody(), re.M):
+                        if re.search("^.*X-Forwarded-For: .*%s" % match, response.get_body(), re.M):
                             continue
 
                         # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
@@ -122,17 +122,17 @@ class private_ip(GrepPlugin):
                                 not request.sent(match):
                             v = vuln.vuln()
                             v.set_plugin_name(self.get_name())
-                            v.setURL(response.getURL())
+                            v.set_url(response.get_url())
                             v.set_id(response.id)
                             v.set_severity(severity.LOW)
                             v.set_name('Private IP disclosure vulnerability')
 
                             msg = 'The URL: "' + \
-                                v.getURL() + '" returned an HTML document '
+                                v.get_url() + '" returned an HTML document '
                             msg += 'with an IP address: "' + match + '".'
                             v.set_desc(msg)
                             v['IP'] = match
-                            v.addToHighlight(match)
+                            v.add_to_highlight(match)
                             kb.kb.append(self, 'HTML', v)
 
     def _generate_ignores(self, response):
@@ -142,7 +142,7 @@ class private_ip(GrepPlugin):
         if self._ignore_if_match is None:
             self._ignore_if_match = set()
 
-            requested_domain = response.getURL().getDomain()
+            requested_domain = response.get_url().get_domain()
             self._ignore_if_match.add(requested_domain)
 
             self._ignore_if_match.add(get_local_ip(requested_domain))

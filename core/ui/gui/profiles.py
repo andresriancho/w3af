@@ -45,12 +45,12 @@ class ProfileList(gtk.TreeView):
         # A list to store the several "initial" profiles
         self._parameter_profile = initial
 
-        self.loadProfiles(selected=initial)
+        self.load_profiles(selected=initial)
 
         # callbacks for right button and select
         self.connect('button-press-event', self._changeAtempt)
         self.connect('button-release-event', self._popupMenu)
-        self.connect('cursor-changed', self._useProfile)
+        self.connect('cursor-changed', self._use_profile)
         self._rightButtonMenu = None
 
         # create a TreeViewColumn for the text
@@ -68,11 +68,11 @@ class ProfileList(gtk.TreeView):
         # easily to it
         self.pluginsConfigs = {None: {}}
         self.origActPlugins = sorted(
-            self.w3af.mainwin.pcbody.getActivatedPlugins())
+            self.w3af.mainwin.pcbody.get_activated_plugins())
 
         self.show()
 
-    def loadProfiles(self, selected=None, retry=True):
+    def load_profiles(self, selected=None, retry=True):
         '''Load the profiles.
 
         @param selected: which profile is already selected.
@@ -84,7 +84,7 @@ class ProfileList(gtk.TreeView):
         self.profile_instances = {None: None}
 
         # build the list with the profiles name, description, profile_instance
-        instance_list, invalid_profiles = self.w3af.profiles.getProfileList()
+        instance_list, invalid_profiles = self.w3af.profiles.get_profile_list()
         tmpprofiles = []
         for profile_obj in instance_list:
             nom = profile_obj.get_name()
@@ -137,22 +137,22 @@ class ProfileList(gtk.TreeView):
         self.selectedProfile = None
         if selected is None:
             self.set_cursor(0)
-            self._useProfile()
+            self._use_profile()
         else:
             for i, (nom, desc, prfid, changed, perm) in enumerate(liststore):
                 the_prof = self.profile_instances[prfid]
                 if selected == the_prof.get_profile_file() or \
                         selected == the_prof.get_name():
                     self.set_cursor(i)
-                    self._useProfile()
+                    self._use_profile()
                     break
             else:
                 # In some cases, this function is called in a thread while
                 # the profile file is being stored to disk. Because of that
                 # it might happen that the profile "is there" but didn't get
-                # loaded properly in the first call to loadProfiles.
+                # loaded properly in the first call to load_profiles.
                 if retry:
-                    self.loadProfiles(selected, retry=False)
+                    self.load_profiles(selected, retry=False)
                 else:
                     self.set_cursor(0)
 
@@ -169,7 +169,7 @@ class ProfileList(gtk.TreeView):
     def _controlDifferences(self):
         '''Returns if something is different against initial state.'''
         # Always check activation status
-        nowActive = sorted(self.w3af.mainwin.pcbody.getActivatedPlugins())
+        nowActive = sorted(self.w3af.mainwin.pcbody.get_activated_plugins())
         if nowActive != self.origActPlugins:
             return True
 
@@ -194,7 +194,7 @@ class ProfileList(gtk.TreeView):
 
         return False
 
-    def profileChanged(self, plugin=None, changed=None):
+    def profile_changed(self, plugin=None, changed=None):
         '''Get executed when a plugin is changed.
 
         @param plugin: The plugin which changed.
@@ -218,10 +218,10 @@ class ProfileList(gtk.TreeView):
             row[0] = row[4]
 
         # update the mainwin buttons
-        newstatus = self._getActionsSensitivity(path)
-        self.w3af.mainwin.activateProfileActions([True] + newstatus)
+        newstatus = self._get_actionsSensitivity(path)
+        self.w3af.mainwin.activate_profile_actions([True] + newstatus)
 
-    def pluginConfig(self, plugin):
+    def plugin_config(self, plugin):
         '''Gets executed when a plugin config panel is created.
 
         @param plugin: The plugin which will be configured.
@@ -295,16 +295,16 @@ class ProfileList(gtk.TreeView):
 
             # the items
             e = gtk.MenuItem(_("Save configuration to profile"))
-            e.connect('activate', self.saveProfile)
+            e.connect('activate', self.save_profile)
             gm.append(e)
             e = gtk.MenuItem(_("Save configuration to a new profile"))
-            e.connect('activate', self.saveAsProfile)
+            e.connect('activate', self.save_as_profile)
             gm.append(e)
             e = gtk.MenuItem(_("Revert to saved profile state"))
-            e.connect('activate', self.revertProfile)
+            e.connect('activate', self.revert_profile)
             gm.append(e)
             e = gtk.MenuItem(_("Delete this profile"))
-            e.connect('activate', self.deleteProfile)
+            e.connect('activate', self.delete_profile)
             gm.append(e)
             gm.show_all()
         else:
@@ -314,14 +314,14 @@ class ProfileList(gtk.TreeView):
         # Is it over a plugin name ?
         if path is not None and len(path) == 1:
             # Enable/disable the options in function of state
-            newstatus = self._getActionsSensitivity(path)
+            newstatus = self._get_actionsSensitivity(path)
             children = gm.get_children()
             for child, stt in zip(children, newstatus):
                 child.set_sensitive(stt)
 
             gm.popup(None, None, None, event.button, event.time)
 
-    def _getActionsSensitivity(self, path):
+    def _get_actionsSensitivity(self, path):
         '''Returns which actions must be activated or not
 
         @param path: where the cursor is located
@@ -363,7 +363,7 @@ class ProfileList(gtk.TreeView):
             return None
         return profile_obj.get_name()
 
-    def _useProfile(self, widget=None):
+    def _use_profile(self, widget=None):
         '''Uses the selected profile.'''
         profile_obj = self._getProfile()
         profileName = self._getProfileName()
@@ -372,7 +372,7 @@ class ProfileList(gtk.TreeView):
         self.selectedProfile = profileName
 
         try:
-            self.w3af.profiles.useProfile(profile_obj.get_profile_file())
+            self.w3af.profiles.use_profile(profile_obj.get_profile_file())
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3))
             dlg.run()
@@ -385,14 +385,14 @@ class ProfileList(gtk.TreeView):
         self.w3af.mainwin.pcbody.reload(profdesc)
 
         # get the activated plugins
-        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
+        self.origActPlugins = self.w3af.mainwin.pcbody.get_activated_plugins()
 
         # update the mainwin buttons
         path = self.get_cursor()[0]
-        newstatus = self._getActionsSensitivity(path)
-        self.w3af.mainwin.activateProfileActions(newstatus)
+        newstatus = self._get_actionsSensitivity(path)
+        self.w3af.mainwin.activate_profile_actions(newstatus)
 
-    def newProfile(self, widget=None):
+    def new_profile(self, widget=None):
         '''Creates a new profile.'''
         # ask for new profile info
         dlg = entries.EntryDialog(
@@ -405,7 +405,7 @@ class ProfileList(gtk.TreeView):
 
         # use the empty profile
         try:
-            self.w3af.profiles.useProfile(None)
+            self.w3af.profiles.use_profile(None)
         except w3afException, w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, str(w3))
             dlg.run()
@@ -418,29 +418,29 @@ class ProfileList(gtk.TreeView):
         filename = cgi.escape(filename)
         try:
             profile_obj = helpers.coreWrap(
-                self.w3af.profiles.saveCurrentToNewProfile,
+                self.w3af.profiles.save_current_to_new_profile,
                 filename, description)
         except w3afException:
             #FIXME: This message should be more descriptive
             self.w3af.mainwin.sb(_("Problem hit!"))
             return
         self.w3af.mainwin.sb(_("New profile created"))
-        self.loadProfiles(selected=profile_obj.get_name())
+        self.load_profiles(selected=profile_obj.get_name())
 
         # get the activated plugins
-        self.origActPlugins = self.w3af.mainwin.pcbody.getActivatedPlugins()
+        self.origActPlugins = self.w3af.mainwin.pcbody.get_activated_plugins()
 
         # update the mainwin buttons
         path = self.get_cursor()[0]
-        newstatus = self._getActionsSensitivity(path)
-        self.w3af.mainwin.activateProfileActions(newstatus)
+        newstatus = self._get_actionsSensitivity(path)
+        self.w3af.mainwin.activate_profile_actions(newstatus)
 
-    def saveProfile(self, widget=None):
+    def save_profile(self, widget=None):
         '''Saves the selected profile.'''
         profile_obj = self._getProfile()
-        if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
+        if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
-        self.w3af.profiles.saveCurrentToProfile(profile_obj.get_name(),
+        self.w3af.profiles.save_current_to_profile(profile_obj.get_name(),
                                                 prof_desc=profile_obj.get_desc(
                                                 ),
                                                 prof_path=profile_obj.get_profile_file())
@@ -450,9 +450,9 @@ class ProfileList(gtk.TreeView):
         row[0] = row[4]
         row[3] = False
 
-    def saveAsProfile(self, widget=None):
+    def save_as_profile(self, widget=None):
         '''Copies the selected profile.'''
-        if not self.w3af.mainwin.saveStateToCore(relaxedTarget=True):
+        if not self.w3af.mainwin.save_state_to_core(relaxedTarget=True):
             return
 
         dlg = entries.EntryDialog(_(
@@ -464,15 +464,15 @@ class ProfileList(gtk.TreeView):
             filename, description = dlgResponse
             filename = cgi.escape(filename)
             try:
-                profile_obj = helpers.coreWrap(self.w3af.profiles.saveCurrentToNewProfile, filename, description)
+                profile_obj = helpers.coreWrap(self.w3af.profiles.save_current_to_new_profile, filename, description)
             except w3afException:
                 self.w3af.mainwin.sb(
                     _("There was a problem saving the profile!"))
                 return
             self.w3af.mainwin.sb(_("New profile created"))
-            self.loadProfiles(selected=profile_obj.get_name())
+            self.load_profiles(selected=profile_obj.get_name())
 
-    def revertProfile(self, widget=None):
+    def revert_profile(self, widget=None):
         '''Reverts the selected profile to its saved state.'''
         msg = _("Do you really want to discard the changes in the the profile and load the previous saved configuration?")
         dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
@@ -486,10 +486,10 @@ class ProfileList(gtk.TreeView):
             row = self.liststore[path]
             row[0] = row[4]
             row[3] = False
-            self._useProfile()
+            self._use_profile()
             self.w3af.mainwin.sb(_("The profile configuration was reverted to its last saved state"))
 
-    def deleteProfile(self, widget=None):
+    def delete_profile(self, widget=None):
         '''Deletes the selected profile.'''
         profile_obj = self._getProfile()
 
@@ -504,6 +504,6 @@ class ProfileList(gtk.TreeView):
             if profile_obj.get_profile_file() == self._parameter_profile:
                 self._parameter_profile = None
 
-            self.w3af.profiles.removeProfile(profile_obj.get_profile_file())
+            self.w3af.profiles.remove_profile(profile_obj.get_profile_file())
             self.w3af.mainwin.sb(_("The profile was deleted"))
-            self.loadProfiles()
+            self.load_profiles()
