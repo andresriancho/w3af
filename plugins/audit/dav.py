@@ -132,12 +132,12 @@ class dav(AuditPlugin):
         '''
         # upload
         url = domain_path.url_join(rand_alpha(5))
-        rndContent = rand_alnum(6)
-        put_response = self._uri_opener.PUT(url, data=rndContent)
+        rnd_content = rand_alnum(6)
+        put_response = self._uri_opener.PUT(url, data=rnd_content)
 
         # check if uploaded
         res = self._uri_opener.GET(url, cache=True)
-        if res.get_body() == rndContent:
+        if res.get_body() == rnd_content:
             v = vuln.vuln()
             v.set_plugin_name(self.get_name())
             v.set_url(url)
