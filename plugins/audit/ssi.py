@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -47,6 +46,9 @@ class ssi(AuditPlugin):
         # Internal variables
         self._expected_res_mutant = temp_shelve()
         self._freq_list = disk_list()
+        
+        re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'
+        self._extract_results_re = re.compile(re_str) 
 
     def audit(self, freq):
         '''
@@ -61,10 +63,10 @@ class ssi(AuditPlugin):
         mutants = create_mutants(freq, ssi_strings, orig_resp=orig_resp)
 
         # Used in end() to detect "persistent SSI"
-        for m in mutants:
+        for mut in mutants:
             expected_result = self._extract_result_from_payload(
-                m.get_mod_value())
-            self._expected_res_mutant[expected_result] = m
+                mut.get_mod_value())
+            self._expected_res_mutant[expected_result] = mut
 
         self._freq_list.append(freq)
         # End of persistent SSI setup
@@ -90,9 +92,8 @@ class ssi(AuditPlugin):
         '''
         Extract the expected result from the payload we're sending.
         '''
-        mo = re.search(
-            '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->', payload)
-        return mo.group(1) + mo.group(2)
+        match = self._extract_results_re.search(payload)
+        return match.group(1) + match.group(2)
 
     def _analyze_result(self, mutant, response):
         '''
@@ -154,11 +155,10 @@ class ssi(AuditPlugin):
                 v.set_plugin_name(self.get_name())
                 v.set_name('Persistent server side include vulnerability')
                 v.set_severity(severity.HIGH)
-                msg = 'Server side include (SSI) was found at: ' + \
-                    mutant.found_at()
-                msg += ' The result of that injection is shown by'
-                msg += ' browsing to "%s".' % freq.get_url()
-                v.set_desc(msg)
+                msg = 'Server side include (SSI) was found at: %s' \
+                      ' The result of that injection is shown by browsing'\
+                      ' to "%s".' 
+                v.set_desc(msg % (mutant.found_at(), freq.get_url()))
                 v.set_id(response.id)
                 v.add_to_highlight(matched_expected_result)
                 kb.kb.append(self, 'ssi', v)
@@ -169,24 +169,6 @@ class ssi(AuditPlugin):
                                       cache=False)
 
         self.print_uniq(kb.kb.get('ssi', 'ssi'), 'VAR')
-
-    def _find_file(self, response):
-        '''
-        This method finds out if the server side has been successfully included in
-        the resulting HTML.
-
-        @param response: The HTTP response object
-        @return: A list of errors found on the page
-        '''
-        res = []
-        for file_pattern_match in self._multi_in.query(response.body):
-            msg = 'Found file pattern. The section where the file pattern is included is (only'
-            msg += ' a fragment is shown): "' + file_pattern_match
-            msg += '". The error was found on response with id ' + \
-                str(response.id) + '.'
-            om.out.information(msg)
-            res.append(file_pattern_match)
-        return res
 
     def get_long_desc(self):
         '''
