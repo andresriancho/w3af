@@ -23,7 +23,7 @@ import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.vuln as vuln
 
-from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.exact_delay import ExactDelay
 from core.controllers.delay_detection.delay import delay
 
 
@@ -48,7 +48,7 @@ class blind_sqli_time_delay(object):
         '''
         for delay_obj in self._get_delays():
 
-            ed = exact_delay(mutant, delay_obj, self._uri_opener)
+            ed = ExactDelay(mutant, delay_obj, self._uri_opener)
             success, responses = ed.delay_is_controlled()
 
             if success:
@@ -107,7 +107,7 @@ class blind_sqli_time_delay(object):
         # With a small wait time of 5 seconds, this should work without problems...
         # and without hitting the xUrllib timeout !
         #
-        #    TODO: Need to implement variable_delay.py (modification of exact_delay)
+        #    TODO: Need to implement variable_delay.py (modification of ExactDelay)
         #          and use the following there:
         #
         #res.append( delay("1 or BENCHMARK(2500000,MD5(1))") )

@@ -1,5 +1,5 @@
 '''
-exact_delay.py
+ExactDelay.py
 
 Copyright 2012 Andres Riancho
 
@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-class exact_delay(object):
+class ExactDelay(object):
     '''
     Given that more than one vulnerability can be detected using time delays, just
     to name a couple blind SQL injections and OS commandings, I decided to create

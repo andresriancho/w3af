@@ -27,7 +27,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.exact_delay import ExactDelay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
@@ -48,7 +48,8 @@ class eval(AuditPlugin):
         "echo str_repeat('%s',5);",
         # Perl http://perldoc.perl.org/functions/eval.html
         "print '%s'x5",
-        # Python http://docs.python.org/reference/simple_stmts.html#the-exec-statement
+        # Python
+        # http://docs.python.org/reference/simple_stmts.html#the-exec-statement
         "print '%s'*5",
         # ASP
         "Response.Write(new String(\"%s\",5))"
@@ -126,8 +127,8 @@ class eval(AuditPlugin):
 
         for delay_obj in self.WAIT_OBJ:
 
-            ed = exact_delay(mutant, delay_obj, self._uri_opener)
-            success, responses = ed.delay_is_controlled()
+            ed_inst = ExactDelay(mutant, delay_obj, self._uri_opener)
+            success, responses = ed_inst.delay_is_controlled()
 
             if success:
                 v = vuln.vuln(mutant)
@@ -147,7 +148,8 @@ class eval(AuditPlugin):
         '''
         eval_error_list = self._find_eval_result(response)
         for eval_error in eval_error_list:
-            if not re.search(eval_error, mutant.get_original_response_body(), re.I):
+            if not re.search(eval_error,
+                             mutant.get_original_response_body(), re.I):
                 v = vuln.vuln(mutant)
                 v.set_plugin_name(self.get_name())
                 v.set_id(response.id)
@@ -173,11 +175,10 @@ class eval(AuditPlugin):
         res = []
 
         if self._expected_result in response.body.lower():
-            msg = 'Verified eval() input injection, found the concatenated random string: "'
-            msg += self._expected_result + '" in the response body. '
-            msg += 'The vulnerability was found on response with id ' + \
-                str(response.id) + '.'
-            om.out.debug(msg)
+            msg = 'Verified eval() input injection, found the concatenated'\
+                  ' random string: "%s" in the response body. The'\
+                  ' vulnerability was found on response with id %s.'
+            om.out.debug(msg % (self._expected_result, response.id))
             res.append(self._expected_result)
 
         return res
@@ -186,22 +187,23 @@ class eval(AuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = OptionList()
+        opt_list = OptionList()
 
-        d = 'Use time delay (sleep() technique)'
-        h = 'If set to True, w3af will checks insecure eval() usage by analyzing'
-        h += ' of time delay result of script execution.'
-        o = opt_factory(
-            'useTimeDelay', self._use_time_delay, d, 'boolean', help=h)
-        ol.add(o)
+        desc = 'Use time delay (sleep() technique)'
+        _help = 'If set to True, w3af will checks insecure eval() usage by' \
+                ' analyzing of time delay result of script execution.'
+        opt = opt_factory('use_time_delay', self._use_time_delay,
+                          desc, 'boolean', help=_help)
+        opt_list.add(opt)
 
-        d = 'Use echo technique'
-        h = 'If set to True, w3af will checks insecure eval() usage by grepping'
-        h += ' result of script execution for test strings.'
-        o = opt_factory('useEcho', self._use_echo, d, 'boolean', help=h)
-        ol.add(o)
+        desc = 'Use echo technique'
+        _help = 'If set to True, w3af will checks insecure eval() usage by' \
+                ' grepping result of script execution for test strings.'
+        opt = opt_factory('use_echo', self._use_echo, desc,
+                          'boolean', help=_help)
+        opt_list.add(opt)
 
-        return ol
+        return opt_list
 
     def set_options(self, options_list):
         '''
@@ -211,8 +213,8 @@ class eval(AuditPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._use_time_delay = options_list['useTimeDelay'].get_value()
-        self._use_echo = options_list['useEcho'].get_value()
+        self._use_time_delay = options_list['use_time_delay'].get_value()
+        self._use_echo = options_list['use_echo'].get_value()
 
     def get_long_desc(self):
         '''

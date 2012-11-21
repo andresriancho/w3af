@@ -32,7 +32,7 @@ class TestEval(PluginTest):
             'target': target_echo + '?c=',
             'plugins': {
                 'audit': (PluginConfig('eval',
-                                       ('useEcho', True, PluginConfig.BOOL)),
+                                       ('use_echo', True, PluginConfig.BOOL)),
                           ),
             }
         },
@@ -41,7 +41,7 @@ class TestEval(PluginTest):
             'target': target_delay + '?c=',
             'plugins': {
                 'audit': (PluginConfig('eval',
-                                       ('useEcho', False, PluginConfig.BOOL)),
+                                       ('use_echo', False, PluginConfig.BOOL)),
                           ),
             }
         }

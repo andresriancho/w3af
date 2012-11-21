@@ -27,7 +27,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
-from core.controllers.delay_detection.exact_delay import exact_delay
+from core.controllers.delay_detection.exact_delay import ExactDelay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
@@ -154,7 +154,7 @@ class os_commanding(AuditPlugin):
 
             for delay_obj in self._get_wait_commands():
 
-                ed = exact_delay(mutant, delay_obj, self._uri_opener)
+                ed = ExactDelay(mutant, delay_obj, self._uri_opener)
                 success, responses = ed.delay_is_controlled()
 
                 if success:
