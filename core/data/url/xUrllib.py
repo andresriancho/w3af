@@ -278,8 +278,9 @@ class xUrllib(object):
         res = functor(*args, **kwargs)
 
         if callback is not None:
-            # The user specified a custom callback for analyzing the HTTP response
-            # this is commonly used when sending requests in an async way.
+            # The user specified a custom callback for analyzing the HTTP
+            # response this is commonly used when sending requests in an
+            # async way.
             callback(mutant, res)
 
         return res
