@@ -42,7 +42,10 @@ class buffer_overflow(AuditPlugin):
         '*** stack smashing detected ***:',
         'Backtrace:',
         'Memory map:',
-        '<html><head>\n<title>500 Internal Server Error</title>\n</head><body>\n<h1>'
+        
+        # Note that the lack of commas after the strings is intentional
+        '<html><head>\n<title>500 Internal Server Error</title>\n'
+        '</head><body>\n<h1>'
         'Internal Server Error</h1>'
     )
 
@@ -95,7 +98,7 @@ class buffer_overflow(AuditPlugin):
         '''
         try:
             orig_resp = self._uri_opener.send_mutant(freq)
-        except:
+        except w3afException:
             msg = 'Failed to perform the initial request during buffer'
             msg += ' overflow testing'
             om.out.debug(msg)
@@ -116,9 +119,9 @@ class buffer_overflow(AuditPlugin):
             i = info.info(mutant)
             i.set_plugin_name(self.get_name())
             i.set_name('Potential buffer overflow vulnerability')
-            msg = 'A potential (most probably a false positive than a bug) buffer-'
-            msg += 'overflow was found when requesting: "%s", using HTTP method'
-            msg += ' %s. The data sent was: "%s".'
+            msg = 'A potential (most probably a false positive than a bug)' \
+                  ' buffer-overflow was found when requesting: "%s", using' \
+                  ' HTTP method %s. The data sent was: "%s".'
             msg = msg % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
             i.set_desc(msg)
             kb.kb.append_uniq(self, 'buffer_overflow', i)
@@ -138,8 +141,8 @@ class buffer_overflow(AuditPlugin):
                 v.set_id(response.id)
                 v.set_severity(severity.MEDIUM)
                 v.set_name('Buffer overflow vulnerability')
-                msg = 'A potential buffer overflow (accurate detection is hard...)'
-                msg += ' was found at: ' + mutant.found_at()
+                msg = 'A potential buffer overflow (accurate detection is' \
+                      ' hard...) was found at: %s' % mutant.found_at()
                 v.set_desc(msg)
                 v.add_to_highlight(error_str)
                 kb.kb.append_uniq(self, 'buffer_overflow', v)
