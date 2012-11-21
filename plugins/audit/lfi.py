@@ -34,6 +34,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.is_source_file import is_source_file
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
+from core.data.constants.file_patterns import FILE_PATTERNS
 
 
 class lfi(AuditPlugin):
@@ -42,25 +43,7 @@ class lfi(AuditPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    FILE_PATTERNS = (
-        "root:x:0:0:",
-        "daemon:x:1:1:",
-        ":/bin/bash",
-        ":/bin/sh",
-
-        # /etc/passwd in AIX
-        "root:!:x:0:0:",
-        "daemon:!:x:1:1:",
-        ":usr/bin/ksh",
-
-        # boot.ini
-        "[boot loader]",
-        "default=multi(",
-        "[operating systems]",
-
-        # win.ini
-        "[fonts]",
-    )
+    FILE_PATTERNS = FILE_PATTERNS
     _multi_in = multi_in(FILE_PATTERNS)
 
     def __init__(self):

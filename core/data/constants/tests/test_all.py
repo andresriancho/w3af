@@ -29,6 +29,7 @@ from core.data.constants.response_codes import OK
 from core.data.constants.severity import HIGH
 from core.data.constants.ignored_params import IGNORED_PARAMETERS
 from core.data.constants.top_level_domains import GTOP_LEVEL_DOMAINS
+from core.data.constants.file_patterns import FILE_PATTERNS
 
 
 class TestAll(unittest.TestCase):
@@ -48,3 +49,5 @@ class TestAll(unittest.TestCase):
 
         self.assertIn('ar', GTOP_LEVEL_DOMAINS)
         self.assertIn('py', GTOP_LEVEL_DOMAINS)
+        
+        self.assertIn("root:x:0:0:", FILE_PATTERNS)

@@ -31,6 +31,7 @@ from core.controllers.delay_detection.exact_delay import exact_delay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
+from core.data.constants.file_patterns import FILE_PATTERNS
 
 
 class os_commanding(AuditPlugin):
@@ -39,25 +40,7 @@ class os_commanding(AuditPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    FILE_PATTERNS = (
-        "root:x:0:0:",
-        "daemon:x:1:1:",
-        ":/bin/bash",
-        ":/bin/sh",
-
-        # /etc/passwd in AIX
-        "root:!:x:0:0:",
-        "daemon:!:x:1:1:",
-        ":usr/bin/ksh",
-
-        # boot.ini
-        "[boot loader]",
-        "default=multi(",
-        "[operating systems]",
-
-        # win.ini
-        "[fonts]",
-    )
+    FILE_PATTERNS = FILE_PATTERNS 
     _multi_in = multi_in(FILE_PATTERNS)
 
     def __init__(self):
