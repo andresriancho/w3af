@@ -26,6 +26,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
+from core.controllers.exceptions import w3afException
 
 
 class un_ssl(AuditPlugin):
@@ -72,7 +73,7 @@ class un_ssl(AuditPlugin):
                     insecure_fr, follow_redir=False)
                 secure_response = self._uri_opener.send_mutant(
                     secure_fr, follow_redir=False)
-            except:
+            except w3afException:
                 # No vulnerability to report since one of these threw an error
                 # (because there is nothing listening on that port).
                 pass
@@ -87,8 +88,9 @@ class un_ssl(AuditPlugin):
                         v.set_url(insecure_response.get_url())
                         v.set_name('Secure content over insecure channel')
                         v.set_severity(severity.MEDIUM)
-                        msg = 'Secure content can be accesed using the insecure'
-                        msg += ' protocol HTTP. The vulnerable URLs are: "%s" - "%s" .'
+                        msg = 'Secure content can be accesed using the' \
+                              ' insecure protocol HTTP. The vulnerable' \
+                              ' URLs are: "%s" - "%s" .'
                         v.set_desc(msg % (secure_url, insecure_url))
                         v.set_id([insecure_response.id, secure_response.id])
                         kb.kb.append(self, 'un_ssl', v)
