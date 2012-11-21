@@ -381,16 +381,16 @@ class cors_origin(AuditPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        ol = OptionList()
+        opt_list = OptionList()
 
-        d = "Origin HTTP header value"
-        h = "Define value used to specify the 'Origin' HTTP header for HTTP"\
-            " request sent to test application behavior"
-        o = opt_factory('origin_header_value',
-                        self.origin_header_value, d, "string", help=h)
-        ol.add(o)
+        desc = "Origin HTTP header value"
+        _help = "Define value used to specify the 'Origin' HTTP header for"\
+                " HTTP request sent to test application behavior"
+        opt = opt_factory('origin_header_value',
+                          self.origin_header_value, desc, "string", help=_help)
+        opt_list.add(opt)
 
-        return ol
+        return opt_list
 
     def set_options(self, options_list):
         self.origin_header_value = options_list[
