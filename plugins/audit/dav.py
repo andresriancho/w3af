@@ -54,8 +54,9 @@ class dav(AuditPlugin):
         if domain_path not in self._already_tested_dirs:
             self._already_tested_dirs.add(domain_path)
             #
-            #    Send the three requests in different threads, store the apply_result
-            #    objects in order to be able to "join()" in the next for loop
+            #    Send the three requests in different threads, store the
+            #    apply_result objects in order to be able to "join()" in the
+            #    next for loop
             #
             #    TODO: This seems to be a fairly common use case: Send args to N
             #    functions that need to be run in different threads. If possible
@@ -69,6 +70,7 @@ class dav(AuditPlugin):
             for apply_res in results:
                 apply_res.get()
 
+    #pylint: disable-msg=C0103
     def _SEARCH(self, domain_path):
         '''
         Test SEARCH method.
@@ -93,11 +95,12 @@ class dav(AuditPlugin):
             v.set_severity(severity.MEDIUM)
             v.set_name('Insecure DAV configuration')
             v.set_method('SEARCH')
-            msg = 'Directory listing with HTTP SEARCH method was found at directory: "'
-            msg += domain_path + '"'
+            msg = 'Directory listing with HTTP SEARCH method was found at' \
+                  'directory: "%s".' % domain_path
             v.set_desc(msg)
             kb.kb.append(self, 'dav', v)
 
+    #pylint: disable-msg=C0103
     def _PROPFIND(self, domain_path):
         '''
         Test PROPFIND method
@@ -121,11 +124,12 @@ class dav(AuditPlugin):
             v.set_severity(severity.MEDIUM)
             v.set_name('Insecure DAV configuration')
             v.set_method('PROPFIND')
-            msg = 'Directory listing with HTTP PROPFIND method was found at directory: "'
-            msg += domain_path + '"'
+            msg = 'Directory listing with HTTP PROPFIND method was found at' \
+                  ' directory: "%s".' % domain_path
             v.set_desc(msg)
             kb.kb.append(self, 'dav', v)
 
+    #pylint: disable-msg=C0103
     def _PUT(self, domain_path):
         '''
         Tests PUT method.
@@ -145,8 +149,8 @@ class dav(AuditPlugin):
             v.set_severity(severity.HIGH)
             v.set_name('Insecure DAV configuration')
             v.set_method('PUT')
-            msg = 'File upload with HTTP PUT method was found at resource: "%s".'
-            msg += ' A test file was uploaded to: "%s".'
+            msg = 'File upload with HTTP PUT method was found at resource:' \
+                  ' "%s". A test file was uploaded to: "%s".'
             v.set_desc(msg % (domain_path, res.get_url()))
             kb.kb.append(self, 'dav', v)
 
@@ -158,10 +162,10 @@ class dav(AuditPlugin):
             i.set_id(res.id)
             i.set_name('DAV incorrect configuration')
             i.set_method('PUT')
-            msg = 'DAV seems to be incorrectly configured. The web server answered with a 500'
-            msg += ' error code. In most cases, this means that the DAV extension failed in'
-            msg += ' some way. This error was found at: "' + \
-                put_response.get_url() + '".'
+            msg = 'DAV seems to be incorrectly configured. The web server' \
+                  ' answered with a 500 error code. In most cases, this means'\
+                  ' that the DAV extension failed in some way. This error was'\
+                  ' found at: "%s".' % put_response.get_url()
             i.set_desc(msg)
             kb.kb.append(self, 'dav', i)
 
@@ -173,11 +177,11 @@ class dav(AuditPlugin):
             i.set_id([put_response.id, res.id])
             i.set_name('DAV insufficient privileges')
             i.set_method('PUT')
-            msg = 'DAV seems to be correctly configured and allowing you to use the PUT method'
-            msg += ' but the directory does not have the correct permissions that would allow'
-            msg += ' the web server to write to it. This error was found at: "'
-            msg += put_response.get_url() + '".'
-            i.set_desc(msg)
+            msg = 'DAV seems to be correctly configured and allowing you to'\
+                  ' use the PUT method but the directory does not have the'\
+                  ' correct permissions that would allow the web server to'\
+                  ' write to it. This error was found at: "%s".'
+            i.set_desc(msg % put_response.get_url())
             kb.kb.append(self, 'dav', i)
 
     def end(self):
@@ -191,7 +195,8 @@ class dav(AuditPlugin):
         @return: A list with the names of the plugins that should be run before
                  the current one.
         '''
-        return ['infrastructure.allowed_methods', 'infrastructure.server_header']
+        return ['infrastructure.allowed_methods',
+                'infrastructure.server_header']
 
     def get_long_desc(self):
         '''
