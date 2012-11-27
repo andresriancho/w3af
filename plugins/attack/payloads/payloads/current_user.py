@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class current_user(base_payload):
+class current_user(Payload):
     '''
     This payload shows current username & folder on the system.
     '''

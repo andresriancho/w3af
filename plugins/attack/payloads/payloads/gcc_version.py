@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class gcc_version(base_payload):
+class gcc_version(Payload):
     '''
     This payload shows the current GCC Version
     '''

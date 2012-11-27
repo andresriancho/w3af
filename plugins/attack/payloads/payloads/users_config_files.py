@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class users_config_files(base_payload):
+class users_config_files(Payload):
     '''
     This payload uses "users_folders" payload to find ".rc" and other configuration files,
     some of them may contain sensitive information.

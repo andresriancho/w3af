@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class apache_mod_security(base_payload):
+class apache_mod_security(Payload):
     '''
     This payload shows ModSecurity version,rules and configuration files.
     '''

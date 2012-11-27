@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class filesystem(base_payload):
+class filesystem(Payload):
     '''
     This payload shows filesystem info.
     '''

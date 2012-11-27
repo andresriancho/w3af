@@ -1,11 +1,11 @@
 import os
 import subprocess
 
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class pixy(base_payload):
+class pixy(Payload):
     '''
     Downloads the remote source code and performs SCA using pixy.
 

@@ -1,10 +1,10 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 #TODO: TEST
 
 
-class iis_root_directory(base_payload):
+class iis_root_directory(Payload):
     '''
     This payload finds IIS Root Directories where websites are hosted.
     '''

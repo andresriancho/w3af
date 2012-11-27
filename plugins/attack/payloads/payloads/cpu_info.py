@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class cpu_info(base_payload):
+class cpu_info(Payload):
     '''
     This payload shows CPU Model and Core info.
     '''

@@ -1,9 +1,9 @@
 from core.ui.console.tables import table
 from core.controllers.misc.is_private_site import is_private_site
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class portscan(base_payload):
+class portscan(Payload):
     '''
     This payload portscans a given host or IP range.
 

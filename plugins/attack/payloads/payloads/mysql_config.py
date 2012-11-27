@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class mysql_config(base_payload):
+class mysql_config(Payload):
     '''
     This payload shows MySQL configuration files.
     '''

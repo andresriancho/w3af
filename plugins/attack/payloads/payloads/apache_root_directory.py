@@ -2,11 +2,11 @@ import re
 
 import core.data.kb.knowledge_base as kb
 
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class apache_root_directory(base_payload):
+class apache_root_directory(Payload):
     '''
     This payload finds Apache Root Directories where websites are hosted.
     '''

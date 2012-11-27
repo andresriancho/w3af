@@ -26,10 +26,10 @@ import core.data.kb.vuln as vuln
 
 from core.data.dc.data_container import DataContainer
 from core.ui.console.tables import table
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class php_sca(base_payload):
+class php_sca(Payload):
 
     KB_DATA = {
         'XSS': {'kb_key': ('xss', 'xss'), 'severity': severity.MEDIUM,

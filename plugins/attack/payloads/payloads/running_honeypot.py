@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class running_honeypot(base_payload):
+class running_honeypot(Payload):
     '''
     This payload check if the server is a Honeypot or is running one.
     '''

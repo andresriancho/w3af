@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class dns_config_files(base_payload):
+class dns_config_files(Payload):
     '''
     This payload shows DNS Server configuration files
     '''

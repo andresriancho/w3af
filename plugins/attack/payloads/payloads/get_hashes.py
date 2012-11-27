@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class get_hashes(base_payload):
+class get_hashes(Payload):
     '''
     Get the hashes from the /etc/shadow and /etc/passwd files (if any).
     '''

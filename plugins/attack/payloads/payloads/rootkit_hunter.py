@@ -6,10 +6,10 @@ from core.ui.console.tables import table
 from core.controllers.threads.threadpool import return_args
 from core.controllers.threads.threadManager import thread_manager
 
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class rootkit_hunter(base_payload):
+class rootkit_hunter(Payload):
     '''
     This payload checks for current rootkits, trojans, backdoors and local
     xploits installed on system.

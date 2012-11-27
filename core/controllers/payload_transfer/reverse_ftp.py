@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import socket
 
-from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.Payload_transfer import BasePayloadTransfer
 
 
 class ReverseFTP(BasePayloadTransfer):

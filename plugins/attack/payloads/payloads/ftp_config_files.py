@@ -1,7 +1,7 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class ftp_config_files(base_payload):
+class ftp_config_files(Payload):
     '''
     This payload shows FTP Server configuration files
     '''

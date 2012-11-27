@@ -1,10 +1,10 @@
 import os
 import core.data.kb.knowledge_base as kb
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class get_source_code(base_payload):
+class get_source_code(Payload):
     '''
     Get the source code for all files that were spidered by w3af.
 

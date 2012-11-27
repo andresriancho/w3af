@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class uptime(base_payload):
+class uptime(Payload):
     '''
     This payload shows server Uptime.
     '''

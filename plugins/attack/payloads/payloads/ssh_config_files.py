@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class ssh_config_files(base_payload):
+class ssh_config_files(Payload):
     '''
     This payload shows SSH Server configuration files
     '''

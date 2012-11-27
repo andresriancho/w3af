@@ -1,7 +1,7 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class is_root(base_payload):
+class is_root(Payload):
     '''
     Return True if the remote user has root privileges.
     '''

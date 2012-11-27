@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class hosts(base_payload):
+class hosts(Payload):
     '''
     This payload shows the hosts allow and deny files.
     '''

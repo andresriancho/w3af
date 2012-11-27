@@ -3,10 +3,10 @@ import re
 from core.data.constants.common_directories import get_common_directories
 from core.ui.console.tables import table
 
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class spider(base_payload):
+class spider(Payload):
     '''
     This payload crawls the remote file system and extracts information.
 

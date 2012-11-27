@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class root_login_allowed(base_payload):
+class root_login_allowed(Payload):
     '''
     This payload checks if root user is allowed to login on console.
     '''

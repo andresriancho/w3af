@@ -1,9 +1,9 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.controllers.vdaemon.vdFactory import getVirtualDaemon
 from core.controllers.exceptions import w3afException
 
 
-class metasploit(base_payload):
+class metasploit(Payload):
     '''
     This payload interacts with the metasploit framework.
 

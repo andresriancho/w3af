@@ -1,5 +1,5 @@
 '''
-base_payload.py
+Payload.py
 
 Copyright 2009 Andres Riancho
 
@@ -29,7 +29,14 @@ from core.controllers.threads.threadManager import thread_manager
 SYSCALL_LIST = ['read', 'write', 'execute', 'unlink', 'is_open_port']
 
 
-class base_payload(object):
+def _filter(syscall_name):
+    if syscall_name.startswith('run_'):
+        return syscall_name [4:]
+    
+    return None
+
+
+class Payload(object):
 
     def __init__(self, shell_obj):
         self.shell = shell_obj
@@ -39,16 +46,9 @@ class base_payload(object):
         @return: True if this payload has any way of running with the "syscalls"
                  provided by the shell_obj.
         '''
-        #   Get the syscalls that this shell_obj implements
-        available_syscalls = dir(self.shell)
-        available_syscalls = [
-            x for x in available_syscalls if x in SYSCALL_LIST]
-        available_syscalls = set(available_syscalls)
-
-        #   Get the different implementations of "run" that this payload has
-        run_options = dir(self)
-        run_options = [x[4:] for x in run_options if x.startswith('run_')]
-        run_options = set(run_options)
+        available_syscalls = self.get_available_syscalls()
+        
+        run_options = self.get_available_syscalls(_filter)
 
         return available_syscalls.intersection(run_options)
 
@@ -60,34 +60,32 @@ class base_payload(object):
         @return: The payload result.
         '''
         try:
-            return payload_handler.exec_payload(self.shell, payload_name, args, use_api=True)
+            return payload_handler.exec_payload(self.shell, payload_name,
+                                                args, use_api=True)
         except:
             #
-            #    Run the payload name with any shell that has the capabilities we need,
-            #    not the one we're already using (that failed because it doesn't have
-            #    the capabilities).
+            #    Run the payload name with any shell that has the capabilities
+            #    we need, not the one we're already using (that failed because
+            #    it doesn't have the capabilities).
             #
             try:
-                return payload_handler.exec_payload(None, payload_name, args, use_api=True)
+                return payload_handler.exec_payload(None, payload_name, args,
+                                                    use_api=True)
             except:
-                msg = 'The payload you are trying to run ("%s") can not be run with the current' % self
-                msg += ' is trying to call another payload ("%s") which is failing because' % payload_name
-                msg += ' there are no shells that support the necessary system calls.'
-                return msg
+                msg = 'The payload you are trying to run ("%s") can not be' \
+                      ' run because it is trying to call another payload ("%s")'\
+                      ' which is failing because there are no shells that'\
+                      ' support the required system calls.'
+                return msg % (self, payload_name)
 
     def run(self, *args):
         '''
-        @return: The result of running the payload using the most performant way. Basically, if
-        I can run commands using exec() I'll use that, if not I'll use read().
+        @return: The result of running the payload using the most performant
+                 way. Basically, if I can run commands using exec() I'll use
+                 that, if not I'll use read().
         '''
-        #   Get the syscalls that this shell_obj implements
-        available_syscalls = dir(self.shell)
-        available_syscalls = [
-            x for x in available_syscalls if x in SYSCALL_LIST]
-
-        #   Get the different implementations of "run" that this payload has
-        run_options = dir(self)
-        run_options = [x[4:] for x in run_options if x.startswith('run_')]
+        available_syscalls = self.get_available_syscalls()
+        run_options = self.get_available_syscalls(_filter)
 
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.run_execute(*args)
@@ -101,14 +99,8 @@ class base_payload(object):
         @return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().
         '''
-        #   Get the syscalls that this shell_obj implements
-        available_syscalls = dir(self.shell)
-        available_syscalls = [
-            x for x in available_syscalls if x in SYSCALL_LIST]
-
-        #   Get the different implementations of "run" that this payload has
-        run_options = dir(self)
-        run_options = [x[4:] for x in run_options if x.startswith('api_')]
+        available_syscalls = self.get_available_syscalls()
+        run_options = self.get_available_syscalls(_filter)
 
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.api_execute(*args)
@@ -128,7 +120,8 @@ class base_payload(object):
         @param fname_iter: An iterator that yields all the file names to read.
         '''
         read_file = return_args(self.shell.read)
-        for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
+        results = thread_manager.threadpool.imap_unordered(read_file, fname_iter)
+        for (file_name,), content in results:
             yield file_name, content
 
     def get_desc(self):
@@ -136,3 +129,30 @@ class base_payload(object):
             return textwrap.dedent(self.__doc__).strip()
         else:
             return 'No help available for this payload.'
+
+    def get_available_syscalls(self, _filter=lambda x: x):
+        '''
+        @return:
+        '''
+        available_syscalls = []
+        
+        for syscall in SYSCALL_LIST:
+            
+            try:
+                getattr(self, syscall)
+            except AttributeError:
+                pass
+            else:
+                available_syscalls.append(syscall)
+        
+        available_syscalls = [_filter(syscall) for syscall in available_syscalls
+                              if _filter(syscall) is not None]
+        
+        return set(available_syscalls)
+    
+    def run_execute(self, *args, **kwds):
+        raise NotImplementedError
+    
+    run_is_open_port = run_read = api_execute = run_execute 
+    api_is_open_port = api_read = run_execute
+    

@@ -1,8 +1,8 @@
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class read_mail(base_payload):
+class read_mail(Payload):
     '''
     This payload shows local emails stored on /var/mail/
     '''

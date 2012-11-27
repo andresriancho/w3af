@@ -23,7 +23,7 @@ import time
 
 import core.controllers.output_manager as om
 
-from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.Payload_transfer import BasePayloadTransfer
 
 
 class EchoLinux(BasePayloadTransfer):

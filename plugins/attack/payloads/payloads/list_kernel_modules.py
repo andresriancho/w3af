@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class list_kernel_modules(base_payload):
+class list_kernel_modules(Payload):
     '''
     This payload displays a list of all modules loaded into the kernel
     '''

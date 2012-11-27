@@ -1,10 +1,10 @@
 import re
 import core.data.kb.knowledge_base as kb
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class svn_config_files(base_payload):
+class svn_config_files(Payload):
     '''
     This payload shows SVN Server configuration files
     '''

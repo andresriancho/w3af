@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class running_vm(base_payload):
+class running_vm(Payload):
     '''
     This payload check if the Server is running through a VM
     '''

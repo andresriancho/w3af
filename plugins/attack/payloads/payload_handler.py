@@ -53,7 +53,7 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
     @param payload_name: The name of the payload I want to run.
     @param args: A tuple with the args (strings) the user typed.
     @use_api: Indicates if I need to use the API or not in this run. This is
-              True when exec_payload is called from base_payload.exec_payload()
+              True when exec_payload is called from Payload.exec_payload()
 
     @return: The payload result.
     '''

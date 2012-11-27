@@ -5,10 +5,10 @@ import core.controllers.output_manager as om
 from core.controllers.threads.threadManager import thread_manager
 from core.ui.console.tables import table
 
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 
 
-class list_processes(base_payload):
+class list_processes(Payload):
     '''
     This payload shows current proccesses on the system.
 

@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class mail_config_files(base_payload):
+class mail_config_files(Payload):
     '''
     This payload shows mail configuration files
     '''

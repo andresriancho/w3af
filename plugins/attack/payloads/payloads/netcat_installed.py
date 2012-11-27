@@ -1,9 +1,9 @@
 import re
-from plugins.attack.payloads.base_payload import base_payload
+from plugins.attack.payloads.base_payload import Payload
 from core.ui.console.tables import table
 
 
-class netcat_installed(base_payload):
+class netcat_installed(Payload):
     '''
     This payload verifies if Netcat is installed and supports "-e filename" (program to exec after connect)
     '''
