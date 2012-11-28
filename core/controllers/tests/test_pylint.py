@@ -30,6 +30,8 @@ class WritableObject(object):
         self.content = []
         
     def write(self, st):
+        if st == '\n':
+            return
         self.content.append(st)
         
     def read(self):
@@ -40,7 +42,7 @@ class PylintRunner(unittest.TestCase):
     maxDiff = None
     
     def run_pylint(self, directory):
-        pylint_args = [directory, "-E",]
+        pylint_args = [directory, '-E', '--additional-builtins=_']
         pylint_output = WritableObject()
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
