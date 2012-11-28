@@ -22,7 +22,7 @@ import tempfile
 
 from nose.plugins.skip import SkipTest
 
-from plugins.attack.payloads.tests.payload_test_helper import PayloadTestHelper
+from plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from plugins.attack.payloads.payload_handler import exec_payload
 
 

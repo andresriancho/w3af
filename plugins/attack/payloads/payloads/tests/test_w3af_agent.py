@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.controllers.misc.get_local_ip import get_local_ip
 
-from plugins.attack.payloads.tests.payload_test_helper_exec import PayloadTestHelperExec
+from plugins.attack.payloads.payloads.tests.payload_test_helper_exec import PayloadTestHelperExec
 from plugins.attack.payloads.payload_handler import exec_payload
 from plugins.tests.helper import onlyroot
 

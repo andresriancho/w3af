@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from nose.plugins.skip import SkipTest
 
-from plugins.attack.payloads.tests.payload_test_helper import PayloadTestHelper
+from plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from plugins.attack.payloads.payload_handler import exec_payload
 
 
