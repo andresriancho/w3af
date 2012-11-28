@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
+import os
 
 from pylint import lint
 from pylint.reporters.text import TextReporter
@@ -42,7 +43,8 @@ class PylintRunner(unittest.TestCase):
     maxDiff = None
     
     def run_pylint(self, directory):
-        pylint_args = [directory, '-E', '--additional-builtins=_']
+        pylint_rc = os.path.join('core', 'controllers', 'tests', 'pylint.rc')
+        pylint_args = [directory, '-E', '--rcfile=%s' % pylint_rc]
         pylint_output = WritableObject()
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
