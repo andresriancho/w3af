@@ -42,8 +42,9 @@ class dom_xss(GrepPlugin):
                     'window.open',
                     'eval',
                     'window.execScript')
-    JS_FUNCTIONS = [re.compile(
-        js_f + ' *\((.*?)\)', re.IGNORECASE) for js_f in JS_FUNCTIONS]
+    
+    JS_FUNCTION_CALLS = [re.compile(js_f + ' *\((.*?)\)', re.IGNORECASE)
+                         for js_f in JS_FUNCTIONS]
 
     DOM_USER_CONTROLLED = ('document.URL',
                            'document.URLUnencoded',
@@ -96,7 +97,7 @@ class dom_xss(GrepPlugin):
             return res
 
         for script_code in match.groups():
-            for function_re in self.JS_FUNCTIONS:
+            for function_re in self.JS_FUNCTION_CALLS:
                 parameters = function_re.search(script_code)
                 if parameters:
                     for user_controlled in self.DOM_USER_CONTROLLED:
