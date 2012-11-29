@@ -174,7 +174,7 @@ zope=no
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E0201 when accessed. Python regular
 # expressions are accepted.
-generated-members=REQUEST,acl_users,aq_parent
+generated-members=REQUEST,acl_users,aq_parent,draw_line,draw_layout,draw_rectangle,get_size,clear,pack_start,pack_end,get_children,connect,set_position,get_position,draw_point,window,disconnect,get_colormap
 
 
 [DESIGN]
