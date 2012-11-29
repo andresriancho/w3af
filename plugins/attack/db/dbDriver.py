@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from plugins.attack.db.dbDriverFunctions import dbDriverFunctions
 from plugins.attack.db.dump import SQLMapDump
 from core.data.fuzzer.utils import rand_alpha, rand_number
+from core.controllers.exceptions import w3afException
 
 
 class dbDriver(dbDriverFunctions):
