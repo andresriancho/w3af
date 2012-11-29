@@ -125,7 +125,7 @@ class sql_webshell(AttackPlugin):
         vulns.extend(kb.kb.get('sqli', 'sqli'))
         return vulns
 
-    def can_exploit(self, vulnToExploit=None):
+    def can_exploit(self, vuln_to_exploit=None):
         '''
         Searches the kb for vulnerabilities that the plugin can exploit.
 
@@ -133,8 +133,8 @@ class sql_webshell(AttackPlugin):
         '''
         vulns = self.get_exploitable_vulns()
 
-        if vulnToExploit is not None:
-            vulns = [v for v in vulns if v.get_id() == vulnToExploit]
+        if vuln_to_exploit is not None:
+            vulns = [v for v in vulns if v.get_id() == vuln_to_exploit]
 
         if len(vulns) != 0:
             return True
@@ -146,7 +146,7 @@ class sql_webshell(AttackPlugin):
             om.out.console(msg)
             return False
 
-    def exploit(self, vulnToExploit=None):
+    def exploit(self, vuln_to_exploit=None):
         '''
         Exploits a [blind] sql injections vulns that was found and stored in the kb.
 
@@ -165,8 +165,8 @@ class sql_webshell(AttackPlugin):
             for v in vulns:
 
                 # Filter the vuln that was selected by the user
-                if vulnToExploit is not None:
-                    if vulnToExploit != v.get_id():
+                if vuln_to_exploit is not None:
+                    if vuln_to_exploit != v.get_id():
                         continue
 
                 mutant = v.get_mutant()

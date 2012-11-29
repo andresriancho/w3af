@@ -397,7 +397,7 @@ class httpLogTab(entries.RememberingHPaned):
             # that just triggers the req/resp filling.
             lastItem = searchResultObjects[-1]
             self._lastId = int(lastItem.id)
-            self._showListView(searchResultObjects, appendMode=refresh)
+            self._show_listView(searchResultObjects, appendMode=refresh)
             if not refresh:
                 self._sw.set_sensitive(True)
                 self._reqResViewer.set_sensitive(True)
@@ -412,7 +412,7 @@ class httpLogTab(entries.RememberingHPaned):
         self._sw.set_sensitive(False)
         self._lstore.clear()
 
-    def _showListView(self, results, appendMode=False):
+    def _show_listView(self, results, appendMode=False):
         """Show the results of the search in a listview."""
         # First I clear all old results...
         if not appendMode:
