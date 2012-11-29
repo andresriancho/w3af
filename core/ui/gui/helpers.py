@@ -466,7 +466,7 @@ def write_console_messages(dlg):
 class DrawingAreaStringRepresentation(gtk.DrawingArea):
 
     def __init__(self, str_repr=None, width=60, height=40):
-        super(gtk.DrawingArea, self).__init__()
+        super(DrawingAreaStringRepresentation, self).__init__()
 
         self.width = width
         self.height = height

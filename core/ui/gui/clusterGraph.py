@@ -18,38 +18,35 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 # For window creation
 import gtk
 import gtk.gdk
+import gobject
 
-# The magic =)
 from extlib.xdot import xdot as xdot
 from core.controllers.misc.levenshtein import relative_distance
-
-# To show request and responses
 from core.ui.gui.reqResViewer import reqResWindow
 from core.controllers.exceptions import w3afException
-
-import gobject
-from core.ui.gui import helpers, entries
+from core.ui.gui import entries
 
 
 # Constants that define the distance available distance functions
 LEVENSHTEIN = 0
 CONTENT_LENGTH = 1
 HTTP_RESPONSE = 2
+CUSTOM_FUNCTION = 3
 
 SELECT_HELP = """\
 <b>Clustering method selection</b>
 
-The framework provides different clustering methods. Each method defines a way in which
-the distance between two different HTTP responses is going to be calculated. The distance
-between the HTTP responses is then used to group the responses and create the clusters.
+The framework provides different clustering methods. Each method defines a way
+in which the distance between two different HTTP responses is going to be
+calculated. The distance between the HTTP responses is then used to group the
+responses and create the clusters.
 
-The customized clustering method allows you to write a function in python that will perform
-the task. Any python code can be entered in that window, so please be sure you don't copy+paste
-any untrusted code there.
+The customized clustering method allows you to write a function in python that
+will perform the task. Any python code can be entered in that window, so please
+be sure you don't copy+paste any untrusted code there.
 
 Please select the clustering method:
 """
@@ -60,7 +57,8 @@ EXAMPLE_FUNCTION = """def customized_distance(a, b):
 
     @param a: An HTTP response object.
     @param b: An HTTP response object.
-    @return: The the distance between "a" and "b", where 0 means equal and 1 means totally different.
+    @return: The the distance between "a" and "b", where 0 means equal and 1
+             means totally different.
     '''
     if 'error' in b.get_body().lower() and 'error' in a.get_body().lower():
         # They are both error pages
@@ -161,6 +159,8 @@ class distance_function_selector(entries.RememberingWindow):
         @return: None
         '''
         selected_function = None
+        custom_code = None
+        
         if self._cl_button.get_active():
             selected_function = CONTENT_LENGTH
         elif self._levenshtein_button.get_active():
@@ -168,18 +168,21 @@ class distance_function_selector(entries.RememberingWindow):
         elif self._http_res_button.get_active():
             selected_function = HTTP_RESPONSE
         elif self._custom_button.get_active():
+            selected_function = CUSTOM_FUNCTION
+            
             # Send the function itself in the selected_function variable
             text_buffer = self._function_tv.get_buffer()
             start_iter = text_buffer.get_start_iter()
             end_iter = text_buffer.get_end_iter()
 
-            selected_function = text_buffer.get_text(start_iter, end_iter,
-                                                     include_hidden_chars=True)
+            custom_code = text_buffer.get_text(start_iter, end_iter,
+                                               include_hidden_chars=True)
 
         # Create the new window, with the graph
         try:
             window = clusterGraphWidget(
-                self.w3af, self.data, distance_function=selected_function)
+                self.w3af, self.data, distance_function=selected_function,
+                custom_code=custom_code)
         except w3afException, w3:
             msg = str(w3)
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
@@ -274,7 +277,8 @@ class w3afDotWindow(xdot.DotWindow):
 
 
 class clusterGraphWidget(w3afDotWindow):
-    def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN):
+    def __init__(self, w3af, response_list, distance_function=LEVENSHTEIN,
+                 custom_code=None):
         '''
         @param response_list: A list with the responses to graph.
         '''
@@ -286,20 +290,26 @@ class clusterGraphWidget(w3afDotWindow):
         if distance_function == LEVENSHTEIN:
             dotcode = self._generateDotCode(
                 response_list, distance_function=self._relative_distance)
+        
         elif distance_function == HTTP_RESPONSE:
             dotcode = self._generateDotCode(
                 response_list, distance_function=self._http_code_distance)
+        
         elif distance_function == CONTENT_LENGTH:
-            dotcode = self._generateDotCode(response_list, distance_function=self._response_length_distance)
-        elif distance_function.startswith('def customized_distance'):
+            dotcode = self._generateDotCode(response_list,
+                                            distance_function=
+                                            self._response_length_distance)
+        
+        elif distance_function == CUSTOM_FUNCTION:
+            
             try:
-                callable_object = self._create_callable_object(
-                    distance_function)
+                callable_object = self._create_callable_object(custom_code)
             except Exception, e:
-                # TODO: instead of hiding..., which may consume memory... why don't killing?
+                # TODO: instead of hiding..., which may consume memory...
+                #       why don't killing?
                 self.hide()
-                msg = 'Please review your customized code. An error was raised while compiling: "'
-                msg += str(e) + '"'
+                msg = 'Please review your customized code. An error was raised'\
+                      ' while compiling: "%s".' % e
                 raise w3afException(msg)
 
             try:

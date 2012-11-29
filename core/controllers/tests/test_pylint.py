@@ -59,17 +59,14 @@ class PylintRunner(unittest.TestCase):
         return pylint_output
     
     def test_pylint_plugins(self):
-        return
         pylint_output = self.run_pylint('plugins/')
         self.assertEqual(pylint_output.read(), [])
 
     def test_pylint_core_controllers(self):
-        return
         pylint_output = self.run_pylint('core/controllers/')
         self.assertEqual(pylint_output.read(), [])
 
     def test_pylint_core_data(self):
-        return
         pylint_output = self.run_pylint('core/data/')
         self.assertEqual(pylint_output.read(), [])
 
