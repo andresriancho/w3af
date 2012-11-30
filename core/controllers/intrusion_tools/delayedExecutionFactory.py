@@ -19,17 +19,15 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
-from core.controllers.exceptions import *
-from core.data.fuzzer.fuzzer import *
-from core.controllers.intrusion_tools.execMethodHelpers import *
 
+from core.controllers.exceptions import w3afException
+from core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
 from core.controllers.intrusion_tools.crontabHandler import crontabHandler
 from core.controllers.intrusion_tools.atHandler import atHandler
 
 
-class delayedExecutionFactory:
+class delayedExecutionFactory(object):
     '''
     This class constructs a delayedExecution based on the remote operating system.
     '''

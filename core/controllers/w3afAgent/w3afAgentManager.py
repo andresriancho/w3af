@@ -158,14 +158,14 @@ class w3afAgentManager(Process):
             om.out.debug(msg)
             raise w3afException(msg)
         else:
-            waitTime = dH.add_to_schedule(command)
+            wait_time = dH.add_to_schedule(command)
 
             om.out.debug(
                 '[w3afAgentManager] Crontab entry successfully added.')
-            waitTime += 2
+            wait_time += 2
             om.out.information('Please wait ' + str(
-                waitTime) + ' seconds for w3afAgentClient execution.')
-            time.sleep(waitTime)
+                wait_time) + ' seconds for w3afAgentClient execution.')
+            time.sleep(wait_time)
 
             om.out.debug('[w3afAgentManager] Restoring old crontab.')
             dH.restore_old_schedule()

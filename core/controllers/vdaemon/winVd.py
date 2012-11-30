@@ -54,10 +54,10 @@ class winVd(vdaemon):
             om.out.information('Remote user is not allowed to run at! Running command without at, this may cause a timeout.')
             self._exec(self._remote_filename)
         else:
-            waitTime = aH.add_to_schedule(self._remote_filename)
+            wait_time = aH.add_to_schedule(self._remote_filename)
 
             om.out.console('"at" entry successfully added. Waiting for shellcode execution.')
-            time.sleep(waitTime + 3)
+            time.sleep(wait_time + 3)
 
             om.out.console(
                 'Payload successfully executed, restoring old "at".')

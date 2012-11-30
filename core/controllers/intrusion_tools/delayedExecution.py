@@ -21,25 +21,25 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 
-from core.controllers.exceptions import *
-from core.data.fuzzer.fuzzer import *
-
 
 class delayedExecution(object):
     '''
     This class is a base class for crontabHandler and atHandler.
     '''
+    def __init__(self, exec_method):
+        self._exec_method = exec_method
 
     def _exec(self, command):
         '''
         A wrapper for executing commands
         '''
-        om.out.debug('Executing: ' + command)
+        om.out.debug('Executing: "%s".' % command)
         response = apply(self._exec_method, (command,))
-        om.out.debug('"' + command + '" returned: ' + response)
+        om.out.debug('"%s" returned "%s".' % (command, response) )
+        
         return response
 
-    def _fixTime(self, hour, minute, amPm=''):
+    def _fix_time(self, hour, minute, am_pm=''):
         '''
         Fix the time, this is done to fix if minute == 60, or ampm changes
         from am to pm, etc...
@@ -50,13 +50,13 @@ class delayedExecution(object):
         if minute == 60:
             minute = 0
             hour = hour + 1
-            return self._fixTime(hour, minute, amPm)
+            return self._fix_time(hour, minute, am_pm)
 
-        if hour == 13 and amPm.startswith('a'):
-            amPm = ''
+        if hour == 13 and am_pm.startswith('a'):
+            am_pm = ''
 
         if hour == 24:
             hour = 0
-            amPm = 'a'
+            am_pm = 'a'
 
-        return hour, minute, amPm
+        return hour, minute, am_pm

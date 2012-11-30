@@ -599,6 +599,7 @@ class VersionMgr(object):  # TODO: Make it singleton?
                 # Call callback function
                 if callback is not None:
                     # pylint: disable-msg=E1102
+                    # pylint: disable-msg=E1103
                     proceed_upd = callback(
                         'Your current w3af installation is r%s. Do you want '
                         'to update to r%s?' % (localrev.number, remrev.number))

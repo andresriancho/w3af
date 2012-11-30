@@ -19,10 +19,9 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
-from core.controllers.exceptions import *
-from core.data.fuzzer.fuzzer import *
+
+from core.controllers.exceptions import w3afException
 from core.controllers.intrusion_tools.delayedExecution import delayedExecution
 
 
@@ -33,7 +32,6 @@ class atHandler(delayedExecution):
         - return expected execution time
         - restore old crontab
     '''
-
     def __init__(self, exec_method):
         self._exec_method = exec_method
 
@@ -49,23 +47,23 @@ class atHandler(delayedExecution):
         else:
             return True
 
-    def add_to_schedule(self, commandToExec):
+    def add_to_schedule(self, command_to_exec):
         '''
         Adds a command to the cron.
         '''
         # Save this for later
-        self._filename = commandToExec.split(' ')[0]
+        self._filename = command_to_exec.split(' ')[0]
 
         # Work
         remoteTime = self._exec('time')
-        atCommand, waitTime = self._createAtCommand(remoteTime, commandToExec)
+        atCommand, wait_time = self._create_at_command(remoteTime, command_to_exec)
 
         # Schedule the shellcode for execution
         self._exec(atCommand)
         om.out.debug(
             '[atHandler] Shellcode successfully added to "at" service.')
 
-        return waitTime
+        return wait_time
 
     def restore_old_schedule(self):
         try:
@@ -79,7 +77,7 @@ class atHandler(delayedExecution):
         except:
             om.out.debug('Failed to remove task from "at" service.')
 
-    def _createAtCommand(self, time, command):
+    def _create_at_command(self, time, command):
         '''
         Creates an at command based on the time and command parameter.
 
@@ -88,7 +86,8 @@ class atHandler(delayedExecution):
         The current time is: 11:24:19.59
         Enter the new time:
 
-        @return: A tuple with the "at" command, and the time that it will take to run the command.
+        @return: A tuple with the "at" command, and the time that it will take
+                 to run the command.
         '''
         res = 'at '
         try:
@@ -99,16 +98,17 @@ class atHandler(delayedExecution):
                 # windows 2k
                 seconds = time[2].split('.')[0]
             else:
-                # windows XP. This assholes reimplement the time command from one release to another...
+                # windows XP. This assholes reimplement the time command from
+                # one release to another...
                 seconds = time[2].split(',')[0]
 
             # TODO ( see below )
             if int(hour) > 12:
-                amPm = ''
+                am_pm = ''
             else:
                 # TODO !
-                # analyze... before I had amPm = 'a' ; check if this is really necesary
-                amPm = ''
+                # analyze... before I had am_pm = 'a' ; check if this is really necesary
+                am_pm = ''
         except:
             raise w3afException('The time command of the remote server returned an unknown format.')
         else:
@@ -116,15 +116,15 @@ class atHandler(delayedExecution):
             if int(seconds) > 57:
                 # Just to be 100% sure...
                 delta = 2
-                waitTime = 60 + 5
+                wait_time = 60 + 5
             else:
                 delta = 1
-                waitTime = 60 - int(seconds)
+                wait_time = 60 - int(seconds)
 
             minute = int(minute) + delta
-            hour, minute, amPm = self._fixTime(hour, minute, amPm)
+            hour, minute, am_pm = self._fix_time(hour, minute, am_pm)
 
             res += str(
-                hour) + ':' + str(minute).zfill(2) + amPm + ' ' + command
+                hour) + ':' + str(minute).zfill(2) + am_pm + ' ' + command
 
-        return res, waitTime
+        return res, wait_time

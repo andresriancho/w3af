@@ -57,10 +57,10 @@ class lnxVd(vdaemon):
             om.out.debug(msg)
             raise w3afException(msg)
         else:
-            waitTime = cH.add_to_schedule(remote_filename)
+            wait_time = cH.add_to_schedule(remote_filename)
 
             om.out.console('Crontab entry successfully added. Waiting for shellcode execution.')
-            time.sleep(waitTime + 3)
+            time.sleep(wait_time + 3)
 
             om.out.debug(
                 'Shellcode successfully executed, restoring old crontab.')

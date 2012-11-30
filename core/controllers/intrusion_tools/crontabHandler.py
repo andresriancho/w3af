@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
-from core.controllers.exceptions import *
-from core.data.fuzzer.fuzzer import *
+
+from core.controllers.exceptions import w3afException
 from core.controllers.intrusion_tools.delayedExecution import delayedExecution
-from core.controllers.intrusion_tools.execMethodHelpers import *
+from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
 
 
 class crontabHandler(delayedExecution):
@@ -51,7 +50,7 @@ class crontabHandler(delayedExecution):
             om.out.debug('[crontabHandler] The user can create a cron entry.')
             return True
 
-    def add_to_schedule(self, commandToExec):
+    def add_to_schedule(self, command_to_exec):
         '''
         Adds a command to the cron.
         '''
@@ -64,8 +63,8 @@ class crontabHandler(delayedExecution):
         user = self._exec('whoami')
         user = user.strip()
 
-        newCronLine, waitTime = self._createCronLine(
-            remoteDate, commandToExec)
+        newCronLine, wait_time = self._createCronLine(
+            remoteDate, command_to_exec)
 
         if 'no crontab for ' + user == actualCron:
             newCron = newCronLine
@@ -79,14 +78,14 @@ class crontabHandler(delayedExecution):
         self._exec('crontab ' + self._cronFile)
         self._exec('/bin/rm ' + self._cronFile)
 
-        filename = commandToExec.split(' ')[0]
+        filename = command_to_exec.split(' ')[0]
         self._exec('/bin/chmod +x ' + filename)
 
-        om.out.debug('Added command: "' + commandToExec +
+        om.out.debug('Added command: "' + command_to_exec +
                      '" to the remote crontab of user : "' + user + '".')
         self._oldCron = actualCron
 
-        return waitTime
+        return wait_time
 
     def restore_old_schedule(self):
         self._exec('/bin/echo -e ' + self._oldCron + ' > ' + self._cronFile)
@@ -94,32 +93,35 @@ class crontabHandler(delayedExecution):
         self._exec('/bin/rm ' + self._cronFile)
         om.out.debug('Successfully restored old crontab.')
 
-    def _createCronLine(self, remoteDate, commandToExec):
+    def _createCronLine(self, remoteDate, command_to_exec):
         '''
-        Creates a crontab line that executes the command one minute after the "date" parameter.
+        Creates a crontab line that executes the command one minute after the
+        "date" parameter.
 
-        @return: A tuple with the new line to add to the crontab, and the time that it will take to run the command.
+        @return: A tuple with the new line to add to the crontab, and the time
+                 that it will take to run the command.
         '''
-        resLine = ''
+        res_line = ''
         try:
             # date +"%d-%m-%H:%M:%S-%u"
-            dayNumber, month, hour, weekDay = remoteDate.split('-')
+            day_number, month, hour, week_day = remoteDate.split('-')
         except:
             raise w3afException('The date command of the remote server returned an unknown format.')
         else:
             hour, minute, sec = hour.split(':')
-            waitTime = None
+            wait_time = None
             if int(sec) > 57:
                 # Just to be 100% sure...
                 delta = 2
-                waitTime = 4 + 60
+                wait_time = 4 + 60
             else:
                 delta = 1
-                waitTime = 60 - int(sec)
+                wait_time = 60 - int(sec)
 
             minute = int(minute) + delta
-            hour, minute, amPm = self._fixTime(hour, minute)
+            hour, minute, am_pm = self._fix_time(hour, minute)
 
-            resLine = str(minute) + ' ' + str(hour) + ' ' + str(dayNumber) + ' ' + str(month) + ' ' + str(weekDay) + ' ' + commandToExec
-
-        return resLine, waitTime
+            res_line = '%s %s %s %s %s %s' % (minute, hour, day_number, month,
+                                             week_day, command_to_exec)
+            
+        return res_line, wait_time
