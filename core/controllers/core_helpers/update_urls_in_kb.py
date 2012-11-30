@@ -48,6 +48,7 @@ def update_kb(fuzzable_request):
         # Update the list of fuzzable requests that lives in the KB
         # TODO: Move the whole KB to a sqlite database in order to save
         #       some memory usage.
+        #pylint: disable-msg=E1103
         kb_fr_set = get_fuzzable_requests_from_kb()
         kb_fr_set.add(fuzzable_request)
 

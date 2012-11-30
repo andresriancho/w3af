@@ -61,8 +61,8 @@ class ThreadManager(object):
         result = self._threadpool.apply_async(target, args)
         self._results.setdefault(ownerObj, Queue.Queue()).put(result)
 
-        msg = '[thread manager] Successfully added function to threadpool.'
-        msg += 'Work queue size: %s' % self._threadpool.in_qsize()
+        msg = '[thread manager] Successfully added function to threadpool.' \
+              'Work queue size: %s' % self._threadpool.in_qsize()
         om.out.debug(msg)
 
     def join(self, ownerObj=None):

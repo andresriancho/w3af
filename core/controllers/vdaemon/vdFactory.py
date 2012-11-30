@@ -27,10 +27,11 @@ from core.controllers.intrusion_tools.execMethodHelpers import os_detection_exec
 from core.controllers.exceptions import w3afException
 
 
-def getVirtualDaemon(exec_method):
+def get_virtual_daemon(exec_method):
     '''
-    Uses the exec_method to run remote commands and determine what's the remote OS is,
-    and based on that info, it returns the corresponding virtual daemon.
+    Uses the exec_method to run remote commands and determine what's the
+    remote OS is, and based on that info, it returns the corresponding virtual
+    daemon.
     '''
     try:
         os = os_detection_exec(exec_method)

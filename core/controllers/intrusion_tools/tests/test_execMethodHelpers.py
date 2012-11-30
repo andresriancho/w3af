@@ -1,5 +1,5 @@
 '''
-test_execMethodHelpers.py
+test_exec_methodHelpers.py
 
 Copyright 2011 Andres Riancho
 

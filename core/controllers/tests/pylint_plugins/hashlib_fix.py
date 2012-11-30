@@ -5,18 +5,18 @@ from logilab.astng.builder import ASTNGBuilder
 
 CODE_FIX = '''
 class md5(object):
-  def __init__(self, value): pass
-  def hexdigest(self):
-    return u''
-  def update(self, x):
-    return u''
+    def __init__(self, value): pass
+    def hexdigest(self):
+        return u''
+    def update(self, x):
+        return u''
 
 class sha1(object):
-  def __init__(self, value): pass
-  def hexdigest(self):
-    return u''
-  def update(self, x):
-    return u''
+    def __init__(self, value): pass
+    def hexdigest(self):
+        return u''
+    def update(self, x):
+        return u''
 
 '''
 

@@ -33,15 +33,15 @@ class delayedExecutionFactory:
     '''
     This class constructs a delayedExecution based on the remote operating system.
     '''
-    def __init__(self, execMethod):
-        self._execMethod = execMethod
+    def __init__(self, exec_method):
+        self._exec_method = exec_method
 
     def get_delayed_execution_handler(self):
-        os = os_detection_exec(self._execMethod)
+        os = os_detection_exec(self._exec_method)
         if os == 'windows':
-            return atHandler(self._execMethod)
+            return atHandler(self._exec_method)
         elif os == 'linux':
-            return crontabHandler(self._execMethod)
+            return crontabHandler(self._exec_method)
         else:
             raise w3afException(
                 'Failed to create a delayed execution handler.')

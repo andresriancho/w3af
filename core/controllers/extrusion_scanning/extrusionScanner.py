@@ -48,25 +48,25 @@ class extrusionScanner(object):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, execMethod, forceReRun=False,
+    def __init__(self, exec_method, forceReRun=False,
                  tcpPortList=[25, 80, 53, 1433, 8080],
                  udpPortList=[53, 69, 139, 1025]):
         '''
-        @param execMethod: The execMethod used to execute commands on the
+        @param exec_method: The exec_method used to execute commands on the
                                remote host
         @param forceReRun: If forceReRun is True, the extrusion scanner
                                won't fetch the results from the KB
         '''
-        self._execMethod = execMethod
+        self._exec_method = exec_method
         self._forceReRun = forceReRun
         self._tcp_port_list = tcpPortList
         self._udp_port_list = udpPortList
 
-        os = os_detection_exec(execMethod)
+        os = os_detection_exec(exec_method)
         if os == 'windows':
-            self._transferHandler = EchoWindows(execMethod, os)
+            self._transferHandler = EchoWindows(exec_method, os)
         elif os == 'linux':
-            self._transferHandler = EchoLinux(execMethod, os)
+            self._transferHandler = EchoLinux(exec_method, os)
 
     def _getRemoteId(self):
         '''
@@ -201,7 +201,7 @@ class extrusionScanner(object):
 
     def _sendExtrusionClient(self):
         interpreter, extrusionClient, extension = self._selectExtrusionClient()
-        remoteFilename = get_remote_temp_file(self._execMethod)
+        remoteFilename = get_remote_temp_file(self._exec_method)
         remoteFilename += '.' + extension
 
         # do the transfer
@@ -215,7 +215,7 @@ class extrusionScanner(object):
         A wrapper for executing commands
         '''
         om.out.debug('Executing: ' + command)
-        response = apply(self._execMethod, (command,))
+        response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 

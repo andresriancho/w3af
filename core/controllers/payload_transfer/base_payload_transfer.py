@@ -27,8 +27,8 @@ class BasePayloadTransfer(object):
     This is a base class for doing payload transfers.
     '''
 
-    def __init__(self, execMethod, os):
-        self._exec_method = execMethod
+    def __init__(self, exec_method, os):
+        self._exec_method = exec_method
         self._os = os
 
     def can_transfer(self):
@@ -45,9 +45,9 @@ class BasePayloadTransfer(object):
         '''
         raise NotImplementedError()
 
-    def transfer(self, strObject, destination):
+    def transfer(self, data_str, destination):
         '''
-        This method is used to transfer the strObject from w3af to the
+        This method is used to transfer the data_str from w3af to the
         compromised server,
         '''
         raise NotImplementedError()

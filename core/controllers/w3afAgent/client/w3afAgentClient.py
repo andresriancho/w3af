@@ -321,9 +321,9 @@ class ConnectionManager(threading.Thread):
 
 class SocksHandler(threading.Thread):
     """This request handler class handles Socks 4 requests."""
-    def __init__(self, clientSocket, request):
+    def __init__(self, client_socketet, request):
         threading.Thread.__init__(self)
-        self.clientSocket = clientSocket
+        self.client_socketet = client_socketet
         self.request = request
 
     def run(self):
@@ -496,7 +496,7 @@ class SocksHandler(threading.Thread):
                 # We can now tell the client the connection is OK, and
                 # start the forwarding process.
                 self.answer_granted()
-                self.forward(self.clientSocket, incoming)
+                self.forward(self.client_socketet, incoming)
             # Mandatory closing of the socket with the remote peer.
             finally:
                 incoming.close()
@@ -551,7 +551,7 @@ class SocksHandler(threading.Thread):
                 # granted.
                 self.answer_granted()
                 # Starting to relay information between the two peers.
-                self.forward(self.clientSocket, remote)
+                self.forward(self.client_socketet, remote)
             # We don't have the right to "speak" to the client anymore.
             # So any socket failure means a "connection closed" and silent
             # exit.
@@ -585,7 +585,7 @@ factorised because all answers follow the same format."""
             packet += ip
             log.debug(thread.get_ident(), 'Sending back:',
                       code, string2port(port), socket.inet_ntoa(ip))
-            self.clientSocket.send(packet)
+            self.client_socketet.send(packet)
         except:
             # Trying to keep a trace of the original exception.
             raise Client_Connection_Closed(sys.exc_info())

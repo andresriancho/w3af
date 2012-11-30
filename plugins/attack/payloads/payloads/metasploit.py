@@ -1,5 +1,5 @@
 from plugins.attack.payloads.base_payload import Payload
-from core.controllers.vdaemon.vdFactory import getVirtualDaemon
+from core.controllers.vdaemon.vdFactory import get_virtual_daemon
 from core.controllers.exceptions import w3afException
 
 
@@ -20,7 +20,7 @@ class metasploit(Payload):
     '''
     def api_execute(self, msf_args):
         try:
-            vd = getVirtualDaemon(self.shell.execute)
+            vd = get_virtual_daemon(self.shell.execute)
         except w3afException, w3:
             return 'Error, %s' % w3
         else:

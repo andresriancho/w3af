@@ -34,8 +34,8 @@ class atHandler(delayedExecution):
         - restore old crontab
     '''
 
-    def __init__(self, execMethod):
-        self._execMethod = execMethod
+    def __init__(self, exec_method):
+        self._exec_method = exec_method
 
     def can_delay(self):
         '''

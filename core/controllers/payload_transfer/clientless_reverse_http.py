@@ -26,7 +26,7 @@ import core.data.kb.config as cf
 
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
-from core.controllers.payload_transfer.payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 from core.data.fuzzer.utils import rand_alpha
 
 
@@ -75,9 +75,9 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         '''
         return int(size / 2000)
 
-    def transfer(self, strObject, destination):
+    def transfer(self, data_str, destination):
         '''
-        This method is used to transfer the strObject from w3af to the compromised server.
+        This method is used to transfer the data_str from w3af to the compromised server.
         '''
         if not self._command:
             self.can_transfer()
@@ -91,7 +91,7 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
         filename = rand_alpha(10)
         file_path = get_temp_dir() + os.path.sep + filename
         f = file(file_path, 'w')
-        f.write(strObject)
+        f.write(data_str)
         f.close()
 
         # Start a web server on the inbound port and create the file that
@@ -107,7 +107,7 @@ class ClientlessReverseHTTP(BasePayloadTransfer):
 
         os.remove(file_path)
 
-        return self.verify_upload(strObject, destination)
+        return self.verify_upload(data_str, destination)
 
     def get_speed(self):
         '''

@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 from core.controllers.auto_update.auto_update import (
     is_working_copy,
-    get_svnversion
+    get_svn_version
 )
 
 
@@ -30,7 +30,7 @@ def get_w3af_version():
     '''
     @return: A string with the w3af version.
     '''
-    rev = get_svnversion() if is_working_copy() else 'unknown'
+    rev = get_svn_version() if is_working_copy() else 'unknown'
     return ('w3af - Web Application Attack and Audit Framework\n'
             'Version: 1.2\n'
             'Revision: %s\n'

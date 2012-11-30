@@ -31,7 +31,7 @@ from core.data.db.startup_cfg import StartUpConfig
 from core.controllers.auto_update.auto_update import (
     w3afSVNClient, Revision, VersionMgr, SVNFilesList,
     FILE_UPD, FILE_NEW, FILE_DEL, ST_CONFLICT, ST_MODIFIED, ST_UNKNOWN,
-    W3AF_LOCAL_PATH, get_svnversion, SVNError, SVNUpdateError
+    W3AF_LOCAL_PATH, get_svn_version, SVNError, SVNUpdateError
 )
 
 REPO_URL = 'http://localhost/svn/w3af'
@@ -260,7 +260,7 @@ class TestSVNVersion(unittest.TestCase):
     def tearDown(self):
         self.pysvn_client_patch.stop()
 
-    def test_get_svnversion_with_non_svn_path(self):
+    def test_get_svn_version_with_non_svn_path(self):
         cli = self.cli
         Rev = TestSVNVersion.Rev
         cli.info = MagicMock(side_effect=[{'revision': Rev(22)},
@@ -276,19 +276,19 @@ class TestSVNVersion(unittest.TestCase):
         os_walk_patch = patch('os.walk', side_effect=side_effect)
         os_walk_patch.start()
 
-        self.assertEquals('22:23', get_svnversion(W3AF_LOCAL_PATH))
+        self.assertEquals('22:23', get_svn_version(W3AF_LOCAL_PATH))
         os_walk_patch.stop()
 
     def test_non_svn_install(self):
         '''
-        Ensure that SVNError is raised when `get_svnversion` is called
+        Ensure that SVNError is raised when `get_svn_version` is called
         in a non svn copy.
         '''
         os_walk_patch = patch('os.walk', return_value=[])
         os_walk_patch.start()
 
         with self.assertRaises(SVNError) as cm:
-            get_svnversion(W3AF_LOCAL_PATH)
+            get_svn_version(W3AF_LOCAL_PATH)
         self.assertTrue("is not a svn working copy" in cm.exception.message)
 
         os_walk_patch.stop()

@@ -23,7 +23,7 @@ import time
 
 import core.controllers.output_manager as om
 
-from core.controllers.payload_transfer.payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 from core.controllers.exceptions import w3afException
 
 
@@ -75,9 +75,9 @@ class EchoWindows(BasePayloadTransfer):
             'The file transfer will take "' + str(timeTaken) + '" seconds.')
         return int(timeTaken)
 
-    def transfer(self, strObject, destination):
+    def transfer(self, data_str, destination):
         '''
-        This method is used to transfer the strObject from w3af to the compromised server.
+        This method is used to transfer the data_str from w3af to the compromised server.
         '''
         om.out.debug('Starting upload.')
 
@@ -98,16 +98,16 @@ class EchoWindows(BasePayloadTransfer):
             'echo n ' + self._filename + '._ >> ' + self._filename)
         self._exec_method('echo r cx' + ' >> ' + self._filename)
         self._exec_method(
-            'echo ' + hex(len(strObject))[2:] + ' >> ' + self._filename)
+            'echo ' + hex(len(data_str))[2:] + ' >> ' + self._filename)
         self._exec_method('echo f 0000 ffff 00' + ' >> ' + self._filename)
 
         # http://www.totse.com/en/technology/computer_technology/windowsdebugco172680.html
         i = 0
         j = 256
-        while i < len(strObject):
+        while i < len(data_str):
             # Prepare the command
             cmd = "echo e " + hex(j)[2:]
-            for c in strObject[i:i + self._step]:
+            for c in data_str[i:i + self._step]:
                 cmd += ' ' + hex(ord(c))[2:].zfill(2)
 
             cmd += " >> " + self._filename

@@ -40,7 +40,7 @@ def is_working_copy():
     return SVNClientClass.is_working_copy(localpath=W3AF_LOCAL_PATH)
 
 
-def get_svnversion(path=W3AF_LOCAL_PATH):
+def get_svn_version(path=W3AF_LOCAL_PATH):
     '''
     Summarize the local revision(s) of a `path`'s working copy.
     '''
@@ -205,11 +205,12 @@ class w3afSVNClient(SVNClient):
             def wrapped_meth(*args, **kwargs):
                 try:
                     self._result = meth(*args, **kwargs)
-                    self._exc = None
                 except Exception, exc:
                     if isinstance(exc, pysvn.ClientError):
                         exc = SVNError(*exc.args)
                     self._exc = exc
+                else:
+                    self._exc = None
             # Run wrapped_meth in new thread.
             th = Process(target=wrapped_meth, args=args, kwargs=kwargs)
             th.setDaemon(True)
@@ -219,7 +220,7 @@ class w3afSVNClient(SVNClient):
                 while th.isAlive():
                     time.sleep(0.2)
                 try:
-                    if self._exc:
+                    if self._exc is not None:
                         raise self._exc
                     return self._result
                 finally:
@@ -417,6 +418,9 @@ class SVNList(list):
         self._rev = rev
         self._sorted = True
 
+    # pylint: disable-msg=E0102
+    # pylint: disable-msg=E1101
+    # E0102:425,4:SVNList.rev: method already defined line 421
     @property
     def rev(self):
         return self._rev
@@ -593,7 +597,8 @@ class VersionMgr(object):  # TODO: Make it singleton?
                 proceed_upd = True
                 callback = self.callback_onupdate_confirm
                 # Call callback function
-                if callback:
+                if callback is not None:
+                    # pylint: disable-msg=E1102
                     proceed_upd = callback(
                         'Your current w3af installation is r%s. Do you want '
                         'to update to r%s?' % (localrev.number, remrev.number))
@@ -799,7 +804,7 @@ class UIUpdater(object):
             # Try to convert to int => a valid revision number. Otherwise the
             # code is inconsistent => more than one revision is checked out
             try:
-                int(get_svnversion())
+                int(get_svn_version())
             except ValueError:
                 self._log("Oops!... w3af can't be started. It seems that the "
                           "last auto update process was unsuccessful.\n\n"

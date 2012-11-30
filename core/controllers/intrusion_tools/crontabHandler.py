@@ -35,9 +35,9 @@ class crontabHandler(delayedExecution):
         - restore old crontab
     '''
 
-    def __init__(self, execMethod):
-        self._execMethod = execMethod
-        self._cronFile = get_remote_temp_file(self._execMethod)
+    def __init__(self, exec_method):
+        self._exec_method = exec_method
+        self._cronFile = get_remote_temp_file(self._exec_method)
 
     def can_delay(self):
         '''

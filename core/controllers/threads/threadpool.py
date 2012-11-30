@@ -61,3 +61,7 @@ class Pool(ThreadPool):
     def map_multi_args(self, func, iterable, chunksize=None):
         assert self._state == RUN
         return self.map_async(one_to_many(func), iterable, chunksize).get()
+
+    def in_qsize(self):
+        return self._taskqueue.qsize()
+    

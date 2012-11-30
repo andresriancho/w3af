@@ -19,13 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
+
 from core.controllers.exceptions import *
 from core.data.fuzzer.fuzzer import *
 
 
-class delayedExecution:
+class delayedExecution(object):
     '''
     This class is a base class for crontabHandler and atHandler.
     '''
@@ -35,13 +35,14 @@ class delayedExecution:
         A wrapper for executing commands
         '''
         om.out.debug('Executing: ' + command)
-        response = apply(self._execMethod, (command,))
+        response = apply(self._exec_method, (command,))
         om.out.debug('"' + command + '" returned: ' + response)
         return response
 
     def _fixTime(self, hour, minute, amPm=''):
         '''
-        Fix the time, this is done to fix if minute == 60, or ampm changes from am to pm, etc...
+        Fix the time, this is done to fix if minute == 60, or ampm changes
+        from am to pm, etc...
         '''
         hour = int(hour)
         minute = int(minute)

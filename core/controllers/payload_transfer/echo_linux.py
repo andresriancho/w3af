@@ -23,7 +23,7 @@ import time
 
 import core.controllers.output_manager as om
 
-from core.controllers.payload_transfer.payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.base_payload_transfer import BasePayloadTransfer
 
 
 class EchoLinux(BasePayloadTransfer):
@@ -71,9 +71,9 @@ class EchoLinux(BasePayloadTransfer):
             'The file transfer will take "' + str(timeTaken) + '" seconds.')
         return int(timeTaken)
 
-    def transfer(self, strObject, destination):
+    def transfer(self, data_str, destination):
         '''
-        This method is used to transfer the strObject from w3af to the compromised server.
+        This method is used to transfer the data_str from w3af to the compromised server.
         '''
         self._filename = destination
 
@@ -81,10 +81,10 @@ class EchoLinux(BasePayloadTransfer):
         self._exec_method('> ' + self._filename)
 
         i = 0
-        while i < len(strObject):
+        while i < len(data_str):
             # Prepare the command
             cmd = "/bin/echo -ne "
-            for c in strObject[i:i + self._step]:
+            for c in data_str[i:i + self._step]:
                 cmd += '\\\\' + oct(ord(c)).zfill(4)
 
             cmd += " >> " + self._filename
@@ -93,7 +93,7 @@ class EchoLinux(BasePayloadTransfer):
             # Send the command to the remote server
             self._exec_method(cmd)
 
-        return self.verify_upload(strObject, self._filename)
+        return self.verify_upload(data_str, self._filename)
 
     def get_speed(self):
         '''
