@@ -26,7 +26,7 @@ import core.data.kb.config as cf
 
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.intrusion_tools.execMethodHelpers import get_remote_temp_file
-from core.controllers.payload_transfer.Payload_transfer import BasePayloadTransfer
+from core.controllers.payload_transfer.payload_transfer import BasePayloadTransfer
 from core.data.fuzzer.utils import rand_alpha
 
 
