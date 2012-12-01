@@ -36,8 +36,6 @@ class TestProxy(unittest.TestCase):
         # Start the proxy server
         create_temp_dir()
 
-        last_exception = None
-
         for port in xrange(self.PORT, self.PORT + 10):
             try:
                 self._proxy = proxy(self.IP, port, xUrllib(), w3afProxyHandler)
