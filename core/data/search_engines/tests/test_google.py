@@ -82,8 +82,7 @@ class test_google(unittest.TestCase):
                     break
             self.assertTrue(found)
 
-
-class BaseGoogleAPISearchTest(object):
+class BaseGoogleAPISearch(unittest.TestCase):
     '''
     @see: test_GMobileSearch, test_GStandardSearch, test_GAjaxSearch below for
           tests on these particular search implementations.
@@ -93,8 +92,14 @@ class BaseGoogleAPISearchTest(object):
     GoogleApiSearcher = None
 
     COUNT = 10
+    
+    def setUp(self):
+        self.opener = xUrllib()
 
     def test_len_link_results(self):
+        if self.GoogleApiSearcher is None:
+            return
+        
         keywords = ["pink", "red", "blue"]
         random.shuffle(keywords)
         query = ' '.join(keywords)
@@ -107,10 +112,10 @@ class BaseGoogleAPISearchTest(object):
         # This actually does the search
         searcher.links
 
-        msg = 'This test fails randomly based on Google\'s anti automation'
-        msg += ' protection, if it fails you should run it again in a couple of'
-        msg += ' minutes. Many consecutive failures show that our code is NOT'
-        msg += ' working anymore.'
+        msg = 'This test fails randomly based on Google\'s anti automation' \
+              ' protection, if it fails you should run it again in a couple'\
+              ' of minutes. Many consecutive failures show that our code is'\
+              ' NOT working anymore.'
         self.assertEqual(searcher.status, FINISHED_OK, msg)
 
         msg = 'Got less results than expected:\n%s' % '\n'.join(
@@ -133,6 +138,9 @@ class BaseGoogleAPISearchTest(object):
         self.assertTrue(related > 5, related)
 
     def test_links_results_domain(self):
+        if self.GoogleApiSearcher is None:
+            return
+        
         domain = "www.bonsai-sec.com"
         query = "site:%s" % domain
         start = 0
@@ -162,24 +170,13 @@ class BaseGoogleAPISearchTest(object):
 
 
 @attr('internet')
-class test_GAjaxSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+class TestGAjaxSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GAjaxSearch
 
-    def setUp(self):
-        self.opener = xUrllib()
-
-
 @attr('internet')
-class test_GMobileSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+class TestGMobileSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GMobileSearch
 
-    def setUp(self):
-        self.opener = xUrllib()
-
-
 @attr('internet')
-class test_GStandardSearch(unittest.TestCase, BaseGoogleAPISearchTest):
+class TestGStandardSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GStandardSearch
-
-    def setUp(self):
-        self.opener = xUrllib()
