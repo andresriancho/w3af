@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import re
 
-from plugins.grep.password_profiling_plugins.basePpPlugin import basePpPlugin
+from plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
 
 words_split_re = re.compile("[^\w]")
 
 
-class html(basePpPlugin):
+class html(BasePwdProfilingPlugin):
     '''
     This plugin creates a map of possible passwords by reading html responses.
 
@@ -35,7 +35,7 @@ class html(basePpPlugin):
     '''
 
     def __init__(self):
-        basePpPlugin.__init__(self)
+        BasePwdProfilingPlugin.__init__(self)
 
     def get_words(self, response):
         '''

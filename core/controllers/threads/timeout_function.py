@@ -32,12 +32,16 @@
 __all__ = ('timelimited', 'TimeLimited', 'TimeLimitExpired')
 __version__ = '4  2009-06-08'
 
+import traceback
+
 from multiprocessing.dummy import Process
 
 # The #PYCHOK marks are intended for postprocessing
 # by <http://code.activestate.com/recipes/546532/>
 
-try:  # UGLY! private method __stop
+# UGLY! private method __stop
+# pylint: disable-msg=E1101
+try:
     _Thread_stop = Process._Thread__stop  # PYCHOK false
 except AttributeError:  # _stop in Python 3.0
     _Thread_stop = Process._stop  # PYCHOK expected
@@ -74,11 +78,11 @@ def timelimited(timeout, function, *args, **kwds):
         def run(self):
             try:
                 self._result_ = function(*args, **kwds)
-                self._error_ = None
             except Exception, e:  # XXX as for Python 3.0
-                import traceback
                 e.orig_traceback_str = traceback.format_exc()
                 self._error_ = e
+            else:
+                self._error_ = None
 
         def _stop(self):
             # UGLY! force the thread to stop by (ab)using

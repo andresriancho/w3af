@@ -62,11 +62,11 @@ class PDFParser(BaseParser):
         # Get the mail addys
         self._extract_emails(content_text)
 
-    def get_pdf_content(self, documentString):
+    def get_pdf_content(self, document_str):
         content = u""
-        if documentString:
+        if document_str:
             # Load PDF into pyPDF
-            pdfreader = pyPdf.PdfFileReader(StringIO.StringIO(documentString))
+            pdfreader = pyPdf.PdfFileReader(StringIO.StringIO(document_str))
             try:
                 content = u"\n".join(p.extractText() for p in pdfreader.pages)
             except Exception, e:

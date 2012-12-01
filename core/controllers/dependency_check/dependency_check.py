@@ -43,8 +43,8 @@ def dependency_check():
             msg = 'Error: Python 2.%s found but Python 2.6 or 2.7 required.' % minor
             print msg
     elif major > 2:
-        msg = 'It seems that you are running Python 3k, please let us know if'
-        msg += ' w3af works as expected at w3af-develop@lists.sourceforge.net !'
+        msg = 'It seems that you are running Python 3k, please let us know if' \
+              ' w3af works as expected at w3af-develop@lists.sourceforge.net !'
         print msg
         sys.exit(1)
 
@@ -59,11 +59,11 @@ def dependency_check():
         try:
             from pybloomfilter import BloomFilter as mmap_filter
         except Exception, e:
-            msg = '    pybloomfiltermmap is a required dependency in *nix systems,'
-            msg += ' in order to install it please run the following command'
-            msg += ' after installing the Python development headers and Python'
-            msg += ' setup tools:'
-            msg += '        sudo easy_install pybloomfiltermmap'
+            msg = '    pybloomfiltermmap is a required dependency in *nix' \
+                  ' systems, in order to install it please run the following' \
+                  ' command after installing the Python development headers' \
+                  ' and Python setup tools:' \
+                  '        sudo easy_install pybloomfiltermmap'
             packages.append('pybloomfilter')
             packages_debian.extend(['python2.7-dev', 'python-setuptools'])
             # Openbsd's python package already includes dev stuff
@@ -75,11 +75,11 @@ def dependency_check():
         import esmre
         import esm
     except ImportError:
-        msg = '    esmre is an optional (for now) library for running w3af which'
-        msg += ' will speed up pattern matching for most plugins. You'
-        msg += ' can download it from http://code.google.com/p/esmre/ or run'
-        msg += ' the following command to install it:\n'
-        msg += '        sudo easy_install esmre\n'
+        msg = '    esmre is an optional (for now) library for running w3af' \
+              ' which will speed up pattern matching for most plugins. You' \
+              ' can download it from http://code.google.com/p/esmre/ or run' \
+              ' the following command to install it:\n' \
+              '        sudo easy_install esmre\n'
 
         #packages_debian.append('python-setuptools')
         #packages_openbsd.append('py-setuptools')
@@ -102,16 +102,17 @@ def dependency_check():
         packages_openbsd.append('py-nltk')
         #TODO
         #packages_mac_port.append()
-        msg = '    If you can not install nltk with the system package manager, try the following:\n'
-        msg += '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n'
-        msg += '        tar -xzvf PyYAML-3.09.tar.gz\n'
-        msg += '        cd PyYAML-3.09\n'
-        msg += '        python setup.py install\n'
-        msg += '        cd ..\n'
-        msg += '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz\n'
-        msg += '        tar -xzvf nltk-2.0b9.tar.gz\n'
-        msg += '        cd nltk-2.0b9\n'
-        msg += '        python setup.py install'
+        msg = '    If you can not install nltk with the system package manager,' \
+              ' try the following:\n' \
+              '        wget http://pyyaml.org/download/pyyaml/PyYAML-3.09.tar.gz\n' \
+              '        tar -xzvf PyYAML-3.09.tar.gz\n' \
+              '        cd PyYAML-3.09\n' \
+              '        python setup.py install\n' \
+              '        cd ..\n' \
+              '        wget http://nltk.googlecode.com/files/nltk-2.0b9.tar.gz\n' \
+              '        tar -xzvf nltk-2.0b9.tar.gz\n' \
+              '        cd nltk-2.0b9\n' \
+              '        python setup.py install'
         additional_information.append(msg)
         reason_for_exit = True
     #mem_test('after nltk import')
@@ -159,20 +160,20 @@ def dependency_check():
     try:
         import pysvn
     except Exception, e:
+        # pylint: disable-msg=E1101
         if e.message.startswith('pysvn was built'):
-            msg = '    It looks like your pysvn library installation is broken\n'
-            msg += '    (are you using BT4 R2?). The error we get when importing\n'
-            msg += '    the pysvn library is "%s". \n\n' % e.message
+            msg = '    It looks like your pysvn library installation is broken\n'\
+                  '    (are you using BT4 R2?). The error we get when importing\n'\
+                  '    the pysvn library is "%s". \n\n' \
+                  '    This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)\n' \
+                  '    that was fixed by them in their devel repositories, in order to\n' \
+                  '    enable them you need to follow these steps:\n' \
+                  '        1. vim /etc/apt/sources.list\n' \
+                  '        2. Un-comment the BackTrack Devel Repository line ' \
+                  '(deb http://archive.offensive-security.com/repotest/ ./)' \
+                  '        3. apt-get update && apt-get dist-upgrade'
 
-            msg += '    This is a BackTrack issue (works with Ubuntu 8.04 and 10.10)\n'
-            msg += '    that was fixed by them in their devel repositories, in order to\n'
-            msg += '    enable them you need to follow these steps:\n'
-            msg += '        1. vim /etc/apt/sources.list\n'
-            msg += '        2. Un-comment the BackTrack Devel Repository line ' \
-                '(deb http://archive.offensive-security.com/repotest/ ./)'
-            msg += '        3. apt-get update && apt-get dist-upgrade'
-
-            additional_information.append(msg)
+            additional_information.append(msg % e.message)
 
         packages.append('pysvn')
         packages_debian.append('python-svn')
@@ -193,19 +194,21 @@ def dependency_check():
         try:
             import scapy.config
         except:
-            msg = '    Your version of scapy is *very old* and incompatible with w3af. Please install scapy version >= 2.0 .\n'
-            msg += '    You may issue the following commands in order to install the latest version of scapy in your system:\n'
-            msg += '        cd /tmp\n'
-            msg += '        wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n'
-            msg += '        tar -xzvf scapy-latest.tar.gz\n'
-            msg += '        cd scapy-2*\n'
-            msg += '        sudo python setup.py install\n'
+            msg = '    Your version of scapy is *very old* and incompatible' \
+                  ' with w3af. Please install scapy version >= 2.0 .\n' \
+                  '    You may issue the following commands in order to install' \
+                  ' the latest version of scapy in your system:\n' \
+                  '        cd /tmp\n' \
+                  '        wget http://www.secdev.org/projects/scapy/files/scapy-latest.tar.gz\n' \
+                  '        tar -xzvf scapy-latest.tar.gz\n' \
+                  '        cd scapy-2*\n' \
+                  '        sudo python setup.py install\n'
             additional_information.append(msg)
             reason_for_exit = True
         else:
             if not scapy.config.conf.version.startswith('2.'):
-                msg = '    Your version of scapy (%s) is not compatible with w3af. '
-                msg += 'Please install scapy version >= 2.0 .'
+                msg = '    Your version of scapy (%s) is not compatible with' \
+                      ' w3af. Please install scapy version >= 2.0 .'
                 additional_information.append(msg % scapy.config.conf.version)
                 reason_for_exit = True
     #mem_test('after scapy import')

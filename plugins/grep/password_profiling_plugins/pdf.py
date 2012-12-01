@@ -19,20 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from plugins.grep.password_profiling_plugins.basePpPlugin import basePpPlugin
-from core.data.getResponseType import isPDF
-
+import StringIO
 # Added this try/except to fix a bug in debian/ubuntu.
 try:
     import extlib.pyPdf.pyPdf as pyPdf
 except:
     import pyPdf
 
-import StringIO
+from plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
+from core.data.getResponseType import isPDF
 
 
-class pdf(basePpPlugin):
+class pdf(BasePwdProfilingPlugin):
     '''
     This plugin creates a map of possible passwords by reading pdf documents.
 
@@ -40,25 +38,31 @@ class pdf(basePpPlugin):
     '''
 
     def __init__(self):
-        basePpPlugin.__init__(self)
+        BasePwdProfilingPlugin.__init__(self)
 
-    def _get_pdf_content(self, documentString):
-        content = ""
-        # Load PDF into pyPDF
-        pdf = pyPdf.PdfFileReader(StringIO.StringIO(documentString))
-        # Iterate pages
+    def _get_pdf_content(self, document_str):
+        '''
+        Iterate through all PDF pages and extract text
+        
+        @return: The page content
+        '''
+        content = ''
+
+        document_io = StringIO.StringIO(document_str)
+        pdf = pyPdf.PdfFileReader(document_io)
+
         for i in range(0, pdf.getNumPages()):
-            # Extract text from page and add to content
-            content += pdf.get_page(i).extractText() + "\n"
-        # Collapse whitespace
-        content = " ".join(content.replace("\xa0", " ").strip().split())
+            content += pdf.getPage(i).extractText() + '\n'
+        
+        content = " ".join(content.replace(u'\xa0', u' ').strip().split())
         return content.split()
 
     def get_words(self, response):
         '''
         Get words from the pdf document.
 
-        @param response: In most common cases, an html. Could be almost anything, if we are lucky, it's a PDF file.
+        @param response: In most common cases, an html. Could be almost
+                         anything, if we are lucky, it's a PDF file.
         @return: A map of strings:repetitions.
         '''
         res = None

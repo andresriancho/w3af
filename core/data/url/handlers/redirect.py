@@ -74,6 +74,7 @@ class HTTP30XHandler(urllib2.HTTPRedirectHandler):
             return
 
         # fix a possible malformed URL
+        # pylint: disable-msg=E1101
         urlparts = urlparse.urlparse(newurl)
         if not urlparts.path:
             urlparts = list(urlparts)

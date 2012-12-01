@@ -677,7 +677,7 @@ class xUrllib(object):
             om.out.debug(msg)
 
             http_resp = from_httplib_resp(res, original_url=original_url_inst)
-            http_resp.set_id(id=res.id)
+            http_resp.set_id(res.id)
             http_resp.set_wait_time(time.time() - start_time)
 
             # Let the upper layers know that this response came from the

@@ -1,5 +1,5 @@
 '''
-basePpPlugin.py
+BasePwdProfilingPlugin.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,7 +24,7 @@ import core.controllers.output_manager as om
 from core.controllers.exceptions import w3afException
 
 
-class basePpPlugin:
+class BasePwdProfilingPlugin:
     '''
     This is the base plugin for all password profiling plugins.
 

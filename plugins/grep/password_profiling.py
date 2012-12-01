@@ -73,55 +73,72 @@ class password_profiling(GrepPlugin):
 
         # I added the 404 code here to avoid doing some is_404 lookups
         if response.get_code() not in [500, 401, 403, 404] \
-            and not is_404(response) \
-                and request.get_method() in ['POST', 'GET']:
+        and not is_404(response) \
+        and request.get_method() in ['POST', 'GET']:
 
             # Run the plugins
             data = self._run_plugins(response)
 
             with self._plugin_lock:
-                old_data = kb.kb.get(
-                    'password_profiling', 'password_profiling')
-
-                # "merge" both maps and update the repetitions
-                for d in data:
-
-                    if len(d) >= 4 and d.isalnum() and \
-                        not d.isdigit() and \
-                        d.lower() not in self.BANNED_WORDS and \
-                        d.lower() not in self.COMMON_WORDS[lang] and \
-                            not request.sent(d):
-
-                        if d in old_data:
-                            old_data[d] += data[d]
-                        else:
-                            old_data[d] = data[d]
-
-                #   If the dict grows a lot, I want to trim it. Basically, if
-                #   it grows to a length of more than 2000 keys, I'll trim it
-                #   to 1000 keys.
-                if len(old_data) > 2000:
-                    def sortfunc(x_obj, y_obj):
-                        return cmp(y_obj[1], x_obj[1])
-
-                    items = old_data.items()
-                    items.sort(sortfunc)
-
-                    items = items[:1000]
-
-                    new_data = {}
-                    for key, value in items:
-                        new_data[key] = value
-
-                else:
-                    new_data = old_data
-
+                old_data = kb.kb.get('password_profiling',
+                                     'password_profiling')
+                
+                new_data = self.merge_maps(old_data, data, request, lang)
+                
+                new_data = self._trim_data(new_data)
+                
                 # save the updated map
                 kb.kb.save(self, 'password_profiling', new_data)
+    
+    def _trim_data(self, data):
+        '''
+        If the dict grows a lot, I want to trim it. Basically, if
+        it grows to a length of more than 2000 keys, I'll trim it
+        to 1000 keys.
+        '''
+        if len(data) > 2000:
+            def sortfunc(x_obj, y_obj):
+                return cmp(y_obj[1], x_obj[1])
+            
+            # pylint: disable-msg=E1103
+            items = data.items()
+            items.sort(sortfunc)
 
+            items = items[:1000]
+
+            new_data = {}
+            for key, value in items:
+                new_data[key] = value
+
+        else:
+            new_data = data
+    
+        return new_data
+                
+    def merge_maps(self, old_data, data, request, lang):
+        '''
+        "merge" both maps and update the repetitions
+        '''
+        for d in data:
+
+            if len(d) >= 4 and d.isalnum() and \
+                not d.isdigit() and \
+                d.lower() not in self.BANNED_WORDS and \
+                d.lower() not in self.COMMON_WORDS[lang] and \
+                    not request.sent(d):
+
+                if d in old_data:
+                    old_data[d] += data[d]
+                else:
+                    old_data[d] = data[d]
+        
+        return old_data
+    
     def _run_plugins(self, response):
         '''
-        Runs password profiling plugins to collect data from HTML, TXT, PDF, etc files.
+        Runs password profiling plugins to collect data from HTML, TXT,
+        PDF, etc files.
+        
         @param response: A HTTPResponse object
         @return: A map with word:repetitions
         '''
@@ -157,7 +174,8 @@ class password_profiling(GrepPlugin):
         # have a dict anymore (threading issue most likely) Seen here:
         # https://sourceforge.net/apps/trac/w3af/ticket/171745
         if isinstance(profiling_data, dict):
-
+            
+            # pylint: disable-msg=E1103
             items = profiling_data.items()
             if len(items) != 0:
 
@@ -178,8 +196,8 @@ class password_profiling(GrepPlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+                 the current one.
         '''
         return ['grep.lang']
 
