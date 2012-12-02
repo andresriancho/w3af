@@ -25,6 +25,7 @@ import unittest
 
 from pylint import lint
 from pylint.reporters.text import TextReporter
+from nose.plugins.attrib import attr
 
 
 class WritableObject(object):
@@ -39,6 +40,8 @@ class WritableObject(object):
     def read(self):
         return self.content
 
+
+@attr('smoke')
 class PylintRunner(unittest.TestCase):
 
     maxDiff = None
