@@ -169,19 +169,12 @@ class HTTPResponse(object):
     def get_code(self):
         return self._code
 
-    @property
-    def body(self):
+    def get_body(self):
         if self._body is None:
             self._body, self._charset = self._charset_handling()
             # Free 'raw_body'
             self._raw_body = None
         return self._body
-
-    @body.setter
-    def body(self, body):
-        # Reset body
-        self._body = None
-        self._raw_body = body
 
     def set_body(self, body):
         '''
@@ -189,10 +182,10 @@ class HTTPResponse(object):
 
         @body: A string that represents the body of the HTTP response
         '''
-        self.body = body
-
-    def get_body(self):
-        return self.body
+        self._body = None
+        self._raw_body = body
+    
+    body = property(get_body, set_body)
 
     def get_clear_text_body(self):
         '''
@@ -254,24 +247,18 @@ class HTTPResponse(object):
                 om.out.debug(msg)
         return self._dom
 
-    @property
-    def charset(self):
+    def get_charset(self):
         if not self._charset:
             self._body, self._charset = self._charset_handling()
             # Free 'raw_body'
             self._raw_body = None
         return self._charset
 
-    @charset.setter
-    def charset(self, charset):
-        self._charset = charset
-
     def set_charset(self, charset):
-        self.charset = charset
-
-    def get_charset(self):
-        return self.charset
-
+        self._charset = charset
+    
+    charset = property(get_charset, set_charset)
+    
     def set_redir_url(self, ru):
         self._redirectedURL = ru
 
@@ -284,15 +271,20 @@ class HTTPResponse(object):
     def get_redir_uri(self):
         return self._redirectedURI
 
-    @property
-    def headers(self):
+
+    def get_headers(self):
         if self._headers is None:
             self.headers = self._info
             assert self._headers is not None
         return self._headers
 
-    @headers.setter
-    def headers(self, headers):
+    def set_headers(self, headers):
+        '''
+        Sets the headers and also analyzes them in order to get the response
+        mime type (text/html , application/pdf, etc).
+
+        @param headers: The headers dict.
+        '''
         # Fix lowercase in header names from HTTPMessage
         if isinstance(headers, httplib.HTTPMessage):
             self._headers = Headers()
@@ -332,18 +324,8 @@ class HTTPResponse(object):
                               ('text', 'html', 'xml', 'txt', 'javascript'))):
                     self._doc_type = HTTPResponse.DOC_TYPE_TEXT_OR_HTML
 
-    def set_headers(self, headers):
-        '''
-        Sets the headers and also analyzes them in order to get the response
-        mime type (text/html , application/pdf, etc).
-
-        @param headers: The headers dict.
-        '''
-        self.headers = headers
-
-    def get_headers(self):
-        return self.headers
-
+    headers = property(get_headers, set_headers)
+    
     def get_lower_case_headers(self):
         '''
         If the original headers were:

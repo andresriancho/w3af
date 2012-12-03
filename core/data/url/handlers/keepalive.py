@@ -207,20 +207,18 @@ class HTTPResponse(httplib.HTTPResponse):
         self._multiread = None
         self._encoding = None
 
-    @property
-    def URL(self):
-        return self.geturl()
-
     def geturl(self):
         return self._url
 
-    @property
-    def encoding(self):
+    URL = property(geturl)
+
+    def get_encoding(self):
         return self._encoding
 
-    @encoding.setter
-    def encoding(self, enc):
+    def set_encoding(self, enc):
         self._encoding = enc
+    
+    encoding = property(get_encoding, set_encoding)
 
     def _raw_read(self, amt=None):
         '''

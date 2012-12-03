@@ -24,7 +24,9 @@ else:
     from extlib.ntlm import ntlm
 
 
-class AbstractNtlmAuthHandler:
+class AbstractNtlmAuthHandler(object):
+
+    auth_header = None
 
     def __init__(self, password_mgr=None):
         if password_mgr is None:
@@ -67,9 +69,14 @@ class AbstractNtlmAuthHandler:
             r.begin()
             r._safe_read(int(r.getheader('content-length')))
             if r.getheader('set-cookie'):
-                # this is important for some web applications that store authentication-related info in cookies (it took a long time to figure out)
+                # this is important for some web applications that store 
+                # authentication-related info in cookies (it took a long
+                # time to figure out)
                 headers['Cookie'] = r.getheader('set-cookie')
-            r.fp = None  # remove the reference to the socket, so that it can not be closed by the response object (we want to keep the socket open)
+            
+            # remove the reference to the socket, so that it can not be closed
+            # by the response object (we want to keep the socket open)
+            r.fp = None
             auth_header_value = r.getheader(auth_header_field, None)
             (ServerChallenge, NegotiateFlags) = ntlm.parse_NTLM_CHALLENGE_MESSAGE(auth_header_value[5:])
             user_parts = user.split('\\', 1)
@@ -84,7 +91,8 @@ class AbstractNtlmAuthHandler:
             try:
                 h.request(
                     req.get_method(), req.get_selector(), req.data, headers)
-                # none of the configured handlers are triggered, for example redirect-responses are not handled!
+                # none of the configured handlers are triggered, for example
+                # redirect-responses are not handled!
                 response = h.getresponse()
 
                 def notimplemented():

@@ -46,13 +46,14 @@ class TestGTKOutput(unittest.TestCase):
             ('console', '1'),
             ('information', '2'),
             ('vulnerability', '3'),
-            ('debug', ''),
-            # Note that this empty string is correct
+            ('debug', ''), # Note that this empty string is correct
             ('error', '5'), ]
         )
 
         from_queue = set()
-
+        # pylint: disable-msg=E1103
+        # E1103: Instance of 'list' has no 'qsize' member (but some types
+        # could not be inferred)
         while gtk_output_queue.qsize() > 0:
             msg = gtk_output_queue.get()
             from_queue.add((msg.get_type(), msg.get_msg()))

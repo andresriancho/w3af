@@ -67,7 +67,7 @@ class csrf(AuditPlugin):
 
         # Does request has CSRF token in query string or POST payload?
         token = self._find_csrf_token(freq, orig_response)
-        if token and self._is_token_checked(freq, token):
+        if token and self._is_token_checked(freq, token, orig_response):
             om.out.debug('Token for %s is exist and checked' % freq.get_url())
             return
 
@@ -138,7 +138,7 @@ class csrf(AuditPlugin):
             return True
         return False
 
-    def _find_csrf_token(self, freq):
+    def _find_csrf_token(self, freq, orig_response):
         om.out.debug('Testing for token in %s' % freq.get_url())
         result = DataContainer()
         dc = freq.get_dc()
@@ -154,7 +154,7 @@ class csrf(AuditPlugin):
         om.out.debug('Testing for validation of token in %s' % freq.get_url())
         mutants = create_mutants(freq, ['123'], False, token.keys())
         for mutant in mutants:
-            mutant_response = self._sendMutant(mutant, analyze=False)
+            mutant_response = self._uri_opener.send_mutant(mutant, analyze=False)
             if not self._is_resp_equal(orig_response, mutant_response):
                 return True
         return False

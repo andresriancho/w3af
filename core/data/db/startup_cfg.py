@@ -54,14 +54,6 @@ class StartUpConfig(object):
         (self._autoupd, self._freq, self._lastupd, self._lastrev,
          self._accepted_disclaimer) = configs
 
-    ### PROPERTIES #
-    
-    freq = property(get_freq)
-    auto_upd = property(get_auto_upd)
-    last_rev = property(get_last_rev, set_last_rev)
-    accepted_disclaimer = property(get_accepted_disclaimer, set_accepted_disclaimer)
-    last_upd = property(get_last_upd, set_last_upd)
-    
     ### METHODS #
     
     def get_last_upd(self):
@@ -160,3 +152,12 @@ class StartUpConfig(object):
         '''
         with open(self._start_cfg_file, 'wb') as configfile:
             self._config.write(configfile)
+    
+    ### PROPERTIES #
+    
+    freq = property(get_freq)
+    auto_upd = property(get_auto_upd)
+    last_rev = property(get_last_rev, set_last_rev)
+    accepted_disclaimer = property(get_accepted_disclaimer, set_accepted_disclaimer)
+    last_upd = property(get_last_upd, set_last_upd)
+    
