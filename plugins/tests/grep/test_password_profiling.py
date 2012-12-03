@@ -18,9 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from plugins.tests.helper import PluginTest, PluginConfig
-import core.data.constants.severity as severity
 
 
 class TestPasswordProfiling(PluginTest):
@@ -44,8 +42,11 @@ class TestPasswordProfiling(PluginTest):
     def test_collected_passwords(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
-        collected_passwords = self.kb.get(
-            'password_profiling', 'password_profiling')
+
+        # pylint: disable-msg=E1101
+        # Pylint fails to detect the object types that come out of the KB            
+        collected_passwords = self.kb.get('password_profiling',
+                                          'password_profiling')
 
         def sortfunc(x_obj, y_obj):
             return cmp(x_obj[1], y_obj[1])

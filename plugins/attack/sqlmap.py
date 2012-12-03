@@ -375,8 +375,8 @@ class sqlShellObj(shell):
                 self.help()
                 return ''
 
-        tm.apply_async(target=self._runCommand, args=(
-            method, command, parameters), ownerObj=self, restrict=False)
+        args = (method, command, parameters)
+        tm.apply_async(target=self._runCommand, args=args, ownerObj=self)
         #self._runCommand(method, command)
         return None
 

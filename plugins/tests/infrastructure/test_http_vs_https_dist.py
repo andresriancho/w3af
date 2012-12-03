@@ -50,6 +50,9 @@ class test_http_vs_https_dist(unittest.TestCase):
 
     def test_discover_override_port(self):
         plugininst = hvshsdist.http_vs_https_dist()
+        # pylint: disable-msg=E0202
+        # An attribute affected in plugins.tests.infrastructure.
+        # test_http_vs_https_dist line 53 hide this method
         plugininst._has_permission = MagicMock(return_value=True)
 
         url = URL('https://host.tld:4444/')

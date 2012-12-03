@@ -70,7 +70,11 @@ class TestWebSpider(PluginTest):
     def test_spider_urls_with_strange_charsets(self):
         cfg = self._run_configs['basic']
         self._scan(self.encoding_url + 'index.html', cfg['plugins'])
+        
+        # pylint: disable-msg=E1101
+        # Pylint fails to detect the object types that come out of the KB            
         urls = self.kb.get('urls', 'url_objects')
+        
         expected = (
             u'', u'index.html',
             # Japanese

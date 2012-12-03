@@ -59,6 +59,8 @@ def gtkui_dependency_check():
         packages_openbsd.append('graphviz')
         reason_for_exit = True
     else:
+        # pylint: disable-msg=E1101
+        # E1101: Instance of 'Popen' has no 'stderr' member
         if 'graphviz' not in proc.stderr.read().lower():
             packages_debian.append('graphviz')
             packages_mac_ports.append('graphviz')
