@@ -135,7 +135,7 @@ class digit_sum(CrawlPlugin):
         @return: A generator which returns mangled fuzzable requests
         '''
         # First i'll mangle the digits in the URL file
-        filename = fuzzable_request.get_url().get_fileName()
+        filename = fuzzable_request.get_url().get_file_name()
         domain_path = fuzzable_request.get_url().get_domain_path()
         for fname in self._do_combinations(filename):
             fr_copy = fuzzable_request.copy()

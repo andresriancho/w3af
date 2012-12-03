@@ -213,7 +213,7 @@ class FileUploadShell(exec_shell):
         msg = 'File upload shell is going to delete the webshell that was'\
               ' uploaded before.'
         om.out.debug(msg)
-        file_to_del = self.get_exploit_URL().get_fileName()
+        file_to_del = self.get_exploit_URL().get_file_name()
 
         try:
             self.unlink(file_to_del)

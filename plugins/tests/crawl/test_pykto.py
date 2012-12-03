@@ -66,3 +66,59 @@ class TestPykto(PluginTest):
               'svn commit -m "Updating scan_database.db file." scan_database.db\n'\
               'cd -'
         self.assertFalse(is_older, msg)
+    
+    def test_parse_db_line_basic(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        
+        line = '"apache","/docs/","200","GET","Description"'
+        test_generator = pykto_inst._parse_db_line(line)
+        
+        tests = [i for i in test_generator]
+        self.assertEqual(len(tests), 1)
+        self.assertEqual([('apache', '/docs/', '200', 'GET', 'Description')], tests)
+
+    def test_parse_db_line_junk(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        
+        line = '"apache","/docs/JUNK(5)","200","GET","Description"'
+        test_generator = pykto_inst._parse_db_line(line)
+        
+        tests = [i for i in test_generator]
+        self.assertEqual(len(tests), 1)
+        
+        server, query, expected_response, method , desc = tests[0]
+        self.assertTrue(query.startswith('/docs/'))
+        self.assertEqual(len(query), len('/docs/') + 5)
+
+    def test_parse_db_line_cgidirs(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        
+        line = '"apache","@CGIDIRS","200","GET","CGI"'
+        test_generator = pykto_inst._parse_db_line(line)
+        
+        tests = [i for i in test_generator]
+        self.assertEqual(len(tests), 1)
+        self.assertEqual([('apache', '/cgi-bin/', '200', 'GET', 'CGI')], tests)
+        
+    def test_parse_db_line_admin_dirs(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        
+        line = '"apache","@ADMINDIRS","200","GET","CGI"'
+        test_generator = pykto_inst._parse_db_line(line)
+        
+        tests = [i for i in test_generator]
+        self.assertEqual(len(tests), 2)
+        self.assertEqual([('apache', '/admin/', '200', 'GET', 'CGI'),
+                          ('apache', '/adm/', '200', 'GET', 'CGI')], tests)
+        
+
+    def test_parse_db_line_admin_users_two(self):
+        pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
+        
+        line = '"apache","@ADMINDIRS@USERS","200","GET","CGI"'
+        test_generator = pykto_inst._parse_db_line(line)
+        
+        tests = [i for i in test_generator]
+        self.assertIn(('apache', '/adm/sys', '200', 'GET', 'CGI'), tests)
+        self.assertIn(('apache', '/admin/bin', '200', 'GET', 'CGI'), tests)
+    

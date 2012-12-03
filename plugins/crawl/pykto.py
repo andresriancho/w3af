@@ -334,45 +334,6 @@ class pykto(CrawlPlugin):
             3. expected_response
             4. method
             5. desc
-
-        Basic Test
-        ==========
-
-        >>> p = pykto()
-        >>> test_gen = p._parse_db_line('"apache","/docs/","200","GET","Description"')
-        >>> [i for i in test_gen]
-        [('apache', '/docs/', '200', 'GET', 'Description')]
-
-        JUNK Test
-        ==========
-
-        >>> test_gen = p._parse_db_line('"apache","/docs/JUNK(5)","200","GET","Description"')
-        >>> server, query, expected_response, method , desc = [i for i in test_gen][0]
-        >>> query.startswith('/docs/')
-        True
-        >>> len(query) == len('/docs/') + 5
-        True
-
-        One variable test
-        =================
-        >>> test_gen = p._parse_db_line('"apache","@CGIDIRS","200","GET","CGI"')
-        >>> [i for i in test_gen]
-        [('apache', '/cgi-bin/', '200', 'GET', 'CGI')]
-
-        >>> test_gen = p._parse_db_line('"apache","@ADMINDIRS","200","GET","CGI"')
-        >>> [i for i in test_gen]
-        [('apache', '/admin/', '200', 'GET', 'CGI'), ('apache',
-          '/adm/', '200', 'GET', 'CGI')]
-
-        Two variables test
-        ==================
-        >>> test_gen = p._parse_db_line('"apache","@ADMINDIRS@USERS","200","GET","CGI"')
-        >>> result = [i for i in test_gen]
-        >>> ('apache', '/adm/sys', '200', 'GET', 'CGI') in result
-        True
-        >>> ('apache', '/admin/bin', '200', 'GET', 'CGI') in result
-        True
-
         '''
         splitted_line = line.split('","')
 

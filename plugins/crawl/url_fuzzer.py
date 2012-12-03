@@ -118,7 +118,7 @@ class url_fuzzer(CrawlPlugin):
             #
             #   Save it to the kb (if new)!
             #
-            if response.get_url() not in self._seen and response.get_url().get_fileName():
+            if response.get_url() not in self._seen and response.get_url().get_file_name():
                 i = info.info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Potentially interesting file')
@@ -139,7 +139,7 @@ class url_fuzzer(CrawlPlugin):
         if not uri.has_query_string():
             return False
 
-        uri.set_file_name(uri.get_fileName() + rand_alnum(7))
+        uri.set_file_name(uri.get_file_name() + rand_alnum(7))
 
         try:
             response = self._uri_opener.GET(uri, cache=True,
@@ -229,7 +229,7 @@ class url_fuzzer(CrawlPlugin):
             #
             for to_append in self._appendables:
                 url_copy = url.copy()
-                filename = url_copy.get_fileName()
+                filename = url_copy.get_file_name()
                 filename += to_append
                 url_copy.set_file_name(filename)
                 yield url_copy

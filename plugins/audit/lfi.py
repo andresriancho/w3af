@@ -64,7 +64,7 @@ class lfi(AuditPlugin):
 
         # Which payloads do I want to send to the remote end?
         local_files = []
-        local_files.append(freq.get_url().get_fileName())
+        local_files.append(freq.get_url().get_file_name())
         if not self._open_basedir:
             local_files.extend(self._get_local_file_list(freq.get_url()))
 
@@ -168,7 +168,7 @@ class lfi(AuditPlugin):
         #   (note that this is run if no vulns were identified)
         #
         #   http://host.tld/show_user.php?id=show_user.php
-        if mutant.get_mod_value() == mutant.get_url().get_fileName():
+        if mutant.get_mod_value() == mutant.get_url().get_file_name():
             match, lang = is_source_file(response.get_body())
             if match:
                 #   We were able to read the source code of the file that is vulnerable to

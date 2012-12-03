@@ -60,7 +60,7 @@ class TestOSCommanding(PluginTest):
         ]
 
         found_vulns = [(v.get_url(
-        ).get_fileName(), v.get_mutant().get_var()) for v in vulns]
+        ).get_file_name(), v.get_mutant().get_var()) for v in vulns]
 
         self.assertEquals(set(EXPECTED),
                           set(found_vulns)

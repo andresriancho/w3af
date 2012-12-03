@@ -70,7 +70,7 @@ class dot_net_errors(InfrastructurePlugin):
         '''
         special_chars = ['|', '~']
 
-        filename = original_url.get_fileName()
+        filename = original_url.get_file_name()
         if filename != '' and '.' in filename:
             splitted_filename = filename.split('.')
             extension = splitted_filename[-1:][0]

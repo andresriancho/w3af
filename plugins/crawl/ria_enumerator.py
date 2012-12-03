@@ -99,7 +99,7 @@ class ria_enumerator(CrawlPlugin):
         if is_404(response):
             return
 
-        file_name = url.get_fileName()
+        file_name = url.get_file_name()
 
         om.out.debug('Checking response for %s in ria_enumerator.' % response)
 

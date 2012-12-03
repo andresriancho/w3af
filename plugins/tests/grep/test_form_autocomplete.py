@@ -50,7 +50,7 @@ class TestFormAutocomplete(PluginTest):
 
         self.assertEquals(3, len(vulns))
 
-        filenames = [vuln.get_url().get_fileName() for vuln in vulns]
+        filenames = [vuln.get_url().get_file_name() for vuln in vulns]
         filenames.sort()
         expected_results.sort()
 

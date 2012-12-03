@@ -57,7 +57,7 @@ class TestEventValidation(PluginTest):
         vulns_set = set()
         for vuln in vulns:
             ending = vuln.get_desc(with_id=False)[-30:]
-            vulns_set.add((vuln.get_url().get_fileName(), ending))
+            vulns_set.add((vuln.get_url().get_file_name(), ending))
 
         self.assertEqual(EXPECTED_VULNS,
                          vulns_set)

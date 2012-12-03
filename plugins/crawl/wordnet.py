@@ -196,7 +196,7 @@ class wordnet(CrawlPlugin):
         '''
         @return: The filename, without the extension
         '''
-        fname = url.get_fileName()
+        fname = url.get_file_name()
         ext = url.get_extension()
         return fname.replace('.' + ext, '')
 
@@ -215,7 +215,7 @@ class wordnet(CrawlPlugin):
         if analyzed_variable is None:
             # The URL was analyzed
             url = fuzzable_request.get_url()
-            fname = url.get_fileName()
+            fname = url.get_file_name()
             domain_path = url.get_domain_path()
 
             # The result

@@ -61,7 +61,7 @@ class fingerprint_os(InfrastructurePlugin):
         '''
         found_os = False
         freq_url = fuzzable_request.get_url()
-        filename = freq_url.get_fileName()
+        filename = freq_url.get_file_name()
         dirs = freq_url.get_directories()[:-1]  # Skipping "domain level" dir.
 
         if dirs and filename:

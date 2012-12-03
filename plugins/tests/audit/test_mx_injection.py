@@ -53,7 +53,7 @@ class TestMXInjection(PluginTest):
 
         verified_vulns = 0
         for vuln in vulns:
-            if (vuln.get_url().get_fileName(), vuln.get_mutant().get_var()) in expected:
+            if (vuln.get_url().get_file_name(), vuln.get_mutant().get_var()) in expected:
                 verified_vulns += 1
 
         self.assertEquals(1, verified_vulns)

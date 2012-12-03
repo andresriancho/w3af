@@ -104,7 +104,7 @@ class content_negotiation(CrawlPlugin):
         @return: A list of new fuzzable requests.
         '''
         # Get the file name
-        filename = fuzzable_request.get_url().get_fileName()
+        filename = fuzzable_request.get_url().get_file_name()
         if filename == '':
             return
         else:
@@ -238,7 +238,7 @@ class content_negotiation(CrawlPlugin):
         else:
             # We perform the test, for this we need a URL that has a filename, URL's
             # that don't have a filename can't be used for this.
-            filename = fuzzable_request.get_url().get_fileName()
+            filename = fuzzable_request.get_url().get_file_name()
             if filename == '':
                 return None
 
