@@ -11,8 +11,8 @@ verbose = False
 extensions = gif,html
 
 [audit.eval]
-useTimeDelay = True
-useEcho = True
+use_time_delay = True
+use_echo = True
 
 [audit.un_ssl]
 
