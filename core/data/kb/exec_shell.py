@@ -43,6 +43,9 @@ class exec_shell(shell):
         # For writing files to the remote server
         self._transfer_handler = None
 
+    def execute(self, cmd):
+        raise NotImplementedError
+
     def help(self, command):
         '''
         Handle the help command.
@@ -300,6 +303,8 @@ class exec_shell(shell):
     def __repr__(self):
         if not self._rOS:
             self._identify_os()
-        return '<' + self.get_name() + ' object (ruser: "' + self.get_remote_user() + '" | rsystem: "' + self.get_remote_system() + '")>'
+        fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
+        return fmt % (self.get_name(), self.get_remote_user(), 
+                      self.get_remote_system())
 
     __str__ = __repr__

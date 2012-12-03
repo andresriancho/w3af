@@ -203,7 +203,7 @@ class csrf(AuditPlugin):
         This method is called at the end, when w3afCore aint going to use this
         plugin anymore.
         '''
-        self.printUniq(kb.kb.get('csrf', 'csrf'), None)
+        self.print_uniq(kb.kb.get('csrf', 'csrf'), None)
 
     def get_long_desc(self):
         '''
