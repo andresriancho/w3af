@@ -30,7 +30,7 @@ except ImportError:
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdf as PDFParser
 import core.data.parsers.swfParser as swfParser
-import core.data.parsers.wmlParser as wmlParser
+import core.data.parsers.wml_parser as WMLParser
 
 from core.controllers.exceptions import w3afException
 
@@ -54,7 +54,7 @@ class DocumentParser(object):
             msg = 'There is no parser for images.'
             raise w3afException(msg)
         elif self._is_wml(http_resp):
-            parser = wmlParser.wmlParser(http_resp)
+            parser = WMLParser.WMLParser(http_resp)
         elif http_resp.is_text_or_html():
             parser = htmlParser.HTMLParser(http_resp)
         elif self._is_pdf(http_resp):
