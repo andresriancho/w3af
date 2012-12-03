@@ -63,7 +63,7 @@ def exec_payload(shell_obj, payload_name, args=(), use_api=False):
         #    available there using the syscalls they provide and the syscalls
         #    I need.
 
-        #    The import needs to be here, don't ask why :P
+        # FIXME: The import needs to be here
         import core.data.kb.knowledge_base as kb
 
         available_shells = kb.kb.get_all_shells()

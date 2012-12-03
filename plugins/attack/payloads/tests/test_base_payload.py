@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from plugins.attack.payloads.base_payload import Payload
+from core.data.kb.shell import shell
 
 
 class TestBasePayload(unittest.TestCase):
@@ -33,7 +34,7 @@ class TestBasePayload(unittest.TestCase):
     
     def test_run_only_read(self):
         bp = Payload(None)
-        self.assertRaises(NotImplementedError, bp.run, 'filename')
+        self.assertRaises(AttributeError, bp.run, 'filename')
 
     def test_run_execute(self):
         class Executable(Payload):
@@ -42,16 +43,26 @@ class TestBasePayload(unittest.TestCase):
             
             def run_execute(self, cmd):
                 self.called_run_execute = True
+                self.shell.execute(cmd)
 
             def api_execute(self, cmd):
                 self.called_api_execute = True
+        
+        class FakeShell(shell):
+            called_execute = False
+            
+            def __init__(self): pass
+            
+            def execute(self, cmd):
+                self.called_execute = True
                 
-        executable = Executable(None)
+        executable = Executable(FakeShell())
         
         self.assertEqual(self.bp.can_run(), set())
         
         executable.run('command')
         self.assertTrue(executable.called_run_execute)
+        self.assertTrue(executable.shell.called_execute)
 
         executable.run_api('command')
         self.assertTrue(executable.called_api_execute)

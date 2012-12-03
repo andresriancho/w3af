@@ -29,13 +29,6 @@ from core.controllers.threads.threadManager import thread_manager
 SYSCALL_LIST = ['read', 'write', 'execute', 'unlink', 'is_open_port']
 
 
-def _filter(syscall_name):
-    if syscall_name.startswith('run_'):
-        return syscall_name [4:]
-    
-    return None
-
-
 class Payload(object):
 
     def __init__(self, shell_obj):
@@ -46,9 +39,9 @@ class Payload(object):
         @return: True if this payload has any way of running with the "syscalls"
                  provided by the shell_obj.
         '''
-        available_syscalls = self.get_available_syscalls()
+        available_syscalls = self.get_shell_syscalls()
         
-        run_options = self.get_available_syscalls(_filter)
+        run_options = self.get_payload_implemented_methods()
 
         return available_syscalls.intersection(run_options)
 
@@ -84,9 +77,10 @@ class Payload(object):
                  way. Basically, if I can run commands using exec() I'll use
                  that, if not I'll use read().
         '''
-        available_syscalls = self.get_available_syscalls()
-        run_options = self.get_available_syscalls(_filter)
+        available_syscalls = self.get_shell_syscalls()
+        run_options = self.get_payload_implemented_methods()
 
+        # pylint: disable-msg=E1101
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.run_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
@@ -99,9 +93,10 @@ class Payload(object):
         @return: The result of running the payload using the most performant way. Basically, if
         I can run commands using exec() I'll use that, if not I'll use read().
         '''
-        available_syscalls = self.get_available_syscalls()
-        run_options = self.get_available_syscalls(_filter)
+        available_syscalls = self.get_shell_syscalls()
+        run_options = self.get_payload_implemented_methods()
 
+        # pylint: disable-msg=E1101
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.api_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
@@ -130,16 +125,16 @@ class Payload(object):
         else:
             return 'No help available for this payload.'
 
-    def get_available_syscalls(self, _filter=lambda x: x):
+    def get_shell_syscalls(self, _filter=lambda x: x):
         '''
-        @return:
+        @return: A set with the syscalls that the shell implements
         '''
         available_syscalls = []
         
         for syscall in SYSCALL_LIST:
             
             try:
-                getattr(self, syscall)
+                getattr(self.shell, syscall)
             except AttributeError:
                 pass
             else:
@@ -150,9 +145,24 @@ class Payload(object):
         
         return set(available_syscalls)
     
-    def run_execute(self, *args, **kwds):
-        raise NotImplementedError
-    
-    run_is_open_port = run_read = api_execute = run_execute 
-    api_is_open_port = api_read = run_execute
+    def get_payload_implemented_methods(self):
+        '''
+        @return: A list of all methods that the current payload implements,
+                 in other words, a list with ['execute', 'read'] if the
+                 methods run_execute and run_read exist.
+        '''
+        implemented_methods = []
+        
+        for syscall in SYSCALL_LIST:
+            
+            implemented_method = 'run_' + syscall
+            
+            try:
+                getattr(self, implemented_method)
+            except AttributeError:
+                pass
+            else:
+                implemented_methods.append(syscall)
+        
+        return set(implemented_methods)
     
