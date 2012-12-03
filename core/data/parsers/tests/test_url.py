@@ -168,3 +168,42 @@ class TestURLParser(unittest.TestCase):
         encoded = original.url_encode()
         decoded = URL(encoded).url_decode()
         self.assertEqual(original, decoded)
+    
+    #
+    #    Test get_directories
+    #
+    def test_get_directories_path_levels_1(self):
+        result = [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
+        expected = [u'http://w3af.com/xyz/def/123/', u'http://w3af.com/xyz/def/',
+                    u'http://w3af.com/xyz/', u'http://w3af.com/']
+        self.assertEqual(result, expected)
+    
+    def test_get_directories_path_levels_2(self):
+        result = [i.url_string for i in URL('http://w3af.com/xyz/def/').get_directories()]
+        expected = [u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/',
+                    u'http://w3af.com/']
+        self.assertEqual(result, expected)
+    
+    def test_get_directories_path_levels_3(self):
+        result = [i.url_string for i in URL('http://w3af.com/xyz/').get_directories()]
+        expected = [u'http://w3af.com/xyz/', u'http://w3af.com/']
+        self.assertEqual(result, expected)
+    
+    def test_get_directories_path_levels_4(self):
+        result = [i.url_string for i in URL('http://w3af.com/').get_directories()]
+        expected = [u'http://w3af.com/']
+        self.assertEqual(result, expected)
+
+    def test_get_directories_filename(self):
+        result = [i.url_string for i in URL('http://w3af.com/def.html').get_directories()]
+        expected = [u'http://w3af.com/']
+        self.assertEqual(result, expected)
+    
+    def test_get_directories_fname_qs(self):
+        expected = [u'http://w3af.com/']
+        
+        result = [i.url_string for i in URL('http://w3af.com/def.html?id=5').get_directories()]
+        self.assertEqual(result, expected)
+        
+        result = [i.url_string for i in URL('http://w3af.com/def.html?id=/').get_directories()]
+        self.assertEqual(result, expected)

@@ -1096,32 +1096,6 @@ class URL(disk_item):
     def get_directories(self):
         '''
         Get a list of all directories and subdirectories.
-
-        Test different path levels
-
-        >>> [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
-        [u'http://w3af.com/xyz/def/123/', u'http://w3af.com/xyz/def/',
-            u'http://w3af.com/xyz/', u'http://w3af.com/']
-        >>> [i.url_string for i in URL('http://w3af.com/xyz/def/').get_directories()]
-        [u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/',
-            u'http://w3af.com/']
-        >>> [i.url_string for i in URL('http://w3af.com/xyz/').get_directories()]
-        [u'http://w3af.com/xyz/', u'http://w3af.com/']
-        >>> [i.url_string for i in URL('http://w3af.com/').get_directories()]
-        [u'http://w3af.com/']
-
-
-        Test with a filename
-
-        >>> [i.url_string for i in URL('http://w3af.com/def.html').get_directories()]
-        [u'http://w3af.com/']
-
-        Test with a filename and a QS
-
-        >>> [i.url_string for i in URL('http://w3af.com/def.html?id=5').get_directories()]
-        [u'http://w3af.com/']
-        >>> [i.url_string for i in URL('http://w3af.com/def.html?id=/').get_directories()]
-        [u'http://w3af.com/']
         '''
         res = []
 
