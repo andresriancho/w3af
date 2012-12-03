@@ -281,7 +281,7 @@ class exec_shell(shell):
         '''
         raise NotImplementedError
 
-    def _identifyOs(self):
+    def _identify_os(self):
         '''
         Identify the remote operating system and get some remote variables to show to the user.
         '''
@@ -299,7 +299,7 @@ class exec_shell(shell):
 
     def __repr__(self):
         if not self._rOS:
-            self._identifyOs()
+            self._identify_os()
         return '<' + self.get_name() + ' object (ruser: "' + self.get_remote_user() + '" | rsystem: "' + self.get_remote_system() + '")>'
 
     __str__ = __repr__

@@ -429,7 +429,7 @@ class sqlShellObj(shell):
         self._showPrompt()
         return True
 
-    def _identifyOs(self):
+    def _identify_os(self):
         # hmmm....
         self._rSystem = self._rSystemName = self._dbms = self._driver.get_fingerprint()
         self._rUser = self._driver.get_current_user()
@@ -439,7 +439,7 @@ class sqlShellObj(shell):
 
     def __repr__(self):
         if not self._rOS:
-            self._identifyOs()
+            self._identify_os()
         return '<sql object ( dbms: "' + self._dbms + '" | ruser: "' + self._rUser + '" )>'
 
     __str__ = __repr__

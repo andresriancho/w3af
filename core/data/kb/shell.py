@@ -245,7 +245,7 @@ class shell(vuln, ExploitResult):
         msg += ' from "shell"'
         raise NotImplementedError(msg)
 
-    def _identifyOs(self):
+    def _identify_os(self):
         '''
         Identify the remote operating system and get some remote variables to
         show to the user.
@@ -257,7 +257,7 @@ class shell(vuln, ExploitResult):
 
     def __repr__(self):
         if not self._rOS:
-            self._identifyOs()
+            self._identify_os()
         fmt = '<%s object (ruser: "%s" | rsystem: "%s")>'
         return fmt % (self.get_name(), self.get_remote_user(),
                       self.get_remote_system())

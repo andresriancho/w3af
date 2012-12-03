@@ -338,7 +338,7 @@ class RFIProxyShell(shell):
     def get_name(self):
         return 'RFIProxyShell'
 
-    def _identifyOs(self):
+    def _identify_os(self):
         return 'remote_file_inclusion_proxy'
 
     def __repr__(self):

@@ -114,7 +114,7 @@ class read_shell(shell):
         else:
             return 'Command "%s" not found. Please type "help".' % command
 
-    def _identifyOs(self):
+    def _identify_os(self):
         '''
         Identify the remote operating system by reading different files from the OS.
         '''
@@ -135,7 +135,7 @@ class read_shell(shell):
         @return: A string representation of this shell.
         '''
         if not self._rOS:
-            self._identifyOs()
+            self._identify_os()
 
         return '<shell object (rsystem: "' + self._rOS + '")>'
 
