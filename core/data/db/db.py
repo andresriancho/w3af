@@ -68,6 +68,10 @@ class DBClient(object):
         '''Commit changes and close the connection to the underlying db.'''
         raise NotImplementedError
 
+    def commit(self):
+        '''Commit changes to the underlying db.'''
+        raise NotImplementedError
+    
     def execute(self, sql, parameters=()):
         '''Execute SQL statement.'''
         raise NotImplementedError
