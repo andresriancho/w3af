@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import unittest
-
 from nose.plugins.attrib import attr
 
 from pybloomfilter import BloomFilter as CMmapFilter
@@ -28,7 +26,7 @@ from core.data.bloomfilter.tests.generic_filter_test import GenericFilterTest
 from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class TestCMmapBloomfilterLarge(unittest.TestCase, GenericFilterTest):
+class TestCMmapBloomfilterLarge(GenericFilterTest):
 
     CAPACITY = 20000
     ERROR_RATE = 0.001
@@ -40,7 +38,7 @@ class TestCMmapBloomfilterLarge(unittest.TestCase, GenericFilterTest):
 
 
 @attr('smoke')
-class TestCMmapBloomfilterSmall(unittest.TestCase, GenericFilterTest):
+class TestCMmapBloomfilterSmall(GenericFilterTest):
 
     CAPACITY = 500
     ERROR_RATE = 0.001

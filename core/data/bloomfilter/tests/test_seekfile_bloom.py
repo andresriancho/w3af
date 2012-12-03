@@ -19,14 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import unittest
-
 from core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter
 from core.data.bloomfilter.tests.generic_filter_test import GenericFilterTest
 from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class TestCMmapBloomFilterLarge(unittest.TestCase, GenericFilterTest):
+class TestCMmapBloomFilterLarge(GenericFilterTest):
 
     CAPACITY = 20000
     ERROR_RATE = 0.001
@@ -38,7 +36,7 @@ class TestCMmapBloomFilterLarge(unittest.TestCase, GenericFilterTest):
             self.CAPACITY, self.ERROR_RATE, temp_file)
 
 
-class TestCMmapBloomFilterSmall(unittest.TestCase, GenericFilterTest):
+class TestCMmapBloomFilterSmall(GenericFilterTest):
 
     CAPACITY = 500
     ERROR_RATE = 0.001

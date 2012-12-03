@@ -19,8 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import unittest
-
 from nose.plugins.attrib import attr
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -42,7 +40,7 @@ class WrappedFileSeekBloomFilter(GenericBloomFilter):
 
 
 @attr('smoke')
-class TestScalableBloomFilterLargeCmmap(unittest.TestCase, GenericFilterTest):
+class TestScalableBloomFilterLargeCmmap(GenericFilterTest):
 
     CAPACITY = 20000
 
@@ -52,7 +50,7 @@ class TestScalableBloomFilterLargeCmmap(unittest.TestCase, GenericFilterTest):
             mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
 
-class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
+class TestScalableBloomfilterSmallCmmap(GenericFilterTest):
 
     CAPACITY = 500
 
@@ -62,7 +60,7 @@ class TestScalableBloomfilterSmallCmmap(unittest.TestCase, GenericFilterTest):
             mode=ScalableBloomFilter.LARGE_SET_GROWTH)
 
 
-class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest):
+class TestScalableBloomFilterLargeSeekFile(GenericFilterTest):
 
     CAPACITY = 20000
 
@@ -74,7 +72,7 @@ class TestScalableBloomFilterLargeSeekFile(unittest.TestCase, GenericFilterTest)
 
 
 @attr('smoke')
-class TestScalableBloomfilterSmallSeekFile(unittest.TestCase, GenericFilterTest):
+class TestScalableBloomfilterSmallSeekFile(GenericFilterTest):
 
     CAPACITY = 500
 
