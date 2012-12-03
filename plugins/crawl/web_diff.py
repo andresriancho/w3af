@@ -33,6 +33,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import BOOL, STRING, LIST
 from core.data.options.option_types import URL as URL_OPTION_TYPE
 from core.data.options.option_list import OptionList
+from core.data.parsers.url import URL
 
 
 class web_diff(CrawlPlugin):
@@ -59,7 +60,7 @@ class web_diff(CrawlPlugin):
         self._ban_url = ['asp', 'jsp', 'php']
         self._content = True
         self._local_dir = ''
-        self._remote_url_path = 'http://host.tld/'
+        self._remote_url_path = URL('http://host.tld/')
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):

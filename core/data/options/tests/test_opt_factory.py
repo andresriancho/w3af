@@ -88,3 +88,27 @@ class TestOptionFactory(unittest.TestCase):
         for _type, fake_value in data.iteritems():
             self.assertRaises(w3afException, opt_factory, 'name', fake_value,
                               'desc', _type)
+
+    def test_factory_already_converted_type(self):
+        data = {BOOL: (True, True),
+                INT: (1, 1),
+                FLOAT: (1.0, 1.0),
+                STRING: ('hello world', 'hello world'),
+                URL: (URL_KLASS('http://moth/'), URL_KLASS('http://moth/')),
+                LIST: (['a', 'b', 'c'], ['a', 'b', 'c']),
+                PORT: (12345, 12345)
+                }
+
+        for _type, (user_value, parsed_value) in data.iteritems():
+            opt = opt_factory('name', user_value, 'desc', _type)
+
+            self.assertEqual(opt.get_name(), 'name')
+            self.assertEqual(opt.get_desc(), 'desc')
+            self.assertEqual(opt.get_type(), _type)
+            self.assertEqual(opt.get_default_value(), parsed_value)
+            self.assertEqual(opt.get_value(), parsed_value)
+
+            self.assertIsInstance(opt.get_name(), basestring)
+            self.assertIsInstance(opt.get_desc(), basestring)
+            self.assertIsInstance(opt.get_type(), basestring)
+            self.assertIsInstance(opt.get_help(), basestring)

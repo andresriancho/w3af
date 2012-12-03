@@ -37,6 +37,9 @@ class URLOption(BaseOption):
         Based on the value parameter and the option type, I have to create a nice
         looking object like True or ['a','b','c'].
         '''
+        if isinstance(value, URL):
+            value = value.url_string
+            
         self._value = self.validate(value)
 
     def validate(self, value):
