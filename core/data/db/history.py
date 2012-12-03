@@ -84,30 +84,30 @@ class HistoryItem(object):
             self._db = kb.kb.get('history', 'db')
             self._session_dir = kb.kb.get('history', 'session_dir')
 
-    @property
-    def response(self):
+    def get_response(self):
         resp = self._response
         if not resp and self.id:
             self._request, resp = self._loadFromFile(self.id)
             self._response = resp
         return resp
 
-    @response.setter
-    def response(self, resp):
+    def set_response(self, resp):
         self._response = resp
 
-    @property
-    def request(self):
+    response = property(get_response, set_response)
+
+    def get_request(self):
         req = self._request
         if not req and self.id:
             req, self._response = self._loadFromFile(self.id)
             self._request = req
         return req
 
-    @request.setter
-    def request(self, req):
+    def set_request(self, req):
         self._request = req
 
+    request = property(get_request, set_request)
+    
     def init_structure(self):
         '''Init history structure.'''
         session_name = cf.cf.get('session_name')
