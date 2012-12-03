@@ -20,15 +20,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import re
+import unittest
+
+from nose.plugins.skip import SkipTest
+from mock import Mock
 
 from core.data.esmre.re_multire import re_multire
 from core.data.esmre.esmre_multire import esmre_multire
 
-import re
-import unittest
 
+class BaseMultiReTest(unittest.TestCase):
 
-class BaseMultiReTest(object):
+    klass = Mock()
+    
+    def setUp(self):
+        if isinstance(self.klass, Mock):
+            raise SkipTest('Run only in subclasses that set a klass.')
 
     def test_simplest(self):
         re_list = ['123', '456', '789']
@@ -115,13 +123,13 @@ class BaseMultiReTest(object):
         self.assertEqual('\x00', result[0][1])
 
 
-class TestEsmreMultire(unittest.TestCase, BaseMultiReTest):
+class TestEsmreMultire(BaseMultiReTest):
     def __init__(self, testname):
         super(TestEsmreMultire, self).__init__(testname)
         self.klass = esmre_multire
 
 
-class TestReMultire(unittest.TestCase, BaseMultiReTest):
+class TestReMultire(BaseMultiReTest):
     def __init__(self, testname):
         super(TestReMultire, self).__init__(testname)
         self.klass = re_multire

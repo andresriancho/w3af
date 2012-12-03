@@ -20,15 +20,23 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import unittest
+
+from nose.plugins.skip import SkipTest
+from mock import Mock
 
 from core.data.esmre.in_multi_in import in_multi_in
 from core.data.esmre.esm_multi_in import esm_multi_in
 
-import unittest
 
+class BaseMultiInTest(unittest.TestCase):
 
-class BaseMultiInTest(object):
-
+    klass = Mock()
+    
+    def setUp(self):
+        if isinstance(self.klass, Mock):
+            raise SkipTest('Run only in subclasses that set a klass.')
+    
     def test_simplest(self):
         in_list = ['123', '456', '789']
         imi = self.klass(in_list)
@@ -93,13 +101,13 @@ class BaseMultiInTest(object):
         self.assertEqual('\x00', result[0])
 
 
-class TestEsmMultiIn(unittest.TestCase, BaseMultiInTest):
+class TestEsmMultiIn(BaseMultiInTest):
     def __init__(self, testname):
         super(TestEsmMultiIn, self).__init__(testname)
         self.klass = esm_multi_in
 
 
-class TestInMultiIn(unittest.TestCase, BaseMultiInTest):
+class TestInMultiIn(BaseMultiInTest):
     def __init__(self, testname):
         super(TestInMultiIn, self).__init__(testname)
         self.klass = in_multi_in

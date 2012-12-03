@@ -104,6 +104,8 @@ class BaseGoogleAPISearch(unittest.TestCase):
         random.shuffle(keywords)
         query = ' '.join(keywords)
         start = 0
+        # pylint: disable-msg=E1102
+        # E1102: self.GoogleApiSearcher is not callable
         searcher = self.GoogleApiSearcher(
             self.opener, query, start, self.COUNT)
 
@@ -144,6 +146,8 @@ class BaseGoogleAPISearch(unittest.TestCase):
         domain = "www.bonsai-sec.com"
         query = "site:%s" % domain
         start = 0
+        # pylint: disable-msg=E1102
+        # E1102: self.GoogleApiSearcher is not callable
         searcher = self.GoogleApiSearcher(
             self.opener, query, start, self.COUNT)
 
@@ -152,10 +156,10 @@ class BaseGoogleAPISearch(unittest.TestCase):
         # This actually does the search
         searcher.links
 
-        msg = 'This test fails randomly based on Google\'s anti automation'
-        msg += ' protection, if it fails you should run it again in a couple of'
-        msg += ' minutes. Many consecutive failures show that our code is NOT'
-        msg += ' working anymore.'
+        msg = 'This test fails randomly based on Google\'s anti automation' \
+              ' protection, if it fails you should run it again in a couple of' \
+              ' minutes. Many consecutive failures show that our code is NOT' \
+              ' working anymore.'
         self.assertEqual(searcher.status, FINISHED_OK, msg)
 
         msg = 'Got less results than expected:\n%s' % '\n'.join(
