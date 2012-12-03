@@ -29,6 +29,46 @@ from core.data.parsers.url import URL
 class TestURLParser(unittest.TestCase):
 
     #
+    #    Object instansiation test
+    #
+    def test_simplest_url(self):
+        u = URL('http://w3af.com/foo/bar.txt')
+        
+        self.assertEqual(u.path, '/foo/bar.txt')
+        self.assertEqual(u.scheme, 'http')
+        self.assertEqual(u.get_file_name(), 'bar.txt')
+        self.assertEqual(u.get_extension(), 'txt')
+
+    def test_default_proto(self):
+        '''
+        http is the default protocol, we can provide URLs with no proto
+        '''
+        u = URL('w3af.com')
+        self.assertEqual(u.get_domain(), 'w3af.com')
+        self.assertEqual(u.get_protocol(), 'http')
+    
+    def test_no_domain(self):
+        '''
+        But we can't specify a URL without a domain!
+        '''
+        self.assertRaises(ValueError, URL, 'http://')
+    
+    def test_case_insensitive_proto(self):
+        u = URL('HtTp://w3af.com/foo/bar.txt')
+        self.assertEqual(u.scheme, 'http')
+        
+    def test_path_root(self):
+        u = URL('http://w3af.com/')
+        self.assertEqual(u.path, '/')
+
+    def test_url_in_qs(self):
+        u = URL('http://w3af.org/?foo=http://w3af.com')
+        self.assertEqual(u.netloc, 'w3af.org')
+    
+    def test_invalid_encoding(self):
+        self.assertRaises(ValueError, URL, 'http://w3af.org/', encoding='x-euc-jp')
+
+    #
     #    Decode tests
     #
     def decode_get_qs(self, url_str):

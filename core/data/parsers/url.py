@@ -170,60 +170,6 @@ class URL(disk_item):
 
         Simple generic test, more detailed tests in each method!
 
-        >>> u = URL('http://w3af.com/foo/bar.txt')
-        >>> u.path
-        '/foo/bar.txt'
-        >>> u.scheme
-        'http'
-        >>> u.get_file_name()
-        'bar.txt'
-        >>> u.get_extension()
-        'txt'
-        >>>
-
-        #
-        # http is the default protocol, we can provide URLs with no proto
-        #
-        >>> u = URL('w3af.com')
-        >>> u.get_domain()
-        'w3af.com'
-        >>> u.get_protocol()
-        'http'
-
-        #
-        # But we can't specify a URL without a domain!
-        #
-        >>> u = URL('http://')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: Invalid URL "http://"
-
-        #
-        # And protocols are case insensitive
-        #
-        >>> u = URL('HtTp://w3af.com')
-        >>> u.get_domain()
-        'w3af.com'
-        >>> u.get_protocol()
-        'http'
-
-        >>> u = URL(u'http://w3af.com/foo/bar.txt')
-        >>> u.path
-        u'/foo/bar.txt'
-
-        >>> u = URL(u'http://w3af.com')
-        >>> u.path
-        u'/'
-
-        >>> u = URL('http://w3af.org/?foo=http://w3af.com')
-        >>> u.netloc
-        'w3af.org'
-
-        >>> u = URL('http://w3af.org/', encoding='x-euc-jp')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: Invalid encoding "x-euc-jp" when creating URL.
-
         '''
         self._already_calculated_url = None
         self._querystr = None
@@ -380,8 +326,7 @@ class URL(disk_item):
         '''
         return bool(self.querystring)
 
-    @property
-    def querystring(self):
+    def get_querystring(self):
         '''
         Parses the query string and returns a QueryString
         (a dict like) object.
@@ -402,9 +347,8 @@ class URL(disk_item):
         '''
         return self._querystr
 
-    @querystring.setter
     @set_changed
-    def querystring(self, qs):
+    def set_querystring(self, qs):
         '''
         Set the query string for this URL.
         '''
@@ -418,6 +362,8 @@ class URL(disk_item):
         else:
             raise TypeError, ("Invalid type '%r'; must be DataContainer, "
                               "dict or string" % type(qs))
+
+    querystring = property(get_querystring, set_querystring)
 
     def uri2url(self):
         '''
