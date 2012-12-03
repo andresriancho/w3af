@@ -69,7 +69,7 @@ class DAVTemplate(BaseTemplate):
         @return: A tuple with the location where the vulnerability will be saved,
                  example return value would be: ('eval', 'eval')
         '''
-        raise ('dav', 'dav')
+        return ('dav', 'dav')
 
     def get_vulnerability_name(self):
         '''
@@ -78,7 +78,7 @@ class DAVTemplate(BaseTemplate):
                  string which can contain any information, not used for any
                  strict matching of vulns before exploiting.
         '''
-        raise 'DAV Misconfiguration'
+        return 'DAV Misconfiguration'
 
     def get_vulnerability_desc(self):
         return 'DAV misconfiguration which allows file uploads using the HTTP'\
