@@ -55,15 +55,22 @@ class StartUpConfig(object):
          self._accepted_disclaimer) = configs
 
     ### PROPERTIES #
-    @property
-    def last_upd(self):
+    
+    freq = property(get_freq)
+    auto_upd = property(get_auto_upd)
+    last_rev = property(get_last_rev, set_last_rev)
+    accepted_disclaimer = property(get_accepted_disclaimer, set_accepted_disclaimer)
+    last_upd = property(get_last_upd, set_last_upd)
+    
+    ### METHODS #
+    
+    def get_last_upd(self):
         '''
         Getter method.
         '''
         return self._lastupd
 
-    @last_upd.setter
-    def last_upd(self, datevalue):
+    def set_last_upd(self, datevalue):
         '''
         @param datevalue: datetime.date value
         '''
@@ -71,12 +78,10 @@ class StartUpConfig(object):
         self._config.set(self._start_section, 'last-update',
                          datevalue.isoformat())
 
-    @property
-    def accepted_disclaimer(self):
+    def get_accepted_disclaimer(self):
         return self._accepted_disclaimer
 
-    @accepted_disclaimer.setter
-    def accepted_disclaimer(self, accepted_decision):
+    def set_accepted_disclaimer(self, accepted_decision):
         '''
         @param datevalue: datetime.date value
         '''
@@ -85,24 +90,18 @@ class StartUpConfig(object):
         self._config.set(self._start_section, 'accepted-disclaimer',
                          value)
 
-    @property
-    def last_rev(self):
+    def get_last_rev(self):
         return self._lastrev
 
-    @last_rev.setter
-    def last_rev(self, rev):
+    def set_last_rev(self, rev):
         self._lastrev = rev.number
         self._config.set(self._start_section, 'last-rev', self._lastrev)
 
-    @property
-    def freq(self):
+    def get_freq(self):
         return self._freq
 
-    @property
-    def auto_upd(self):
+    def get_auto_upd(self):
         return self._autoupd
-
-    ### METHODS #
 
     def _load_cfg(self):
         '''
@@ -126,6 +125,9 @@ class StartUpConfig(object):
         boolvals = {'false': 0, 'off': 0, 'no': 0,
                     'true': 1, 'on': 1, 'yes': 1}
 
+        # pylint: disable-msg=E1103
+        # E1103: Instance of '_Chainmap' has no 'lower' member 
+        #        (but some types could not be inferred)",
         auto_upd = config.get(startsection, 'auto-update', raw=True)
         auto_upd = bool(boolvals.get(auto_upd.lower(), False))
 
