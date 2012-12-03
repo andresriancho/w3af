@@ -105,7 +105,7 @@ class BaseTemplate(Configurable):
         kb.kb.append(kb_loc_a, kb_loc_b, created_vulnerability)
 
     def get_vuln_id(self):
-        return consecutive_number_generator()
+        return consecutive_number_generator.inc()
 
     def create_base_vuln(self):
         '''
