@@ -298,8 +298,7 @@ class VariableDef(NodeRep):
         # Request parameter name, source for a possible vuln.
         self._taint_source = None
 
-    @property
-    def is_root(self):
+    def get_is_root(self):
         '''
         A variable is said to be 'root' when it has no ancestor or when
         its ancestor's name is in USER_VARS
@@ -311,12 +310,12 @@ class VariableDef(NodeRep):
                 self._is_root = True
         return self._is_root
 
-    @is_root.setter
-    def is_root(self, is_root):
+    def set_is_root(self, is_root):
         self._is_root = is_root
+        
+    is_root = property(get_is_root, set_is_root)
 
-    @property
-    def parent(self):
+    def get_parent(self):
         '''
         Get this var's parent variable
         '''
@@ -329,9 +328,10 @@ class VariableDef(NodeRep):
                 self._parent = self._scope.get_var(varnode.name)
         return self._parent
 
-    @parent.setter
-    def parent(self, parent):
+    def set_parent(self, parent):
         self._parent = parent
+    
+    parent = property(get_parent, set_parent)
 
     @property
     def controlled_by_user(self):
