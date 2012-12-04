@@ -664,11 +664,19 @@ class xUrllib(object):
                 msg = ('%s %s returned HTTP code "%s"' %
                        (req.get_method(), urllib.unquote_plus(original_url), res.code))
             else:
+                printable_data = urllib.unquote_plus(rdata)
+                if len(rdata) > 75:
+                    printable_data = '%s...' % printable_data[:75]
+                    printable_data = printable_data.replace('\n', ' ')
+                    printable_data = printable_data.replace('\r', ' ')
+                    
                 msg = ('%s %s with data: "%s" returned HTTP code "%s"'
                        % (
-                       req.get_method(
-                       ), original_url, urllib.unquote_plus(rdata),
-                       res.code))
+                          req.get_method(),
+                          original_url,
+                          printable_data,
+                          res.code)
+                         )
 
             from_cache = hasattr(res, 'from_cache')
             flags = ' (id=%s,from_cache=%i,grep=%i)' % (
