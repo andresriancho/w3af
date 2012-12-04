@@ -132,7 +132,7 @@ class MultipartPostHandler(urllib2.BaseHandler):
         except TypeError:
             try:
                 tb = sys.exc_info()[2]
-                # pylint: disable-msg=E0702
+                # pylint: disable=E0702
                 # http://www.logilab.org/ticket/113023
                 raise (TypeError, "not a valid non-string sequence or "
                        "mapping object", tb)

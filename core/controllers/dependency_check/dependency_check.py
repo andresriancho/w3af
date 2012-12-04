@@ -160,7 +160,7 @@ def dependency_check():
     try:
         import pysvn
     except Exception, e:
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
         if e.message.startswith('pysvn was built'):
             msg = '    It looks like your pysvn library installation is broken\n'\
                   '    (are you using BT4 R2?). The error we get when importing\n'\

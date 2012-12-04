@@ -80,7 +80,7 @@ class Payload(object):
         available_syscalls = self.get_shell_syscalls()
         run_options = self.get_payload_implemented_methods()
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.run_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:
@@ -96,7 +96,7 @@ class Payload(object):
         available_syscalls = self.get_shell_syscalls()
         run_options = self.get_payload_implemented_methods()
 
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
         if 'execute' in run_options and 'execute' in available_syscalls:
             return self.api_execute(*args)
         elif 'is_open_port' in run_options and 'is_open_port' in available_syscalls:

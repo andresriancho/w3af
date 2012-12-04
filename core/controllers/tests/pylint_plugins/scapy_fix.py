@@ -7,13 +7,16 @@ CODE_FIX = '''
 class IP(object): pass
 class TCP(object): pass
 class UDP(object): pass
+class traceroute(object):
+    def __init__(domain, dport=80):
+        pass
 '''
 
 def scapy_transform(module):
     if module.name == 'scapy.all':
         fake = ASTNGBuilder(MANAGER).string_build(CODE_FIX)
         
-        for func in ('IP', 'TCP', 'UDP'):
+        for func in ('IP', 'TCP', 'UDP', 'traceroute'):
             module.locals[func] = fake.locals[func]
 
 def register(linter):

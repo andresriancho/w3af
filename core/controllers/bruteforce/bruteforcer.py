@@ -180,7 +180,7 @@ def get_profiling_results(self, max_items=50):
     def sortfunc(x, y):
         return cmp(y[1], x[1])
 
-    #pylint: disable-msg=E1103
+    #pylint: disable=E1103
     kb_data = kb.kb.get('password_profiling', 'password_profiling')
 
     if not kb_data:

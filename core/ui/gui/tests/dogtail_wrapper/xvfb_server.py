@@ -89,7 +89,7 @@ class XVFBServer(threading.Thread):
                                                  stdout=subprocess.PIPE,
                                                  stderr=subprocess.PIPE)
 
-            # pylint: disable-msg=E1101
+            # pylint: disable=E1101
             # E1101: Instance of 'Popen' has no 'wait' member
             returncode = self.xvfb_process.wait()
 
@@ -103,7 +103,7 @@ class XVFBServer(threading.Thread):
 
     def stop(self):
         if self.is_running():
-            # pylint: disable-msg=E1101
+            # pylint: disable=E1101
             # E1101: Instance of 'Popen' has no 'terminate' member            
             self.xvfb_process.terminate()
             self.xvfb_process = None

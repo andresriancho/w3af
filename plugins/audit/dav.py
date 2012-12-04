@@ -70,7 +70,7 @@ class dav(AuditPlugin):
             for apply_res in results:
                 apply_res.get()
 
-    #pylint: disable-msg=C0103
+    #pylint: disable=C0103
     def _SEARCH(self, domain_path):
         '''
         Test SEARCH method.
@@ -100,7 +100,7 @@ class dav(AuditPlugin):
             v.set_desc(msg)
             kb.kb.append(self, 'dav', v)
 
-    #pylint: disable-msg=C0103
+    #pylint: disable=C0103
     def _PROPFIND(self, domain_path):
         '''
         Test PROPFIND method
@@ -129,7 +129,7 @@ class dav(AuditPlugin):
             v.set_desc(msg)
             kb.kb.append(self, 'dav', v)
 
-    #pylint: disable-msg=C0103
+    #pylint: disable=C0103
     def _PUT(self, domain_path):
         '''
         Tests PUT method.

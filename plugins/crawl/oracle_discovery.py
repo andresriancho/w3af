@@ -76,7 +76,7 @@ class oracle_discovery(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
                 
-                # pylint: disable-msg=E1101
+                # pylint: disable=E1101
                 # E1101: Instance of 'str' has no 'search' member
                 mo = re_obj.search(response.get_body(), re.DOTALL)
 

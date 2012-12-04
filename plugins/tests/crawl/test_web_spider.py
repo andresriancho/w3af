@@ -71,7 +71,7 @@ class TestWebSpider(PluginTest):
         cfg = self._run_configs['basic']
         self._scan(self.encoding_url + 'index.html', cfg['plugins'])
         
-        # pylint: disable-msg=E1101
+        # pylint: disable=E1101
         # Pylint fails to detect the object types that come out of the KB            
         urls = self.kb.get('urls', 'url_objects')
         

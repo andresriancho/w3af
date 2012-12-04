@@ -51,7 +51,7 @@ class TestGTKOutput(unittest.TestCase):
         )
 
         from_queue = set()
-        # pylint: disable-msg=E1103
+        # pylint: disable=E1103
         # E1103: Instance of 'list' has no 'qsize' member (but some types
         # could not be inferred)
         while gtk_output_queue.qsize() > 0:

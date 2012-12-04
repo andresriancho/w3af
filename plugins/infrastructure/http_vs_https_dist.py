@@ -139,6 +139,9 @@ class http_vs_https_dist(InfrastructurePlugin):
                        ' the same:\n%s' % trace_str(http_ip_tuples)
                 set_info('HTTP traceroute', desc)
 
+    # pylint: disable=E0202
+    # An attribute affected in plugins.tests.infrastructure.
+    # test_http_vs_https_dist line 53 hide this method
     def _has_permission(self):
         '''
         Return boolean value that indicates if the user running w3af has
@@ -149,6 +152,7 @@ class http_vs_https_dist(InfrastructurePlugin):
         except socket.error:
             return False
         return True
+    # pylint: enable=E0202
 
     def get_options(self):
         '''

@@ -418,8 +418,8 @@ class SVNList(list):
         self._rev = rev
         self._sorted = True
 
-    # pylint: disable-msg=E0102
-    # pylint: disable-msg=E1101
+    # pylint: disable=E0102
+    # pylint: disable=E1101
     # E0102:425,4:SVNList.rev: method already defined line 421
     @property
     def rev(self):
@@ -598,8 +598,8 @@ class VersionMgr(object):  # TODO: Make it singleton?
                 callback = self.callback_onupdate_confirm
                 # Call callback function
                 if callback is not None:
-                    # pylint: disable-msg=E1102
-                    # pylint: disable-msg=E1103
+                    # pylint: disable=E1102
+                    # pylint: disable=E1103
                     proceed_upd = callback(
                         'Your current w3af installation is r%s. Do you want '
                         'to update to r%s?' % (localrev.number, remrev.number))

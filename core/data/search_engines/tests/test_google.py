@@ -104,7 +104,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         random.shuffle(keywords)
         query = ' '.join(keywords)
         start = 0
-        # pylint: disable-msg=E1102
+        # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
         searcher = self.GoogleApiSearcher(
             self.opener, query, start, self.COUNT)
@@ -146,7 +146,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         domain = "www.bonsai-sec.com"
         query = "site:%s" % domain
         start = 0
-        # pylint: disable-msg=E1102
+        # pylint: disable=E1102
         # E1102: self.GoogleApiSearcher is not callable
         searcher = self.GoogleApiSearcher(
             self.opener, query, start, self.COUNT)

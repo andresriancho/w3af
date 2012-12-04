@@ -40,7 +40,7 @@ from multiprocessing.dummy import Process
 # by <http://code.activestate.com/recipes/546532/>
 
 # UGLY! private method __stop
-# pylint: disable-msg=E1101
+# pylint: disable=E1101
 try:
     _Thread_stop = Process._Thread__stop  # PYCHOK false
 except AttributeError:  # _stop in Python 3.0

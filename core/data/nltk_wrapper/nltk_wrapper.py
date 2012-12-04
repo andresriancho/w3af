@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 
-# pylint: disable-msg=E0611
+# pylint: disable=E0611
 # E0611: 24,0: No name 'util' in module 'LazyModule'
 # E0611: 26,0: No name 'reader' in module 'LazyModule'
 # E0611: 27,0: No name 'reader' in module 'LazyModule'

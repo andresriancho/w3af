@@ -34,7 +34,7 @@ class args:
     resumedQueries = {}
     verbose = True
 
-
+# pylint: disable=E0202
 class dbDriverFunctions:
     '''
     This class stores all database driver methods.

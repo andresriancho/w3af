@@ -100,7 +100,7 @@ class password_profiling(GrepPlugin):
             def sortfunc(x_obj, y_obj):
                 return cmp(y_obj[1], x_obj[1])
             
-            # pylint: disable-msg=E1103
+            # pylint: disable=E1103
             items = data.items()
             items.sort(sortfunc)
 
@@ -175,7 +175,7 @@ class password_profiling(GrepPlugin):
         # https://sourceforge.net/apps/trac/w3af/ticket/171745
         if isinstance(profiling_data, dict):
             
-            # pylint: disable-msg=E1103
+            # pylint: disable=E1103
             items = profiling_data.items()
             if len(items) != 0:
 

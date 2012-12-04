@@ -43,15 +43,16 @@ class TestPasswordProfiling(PluginTest):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
 
-        # pylint: disable-msg=E1101
+        def sortfunc(x_obj, y_obj):
+            return cmp(x_obj[1], y_obj[1])
+
+        # pylint: disable=E1103
         # Pylint fails to detect the object types that come out of the KB            
         collected_passwords = self.kb.get('password_profiling',
                                           'password_profiling')
 
-        def sortfunc(x_obj, y_obj):
-            return cmp(x_obj[1], y_obj[1])
-
         collected_passwords = collected_passwords.keys()
+        # pylint: enable=E1103
         collected_passwords.sort(sortfunc)
 
         self.assertEquals(collected_passwords[0], 'Password')

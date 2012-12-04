@@ -62,7 +62,7 @@ class ReverseFTP(BasePayloadTransfer):
 
         client_socket, addr = server_socket.accept()
 
-        #pylint: disable-msg=E1101
+        #pylint: disable=E1101
         client_socket.send(data_str)
         client_socket.close()
 

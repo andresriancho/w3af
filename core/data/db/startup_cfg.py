@@ -117,7 +117,7 @@ class StartUpConfig(object):
         boolvals = {'false': 0, 'off': 0, 'no': 0,
                     'true': 1, 'on': 1, 'yes': 1}
 
-        # pylint: disable-msg=E1103
+        # pylint: disable=E1103
         # E1103: Instance of '_Chainmap' has no 'lower' member 
         #        (but some types could not be inferred)",
         auto_upd = config.get(startsection, 'auto-update', raw=True)
