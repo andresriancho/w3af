@@ -229,8 +229,8 @@ class file_upload(AuditPlugin):
         ol = OptionList()
 
         d = 'Extensions that w3af will try to upload through the form.'
-        h = 'When finding a form with a file upload, this plugin will try to'
-        h += '  upload a set of files with the extensions specified here.'
+        h = 'When finding a form with a file upload, this plugin will try to'\
+            ' upload a set of files with the extensions specified here.'
         o = opt_factory('extensions', self._extensions, d, 'list', help=h)
 
         ol.add(o)
