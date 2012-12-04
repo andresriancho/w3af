@@ -27,7 +27,7 @@ from core.ui.console.console_ui import ConsoleUI
 class TestAcceptDisclaimer(unittest.TestCase):
 
     def setUp(self):
-        self.console_ui = ConsoleUI()
+        self.console_ui = ConsoleUI(do_upd=False)
 
     class dummy_true(Mock):
         accepted_disclaimer = True
