@@ -55,10 +55,6 @@ class bruteforce(BaseConsumer):
             om.out.debug('%s plugin is testing: "%s"' % (
                 plugin.get_name(), work_unit))
 
-            # Now I'm adding new tasks that will be in progress until the
-            # self._plugin_finished_cb is called.
-            self._add_task()
-
             self._threadpool.apply_async(return_args(self._bruteforce),
                                         (plugin, work_unit,),
                                          callback=self._plugin_finished_cb)
@@ -68,8 +64,6 @@ class bruteforce(BaseConsumer):
             self._out_queue.put((plugin.get_name(),
                                  input_fuzzable_request,
                                  new_fuzzable_request))
-
-        self._task_done(None)
 
     def _bruteforce(self, plugin, fuzzable_request):
         '''
@@ -85,6 +79,10 @@ class bruteforce(BaseConsumer):
                                  bruteforced by @plugin.
         @return: A list of the URL's that have been successfully bruteforced
         '''
+        # Please note that I add a task to self, this task is marked as DONE
+        # in the finally clause below
+        self._add_task()
+        
         res = set()
 
         # Status
@@ -103,5 +101,7 @@ class bruteforce(BaseConsumer):
                 'bruteforce', plugin.get_name(), fuzzable_request, e)
         else:
             res.update(new_frs)
-
+        finally:
+            self._task_done(None)
+            
         return res

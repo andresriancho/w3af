@@ -27,11 +27,11 @@ import core.data.kb.config as cf
 
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
+from core.controllers.exceptions import w3afException, w3afRunOnce
+from core.controllers.threads.threadpool import return_args
 from core.controllers.core_helpers.update_urls_in_kb import (update_kb,
                                                              get_urls_from_kb,
                                                              get_fuzzable_requests_from_kb)
-from core.controllers.exceptions import w3afException, w3afRunOnce
-from core.controllers.threads.threadpool import return_args
 from core.data.db.variant_db import VariantDB
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
@@ -121,9 +121,6 @@ class crawl_infrastructure(BaseConsumer):
             om.out.debug('%s plugin is testing: "%s"' % (
                 plugin.get_name(), work_unit))
 
-            # Please note that I add a task to self, this task is marked as DONE
-            # in _finished_plugin_cb().
-            self._add_task()
 
             # TODO: unittest what happens if an exception (which is not handled
             #       by the exception handler) is raised. Who's doing a .get()
@@ -138,8 +135,6 @@ class crawl_infrastructure(BaseConsumer):
 
         # Finished one fuzzable_request, inc!
         self._w3af_core.progress.inc()
-
-        self._task_done(None)
 
     def _route_all_plugin_results(self):
         for plugin in self._consumer_plugins:
@@ -348,6 +343,10 @@ class crawl_infrastructure(BaseConsumer):
 
         @return: A list with the newly found fuzzable requests.
         '''
+        # Please note that I add a task to self, this task is marked as DONE
+        # in the finally clause below
+        self._add_task()
+        
         om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
                                                          fuzzable_request.get_uri()))
 
@@ -391,3 +390,6 @@ class crawl_infrastructure(BaseConsumer):
                 ve = ValueError(msg)
                 self.handle_exception(plugin.get_type(), plugin.get_name(),
                                       fuzzable_request, ve)
+        
+        finally:
+            self._task_done(None)

@@ -141,11 +141,10 @@ class xpath(AuditPlugin):
         '''
         res = []
         for xpath_error_match in self._multi_in.query(response.body):
-            msg = 'Found XPATH injection. The error showed by the web application'
-            msg += ' is (only a fragment is shown): "' + xpath_error_match
-            msg += '". The error was found on response with id ' + \
-                str(response.id) + '.'
-            om.out.information(msg)
+            msg = 'Found XPATH injection. The error showed by the web'\
+                  ' application is (only a fragment is shown): "%s".'\
+                  ' The error was found on response with id %s.'
+            om.out.information(msg % (xpath_error_match, response.id))
             res.append(xpath_error_match)
         return res
 

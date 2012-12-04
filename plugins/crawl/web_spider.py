@@ -81,8 +81,7 @@ class web_spider(CrawlPlugin):
             # I have to set some variables, in order to be able to code
             # the "onlyForward" feature
             self._first_run = False
-            self._target_urls = [i.get_domain_path(
-            ) for i in cf.cf.get('targets')]
+            self._target_urls = [i.get_domain_path() for i in cf.cf.get('targets')]
 
             #    The following line triggered lots of bugs when the "stop" button
             #    was pressed and the core did this: "cf.cf.save('targets', [])"
@@ -90,7 +89,7 @@ class web_spider(CrawlPlugin):
             #    Changing it to something awful but bug-free.
             targets = cf.cf.get('targets')
             if not targets:
-                return []
+                return
             else:
                 self._target_domain = targets[0].get_domain()
 
@@ -101,7 +100,7 @@ class web_spider(CrawlPlugin):
         if isinstance(fuzzable_req, HTTPPostDataRequest):
 
             if fuzzable_req.get_url() in self._already_filled_form:
-                return []
+                return
 
             fuzzable_req = self._fill_form(fuzzable_req)
 
@@ -111,13 +110,14 @@ class web_spider(CrawlPlugin):
 
         # Nothing to do here...
         if resp.get_code() == 401:
-            return []
+            return
 
         fuzz_req_list = self._create_fuzzable_requests(
             resp,
             request=fuzzable_req,
             add_self=False
         )
+        
         for fr in fuzz_req_list:
             self.output_queue.put(fr)
 

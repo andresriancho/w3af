@@ -63,11 +63,8 @@ class audit(BaseConsumer):
             self._w3af_core.status.set_current_fuzzable_request(
                 fuzzable_request)
 
-            self._add_task()
-
             self._threadpool.apply_async(self._audit,
-                                        (plugin, fuzzable_request,),
-                                         callback=self._task_done)
+                                        (plugin, fuzzable_request,))
 
     def _audit(self, plugin, fuzzable_request):
         '''
@@ -79,8 +76,12 @@ class audit(BaseConsumer):
         Python 3 has an error_callback in the apply_async method, which we could
         use in the future.
         '''
+        self._add_task()
+        
         try:
             plugin.audit_with_copy(fuzzable_request)
         except Exception, e:
             self.handle_exception(
                 'audit', plugin.get_name(), fuzzable_request, e)
+        finally:
+            self._task_done()

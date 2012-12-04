@@ -169,10 +169,9 @@ class w3af_core_strategy(object):
             self._handle_all_consumer_exceptions(_other)
 
             # Route fuzzable requests
-            route_result = self._route_one_fuzzable_request_batch(
-                _input, output,
-                finished,
-                consumer_forced_end)
+            route_result = self._route_one_fuzzable_request_batch(_input, output,
+                                                                  finished,
+                                                                  consumer_forced_end)
 
             if route_result is None:
                 break

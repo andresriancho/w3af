@@ -111,6 +111,11 @@ class BaseConsumer(Process):
 
         So, for each _add_task() there has to be a _task_done() even if the
         task ends in an error or exception.
+        
+        Recommendation: Do NOT set the callback for apply_async to call
+        _task_done, the Python2.7 pool implementation won't call it if the
+        function raised an exception and you'll end up with tasks in progress
+        that finished with an exception.
         '''
         self._tasks_in_progress_counter -= 1
         assert self._tasks_in_progress_counter >= 0, 'You can not _task_done()' \
@@ -139,7 +144,7 @@ class BaseConsumer(Process):
                  is still doing something that might impact on out_queue.
         '''
         if self.in_queue_size() > 0 \
-                or self.out_queue.qsize() > 0:
+        or self.out_queue.qsize() > 0:
             return True
 
         if self._tasks_in_progress_counter > 0:
