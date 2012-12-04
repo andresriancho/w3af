@@ -83,3 +83,24 @@ class TestPostDataMutant(unittest.TestCase):
             all(isinstance(m, PostDataMutant) for m in created_mutants))
         self.assertTrue(
             all(m.get_method().startswith('PUT') for m in created_mutants))
+
+    def test_mutant_creation_file(self):
+        form = Form()
+        form.add_input([("name", "username"), ("value", "default")])
+        form.add_file_input([("name", "file_upload")])
+
+        freq = HTTPPostDataRequest(URL('http://www.w3af.com/upload'), dc=form,
+                                   method='POST')
+
+        payloads = [file(__file__),]
+        created_mutants = PostDataMutant.create_mutants(
+            freq, payloads, ['file_upload', ],
+            False, self.fuzzer_config)
+
+        self.assertEqual(len(created_mutants), 1, created_mutants)
+        
+        mutant = created_mutants[0]
+        
+        self.assertIsInstance(mutant.get_dc()['file_upload'][0], file)
+        self.assertEqual(mutant.get_dc()['username'][0], 'default')
+        

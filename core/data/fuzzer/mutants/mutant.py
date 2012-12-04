@@ -228,8 +228,9 @@ class Mutant(object):
                     # lines below, search for the "__HERE__" string!
                     #
                     # The exclusion is done here:
-                    if pname in freq.get_file_vars() and not \
-                            isinstance(mutant_str, NamedStringIO):
+                    if pname in freq.get_file_vars() \
+                    and not isinstance(mutant_str, NamedStringIO) \
+                    and not isinstance(mutant_str, file):
                         continue
 
                     # Only fuzz the specified parameters (if any)
