@@ -84,6 +84,9 @@ class TestEnvironment(unittest.TestCase):
 
     def test_get_screenshot(self):
         self.xvfb_server.start_sync()
+        self.assertTrue(self.xvfb_server.is_running(),
+                        'xvfb server failed to start.')
+            
         output_file = self.xvfb_server.get_screenshot()
 
         screenshot_img = Image.open(output_file)
