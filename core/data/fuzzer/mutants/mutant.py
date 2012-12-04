@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import copy
 
-from core.controllers.exceptions import w3afException
 from core.controllers.misc.io import NamedStringIO
 
 from core.data.dc.data_container import DataContainer
@@ -43,7 +42,7 @@ class Mutant(object):
         self._original_value = ''
         self._original_response_body = None
         self._mutant_dc = DataContainer()
-
+    
     def get_mutant_dc(self):
         return self._mutant_dc
 
@@ -169,6 +168,10 @@ class Mutant(object):
     @staticmethod
     def get_mutant_type():
         return 'generic'
+
+    @classmethod
+    def get_mutant_class(cls):
+        return cls.__name__        
 
     @staticmethod
     def create_mutants(freq, mutant_str_list, fuzzable_param_list,

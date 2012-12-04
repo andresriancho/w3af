@@ -54,10 +54,12 @@ def create_mutants(freq, mutant_str_list, append=False,
                                                 fuzzable_param_list, append,
                                                 fuzzer_config)
 
-        om.out.debug('"%s" created %s new mutants for "%s".' % (mutant_kls,
-                                                                len(new_mutants),
-                                                                freq))
-
+        
+        mutant_name = mutant_kls.get_mutant_class()
+        om.out.debug('%s created %s new mutants for "%s".' % (mutant_name,
+                                                              len(new_mutants),
+                                                              freq))
+        
         result.extend(new_mutants)
 
     #

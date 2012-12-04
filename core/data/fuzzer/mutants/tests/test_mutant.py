@@ -28,15 +28,6 @@ from core.data.parsers.url import URL
 from core.data.dc.data_container import DataContainer
 from core.data.dc.form import Form
 
-from core.data.fuzzer.mutants.querystring_mutant import QSMutant
-from core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
-from core.data.fuzzer.mutants.filename_mutant import FileNameMutant
-from core.data.fuzzer.mutants.urlparts_mutant import URLPartsMutant
-from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
-from core.data.fuzzer.mutants.json_mutant import JSONMutant
-from core.data.fuzzer.mutants.cookie_mutant import CookieMutant
-from core.data.fuzzer.mutants.filecontent_mutant import FileContentMutant
-
 
 class TestMutant(unittest.TestCase):
 
@@ -72,7 +63,12 @@ class TestMutant(unittest.TestCase):
         self.assertEqual(created_mutants[2].get_original_value(), '2')
 
         self.assertTrue(all(isinstance(m, Mutant) for m in created_mutants))
+        self.assertTrue(all(m.get_mutant_class() == 'Mutant' for m in created_mutants))
 
+    def test_get_mutant_class(self):
+        m = Mutant(None)
+        self.assertEqual(m.get_mutant_class(), 'Mutant')
+        
     def test_mutant_generic_methods(self):
         self.dc['a'] = ['1', ]
         self.dc['b'] = ['2', ]
