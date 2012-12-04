@@ -70,9 +70,9 @@ class un_ssl(AuditPlugin):
 
             try:
                 insecure_response = self._uri_opener.send_mutant(
-                    insecure_fr, follow_redir=False)
+                    insecure_fr, follow_redir=False, grep=False)
                 secure_response = self._uri_opener.send_mutant(
-                    secure_fr, follow_redir=False)
+                    secure_fr, follow_redir=False, grep=False)
             except w3afException:
                 # No vulnerability to report since one of these threw an error
                 # (because there is nothing listening on that port).
