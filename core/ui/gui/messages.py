@@ -111,7 +111,7 @@ class _LineScroller(gtk.TextView):
             if mess is None:
                 yield True
                 continue
-            text = "[%s] %s\n" % (mess.getTime(), mess.get_msg())
+            text = "[%s] %s\n" % (mess.get_time(), mess.get_msg())
             mtype = mess.get_type()
 
             # only store it if it's of one of the possible filtered
