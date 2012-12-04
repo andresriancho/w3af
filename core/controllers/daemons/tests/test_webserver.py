@@ -36,7 +36,15 @@ class TestWebserver(unittest.TestCase):
 
     def setUp(self):
         self.tempdir = tempfile.gettempdir()
-        start_webserver(self.IP, self.PORT, self.tempdir)
+        
+        for port in xrange(self.PORT, self.PORT + 15):
+            try:
+                start_webserver(self.IP, port, self.tempdir)
+            except:
+                pass
+            else:
+                self.PORT = port
+                break
 
     def test_GET_404(self):
         # Raises a 404
