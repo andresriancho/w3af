@@ -125,7 +125,6 @@ class lfi(AuditPlugin):
         Analyze results of the _send_mutant method.
         Try to find the local file inclusions.
         '''
-
         # I analyze the response searching for a specific PHP error string
         # that tells me that open_basedir is enabled, and our request triggered
         # the restriction. If open_basedir is in use, it makes no sense to keep
@@ -134,8 +133,11 @@ class lfi(AuditPlugin):
         # of this security feature.
 
         if not self._open_basedir:
-            if 'open_basedir restriction in effect' in response\
-                    and 'open_basedir restriction in effect' not in mutant.get_original_response_body():
+            
+            basedir_warning = 'open_basedir restriction in effect'
+            
+            if basedir_warning in response and \
+            basedir_warning not in mutant.get_original_response_body():
                 self._open_basedir = True
 
         #
@@ -192,7 +194,8 @@ class lfi(AuditPlugin):
                 return
 
         #
-        #   Check for interesting errors (note that this is run if no vulns were identified)
+        #   Check for interesting errors (note that this is run if no vulns were
+        #   identified)
         #
         for regex in self.get_include_errors():
 
@@ -203,8 +206,8 @@ class lfi(AuditPlugin):
                 i.set_plugin_name(self.get_name())
                 i.set_id(response.id)
                 i.set_name('File read error')
-                i.set_desc(
-                    'A file read error was found at: ' + mutant.found_at())
+                desc = 'A file read error was found at: %s'
+                i.set_desc(desc % mutant.found_at())
                 kb.kb.append_uniq(self, 'error', i)
 
     def end(self):
@@ -227,12 +230,11 @@ class lfi(AuditPlugin):
             res.append(file_pattern_match)
 
         if len(res) == 1:
-            msg = 'A file fragment was found. The section where the file is included is (only'
-            msg += ' a fragment is shown): "' + res[0]
-            msg += '". This is just an informational message, which might be related to a'
-            msg += ' vulnerability and was found on response with id ' + \
-                str(response.id) + '.'
-            om.out.debug(msg)
+            msg = 'A file fragment was found. The section where the file is'\
+                  ' included is (only a fragment is shown): "%s". This is' \
+                  ' just an informational message, which might be related' \
+                  '  to a vulnerability and was found on response with id %s.'
+            om.out.debug(msg % (res[0], response.id))
         if len(res) > 1:
             msg = 'File fragments have been found. The following is a list of file fragments'
             msg += ' that were returned by the web application while testing for local file'
@@ -243,6 +245,7 @@ class lfi(AuditPlugin):
             msg += ' vulnerability and was found on response with id ' + \
                 str(response.id) + '.'
             om.out.debug(msg)
+        
         return res
 
     def get_include_errors(self):
