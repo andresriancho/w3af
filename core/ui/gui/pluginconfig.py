@@ -688,7 +688,7 @@ class PluginConfigBody(gtk.VBox):
 
         # update the Entry with plugin info
         options = configurable_target.get_options()
-        self.target.set_text(options['target'].get_value_str())
+        self.target.set_text_wrapper(options['target'].get_value_str())
 
     def get_activated_plugins(self):
         '''Return the activated plugins.
@@ -724,7 +724,7 @@ class PluginConfigBody(gtk.VBox):
         options = configurable_obj.get_options()
         newurl = options['target'].get_default_value_str()
         if newurl:
-            self.target.set_text(newurl)
+            self.target.set_text_wrapper(newurl)
             self.w3af.mainwin.scanok.change(self.target, True)
         else:
             self.target.reset()

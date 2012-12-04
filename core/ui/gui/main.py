@@ -832,7 +832,7 @@ class MainApp(object):
 
     def profile_action(self, action):
         '''Do the action on the profile.'''
-        methname = action + "Profile"
+        methname = action + "_profile"
         method = getattr(self.profiles, methname)
         method()
 

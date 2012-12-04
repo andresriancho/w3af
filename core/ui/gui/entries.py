@@ -429,7 +429,7 @@ class AdvisedEntry(gtk.Entry):
         texto = self.liststore[iterl][0]
         return entrystr in texto
 
-    def set_text(self, message):
+    def set_text_wrapper(self, message):
         '''Sets the widget text.'''
         self.firstfocus = False
         self._current_message = message
