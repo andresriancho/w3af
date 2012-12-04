@@ -117,8 +117,8 @@ class w3afCore(object):
             self.verify_environment()
         except Exception, e:
             error = ('verify_environment() raised an exception: "%s". This'
-                     ' should never happen. Are *you* user interface coder sure'
-                     ' that you called verify_environment() *before* start() ?' % e)
+                     ' should never happen. Are you (UI developer) sure that'
+                     ' you called verify_environment() *before* start() ?' % e)
             om.out.error(error)
             raise
 
@@ -262,9 +262,9 @@ class w3afCore(object):
             raise w3afException('No target URI configured.')
 
         if not len(self.plugins.get_enabled_plugins('audit'))\
-            and not len(self.plugins.get_enabled_plugins('crawl'))\
-            and not len(self.plugins.get_enabled_plugins('infrastructure'))\
-                and not len(self.plugins.get_enabled_plugins('grep')):
+        and not len(self.plugins.get_enabled_plugins('crawl'))\
+        and not len(self.plugins.get_enabled_plugins('infrastructure'))\
+        and not len(self.plugins.get_enabled_plugins('grep')):
             raise w3afException(
                 'No audit, grep or crawl plugins configured to run.')
 

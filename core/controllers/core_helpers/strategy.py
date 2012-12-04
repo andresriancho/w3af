@@ -281,8 +281,8 @@ class w3af_core_strategy(object):
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
                 is_404(response)
             except Exception, e:
-                msg = 'Failed to initialize the 404 detection, original exception'
-                msg += ' was: "%s".'
+                msg = 'Failed to initialize the 404 detection, original' \
+                      ' exception was: "%s".'
                 raise w3afMustStopException(msg % e)
 
     def _setup_crawl_infrastructure(self):
