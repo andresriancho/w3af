@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
-from core.controllers.core_helpers.consumers.constants import POISON_PILL, FORCE_LOGIN
+from core.controllers.core_helpers.consumers.constants import (POISON_PILL,
+                                                               FORCE_LOGIN)
 
 from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
@@ -42,8 +43,8 @@ class auth(BaseConsumer):
         @param w3af_core: The w3af core that we'll use for status reporting
         @param timeout: The time to wait between each login check
         '''
-        super(auth, self).__init__(
-            auth_plugins, w3af_core, thread_name='Authenticator')
+        super(auth, self).__init__(auth_plugins, w3af_core,
+                                   thread_name='Authenticator')
 
         self._timeout = timeout
 
@@ -88,9 +89,6 @@ class auth(BaseConsumer):
                     plugin.login()
             except Exception, e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
-
-            finally:
-                tm.join(plugin)
 
         # See comment above in _add_task
         self._task_done(None)
