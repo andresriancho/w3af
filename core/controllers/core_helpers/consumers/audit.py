@@ -84,4 +84,4 @@ class audit(BaseConsumer):
             self.handle_exception(
                 'audit', plugin.get_name(), fuzzable_request, e)
         finally:
-            self._task_done()
+            self._task_done(None)
