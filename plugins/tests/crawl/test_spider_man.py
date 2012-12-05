@@ -50,8 +50,8 @@ class BrowserThread(threading.Thread):
         '''
         time.sleep(5.0)
 
-        proxy_support = urllib2.ProxyHandler(
-            {'http': 'http://127.0.0.1:44444/'})
+        proxy_cfg = {'http': 'http://127.0.0.1:44444/'}
+        proxy_support = urllib2.ProxyHandler(proxy_cfg)
         opener = urllib2.build_opener(proxy_support)
         # Avoid this, it might influence other tests!
         #urllib2.install_opener(opener)
@@ -118,14 +118,14 @@ class TestSpiderman(PluginTest):
         #    First set of assertions
         #
         for index, e_response in enumerate(EXPECTED_RESPONSE_CONTENTS):
-            self.assertTrue(e_response in responses[index], responses[index])
+            self.assertIn(e_response, responses[index])
 
         #
         #    Second set of assertions
         #
         kb_urls = [u.uri2url().url_string for u in kb_urls]
         for _, e_url, _ in BROWSE_URLS:
-            self.assertTrue(e_url in kb_urls)
+            self.assertIn(e_url, kb_urls)
 
     def test_https(self):
         raise SkipTest('FIXME: Need to add this test.')
