@@ -25,7 +25,7 @@ import urlparse
 import cookielib
 
 import core.controllers.output_manager as om
-import core.data.url.handlers.HTTPNtlmAuthHandler as HTTPNtlmAuthHandler
+import core.data.url.handlers.ntlm_auth as HTTPNtlmAuthHandler
 import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 import core.data.url.handlers.localCache as localCache
 import core.data.url.handlers.mangleHandler as mangleHandler

@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+'''
+test_xurllib_integration.py
+
+Copyright 2011 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+'''
+import unittest
+
+from core.data.url.opener_settings import OpenerSettings
+from core.data.url.xUrllib import xUrllib
+from core.data.parsers.url import URL
+
+
+class TestXUrllibIntegration(unittest.TestCase):
+
+    def test_ntlm_auth_not_configured(self):
+        self.uri_opener = xUrllib()
+        url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertIn('Must authenticate.', http_response.body)
+
+    def test_ntlm_auth_valid_creds(self):
+        
+        self.uri_opener = xUrllib()
+        
+        settings = OpenerSettings()
+        options = settings.get_options()
+        ntlm_domain = options['ntlmAuthDomain'] 
+        ntlm_user = options['ntlmAuthUser']
+        ntlm_pass = options['ntlmAuthPass']
+        ntlm_url = options['ntlmAuthURL']
+        
+        ntlm_domain.set_value('moth') 
+        ntlm_user.set_value('admin')
+        ntlm_pass.set_value('admin')
+        ntlm_url.set_value('http://moth/w3af/core/ntlm_auth/ntlm_v1/')
+        
+        settings.set_options(options)
+        self.uri_opener.settings = settings
+        
+        url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertIn('You are admin from MOTH/', http_response.body)
