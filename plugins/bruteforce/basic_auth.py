@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import base64
+
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
@@ -26,7 +28,7 @@ import core.data.constants.severity as severity
 
 from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.exceptions import w3afException
-from core.data.url.xUrllib import xUrllib
+from core.data.dc.headers import Headers
 
 
 class basic_auth(BruteforcePlugin):
@@ -82,20 +84,13 @@ class basic_auth(BruteforcePlugin):
         if not self._found or not self._stop_on_first:
             user, passwd = combination
 
-            #
-            # TODO: These four lines make the whole process *very* CPU hungry
-            #       since we're creating a new xUrllib() for each user/password
-            #       combination! In my test environment I achieve 100% CPU usage
-            #
-            uri_opener = xUrllib()
-            uri_opener.settings.set_basic_auth(url, user, passwd)
-            # The next lines replace the uri_opener opener with a new one that has
-            # the basic auth settings configured
-            uri_opener.settings.build_openers()
-            uri_opener._opener = uri_opener.settings.get_custom_opener()
+            raw_values = "%s:%s" % (user, passwd)
+            auth = 'Basic %s' % base64.b64encode(raw_values).strip()
+            headers = Headers([('Authorization', auth)])
 
             try:
-                response = uri_opener.GET(url, cache=False, grep=False)
+                response = self._uri_opener.GET(url, cache=False, grep=False,
+                                                headers=headers)
             except w3afException, w3:
                 msg = 'Exception while bruteforcing basic authentication, error'
                 msg += ' message: "%s"'
@@ -126,8 +121,8 @@ class basic_auth(BruteforcePlugin):
         '''
         for v in kb.kb.get('basic_auth', 'auth'):
             self._uri_opener.settings.set_basic_auth(v.get_url(),
-                                                   v['user'],
-                                                   v['pass'])
+                                                     v['user'],
+                                                     v['pass'])
 
     def get_long_desc(self):
         '''
