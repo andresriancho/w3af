@@ -22,12 +22,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
+from mock import Mock
+
 from core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 from core.data.esmre.in_multi_in import in_multi_in
 from core.data.esmre.esm_multi_in import esm_multi_in
 
 
 class BaseMultiInTest(unittest.TestCase):
+
+    klass = Mock()
 
     @only_if_subclass
     def test_simplest(self):

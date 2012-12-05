@@ -23,12 +23,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import unittest
 
+from mock import Mock
+
 from core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 from core.data.esmre.re_multire import re_multire
 from core.data.esmre.esmre_multire import esmre_multire
 
 
 class BaseMultiReTest(unittest.TestCase):
+
+    klass = Mock()
 
     @only_if_subclass
     def test_simplest(self):
