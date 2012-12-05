@@ -23,21 +23,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 import unittest
 
-from nose.plugins.skip import SkipTest
-from mock import Mock
-
+from core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 from core.data.esmre.re_multire import re_multire
 from core.data.esmre.esmre_multire import esmre_multire
 
 
 class BaseMultiReTest(unittest.TestCase):
 
-    klass = Mock()
-    
-    def setUp(self):
-        if isinstance(self.klass, Mock):
-            raise SkipTest('Run only in subclasses that set a klass.')
-
+    @only_if_subclass
     def test_simplest(self):
         re_list = ['123', '456', '789']
         mre = self.klass(re_list)
@@ -50,6 +43,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual('789', result[0][1])
 
+    @only_if_subclass
     def test_re(self):
         re_list = ['123.*456', 'abc.*def']
         mre = self.klass(re_list)
@@ -65,6 +59,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual('abc.*def', result[0][1])
 
+    @only_if_subclass
     def test_re_with_obj(self):
         re_list = [('123.*456', None, None), ('abc.*def', 1, 2)]
         mre = self.klass(re_list)
@@ -81,6 +76,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, result[0][3])
         self.assertEqual(2, result[0][4])
 
+    @only_if_subclass
     def test_re_flags(self):
         re_list = ['123.*456', 'abc.*def']
         mre = self.klass(re_list, re.IGNORECASE)
@@ -89,6 +85,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual('abc.*def', result[0][1])
 
+    @only_if_subclass
     def test_unicode_re(self):
         re_list = [u'ñ', u'ý']
         mre = self.klass(re_list)
@@ -101,6 +98,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual(1, len(result))
         self.assertEqual('ñ', result[0][1])
 
+    @only_if_subclass
     def test_unicode_query(self):
         re_list = [u'abc', u'def']
         mre = self.klass(re_list)
@@ -114,6 +112,7 @@ class BaseMultiReTest(unittest.TestCase):
         self.assertEqual('abc', result[0][1])
         self.assertEqual('def', result[1][1])
 
+    @only_if_subclass
     def test_special_char(self):
         re_list = [u'\x00']
         mre = self.klass(re_list)
