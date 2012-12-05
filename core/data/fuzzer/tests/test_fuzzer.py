@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import unittest
 
-import core.data.kb.config as cf
-from core.data.kb.config import config
+from core.data.kb.config import Config
+from core.data.kb.config import cf as cf_singleton
 
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.request.HTTPQsRequest import HTTPQSRequest
@@ -44,18 +44,18 @@ class TestFuzzer(unittest.TestCase):
 
     def setUp(self):
         self.payloads = ['abc', 'def']
-        self.cf_backup = config(cf.cf)
+        self.cf_backup = Config(cf_singleton)
 
     def tearDown(self):
-        cf.cf = self.cf_backup
+        cf_singleton = self.cf_backup
 
     def test_simple(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
         freq = HTTPQSRequest(url)
@@ -70,12 +70,12 @@ class TestFuzzer(unittest.TestCase):
             all(isinstance(m, QSMutant) for m in generated_mutants))
 
     def test_fuzz_headers_no_headers(self):
-        cf.cf.save('fuzzable_headers', ['Referer'])  # This one changed
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', ['Referer'])  # This one changed
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
         # No headers in the original request
@@ -104,12 +104,12 @@ class TestFuzzer(unittest.TestCase):
                             for m in generated_mutants))
 
     def test_fuzz_headers(self):
-        cf.cf.save('fuzzable_headers', ['Referer'])  # This one changed
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', ['Referer'])  # This one changed
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
         # With headers
@@ -138,12 +138,12 @@ class TestFuzzer(unittest.TestCase):
                             for m in generated_mutants))
 
     def test_qs_and_no_cookie(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', True)  # This one changed
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', True)  # This one changed
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
         # But there is no cookie
@@ -158,12 +158,12 @@ class TestFuzzer(unittest.TestCase):
         #self.assertTrue( all(isinstance(m, QSMutant) for m in generated_mutants) )
 
     def test_qs_and_cookie(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', True)  # This one changed
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', True)  # This one changed
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/?id=1')
         # And now there is a cookie
@@ -193,12 +193,12 @@ class TestFuzzer(unittest.TestCase):
                             for m in generated_mutants))
 
     def test_filename_only_dir_path(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', True)  # This one changed
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', True)  # This one changed
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/')
         freq = HTTPQSRequest(url)
@@ -207,12 +207,12 @@ class TestFuzzer(unittest.TestCase):
         self.assertEqual(generated_mutants, [])
 
     def test_filename_fname_qs(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', True)  # This one changed
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', True)  # This one changed
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/foo.htm?id=1')
         freq = HTTPQSRequest(url)
@@ -234,12 +234,12 @@ class TestFuzzer(unittest.TestCase):
                             for m in generated_mutants))
 
     def test_form_file_qs(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', True)  # This one changed
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', True)  # This one changed
+        cf_singleton.save('fuzz_url_parts', False)
 
         url = URL('http://moth/foo.htm')
         freq = HTTPQSRequest(url)
@@ -248,12 +248,12 @@ class TestFuzzer(unittest.TestCase):
         self.assertEqual(generated_mutants, [])
 
     def test_form_file_post_no_files(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', True)  # This one changed
-        cf.cf.save('fuzz_url_parts', False)
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', True)  # This one changed
+        cf_singleton.save('fuzz_url_parts', False)
 
         form = Form()
         form.add_input([("name", "username"), ("value", "")])
@@ -286,12 +286,12 @@ class TestFuzzer(unittest.TestCase):
         self.assertEqual(created_dc_lst, expected_dc_lst)
 
     def test_urlparts_no_path(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', False)
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', True)  # This one changed
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', False)
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', True)  # This one changed
 
         url = URL('http://moth/')
         freq = HTTPQSRequest(url)
@@ -300,12 +300,12 @@ class TestFuzzer(unittest.TestCase):
         self.assertEqual(generated_mutants, [])
 
     def test_urlparts_filename_path_qs(self):
-        cf.cf.save('fuzzable_headers', [])
-        cf.cf.save('fuzz_cookies', False)
-        cf.cf.save('fuzz_url_filenames', True)  # This one changed
-        cf.cf.save('fuzzed_files_extension', 'gif')
-        cf.cf.save('fuzz_form_files', False)
-        cf.cf.save('fuzz_url_parts', True)  # This one changed
+        cf_singleton.save('fuzzable_headers', [])
+        cf_singleton.save('fuzz_cookies', False)
+        cf_singleton.save('fuzz_url_filenames', True)  # This one changed
+        cf_singleton.save('fuzzed_files_extension', 'gif')
+        cf_singleton.save('fuzz_form_files', False)
+        cf_singleton.save('fuzz_url_parts', True)  # This one changed
 
         url = URL('http://moth/foo/bar.htm?id=1')
         freq = HTTPQSRequest(url)

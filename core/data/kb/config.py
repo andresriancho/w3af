@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 
-class config(dict):
+class Config(dict):
     '''
     This class saves config parameters sent by the user.
 
@@ -40,4 +40,4 @@ class config(dict):
         '''
         self.clear()
 
-cf = config()
+cf = Config()
