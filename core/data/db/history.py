@@ -115,7 +115,7 @@ class HistoryItem(object):
             # This is the case of unittests where we "forget" to set the proper
             # cf variables. Because I don't want to set the session name in all
             # unittests, I do it here.
-            session_name = 'unittest-'
+            session_name = 'unittest'
 
         db_name = os.path.join(get_temp_dir(), 'db_' + session_name)
 
@@ -244,10 +244,9 @@ class HistoryItem(object):
         try:
             row = self._db.select_one(sql, (id,))
         except Exception, e:
-            msg = 'An unexpected error occurred while searching for id "%s".'
-            msg += ' Original exception: "%s".'
-            msg = msg % (id, e)
-            raise w3afException(msg)
+            msg = 'An unexpected error occurred while searching for id "%s".'\
+                  ' Original exception: "%s".'
+            raise w3afException(msg % (id, e))
         else:
             if row is not None:
                 self._loadFromRow(row, full)
@@ -371,5 +370,15 @@ class HistoryItem(object):
         # Clear DB
         sql = 'DELETE FROM ' + self._DATA_TABLE
         self._db.execute(sql)
+        
+        # Get the DB filename 
+        db_filename = self._db.get_file_name()
+        self._db.close()
+        
         # Delete files
+        os.remove(db_filename)
         rmtree(self._session_dir)
+        
+        kb.kb.save('history', 'db', [])
+        
+        return True

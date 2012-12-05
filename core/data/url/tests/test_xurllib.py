@@ -19,16 +19,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
 import unittest
-import threading
 import Queue
 
+from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
 
 from core.data.url.xUrllib import xUrllib
 from core.data.parsers.url import URL
 from core.data.dc.data_container import DataContainer
 
+from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.exceptions import (w3afMustStopByUserRequest,
                                          w3afMustStopOnUrlError)
 
@@ -40,7 +42,10 @@ class TestXUrllib(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = xUrllib()
-
+    
+    def tearDown(self):
+        self.uri_opener.end()
+        
     def test_basic(self):
         url = URL('http://moth/')
         http_response = self.uri_opener.GET(url, cache=False)
@@ -79,26 +84,6 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertTrue(test_data in http_response.body, http_response.body)
 
-    def test_gzip(self):
-        url = URL('http://www.google.com.ar/')
-        res = self.uri_opener.GET(url, cache=False)
-        headers = res.get_headers()
-        content_encoding, _ = headers.iget('content-encoding', '')
-        test_res = 'gzip' in content_encoding or \
-                   'compress' in content_encoding
-        self.assertTrue(test_res, content_encoding)
-
-    def test_get_cookies(self):
-        self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)
-
-        url_sends_cookie = URL(
-            'http://moth/w3af/core/cookie_handler/set-cookie.php')
-        self.uri_opener.GET(url_sends_cookie, cache=False)
-
-        self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 1)
-        cookie = [c for c in self.uri_opener.get_cookies()][0]
-        self.assertEqual('moth.local', cookie.domain)
-
     def test_unknown_url(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
         self.assertRaises(w3afMustStopOnUrlError, self.uri_opener.GET, url)
@@ -123,7 +108,7 @@ class TestXUrllib(unittest.TestCase):
             http_response = uri_opener.GET(url)
             output.put(http_response)
 
-        th = threading.Thread(target=send, args=(self.uri_opener, output))
+        th = Process(target=send, args=(self.uri_opener, output))
         th.daemon = True
         th.start()
 
@@ -138,7 +123,7 @@ class TestXUrllib(unittest.TestCase):
             http_response = uri_opener.GET(url)
             output.put(http_response)
 
-        th = threading.Thread(target=send, args=(self.uri_opener, output))
+        th = Process(target=send, args=(self.uri_opener, output))
         th.daemon = True
         th.start()
 
@@ -147,7 +132,26 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.pause(False)
 
         http_response = output.get()
-
+        th.join()
+        
         self.assertEqual(http_response.get_code(), 200)
-        self.assertTrue(
-            self.MOTH_MESSAGE in http_response.body, http_response.body)
+        self.assertIn(self.MOTH_MESSAGE, http_response.body)
+    
+    def test_removes_cache(self):
+        url = URL('http://moth/')
+        self.uri_opener.GET(url, cache=False)
+        
+        # Please note that this line, together with the tearDown() act as
+        # a test for a "double call to end()".
+        self.uri_opener.end()
+        
+        db_fmt = 'db_unittest-%s'
+        trace_fmt = 'db_unittest-%s_traces/'
+        temp_dir = get_temp_dir()
+        
+        for i in xrange(100):
+            test_db_path = os.path.join(temp_dir, db_fmt % i)
+            test_trace_path = os.path.join(temp_dir, trace_fmt % i)
+            self.assertFalse(os.path.exists(test_db_path), test_db_path)
+            self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
+        

@@ -36,7 +36,7 @@ from core.data.kb.config import cf as cfg
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
-from core.data.url.handlers.FastHTTPBasicAuthHandler import FastHTTPBasicAuthHandler
+from core.data.url.handlers.fast_basic_auth import FastHTTPBasicAuthHandler
 from core.data.url.handlers.cookie_handler import CookieHandler
 from core.data.url.handlers.gzip_handler import HTTPGzipProcessor
 from core.data.url.handlers.keepalive import HTTPHandler as kAHTTP
@@ -61,6 +61,7 @@ class OpenerSettings(Configurable):
         self._mangleHandler = None
         self._urlParameterHandler = None
         self._ntlmAuthHandler = None
+        self._cache_hdler = None
         # Keep alive handlers are created on build_openers()
 
         cj = cookielib.MozillaCookieJar()
@@ -179,6 +180,9 @@ class OpenerSettings(Configurable):
         @return: The cookies that were collected during this scan.
         '''
         return self._cookieHandler.cookiejar
+    
+    def clear_cookies(self):
+        self._cookieHandler.cookiejar.clear()
 
     def set_timeout(self, timeout):
         om.out.debug('Called SetTimeout(' + str(timeout) + ')')
@@ -343,6 +347,19 @@ class OpenerSettings(Configurable):
 
     def get_custom_opener(self):
         return self._uri_opener
+
+    def clear_cache(self):
+        '''
+        Calls the cache handler and requires it to clear the cache, removing
+        files and directories.
+        
+        @return: True if the cache was sucessfully cleared.
+        '''
+        if self._cache_hdler is not None: 
+            return self._cache_hdler.clear()
+        
+        # The is no cache, clear always is successful in this case
+        return True
 
     def set_mangle_plugins(self, mp):
         '''

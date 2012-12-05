@@ -50,8 +50,8 @@ class detailed(AuthPlugin):
         Login to the application.
         '''
 
-        msg = 'Logging into the application using %s/%s' % (
-            self.username, self.password)
+        msg = 'Logging into the application using %s/%s' % (self.username,
+                                                            self.password)
         om.out.debug(msg)
 
         data = self._get_data_from_format()

@@ -75,6 +75,12 @@ class CacheHandler(urllib2.BaseHandler):
     def __init__(self):
         CacheClass.init()
 
+    def clear(self):
+        '''
+        Clear the cache (remove all files and directories associated with it).
+        '''
+        return CacheClass.clear()
+
     def default_open(self, request):
 
         method = request.get_method().upper()
@@ -401,6 +407,13 @@ class SQLCachedResponse(CachedResponse):
     @staticmethod
     def init():
         create_temp_dir()
+    
+    @staticmethod
+    def clear():
+        '''
+        Clear the cache (remove all files and directories associated with it).
+        '''
+        return HistoryItem().clear()
 
 # This is the default implementation
 CacheClass = SQLCachedResponse

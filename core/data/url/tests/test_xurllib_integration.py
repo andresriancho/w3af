@@ -28,6 +28,11 @@ from core.data.parsers.url import URL
 
 class TestXUrllibIntegration(unittest.TestCase):
 
+    MOTH_MESSAGE = 'Welcome to the moth homepage!'
+
+    def setUp(self):
+        self.uri_opener = xUrllib()
+        
     def test_ntlm_auth_not_configured(self):
         self.uri_opener = xUrllib()
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
@@ -56,3 +61,23 @@ class TestXUrllibIntegration(unittest.TestCase):
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('You are admin from MOTH/', http_response.body)
+
+    def test_gzip(self):
+        url = URL('http://www.google.com.ar/')
+        res = self.uri_opener.GET(url, cache=False)
+        headers = res.get_headers()
+        content_encoding, _ = headers.iget('content-encoding', '')
+        test_res = 'gzip' in content_encoding or \
+                   'compress' in content_encoding
+        self.assertTrue(test_res, content_encoding)
+
+    def test_get_cookies(self):
+        self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)
+
+        url_sends_cookie = URL(
+            'http://moth/w3af/core/cookie_handler/set-cookie.php')
+        self.uri_opener.GET(url_sends_cookie, cache=False)
+
+        self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 1)
+        cookie = [c for c in self.uri_opener.get_cookies()][0]
+        self.assertEqual('moth.local', cookie.domain)

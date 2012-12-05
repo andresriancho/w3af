@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import httplib
-import os
 import re
 import socket
 import threading
@@ -38,7 +37,6 @@ import core.controllers.output_manager as om
 import core.data.kb.config as cf
 import opener_settings
 
-from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.profiling.memory_usage import dump_memory_usage
 from core.controllers.misc.number_generator import consecutive_number_generator as seq_gen
 from core.controllers.exceptions import (w3afMustStopException, w3afException,
@@ -146,20 +144,8 @@ class xUrllib(object):
         This method is called when the xUrllib is not going to be used anymore.
         '''
         self.clear()
-
-        path_join = os.path.join
-        try:
-            cacheLocation = path_join(get_home_dir(), 'urllib2cache',
-                                      str(os.getpid()))
-            if os.path.exists(cacheLocation):
-                for f in os.listdir(cacheLocation):
-                    os.unlink(path_join(cacheLocation, f))
-                os.rmdir(cacheLocation)
-        except Exception, e:
-            om.out.error('Error while cleaning urllib2 cache, exception: %s'
-                         % e)
-        else:
-            om.out.debug('Cleared urllib2 local cache.')
+        self.settings.clear_cookies()
+        self.settings.clear_cache()
 
     def _init(self):
         if self.settings.need_update or self._opener is None:
@@ -628,6 +614,8 @@ class xUrllib(object):
                 msg += ' Please check if your disk is full.'
             raise w3afMustStopException(msg)
         except w3afMustStopException:
+            raise
+        except AttributeError:
             raise
         except Exception, e:
             # This except clause will catch unexpected errors

@@ -61,13 +61,13 @@ class TestDetailed(PluginTest):
     }
 
     def test_post_auth_xss(self):
-        self._scan(self._run_config['target'], self._run_config['plugins'])
+        self._scan(self._run_config['target'], self._run_config['plugins'], debug=True)
 
         vulns = self.kb.get('xss', 'xss')
 
         self.assertEquals(len(vulns), 1, vulns)
 
         vuln = vulns[0]
-        self.assertEquals(vuln.get_name(
-        ), 'Cross site scripting vulnerability', vuln.get_name())
-        self.assertEquals(vuln.get_var(), 'section', vuln.get_var())
+        self.assertEquals(vuln.get_name(),
+                          'Cross site scripting vulnerability')
+        self.assertEquals(vuln.get_var(), 'section')
