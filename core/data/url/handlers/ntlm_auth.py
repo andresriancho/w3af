@@ -17,7 +17,7 @@ import urllib2
 from extlib.ntlm import ntlm
 
 
-class AbstractNtlmAuthHandler(object):
+class AbstractNtlmAuthHandler(urllib2.BaseHandler):
 
     auth_header = None
 
@@ -85,7 +85,7 @@ class AbstractNtlmAuthHandler(object):
             return None
 
 
-class HTTPNtlmAuthHandler(AbstractNtlmAuthHandler, urllib2.BaseHandler):
+class HTTPNtlmAuthHandler(AbstractNtlmAuthHandler):
 
     auth_header = 'Authorization'
         
