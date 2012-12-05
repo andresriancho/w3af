@@ -4,18 +4,22 @@ dbDriverFunctions.py
 This file was part of sqlmap, I ( Andres Riancho ), adapted it to work with w3af.
 License: GPL v2.
 '''
-
-import core.controllers.output_manager as om
-from core.controllers.exceptions import w3afException
-from core.controllers.threads.threadManager import thread_manager as tm
-from core.data.parsers.url import URL
-import core.data.kb.config as cf
-
 import urllib
 import time
 import os
 import random
 
+import core.controllers.output_manager as om
+import core.data.kb.config as cf
+
+from core.controllers.exceptions import w3afException
+from core.controllers.threads.threadManager import thread_manager as tm
+from core.data.parsers.url import URL
+
+# I don't care much about all this code since I'm going to remove it within
+# the next days when I create a new wrapper around sqlmap
+#
+# pylint: disable=E1101
 
 class args:
     '''

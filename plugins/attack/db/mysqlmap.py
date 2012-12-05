@@ -112,10 +112,10 @@ class MySQLMap(Common):
 
                 if newResult == self.args.trueResult:
                     if version[0] == "3":
-                        midVer = prevVer[1:3]
+                        midVer = version[1:3]
                     else:
-                        midVer = prevVer[2]
-                    trueVer = "%s.%s.%s" % (prevVer[0], midVer, prevVer[3:])
+                        midVer = version[2]
+                    trueVer = "%s.%s.%s" % (version[0], midVer, version[3:])
 
                     return trueVer
 
