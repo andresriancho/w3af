@@ -24,6 +24,7 @@ import random
 import string
 
 from core.data.parsers.url import URL
+from core.controllers.tests.pylint_plugins.decorator import only_if_subclass
 
 
 class GenericFilterTest(unittest.TestCase):
@@ -37,15 +38,13 @@ class GenericFilterTest(unittest.TestCase):
         # "random" numbers used.
         random.seed(20)
 
+    @only_if_subclass
     def test_bloom_int(self):
-        # These two lines are here because I don't want to run this test when
-        # it is part of a GenericFilterTest, only when it is in a subclass
-        # that overrides CAPACITY and ERROR_RATE
-        if self.CAPACITY is None:
-            return
-        
-        for i in xrange(0, self.CAPACITY):
-            self.filter.add(i)
+        try:
+            for i in xrange(0, self.CAPACITY):
+                self.filter.add(i)
+        except:
+            print 'a'
 
         # After understanding a little bit more about how bloom filters work,
         # I decided to comment this line. Given the probabilistic nature of
@@ -62,13 +61,8 @@ class GenericFilterTest(unittest.TestCase):
             r = random.randint(self.CAPACITY, self.CAPACITY * 2)
             self.assertNotIn(r, self.filter)
 
+    @only_if_subclass
     def test_bloom_string(self):
-        # These two lines are here because I don't want to run this test when
-        # it is part of a GenericFilterTest, only when it is in a subclass
-        # that overrides CAPACITY and ERROR_RATE        
-        if self.CAPACITY is None:
-            return
-        
         randomly_generated_strings = []
 
         for _ in xrange(0, self.CAPACITY):
@@ -85,13 +79,8 @@ class GenericFilterTest(unittest.TestCase):
         for saved_str in randomly_generated_strings:
             self.assertNotIn(saved_str[::-1], self.filter)
 
-    def test_bloom_url_objects(self):
-        # These two lines are here because I don't want to run this test when
-        # it is part of a GenericFilterTest, only when it is in a subclass
-        # that overrides CAPACITY and ERROR_RATE       
-        if self.CAPACITY is None:
-            return
-        
+    @only_if_subclass
+    def test_bloom_url_objects(self):        
         for i in xrange(0, self.CAPACITY):
             url_num = URL('http://moth/index%s.html' % i)
             self.filter.add(url_num)
