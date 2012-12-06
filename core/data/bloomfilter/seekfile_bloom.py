@@ -21,6 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 import math
+import random
+import hashlib
+import struct
 
 from core.data.misc import python2x3
 from core.data.bloomfilter.wrappers import GenericBloomFilter
@@ -28,157 +31,113 @@ from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 class FileSeekBloomFilter(GenericBloomFilter):
     '''Backend storage for our "array of bits" using a file in which we seek
-
-    Shamelessly borrowed (under MIT license) from
-    http://code.activestate.com/recipes/577686-bloom-filter/
-
     About Bloom Filters: http://en.wikipedia.org/wiki/Bloom_filter
-
-    Tweaked by Daniel Richard Stromberg, mostly to:
-        1) Give it a little nicer __init__ parameters.
-        2) Improve the hash functions to get a much lower rate of false positives
-        3) Make it pass pylint
-
-    http://stromberg.dnsalias.org/svn/bloom-filter/trunk/bloom_filter_mod.py
+    
+    With fewer elements, we should do very well.  With more elements, our
+    error rate "guarantee" drops rapidly.
     '''
-
-    effs = 2 ^ 8 - 1
-
     def __init__(self, capacity, error_rate, temp_file):
         self.error_rate = error_rate
-        # With fewer elements, we should do very well.  With more elements, our
-        # error rate "guarantee" drops rapidly.
         self.capacity = capacity
         self.stored_items = 0
 
-        numerator = -1 * self.capacity * math.log(self.error_rate)
-        denominator = math.log(2) ** 2
-        real_num_bits = numerator / denominator
+        self.num_hashes = int(math.ceil(math.log(1.0 / error_rate, 2.0)))
+        bits_per_hash = int(math.ceil(
+                (2.0 * capacity * abs(math.log(error_rate))) /
+                (self.num_hashes * (math.log(2) ** 2))))
 
-        self.num_bits = int(math.ceil(real_num_bits))
+        self.num_bits = self.num_hashes * bits_per_hash
         self.num_chars = (self.num_bits + 7) // 8
-
-        real_num_probes_k = (self.num_bits / self.capacity) * math.log(2)
-        self.num_probes_k = int(math.ceil(real_num_probes_k))
 
         flags = os.O_RDWR | os.O_CREAT
         if hasattr(os, 'O_BINARY'):
             flags |= getattr(os, 'O_BINARY')
 
-        self.file_ = os.open(temp_file, flags)
-        os.lseek(self.file_, self.num_chars + 1, os.SEEK_SET)
-        os.write(self.file_, python2x3.null_byte)
+        self._file_handler = os.open(temp_file, flags)
+        self._file_name = temp_file
+        
+        os.lseek(self._file_handler, 0, os.SEEK_SET)
+        os.write(self._file_handler, python2x3.null_byte * self.num_chars)
+        
+        random.seed(42)
+        self.hash_seeds = ([str(random.getrandbits(32)) for _ in 
+                            range(self.num_hashes)])
 
     def add(self, key):
         '''Add an element to the filter'''
-        if key not in self:
-            self.stored_items += 1
+        self.stored_items += 1
 
-        for bitno in self.get_bitno_lin_comb(key):
+        for bitno in self.generate_bits_for_key(key):            
             self.set(bitno)
 
     def __len__(self):
         return self.stored_items
 
     def __contains__(self, key):
-        for bitno in self.get_bitno_lin_comb(key):
-            #wordno, bit_within_word = divmod(bitno, 32)
-            #mask = 1 << bit_within_word
-            #if not (self.array_[wordno] & mask):
+        '''
+        @return: True if key is in the filter.
+        '''
+        for bitno in self.generate_bits_for_key(key):
             if not self.is_set(bitno):
                 return False
         return True
 
-    def get_bitno_lin_comb(self, key):
-        '''Apply num_probes_k hash functions to key.  Generate the array index
-        and bitmask corresponding to each result'''
-
-        # This one assumes key is either bytes or str (or other list of integers)
-
-        # I'd love to check for long too, but that doesn't exist in 3.2, and 2.5
-        # doesn't have the numbers.Integral base type
-        if hasattr(key, '__divmod__'):
-            int_list = []
-            temp = key
-            while temp:
-                quotient, remainder = divmod(temp, 256)
-                int_list.append(remainder)
-                temp = quotient
-
-        elif hasattr(key, '__getitem__'):
-            if hasattr(key[0], '__divmod__'):
-                int_list = key
-
-            elif isinstance(key[0], str):
-                int_list = [ord(char) for char in key]
-
-        elif hasattr(key, '__iter__'):
-            int_list = [ord(char) for char in key]
-
-        else:
-            raise TypeError('Bloom filter can NOT hash type: %s' % type(key))
-
-        hash_value1 = self.hash1(int_list)
-        hash_value2 = self.hash2(int_list)
-
-        # We're using linear combinations of hash_value1 and hash_value2 to
-        # obtain num_probes_k hash functions
-        for probeno in range(1, self.num_probes_k + 1):
-            bit_index = hash_value1 + probeno * hash_value2
-            yield bit_index % self.num_bits
-
-    MERSENNES1 = [2 ** x - 1 for x in [17, 31, 127]]
-    MERSENNES2 = [2 ** x - 1 for x in [19, 67, 257]]
-
-    def simple_hash(self, int_list, prime1, prime2, prime3):
-        '''Compute a hash value from a list of integers and 3 primes'''
-        result = 0
-        for integer in int_list:
-            result += ((result + integer + prime1) * prime2) % prime3
-        return result
-
-    def hash1(self, int_list):
-        '''Basic hash function #1'''
-        return self.simple_hash(int_list, self.MERSENNES1[0],
-                                self.MERSENNES1[1], self.MERSENNES1[2])
-
-    def hash2(self, int_list):
-        '''Basic hash function #2'''
-        return self.simple_hash(int_list, self.MERSENNES2[0],
-                                self.MERSENNES2[1], self.MERSENNES2[2])
+    def to_str(self, key):
+        '''
+        @return: A string representation of @key.        
+        '''
+        return str(key)
+    
+    def generate_bits_for_key(self, key):
+        '''
+        Apply num_probes_k hash functions to key, yield each bit so that
+        we can perform a bit by bit check in __contains__ and in most cases
+        increase performance by not calculating all hashes.
+        
+        @return: A trail of bits to check in the file.
+        '''
+        key_str = self.to_str(key)
+        m = hashlib.md5()
+        # Both algorithms pass my unittests, but with sha512 it takes 2 more
+        # seconds (26 vs. 28), so I'm going to leave md5.
+        #m = hashlib.sha512()
+        
+        for i in xrange(self.num_hashes):
+            seed = self.hash_seeds[i]
+            
+            m.update(seed)
+            m.update(key_str)
+            hash_result = m.digest()
+            
+            long_numbers = struct.unpack('QQ', hash_result)
+            #long_numbers = struct.unpack('QQQQQQQQ', hash_result)
+            bitno = sum(long_numbers) % self.num_bits
+            
+            yield bitno
 
     def is_set(self, bitno):
         '''Return true iff bit number bitno is set'''
         byteno, bit_within_wordno = divmod(bitno, 8)
         mask = 1 << bit_within_wordno
-        os.lseek(self.file_, byteno, os.SEEK_SET)
-        char = os.read(self.file_, 1)
-        if isinstance(char, str):
-            byte = ord(char)
-        else:
-            byte = char[0]
+        os.lseek(self._file_handler, byteno, os.SEEK_SET)
+        char = os.read(self._file_handler, 1)
+        byte = ord(char)
         return byte & mask
 
     def set(self, bitno):
         '''set bit number bitno to true'''
         byteno, bit_within_byteno = divmod(bitno, 8)
         mask = 1 << bit_within_byteno
-        os.lseek(self.file_, byteno, os.SEEK_SET)
-        char = os.read(self.file_, 1)
-        if isinstance(char, str):
-            byte = ord(char)
-            was_char = True
-        else:
-            byte = char[0]
-            was_char = False
+        
+        os.lseek(self._file_handler, byteno, os.SEEK_SET)
+        char = os.read(self._file_handler, 1)
+        
+        byte = ord(char)
         byte |= mask
-        os.lseek(self.file_, byteno, os.SEEK_SET)
-        if was_char:
-            os.write(self.file_, chr(byte))
-        else:
-            char = python2x3.intlist_to_binary([byte])
-            os.write(self.file_, char)
+        os.lseek(self._file_handler, byteno, os.SEEK_SET)
+        os.write(self._file_handler, chr(byte))
 
     def close(self):
-        '''Close the file'''
-        os.close(self.file_)
+        '''Close the file handler and remove the backend file.'''
+        os.close(self._file_handler)
+        os.remove(self._file_name)

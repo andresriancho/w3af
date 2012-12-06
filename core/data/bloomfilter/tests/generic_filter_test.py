@@ -40,12 +40,9 @@ class GenericFilterTest(unittest.TestCase):
 
     @only_if_subclass
     def test_bloom_int(self):
-        try:
-            for i in xrange(0, self.CAPACITY):
-                self.filter.add(i)
-        except:
-            print 'a'
-
+        for i in xrange(0, self.CAPACITY):
+            self.filter.add(i)
+            
         # After understanding a little bit more about how bloom filters work,
         # I decided to comment this line. Given the probabilistic nature of
         # these filters, it might be the case that the length of the filter is
