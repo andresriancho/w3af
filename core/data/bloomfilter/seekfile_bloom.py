@@ -24,6 +24,7 @@ import math
 import random
 import hashlib
 import struct
+import mmap
 
 from core.data.misc import python2x3
 from core.data.bloomfilter.wrappers import GenericBloomFilter
@@ -49,15 +50,14 @@ class FileSeekBloomFilter(GenericBloomFilter):
         self.num_bits = self.num_hashes * bits_per_hash
         self.num_chars = (self.num_bits + 7) // 8
 
-        flags = os.O_RDWR | os.O_CREAT
-        if hasattr(os, 'O_BINARY'):
-            flags |= getattr(os, 'O_BINARY')
-
-        self._file_handler = os.open(temp_file, flags)
         self._file_name = temp_file
+        file_handler = open(self._file_name, 'wb')
+        file_handler.write(python2x3.null_byte * self.num_chars) 
+        file_handler.flush()
         
-        os.lseek(self._file_handler, 0, os.SEEK_SET)
-        os.write(self._file_handler, python2x3.null_byte * self.num_chars)
+        file_handler = open(self._file_name, 'r+b')
+        self._mmapped_file = mmap.mmap(file_handler.fileno(), 0)
+        self._mmapped_file.seek(0)
         
         random.seed(42)
         self.hash_seeds = ([str(random.getrandbits(32)) for _ in 
@@ -119,8 +119,8 @@ class FileSeekBloomFilter(GenericBloomFilter):
         '''Return true iff bit number bitno is set'''
         byteno, bit_within_wordno = divmod(bitno, 8)
         mask = 1 << bit_within_wordno
-        os.lseek(self._file_handler, byteno, os.SEEK_SET)
-        char = os.read(self._file_handler, 1)
+        self._mmapped_file.seek(byteno)
+        char = self._mmapped_file.read(1)
         byte = ord(char)
         return byte & mask
 
@@ -129,15 +129,15 @@ class FileSeekBloomFilter(GenericBloomFilter):
         byteno, bit_within_byteno = divmod(bitno, 8)
         mask = 1 << bit_within_byteno
         
-        os.lseek(self._file_handler, byteno, os.SEEK_SET)
-        char = os.read(self._file_handler, 1)
+        self._mmapped_file.seek(byteno)
+        char = self._mmapped_file.read(1)
         
         byte = ord(char)
         byte |= mask
-        os.lseek(self._file_handler, byteno, os.SEEK_SET)
-        os.write(self._file_handler, chr(byte))
+        self._mmapped_file.seek(byteno)
+        self._mmapped_file.write(chr(byte))
 
     def close(self):
         '''Close the file handler and remove the backend file.'''
-        os.close(self._file_handler)
+        self._mmapped_file.close()
         os.remove(self._file_name)
