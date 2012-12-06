@@ -48,8 +48,9 @@ def create_temp_dir():
     return complete_dir
 
 
-def remove_temp_dir():
+def remove_temp_dir(ignore_errors=False):
     '''
     Remove the temp directory.
     '''
-    shutil.rmtree(get_temp_dir(), ignore_errors=True)
+    shutil.rmtree(get_temp_dir(), ignore_errors=ignore_errors)
+
