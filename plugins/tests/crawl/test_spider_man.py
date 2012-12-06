@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-import threading
 import time
 import urllib2
 
+from multiprocessing.dummy import Process
 from nose.plugins.skip import SkipTest
 
 from plugins.tests.helper import PluginTest, PluginConfig
@@ -38,7 +38,7 @@ TERMINATE_URL = (
 )
 
 
-class BrowserThread(threading.Thread):
+class BrowserThread(Process):
 
     def __init__(self):
         super(BrowserThread, self).__init__()
