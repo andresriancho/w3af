@@ -109,10 +109,10 @@ class PluginTest(unittest.TestCase):
 
     def tearDown(self):
         #
-        # I want to make sure that we don't have *any hidden* exceptions in our tests.
+        # I want to make sure that we don't have *any hidden* exceptions in our
+        # tests.
         #
-        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions(
-        )
+        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
         msg = [e.get_summary() for e in caught_exceptions]
         self.assertEqual(len(caught_exceptions), 0, msg)
 
