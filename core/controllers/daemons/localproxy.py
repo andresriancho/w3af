@@ -165,16 +165,16 @@ class localproxy(proxy):
     This is the local proxy server that is used by the local proxy GTK user interface to perform all its magic ;)
     '''
 
-    def __init__(self, ip, port, urlOpener=xUrllib(), proxyCert='core/controllers/daemons/mitm.crt'):
+    def __init__(self, ip, port, urlOpener=xUrllib(), proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
         @param ip: IP address to bind
         @param port: Port to bind
         @param urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
         @param proxyHandler: A class that will know how to handle requests from the browser
-        @param proxyCert: Proxy certificate to use, this is needed for proxying SSL connections.
+        @param proxy_cert: Proxy certificate to use, this is needed for proxying SSL connections.
         '''
         proxy.__init__(
-            self, ip, port, urlOpener, w3afLocalProxyHandler, proxyCert)
+            self, ip, port, urlOpener, w3afLocalProxyHandler, proxy_cert)
 
         # Internal vars
         self._requestQueue = Queue.Queue()
