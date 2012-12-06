@@ -67,8 +67,8 @@ class HistoryItem(object):
     info = None
     mark = False
     tag = ''
-    contentType = ''
-    responseSize = 0
+    content_type = ''
+    response_size = 0
     method = 'GET'
     msg = 'OK'
     code = 200
@@ -190,10 +190,10 @@ class HistoryItem(object):
         self.info = row[5]
         self.time = float(row[6])
         self.msg = row[7]
-        self.contentType = row[8]
+        self.content_type = row[8]
         self.charset = row[9]
         self.method = row[10]
-        self.responseSize = int(row[11])
+        self.response_size = int(row[11])
 
     def _loadFromFile(self, id):
 
