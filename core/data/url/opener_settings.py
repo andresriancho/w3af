@@ -183,6 +183,7 @@ class OpenerSettings(Configurable):
     
     def clear_cookies(self):
         self._cookieHandler.cookiejar.clear()
+        self._cookieHandler.cookiejar.clear_session_cookies()
 
     def set_timeout(self, timeout):
         om.out.debug('Called SetTimeout(' + str(timeout) + ')')
