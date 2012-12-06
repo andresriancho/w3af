@@ -10,6 +10,8 @@ class md5(object):
         return u''
     def update(self, x):
         return u''
+    def digest(self):
+        return u''
 
 class sha1(object):
     def __init__(self, value): pass
@@ -17,7 +19,17 @@ class sha1(object):
         return u''
     def update(self, x):
         return u''
+    def digest(self):
+        return u''
 
+class sha512(object):
+    def __init__(self, value): pass
+    def hexdigest(self):
+        return u''
+    def update(self, x):
+        return u''
+    def digest(self):
+        return u''
 '''
 
 def hashlib_transform(module):
