@@ -29,6 +29,7 @@ import core.data.kb.config as cf
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.misc.temp_dir import create_temp_dir, remove_temp_dir
+from core.controllers.exceptions import w3afException
 from core.data.db.history import HistoryItem
 from core.data.fuzzer.utils import rand_alnum
 from core.data.request.fuzzable_request import FuzzableRequest as FuzzReq
@@ -153,23 +154,24 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(h2, None)
 
     def test_clear(self):
-        i = random.randint(1, 499)
+        
         url = URL('http://w3af.com/a/b/c.php')
         fr = FuzzReq(url, dc={'a': ['1']})
         hdr = Headers([('Content-Type', 'text/html')])
         res = HTTPResponse(200, '<html>', hdr, url, url)
+        
         h1 = HistoryItem()
         h1.request = fr
-        res.set_id(i)
+        res.set_id(1)
         h1.response = res
         h1.save()
-        h1.clear()
-        try:
-            h2 = h1.read(i)
-        except:
-            h2 = None
-        self.assertEqual(h2, None)
-        self.assertFalse(os.path.exists(h1._session_dir))
+        
+        clear_result = h1.clear()
+        
+        self.assertTrue(clear_result)
+        self.assertRaises(w3afException, h1.read, 1)
+        self.assertFalse(os.path.exists(h1._session_dir),
+                         '%s exists.' % h1._session_dir)
 
     def test_tag(self):
         tag_id = random.randint(501, 999)

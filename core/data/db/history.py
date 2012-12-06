@@ -276,9 +276,9 @@ class HistoryItem(object):
         '''Return item by ID.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
-        resultItem = self.__class__()
-        resultItem.load(id, full)
-        return resultItem
+        result_item = self.__class__()
+        result_item.load(id, full)
+        return result_item
 
     def save(self):
         '''Save object into DB.'''
@@ -367,13 +367,11 @@ class HistoryItem(object):
         '''Clear history and delete all trace files.'''
         if not self._db:
             raise w3afException('The database is not initialized yet.')
-        # Clear DB
-        sql = 'DELETE FROM ' + self._DATA_TABLE
-        self._db.execute(sql)
         
         # Get the DB filename 
         db_filename = self._db.get_file_name()
         self._db.close()
+        self._db = None
         
         # Delete files
         os.remove(db_filename)
