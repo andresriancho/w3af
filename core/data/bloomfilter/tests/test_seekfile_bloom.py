@@ -24,25 +24,25 @@ from core.data.bloomfilter.tests.generic_filter_test import GenericFilterTest
 from core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
-class TestCMmapBloomFilterLarge(GenericFilterTest):
+class TestFileSeekBloomFilterLarge(GenericFilterTest):
 
     CAPACITY = 20000
     ERROR_RATE = 0.001
 
     def setUp(self):
-        super(TestCMmapBloomFilterLarge, self).setUp()
+        super(TestFileSeekBloomFilterLarge, self).setUp()
         temp_file = GenericBloomFilter.get_temp_file()
-        self.filter = FileSeekBloomFilter(
-            self.CAPACITY, self.ERROR_RATE, temp_file)
+        self.filter = FileSeekBloomFilter(self.CAPACITY, self.ERROR_RATE,
+                                          temp_file)
 
 
-class TestCMmapBloomFilterSmall(GenericFilterTest):
+class TestFileSeekBloomFilterSmall(GenericFilterTest):
 
     CAPACITY = 500
     ERROR_RATE = 0.001
 
     def setUp(self):
-        super(TestCMmapBloomFilterSmall, self).setUp()
+        super(TestFileSeekBloomFilterSmall, self).setUp()
         temp_file = GenericBloomFilter.get_temp_file()
-        self.filter = FileSeekBloomFilter(
-            self.CAPACITY, self.ERROR_RATE, temp_file)
+        self.filter = FileSeekBloomFilter(self.CAPACITY, self.ERROR_RATE,
+                                          temp_file)
