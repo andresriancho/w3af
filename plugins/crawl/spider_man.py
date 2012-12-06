@@ -26,11 +26,13 @@ import core.data.constants.ports as ports
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.daemons.proxy import proxy, w3afProxyHandler
-from core.controllers.exceptions import w3afRunOnce
+from core.controllers.exceptions import w3afRunOnce, w3afProxyException
 from core.controllers.misc.decorators import runonce
+
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
+from core.data.dc.headers import Headers
 
 # Cohny changed the original http://w3af/spider_man?terminate
 # to http://127.7.7.7/spider_man?terminate because in Opera we got
@@ -55,20 +57,24 @@ class spider_man(CrawlPlugin):
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, freq):
+        
         # Create the proxy server
-        self._proxy = proxy(self._listen_address, self._listen_port,
-                            self._uri_opener, self.create_p_h())
-        self._proxy.target_domain = freq.get_url().get_domain()
-
-        # Inform the user
-        msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
-               'your browser to use these proxy settings and navigate the '
-               'target site.\nTo exit spider_man plugin please navigate to %s .'
-               % (self._listen_address, self._listen_port, TERMINATE_URL))
-        om.out.information(msg)
-
-        # Run the server
-        self._proxy.run()
+        try:
+            self._proxy = proxy(self._listen_address, self._listen_port,
+                                self._uri_opener, self.create_p_h())
+        except w3afProxyException, proxy_exc:
+            om.out.error('%s' % proxy_exc)
+        
+        else:
+            self._proxy.target_domain = freq.get_url().get_domain()
+            
+            msg = ('spider_man proxy is running on %s:%s.\nPlease configure '
+                   'your browser to use these proxy settings and navigate the '
+                   'target site.\nTo exit spider_man plugin please navigate to %s .'
+                   % (self._listen_address, self._listen_port, TERMINATE_URL))
+            om.out.information(msg)
+            
+            self._proxy.run()
 
     def append_fuzzable_request(self, freq):
         '''
@@ -100,7 +106,7 @@ class spider_man(CrawlPlugin):
         @return: proxyHandler constructor
         '''
         def constructor(request, client_addr, server):
-            return proxyHandler(request, client_addr, server, self)
+            return ProxyHandler(request, client_addr, server, self)
 
         return constructor
 
@@ -160,13 +166,13 @@ class spider_man(CrawlPlugin):
         '''
 
 
-global_firstRequest = True
+global_first_request = True
 
 
-class proxyHandler(w3afProxyHandler):
+class ProxyHandler(w3afProxyHandler):
 
     def __init__(self, request, client_address, server, spider_man=None):
-        self._version = 'spider_man-w3af/1.0'
+        self._version = 'spider_man-w3af/1.1'
         if spider_man is None:
             if hasattr(server, 'chainedHandler'):
                 # see core.controllers.daemons.proxy.HTTPServerWrapper
@@ -177,9 +183,9 @@ class proxyHandler(w3afProxyHandler):
         w3afProxyHandler.__init__(self, request, client_address, server)
 
     def do_ALL(self):
-        global global_firstRequest
-        if global_firstRequest:
-            global_firstRequest = False
+        global global_first_request
+        if global_first_request:
+            global_first_request = False
             om.out.information(
                 'The user is navigating through the spider_man proxy.')
 
@@ -188,7 +194,7 @@ class proxyHandler(w3afProxyHandler):
 
         if path == TERMINATE_URL:
             om.out.information('The user terminated the spider_man session.')
-            self._sendEnd()
+            self._send_end()
             self._spider_man.stop_proxy()
             return
 
@@ -198,8 +204,9 @@ class proxyHandler(w3afProxyHandler):
         freq = self._create_fuzzable_request()
         self._spider_man.append_fuzzable_request(freq)
 
-        grep = True if path.get_domain(
-        ) == self.server.w3afLayer.target_domain else False
+        grep = True
+        if path.get_domain() != self.server.w3afLayer.target_domain:
+            grep = False
 
         try:
             response = self._send_to_server(grep=grep)
@@ -209,25 +216,25 @@ class proxyHandler(w3afProxyHandler):
             if response.is_text_or_html():
                 self._spider_man.ext_fuzzable_requests(response)
 
-            for h in response.get_headers():
-                if 'cookie' in h.lower():
-                    msg = ('The remote web application sent the following'
-                           ' cookie: "%s".\nw3af will use it during the rest '
-                           'of the process in order to maintain the session.'
-                           % response.get_headers()[h])
-                    om.out.information(msg)
+            headers = response.get_headers()
+            cookie_value, cookie_header = headers.iget('cookie', None)
+            if cookie_value is not None:
+                msg = 'The remote web application sent the following' \
+                      ' cookie: "%s".\nw3af will use it during the rest ' \
+                      'of the process in order to maintain the session.' 
+                om.out.information(msg % cookie_value)
             self._send_to_browser(response)
-        return self._spider_man._fuzzable_requests
-
+        
     do_GET = do_POST = do_HEAD = do_ALL
 
-    def _sendEnd(self):
+    def _send_end(self):
         '''
         Sends an HTML indicating that w3af spider_man plugin has finished its execution.
         '''
         html = '<html>spider_man plugin finished its execution.</html>'
-        headers = {'Content-Length': str(len(html))}
+        html_len = str(len(html))
+        headers = Headers([('Content-Length', html_len)])
 
-        r = HTTPResponse.HTTPResponse(200, html, headers,
-                                      TERMINATE_URL, TERMINATE_URL,)
-        self._send_to_browser(r)
+        resp = HTTPResponse.HTTPResponse(200, html, headers,
+                                         TERMINATE_URL, TERMINATE_URL,)
+        self._send_to_browser(resp)

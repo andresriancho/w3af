@@ -56,7 +56,7 @@ class OpenerSettings(Configurable):
 
         # Set the openers to None
         self._basicAuthHandler = None
-        self._proxyHandler = None
+        self._proxy_handler = None
         self._httpsHandler = None
         self._mangleHandler = None
         self._urlParameterHandler = None
@@ -214,7 +214,7 @@ class OpenerSettings(Configurable):
         '''
         Saves the proxy information and creates the handler.
 
-        If the information is invalid it will set self._proxyHandler to None,
+        If the information is invalid it will set self._proxy_handler to None,
         so no proxy is used.
 
         @return: None
@@ -225,12 +225,12 @@ class OpenerSettings(Configurable):
             #    The user doesn't want a proxy anymore
             cfg.save('proxyAddress', '')
             cfg.save('proxyPort', '')
-            self._proxyHandler = None
+            self._proxy_handler = None
             return
 
         if port > 65535 or port < 1:
             #    The user entered something invalid
-            self._proxyHandler = None
+            self._proxy_handler = None
             raise w3afException('Invalid port number: ' + str(port))
 
         #
@@ -247,7 +247,7 @@ class OpenerSettings(Configurable):
         #    makes no sense, because urllib2.ProxyHandler doesn't support HTTPS proxies with CONNECT.
         #    The proxying with CONNECT is implemented in keep-alive handler. (nasty!)
         proxyMap = {'http': "http://" + ip + ":" + str(port)}
-        self._proxyHandler = urllib2.ProxyHandler(proxyMap)
+        self._proxy_handler = urllib2.ProxyHandler(proxyMap)
 
     def get_proxy(self):
         return cfg.get('proxyAddress') + ':' + str(cfg.get('proxyPort'))
@@ -327,7 +327,7 @@ class OpenerSettings(Configurable):
 
         # Prepare the list of handlers
         handlers = []
-        for handler in [self._proxyHandler, self._basicAuthHandler,
+        for handler in [self._proxy_handler, self._basicAuthHandler,
                         self._ntlmAuthHandler, self._cookieHandler,
                         MultipartPostHandler.MultipartPostHandler,
                         self._kAHTTP, self._kAHTTPS, LogHandler,

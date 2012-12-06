@@ -41,15 +41,18 @@ from core.data.dc.headers import Headers
 
 class proxy(Process):
     '''
-    This class defines a simple HTTP proxy, it is mainly used for "complex" plugins.
+    This class defines a simple HTTP proxy, it is mainly used for "complex"
+    plugins.
 
     You should create a proxy instance like this:
         ws = proxy( '127.0.0.1', 8080, urlOpener )
 
-    Or like this, if you want to override the proxyHandler (most times you want to do it...):
+    Or like this, if you want to override the proxyHandler (most times you
+    want to do it...):
         ws = proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
 
-    If the IP:Port is already in use, an exception will be raised while creating the ws instance.
+    If the IP:Port is already in use, an exception will be raised while
+    creating the ws instance.
 
     To start the proxy, and given that this is a Process class, you can do this:
         ws.start()
@@ -80,7 +83,7 @@ class proxy(Process):
     '''
 
     def __init__(self, ip, port, uri_opener, proxyHandler=None,
-                 proxyCert='core/controllers/daemons/mitm.crt'):
+                 proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
         @param ip: IP address to bind
         @param port: Port to bind
@@ -88,15 +91,16 @@ class proxy(Process):
             the requests that arrive from the browser
         @param proxyHandler: A class that will know how to handle
             requests from the browser
-        @param proxyCert: Proxy certificate to use, this is needed
+        @param proxy_cert: Proxy certificate to use, this is needed
             for proxying SSL connections.
         '''
         Process.__init__(self)
         self.daemon = True
-
+        self.name = 'ProxyThread'
+        
         # Internal vars
         self._server = None
-        self._proxyHandler = proxyHandler
+        self._proxy_handler = proxyHandler
         self._running = False
         self._uri_opener = uri_opener
         self._tm = tm
@@ -104,15 +108,15 @@ class proxy(Process):
         # User configured parameters
         self._ip = ip
         self._port = port
-        self._proxyCert = proxyCert
+        self._proxy_cert = proxy_cert
 
         # Start the proxy server
         try:
-            self._server = ProxyServer(
-                (self._ip, self._port), self._proxyHandler)
+            self._server = ProxyServer((self._ip, self._port),
+                                       self._proxy_handler)
         except socket.error, se:
-            raise w3afProxyException(
-                'Socket error while starting proxy: "%s"' % se.strerror)
+            raise w3afProxyException('Socket error while starting proxy: "%s"'
+                                     % se.strerror)
 
     def get_bind_ip(self):
         '''
@@ -160,16 +164,15 @@ class proxy(Process):
         Starts the proxy daemon; usually this method isn't called directly. In
         most cases you'll call start()
         """
-        if self._proxyHandler is None:
-            self._proxyHandler = w3afProxyHandler
+        if self._proxy_handler is None:
+            self._proxy_handler = w3afProxyHandler
 
-        om.out.debug('Using proxy handler: ' + str(self._proxyHandler))
-        self._proxyHandler._uri_opener = self._uri_opener
-        self._proxyHandler._uri_opener._proxyCert = self._proxyCert
+        om.out.debug('Using proxy handler: %s.' % self._proxy_handler)
+        self._proxy_handler._uri_opener = self._uri_opener
+        self._proxy_handler._uri_opener._proxy_cert = self._proxy_cert
 
         # Starting to handle requests
-        message = 'Proxy server listening on ' + self._ip + ':' + \
-            str(self._port)
+        message = 'Proxy server listening on %s:%s.' % (self._ip, self._port)
         om.out.debug(message)
         self._server.w3afLayer = self
 
@@ -177,7 +180,8 @@ class proxy(Process):
         self._server.serve_forever()
         self._running = False
 
-        # I have to do this to actually KILL the HTTPServer, and free the TCP port
+        # I have to do this to actually KILL the HTTPServer, and free the
+        # TCP port
         del self._server
 
 
@@ -197,24 +201,22 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
         if not self.raw_requestline:
             self.close_connection = 1
             return
-        if not self.parse_request():  # An error code has been sent, just exit
+        
+        # An error code has been sent, just exit
+        if not self.parse_request():
             return
 
-        try:
-            # Now I perform my specific tasks...
-            if self.command == 'QUIT':
-                # Stop the server
-                self.send_response(200)
-                self.end_headers()
-                self.server.stop = True
-                om.out.debug('Handled QUIT request.')
-            elif self.command == 'CONNECT':
-                self.do_CONNECT()
-            else:
-                self.do_ALL()
-        except Exception, e:
-            ### FIXME: Maybe I should perform some more detailed error handling...
-            om.out.debug('An exception occurred in w3afProxyHandler.handle_one_request() :' + str(e))
+        # Now I perform my specific tasks...
+        if self.command == 'QUIT':
+            # Stop the server
+            self.send_response(200)
+            self.end_headers()
+            self.server.stop = True
+            om.out.debug('Handled QUIT request.')
+        elif self.command == 'CONNECT':
+            self.do_CONNECT()
+        else:
+            self.do_ALL()
 
     def _get_post_data(self):
         '''
@@ -343,8 +345,9 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
 
         except Exception, e:
             traceback.print_exc()
-            om.out.debug('An error occurred in proxy._send_error(). Maybe the browser closed the connection?')
-            om.out.debug('Exception: ' + str(e))
+            msg = 'An error occurred in proxy._send_error(). Maybe the browser'\
+                  ' closed the connection? Exception: %s.' % e
+            om.out.debug(msg)
 
         self.wfile.close()
 
@@ -447,12 +450,12 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
                 ctx.set_timeout(5)
 
                 try:
-                    ctx.use_privatekey_file(self._uri_opener._proxyCert)
+                    ctx.use_privatekey_file(self._uri_opener._proxy_cert)
                 except:
-                    om.out.error("[proxy error] Couldn't find certificate file %s" % self._uri_opener._proxyCert)
+                    om.out.error("[proxy error] Couldn't find certificate file %s" % self._uri_opener._proxy_cert)
 
-                ctx.use_certificate_file(self._uri_opener._proxyCert)
-                ctx.load_verify_locations(self._uri_opener._proxyCert)
+                ctx.use_certificate_file(self._uri_opener._proxy_cert)
+                ctx.load_verify_locations(self._uri_opener._proxy_cert)
 
                 # Save for later
                 browSoc = self.connection
@@ -520,7 +523,9 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
             'Exiting proxy server serve_forever(); stop() was successful.')
 
     def server_bind(self):
-        om.out.debug('Changing socket options of ProxyServer to (socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)')
+        msg = 'Changing socket options of ProxyServer to (socket.SOL_SOCKET,'\
+              ' socket.SO_REUSEADDR, 1)'
+        om.out.debug(msg)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         HTTPServer.server_bind(self)
 
