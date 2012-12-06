@@ -58,12 +58,14 @@ class ScalableBloomFilter(object):
         True
 
         >>> sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH)
-        >>> count = 10000
+        >>> count = 12500
         >>> for i in xrange(0, count):
         ...     _ = sbf.add(i)
         ...
         >>> sbf.capacity > count
         True
+        >>> sbf.capacity
+        30000
         >>> len(sbf) <= count
         True
         >>> abs((len(sbf) / float(count)) - 1.0) <= sbf.error_rate
