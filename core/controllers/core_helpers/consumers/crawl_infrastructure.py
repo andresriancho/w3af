@@ -369,8 +369,8 @@ class crawl_infrastructure(BaseConsumer):
             om.out.information('The user interrupted the crawl phase, '
                                'continuing with audit.')
         except w3afException, e:
-            msg = 'An exception was found while running "%s" with "%s".'
-            om.out.error(msg % (plugin.get_name(), fuzzable_request))
+            msg = 'An exception was found while running "%s" with "%s": "%s".'
+            om.out.error(msg % (plugin.get_name(), fuzzable_request), e)
         except w3afRunOnce:
             # Some plugins are meant to be run only once
             # that is implemented by raising a w3afRunOnce
