@@ -300,15 +300,16 @@ class web_spider(CrawlPlugin):
                 # want to return a 404 to the core.
                 add_self = resp.get_code() in self.NOT_404
                 fuzz_req_list = self._create_fuzzable_requests(resp,
-                                                               request=original_request, add_self=add_self)
+                                                               request=original_request,
+                                                               add_self=add_self)
                 if not possibly_broken and not add_self:
                     t = (resp.get_url(), original_request.get_uri())
                     self._broken_links.add(t)
             else:
                 om.out.debug('Adding relative reference "%s" '
                              'to the result.' % reference)
-                frlist = self._create_fuzzable_requests(
-                    resp, request=original_request)
+                frlist = self._create_fuzzable_requests(resp,
+                                                        request=original_request)
                 fuzz_req_list.extend(frlist)
 
             # Process the list.
