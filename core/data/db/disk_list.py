@@ -70,15 +70,16 @@ class disk_list(DBClientSQLite):
                                         journal_mode='OFF', cache_size=200)
 
         # Create table
-        self.execute('CREATE TABLE data (index_ REAL PRIMARY KEY, eq_attrs BLOB, pickle BLOB)')
+        # DO NOT add the AUTOINCREMENT flag to the table creation since that
+        # will break __getitem__ when an item is removed, see:
+        #     http://www.sqlite.org/faq.html#q1
+        self.execute('CREATE TABLE data (index_ INTEGER PRIMARY KEY,'
+                     ' eq_attrs BLOB, pickle BLOB)')
 
         # Create index
         self.execute('CREATE INDEX data_index ON data(eq_attrs)')
 
         self.commit()
-
-        # Init some attributes
-        self._current_index = 0
 
         # Now we perform a small trick... we remove the temp file directory
         # entry
@@ -163,17 +164,16 @@ class disk_list(DBClientSQLite):
         '''
         pickled_obj = cPickle.dumps(value)
         eq_attrs = self._get_eq_attrs_values(value)
-        t = (self._current_index, eq_attrs, pickled_obj)
-        self._current_index += 1
-        self.execute("INSERT INTO data VALUES (?, ?, ?)", t)
+        t = (eq_attrs, pickled_obj)
+        self.execute("INSERT INTO data VALUES (NULL, ?, ?)", t)
 
     def clear(self):
         self.execute("DELETE FROM data WHERE 1=1")
-        self._current_index = 0
 
     def extend(self, value_list):
         '''
-        Extend the disk list with a group of items that is provided in @value_list
+        Extend the disk list with a group of items that is provided in
+        @value_list
 
         @return: None
         '''
@@ -202,9 +202,13 @@ class disk_list(DBClientSQLite):
             yield obj
 
     def __getitem__(self, key):
+        # I need to add 1 to this key because the autoincrement in SQLITE
+        # starts counting from 1 instead of 0
+        index_ = int(key) + 1
+         
         try:
             r = self.select_one(
-                'SELECT pickle FROM data WHERE index_ = ?', (key,))
+                'SELECT pickle FROM data WHERE index_ = ?', (index_,))
             obj = cPickle.loads(r[0])
         except:
             raise IndexError('list index out of range')
