@@ -125,10 +125,10 @@ class TestBlindSQLI(PluginTest):
         self.assertEquals(target_url, str(vuln.get_url()))
 
     def test_single_quote_form(self):
-        target_url = 'http://moth/w3af/audit/blind_sql_injection/test_forms.html'
+        target_url = 'http://moth/w3af/audit/blind_sql_injection/forms/test_forms.html'
         self._scan(target_url, self._run_configs['cfg']['plugins'])
 
-        action_url = 'http://moth/w3af/audit/blind_sql_injection/data_receptor.php'
+        action_url = 'http://moth/w3af/audit/blind_sql_injection/forms/data_receptor.php'
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
         self.assertEquals(1, len(vulns))
 
