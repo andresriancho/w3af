@@ -1,0 +1,3 @@
+*.py[cod]
+output/
+.sqlmap_history
