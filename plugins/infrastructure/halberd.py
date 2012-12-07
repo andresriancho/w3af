@@ -134,9 +134,9 @@ class halberd(InfrastructurePlugin):
             diff_fields = halberd_analysis.diff_fields(clues)
 
             om.out.information('=' * 70)
-            om.out.information('%s' % scantask.url, newLine=False)
+            om.out.information('%s' % scantask.url, new_line=False)
             if scantask.addr:
-                om.out.information(' (%s)' % scantask.addr, newLine=False)
+                om.out.information(' (%s)' % scantask.addr, new_line=False)
             om.out.information(': %d real server(s)' % len(clues))
             om.out.information('=' * 70)
 

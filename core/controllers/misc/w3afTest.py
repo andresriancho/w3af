@@ -115,7 +115,7 @@ def w3afTest():
         try:
             sep = os.path.sep
             short_script = script.split(sep)[-1].replace('.w3af', '')
-            om.out.information(short_script + '...', newLine=False)
+            om.out.information(short_script + '...', new_line=False)
             result, took = run_script(script)
             res_code, msg = analyze_result(result)
 
@@ -173,7 +173,7 @@ def w3afTest():
 
     # Failed
     bad_list.sort()
-    om.out.console('- ' + str(len(bad_list)) + ' Failed', newLine=False)
+    om.out.console('- ' + str(len(bad_list)) + ' Failed', new_line=False)
     if not bad_list:
         om.out.console('')
     else:

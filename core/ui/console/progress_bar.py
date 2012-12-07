@@ -113,12 +113,12 @@ class progress_bar(object):
             self.__oldProgBar = self.__progBar
 
             if eta and self.__amount < self.__max:
-                om.out.console("\r%s %d/%d  ETA %s" % (self.__progBar, self.__amount, self.__max, self.__convertSeconds(int(eta))), newLine=False)
+                om.out.console("\r%s %d/%d  ETA %s" % (self.__progBar, self.__amount, self.__max, self.__convertSeconds(int(eta))), new_line=False)
             else:
                 blank = " " * (80 - len("\r%s %d/%d" % (
                     self.__progBar, self.__amount, self.__max)))
                 om.out.console("\r%s %d/%d%s" % (self.__progBar, self.__amount,
-                               self.__max, blank), newLine=False)
+                               self.__max, blank), new_line=False)
 
             if self.__amount == self.__max:
                 om.out.console("")

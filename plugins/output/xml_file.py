@@ -101,7 +101,7 @@ class xml_file(OutputPlugin):
         pass
     debug = information = vulnerability = console = log_http = do_nothing
 
-    def error(self, message, newLine=True):
+    def error(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was called
         from a plugin or from the framework. This method should take an action

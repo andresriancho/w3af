@@ -32,7 +32,7 @@ class list_processes(Payload):
         #   "progress bar"
         self.k -= 1
         if self.k == 0:
-            om.out.console('.', newLine=False)
+            om.out.console('.', new_line=False)
             self.k = 400
         #   end "progress bar"
 
@@ -46,7 +46,7 @@ class list_processes(Payload):
                 cmd = '[kernel process]'
             cmd = cmd.replace('\x00', ' ')
             self.result[str(pid)] = {'name': name, 'state': state, 'cmd': cmd}
-            om.out.console('+', newLine=False)
+            om.out.console('+', new_line=False)
 
         #TODO: Check how to append to the KB
         #if kb.kb:

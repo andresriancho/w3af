@@ -71,23 +71,23 @@ class console(OutputPlugin):
         sys.stdout.flush()
 
     @catch_ioerror
-    def debug(self, message, newLine=True):
+    def debug(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for debug messages.
         '''
         if self.verbose:
-            self._print_to_stdout(message, newLine)
+            self._print_to_stdout(message, new_line)
 
     @catch_ioerror
-    def _generic(self, message, newLine=True, severity=None):
+    def _generic(self, message, new_line=True, severity=None):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
         an action for all messages except from debug ones.
         '''
-        self._print_to_stdout(message, newLine)
+        self._print_to_stdout(message, new_line)
 
     error = console = vulnerability = information = _generic
 

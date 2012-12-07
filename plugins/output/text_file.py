@@ -113,19 +113,19 @@ class text_file(OutputPlugin):
                   ' file "%s", error: "%s".' % (self._http_file_name, e)
             sys.exit(1)
 
-    def write(self, message, log_type, newLine=True):
+    def write(self, message, log_type, new_line=True):
         '''
         Method that writes stuff to the text_file.
 
         @param message: The message to write to the file
         @param log_type: Type of message are we writing to the file
-        @param newLine: Add a new line after the message
+        @param new_line: Add a new line after the message
         '''
         if not self._initialized:
             self._init()
 
         to_print = str(message)
-        if newLine == True:
+        if new_line == True:
             to_print += '\n'
 
         now = time.localtime(time.time())
@@ -141,44 +141,44 @@ class text_file(OutputPlugin):
 
         self._flush()
 
-    def debug(self, message, newLine=True):
+    def debug(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for debug messages.
         '''
         if self.verbose:
-            self.write(message, 'debug', newLine)
+            self.write(message, 'debug', new_line)
 
-    def information(self, message, newLine=True):
+    def information(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for informational messages.
         '''
-        self.write(message, 'information', newLine)
+        self.write(message, 'information', new_line)
 
-    def error(self, message, newLine=True):
+    def error(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action for error messages.
         '''
-        self.write(message, 'error', newLine)
+        self.write(message, 'error', new_line)
 
-    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
+    def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take an
         action when a vulnerability is found.
         '''
-        self.write(message, 'vulnerability', newLine)
+        self.write(message, 'vulnerability', new_line)
 
-    def console(self, message, newLine=True):
+    def console(self, message, new_line=True):
         '''
         This method is used by the w3af console to print messages to the outside.
         '''
-        self.write(message, 'console', newLine)
+        self.write(message, 'console', new_line)
 
     def log_enabled_plugins(self, plugins_dict, options_dict):
         '''

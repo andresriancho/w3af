@@ -44,7 +44,7 @@ class OutputPlugin(Plugin):
     def get_type(self):
         return 'output'
 
-    def debug(self, message, newLine=True):
+    def debug(self, message, new_line=True):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
@@ -55,7 +55,7 @@ class OutputPlugin(Plugin):
         raise w3afException(
             'Plugin is not implementing required method debug')
 
-    def information(self, message, newLine=True):
+    def information(self, message, new_line=True):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
@@ -66,7 +66,7 @@ class OutputPlugin(Plugin):
         raise w3afException(
             'Plugin is not implementing required method information')
 
-    def error(self, message, newLine=True):
+    def error(self, message, new_line=True):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
@@ -77,7 +77,7 @@ class OutputPlugin(Plugin):
         raise w3afException(
             'Plugin is not implementing required method error')
 
-    def vulnerability(self, message, newLine=True, severity=severity.MEDIUM):
+    def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an
@@ -88,7 +88,7 @@ class OutputPlugin(Plugin):
         raise w3afException(
             'Plugin is not implementing required method vulnerability')
 
-    def console(self, message, newLine=True):
+    def console(self, message, new_line=True):
         '''
         This method is called from the output manager object. The OM object was
         called from a plugin or from the framework. This method should take an

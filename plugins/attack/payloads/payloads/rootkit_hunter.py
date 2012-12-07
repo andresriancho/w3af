@@ -18,7 +18,7 @@ class rootkit_hunter(Payload):
         #   "progress bar"
         self.k -= 1
         if self.k == 0:
-            om.out.console('.', newLine=False)
+            om.out.console('.', new_line=False)
             self.k = 400
         #   end "progress bar"
 

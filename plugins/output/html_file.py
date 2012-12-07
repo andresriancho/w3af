@@ -115,7 +115,7 @@ class html_file(OutputPlugin):
                 print msg
                 sys.exit(1)
 
-    def debug(self, message, newLine=True):
+    def debug(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
@@ -133,7 +133,7 @@ class html_file(OutputPlugin):
         pass
     information = vulnerability = do_nothing
 
-    def error(self, message, newLine=True):
+    def error(self, message, new_line=True):
         '''
         This method is called from the output object. The output object was
         called from a plugin or from the framework. This method should take
@@ -143,7 +143,7 @@ class html_file(OutputPlugin):
         to_print = self._clean_string(message)
         self._add_to_debug_table(cgi.escape(to_print), 'error')
 
-    def console(self, message, newLine=True):
+    def console(self, message, new_line=True):
         '''
         This method is used by the w3af console to print messages to the
         outside.

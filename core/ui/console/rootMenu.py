@@ -170,7 +170,7 @@ class rootMenu(menu):
                     progress + ' - ETA: %.2dd %.2dh %.2dm %.2ds' % eta
 
                 # Print
-                om.out.console(msg, newLine=True)
+                om.out.console(msg, new_line=True)
 
     def _cmd_version(self, params):
         '''

@@ -414,18 +414,18 @@ class ConsoleUI(object):
 
     def _onUp(self):
         history = self._get_history()
-        newLine = history.back(self._line)
+        new_line = history.back(self._line)
 
-        if newLine is not None:
-            self._setLine(newLine)
+        if new_line is not None:
+            self._setLine(new_line)
         else:
             term.bell()
 
     def _onDown(self):
         history = self._get_history()
-        newLine = history.forward()
-        if newLine is not None:
-            self._setLine(newLine)
+        new_line = history.forward()
+        if new_line is not None:
+            self._setLine(new_line)
         else:
             term.bell()
 

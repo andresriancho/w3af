@@ -102,10 +102,10 @@ class TestOutputManager(unittest.TestCase):
 
     def test_error_handling(self):
         class InvalidPlugin(object):
-            def information(self, msg, newLine=True):
+            def information(self, msg, new_line=True):
                 raise Exception('Test')
 
-            def error(self, msg, newLine=True):
+            def error(self, msg, new_line=True):
                 pass
 
             def get_name(self):
