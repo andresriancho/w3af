@@ -29,5 +29,10 @@ class TestSQLMapUpdate(unittest.TestCase):
     
     def test_updated(self):
         days = days_since_newest_file_update(SQLMapWrapper.SQLMAP_LOCATION)
-        print days
+        
+        msg = 'You need to update the sqlmap installation that\'s embedded with'\
+              ' w3af, to do so please run these commands:\n'\
+              'cd plugins/attack/db/sqlmap/\n'\
+              'git pull\n'
+        self.assertLess(days, 30, msg)
         
