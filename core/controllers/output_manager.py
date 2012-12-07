@@ -82,9 +82,8 @@ class output_manager(Process):
 
     def run(self):
         '''
-        This method is one of the most important ones in the class, since it will
-        consume the work units from the queue and send them to the plugins
-
+        This method is one of the most important ones in the class, since it
+        will consume the work units from the queue and send them to the plugins
         '''
         while True:
             work_unit = self.in_queue.get()
