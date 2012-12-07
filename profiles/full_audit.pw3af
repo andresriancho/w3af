@@ -75,7 +75,7 @@ use_w3af_site = True
 stopOnFirst = True
 
 [crawl.web_spider]
-onlyForward = False
+only_forward = False
 followRegex = .*
 ignoreRegex = 
 

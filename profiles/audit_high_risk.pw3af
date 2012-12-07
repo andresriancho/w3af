@@ -69,7 +69,7 @@ verbose = True
 [crawl.web_spider]
 followRegex = .*
 ignoreRegex = 
-onlyForward = False
+only_forward = False
 
 [audit.file_upload]
 extensions = gif,html,bmp,jpg,png,txt

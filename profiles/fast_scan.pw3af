@@ -125,7 +125,7 @@ ntlmAuthURL =
 [grep.http_auth_detect]
 
 [crawl.web_spider]
-onlyForward = False
+only_forward = False
 followRegex = .*
 ignoreRegex = 
 

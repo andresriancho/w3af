@@ -34,7 +34,7 @@ class TestDOMXSS(PluginTest):
                 'grep': (PluginConfig('dom_xss'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
 
             }

@@ -31,7 +31,7 @@ class TestContentNegotiation(PluginTest):
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('content_negotiation'),
                                   PluginConfig('web_spider',
-                                               ('onlyForward', True, PluginConfig.BOOL)))}
+                                               ('only_forward', True, PluginConfig.BOOL)))}
         }
     }
 

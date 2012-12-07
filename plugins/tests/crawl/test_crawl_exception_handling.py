@@ -38,7 +38,7 @@ class TestCrawlExceptions(PluginTest):
             'plugins': {
                 'crawl': (
                     PluginConfig('failing_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
             }
         },

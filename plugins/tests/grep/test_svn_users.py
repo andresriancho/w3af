@@ -34,7 +34,7 @@ class TestSVNUsers(PluginTest):
                 'grep': (PluginConfig('svn_users'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
 
             }

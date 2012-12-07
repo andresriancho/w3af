@@ -34,7 +34,7 @@ class TestXPATH(PluginTest):
                 'crawl': (
                     PluginConfig(
                         'web_spider',
-                        ('onlyForward', True, PluginConfig.BOOL)),
+                        ('only_forward', True, PluginConfig.BOOL)),
                 )
             }
         }

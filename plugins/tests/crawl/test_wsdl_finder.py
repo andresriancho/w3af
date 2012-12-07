@@ -32,7 +32,7 @@ class TestWSDLFinder(PluginTest):
             'plugins': {'crawl': (PluginConfig('wsdl_finder'),
                                   PluginConfig('web_spider',
                                                (
-                                               'onlyForward', True, PluginConfig.BOOL))),
+                                               'only_forward', True, PluginConfig.BOOL))),
                         }
         }
     }

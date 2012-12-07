@@ -6,7 +6,7 @@ discovery
 output console,text_file
 output
 output config text_file
-set fileName output-agfnet.txt
+set output_file output-agfnet.txt
 set verbosity 10
 back
 output config console

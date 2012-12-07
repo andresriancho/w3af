@@ -3,7 +3,7 @@
 plugins
 output console
 output config text_file
-set fileName output-w3af.txt
+set output_file output-w3af.txt
 set verbose True
 back
 output config console
@@ -13,7 +13,7 @@ grep http_in_body
 
 crawl web_spider
 crawl config web_spider
-set onlyForward True
+set only_forward True
 back
 
 back

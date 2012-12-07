@@ -78,7 +78,7 @@ result_limit = 300
 [crawl.web_spider]
 followRegex = .*
 ignoreRegex = None
-onlyForward = False
+only_forward = False
 
 [audit.ssl_certificate]
 minExpireDays = 30

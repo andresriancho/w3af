@@ -34,7 +34,7 @@ class TestWordnet(PluginTest):
         'crawl': (PluginConfig('wordnet',
                                ('wn_results', 20, PluginConfig.INT)),
                   PluginConfig('web_spider',
-                               ('onlyForward', True, PluginConfig.BOOL)))
+                               ('only_forward', True, PluginConfig.BOOL)))
             },
         }
     }

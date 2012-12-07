@@ -60,7 +60,7 @@ verbose = False
 [crawl.archive_dot_org]
 
 [crawl.web_spider]
-onlyForward = False
+only_forward = False
 followRegex = .*
 ignoreRegex = 
 

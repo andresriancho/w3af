@@ -43,7 +43,7 @@ class TestWebSpider(PluginTest):
             'plugins': {
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL),
+                                 ('only_forward', True, PluginConfig.BOOL),
                                  (
                                  'ignoreRegex', '.*pages/100.php.*', PluginConfig.STR)),
                 )

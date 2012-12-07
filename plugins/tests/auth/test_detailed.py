@@ -32,7 +32,7 @@ class TestDetailed(PluginTest):
         'plugins': {
         'crawl': (
         PluginConfig('web_spider',
-                     ('onlyForward', True, PluginConfig.BOOL),
+                     ('only_forward', True, PluginConfig.BOOL),
                      (
         'ignoreRegex', '.*logout.*', PluginConfig.STR)),
 

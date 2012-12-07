@@ -33,7 +33,7 @@ class TestFormAutocomplete(PluginTest):
                 'grep': (PluginConfig('form_autocomplete'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
             }
         }

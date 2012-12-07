@@ -5,7 +5,7 @@ audit lfi
 grep path_disclosure
 output console,text_file
 output config text_file
-set fileName output-w3af.txt
+set output_file output-w3af.txt
 set verbose True
 back
 back

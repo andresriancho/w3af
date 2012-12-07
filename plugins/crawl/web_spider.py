@@ -79,7 +79,7 @@ class web_spider(CrawlPlugin):
         '''
         if self._first_run:
             # I have to set some variables, in order to be able to code
-            # the "onlyForward" feature
+            # the "only_forward" feature
             self._first_run = False
             self._target_urls = [i.get_domain_path() for i in cf.cf.get('targets')]
 
@@ -349,7 +349,7 @@ class web_spider(CrawlPlugin):
         ol = OptionList()
 
         d = 'When spidering, only search directories inside the one that was given as target'
-        o = opt_factory('onlyForward', self._only_forward, d, BOOL)
+        o = opt_factory('only_forward', self._only_forward, d, BOOL)
         ol.add(o)
 
         d = 'When spidering, only follow links that match this regular expression '
@@ -372,7 +372,7 @@ class web_spider(CrawlPlugin):
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._only_forward = options_list['onlyForward'].get_value()
+        self._only_forward = options_list['only_forward'].get_value()
         self._ignore_regex = options_list['ignoreRegex'].get_value()
         self._follow_regex = options_list['followRegex'].get_value()
         self._compile_re()
@@ -406,7 +406,7 @@ class web_spider(CrawlPlugin):
         all links and forms from the response.
 
         Three configurable parameter exist:
-            - onlyForward
+            - only_forward
             - ignoreRegex
             - followRegex
 

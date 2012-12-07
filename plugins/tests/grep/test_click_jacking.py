@@ -34,7 +34,7 @@ class TestClickJacking(PluginTest):
                 'grep': (PluginConfig('click_jacking'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
 
             }

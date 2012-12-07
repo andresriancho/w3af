@@ -40,7 +40,7 @@ class Testwordpress_fingerprint(PluginTest):
             'plugins': {
         'crawl': (PluginConfig('wordpress_fingerprint',),
                   PluginConfig('web_spider',
-                               ('onlyForward', True, PluginConfig.BOOL)))
+                               ('only_forward', True, PluginConfig.BOOL)))
 
             },
         }

@@ -33,7 +33,7 @@ class TestFindDVCS(PluginTest):
             'target': base_url,
             'plugins': {'crawl': (PluginConfig('find_dvcs'),
                                   PluginConfig('web_spider',
-                                               ('onlyForward', True, PluginConfig.BOOL)),)}
+                                               ('only_forward', True, PluginConfig.BOOL)),)}
         }
     }
 

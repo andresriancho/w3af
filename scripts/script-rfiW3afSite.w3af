@@ -9,7 +9,7 @@ back
 output console,text_file
 output
 output config text_file
-set fileName output-w3af.txt
+set output_file output-w3af.txt
 set verbose True
 back
 back

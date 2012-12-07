@@ -3,7 +3,7 @@
 plugins
 output console, html_file
 output config html_file
-set fileName output-w3af.html
+set output_file output-w3af.html
 set verbose True
 back
 output config console
@@ -11,7 +11,7 @@ back
 
 crawl web_spider
 crawl config web_spider
-set onlyForward True
+set only_forward True
 back
 audit xss
 back

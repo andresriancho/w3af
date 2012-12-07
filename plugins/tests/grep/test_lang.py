@@ -39,7 +39,7 @@ class TestLang(PluginTest):
                 'grep': (PluginConfig('lang'),),
                 'crawl': (
                     PluginConfig('web_spider',
-                                 ('onlyForward', True, PluginConfig.BOOL)),
+                                 ('only_forward', True, PluginConfig.BOOL)),
                 )
 
             }
