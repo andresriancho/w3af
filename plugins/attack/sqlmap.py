@@ -19,6 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import sys
+import select
+import Queue
+
+from multiprocessing.dummy import Process
+
 import core.controllers.output_manager as om
 
 from core.data.kb.read_shell import ReadShell
@@ -120,7 +126,46 @@ class sqlmap(AttackPlugin):
             http://sqlmap.org/
         '''
 
-
+class RunFunctor(Process):
+    def __init__(self, functor, params):
+        super(RunFunctor, self).__init__()
+        self.daemon = True
+        self.name = 'SQLMapWrapper'
+        
+        self.functor = functor
+        self.params = params
+        self.user_input = Queue.Queue()
+        
+        class FakeProcess(object):
+            def poll(self):
+                return None
+        self.process = FakeProcess()
+        
+    def run(self):
+        cmd, process = apply(self.functor, self.params)
+        self.process = process
+        
+        om.out.information('Wrapped SQLMap command: %s' % cmd)
+        
+        try:
+            while process.poll() is None:
+                for line in process.stdout.readline():
+                    om.out.console(line, new_line=False)
+                    
+                try:
+                    user_input = self.user_input.get_nowait()
+                except Queue.Empty:
+                    pass
+                else:
+                    process.stdin.write(user_input)
+                    
+        except KeyboardInterrupt:
+            om.out.information('Terminating SQLMap after Ctrl+C.')
+            process.terminate()
+        
+        final_content = process.stdout.read()
+        om.out.console(final_content, new_line=False)
+    
 class SQLMapShell(ReadShell):
     def set_wrapper(self, sqlmap):
         self.sqlmap = sqlmap
@@ -129,23 +174,6 @@ class SQLMapShell(ReadShell):
         return self.sqlmap
 
     ALIAS = ('dbs', 'tables', 'users', 'dump')
-
-    def _run_functor(self, functor, params):
-        cmd, process = apply(functor, params)
-        
-        om.out.information('Wrapped SQLMap command: %s' % cmd)
-        
-        # FIXME: What about stdin? How do we get the user input here?
-        try:
-            while process.poll() is None:
-                for line in process.stdout.readline():
-                    om.out.console(line, newLine=False)
-        except KeyboardInterrupt:
-            om.out.information('Terminating SQLMap after Ctrl+C.')
-            process.terminate()
-        
-        final_content = process.stdout.read()
-        om.out.console(final_content, newLine=False)
 
     def specific_user_input(self, command, params):
         # Call the parent in order to get read/download without duplicating
@@ -158,14 +186,28 @@ class SQLMapShell(ReadShell):
         
         # SQLMap specific code starts
         params = tuple(params)
+        functor = None
         
         if command in self.ALIAS:
-            alias = getattr(self.sqlmap, command)
-            self._run_functor(alias, params)
-            return ''
+            functor = getattr(self.sqlmap, command)
         
         if command == 'sqlmap':
-            self._run_functor(self.sqlmap.direct, params)
+            functor = self.sqlmap.direct
+        
+        if functor is not None:
+            sqlmap_thread = RunFunctor(functor, params)
+            sqlmap_thread.start()
+            
+            # While the process is running...
+            while sqlmap_thread.process.poll() is None:
+                stdin, _, _ = select.select( [sys.stdin,], [], [], 0.5 )
+                
+                if stdin:
+                    user_input = sys.stdin.read()
+                    sqlmap_thread.user_input.put(user_input)
+            
+            # Returning this empty string makes the console avoid printing
+            # a message that says that the command was not found
             return ''
         
         return
