@@ -25,6 +25,7 @@ from core.data.kb.read_shell import ReadShell
 from core.data.dc.form import Form
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
+from plugins.attack.payloads.decorators.read_decorator import read_debug
 
 
 class sqlmap(AttackPlugin):
@@ -133,10 +134,15 @@ class SQLMapShell(ReadShell):
         cmd, process = apply(functor, params)
         
         om.out.information('Wrapped SQLMap command: %s' % cmd)
+        
         # FIXME: What about stdin? How do we get the user input here?
-        while process.poll() is None:
-            for line in process.stdout.readline():
-                om.out.console(line, newLine=False)
+        try:
+            while process.poll() is None:
+                for line in process.stdout.readline():
+                    om.out.console(line, newLine=False)
+        except KeyboardInterrupt:
+            om.out.information('Terminating SQLMap after Ctrl+C.')
+            process.terminate()
         
         final_content = process.stdout.read()
         om.out.console(final_content, newLine=False)
@@ -163,7 +169,8 @@ class SQLMapShell(ReadShell):
             return ''
         
         return
-            
+    
+    @read_debug        
     def read(self, filename):
         return self.sqlmap.read(filename)
     
