@@ -40,7 +40,7 @@ class vuln(info):
         self._mutant = None
 
         if isinstance(data_obj, Mutant) or \
-                isinstance(data_obj, vuln):
+        isinstance(data_obj, vuln):
             self.set_method(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())

@@ -210,22 +210,24 @@ class info(dict):
 
     def set_id(self, id):
         '''
-        The id is a unique number that identifies every request and response performed
-        by the framework.
+        The id is a unique number that identifies every request and response
+        performed by the framework.
 
-        The id parameter is usually an integer, that points to that request / response pair.
+        The id parameter is usually an integer, that points to that request/
+        response pair.
 
-        In some cases, one information object is related to more than one request / response,
-        in those cases, the id parameter is a list of integers.
+        In some cases, one information object is related to more than one
+        request/response, in those cases, the id parameter is a list of integers.
 
-        For example, in the cases where the info object is related to one request / response, we get
-        this call:
+        For example, in the cases where the info object is related to one
+        request / response, we get this call:
             set_id( 3 )
 
         And we save this to the attribute:
             [ 3, ]
 
-        When the info object is related to more than one request / response, we get this call:
+        When the info object is related to more than one request / response,
+        we get this call:
             set_id( [3, 4] )
 
         And we save this to the attribute:

@@ -1,0 +1,89 @@
+'''
+test_sqlmap.py
+
+Copyright 2012 Andres Riancho
+
+This file is part of w3af, w3af.sourceforge.net .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+'''
+from plugins.tests.helper import PluginTest, PluginConfig
+
+
+class TestSQLMapShell(PluginTest):
+
+    target_url = 'http://moth/w3af/audit/sql_injection/select/'\
+                 'sql_injection_string.php?name=andres'
+
+    _run_configs = {
+        'cfg': {
+            'target': target_url,
+            'plugins': {
+                'audit': (PluginConfig('sqli'),),
+                'crawl': (
+                    PluginConfig(
+                        'web_spider',
+                        ('onlyForward', True, PluginConfig.BOOL)),
+                )
+            }
+        }
+    }
+
+    def test_found_exploit_sqlmap(self):
+        # Run the scan
+        cfg = self._run_configs['cfg']
+        self._scan(cfg['target'], cfg['plugins'])
+
+        # Assert the general results
+        vulns = self.kb.get('sqli', 'sqli')
+        self.assertEquals(1, len(vulns))
+        self.assertEquals(
+            all(["SQL injection" == v.get_name() for v in vulns]),
+            True)
+
+        # Verify the specifics about the vulnerabilities
+        EXPECTED = [
+            ('sql_injection_string.php', 'name'),
+        ]
+
+        found_vulns = [(v.get_url().get_file_name(),
+                        v.get_mutant().get_var()) for v in vulns]
+
+        self.assertEquals(set(EXPECTED),
+                          set(found_vulns))
+
+        vuln_to_exploit_id = [v.get_id() for v in vulns
+                              if v.get_url().get_file_name() == EXPECTED[0][0]][0]
+
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'sqlmap')
+
+        self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
+
+        exploit_result = plugin.exploit(vuln_to_exploit_id)
+
+        self.assertGreaterEqual(len(exploit_result), 1)
+
+        #
+        # Now I start testing the shell itself!
+        #
+        shell = exploit_result[0]
+        etc_passwd = shell.generic_user_input('read', ['/etc/passwd',])
+
+        self.assertTrue('root' in etc_passwd)
+
+        lsp = shell.generic_user_input('lsp', [])
+        self.assertTrue('apache_config_directory' in lsp)
+
+        payload = shell.generic_user_input('payload', ['apache_config_directory'])
+        self.assertTrue(payload is None)

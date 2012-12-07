@@ -27,7 +27,7 @@ import core.data.kb.vuln as vuln
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.data.kb.read_shell import read_shell as read_shell
+from core.data.kb.read_shell import ReadShell
 from core.data.parsers.url import parse_qs
 
 from core.controllers.exceptions import w3afException
@@ -88,7 +88,7 @@ class local_file_reader(AttackPlugin):
         Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''
-        return 'lfi'
+        return ['lfi',]
 
     def _generate_shell(self, vuln_obj):
         '''
@@ -238,7 +238,7 @@ READ_DIRECTORY = 'Cannot cat a directory.'
 FAILED_STREAM = 'Failed to open stream.'
 
 
-class FileReaderShell(read_shell):
+class FileReaderShell(ReadShell):
     '''
     A shell object to exploit local file include and local file read vulns.
 

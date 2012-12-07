@@ -73,11 +73,11 @@ class TestSQLMapWrapper(unittest.TestCase):
         self.sqlmap = SQLMapWrapper(target)
         
         prms = ['--batch',]
-        cmd, stdout, stderr, stdin = self.sqlmap.run_sqlmap_with_pipes(prms)
+        cmd, process = self.sqlmap.run_sqlmap_with_pipes(prms)
         
-        self.assertIsInstance(stdout, file)
-        self.assertIsInstance(stderr, file)
-        self.assertIsInstance(stdin, file)
+        self.assertIsInstance(process.stdout, file)
+        self.assertIsInstance(process.stderr, file)
+        self.assertIsInstance(process.stdin, file)
         self.assertIsInstance(cmd, basestring)
         
         self.assertIn('sqlmap.py', cmd)
@@ -111,8 +111,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, stdout, stderr, stdin = self.sqlmap.dbs()
-        output = stdout.read()
+        cmd, process = self.sqlmap.dbs()
+        output = process.stdout.read()
         
         self.assertIn('fetching database names', output)
         self.assertIn('available databases', output)
@@ -122,8 +122,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, stdout, stderr, stdin = self.sqlmap.tables()
-        output = stdout.read()
+        cmd, process = self.sqlmap.tables()
+        output = process.stdout.read()
         
         self.assertIn('fetching tables for databases:', output)
         self.assertIn('Database: information_schema', output)
@@ -133,8 +133,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, stdout, stderr, stdin = self.sqlmap.users()
-        output = stdout.read()
+        cmd, process = self.sqlmap.users()
+        output = process.stdout.read()
         
         self.assertIn('debian-sys-maint', output)
         self.assertIn('localhost', output)
@@ -144,8 +144,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, stdout, stderr, stdin = self.sqlmap.dump()
-        output = stdout.read()
+        cmd, process = self.sqlmap.dump()
+        output = process.stdout.read()
         
         self.assertIn('email', output)
         self.assertIn('phone', output)
@@ -156,8 +156,8 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, stdout, stderr, stdin = self.sqlmap.direct('--dump -D test -T users')
-        output = stdout.read()
+        cmd, process = self.sqlmap.direct('--dump -D test -T users')
+        output = process.stdout.read()
         
         self.assertIn('email', output)
         self.assertIn('phone', output)

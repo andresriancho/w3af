@@ -20,99 +20,24 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-import core.data.kb.knowledge_base as kb
 
-from core.data.kb.shell import shell as shell
-from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
-from core.data.request.HTTPQsRequest import HTTPQSRequest
-from core.data.fuzzer.fuzzer import create_mutants
-from core.data.parsers.url import parse_qs
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
-
+from core.data.kb.read_shell import ReadShell
+from core.data.dc.form import Form
 from core.controllers.plugins.attack_plugin import AttackPlugin
-from core.controllers.exceptions import w3afException
-from core.controllers.sql_tools.blind_sqli_response_diff import blind_sqli_response_diff
-from core.controllers.threads.threadManager import thread_manager as tm
-
-from plugins.attack.db.dbDriverBuilder import dbDriverBuilder as dbDriverBuilder
-
-
-SQLMAPCREATORS = 'sqlmap coded by inquis <bernardo.damele@gmail.com> and belch <daniele.bellucci@gmail.com>'
+from plugins.attack.db.sqlmap_wrapper import Target, SQLMapWrapper
 
 
 class sqlmap(AttackPlugin):
     '''
-    Exploits [blind] sql injections using sqlmap ( http://sqlmap.sf.net ).
+    Exploit web servers that have sql injection vulnerabilities using sqlmap.
+    @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    #Plugin author:
-    #@author: Andres Riancho (andres.riancho@gmail.com)
-
-    #sqlmap authors:
-    #@author: Bernardo Damele (inquis) - maintainer
-    #@author: Daniele Bellucci (belch) - initial author
 
     def __init__(self):
         AttackPlugin.__init__(self)
 
         # Internal variables
-        self._vuln = None
-        self._driver = None
-
-        # User configured options for fast_exploit
-        self._url = 'http://host.tld/'
-        self._method = 'GET'
-        self._data = ''
-        self._injvar = ''
-
-        # User configured variables
-        self._eq_limit = 0.9
-        self._goodSamaritan = True
-        self._generate_only_one = True
-
-    def fast_exploit(self):
-        '''
-        Exploits a web app with [blind] sql injections vulns.
-        The options are configured using the plugin options and set_options() method.
-        '''
-        om.out.debug('Starting sqlmap fast_exploit.')
-        om.out.console(SQLMAPCREATORS)
-
-        if self._url is None or self._method is None or self._data is None or self._injvar is None:
-            raise w3afException('You have to configure the plugin parameters')
-        else:
-
-            freq = None
-            if self._method == 'POST':
-                freq = HTTPPostDataRequest(self._url)
-            elif self._method == 'GET':
-                freq = HTTPQSRequest(self._url)
-            else:
-                raise w3afException('Method not supported.')
-
-            freq.set_dc(parse_qs(self._data))
-
-            bsql = blind_sqli_response_diff(self._uri_opener)
-            bsql.set_eq_limit(self._eq_limit)
-
-            fake_mutants = create_mutants(
-                freq, [''], fuzzable_param_list=[self._injvar, ])
-            for mutant in fake_mutants:
-                vuln_obj = bsql.is_injectable(mutant)
-                if vuln_obj is not None:
-                    om.out.console('SQL injection verified, trying to create the DB driver.')
-
-                    # Try to get a shell using all vuln
-                    msg = 'Trying to exploit using vulnerability with id: ' + \
-                        str(vuln_obj.get_id())
-                    msg += '. Please wait...'
-                    om.out.console(msg)
-                    shell_obj = self._generate_shell(vuln_obj)
-                    if shell_obj is not None:
-                        kb.kb.append(self, 'shell', shell_obj)
-                        return [shell_obj, ]
-            else:
-                raise w3afException('No exploitable vulnerabilities found.')
+        self._sqlmap = None
 
     def get_attack_type(self):
         '''
@@ -120,175 +45,57 @@ class sqlmap(AttackPlugin):
         '''
         return 'shell'
 
-    def get_exploitable_vulns(self):
-        vulns = list(kb.kb.get('blind_sqli', 'blind_sqli'))
-        vulns.extend(kb.kb.get('sqli', 'sqli'))
-        return vulns
-
-    def can_exploit(self, vuln_to_exploit=None):
+    def get_kb_location(self):
         '''
-        Searches the kb for vulnerabilities that the plugin can exploit.
+        This method should return the vulnerability name (as saved in the kb)
+        to exploit. For example, if the audit.os_commanding plugin finds an
+        vuln, and saves it as:
 
-        @return: True if plugin knows how to exploit a found vuln.
+        kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
+
+        Then the exploit plugin that exploits os_commanding
+        ( attack.os_commanding ) should return 'os_commanding' in this method.
         '''
-        vulns = self.get_exploitable_vulns()
-
-        if vuln_to_exploit is not None:
-            vulns = [v for v in vulns if v.get_id() == vuln_to_exploit]
-
-        if len(vulns) != 0:
-            return True
-        else:
-            om.out.console(
-                'No [blind] SQL injection vulnerabilities have been found.')
-            om.out.console('Hint #1: Try to find vulnerabilities using the audit plugins.')
-            msg = 'Hint #2: Use the set command to enter the values yourself, and then exploit it using fast_exploit.'
-            om.out.console(msg)
-            return False
-
-    def exploit(self, vuln_to_exploit=None):
-        '''
-        Exploits a [blind] sql injections vulns that was found and stored in the kb.
-
-        @return: True if the shell is working and the user can start calling specific_user_input
-        '''
-        if not self.can_exploit():
-            return []
-        else:
-            vulns = kb.kb.get('blind_sqli', 'blind_sqli')
-            vulns.extend(kb.kb.get('sqli', 'sqli'))
-
-            bsql = blind_sqli_response_diff(self._uri_opener)
-            bsql.set_eq_limit(self._eq_limit)
-
-            tmp_vuln_list = []
-            for v in vulns:
-
-                # Filter the vuln that was selected by the user
-                if vuln_to_exploit is not None:
-                    if vuln_to_exploit != v.get_id():
-                        continue
-
-                mutant = v.get_mutant()
-                mutant.set_mod_value(mutant.get_original_value())
-                v.set_mutant(mutant)
-
-                # The user didn't selected anything, or we are in the selected vuln!
-                om.out.debug(
-                    'Verifying vulnerability in URL: "' + v.get_url() + '".')
-                vuln_obj = bsql.is_injectable(v.get_mutant())
-
-                if vuln_obj:
-                    tmp_vuln_list.append(vuln_obj)
-
-            # Ok, go to the next stage with the filtered vulnerabilities
-            vulns = tmp_vuln_list
-            if len(vulns) == 0:
-                om.out.debug('is_injectable failed for all vulnerabilities.')
-                return []
-            else:
-                for vuln_obj in vulns:
-                    # Try to get a shell using all vuln
-                    msg = 'Trying to exploit using vulnerability with id: ' + \
-                        str(vuln_obj.get_id())
-                    msg += '. Please wait...'
-                    om.out.console(msg)
-                    shell_obj = self._generate_shell(vuln_obj)
-                    if shell_obj:
-                        if self._generate_only_one:
-                            # A shell was generated, I only need one point of exec.
-                            return [shell_obj, ]
-                        else:
-                            # Keep adding all shells to the kb
-                            pass
-
-                # FIXME: Am I really saving anything here ?!?!
-                return kb.kb.get(self.get_name(), 'shell')
+        return ['sqli', 'blind_sqli']
 
     def _generate_shell(self, vuln_obj):
         '''
-        @param vuln_obj: The vuln to exploit, as it was saved in the kb or supplied by the user with set commands.
-        @return: A sqlmap shell object if sqlmap could fingerprint the database.
+        @param vuln_obj: The vuln to exploit.
+        @return: The shell object based on the vulnerability that was passed as
+                 a parameter.
         '''
-        bsql = blind_sqli_response_diff(self._uri_opener)
-        bsql.set_eq_limit(self._eq_limit)
-
-        dbBuilder = dbDriverBuilder(self._uri_opener, bsql.equal_with_limit)
-        driver = dbBuilder.get_driver_for_vuln(vuln_obj)
-        if driver is None:
-            return None
-        else:
+        # Check if we really can execute commands on the remote server
+        if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = sqlShellObj(vuln_obj)
-            shell_obj.set_good_samaritan(self._goodSamaritan)
-            shell_obj.set_driver(driver)
-            kb.kb.append(self, 'shells', shell_obj)
+            shell_obj = SQLMapShell(vuln_obj)
+            shell_obj.set_url_opener(self._uri_opener)
+            shell_obj.set_wrapper(self._sqlmap)
             return shell_obj
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-        d = 'URL to exploit with fast_exploit()'
-        o = opt_factory('url', self._url, d, 'url')
-        ol.add(o)
-
-        d = 'Method to use with fast_exploit()'
-        o = opt_factory('method', self._method, d, 'string')
-        ol.add(o)
-
-        d = 'Data to send with fast_exploit()'
-        o = opt_factory('data', self._data, d, 'string')
-        ol.add(o)
-
-        d = 'Variable where to inject with fast_exploit()'
-        o = opt_factory('injvar', self._injvar, d, 'string')
-        ol.add(o)
-
-        d = 'String equal ratio (0.0 to 1.0)'
-        h = 'Two pages are equal if they match in more than equalLimit. Only used when'
-        h += ' equAlgorithm is set to setIntersection.'
-        o = opt_factory('equalLimit', self._eq_limit, d, 'float', help=h)
-        ol.add(o)
-
-        d = 'Enable or disable the good samaritan module'
-        h = 'The good samaritan module is a the best way to speed up blind sql exploitations.'
-        h += ' It\'s really simple, you see messages in the console that show the status of the'
-        h += ' crawl and you can help the process. For example, if you see "Micros" you'
-        h += ' could type "oft", and if it\'s correct, you have made your good action of the day'
-        h += ', speeded up the crawl AND had fun doing it.'
-        o = opt_factory(
-            'goodSamaritan', self._goodSamaritan, d, 'boolean', help=h)
-        ol.add(o)
-
-        d = 'If true, this plugin will try to generate only one shell object.'
-        o = opt_factory(
-            'generateOnlyOne', self._generate_only_one, d, 'boolean')
-        ol.add(o)
-
-        return ol
-
-    def set_options(self, options_list):
-        '''
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
-
-        @param options_list: A map with the options for the plugin.
-        @return: No value is returned.
-        '''
-        self._url = options_list['url'].get_value().uri2url()
-
-        if options_list['method'].get_value() not in ['GET', 'POST']:
-            raise w3afException('Unknown method.')
         else:
-            self._method = options_list['method'].get_value()
+            return None
 
-        self._data = options_list['data'].get_value()
-        self._injvar = options_list['injvar'].get_value()
-        self._eq_limit = options_list['equalLimit'].get_value()
-        self._goodSamaritan = options_list['goodSamaritan'].get_value()
-        self._generate_only_one = options_list['generateOnlyOne'].get_value()
+    def _verify_vuln(self, vuln_obj):
+        '''
+        This command verifies a vuln. This is really hard work! :P
+
+        @return : True if vuln can be exploited.
+        '''
+        uri = vuln_obj.get_uri()
+        
+        post_data = None
+        
+        dc = vuln_obj.get_dc()
+        if isinstance(dc, Form):
+            post_data = str(dc) or None
+        
+        target = Target(uri, post_data)
+        
+        sqlmap = SQLMapWrapper(target)
+        if sqlmap.is_vulnerable():
+            self._sqlmap = sqlmap
+            return True
+        
+        return False
 
     def get_root_probability(self):
         '''
@@ -299,172 +106,73 @@ class sqlmap(AttackPlugin):
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
         '''
-        return 0.1
+        return 0.8
 
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin exploits [blind] sql injections.
-
-        The original sqlmap program was coded by Bernardo Damele and Daniele Bellucci, many thanks to both of
-        them.
-
-        Five configurable parameters exist:
-            - url
-            - method
-            - data
-            - injvar
-            - equalLimit
+        This plugin exploits SQL injection vulnerabilities using sqlmap. For
+        more information about sqlmap please visit:
+        
+            http://sqlmap.org/
         '''
 
 
-class sqlShellObj(shell):
+class SQLMapShell(ReadShell):
+    def set_wrapper(self, sqlmap):
+        self.sqlmap = sqlmap
 
-    def set_driver(self, driver):
-        '''
-        @param driver: The DB driver from sqlmap.
-        '''
-        self._driver = driver
+    def get_wrapper(self):
+        return self.sqlmap
 
-    def set_good_samaritan(self, good_samaritan):
-        '''
-        @param good_samaritan: A boolean that indicates if we are going to use it or not.
-        '''
-        self._goodSamaritan = good_samaritan
+    ALIAS = ('dbs', 'tables', 'users', 'dump')
 
-    def specific_user_input(self, command, parameters):
-        '''
-        This method is called when a user writes a command in the shell and hits enter.
+    def _run_functor(self, functor, params):
+        cmd, process = apply(functor, params)
+        
+        om.out.information('Wrapped SQLMap command: %s' % cmd)
+        # FIXME: What about stdin? How do we get the user input here?
+        while process.poll() is None:
+            for line in process.stdout.readline():
+                om.out.console(line, newLine=False)
+        
+        final_content = process.stdout.read()
+        om.out.console(final_content, newLine=False)
 
-        Before calling this method, the framework calls the generic_user_input method
-        from the shell class.
-
-        @param command: The command to handle ( ie. "dbs", "users", etc ).
-        @param parameters: A list with the parameters for @command
-        @return: The result of the command.
-        '''
-        if not self._driver:
-            raise w3afException('No driver could be created.')
-
-        _method_map = {}
-        _method_map['fingerprint'] = self._driver.get_fingerprint
-        _method_map['banner'] = self._driver.get_banner
-        _method_map['current-user'] = self._driver.get_current_user
-        _method_map['current-db'] = self._driver.get_current_db
-        _method_map['users'] = self._driver.get_users
-        _method_map['dbs'] = self._driver.get_dbs
-        _method_map['tables'] = self._driver.aux_get_tables
-        _method_map['columns'] = self._driver.aux_get_columns
-        _method_map['dump'] = self._driver.aux_dump
-        _method_map['file'] = self._driver.get_file
-        _method_map['expression'] = self._driver.get_expr
-        _method_map['union-check'] = self._driver.union_check
-        _method_map['help'] = self.help
-
-        if command in _method_map:
-            method = _method_map[command]
-        else:
-            if self._goodSamaritan and self._driver.is_running_good_samaritan():
-                self._driver.good_samaritan_contribution(command)
-                return None
-            else:
-                om.out.console(
-                    'Unknown command: "%s". Please read the help:' % command)
-                self.help()
-                return ''
-
-        args = (method, command, parameters)
-        tm.apply_async(target=self._runCommand, args=args, ownerObj=self)
-        #self._runCommand(method, command)
-        return None
-
-    def _runCommand(self, method, command, parameters):
-        args = tuple(parameters)
-
-        if self._goodSamaritan and command.strip() != 'help':
-            self._driver.start_good_samaritan()
-
-        try:
-            res = apply(method, args)
-        except TypeError:
-            res = 'Invalid number of parameters for command.'
-        except KeyboardInterrupt, k:
-            res = 'The user interrupted the process with Ctrl+C.'
-        except w3afException, e:
-            res = 'An unexpected error was found while trying to run the specified command.\n'
-            res += 'Exception: "' + str(e) + '"'
-        else:
-            res = self._driver.dump.dump(command, args, res)
-            res = res.replace('\n', '\r\n')
-
-        # Always stop the good samaritan
-        self._driver.stop_good_samaritan()
-        om.out.console('\r\n' + res)
-        self._showPrompt()
-
-    def _showPrompt(self):
-        om.out.console('w3af/exploit/' + self.get_name() + '-' + str(
-            self.get_exploit_result_id()) + '>>>', newLine=False)
-
-    def help(self, command=''):
-        '''
-        Print the help to the user.
-        '''
-        om.out.console('')
-        om.out.console(SQLMAPCREATORS)
-        om.out.console('fingerprint             perform an exaustive database fingerprint')
-        om.out.console('banner                  get database banner')
-        om.out.console('current-user            get current database user')
-        om.out.console('current-db              get current database name')
-        om.out.console('users                   get database users')
-        om.out.console('dbs                     get available databases')
-        om.out.console('tables [db]             get available databases tables (optional: database)')
-        om.out.console('columns <table> [db]    get table columns (required: table optional: database)')
-        om.out.console('dump <table> [db]       dump a database table (required: -T optional: -D)')
-        om.out.console('file <FILENAME>         read a specific file content')
-        om.out.console('expression <EXPRESSION> expression to evaluate')
-        om.out.console('union-check             check for UNION sql injection')
-        self._showPrompt()
-        return True
-
-    def _identify_os(self):
-        # hmmm....
-        self._rSystem = self._rSystemName = self._dbms = self._driver.get_fingerprint()
-        self._rUser = self._driver.get_current_user()
-
-    def get_remote_system(self):
-        return self._dbms
-
-    def __repr__(self):
-        if not self._rOS:
-            self._identify_os()
-        return '<sql object ( dbms: "' + self._dbms + '" | ruser: "' + self._rUser + '" )>'
-
-    __str__ = __repr__
-
-    def end(self):
-        om.out.debug('sqlmap cleanup complete.')
-
+    def specific_user_input(self, command, params):
+        # Call the parent in order to get read/download without duplicating
+        # any code.
+        resp = super(SQLMapShell, self).specific_user_input(command, params,
+                                                            return_err=False)
+        
+        if resp is not None:
+            return resp
+        
+        # SQLMap specific code starts
+        params = tuple(params)
+        
+        if command in self.ALIAS:
+            alias = getattr(self.sqlmap, command)
+            self._run_functor(alias, params)
+            return ''
+        
+        if command == 'sqlmap':
+            self._run_functor(self.sqlmap.direct, params)
+            return ''
+        
+        return
+            
+    def read(self, filename):
+        return self.sqlmap.read(filename)
+    
     def get_name(self):
         return 'sqlmap'
 
-    def end_interaction(self):
+    def __repr__(self):
         '''
-        When the user executes "exit" in the console, this method is called.
-        Basically, here we handle WHAT TO DO in that case. In most cases (and this is
-        why we implemented it this way here) the response is "yes, do it end me" that
-        equals to "return True".
-
-        In some other cases, the shell prints something to the console and then exists,
-        or maybe some other, more complex, thing.
+        @return: A string representation of this shell.
         '''
-        if self._goodSamaritan and self._driver.is_running_good_samaritan():
-            # Keep the user locked inside this shell until the good samaritan ain't working
-            # anymore
-            #print 'a' * 33
-            return False
-        else:
-            # Exit this shell
-            return True
+        return '<sqlmap shell object>'
+    

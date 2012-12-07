@@ -74,7 +74,7 @@ class os_commanding(AttackPlugin):
         Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''
-        return 'os_commanding'
+        return ['os_commanding',]
 
     def _generate_shell(self, vuln):
         '''

@@ -72,7 +72,7 @@ class file_upload(AttackPlugin):
         Then the exploit plugin that exploits os_commanding
         ( attack.os_commanding ) should return 'os_commanding' in this method.
         '''
-        return 'file_upload'
+        return ['file_upload',]
 
     def _generate_shell(self, vuln_obj):
         '''

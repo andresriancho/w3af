@@ -1,5 +1,5 @@
 '''
-read_shell.py
+ReadShell.py
 
 Copyright 2010 Andres Riancho
 
@@ -26,7 +26,7 @@ from core.controllers.intrusion_tools.readMethodHelpers import read_os_detection
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
-class read_shell(shell):
+class ReadShell(shell):
     '''
     This class represents a shell that can only read files from the remote system.
 
@@ -80,7 +80,7 @@ class read_shell(shell):
                 fh.close()
                 return 'Success.'
 
-    def specific_user_input(self, command, parameters):
+    def specific_user_input(self, command, parameters, return_err=True):
         '''
         This is the method that is called when a user wants to execute something
         in the shell.
@@ -111,8 +111,10 @@ class read_shell(shell):
             local_filename = parameters[1]
             return self.download(remote_filename, local_filename)
 
-        else:
+        elif return_err:
             return 'Command "%s" not found. Please type "help".' % command
+        
+        return
 
     def _identify_os(self):
         '''
@@ -121,7 +123,7 @@ class read_shell(shell):
         self._rOS = read_os_detection(self.read)
         # TODO: Could we determine this by calling some payloads?
         self._rSystem = ''
-        self._rSystemName = 'linux'
+        self._rSystemName = 'unknown'
         self._rUser = 'file-reader'
 
     def end(self):
@@ -145,4 +147,4 @@ class read_shell(shell):
         '''
         To be overriden by subclasses.
         '''
-        pass
+        raise NotImplementedError

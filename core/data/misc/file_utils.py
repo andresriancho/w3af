@@ -48,18 +48,21 @@ def get_days_since_file_update(filename):
     '''
     @return: The days since the last update 
     '''
-    client = pysvn.Client()
-    entry = client.info(filename)
-
-    # entry.commit_time is epoch
-    last_commit_time = datetime.datetime.fromtimestamp(entry.commit_time)
-    last_commit_date = last_commit_time.date()
+    try:
+        client = pysvn.Client()
+        entry = client.info(filename)
+        # entry.commit_time is epoch
+        last_commit_time = datetime.datetime.fromtimestamp(entry.commit_time)
+    except (AttributeError, pysvn.ClientError):
+        raise ValueError('%s is not tracked by SVN.')
+    else:
+        last_commit_date = last_commit_time.date()
+        
+        today_date = datetime.date.today()
     
-    today_date = datetime.date.today()
-
-    time_delta = today_date - last_commit_date
-    
-    return time_delta.days
+        time_delta = today_date - last_commit_date
+        
+        return time_delta.days
 
 def days_since_newest_file_update(path):
     '''
@@ -69,12 +72,18 @@ def days_since_newest_file_update(path):
     days = 365
     
     for item in os.listdir(path):
-        if os.path.isfile(os.path.join(path, item)):
-            last_updated = get_days_since_file_update(item)
-        else:
-            last_updated = days_since_newest_file_update(os.path.join(path,
-                                                                      item))
+        
+        full_path = os.path.join(path, item)
+        
+        try:
+            if os.path.isfile(full_path):            
+                last_updated = get_days_since_file_update(full_path)
+            else:
+                last_updated = days_since_newest_file_update(full_path)
+        except ValueError:
+            last_updated = days
+        
         if last_updated < days:
             days = last_updated
-    
+        
     return days

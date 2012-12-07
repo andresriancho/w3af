@@ -29,7 +29,7 @@ from plugins.attack.payloads.payload_handler import (payload_to_file,
                                                      get_payload_list)
 
 from core.data.kb.exec_shell import exec_shell
-from core.data.kb.read_shell import read_shell
+from core.data.kb.read_shell import ReadShell
 
 
 class TestPayloadHandler(unittest.TestCase):
@@ -127,7 +127,7 @@ class FakeExecShell(exec_shell):
         return 'FakeExecShell'
 
 
-class FakeReadShell(read_shell):
+class FakeReadShell(ReadShell):
 
     def read(self, filename):
         return file(filename).read()

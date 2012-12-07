@@ -62,11 +62,16 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         '''
         @param vuln: The vulnerability object to exploit.
         '''
-        raise NotImplementedError(
-            'Plugin is not implementing required method _generate_shell')
+        msg = 'Plugin is not implementing required method _generate_shell'
+        raise NotImplementedError(msg)
 
     def get_exploitable_vulns(self):
-        return kb.kb.get(self.get_kb_location(), self.get_kb_location())
+        vulns = []
+        
+        for location in self.get_kb_location():
+            vulns.extend(kb.kb.get(location, location))
+        
+        return vulns
 
     def can_exploit(self, vuln_to_exploit=None):
         '''
@@ -93,8 +98,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
         '''
-        raise NotImplementedError(
-            'Plugin is not implementing required method get_attack_type')
+        msg = 'Plugin is not implementing required method get_attack_type'
+        raise NotImplementedError(msg)
 
     def GET2POST(self, vuln):
         '''
@@ -132,24 +137,28 @@ class AttackPlugin(Plugin, CommonAttackMethods):
                  that will never return a root shell, and 1 for an exploit that
                  WILL ALWAYS return a root shell.
         '''
-        raise NotImplementedError(
-            'Plugin is not implementing required method get_root_probability')
+        msg = 'Plugin is not implementing required method get_root_probability'
+        raise NotImplementedError(msg)
 
     def get_type(self):
         return 'attack'
 
     def get_kb_location(self):
         '''
-        This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
+        This method should return the vulnerability names (as saved in the kb)
+        to exploit. For example, if the audit.os_commanding plugin finds a
+        vuln, and saves it as:
 
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
 
-        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
-        return 'os_commanding' in this method.
+        Then the exploit plugin that exploits os_commanding
+        (attack.os_commanding) should return ['os_commanding',] in this method.
+        
+        If there is more than one location the implementation should return
+        ['a', 'b', ..., 'n']
         '''
-        raise NotImplementedError(
-            'Plugin is not implementing required method get_kb_location')
+        msg = 'Plugin is not implementing required method get_kb_location.'
+        raise NotImplementedError(msg)
 
     def exploit(self, vuln_to_exploit=None):
         '''
@@ -160,8 +169,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         '''
         om.out.information(self.get_name() + ' exploit plugin is starting.')
         if not self.can_exploit():
-            raise w3afException('No ' + self.get_kb_location(
-            ) + ' vulnerabilities have been found.')
+            fmt = 'No %s vulnerabilities have been found.'
+            raise w3afException(fmt % ' or '.join(self.get_kb_location()))
 
         for vuln in self.get_exploitable_vulns():
 

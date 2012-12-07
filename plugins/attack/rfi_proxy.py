@@ -105,7 +105,7 @@ class rfi_proxy(AttackPlugin, Process):
         Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
         return 'os_commanding' in this method.
         '''
-        return 'rfi'
+        return ['rfi',]
 
     def _generate_shell(self, vuln):
         '''

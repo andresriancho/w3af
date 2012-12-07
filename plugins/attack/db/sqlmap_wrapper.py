@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
+import re
 import shlex
 import subprocess
 
@@ -74,7 +75,7 @@ class SQLMapWrapper(object):
         final_params = self.get_wrapper_params(custom_params)
         target_params = self.target.to_params()
         all_params = ['python', 'sqlmap.py'] + final_params + target_params
-        
+                
         process = subprocess.Popen(args=all_params,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
@@ -85,7 +86,7 @@ class SQLMapWrapper(object):
         
         full_command = ' '.join(all_params)
         self.last_command = full_command
-        
+                
         return process
     
     def run_sqlmap(self, custom_params):
@@ -96,9 +97,9 @@ class SQLMapWrapper(object):
                               send to sqlmap.
                               
         @return: Runs sqlmap and returns a tuple containing:
-                    (the command was run,
-                     stdout for the command,
-                     stderr for the command)
+                    (last command run,
+                     Popen object so that everyone can read .stdout,
+                     .stderr, .stdin attributes)
         '''
         process = self._run(custom_params)
         stdout, stderr = process.communicate()                
@@ -114,17 +115,19 @@ class SQLMapWrapper(object):
                               
         @return: Runs sqlmap and returns a tuple with:
                     (last command run,
-                     file-like object for stdout,
-                     file-like object for stderr,
-                     file-like object for stdin)
+                     Popen object so that everyone can read .stdout,
+                     .stderr, .stdin attributes)
                  
                  This is very useful for using with w3af's output manager.
         '''
         process = self._run(custom_params)
-        return self.last_command, process.stdout, process.stderr, process.stdin
+        return self.last_command, process
     
-    def direct(self, params_str):
-        extra_params = shlex.split(params_str)
+    def direct(self, params):
+        
+        if isinstance(params, basestring):
+            extra_params = shlex.split(params)
+            
         return self.run_sqlmap_with_pipes(extra_params)
     
     def get_wrapper_params(self, extra_params=[]):
@@ -146,13 +149,11 @@ class SQLMapWrapper(object):
         
         @return: Runs sqlmap with --dbs and returns a tuple with:
                     (last command run,
-                     file-like object for stdout,
-                     file-like object for stderr,
-                     file-like object for stdin)
+                     Popen object so that everyone can read .stdout,
+                     .stderr, .stdin attributes)
         '''
         process = self._run(custom_params)
-        return (self.last_command, process.stdout,
-                process.stderr, process.stdin)
+        return self.last_command, process
         
     def dbs(self):
         return self._wrap_param(['--dbs',])
@@ -165,6 +166,29 @@ class SQLMapWrapper(object):
 
     def dump(self):
         return self._wrap_param(['--dump',])
+
+    def read(self, filename):
+        '''
+        @param filename: The file to be read
+        @return: The contents of the file that was passed as parameter
+        '''
+        cmd, process = self._wrap_param(['--file-read=%s' % filename,])
+        local_file_re = re.compile("/etc/passwd file saved to:    '(.*)'")
+        stdout = process.stdout.read()
+        
+        try:
+            local_file = local_file_re.search(stdout).group(1)
+        except:
+            # FIXME: I'll have to fix this at some point... files that do not
+            # exist should raise an exception (or something similar), instead
+            # of just returning an empty string. This is a big FAIL from my
+            # initial design of the payloads/shell API.
+            return ''
+        else:
+            if os.path.exists(local_file):
+                return file(local_file).read()
+        
+        return 
         
 class Target(object):
     def __init__(self, uri, post_data=None):
