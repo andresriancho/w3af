@@ -75,7 +75,7 @@ class lfi(AuditPlugin):
                                       self._analyze_result,
                                       grep=False)
 
-    def _get_local_file_list(self, origUrl):
+    def _get_local_file_list(self, orig_url):
         '''
         This method returns a list of local files to try to include.
 
@@ -83,7 +83,7 @@ class lfi(AuditPlugin):
         '''
         local_files = []
 
-        extension = origUrl.get_extension()
+        extension = orig_url.get_extension()
 
         # I will only try to open these files, they are easy to identify of they
         # echoed by a vulnerable web app and they are on all unix or windows default installs.
@@ -131,7 +131,6 @@ class lfi(AuditPlugin):
         # trying to read "/etc/passwd", that is why this variable is used to
         # determine which tests to send if it was possible to detect the usage
         # of this security feature.
-
         if not self._open_basedir:
             
             basedir_warning = 'open_basedir restriction in effect'
@@ -173,8 +172,8 @@ class lfi(AuditPlugin):
         if mutant.get_mod_value() == mutant.get_url().get_file_name():
             match, lang = is_source_file(response.get_body())
             if match:
-                #   We were able to read the source code of the file that is vulnerable to
-                #   local file read
+                # We were able to read the source code of the file that is
+                # vulnerable to local file read
                 v = vuln.vuln(mutant)
                 v.set_plugin_name(self.get_name())
                 v.set_id(response.id)
@@ -236,14 +235,14 @@ class lfi(AuditPlugin):
                   '  to a vulnerability and was found on response with id %s.'
             om.out.debug(msg % (res[0], response.id))
         if len(res) > 1:
-            msg = 'File fragments have been found. The following is a list of file fragments'
-            msg += ' that were returned by the web application while testing for local file'
-            msg += ' inclusion: \n'
+            msg = 'File fragments have been found. The following is a list' \
+                  ' of file fragments that were returned by the web application' \
+                  ' while testing for local file inclusion: \n'
             for file_pattern_match in res:
                 msg += '- "' + file_pattern_match + '" \n'
-            msg += 'This is just an informational message, which might be related to a'
-            msg += ' vulnerability and was found on response with id ' + \
-                str(response.id) + '.'
+            msg += 'This is just an informational message, which might be' \
+                   ' related to a vulnerability and was found on response' \
+                   'with id %s.' % response.id 
             om.out.debug(msg)
         
         return res
@@ -261,22 +260,19 @@ class lfi(AuditPlugin):
         if self._error_compiled_regex:
             return self._error_compiled_regex
         else:
-            read_errors = []
-            read_errors.append("java.io.FileNotFoundException:")
-            read_errors.append('java.lang.Exception:')
-            read_errors.append('java.lang.IllegalArgumentException:')
-            read_errors.append('java.net.MalformedURLException:')
-            read_errors.append('The server encountered an internal error \\(.*\\) that prevented it from fulfilling this request.')
-            read_errors.append(
-                'The requested resource \\(.*\\) is not available.')
-            read_errors.append("fread\\(\\):")
-            read_errors.append("for inclusion '\\(include_path=")
-            read_errors.append("Failed opening required")
-            read_errors.append("<b>Warning</b>:  file\\(")
-            read_errors.append("<b>Warning</b>:  file_get_contents\\(")
+            read_errors = ["java.io.FileNotFoundException:",
+                           'java.lang.Exception:',
+                           'java.lang.IllegalArgumentException:',
+                           'java.net.MalformedURLException:',
+                           'The server encountered an internal error \\(.*\\) that prevented it from fulfilling this request.',
+                           'The requested resource \\(.*\\) is not available.',
+                           "fread\\(\\):",
+                           "for inclusion '\\(include_path=",
+                           "Failed opening required",
+                           "<b>Warning</b>:  file\\(",
+                           "<b>Warning</b>:  file_get_contents\\("]
 
-            self._error_compiled_regex = [re.compile(
-                i, re.IGNORECASE) for i in read_errors]
+            self._error_compiled_regex = [re.compile(i, re.IGNORECASE) for i in read_errors]
             return self._error_compiled_regex
 
     def get_long_desc(self):
