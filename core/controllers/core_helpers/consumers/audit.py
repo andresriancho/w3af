@@ -51,8 +51,8 @@ class audit(BaseConsumer):
 
     def _consume(self, fuzzable_request):
         for plugin in self._consumer_plugins:
-            om.out.debug('%s plugin is testing: "%s"' % (
-                plugin.get_name(), fuzzable_request))
+            om.out.debug('%s plugin is testing: "%s"' % (plugin.get_name(),
+                                                         fuzzable_request))
 
             # Please note that this is not perfect, it is showing which
             # plugin result was JUST taken from the Queue. The good thing is
@@ -77,11 +77,10 @@ class audit(BaseConsumer):
         use in the future.
         '''
         self._add_task()
-        
         try:
             plugin.audit_with_copy(fuzzable_request)
         except Exception, e:
-            self.handle_exception(
-                'audit', plugin.get_name(), fuzzable_request, e)
+            self.handle_exception('audit', plugin.get_name(),
+                                  fuzzable_request, e)
         finally:
             self._task_done(None)
