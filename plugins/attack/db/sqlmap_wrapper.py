@@ -209,6 +209,7 @@ class SQLMapWrapper(object):
         '''
         cmd, process = self._wrap_param(['--file-read=%s' % filename,])
         local_file_re = re.compile("/etc/passwd file saved to:    '(.*)'")
+        # pylint: disable=E1101
         stdout = process.stdout.read()
         
         try:

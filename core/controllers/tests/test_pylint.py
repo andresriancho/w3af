@@ -63,16 +63,20 @@ class PylintRunner(unittest.TestCase):
     
     def test_pylint_plugins(self):
         pylint_output = self.run_pylint('plugins/')
-        self.assertEqual(pylint_output.read(), [])
+        output = pylint_output.read()
+        self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_controllers(self):
         pylint_output = self.run_pylint('core/controllers/')
-        self.assertEqual(pylint_output.read(), [])
+        output = pylint_output.read()
+        self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_data(self):
         pylint_output = self.run_pylint('core/data/')
-        self.assertEqual(pylint_output.read(), [])
+        output = pylint_output.read()
+        self.assertEqual(output, [], '\n'.join(output))
 
     def test_pylint_core_ui(self):
         pylint_output = self.run_pylint('core/ui/')
-        self.assertEqual(pylint_output.read(), [])
+        output = pylint_output.read()
+        self.assertEqual(output, [], '\n'.join(output))
