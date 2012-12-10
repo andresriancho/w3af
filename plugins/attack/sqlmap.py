@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
 import select
 import Queue
 
@@ -88,16 +87,18 @@ class sqlmap(AttackPlugin):
         @return : True if vuln can be exploited.
         '''
         uri = vuln_obj.get_uri()
+        dc = vuln_obj.get_dc()
+        
+        orig_value = vuln_obj.get_mutant().get_original_value()
+        dc[vuln_obj.get_var()] = orig_value
         
         post_data = None
-        
-        dc = vuln_obj.get_dc()
         if isinstance(dc, Form):
             post_data = str(dc) or None
         
         target = Target(uri, post_data)
         
-        sqlmap = SQLMapWrapper(target)
+        sqlmap = SQLMapWrapper(target, self._uri_opener)
         if sqlmap.is_vulnerable():
             self._sqlmap = sqlmap
             return True
@@ -154,14 +155,6 @@ class RunFunctor(Process):
                 if read_ready:
                     line = process.stdout.read(1)
                     om.out.console(line, new_line=False)
-                
-                try:
-                    user_input = self.user_input.get_nowait()
-                except Queue.Empty:
-                    pass
-                else:
-                    process.stdin.write(user_input)
-                                      
                     
         except KeyboardInterrupt:
             om.out.information('Terminating SQLMap after Ctrl+C.')
@@ -199,16 +192,11 @@ class SQLMapShell(ReadShell):
             functor = self.sqlmap.direct
         
         if functor is not None:
+            # TODO: I run this in a different thread in order to be able to
+            #       (in the future) handle stdin and all other UI inputs.
             sqlmap_thread = RunFunctor(functor, params)
             sqlmap_thread.start()
-            
-            # While the process is running...
-            while sqlmap_thread.process.poll() is None:
-                read_ready, _, _ = select.select( [sys.stdin,], [], [], 0.1 )
-                
-                if read_ready:
-                    user_input = sys.stdin.read(1)
-                    sqlmap_thread.user_input.put(user_input)
+            sqlmap_thread.join()
             
             # Returning this empty string makes the console avoid printing
             # a message that says that the command was not found
@@ -222,7 +210,10 @@ class SQLMapShell(ReadShell):
     
     def get_name(self):
         return 'sqlmap'
-
+    
+    def end(self):
+        self.sqlmap.cleanup()
+    
     def __repr__(self):
         '''
         @return: A string representation of this shell.

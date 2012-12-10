@@ -18,16 +18,22 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+import os
+import shutil
 import unittest
 
 from plugins.attack.db.sqlmap_wrapper import SQLMapWrapper, Target
 from core.data.parsers.url import URL
+from core.data.url.xUrllib import xUrllib
 
 
 class TestSQLMapWrapper(unittest.TestCase):
     
     SQLI_GET = 'http://moth/w3af/audit/sql_injection/select/'\
                'sql_injection_string.php?name=andres'
+
+    SSL_SQLI_GET = 'http://moth/w3af/audit/sql_injection/select/'\
+                   'sql_injection_string.php?name=andres'
 
     SQLI_POST = 'http://moth/w3af/audit/sql_injection/select/'\
                 'sql_injection_string.php'
@@ -38,9 +44,39 @@ class TestSQLMapWrapper(unittest.TestCase):
         uri = URL(self.SQLI_GET)
         target = Target(uri)
         
-        self.sqlmap = SQLMapWrapper(target)
+        self.uri_opener = xUrllib()
+        
+        self.sqlmap = SQLMapWrapper(target, self.uri_opener)
     
+    def tearDown(self):
+        self.uri_opener.end()
+        self.sqlmap.cleanup()
+    
+    @classmethod
+    def setUpClass(cls):
+        output_dir = os.path.join(SQLMapWrapper.SQLMAP_LOCATION, 'output')
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Doing this in both setupclass and teardownclass in order to be sure
+        # that a ctrl+c doesn't break it
+        output_dir = os.path.join(SQLMapWrapper.SQLMAP_LOCATION, 'output')
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        
     def test_verify_vulnerability(self):
+        vulnerable = self.sqlmap.is_vulnerable()
+        self.assertTrue(vulnerable)
+    
+    def test_verify_vulnerability_ssl(self):
+        uri = URL(self.SSL_SQLI_GET)
+        target = Target(uri)
+        
+        self.uri_opener = xUrllib()
+        
+        self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
 
@@ -50,7 +86,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         uri = URL(not_vuln)
         target = Target(uri)
         
-        self.sqlmap = SQLMapWrapper(target)
+        self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertFalse(vulnerable)
@@ -58,19 +94,19 @@ class TestSQLMapWrapper(unittest.TestCase):
     def test_verify_vulnerability_POST(self):
         target = Target(URL(self.SQLI_POST), self.DATA_POST)
         
-        self.sqlmap = SQLMapWrapper(target)
+        self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
     def test_wrapper_invalid_url(self):
-        self.assertRaises(TypeError, SQLMapWrapper, self.SQLI_GET)
+        self.assertRaises(TypeError, SQLMapWrapper, self.SQLI_GET, self.uri_opener)
     
     def test_stds(self):
         uri = URL(self.SQLI_GET)
         target = Target(uri)
         
-        self.sqlmap = SQLMapWrapper(target)
+        self.sqlmap = SQLMapWrapper(target, self.uri_opener)
         
         prms = ['--batch',]
         cmd, process = self.sqlmap.run_sqlmap_with_pipes(prms)
@@ -99,11 +135,20 @@ class TestSQLMapWrapper(unittest.TestCase):
         params = self.sqlmap.get_wrapper_params()
         self.assertIn('--disable-coloring', params)
 
+    def test_always_batch(self):
+        params = self.sqlmap.get_wrapper_params()
+        self.assertIn('--batch', params)
+        
+    def test_use_proxy(self):
+        params = self.sqlmap.get_wrapper_params()
+        
+        self.assertTrue(any(i.startswith('--proxy=http://127.0.0.1:') for i in params))
+
     def test_enable_coloring(self):
         uri = URL(self.SQLI_GET)
         target = Target(uri)
         
-        sqlmap = SQLMapWrapper(target, coloring=True)
+        sqlmap = SQLMapWrapper(target, self.uri_opener, coloring=True)
         params = sqlmap.get_wrapper_params()
         self.assertNotIn('--disable-coloring', params)
         
@@ -156,7 +201,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
         
-        cmd, process = self.sqlmap.direct('--dump -D test -T users')
+        cmd, process = self.sqlmap.direct('--dump -D w3af_test -T users')
         output = process.stdout.read()
         
         self.assertIn('email', output)
@@ -166,4 +211,3 @@ class TestSQLMapWrapper(unittest.TestCase):
         
         self.assertNotIn('information_schema', output)
         self.assertNotIn('COLUMN_PRIVILEGES', output)
-        

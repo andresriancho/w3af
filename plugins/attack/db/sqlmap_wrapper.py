@@ -24,25 +24,55 @@ import shlex
 import subprocess
 
 from core.data.parsers.url import URL
+from core.data.constants.ports import SQLMAP_PROXY
+from core.controllers.daemons.proxy import Proxy
+from core.controllers.exceptions import w3afProxyException
 
 
 class SQLMapWrapper(object):
     
-    SQLMAP_LOCATION = os.path.join('plugins', 'attack', 'db', 'sqlmap') 
     
+    SQLMAP_LOCATION = os.path.join('plugins', 'attack', 'db', 'sqlmap') 
     VULN_STR = 'sqlmap identified the following injection points'
     NOT_VULN_STR = 'all tested parameters appear to be not injectable'
     
-    def __init__(self, target, coloring=False):
+    
+    def __init__(self, target, uri_opener, coloring=False):
         if not isinstance(target, Target):
             fmt = 'Invalid type %s for target parameter in SQLMapWrapper ctor.'
             raise TypeError(fmt % type(target))
 
+        self._start_proxy(uri_opener)
+
         self.target = target
         self.coloring = coloring
-        self.local_proxy_url = None
         self.last_command = None
         self.verified_vulnerable = False
+    
+    def _start_proxy(self, uri_opener):
+        '''
+        Saves the proxy configuration to self.local_proxy_url in order for the
+        wrapper to use it in the calls to sqlmap.py and have the traffic go
+        through our proxy (which has the user configuration, logging, etc).
+        
+        @return: None, an exception is raised if something fails.
+        '''
+        host = '127.0.0.1'
+        
+        for port in xrange(SQLMAP_PROXY, SQLMAP_PROXY+25):
+            try:
+                self.proxy = Proxy(host, port, uri_opener)
+            except w3afProxyException, pe:
+                pass
+            else:
+                self.proxy.start()
+                self.local_proxy_url = 'http://%s:%s/' % (host, port)
+                return
+        else:
+            raise pe
+    
+    def cleanup(self):
+        self.proxy.stop()
     
     def is_vulnerable(self):
         '''
@@ -133,6 +163,11 @@ class SQLMapWrapper(object):
     def get_wrapper_params(self, extra_params=[]):
         params = []
         
+        # TODO: This one will dissapear the day I add stdin handling support
+        #       for the wrapper. Please remember that this support will have to
+        #       take care of stdin and all other inputs from other UIs
+        params.append('--batch')
+        
         if not self.coloring:
             params.append('--disable-coloring')
         
@@ -211,3 +246,6 @@ class Target(object):
             params.append("--data=%s" % self.post_data)
         
         return params
+    
+    def __repr__(self):
+        return '<Target %s %s>' % (self.uri, self.post_data)

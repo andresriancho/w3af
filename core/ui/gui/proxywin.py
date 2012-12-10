@@ -28,7 +28,7 @@ from core.ui.gui import reqResViewer, helpers, entries, httpLogTab
 from core.controllers.exceptions import w3afException, w3afProxyException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.controllers.daemons import localproxy
+from core.controllers.daemons.localproxy import LocalProxy
 from core.ui.gui.entries import ConfigOptions
 
 ui_proxy_menu = """
@@ -255,7 +255,7 @@ class ProxiedRequests(entries.RememberingWindow):
             ip, port = ipport.split(":")
         self.w3af.mainwin.sb(_("Starting local proxy"))
         try:
-            self.proxy = localproxy.localproxy(ip, int(port))
+            self.proxy = LocalProxy(ip, int(port))
         except w3afProxyException, w3:
             if not silent:
                 self.show_alert(_(str(w3)))

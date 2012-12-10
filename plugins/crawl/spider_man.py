@@ -25,7 +25,7 @@ import core.data.url.HTTPResponse as HTTPResponse
 import core.data.constants.ports as ports
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from core.controllers.exceptions import w3afRunOnce, w3afProxyException
 from core.controllers.misc.decorators import runonce
 
@@ -60,7 +60,7 @@ class spider_man(CrawlPlugin):
         
         # Create the proxy server
         try:
-            self._proxy = proxy(self._listen_address, self._listen_port,
+            self._proxy = Proxy(self._listen_address, self._listen_port,
                                 self._uri_opener, self.create_p_h())
         except w3afProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)

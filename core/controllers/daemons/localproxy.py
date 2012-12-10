@@ -25,7 +25,7 @@ import re
 import time
 import traceback
 
-from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 from core.controllers.exceptions import w3afException
 from core.data.parsers.HTTPRequestParser import HTTPRequestParser
 from core.data.url.xUrllib import xUrllib
@@ -160,21 +160,26 @@ class w3afLocalProxyHandler(w3afProxyHandler):
         return True
 
 
-class localproxy(proxy):
+class LocalProxy(Proxy):
     '''
-    This is the local proxy server that is used by the local proxy GTK user interface to perform all its magic ;)
+    This is the local proxy server that is used by the local proxy GTK user
+    interface to perform all its magic ;)
     '''
 
-    def __init__(self, ip, port, urlOpener=xUrllib(), proxy_cert='core/controllers/daemons/mitm.crt'):
+    def __init__(self, ip, port, urlOpener=xUrllib(),
+                 proxy_cert='core/controllers/daemons/mitm.crt'):
         '''
         @param ip: IP address to bind
         @param port: Port to bind
-        @param urlOpener: The urlOpener that will be used to open the requests that arrive from the browser
-        @param proxyHandler: A class that will know how to handle requests from the browser
-        @param proxy_cert: Proxy certificate to use, this is needed for proxying SSL connections.
+        @param urlOpener: The urlOpener that will be used to open the requests
+                          that arrive from the browser
+        @param proxyHandler: A class that will know how to handle requests
+                             from the browser
+        @param proxy_cert: Proxy certificate to use, this is needed for
+                           proxying SSL connections.
         '''
-        proxy.__init__(
-            self, ip, port, urlOpener, w3afLocalProxyHandler, proxy_cert)
+        Proxy.__init__(self, ip, port, urlOpener, w3afLocalProxyHandler,
+                       proxy_cert)
 
         # Internal vars
         self._requestQueue = Queue.Queue()
@@ -246,8 +251,8 @@ class localproxy(proxy):
         self._editedRequests[id(orig_fuzzable_req)] = (None, None)
 
     def send_raw_request(self, orig_fuzzable_req, head, postdata):
-        # the handler is polling this dict and will extract the information from it and
-        # then send it to the remote web server
+        # the handler is polling this dict and will extract the information
+        # from it and then send it to the remote web server
         self._editedRequests[id(orig_fuzzable_req)] = (head, postdata)
 
         # Loop until I get the data from the remote web server
@@ -267,7 +272,7 @@ class localproxy(proxy):
             'Timed out waiting for response from remote server.')
 
 if __name__ == '__main__':
-    lp = localproxy('127.0.0.1', 8080, xUrllib())
+    lp = LocalProxy('127.0.0.1', 8080, xUrllib())
     lp.start()
 
     for i in xrange(10):

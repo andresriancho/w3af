@@ -182,12 +182,14 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             #   A couple of minor verifications before continuing to exploit a vulnerability
             #
             if not isinstance(vuln.get_url(), URL):
-                msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an URL.'
+                msg = '%s plugin can NOT exploit vulnerability with id "%s" as'\
+                      ' it doesn\'t have an URL.'
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
 
             if not isinstance(vuln.get_method(), basestring):
-                msg = '%s plugin can NOT exploit vulnerability with id "%s" as it doesn\'t have an HTTP method.'
+                msg = '%s plugin can NOT exploit vulnerability with id "%s" as' \
+                      ' it doesn\'t have an HTTP method.'
                 om.out.debug(msg % (self.get_name(), vuln.get_id()))
                 continue
 
@@ -195,7 +197,8 @@ class AttackPlugin(Plugin, CommonAttackMethods):
             s = self._generate_shell(vuln)
             if s is not None:
                 kb.kb.append(self, 'shell', s)
-                om.out.console('Vulnerability successfully exploited. Generated shell object %s' % s)
+                om.out.console('Vulnerability successfully exploited.'
+                               ' Generated shell object %s' % s)
                 if self._generate_only_one:
                     # A shell was generated, I only need one point of exec.
                     return [s, ]

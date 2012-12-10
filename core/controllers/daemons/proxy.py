@@ -39,152 +39,6 @@ from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.headers import Headers
 
 
-class proxy(Process):
-    '''
-    This class defines a simple HTTP proxy, it is mainly used for "complex"
-    plugins.
-
-    You should create a proxy instance like this:
-        ws = proxy( '127.0.0.1', 8080, urlOpener )
-
-    Or like this, if you want to override the proxyHandler (most times you
-    want to do it...):
-        ws = proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
-
-    If the IP:Port is already in use, an exception will be raised while
-    creating the ws instance.
-
-    To start the proxy, and given that this is a Process class, you can do this:
-        ws.start()
-
-    Or if you don't want a different thread, you can simply call the run method:
-        ws.run()
-
-    The proxy handler class is the place where you'll perform all the magic stuff,
-    like intercepting requests, modifying them, etc. A good idea if you want to
-    code your own proxy handler is to inherit from the proxy handler that is
-    already defined in this file (see: w3afProxyHandler).
-
-    What you basically have to do is to inherit from it:
-        class myProxyHandler(w3afProxyHandler):
-
-    And redefine the following methods:
-        def do_ALL( self )
-            Which originally receives a request from the browser, sends it to
-            the remote site, receives the response and returns the response to
-            the browser. This method is called every time the browser sends a
-            new request.
-
-    Things that work:
-        - http requests like GET, HEAD, POST, CONNECT
-        - https CONNECT ( thanks Sasha! )
-
-    @author: Andres Riancho (andres.riancho@gmail.com)
-    '''
-
-    def __init__(self, ip, port, uri_opener, proxyHandler=None,
-                 proxy_cert='core/controllers/daemons/mitm.crt'):
-        '''
-        @param ip: IP address to bind
-        @param port: Port to bind
-        @param uri_opener: The uri_opener that will be used to open
-            the requests that arrive from the browser
-        @param proxyHandler: A class that will know how to handle
-            requests from the browser
-        @param proxy_cert: Proxy certificate to use, this is needed
-            for proxying SSL connections.
-        '''
-        Process.__init__(self)
-        self.daemon = True
-        self.name = 'ProxyThread'
-        
-        # Internal vars
-        self._server = None
-        self._proxy_handler = proxyHandler
-        self._running = False
-        self._uri_opener = uri_opener
-        self._tm = tm
-
-        # User configured parameters
-        self._ip = ip
-        self._port = port
-        self._proxy_cert = proxy_cert
-
-        # Start the proxy server
-        try:
-            self._server = ProxyServer((self._ip, self._port),
-                                       self._proxy_handler)
-        except socket.error, se:
-            raise w3afProxyException('Socket error while starting proxy: "%s"'
-                                     % se.strerror)
-
-    def get_bind_ip(self):
-        '''
-        @return: The IP address where the proxy will listen.
-        '''
-        return self._ip
-
-    def get_bind_port(self):
-        '''
-        @return: The TCP port where the proxy will listen.
-        '''
-        return self._port
-
-    def stop(self):
-        '''
-        Stop the proxy by setting _go to False and creating a new request.
-        '''
-        om.out.debug('Calling stop of proxy daemon.')
-        if self._running:
-            try:
-                # Tell the proxy that he must quit
-                self._server.stop = True
-                conn = httplib.HTTPConnection(self._ip + ':' + str(self._port))
-                conn.request("QUIT", "/")
-                conn.getresponse()
-                om.out.debug('Sent QUIT request.')
-            except Exception:
-                om.out.debug(
-                    'Sent QUIT request and got timeout. Proxy server closed.')
-                self._running = False
-            else:
-                self._running = False
-        else:
-            om.out.debug(
-                'You called stop() on a proxy daemon that isn\'t running.')
-
-    def is_running(self):
-        '''
-        @return: True if the proxy daemon is running
-        '''
-        return self._running
-
-    def run(self):
-        """
-        Starts the proxy daemon; usually this method isn't called directly. In
-        most cases you'll call start()
-        """
-        if self._proxy_handler is None:
-            self._proxy_handler = w3afProxyHandler
-
-        om.out.debug('Using proxy handler: %s.' % self._proxy_handler)
-        self._proxy_handler._uri_opener = self._uri_opener
-        self._proxy_handler._uri_opener._proxy_cert = self._proxy_cert
-
-        # Starting to handle requests
-        message = 'Proxy server listening on %s:%s.' % (self._ip, self._port)
-        om.out.debug(message)
-        self._server.w3afLayer = self
-
-        self._running = True
-        self._server.serve_forever()
-        self._running = False
-
-        # I have to do this to actually KILL the HTTPServer, and free the
-        # TCP port
-        del self._server
-
-
 class w3afProxyHandler(BaseHTTPRequestHandler):
 
     def handle_one_request(self):
@@ -507,6 +361,148 @@ class w3afProxyHandler(BaseHTTPRequestHandler):
             self.address_string(), format % args)
         om.out.debug(message)
 
+
+class Proxy(Process):
+    '''
+    This class defines a simple HTTP proxy, it is mainly used for "complex"
+    plugins.
+
+    You should create a proxy instance like this:
+        ws = Proxy( '127.0.0.1', 8080, urlOpener )
+
+    Or like this, if you want to override the proxyHandler (most times you
+    want to do it...):
+        ws = Proxy( '127.0.0.1', 8080, urlOpener, proxyHandler=pH )
+
+    If the IP:Port is already in use, an exception will be raised while
+    creating the ws instance.
+
+    To start the proxy, and given that this is a Process class, you can do this:
+        ws.start()
+
+    Or if you don't want a different thread, you can simply call the run method:
+        ws.run()
+
+    The proxy handler class is the place where you'll perform all the magic stuff,
+    like intercepting requests, modifying them, etc. A good idea if you want to
+    code your own proxy handler is to inherit from the proxy handler that is
+    already defined in this file (see: w3afProxyHandler).
+
+    What you basically have to do is to inherit from it:
+        class myProxyHandler(w3afProxyHandler):
+
+    And redefine the following methods:
+        def do_ALL( self )
+            Which originally receives a request from the browser, sends it to
+            the remote site, receives the response and returns the response to
+            the browser. This method is called every time the browser sends a
+            new request.
+
+    Things that work:
+        - http requests like GET, HEAD, POST, CONNECT
+        - https CONNECT ( thanks Sasha! )
+
+    @author: Andres Riancho (andres.riancho@gmail.com)
+    '''
+
+    def __init__(self, ip, port, uri_opener, proxy_handler=w3afProxyHandler,
+                 proxy_cert='core/controllers/daemons/mitm.crt'):
+        '''
+        @param ip: IP address to bind
+        @param port: Port to bind
+        @param uri_opener: The uri_opener that will be used to open
+            the requests that arrive from the browser
+        @param proxy_handler: A class that will know how to handle
+            requests from the browser
+        @param proxy_cert: Proxy certificate to use, this is needed
+            for proxying SSL connections.
+        '''
+        Process.__init__(self)
+        self.daemon = True
+        self.name = 'ProxyThread'
+        
+        # Internal vars
+        self._server = None
+        self._proxy_handler = proxy_handler
+        self._running = False
+        self._uri_opener = uri_opener
+        self._tm = tm
+
+        # User configured parameters
+        self._ip = ip
+        self._port = port
+        self._proxy_cert = proxy_cert
+
+        # Start the proxy server
+        try:
+            self._server = ProxyServer((self._ip, self._port),
+                                       self._proxy_handler)
+        except socket.error, se:
+            raise w3afProxyException('Socket error while starting proxy: "%s"'
+                                     % se.strerror)
+
+    def get_bind_ip(self):
+        '''
+        @return: The IP address where the proxy will listen.
+        '''
+        return self._ip
+
+    def get_bind_port(self):
+        '''
+        @return: The TCP port where the proxy will listen.
+        '''
+        return self._port
+
+    def stop(self):
+        '''
+        Stop the proxy by setting _go to False and creating a new request.
+        '''
+        om.out.debug('Calling stop of proxy daemon.')
+        if self._running:
+            try:
+                # Tell the proxy that he must quit
+                self._server.stop = True
+                conn = httplib.HTTPConnection(self._ip + ':' + str(self._port))
+                conn.request("QUIT", "/")
+                conn.getresponse()
+                om.out.debug('Sent QUIT request.')
+            except Exception:
+                om.out.debug('Sent QUIT request and got timeout. Proxy server'
+                             'marked as closed.')
+                self._running = False
+            else:
+                self._running = False
+
+    def is_running(self):
+        '''
+        @return: True if the proxy daemon is running
+        '''
+        return self._running
+
+    def run(self):
+        """
+        Starts the proxy daemon; usually this method isn't called directly. In
+        most cases you'll call start()
+        """
+        om.out.debug('Using proxy handler: %s.' % self._proxy_handler)
+        self._proxy_handler._uri_opener = self._uri_opener
+        self._proxy_handler._uri_opener._proxy_cert = self._proxy_cert
+
+        # Starting to handle requests
+        message = 'Proxy server listening on %s:%s.' % (self._ip, self._port)
+        om.out.debug(message)
+        self._server.w3afLayer = self
+
+        self._running = True
+        self._server.serve_forever()
+        self._running = False
+
+        # I have to do this to actually KILL the HTTPServer, and free the
+        # TCP port
+        del self._server
+
+
+
 # I want to use threads to handle all requests.
 
 
@@ -640,7 +636,7 @@ class SSLConnectionWrapper(object):
         return SSLConnectionFile(self, socket)
 
 
-class SSLConnectionFile:
+class SSLConnectionFile(object):
     '''
     This class pretends to be a file to be used as rfile or wfile in request
     handlers. Actually, it reads and writes data from and to SSL connection
