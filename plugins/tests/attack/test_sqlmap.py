@@ -56,7 +56,6 @@ class TestSQLMapShell(PluginTest):
     }
 
     def test_found_exploit_sqlmap_sqli(self):
-        return
         # Run the scan
         cfg = self._run_configs['sqli']
         self._scan(cfg['target'], cfg['plugins'])
