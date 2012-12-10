@@ -90,8 +90,8 @@ class AuditPlugin(Plugin):
 
         @param freq: A FuzzableRequest
         '''
-        raise w3afException(
-            'Plugin is not implementing required method audit')
+        msg = 'Plugin is not implementing required method audit'
+        raise NotImplementedError(msg)
 
     def _has_bug(self, fuzz_req, varname='', pname='', kb_varname=''):
         return not self._has_no_bug(fuzz_req, varname, pname, kb_varname)
