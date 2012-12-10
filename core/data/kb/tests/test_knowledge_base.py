@@ -71,6 +71,21 @@ class test_knowledge_base(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
 
+    def test_append_uniq_bug_10Dec2012(self):
+        i1 = info()
+        i1.set_desc('1')
+        i1.set_uri(URL('http://moth/abc.html'))
+        i1.set_var('id')
+
+        i2 = info()
+        i2.set_desc('2')
+        i2.set_uri(URL('http://moth/abc.html'))
+        i2.set_var('id')
+
+        kb.append_uniq('a', 'b', i1)
+        kb.append_uniq('a', 'b', i2)
+        self.assertEqual(kb.get('a', 'b'), [i1, ])
+        
     def test_append_uniq_false(self):
         i1 = info()
         i1.set_uri(URL('http://moth/abc.html?id=1'))

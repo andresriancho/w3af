@@ -68,10 +68,19 @@ class InMemoryKnowledgeBase(object):
 
         with self._kb_lock:
             for saved_vuln in self.get(location_a, location_b):
+                
                 if saved_vuln.get_var() == info_inst.get_var() and\
-                saved_vuln.get_url() == info_inst.get_url() and \
-                saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
-                    return False
+                saved_vuln.get_url() == info_inst.get_url():
+                
+                    if saved_vuln.get_dc() is None and\
+                    info_inst.get_dc() is None:
+                        return False
+                    
+                    if saved_vuln.get_dc() is not None and\
+                    info_inst.get_dc() is not None:
+                        
+                        if saved_vuln.get_dc().keys() == info_inst.get_dc().keys():
+                            return False 
 
             self.append(location_a, location_b, info_inst)
             return True
