@@ -149,15 +149,19 @@ class RunFunctor(Process):
         
         try:
             while process.poll() is None:
-                for line in process.stdout.readline():
+                read_ready, _, _ = select.select( [process.stdout,], [], [], 0.1 )
+                
+                if read_ready:
+                    line = process.stdout.read(1)
                     om.out.console(line, new_line=False)
-                    
+                
                 try:
                     user_input = self.user_input.get_nowait()
                 except Queue.Empty:
                     pass
                 else:
                     process.stdin.write(user_input)
+                                      
                     
         except KeyboardInterrupt:
             om.out.information('Terminating SQLMap after Ctrl+C.')
@@ -200,10 +204,10 @@ class SQLMapShell(ReadShell):
             
             # While the process is running...
             while sqlmap_thread.process.poll() is None:
-                stdin, _, _ = select.select( [sys.stdin,], [], [], 0.5 )
+                read_ready, _, _ = select.select( [sys.stdin,], [], [], 0.1 )
                 
-                if stdin:
-                    user_input = sys.stdin.read()
+                if read_ready:
+                    user_input = sys.stdin.read(1)
                     sqlmap_thread.user_input.put(user_input)
             
             # Returning this empty string makes the console avoid printing
