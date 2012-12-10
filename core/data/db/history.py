@@ -325,7 +325,6 @@ class HistoryItem(object):
                              str(self.response.id) + self._EXTENSION)
 
         with FileLock(fname, timeout=1):
-
             rrfile = open(fname, 'wb')
             p = Pickler(rrfile)
             p.dump((self.request, self.response))
@@ -375,7 +374,9 @@ class HistoryItem(object):
         
         # Delete files
         os.remove(db_filename)
-        rmtree(self._session_dir)
+        # It might be the case that another thread removes the session dir
+        # at the same time as we, so we simply ignore errors here
+        rmtree(self._session_dir, ignore_errors=True)
         
         kb.kb.save('history', 'db', [])
         

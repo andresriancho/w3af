@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import os
 import time
 import errno
@@ -56,8 +55,8 @@ class FileLock(object):
         """
         for _ in xrange(int(self.timeout / self.delay)):
             try:
-                self.fd = os.open(
-                    self.lockfile, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+                self.fd = os.open(self.lockfile,
+                                  os.O_CREAT | os.O_EXCL | os.O_RDWR)
                 break
             except OSError as e:
                 if e.errno != errno.EEXIST:
@@ -74,7 +73,15 @@ class FileLock(object):
             called at the end.
         """
         if self.is_locked:
-            os.close(self.fd)
+            try:
+                os.close(self.fd)
+            except OSError:
+                # When the release method is called via __del__, in some cases
+                # it is possible that the interpreter already closed the fd and
+                # an error is raised when I try to close an unknown file
+                # descriptor
+                pass
+            
             os.unlink(self.lockfile)
             self.is_locked = False
 
