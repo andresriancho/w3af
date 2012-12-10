@@ -24,7 +24,7 @@ import unittest
 
 from core.data.url.xUrllib import xUrllib
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.controllers.daemons.proxy import proxy, w3afProxyHandler
+from core.controllers.daemons.proxy import Proxy, w3afProxyHandler
 
 
 class TestProxy(unittest.TestCase):
@@ -38,7 +38,7 @@ class TestProxy(unittest.TestCase):
 
         for port in xrange(self.PORT, self.PORT + 10):
             try:
-                self._proxy = proxy(self.IP, port, xUrllib(), w3afProxyHandler)
+                self._proxy = Proxy(self.IP, port, xUrllib(), w3afProxyHandler)
                 self._proxy.start()
             except Exception, e:
                 last_exception = e
@@ -98,7 +98,7 @@ class TestProxy(unittest.TestCase):
         del proxy_resp_headers['date']
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
-    def test_prox_req_ok(self):
+    def test_proxy_req_ok(self):
         '''Test if self._proxy.stop() works as expected. Note that the check
         content is the same as the previous check, but it might be that this
         check fails because of some error in start() or stop() which is run
@@ -109,7 +109,18 @@ class TestProxy(unittest.TestCase):
         resp = urllib2.urlopen('http://moth').read()
         # They must be very similar
         self.assertEqual(resp, proxy_resp)
+    
+    def test_stop_no_requests(self):
+        '''Test what happens if I stop the proxy without sending any requests
+        through it'''
+        # Note that the test is completed by self._proxy.stop() in tearDown
+        pass
 
+    def test_stop_stop(self):
+        '''Test what happens if I stop the proxy twice.'''
+        # Note that the test is completed by self._proxy.stop() in tearDown
+        self._proxy.stop()
+    
     def tearDown(self):
         # Shutdown the proxy server
         self._proxy.stop()
