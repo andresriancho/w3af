@@ -19,6 +19,6 @@ back
 
 start
 
-assert len(kb.kb.getData('generic','generic')) == 0
+assert len(kb.kb.get('generic','generic')) == 0
 
 exit

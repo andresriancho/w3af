@@ -21,7 +21,7 @@ back
 
 start
 
-assert len(kb.kb.getData('sqli','sqli')) == 1
-assert len(kb.kb.getData('xss','xss')) == 1
+assert len(kb.kb.get('sqli','sqli')) == 1
+assert len(kb.kb.get('xss','xss')) == 1
 
 exit
