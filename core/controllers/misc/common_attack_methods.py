@@ -169,8 +169,7 @@ class CommonAttackMethods(object):
             self._header_length = body.find(expected_result)
 
             # Define the footer
-            self._footer_length = len(
-                body) - self._header_length - len(expected_result)
+            self._footer_length = len(body) - self._header_length - len(expected_result)
 
             om.out.debug('Defined cut header and footer using exact match')
             om.out.debug('Defined header length to %i' % self._header_length)
