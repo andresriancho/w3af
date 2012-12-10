@@ -191,8 +191,8 @@ class file_upload(AuditPlugin):
             v.set_id([http_response.id, get_response.id])
             v.set_severity(severity.HIGH)
             v.set_name('Insecure file upload')
-            v['fileDest'] = get_response.get_url()
-            v['fileVars'] = mutant.get_file_vars()
+            v['file_dest'] = get_response.get_url()
+            v['file_vars'] = mutant.get_file_vars()
             msg = ('A file upload to a directory inside the '
                    'webroot was found at: ' + mutant.found_at())
             v.set_desc(msg)
