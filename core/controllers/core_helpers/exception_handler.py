@@ -45,9 +45,8 @@ class ExceptionHandler(object):
     '''
 
     MAX_EXCEPTIONS_PER_PLUGIN = 3
-    NO_HANDLING = (
-        MemoryError, w3afMustStopByUnknownReasonExc, w3afMustStopException,
-        w3afMustStopByUserRequest)
+    NO_HANDLING = (MemoryError, w3afMustStopByUnknownReasonExc,
+                   w3afMustStopException, w3afMustStopByUserRequest)
 
     def __init__(self):
         # TODO: Maybe this should be a disk_list just to make sure we don't
@@ -109,8 +108,8 @@ class ExceptionHandler(object):
         # the way we want to.
         #
         with self._lock:
-            edata = ExceptionData(
-                current_status, exception, tb, enabled_plugins)
+            edata = ExceptionData(current_status, exception, tb,
+                                  enabled_plugins)
 
             count = 0
             for stored_edata in self._exception_data:
@@ -120,10 +119,9 @@ class ExceptionHandler(object):
 
             if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
                 self._exception_data.append(edata)
-
                 msg = edata.get_summary()
-                msg += ' The scan will continue but some vulnerabilities might'
-                msg += ' not be identified.'
+                msg += ' The scan will continue but some vulnerabilities might'\
+                       ' not be identified.'
                 om.out.error(msg)
 
     def clear(self):
