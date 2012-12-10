@@ -20,13 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os.path
+import base64
 
 import core.data.kb.knowledge_base as kb
 from core.controllers.exceptions import w3afException
 
-SHELL_IDENTIFIER = '15825b40c6dace2a7cf5d4ab8ed434d5'
-SHELL_IDENTIFIER_1 = '15825b40c6dace2a'
-SHELL_IDENTIFIER_2 = '7cf5d4ab8ed434d5'
+SHELL_IDENTIFIER_1 = '15825b40c6dace2a'[::-1]
+SHELL_IDENTIFIER_2 = '7cf5d4ab8ed434d5'[::-1]
+SHELL_IDENTIFIER = SHELL_IDENTIFIER_1 + SHELL_IDENTIFIER_2 
 
 
 def get_webshells(extension, force_extension=False):
@@ -67,7 +68,16 @@ def extract_result(body):
     idx_1 = body.index(SHELL_IDENTIFIER_1)
     len_1 = len(SHELL_IDENTIFIER_1)
     idx_2 = body.index(SHELL_IDENTIFIER_2)
-    return body[idx_1 + len_1:idx_2]
+    raw_result = body[idx_1 + len_1:idx_2]
+    
+    try:
+        result = base64.b64decode(raw_result)
+    except TypeError:
+        msg = 'Unexpected base64 decode error found while trying to retrieve'\
+              ' the command output.'
+        raise w3afException(msg)
+     
+    return result
 
 
 def _get_file_list(type_of_list, extension, force_extension=False):
@@ -81,10 +91,9 @@ def _get_file_list(type_of_list, extension, force_extension=False):
     '''
     known_framework = []
     uncertain_framework = []
-    path = 'plugins' + os.path.sep + 'attack' + os.path.sep + \
-        'payloads' + os.path.sep
-    path += type_of_list + os.path.sep
-
+    path = os.path.join('plugins', 'attack' , 'payloads', type_of_list)
+    path += os.path.sep
+    
     if force_extension:
         filename = path + type_of_list + '.' + extension
         real_extension = extension
@@ -93,21 +102,26 @@ def _get_file_list(type_of_list, extension, force_extension=False):
         poweredByHeader = kb.kb.get('server_header', 'poweredByString')
         filename = ''
 
-        file_list = [x for x in os.listdir(path) if x.startswith(
-            type_of_list)]
+        file_list = [x for x in os.listdir(path) if x.startswith(type_of_list)]
 
         for shell_filename in file_list:
 
             filename = path + shell_filename
             real_extension = shell_filename.split('.')[1]
-
+            
+            # Just in case... this saves me from gedit and joe which save the
+            # old files like code.php~
+            if real_extension.endswith('~'):
+                continue
+            
             # Using the powered By headers
             # More than one header can have been sent by the server
             for h in poweredByHeader:
                 if h.lower().count(real_extension):
                     known_framework.append((filename, real_extension))
 
-            # extension here is the parameter passed by the user, that can be '' , this happens in dav
+            # extension here is the parameter passed by the user, that can be ''
+            # (this happens in dav)
             uncertain_framework.append((filename, real_extension))
 
     # We keep the order, first the ones we think could work, then the ones that may

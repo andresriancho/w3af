@@ -68,9 +68,8 @@ class eval(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = eval_shell(vuln_obj)
+            shell_obj = EvalShell(vuln_obj)
             shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_cut(self._header_length, self._footer_length)
             shell_obj.set_code(self._shell_code)
             return shell_obj
         else:
@@ -90,8 +89,8 @@ class eval(AttackPlugin):
 
         for code, real_extension in shell_code_list:
             # Prepare for exploitation...
-            function_reference = getattr(
-                self._uri_opener, vuln_obj.get_method())
+            function_reference = getattr(self._uri_opener,
+                                         vuln_obj.get_method())
             data_container = vuln_obj.get_dc()
             data_container[vuln_obj.get_var()] = code
 
@@ -103,11 +102,10 @@ class eval(AttackPlugin):
                       ' vulnerability. Original exception: "%s".'
                 om.out.debug(msg % w3)
             else:
-                cut_result = self._define_exact_cut(http_res.get_body(),
-                                                    shell_handler.SHELL_IDENTIFIER)
-                if cut_result:
+                if shell_handler.SHELL_IDENTIFIER in http_res.get_body():
                     msg = 'Sucessfully exploited eval() vulnerability using'\
                           ' the following code snippet: "%s...".' % code[:35]
+                    om.out.debug(msg)
                     self._shell_code = code
                     return True
 
@@ -134,7 +132,7 @@ class eval(AttackPlugin):
         '''
 
 
-class eval_shell(exec_shell):
+class EvalShell(exec_shell):
 
     def set_code(self, code):
         self._shell_code = code
