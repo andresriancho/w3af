@@ -173,6 +173,22 @@ class TestHistoryItem(unittest.TestCase):
         self.assertFalse(os.path.exists(h1._session_dir),
                          '%s exists.' % h1._session_dir)
 
+    def test_clear_clear(self):
+        
+        url = URL('http://w3af.com/a/b/c.php')
+        fr = FuzzReq(url, dc={'a': ['1']})
+        hdr = Headers([('Content-Type', 'text/html')])
+        res = HTTPResponse(200, '<html>', hdr, url, url)
+        
+        h1 = HistoryItem()
+        h1.request = fr
+        res.set_id(1)
+        h1.response = res
+        h1.save()
+        
+        h1.clear()
+        self.assertRaises(w3afException, h1.clear)
+
     def test_tag(self):
         tag_id = random.randint(501, 999)
         tag_value = rand_alnum(10)
