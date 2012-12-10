@@ -37,7 +37,7 @@ def os_detection_exec(exec_method):
     except w3afException:
         pass
     else:
-        if 'w3af' == linux1 and linux2.count(':') > 2:
+        if 'w3af' in linux1 and linux2.count(':') > 3:
             om.out.debug('Identified remote OS as Linux, returning "linux".')
             return 'linux'
 
