@@ -27,7 +27,6 @@ except:
     import pyPdf
 
 from plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
-from core.data.getResponseType import isPDF
 
 
 class pdf(BasePwdProfilingPlugin):
@@ -68,7 +67,8 @@ class pdf(BasePwdProfilingPlugin):
         res = None
         words = []
 
-        if isPDF(response.get_headers()):
+        
+        if response.content_type in ('application/x-pdf', 'application/pdf'):
             try:
                 words = self._get_pdf_content(response.get_body())
             except:
