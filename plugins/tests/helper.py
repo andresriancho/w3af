@@ -50,14 +50,6 @@ class PluginTest(unittest.TestCase):
         self.w3afcore = w3afCore()
 
     def tearDown(self):
-        #
-        # I want to make sure that we don't have *any hidden* exceptions in our
-        # tests.
-        #
-        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-        msg = [e.get_summary() for e in caught_exceptions]
-        self.assertEqual(len(caught_exceptions), 0, msg)
-
         self.w3afcore.quit()
         self.kb.cleanup()
 
@@ -119,6 +111,15 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.verify_environment()
         self.w3afcore.start()
 
+        #
+        # I want to make sure that we don't have *any hidden* exceptions in our
+        # tests. This was in tearDown before, but moved here because I was getting
+        # failed assertions in my test code that were because of exceptions in the
+        # scan and they were hidden.
+        #
+        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
+        msg = [e.get_summary() for e in caught_exceptions]
+        self.assertEqual(len(caught_exceptions), 0, msg)
 
 class PluginConfig(object):
 
