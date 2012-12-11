@@ -52,12 +52,6 @@ class AttackPlugin(Plugin, CommonAttackMethods):
         # User configured parameter
         self._generate_only_one = False
 
-    def fast_exploit(self, url):
-        '''
-        '''
-        raise NotImplementedError(
-            'Plugin is not implementing required method fast_exploit')
-
     def _generate_shell(self, vuln):
         '''
         @param vuln: The vulnerability object to exploit.
