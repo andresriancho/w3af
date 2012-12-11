@@ -93,3 +93,8 @@ class TestOSCommandingShell(PluginTest):
         payload = shell.generic_user_input(
             'payload', ['apache_config_directory'])
         self.assertTrue(payload is None)
+        
+        _help = shell.help(None)
+        self.assertIn('execute', _help)
+        self.assertIn('upload', _help)
+        
