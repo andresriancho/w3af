@@ -97,6 +97,10 @@ class Mutant(object):
             raise ValueError(msg)
 
     def get_mod_value(self):
+        '''
+        @return: The value that was sent to the remote server and triggered the
+                 vulnerability.
+        '''
         try:
             return self._freq._dc[self.get_var()][self._index]
         except:
