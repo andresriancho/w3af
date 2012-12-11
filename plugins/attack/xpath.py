@@ -19,15 +19,16 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-from random import randint
 import re
 import difflib
 
+from random import randint
+
+import core.controllers.output_manager as om
+
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.exceptions import w3afException
-import core.controllers.output_manager as om
-from core.data.kb.exec_shell import shell as shell
+from core.data.kb.shell import shell
 
 ERROR_MSG = 'Empty Path Expression'
 XML_FILTER = '//*'
