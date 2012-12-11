@@ -23,7 +23,7 @@ import core.controllers.output_manager as om
 import plugins.attack.payloads.shell_handler as shell_handler
 
 from core.data.fuzzer.utils import rand_alpha
-from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.exec_shell import ExecShell
 from core.data.parsers.url import URL
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.attack_plugin import AttackPlugin
@@ -148,7 +148,7 @@ class dav(AttackPlugin):
         '''
 
 
-class DAVShell(exec_shell):
+class DAVShell(ExecShell):
     def set_exploit_URL(self, eu):
         self._exploit_url = eu
 

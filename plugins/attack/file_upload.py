@@ -25,7 +25,7 @@ import tempfile
 import core.controllers.output_manager as om
 import plugins.attack.payloads.shell_handler as shell_handler
 
-from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.exec_shell import ExecShell
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.plugins.attack_plugin import AttackPlugin
@@ -173,7 +173,7 @@ class file_upload(AttackPlugin):
         '''
 
 
-class FileUploadShell(exec_shell):
+class FileUploadShell(ExecShell):
     def set_exploit_URL(self, eu):
         self._exploit = eu
 

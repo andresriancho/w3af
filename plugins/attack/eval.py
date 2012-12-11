@@ -24,7 +24,7 @@ import plugins.attack.payloads.shell_handler as shell_handler
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.exceptions import w3afException
-from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.exec_shell import ExecShell
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
 
@@ -132,7 +132,7 @@ class eval(AttackPlugin):
         '''
 
 
-class EvalShell(exec_shell):
+class EvalShell(ExecShell):
 
     def set_code(self, code):
         self._shell_code = code

@@ -34,7 +34,7 @@ from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.homeDir import get_home_dir
 from core.controllers.misc.get_local_ip import get_local_ip
-from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.exec_shell import ExecShell
 from core.data.kb.shell import shell as shell
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
@@ -420,7 +420,7 @@ class PortScanShell(shell):
         return 'portscan-shell object'
 
 
-class RFIShell(exec_shell, PortScanShell):
+class RFIShell(ExecShell, PortScanShell):
     '''
     I create this shell when the remote host allows outgoing connections, or when
     the attack plugin was configured to use XSS vulnerabilities to exploit the RFI and
@@ -431,7 +431,7 @@ class RFIShell(exec_shell, PortScanShell):
         Create the obj
         '''
         PortScanShell.__init__(self, vuln)
-        exec_shell.__init__(self, vuln)
+        ExecShell.__init__(self, vuln)
 
         self._exploit_dc = None
 

@@ -28,7 +28,7 @@ from plugins.attack.payloads.payload_handler import (payload_to_file,
                                                      get_payload_instance,
                                                      get_payload_list)
 
-from core.data.kb.exec_shell import exec_shell
+from core.data.kb.exec_shell import ExecShell
 from core.data.kb.read_shell import ReadShell
 
 
@@ -115,7 +115,7 @@ class TestPayloadHandler(unittest.TestCase):
         self.assertFalse(is_payload('andres_riancho'))
 
 
-class FakeExecShell(exec_shell):
+class FakeExecShell(ExecShell):
 
     def execute(self, command):
         return commands.getoutput(command)

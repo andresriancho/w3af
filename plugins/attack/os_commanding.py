@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
-from core.data.kb.exec_shell import exec_shell as exec_shell
+from core.data.kb.exec_shell import ExecShell
 from core.data.fuzzer.utils import rand_alpha
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
@@ -221,7 +221,7 @@ class os_commanding(AttackPlugin):
         '''
 
 
-class OSCommandingShell(exec_shell):
+class OSCommandingShell(ExecShell):
 
     @exec_debug
     def execute(self, command):
