@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import textwrap
+
 import core.controllers.output_manager as om
 
 from core.data.kb.shell import shell
@@ -42,19 +44,36 @@ class ReadShell(shell):
 
         TODO: When is this going to be called?
         '''
-        om.out.console('Available commands:')
-        om.out.console(
-            '    help                            Display this information')
-        om.out.console('    lsp                             List payloads')
-        om.out.console('    payload <payload>               Execute "payload" and get the result')
-        om.out.console('    read <file>                     Read the remote server <file> and echo to this console')
-        om.out.console('    download <remote> <local>       Download <remote> file to <local> file system location')
-        om.out.console(
-            '    exit                            Exit the shell session')
-        om.out.console('')
-        om.out.console(
-            'All the other commands are executed on the remote server.')
-        return True
+        if command == 'read':
+            _help = '''\
+            read:
+                The read command echoes the content of a file to the console. The
+                command takes only one parameter: the full path of the file to 
+                read.
+            
+            Examples:
+                read /etc/passwd
+            '''
+        elif command == 'download':
+            _help = '''\
+            download:
+                The download command reads a file in the remote system and saves
+                it to the local filesystem.
+            
+            Examples:
+                download /etc/passwd /tmp/passwd
+            '''
+        else:
+            _help = '''\
+            Available commands:
+                help                            Display this information
+                lsp                             List payloads
+                payload <payload>               Execute "payload" and get the result
+                read <file>                     Read the remote server <file> and echo to this console
+                download <remote> <local>       Download <remote> file to <local> file system location
+                exit                            Exit this shell session
+            '''
+        return textwrap.dedent(_help)        
 
     @download_debug
     def download(self, remote_filename, local_filename):

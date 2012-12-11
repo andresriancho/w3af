@@ -1,5 +1,5 @@
 '''
-exec_shell.py
+ExecShell.py
 
 Copyright 2010 Andres Riancho
 
@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import textwrap
+
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
@@ -29,7 +31,7 @@ from plugins.attack.payloads.decorators.read_decorator import read_debug
 from plugins.attack.payloads.decorators.download_decorator import download_debug
 
 
-class exec_shell(shell):
+class ExecShell(shell):
     '''
     This class represents a shell where users can execute commands in the remote
     operating system and get the output back.
@@ -50,24 +52,20 @@ class exec_shell(shell):
         '''
         Handle the help command.
         '''
-        result = []
-        result.append('Available commands:')
-        result.append(
-            '    help                            Display this information')
-        result.append('    lsp                             List payloads')
-        result.append('    payload <payload>               Execute "payload" and get the result')
-        result.append('    read <file>                     Read the remote server <file> and echo to this console')
-        result.append('    write <file> <content>          Write <content> to the remote <file>')
-        result.append('    upload <local> <remote>         Upload <local> file to <remote> location')
-        result.append('    execute <cmd>                   ')
-        result.append('    exec <cmd>                      ')
-        result.append('    e <cmd>                         Run <cmd> on the remote operating system')
-        result.append(
-            '    exit                            Exit this shell session')
-        result.append('')
-        result.append(
-            'All the other commands are executed on the remote server.')
-        return '\n'.join(result)
+        _help = '''\
+        Available commands:
+            help                            Display this information
+            lsp                             List payloads
+            payload <payload>               Execute "payload" and get the result
+            read <file>                     Read the remote server <file> and echo to this console
+            write <file> <content>          Write <content> to the remote <file>
+            upload <local> <remote>         Upload <local> file to <remote> location
+            execute <cmd>                   
+            exec <cmd>                      
+            e <cmd>                         Run <cmd> on the remote operating system
+            exit                            Exit this shell session
+        '''
+        return textwrap.dedent(_help)
 
     @download_debug
     def download(self, remote_filename, local_filename):

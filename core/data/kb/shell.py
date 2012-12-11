@@ -72,18 +72,9 @@ class shell(vuln, ExploitResult):
 
     def help(self, command):
         '''
-        Handle the help command.
+        @return: A string with the 
         '''
-        result = []
-        result.append('Available commands:')
-        result.append(
-            '    help                            Display this information')
-        result.append(
-            '    lsp                             List the available payloads')
-        result.append(
-            '    exit                            Exit the shell session')
-        result.append('')
-        return '\n'.join(result)
+        raise NotImplementedError('Please implement the help() method.')
 
     def generic_user_input(self, command, params):
         '''
@@ -99,7 +90,10 @@ class shell(vuln, ExploitResult):
         #    Commands that are common to all shells:
         #
         if command.strip() == 'help':
-            return self.help(command)
+            help_command = None
+            if len(params) >= 1:
+                help_command = params[0]
+            return self.help(help_command)
 
         elif command == 'payload':
             #
