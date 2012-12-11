@@ -1,5 +1,5 @@
 '''
-test_file_upload.py
+test_local_file_reader.py
 
 Copyright 2012 Andres Riancho
 
