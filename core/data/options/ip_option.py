@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.is_ip_address import is_ip_address
 from core.data.options.baseoption import BaseOption
-from core.data.options.option_types import IPPORT
+from core.data.options.option_types import IP
 
 
-class IPPortOption(BaseOption):
+class IPOption(BaseOption):
 
-    _type = IPPORT
+    _type = IP
 
     def set_value(self, value):
         '''
@@ -40,24 +40,9 @@ class IPPortOption(BaseOption):
         self._value = self.validate(value)
 
     def validate(self, value):
-        try:
-            ip, port = value.split(':')
-        except Exception:
-            msg = 'Invalid IP and port specification, the correct format is'\
-                  ' <ip-address>:<port> , for example:  127.0.0.1:8080.'
+        
+        if not is_ip_address(value):
+            msg = 'Invalid IP address specified ("%s")' % value
             raise w3afException(msg)
-        else:
-            if not is_ip_address(ip):
-                msg = 'Invalid IP address specified ("%s")' % ip
-                raise w3afException(msg)
-            
-            try:
-                port = int(port)
-                assert port > 0
-                assert port < 65536
-            except:
-                msg = 'Invalid port specified, it needs to be a number between'\
-                      ' 1 and 65535.'
-                raise w3afException(msg)
-
-            return value
+        
+        return value

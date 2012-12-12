@@ -24,6 +24,7 @@ INT = 'integer'
 FLOAT = 'float'
 
 # Networking
+IP = 'ip'
 PORT = 'port'
 URL = 'url'
 IPPORT = 'ipport'

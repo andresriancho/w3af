@@ -27,7 +27,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
     REGEX, COMBO, INPUT_FILE, OUTPUT_FILE,
-    PORT)
+    PORT, IP)
 
 
 class TestOptionFactory(unittest.TestCase):
@@ -48,17 +48,20 @@ class TestOptionFactory(unittest.TestCase):
                 COMBO: (['a', 'b', 'c'], 'a'),
                 INPUT_FILE: (input_file, input_file),
                 OUTPUT_FILE: (output_file, output_file),
-                PORT: ('12345', 12345)
+                PORT: ('12345', 12345),
+                IP: ('127.0.0.1', '127.0.0.1')
                 }
 
         for _type, (user_value, parsed_value) in data.iteritems():
-            opt = opt_factory('name', user_value, 'desc', _type)
+            opt = opt_factory('name', user_value, 'desc', _type, 'help', 'tab1')
 
             self.assertEqual(opt.get_name(), 'name')
             self.assertEqual(opt.get_desc(), 'desc')
             self.assertEqual(opt.get_type(), _type)
             self.assertEqual(opt.get_default_value(), parsed_value)
             self.assertEqual(opt.get_value(), parsed_value)
+            self.assertEqual(opt.get_help(), 'help')
+            self.assertEqual(opt.get_tabid(), 'tab1')
 
             self.assertIsInstance(opt.get_name(), basestring)
             self.assertIsInstance(opt.get_desc(), basestring)

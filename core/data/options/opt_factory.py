@@ -25,6 +25,7 @@ from core.data.options.float_option import FloatOption
 from core.data.options.string_option import StringOption
 from core.data.options.url_option import URLOption
 from core.data.options.ipport_option import IPPortOption
+from core.data.options.ip_option import IPOption
 from core.data.options.port_option import PortOption
 from core.data.options.list_option import ListOption
 from core.data.options.regex_option import RegexOption
@@ -35,7 +36,7 @@ from core.data.options.output_file_option import OutputFileOption
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT,
     LIST, REGEX, COMBO, INPUT_FILE,
-    OUTPUT_FILE, PORT)
+    OUTPUT_FILE, PORT, IP)
 
 
 def opt_factory(name, default_value, desc, _type, help='', tabid=''):
@@ -56,6 +57,8 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
         INPUT_FILE: InputFileOption,
         OUTPUT_FILE: OutputFileOption,
         PORT: PortOption,
+        IP: IPOption,
     }
 
-    return option_klasses[_type](name, default_value, desc, _help='', tabid='')
+    return option_klasses[_type](name, default_value, desc, _help=help,
+                                 tabid=tabid)
