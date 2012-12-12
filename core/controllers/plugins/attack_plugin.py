@@ -35,8 +35,10 @@ class AttackPlugin(Plugin, CommonAttackMethods):
     '''
     This is the base class for attack plugins, all attack plugins should inherit
     from it and implement the following methods :
-        1. fast_exploit(...)
-        2. _generate_shell(...)
+        * _generate_shell
+        * get_kb_location
+        * get_attack_type
+        * get_root_probability
 
     @author: Andres Riancho ((andres.riancho@gmail.com))
     '''
