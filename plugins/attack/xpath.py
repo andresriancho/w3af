@@ -215,6 +215,9 @@ class xpath(AttackPlugin):
             om.out.debug('Error "%s"' % (e))
         else:
             use_difflib = (diff_ratio / count) < THRESHOLD
+            # FIXME: I'm not using difflib since it doesn't work well in my
+            #        test environment, but in the future I might need it for
+            #        a real engagement.
             use_difflib = False
             ier = IsErrorResponse(vuln, self._uri_opener, use_difflib)
             is_error_resp = ier.is_error_response
@@ -451,6 +454,7 @@ class IsErrorResponse(object):
     
         @return: True if the res_body is ERROR and FALSE if Not
         '''
+        # FIXME: See FIXME above where I disable the use of difflib.
         if self.use_difflib:
             
             if self.base_response is None:
