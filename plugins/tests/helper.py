@@ -53,7 +53,7 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.quit()
         self.kb.cleanup()
 
-    def _scan(self, target, plugins, debug=False):
+    def _scan(self, target, plugins, debug=False, assert_exceptions=True):
         '''
         Setup env and start scan. Typically called from children's
         test methods.
@@ -117,9 +117,10 @@ class PluginTest(unittest.TestCase):
         # failed assertions in my test code that were because of exceptions in the
         # scan and they were hidden.
         #
-        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
-        msg = [e.get_summary() for e in caught_exceptions]
-        self.assertEqual(len(caught_exceptions), 0, msg)
+        if assert_exceptions:
+            caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
+            msg = [e.get_summary() for e in caught_exceptions]
+            self.assertEqual(len(caught_exceptions), 0, msg)
 
 class PluginConfig(object):
 

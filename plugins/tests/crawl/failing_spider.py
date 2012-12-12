@@ -43,4 +43,4 @@ class failing_spider(web_spider):
             if fuzzable_req.get_url().url_string.endswith(ending):
                 raise Exception('Test')
 
-        return super(failing_spider, self).discover(fuzzable_req)
+        return super(failing_spider, self).crawl(fuzzable_req)

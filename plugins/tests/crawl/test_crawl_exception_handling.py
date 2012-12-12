@@ -51,8 +51,8 @@ class TestCrawlExceptions(PluginTest):
 
         In the tearDown method, I'll remove the file.
         '''
-        self.src = os.path.join(
-            'plugins', 'tests', 'crawl', 'failing_spider.py')
+        self.src = os.path.join('plugins', 'tests', 'crawl',
+                                'failing_spider.py')
         self.dst = os.path.join('plugins', 'crawl', 'failing_spider.py')
         shutil.copy(self.src, self.dst)
 
@@ -65,16 +65,21 @@ class TestCrawlExceptions(PluginTest):
         if os.path.exists(self.dst + 'c'):  # pyc file
             os.remove(self.dst + 'c')
 
-        # This is a very special case in which I don't want the assertion in
-        # the original tearDown() to trigger on me!
-        self.w3afcore.exception_handler.clear()
-
         super(TestCrawlExceptions, self).tearDown()
 
     def test_spider_found_urls(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
 
+        # This is a very special case in which I don't want the assertion in
+        # the _scan() to trigger on me!
+        self._scan(cfg['target'], cfg['plugins'], assert_exceptions=False)
+
+        caught_exceptions = self.w3afcore.exception_handler.get_all_exceptions()
+        self.assertEqual(len(caught_exceptions), 1)
+        
+        edata = caught_exceptions[0]
+        self.assertEqual(edata.get_where(), 'crawl.failing_spider:366')
+        
         # I tried to make some more advanced unittests here, but it was
         # very difficult to get a result that was NOT random from failing_spider
         # + exception_handler .
