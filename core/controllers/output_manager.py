@@ -154,6 +154,11 @@ class output_manager(Process):
         '''
         Internal method used to invoke the requested action on each plugin
         in the output plugin list.
+        
+        A caller to any of the METHODS can specify that the call he's doing
+        should NOT go to a specific plugin set specified in the ignore_plugins
+        keyword argument.
+        
         '''
         encoded_params = []
 
@@ -164,8 +169,29 @@ class output_manager(Process):
             encoded_params.append(arg)
 
         args = tuple(encoded_params)
-
+        
+        # A caller to any of the METHODS can specify that the call he's doing
+        # should NOT go to a specific plugin set specified in the ignore_plugins
+        # keyword argument
+        #
+        # We do a pop() here because the plugin method doesn't really receive
+        # the ignored plugin set, we just filter them at this level.
+        #
+        # This is used (mostly) for reporting errors generated in output
+        # plugins without having the risk of generating a cascading effect
+        # that would make the output manager go crazy, usually that's done
+        # by doing something like:
+        #
+        #    om.out.error(msg, ignore_plugins=set([self.get_name()])
+        #
+        ignored_plugins = kwds.pop('ignore_plugins', set())
+        
+        
         for o_plugin in self._output_plugin_list:
+            
+            if o_plugin.get_name() in ignored_plugins:
+                continue
+            
             try:
                 opl_func_ptr = getattr(o_plugin, actionname)
                 apply(opl_func_ptr, args, kwds)

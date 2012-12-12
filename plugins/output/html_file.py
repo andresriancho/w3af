@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import os
-import sys
 import cgi
 import time
 import codecs
@@ -30,6 +29,7 @@ from string import Template
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
 import core.data.kb.vuln as vuln
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.exceptions import w3afException
@@ -106,14 +106,19 @@ class html_file(OutputPlugin):
 
         @param msg_list: The messages (strings) to write to the file.
         '''
+        if self._file is None:
+            return
+        
         for msg in msg_list:
             try:
                 self._file.write(msg + '\n')
             except Exception, e:
-                msg = 'An exception was raised while trying to write to the'
-                msg += ' output file in output.html_file: "%s"' % e
-                print msg
-                sys.exit(1)
+                self._file = None
+                msg = 'An exception was raised while trying to write to the'\
+                      ' output file "%s" in the html_file plugin: "%s".'\
+                      ' Disabling output to this file.'
+                om.out.error(msg  % (self._output_file_name, e),
+                             ignore_plugins=set([self.get_name()]))
 
     def debug(self, message, new_line=True):
         '''

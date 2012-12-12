@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import sys
 import time
 import os
 
 import core.data.kb.config as cf
 import core.data.constants.severity as severity
+import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.exceptions import w3afException
@@ -92,12 +92,17 @@ class text_file(OutputPlugin):
 
         @param msg: The text to write.
         '''
+        if self._file is None:
+            return
+        
         try:
             self._file.write(self._clean_string(msg))
         except Exception, e:
+            self._file = None
             msg = 'An exception was raised while trying to write to the output'\
-                  ' file "%s", error: "%s".' % (self._output_file_name, e)
-            sys.exit(1)
+                  ' file "%s", error: "%s". Disabling output to this file.'
+            om.out.error(msg  % (self._output_file_name, e),
+                         ignore_plugins=set([self.get_name()]))
 
     def _write_to_HTTP_log(self, msg):
         '''
@@ -106,13 +111,18 @@ class text_file(OutputPlugin):
         @param msg: The text to write (a string representation of the HTTP
                         request and response)
         '''
+        if self._http is None:
+            return
+        
         try:
             self._http.write(msg)
         except Exception, e:
+            self._http = None
             msg = 'An exception was raised while trying to write to the output'\
-                  ' file "%s", error: "%s".' % (self._http_file_name, e)
-            sys.exit(1)
-
+                  ' file "%s", error: "%s". Disabling output to this file.'
+            om.out.error(msg  % (self._http_file_name, e),
+                         ignore_plugins=set([self.get_name()]))
+            
     def write(self, message, log_type, new_line=True):
         '''
         Method that writes stuff to the text_file.

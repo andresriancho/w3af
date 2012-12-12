@@ -99,6 +99,30 @@ class TestOutputManager(unittest.TestCase):
         om.out.process_all_messages()
 
         plugin_action.assert_called_once_with(msg, False)
+    
+    def test_ignore_plugins(self):
+        '''The output manager implements ignore_plugins to avoid sending a
+        message to a specific plugin. Test this feature.'''
+        msg = 'foo bar spam eggs'
+        action = 'information'
+
+        plugin = Mock()
+        plugin_action = MagicMock()
+        plugin_get_name = MagicMock(return_value='fake')
+        setattr(plugin, action, plugin_action)
+        setattr(plugin, 'get_name', plugin_get_name)
+
+        # Invoke action
+        om.out._output_plugin_list = [plugin, ]
+        om_action = getattr(om.out, action)
+        # This one will be ignored at the output manager level
+        om_action(msg, False, ignore_plugins=set(['fake']))
+        # This one will make it and we'll assert it below
+        om_action(msg, False)
+        
+        om.out.process_all_messages()
+
+        plugin_action.assert_called_once_with(msg, False)        
 
     def test_error_handling(self):
         class InvalidPlugin(object):
