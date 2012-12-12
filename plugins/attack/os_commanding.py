@@ -19,17 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-# options
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
+import core.controllers.output_manager as om
 
 from core.data.kb.exec_shell import ExecShell
 from core.data.fuzzer.utils import rand_alpha
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.exceptions import w3afException
-import core.controllers.output_manager as om
 
 from plugins.attack.payloads.decorators.exec_decorator import exec_debug
 
@@ -44,20 +40,6 @@ class os_commanding(AttackPlugin):
     def __init__(self):
         AttackPlugin.__init__(self)
 
-        # User configured parameter
-        self._change_to_post = True
-        self._url = 'http://host.tld/'
-        self._separator = ';'
-        self._data = ''
-        self._inj_var = ''
-        self._method = 'GET'
-
-    def fast_exploit(self):
-        '''
-        Exploits a web app with os_commanding vuln, the settings are configured using set_options()
-        '''
-        raise w3afException('Not implemented.')
-
     def get_attack_type(self):
         '''
         @return: The type of exploit, SHELL, PROXY, etc.
@@ -66,35 +48,28 @@ class os_commanding(AttackPlugin):
 
     def get_kb_location(self):
         '''
-        This method should return the vulnerability name (as saved in the kb) to exploit.
-        For example, if the audit.os_commanding plugin finds an vuln, and saves it as:
+        This method should return the vulnerability names (as saved in the kb)
+        to exploit. For example, if the audit.os_commanding plugin finds a
+        vuln, and saves it as:
 
         kb.kb.append( 'os_commanding' , 'os_commanding', vuln )
 
-        Then the exploit plugin that exploits os_commanding ( attack.os_commanding ) should
-        return 'os_commanding' in this method.
+        Then the exploit plugin that exploits os_commanding
+        (attack.os_commanding) should return ['os_commanding',] in this method.
+        
+        If there is more than one location the implementation should return
+        ['a', 'b', ..., 'n']
         '''
         return ['os_commanding',]
 
     def _generate_shell(self, vuln):
         '''
         @param vuln: The vuln to exploit.
-        @return: The shell object based on the vulnerability that was passed as a parameter.
+        @return: The shell object based on the vulnerability that was passed as
+                 parameter.
         '''
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln):
-
-            if vuln.get_method() != 'POST' and self._change_to_post and \
-                    self._verify_vuln(self.GET2POST(vuln)):
-                msg = 'The vulnerability was found using method GET, but POST is being used'
-                msg += ' during this exploit.'
-                om.out.console(msg)
-                vuln = self.GET2POST(vuln)
-            else:
-                msg = 'The vulnerability was found using method GET, tried to change the method to'
-                msg += ' POST for exploiting but failed.'
-                om.out.console(msg)
-
             # Create the shell object
             shell_obj = OSCommandingShell(vuln)
             shell_obj.set_url_opener(self._uri_opener)
@@ -135,63 +110,6 @@ class os_commanding(AttackPlugin):
         else:
             return self._define_exact_cut(response.get_body(), rand)
 
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        d1 = 'URL to exploit with fast_exploit()'
-        o1 = opt_factory('url', self._url, d1, 'url')
-
-        d2 = 'HTTP method to use with fast_exploit()'
-        o2 = opt_factory('method', self._method, d2, 'string')
-
-        d3 = 'Data to send with fast_exploit()'
-        o3 = opt_factory('data', self._data, d3, 'string')
-
-        d4 = 'Variable where to inject with fast_exploit()'
-        o4 = opt_factory('injvar', self._inj_var, d4, 'string')
-
-        d5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
-        d5 += ' during exploitation.'
-        h5 = 'If the vulnerability was found in a GET request, try to change the method to POST'
-        h5 += 'during exploitation; this is usefull for not being logged in the webserver logs.'
-        o5 = opt_factory(
-            'changeToPost', self._change_to_post, d5, 'boolean', help=h5)
-
-        d6 = 'The command separator to be used.'
-        h6 = 'In an OS commanding vulnerability, a command separator is used to separate the'
-        h6 += ' original command from the customized command that the attacker want\'s to execute.'
-        h6 += ' Common command separators are ;, & and |.'
-        o6 = opt_factory('separator', self._separator, d6, 'string', help=h6)
-
-        ol = OptionList()
-        ol.add(o1)
-        ol.add(o2)
-        ol.add(o3)
-        ol.add(o4)
-        ol.add(o5)
-        ol.add(o6)
-        return ol
-
-    def set_options(self, options_list):
-        '''
-        This method sets all the options that are configured using the user interface
-        generated by the framework using the result of get_options().
-
-        @param OptionList: A dictionary with the options for the plugin.
-        @return: No value is returned.
-        '''
-        if options_list['method'].get_value() not in ['GET', 'POST']:
-            raise w3afException('Unknown method.')
-        else:
-            self._method = options_list['method'].get_value()
-
-        self._data = options_list['data'].get_value()
-        self._inj_var = options_list['injvar'].get_value()
-        self._separator = options_list['separator'].get_value()
-        self._url = options_list['url'].get_value()
-        self._change_to_post = options_list['changeToPost'].get_value()
-
     def get_root_probability(self):
         '''
         @return: This method returns the probability of getting a root shell
@@ -209,15 +127,6 @@ class os_commanding(AttackPlugin):
         '''
         return '''
         This plugin exploits os commanding vulnerabilities and returns a remote shell.
-
-        Seven configurable parameters exist:
-            - changeToPost
-            - url
-            - method
-            - injvar
-            - data
-            - separator
-            - generateOnlyOne
         '''
 
 
@@ -238,12 +147,11 @@ class OSCommandingShell(ExecShell):
         try:
             response = func_ref(self.get_url(), str(exploit_dc))
         except w3afException, e:
-            return 'Error "' + str(e) + '" while sending command to remote host. Please try again.'
+            msg = 'Error "%s" while sending command to remote host. Please '\
+                  'try again.'
+            return msg % e
         else:
             return self._cut(response.get_body())
-
-    def end(self):
-        om.out.debug('OSCommandingShell cleanup complete.')
 
     def get_name(self):
         return 'os_commanding'
