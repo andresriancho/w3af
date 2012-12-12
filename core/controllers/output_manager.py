@@ -23,6 +23,7 @@ import functools
 import os
 import sys
 import Queue
+import threading
 
 from multiprocessing.dummy import Process
 
@@ -30,6 +31,7 @@ from core.controllers.misc.factory import factory
 from core.data.constants.encodings import UTF8
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
 
+start_lock = threading.Lock()
 
 def start_thread_on_demand(func):
     '''
@@ -40,8 +42,10 @@ def start_thread_on_demand(func):
     to the console.
     '''
     def od_wrapper(*args, **kwds):
-        if not out.is_alive():
-            out.start()
+        global start_lock
+        with start_lock:
+            if not out.is_alive():
+                out.start()
         return func(*args, **kwds)
     return od_wrapper
 
