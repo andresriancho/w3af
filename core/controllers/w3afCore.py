@@ -273,6 +273,11 @@ class w3afCore(object):
         This method is called when the process ends normally or by an error.
         '''
         try:
+            # Close the output manager, this needs to be done BEFORE the end()
+            # in uri_opener because some plugins (namely xml_output) use the data
+            # from the history in their end() method. 
+            om.out.end_output_plugins()
+            
             # End the xUrllib (clear the cache) and create a new one, so it can
             # be used by exploit plugins.
             self.uri_opener.end()
@@ -280,9 +285,6 @@ class w3afCore(object):
 
             if exc_inst:
                 om.out.debug(str(exc_inst))
-
-            # Also, close the output manager.
-            om.out.end_output_plugins()
 
         except Exception:
             if not ignore_err:
