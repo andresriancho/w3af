@@ -516,16 +516,25 @@ class ConnectionManager(object):
             else [self._hostmap[host]]
         return reduce(operator.add, map(len, values or [[]]))
 
-# Create the pool instance to be used. Intended to be shared by handlers.
-# See our HTTPHandler and HTTPSHandler class definitions below.
-connMgr = ConnectionManager()
-
 
 class KeepAliveHandler(object):
-
-    _cm = connMgr
-
+    
     def __init__(self):
+        # Create the connection pool instance
+        #
+        # Note: In the initial code this connection manager was created at
+        #       the module level and was shared between the HTTP and HTTPS
+        #       keep alive handlers. This was buggy since at any point if
+        #       a user requested http://host.tld and then https://host.tld
+        #       a connection to the HTTP one was returned from the manager
+        #       for the HTTPS request.
+        #
+        #       This change lets us still keep a "persistent" connection
+        #       manager since our opener_settings and xurllib will only
+        #       create one instance for the KeepAliveHandler and use that
+        #       during the whole scan.
+        self._cm = ConnectionManager()
+        
         # Typically a urllib2.OpenerDirector instance. Set by the
         # urllib2 mechanism.
         self.parent = None
@@ -767,9 +776,9 @@ class HTTPSHandler(KeepAliveHandler, urllib2.HTTPSHandler):
         try:
             host, port = self._proxy.split(':')
         except:
-            msg = 'The proxy you are specifying is invalid! ('
-            msg += self._proxy + '), IP:Port is expected.'
-            raise w3afException(msg)
+            msg = 'The proxy you are specifying (%s) is invalid! The expected'\
+                  ' format is <ip_address>:<port> is expected.'
+            raise w3afException(msg % proxy)
 
         if not host or not port:
             self._proxy = None

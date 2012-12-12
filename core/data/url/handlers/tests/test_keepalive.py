@@ -20,16 +20,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import socket
-import random
 import unittest
 import time
 
 from mock import MagicMock, Mock
 
 from core.controllers.exceptions import w3afException, w3afMustStopException
-from core.data.url.handlers.keepalive import (
-    KeepAliveHandler, ConnectionManager,
-    HTTPResponse, URLTimeoutError)
+from core.data.url.handlers.keepalive import (KeepAliveHandler,
+                                              ConnectionManager,
+                                              HTTPResponse,
+                                              URLTimeoutError,
+                                              HTTPHandler, HTTPSHandler)
 
 
 class test_keepalive(unittest.TestCase):
@@ -135,12 +136,13 @@ class test_keepalive(unittest.TestCase):
 
     def test_single_conn_mgr(self):
         '''
-        We only want to use a single instance of the ConnectionManager.
+        We only want to use different instances of the ConnectionManager for
+        HTTP and HTTPS.
         '''
-        conn_mgr_id = id(self.kahdler._cm)
-
-        for _ in xrange(random.randint(1, 10)):
-            self.assertTrue(conn_mgr_id == id(KeepAliveHandler()._cm))
+        conn_mgr_http = id(HTTPHandler()._cm)
+        conn_mgr_https = id(HTTPSHandler(':')._cm)
+        
+        self.assertNotEqual(conn_mgr_http,conn_mgr_https)
 
 
 class test_connection_mgr(unittest.TestCase):
