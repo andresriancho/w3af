@@ -85,9 +85,8 @@ class MiscSettings(Configurable):
 
         ######## Fuzzer parameters ########
         d = 'Indicates if w3af plugins will use cookies as a fuzzable parameter'
-        opt = opt_factory(
-            'fuzzCookie', cf.cf.get('fuzz_cookies'), d, 'boolean',
-            tabid='Fuzzer parameters')
+        opt = opt_factory('fuzz_cookies', cf.cf.get('fuzz_cookies'), d, 'boolean',
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         d = 'Indicates if w3af plugins will send the fuzzed payload to the file forms'
@@ -108,12 +107,12 @@ class MiscSettings(Configurable):
         ol.add(opt)
 
         desc = 'Indicates if w3af plugins will send fuzzed URL parts in order to find vulnerabilities'
-        help = 'For example, if the discovered URL is http://test/foo/bar/123, and fuzz_url_parts'
-        help += ' is enabled, w3af will request among other things: '
-        help += 'http://test/foo/bar/<script>alert(document.cookie)</script> in order to find XSS.'
-        opt = opt_factory(
-            'fuzz_url_parts', cf.cf.get('fuzz_url_parts'), desc, 'boolean', help=help,
-            tabid='Fuzzer parameters')
+        h = 'For example, if the discovered URL is http://test/foo/bar/123,'\
+            ' and fuzz_url_parts is enabled, w3af will request among other '\
+            ' things: http://test/bar/<script>alert(document.cookie)</script>'\
+            ' in order to find XSS.'
+        opt = opt_factory('fuzz_url_parts', cf.cf.get('fuzz_url_parts'), desc,
+                          'boolean', help=h, tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'Indicates the extension to use when fuzzing file content'
@@ -142,9 +141,9 @@ class MiscSettings(Configurable):
         help += ' to stop on the first exception that is raised by a plugin.'
         help += 'Users should leave this as False in order to get better '
         help += 'exception handling from w3af\'s core.'
-        opt = opt_factory(
-            'stop_on_first_exception', cf.cf.get('stop_on_first_exception'),
-            desc, 'boolean', help=help, tabid='Core settings')
+        opt = opt_factory('stop_on_first_exception',
+                          cf.cf.get('stop_on_first_exception'),
+                          desc, 'boolean', help=help, tabid='Core settings')
         ol.add(opt)
 
         desc = 'Maximum crawl time (minutes)'
@@ -202,35 +201,18 @@ class MiscSettings(Configurable):
         @param options_list: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        cf.cf.save('fuzz_cookies', options_list['fuzzCookie'].get_value())
-        cf.cf.save(
-            'fuzz_form_files', options_list['fuzz_form_files'].get_value())
-        cf.cf.save('fuzz_url_filenames', options_list[
-                   'fuzz_url_filenames'].get_value())
-        cf.cf.save(
-            'fuzz_url_parts', options_list['fuzz_url_parts'].get_value())
-        cf.cf.save('fuzzed_files_extension', options_list[
-                   'fuzzed_files_extension'].get_value())
-        cf.cf.save('form_fuzzing_mode', options_list[
-                   'form_fuzzing_mode'].get_value())
-        cf.cf.save('max_discovery_time', options_list[
-                   'max_discovery_time'].get_value())
-
-        cf.cf.save(
-            'fuzzable_headers', options_list['fuzzable_headers'].get_value())
-        cf.cf.save('interface', options_list['interface'].get_value())
-        cf.cf.save(
-            'local_ip_address', options_list['local_ip_address'].get_value())
-        cf.cf.save('demo', options_list['demo'].get_value())
-
+        to_save = ('fuzz_cookies', 'fuzz_form_files', 'fuzz_url_filenames',
+                   'fuzz_url_parts', 'fuzzed_files_extension',
+                   'form_fuzzing_mode', 'max_discovery_time',
+                   'fuzzable_headers', 'interface', 'local_ip_address',
+                   'demo', 'msf_location', 'stop_on_first_exception')
+        for name in to_save:
+            cf.cf.save(name, options_list[name].get_value())
+            
         url_list = []
         for url_str in options_list['non_targets'].get_value():
             url_list.append(URL(url_str))
         cf.cf.save('non_targets', url_list)
-
-        cf.cf.save('msf_location', options_list['msf_location'].get_value())
-        cf.cf.save('stop_on_first_exception',
-                   options_list['stop_on_first_exception'].get_value())
 
 # This is an undercover call to __init__ :) , so I can set all default parameters.
 # TODO: FIXME: This is awful programming.
