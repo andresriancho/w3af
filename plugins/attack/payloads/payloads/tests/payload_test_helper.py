@@ -25,7 +25,8 @@ from plugins.tests.helper import PluginTest, PluginConfig
 
 class PayloadTestHelper(PluginTest):
 
-    target_url = 'https://moth/w3af/audit/local_file_read/local_file_read.php?file=section.txt'
+    target_url = 'https://moth/w3af/audit/local_file_read/'\
+                 'local_file_read.php?file=section.txt'
 
     _run_configs = {
         'cfg': {
@@ -36,6 +37,9 @@ class PayloadTestHelper(PluginTest):
         }
     }
 
+    # FIXME: For each (very small) payload test, a new scan is run. I need to
+    #        experiment with setUpClass or setUpModule to fix this awful
+    #        test performance issue.
     def _scan_wrapper(self):
         '''
         @return: Run the scan and return the vulnerability itself and the vuln_id.
@@ -56,8 +60,8 @@ class PayloadTestHelper(PluginTest):
     def _get_shell(self):
         vuln, vuln_to_exploit_id = self._scan_wrapper()
 
-        plugin = self.w3afcore.plugins.get_plugin_inst(
-            'attack', 'local_file_reader')
+        plugin = self.w3afcore.plugins.get_plugin_inst('attack',
+                                                       'local_file_reader')
 
         self.assertTrue(plugin.can_exploit(vuln_to_exploit_id))
 
