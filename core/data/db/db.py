@@ -158,6 +158,7 @@ class DBClientSQLite(Process, DBClient):
                                    check_same_thread=True)
         else:
             conn = sqlite3.connect(self.filename, check_same_thread=True)
+            
         conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
         conn.execute('PRAGMA cache_size = %s' % self.cache_size)
         conn.text_factory = str
