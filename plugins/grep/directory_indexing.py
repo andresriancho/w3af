@@ -19,23 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.output_manager as om
-
-# options
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
-
-from core.controllers.plugins.grep_plugin import GrepPlugin
-
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
-
-import re
 
 
 class directory_indexing(GrepPlugin):
@@ -100,28 +90,11 @@ class directory_indexing(GrepPlugin):
                     kb.kb.append(self, 'directory', v)
                     break
 
-    def set_options(self, option_list):
-        pass
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
         self.print_uniq(kb.kb.get('directory_indexing', 'directory'), 'URL')
-
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
 
     def get_long_desc(self):
         '''
