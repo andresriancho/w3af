@@ -63,8 +63,8 @@ class dav(AuditPlugin):
             #    code this into threadpool.py in order to make this code clearer
             results = []
             for func in [self._PUT, self._PROPFIND, self._SEARCH]:
-                apply_res = self._tm.threadpool.apply_async(
-                    func, (domain_path,))
+                apply_res = self._tm.threadpool.apply_async(func,
+                                                            (domain_path,))
                 results.append(apply_res)
 
             for apply_res in results:
