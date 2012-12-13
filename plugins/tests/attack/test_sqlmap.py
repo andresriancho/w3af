@@ -110,24 +110,15 @@ class TestSQLMapShell(PluginTest):
 
         # Assert the general results
         vulns = self.kb.get('blind_sqli', 'blind_sqli')
+        
         self.assertEquals(1, len(vulns))
-        self.assertEquals(
-            all(["Blind SQL injection vulnerability" == v.get_name() for v in vulns]),
-            True)
-
-        # Verify the specifics about the vulnerabilities
-        EXPECTED = [
-            ('data_receptor.php', 'user'),
-        ]
-
-        found_vulns = [(v.get_url().get_file_name(),
-                        v.get_mutant().get_var()) for v in vulns]
-
-        self.assertEquals(set(EXPECTED),
-                          set(found_vulns))
-
-        vuln_to_exploit_id = [v.get_id() for v in vulns
-                              if v.get_url().get_file_name() == EXPECTED[0][0]][0]
+        vuln = vulns[0]
+        
+        self.assertEquals("Blind SQL injection vulnerability", vuln.get_name())
+        self.assertEquals('user', vuln.get_mutant().get_var())
+        self.assertEquals('data_receptor.php', vuln.get_url().get_file_name())
+        
+        vuln_to_exploit_id = vuln.get_id()
 
         plugin = self.w3afcore.plugins.get_plugin_inst('attack', 'sqlmap')
 
