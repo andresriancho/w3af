@@ -3,10 +3,10 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE></TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Unix)">
+	<META NAME="GENERATOR" CONTENT="LibreOffice 3.5  (Linux)">
 	<META NAME="CREATED" CONTENT="20070514;16454200">
-	<META NAME="CHANGEDBY" CONTENT="dz0 ">
-	<META NAME="CHANGED" CONTENT="20110523;22311400">
+	<META NAME="CHANGEDBY" CONTENT="pablo ">
+	<META NAME="CHANGED" CONTENT="20121213;9383700">
 	<META NAME="Info 1" CONTENT="">
 	<META NAME="Info 2" CONTENT="">
 	<META NAME="Info 3" CONTENT="">
@@ -46,7 +46,7 @@ User Guide</B></U></FONT></FONT></P>
 <BR>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
-<FONT SIZE=2>Document version: <B>2</B><B>.</B><B>0</B></FONT></P>
+<FONT SIZE=2>Document version: <B>2.1</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
 <FONT SIZE=2>Original author: <B>Andres Riancho</B></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; font-style: normal; font-weight: normal; text-decoration: none">
@@ -93,8 +93,8 @@ User Guide</B></U></FONT></FONT></P>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><BR>
 </P>
-<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>May
-25, 2011</B></U></I></FONT></P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><FONT SIZE=2><I><U><B>December
+13, 2012</B></U></I></FONT></P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in; page-break-before: always">
 <BR>
 </P>
@@ -184,11 +184,11 @@ Installation Requirements</H3>
 	<LI VALUE=1><P>Core requirements:</P>
 </UL>
 <UL>
-	<LI VALUE=1><P>Python <B>2.</B><B>6</B></P>
+	<LI VALUE=1><P>Python <B>2.7</B></P>
 	<LI><P>fpconst-0.7.2</P>
 	<LI><P>nltk</P>
 	<LI><P>SOAPpy</P>
-	<LI><P>pyPdf</P>
+	<LI><P>pdfminer</P>
 	<LI><P>Python bindings for the libxml2 library</P>
 	<LI><P>Python OpenSSL</P>
 	<LI><P>json.py</P>
@@ -238,10 +238,8 @@ SOAPpy</FONT></P>
 setup.py install</FONT></P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">cd
 ..</FONT></P>
-<P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">cd
-pyPdf</FONT></P>
-<P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace">python
-setup.py install</FONT></P>
+<P STYLE="margin-left: 0.49in"><BR><BR>
+</P>
 <H2 CLASS="western" STYLE="page-break-after: avoid"><FONT FACE="Bitstream Vera Sans, sans-serif">Auto-Update</FONT></H2>
 <P ALIGN=JUSTIFY>The framework includes an auto-update feature. This
 feature allows you to run our latest SVN version without worrying
@@ -273,8 +271,8 @@ W</B><SPAN STYLE="font-weight: normal">[eekly]</SPAN><B>, [M]</B><SPAN STYLE="fo
 <P>Depending on this configuration, w3af will know when to perform
 the next  update verification. It is also possible to force the
 update to take place, or not, by simply giving the startup script the
-desired option: <FONT FACE="Nimbus Mono L, monospace">--force-update</FONT><FONT FACE="Nimbus Mono L, monospace">
-or</FONT><FONT FACE="Nimbus Mono L, monospace"> </FONT><FONT FACE="Nimbus Mono L, monospace">–</FONT><FONT FACE="Nimbus Mono L, monospace">no-update</FONT>.</P>
+desired option: <FONT FACE="Nimbus Mono L, monospace">--force-update
+or –no-update</FONT>.</P>
 <P>This is the typical console output when the auto-update process is
 performed.</P>
 <P><FONT FACE="Nimbus Mono L, monospace"><B>	</B><B>$</B>
@@ -710,7 +708,7 @@ start a scan and analyze the results.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">In
 case you are wondering  what the graphical user interface looks like,
 here is a screenshot:</FONT></P>
-<P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: normal"><FONT COLOR="#000000"><IMG SRC="w3af-users-guide_html_m51b850c5.png" NAME="graphics1" ALIGN=LEFT WIDTH=626 HEIGHT=418 BORDER=2></FONT><BR><BR>
+<P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: normal"><FONT COLOR="#000000"><IMG SRC="w3af-users-guide_html_m51b850c5.png" NAME="graphics1" ALIGN=LEFT WIDTH=626 HEIGHT=418 BORDER=2><BR><BR>
 </P>
 <P ALIGN=JUSTIFY STYLE="font-style: normal; font-weight: normal"><FONT FACE="Bitstream Vera Sans, sans-serif">For
 more details please read the “gtkUiUsersGuide”.</FONT></P>
@@ -1321,17 +1319,14 @@ the target web application and understood its size and components.
 	!googleSpider, !phishtank” .</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">Spiderman
 	should only be used when webSpider can't find all links. The
-	fingerGoogle, finger</SPAN><SPAN STYLE="font-style: normal">Bing</SPAN><SPAN STYLE="font-style: normal">
-	and fingerPKS plugins discover mail addresses from search engines,
-	if this is an intranet application, the addresses put in this site
-	wont be available in search engines because they never were indexed.
-	</SPAN><SPAN STYLE="font-style: normal">Bing</SPAN><SPAN STYLE="font-style: normal">Spider
-	and googleSpider find URLs using search engines, like the ones
-	before, they are useless because search engines don't index private
-	pages. phishtank </SPAN><SPAN STYLE="font-style: normal">should be
-	enabled because </SPAN><SPAN STYLE="font-style: normal">it </SPAN><SPAN STYLE="font-style: normal">search</SPAN><SPAN STYLE="font-style: normal">es</SPAN><SPAN STYLE="font-style: normal">
-	for phishing sites, and like the ones before them, private sites
-	aren't indexed in this systems.</SPAN></P>
+	fingerGoogle, fingerBing and fingerPKS plugins discover mail
+	addresses from search engines, if this is an intranet application,
+	the addresses put in this site wont be available in search engines
+	because they never were indexed. BingSpider and googleSpider find
+	URLs using search engines, like the ones before, they are useless
+	because search engines don't index private pages. phishtank should
+	be enabled because it searches for phishing sites, and like the ones
+	before them, private sites aren't indexed in this systems.</SPAN></P>
 	<P></P>
 	<LI><P>“You are testing a web application over the internet, the
 	web application is huge and doesn't use any macromedia flash or
@@ -1340,10 +1335,8 @@ the target web application and understood its size and components.
 	<P><I>Recommendation</I> : “discovery all,!spiderMan, !wordnet”.</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">Spiderman
 	should only be used when webSpider can't find all links. The wordnet
-	</SPAN><SPAN STYLE="font-style: normal">plugin</SPAN><SPAN STYLE="font-style: normal">
-	</SPAN><SPAN STYLE="font-style: normal">take</SPAN><SPAN STYLE="font-style: normal">s</SPAN><SPAN STYLE="font-style: normal">
-	a long time to run over the internet so it's a good idea to disable
-	them.</SPAN></P>
+	plugin takes a long time to run over the internet so it's a good
+	idea to disable them.</SPAN></P>
 </UL>
 <P><BR><BR>
 </P>
@@ -1357,11 +1350,9 @@ the target web application and understood its size and components.
 	</P>
 	<P><I>Recommendation</I> : “discovery all, !wordnet, !wsdlFinder”.</P>
 	<P ALIGN=JUSTIFY><I>Reason: </I><SPAN STYLE="font-style: normal">The
-	wordnet </SPAN><SPAN STYLE="font-style: normal">plugin</SPAN><SPAN STYLE="font-style: normal">
-	</SPAN><SPAN STYLE="font-style: normal">take</SPAN><SPAN STYLE="font-style: normal">s</SPAN><SPAN STYLE="font-style: normal">
-	a long time to run over the internet so it's a good idea to disable
-	them. Regarding wsdlFinder, if we already know that no web services
-	exist, why look for them?</SPAN></P>
+	wordnet plugin takes a long time to run over the internet so it's a
+	good idea to disable them. Regarding wsdlFinder, if we already know
+	that no web services exist, why look for them?</SPAN></P>
 	<P></P>
 	<LI><P>“You are testing a web application over the internet, the
 	web application is huge, you really need to know all the links and
@@ -1422,9 +1413,8 @@ verbose True</FONT></P>
 </P>
 <P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">To run
 this script you would execute <FONT FACE="Nimbus Mono L, monospace">“./w3af_console
--s scripts/script-os</FONT><FONT FACE="Nimbus Mono L, monospace">_</FONT><FONT FACE="Nimbus Mono L, monospace">c</FONT><FONT FACE="Nimbus Mono L, monospace">ommanding.w3af”
-</FONT>,  the output will look just like if you manually typed every
-command in the console:</FONT></P>
+-s scripts/script-os_commanding.w3af” </FONT>,  the output will
+look just like if you manually typed every command in the console:</FONT></P>
 <P><BR><BR>
 </P>
 <P STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>$</B>
@@ -2269,11 +2259,10 @@ the post-exploitation process.</FONT></P>
 	<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">To use
 	this feature you must have a working installation of the metasploit
 	framework version 3.0 or greater; you can get it for free at
-	</FONT><A HREF="http://www.metasploit.com/"><FONT FACE="Bitstream Vera Sans, sans-serif">www.metasploit.com</FONT></A><FONT FACE="Bitstream Vera Sans, sans-serif">
-	, the installation and configuration of MSF is out of the scope of
-	this document.</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
-	The path to your MSF installation needs to be specified in the
-	misc-settings menu.</FONT></P>
+	<A HREF="http://www.metasploit.com/">www.metasploit.com</A> , the
+	installation and configuration of MSF is out of the scope of this
+	document. The path to your MSF installation needs to be specified in
+	the misc-settings menu.</FONT></P>
 	<P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">As
 	with any other payload, in order to run</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
 	these payloads you need to:</FONT></P>
@@ -2312,7 +2301,7 @@ during exploitation:</FONT></P>
 	manager will send a w3afAgentClient to the remote server. <FONT FACE="Bitstream Vera Sans, sans-serif">The
 	process of uploading the file to the remote server depends on the
 	remote operating system, the privileges of the user running w3af and
-	the local operating system; but in most cases the following happen</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">s:</FONT></FONT></P>
+	the local operating system; but in most cases the following happens:</FONT></FONT></P>
 </OL>
 <UL>
 	<LI><P ALIGN=JUSTIFY><FONT FACE="Bitstream Vera Sans, sans-serif">w3af
@@ -2441,8 +2430,8 @@ really new until now, we configured w3af, started the scan and
 exploited the vulnerability.</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><BR><BR>
 </P>
-<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell</B><B>-0</B><B>&gt;&gt;&gt;</B>
-<B>payload</B><B> </B><B>w3af_agent</B></FONT></P>
+<P ALIGN=JUSTIFY STYLE="margin-left: 0.49in"><FONT FACE="Nimbus Mono L, monospace"><B>w3af/exploit/osCommandingShell-0&gt;&gt;&gt;</B>
+<B>payload w3af_agent</B></FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; font-weight: normal"><FONT FACE="Nimbus Mono L, monospace">Usage:
 w3af_agent &lt;your ip address&gt; </FONT>
 </P>
@@ -2631,17 +2620,10 @@ an email to any of the mailing lists, which can be located at:</FONT></P>
 <P ALIGN=JUSTIFY>The framework is under continuous development and we
 might introduce bugs and regressions while trying to implement new
 features.<SPAN STYLE="font-style: normal"> </SPAN><FONT FACE="Bitstream Vera Sans, sans-serif">If
-you</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">'re using the
-latest version of the framework</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">,
-</FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>“./w3af_console
--f”</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>
-</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>command
-doesn't update any files</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif">,
-</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">and find a bug,
-</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">please report </FONT><FONT FACE="Bitstream Vera Sans, sans-serif">it
-</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">with a detailed
-description</FONT><FONT FACE="Bitstream Vera Sans, sans-serif"> to</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">
-the following URL</FONT><FONT FACE="Bitstream Vera Sans, sans-serif">:</FONT></P>
+you're using the latest version of the framework, </FONT><FONT FACE="Bitstream Vera Sans, sans-serif"><I>“./w3af_console
+-f” command doesn't update any files</I></FONT><FONT FACE="Bitstream Vera Sans, sans-serif">,
+and find a bug, please report it with a detailed description to the
+following URL:</FONT></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-top: 0.17in"><A HREF="http://sourceforge.net/tracker/?group_id=170274&amp;atid=853652">https://sourceforge.net/apps/trac/w3af/newticket</A></P>
 <P ALIGN=JUSTIFY STYLE="margin-left: 0.49in; margin-top: 0.17in"><BR><BR>
 </P>
