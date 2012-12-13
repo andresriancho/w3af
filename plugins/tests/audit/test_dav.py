@@ -65,15 +65,19 @@ class TestDav(PluginTest):
 
         vulns = self.kb.get('dav', 'dav')
 
-        self.assertTrue(len(vulns), 1)
+        self.assertEquals(len(vulns), 2, vulns)
 
-        vuln = vulns[0]
+        iname = 'DAV insufficient privileges'
+        info_no_privs = [i for i in vulns if i.get_name() == iname][0]
 
-        self.assertEquals('DAV insufficient privileges',
-                          vuln.get_name())
-
-        self.assertEquals(self.target_no_privs,
-                          str(vuln.get_url().get_domain_path()))
+        vname = 'Insecure DAV configuration'
+        vuln_propfind = [v for v in vulns if v.get_name() == vname][0]
+         
+        info_url =  str(info_no_privs.get_url().get_domain_path())
+        vuln_url =  str(vuln_propfind.get_url().get_domain_path())
+        
+        self.assertEquals(self.target_no_privs, info_url)
+        self.assertEquals(self.target_no_privs, vuln_url)
 
     def test_not_found_dav(self):
         cfg = self._run_configs['cfg']
