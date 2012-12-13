@@ -293,7 +293,7 @@ class SGMLParser(BaseParser):
             pass
 
     def _handle_meta_tag_start(self, tag, attrs):
-        self._meta_tags.append(attrs.items())
+        self._meta_tags.append(attrs)
 
         has_HTTP_EQUIV = attrs.get('http-equiv', '') == 'refresh'
         content = attrs.get('content', None)
