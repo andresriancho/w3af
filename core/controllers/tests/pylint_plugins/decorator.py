@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from functools import wraps
 
+
 def only_if_subclass(meth):
     '''
     Function to decorate tests that should NOT be called unless they are
