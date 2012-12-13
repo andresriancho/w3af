@@ -28,6 +28,7 @@ import core.data.kb.info as info
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.data.constants.cookies import COOKIE_FINGERPRINT
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.group_by_min_key import group_by_min_key
 
@@ -41,46 +42,7 @@ class analyze_cookies(GrepPlugin):
 
     COOKIE_HEADERS = ('set-cookie', 'cookie', 'cookie2')
 
-    COOKIE_FINGERPRINT = (
-        ('st8id=', 'Teros web application firewall'),
-        ('ASINFO=', 'F5 TrafficShield'),
-        ('NCI__SessionId=', 'Netcontinuum'),
-
-        # oracle
-        ('$OC4J_', 'Oracle container for java'),
-
-        # Java
-        ('JSESSIONID=', 'Jakarta Tomcat / Apache'),
-        ('JServSessionIdroot=', 'Apache JServ'),
-
-        # ASP
-        ('ASPSESSIONID', 'ASP'),
-        ('ASP.NET_SessionId=', 'ASP.NET'),
-
-        # PHP
-        ('PHPSESSID=', 'PHP'),
-
-        # SAP
-        ('sap-usercontext=sap-language=', 'SAP'),
-
-        # Others
-        ('WebLogicSession=', 'BEA Logic'),
-        ('SaneID=', 'Sane NetTracker'),
-        ('ssuid=', 'Vignette'),
-        ('vgnvisitor=', 'Vignette'),
-        ('SESSION_ID=', 'IBM Net.Commerce'),
-        ('NSES40Session=', 'Netscape Enterprise Server'),
-        ('iPlanetUserId=', 'iPlanet'),
-        ('RMID=', 'RealMedia OpenADStream'),
-        ('cftoken=', 'Coldfusion'),
-        ('PORTAL-PSJSESSIONID=', 'PeopleSoft'),
-        ('WEBTRENDS_ID=', 'WebTrends'),
-        ('sesessionid=', 'IBM WebSphere'),
-        ('CGISESSID=', 'Perl CGI::Session'),
-        ('GX_SESSION_ID', 'GeneXus'),
-        ('WC_SESSION_ESTABLISHED', 'WSStore'),
-
-    )
+    COOKIE_FINGERPRINT = COOKIE_FINGERPRINT
 
     SECURE_RE = re.compile('; *?secure([\s;, ]|$)', re.I)
     HTTPONLY_RE = re.compile('; *?httponly([\s;, ]|$)', re.I)
@@ -212,8 +174,8 @@ class analyze_cookies(GrepPlugin):
         self._not_secure_over_https(
             request, response, cookie_obj, cookie_header_value)
 
-        fingerprinted = self._match_cookie_fingerprint(
-            request, response, cookie_obj)
+        fingerprinted = self._match_cookie_fingerprint(request, response,
+                                                       cookie_obj)
         self._http_only(request, response, cookie_obj,
                         cookie_header_value, fingerprinted)
 
