@@ -19,13 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import StringIO
-# Added this try/except to fix a bug in debian/ubuntu.
-try:
-    import extlib.pyPdf.pyPdf as pyPdf
-except:
-    import pyPdf
-
+from core.data.parsers.pdf import pdf_to_text
 from plugins.grep.password_profiling_plugins.base_plugin import BasePwdProfilingPlugin
 
 
@@ -43,18 +37,10 @@ class pdf(BasePwdProfilingPlugin):
         '''
         Iterate through all PDF pages and extract text
         
-        @return: The page content
+        @return: A list containing the words in the PDF
         '''
-        content = ''
-
-        document_io = StringIO.StringIO(document_str)
-        pdf = pyPdf.PdfFileReader(document_io)
-
-        for i in range(0, pdf.getNumPages()):
-            content += pdf.getPage(i).extractText() + '\n'
-        
-        content = " ".join(content.replace(u'\xa0', u' ').strip().split())
-        return content.split()
+        pdf_text = pdf_to_text(document_str)
+        return pdf_text.split()
 
     def get_words(self, response):
         '''

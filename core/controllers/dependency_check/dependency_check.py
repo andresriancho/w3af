@@ -127,16 +127,14 @@ def dependency_check():
             reason_for_exit = True
     #mem_test('after soappy import')
     try:
-        import extlib.pyPdf.pyPdf as pyPdf
+        from pdfminer.converter import TextConverter
     except:
-        try:
-            import pyPdf
-        except:
-            packages.append('pyPdf')
-            packages_debian.append('python-pypdf')
-            #TODO
-            #packages_mac_port.append()
-            reason_for_exit = True
+        packages.append('pdfminer')
+        packages_debian.append('python-pdfminer')
+        #TODO
+        #packages_mac_port.append()
+        reason_for_exit = True
+        
     #mem_test('after pypdf import')
     try:
         from OpenSSL import SSL

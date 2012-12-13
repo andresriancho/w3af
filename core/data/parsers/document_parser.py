@@ -22,11 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import StringIO
 import re
 
-try:
-    from extlib.pyPdf import pyPdf as pyPdf
-except ImportError:
-    import pyPdf
-
 import core.data.parsers.htmlParser as htmlParser
 import core.data.parsers.pdf as PDFParser
 import core.data.parsers.swfParser as swfParser
@@ -89,11 +84,11 @@ class DocumentParser(object):
             #   So... just to be sure I search in the last 12 characters.
             if document.startswith('%PDF-') and '%%EOF' in document[-12:]:
                 try:
-                    pyPdf.PdfFileReader(StringIO.StringIO(document))
+                    text = PDFParser.pdf_to_text(document)
                 except Exception:
                     return False
                 else:
-                    return True
+                    return text != u''
 
         return False
 

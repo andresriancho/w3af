@@ -19,25 +19,22 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
+import StringIO
+import re
 
-import core.controllers.output_manager as om
+from pdfminer.converter import TextConverter
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
+from pdfminer.layout import LAParams
+from pdfminer.pdfparser import PDFSyntaxError
+
 from core.data.parsers.baseparser import BaseParser
 from core.data.parsers.url import URL
 
 
-try:
-    from extlib.pyPdf import pyPdf as pyPdf
-except ImportError:
-    import pyPdf
-
-import StringIO
-import re
-
-
 class PDFParser(BaseParser):
     '''
-    This class parses pdf documents to find emails and URLs. It's based in the
-    pyPdf library.
+    This class parses pdf documents to find emails and URLs. It's based on the
+    pdfminer library.
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
@@ -47,7 +44,7 @@ class PDFParser(BaseParser):
         self._pre_parse(HTTPResponse.body)
 
     def _pre_parse(self, document):
-        content_text = self.get_pdf_content(document)
+        content_text = pdf_to_text(document)
         self._parse(content_text)
 
     def _parse(self, content_text):
@@ -61,17 +58,6 @@ class PDFParser(BaseParser):
 
         # Get the mail addys
         self._extract_emails(content_text)
-
-    def get_pdf_content(self, document_str):
-        content = u""
-        if document_str:
-            # Load PDF into pyPDF
-            pdfreader = pyPdf.PdfFileReader(StringIO.StringIO(document_str))
-            try:
-                content = u"\n".join(p.extractText() for p in pdfreader.pages)
-            except Exception, e:
-                om.out.debug('Exception in get_pdf_content(), error: ' + str(e))
-        return content
 
     def get_references(self):
         '''
@@ -89,3 +75,26 @@ class PDFParser(BaseParser):
 
     get_references_of_tag = get_forms = get_comments = \
         get_meta_redir = get_meta_tags = lambda *args, **kwds: []
+
+
+def pdf_to_text(pdf_string):
+    '''
+    @param pdf_string: The PDF file contents.
+    @return: A string with the content of the PDF file.
+    '''
+    rsrcmgr = PDFResourceManager(caching=True)
+    laparams = LAParams()
+    
+    output = StringIO.StringIO()
+    device = TextConverter(rsrcmgr, output, codec='utf-8', laparams=laparams)
+    
+    document_io = StringIO.StringIO(pdf_string)
+    pagenos = set()
+    try:
+        process_pdf(rsrcmgr, device, document_io, pagenos, check_extractable=False)
+    except PDFSyntaxError:
+        return u''
+    
+    device.close()
+    output.seek(0)
+    return output.read()
