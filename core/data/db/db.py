@@ -25,10 +25,7 @@ import sqlite3
 import sys
 
 from multiprocessing.dummy import Queue, Process
-from functools import wraps
 from collections import namedtuple
-
-import core.controllers.output_manager as om
 
 from core.data.misc.file_utils import replace_file_special_chars
 
