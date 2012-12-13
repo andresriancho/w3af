@@ -25,6 +25,10 @@ import sqlite3
 import sys
 
 from multiprocessing.dummy import Queue, Process
+from functools import wraps
+from collections import namedtuple
+
+import core.controllers.output_manager as om
 
 from core.data.misc.file_utils import replace_file_special_chars
 
@@ -125,9 +129,17 @@ class DBClientSQLite(Process, DBClient):
         # This put/join is here in order to wait for the setup phase in the run
         # method to execute before we return from this method, also see
         # get/task_done below.
+        self._exception_info = None
+        
         self.reqs.put(None)
         self.start()
         self.reqs.join()
+        
+        if self._exception_info is not None:
+            msg = 'The exception "%s" was raised when trying to connect'\
+                  ' to "%s".'
+            einfo = self._exception_info
+            raise Exception(msg % (einfo.e, einfo.filename))
 
     def run(self):
         '''
@@ -153,19 +165,25 @@ class DBClientSQLite(Process, DBClient):
         #
         #    Setup phase
         #
-        if self.autocommit:
-            conn = sqlite3.connect(self.filename, isolation_level=None,
-                                   check_same_thread=True)
-        else:
-            conn = sqlite3.connect(self.filename, check_same_thread=True)
+        try:
+            if self.autocommit:
+                conn = sqlite3.connect(self.filename, isolation_level=None,
+                                       check_same_thread=True)
+            else:
+                conn = sqlite3.connect(self.filename, check_same_thread=True)
+                
+            conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
+            conn.execute('PRAGMA cache_size = %s' % self.cache_size)
+            conn.text_factory = str
+            cursor = conn.cursor()
+            cursor.execute('PRAGMA synchronous=OFF')
+        except Exception, e:
+            ExceptionInfo = namedtuple('ExceptionInfo', ['e', 'filename'])
+            self._exception_info = ExceptionInfo(e, self.filename)
             
-        conn.execute('PRAGMA journal_mode = %s' % self.journal_mode)
-        conn.execute('PRAGMA cache_size = %s' % self.cache_size)
-        conn.text_factory = str
-        cursor = conn.cursor()
-        cursor.execute('PRAGMA synchronous=OFF')
-        self.reqs.get()
-        self.reqs.task_done()
+        finally:
+            self.reqs.get()
+            self.reqs.task_done()
         #
         #    End setup phase
         #
@@ -180,7 +198,8 @@ class DBClientSQLite(Process, DBClient):
                 try:
                     cursor.execute(req, arg)
                 except Exception, e:
-                    print e, req, arg
+                    ExceptionInfo = namedtuple('ExceptionInfo', ['e', 'req', 'arg'])
+                    self._exception_info = ExceptionInfo(e, req, arg)
                 else:
                     if res:
                         for rec in cursor:
@@ -195,9 +214,11 @@ class DBClientSQLite(Process, DBClient):
         `execute` calls are non-blocking: just queue up the request and
         return immediately.
         """
+        self.raise_pending()
         self.reqs.put((sql, parameters or tuple(), res))
 
     def executemany(self, sql, items):
+        self.raise_pending()
         for item in items:
             self.execute(sql, item)
 
@@ -210,8 +231,9 @@ class DBClientSQLite(Process, DBClient):
         request is dequeued, and although you can iterate over the result normally
         (`for res in self.select(): ...`), the entire result will be in memory.
         """
-        res = Queue(
-        )  # results of the select will appear as items in this queue
+        self.raise_pending()
+        # results of the select will appear as items in this queue
+        res = Queue()
         self.execute(sql, parameters, res)
         while True:
             rec = res.get()
@@ -222,21 +244,31 @@ class DBClientSQLite(Process, DBClient):
     def select_one(self, sql, parameters=None):
         """Return only the first row of the SELECT, or None if there are no
         matching rows."""
+        self.raise_pending()
         try:
             return iter(self.select(sql, parameters)).next()
         except StopIteration:
             return None
 
     def commit(self):
+        self.raise_pending()
         self.execute('--commit--')
 
     def close(self):
+        self.raise_pending()
         self.filename = None
         self.execute('--close--')
 
     def get_file_name(self):
         '''Return DB filename.'''
+        self.raise_pending()
         return self.filename
+    
+    def raise_pending(self):
+        if self._exception_info is not None:
+            msg = 'The exception "%s" was raised when trying to %s with arguments %s and %s.'
+            einfo = self._exception_info
+            raise Exception(msg % (einfo.e, 'execute', einfo.req, einfo.arg))        
 
 # Use this client
 DB = DBClientSQLite
