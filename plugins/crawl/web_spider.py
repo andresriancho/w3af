@@ -25,7 +25,7 @@ import re
 import core.controllers.output_manager as om
 import core.data.dc.form as form
 import core.data.kb.config as cf
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.constants.response_codes as http_constants
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -139,7 +139,7 @@ class web_spider(CrawlPlugin):
         if resp.is_text_or_html() or resp.is_pdf() or resp.is_swf():
             original_url = resp.get_redir_uri()
             try:
-                doc_parser = dpCache.dpc.get_document_parser_for(resp)
+                doc_parser = parser_cache.dpc.get_document_parser_for(resp)
             except w3afException, w3:
                 om.out.debug('Failed to find a suitable document parser. '
                              'Exception "%s"' % w3)

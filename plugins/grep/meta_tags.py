@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
@@ -73,7 +73,7 @@ class meta_tags(GrepPlugin):
             self._already_inspected.add(uri)
 
             try:
-                dp = dpCache.dpc.get_document_parser_for(response)
+                dp = parser_cache.dpc.get_document_parser_for(response)
             except w3afException:
                 pass
             else:

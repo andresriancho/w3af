@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 import core.data.kb.vuln as vuln
@@ -53,7 +53,7 @@ class strange_parameters(GrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         try:
-            dp = dpCache.dpc.get_document_parser_for(response)
+            dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
             pass
         else:

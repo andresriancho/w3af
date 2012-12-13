@@ -24,7 +24,7 @@ import re
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 
 from core.data.fuzzer.fuzzer import create_mutants
 from core.controllers.exceptions import w3afException
@@ -137,7 +137,7 @@ class global_redirect(AuditPlugin):
         Test for meta redirects
         '''
         try:
-            dp = dpCache.dpc.get_document_parser_for(response)
+            dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
             # Failed to find a suitable parser for the document
             return False

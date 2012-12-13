@@ -1,5 +1,5 @@
 '''
-dpCache.py
+parser_cache.py
 
 Copyright 2006 Andres Riancho
 
@@ -29,7 +29,7 @@ from core.controllers.misc.lru import LRU
 DEBUG = False
 
 
-class dpCache(object):
+class ParserCache(object):
     '''
     This class is a document parser cache.
 
@@ -47,7 +47,7 @@ class dpCache(object):
         self._calculated_more_than_once = 0.0
         self._total = 0.0
 
-    def get_document_parser_for(self, HTTPResponse):
+    def get_document_parser_for(self, http_response):
         res = None
 
         #   Before I used md5, but I realized that it was unnecessary. I experimented a little bit with
@@ -68,7 +68,10 @@ class dpCache(object):
         #   given that the LRU has only 30 positions, the real probability of a colission is too low.
         #
         self._total += 1
-        hash_string = hash(HTTPResponse.body)
+        
+        # @see: test_bug_13_Dec_2012 to understand why we concat the uri to the
+        #       body before hashing
+        hash_string = hash(http_response.body + http_response.get_uri())
 
         with self._LRULock:
             if hash_string in self._cache:
@@ -76,7 +79,7 @@ class dpCache(object):
                 self._debug_in_cache(hash_string)
             else:
                 # Create a new instance of dp, add it to the cache
-                res = DocumentParser.DocumentParser(HTTPResponse)
+                res = DocumentParser.DocumentParser(http_response)
                 self._cache[hash_string] = res
                 self._debug_not_in_cache(hash_string)
             return res
@@ -98,8 +101,8 @@ class dpCache(object):
 
     def __del__(self):
         if DEBUG:
-            print 'dpCache LRU rate: %s' % (self._from_LRU / self._total)
-            print 'dpCache re-calculation rate: %s' % (self._calculated_more_than_once / self._total)
-            print 'dpCache size: %s' % self.LRU_LENGTH
+            print 'parser_cache LRU rate: %s' % (self._from_LRU / self._total)
+            print 'parser_cache re-calculation rate: %s' % (self._calculated_more_than_once / self._total)
+            print 'parser_cache size: %s' % self.LRU_LENGTH
 
-dpc = dpCache()
+dpc = ParserCache()

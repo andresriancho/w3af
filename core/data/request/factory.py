@@ -26,7 +26,7 @@ from StringIO import StringIO
 
 import core.controllers.output_manager as om
 import core.data.kb.config as cf
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.parsers.wsdlParser as wsdlParser
 
 from core.data.misc.encoding import smart_unicode
@@ -106,7 +106,7 @@ def create_fuzzable_requests(resp, request=None, add_self=True):
 
     # Try to find forms in the document
     try:
-        dp = dpCache.dpc.get_document_parser_for(resp)
+        dp = parser_cache.dpc.get_document_parser_for(resp)
     except w3afException:
         # Failed to find a suitable parser for the document
         form_list = []

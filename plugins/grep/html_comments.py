@@ -25,7 +25,7 @@ from __future__ import with_statement
 import re
 
 import core.controllers.output_manager as om
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
@@ -75,7 +75,7 @@ class html_comments(GrepPlugin):
         '''
         if response.is_text_or_html():
             try:
-                dp = dpCache.dpc.get_document_parser_for(response)
+                dp = parser_cache.dpc.get_document_parser_for(response)
             except w3afException:
                 return
             else:

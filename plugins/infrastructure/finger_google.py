@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 
 import core.controllers.output_manager as om
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
 
@@ -132,7 +132,7 @@ class finger_google(InfrastructurePlugin):
         Parses the HTML and adds the mail addresses to the kb.
         '''
         try:
-            document_parser = dpCache.dpc.get_document_parser_for(response)
+            document_parser = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
             # Failed to find a suitable parser for the document
             pass

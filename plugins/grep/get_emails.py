@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -74,7 +74,7 @@ class get_emails(GrepPlugin):
         @return: None
         '''
         try:
-            dp = dpCache.dpc.get_document_parser_for(response)
+            dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
             msg = 'If I can\'t parse the document, I won\'t be able to find any'
             msg += ' emails. Ignoring the response for "%s".'

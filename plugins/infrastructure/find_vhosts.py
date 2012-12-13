@@ -24,7 +24,7 @@ import socket
 from itertools import izip, repeat
 
 import core.controllers.output_manager as om
-import core.data.parsers.dpCache as dpCache
+import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.kb.info as info
@@ -120,7 +120,7 @@ class find_vhosts(InfrastructurePlugin):
         base_resp_body = base_response.get_body()
 
         try:
-            dp = dpCache.dpc.get_document_parser_for(original_response)
+            dp = parser_cache.dpc.get_document_parser_for(original_response)
         except w3afException:
             # Failed to find a suitable parser for the document
             return []
