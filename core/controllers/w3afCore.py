@@ -133,9 +133,9 @@ class w3afCore(object):
         try:
             self.strategy.start()
         except MemoryError:
-            msg = 'Python threw a MemoryError, this means that your'
-            msg += ' OS is running very low in memory. w3af is going'
-            msg += ' to stop.'
+            msg = 'Python threw a MemoryError, this means that your'\
+                  ' OS is running very low in memory. w3af is going'\
+                  ' to stop.'
             om.out.error(msg)
             raise
         except w3afMustStopByUserRequest:
