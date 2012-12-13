@@ -113,6 +113,16 @@ class TestVariantDB(unittest.TestCase):
             self.vdb._clean_reference(URL('http://w3af.org/index.php')),
             u'http://w3af.org/index.php')
 
+    def test_clean_reference_directory_file(self):
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/foo/index.php')),
+                                         u'http://w3af.org/foo/index.php')
+
+    def test_clean_reference_directory_file_int(self):
+        self.assertEqual(
+            self.vdb._clean_reference(URL('http://w3af.org/foo/index.php?id=2')),
+                                      u'http://w3af.org/foo/index.php?id=number')
+
     def test_clean_reference_int(self):
         self.assertEqual(
             self.vdb._clean_reference(URL('http://w3af.org/index.php?id=2')),
