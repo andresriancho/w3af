@@ -27,16 +27,15 @@ from plugins.attack.payloads.payload_handler import exec_payload
 @attr('slow')
 class test_list_processes(PayloadTestHelper):
 
-    EXPECTED_RESULT = set(['/usr/sbin/mysqld ', '/usr/sbin/apache2 -k start ',
-                           '[kernel process]', 'cron '])
+    EXPECTED_RESULT = set(['/sbin/getty -8 38400 tty4', 'cron'])
 
     def test_list_processes(self):
         result = exec_payload(
-            self.shell, 'list_processes', args=(5000,), use_api=True)
+            self.shell, 'list_processes', args=(2000,), use_api=True)
 
         cmds = []
         for _, pid_data in result.iteritems():
             cmds.append(pid_data['cmd'])
 
         for expected in self.EXPECTED_RESULT:
-            self.assertTrue(expected in cmds, expected)
+            self.assertIn(expected, cmds)

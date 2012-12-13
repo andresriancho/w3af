@@ -45,6 +45,7 @@ class list_processes(Payload):
             if not cmd:
                 cmd = '[kernel process]'
             cmd = cmd.replace('\x00', ' ')
+            cmd = cmd.strip()
             self.result[str(pid)] = {'name': name, 'state': state, 'cmd': cmd}
             om.out.console('+', new_line=False)
 
