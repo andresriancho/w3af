@@ -49,7 +49,7 @@ class question_target_1(question):
         o1 = opt_factory('target', '', d1, 'list')
 
         o2 = opt_factory('target_os', 'unknown', d1, 'string')
-        o3 = opt_factory('targetFramework', 'unknown', d1, 'string')
+        o3 = opt_factory('target_framework', 'unknown', d1, 'string')
 
         ol = OptionList()
         ol.add(o1)

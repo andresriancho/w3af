@@ -52,9 +52,9 @@ class crawl_infrastructure(BaseConsumer):
         @param w3af_core: The w3af core that we'll use for status reporting
         @param max_discovery_time: The max time (in seconds) to use for the discovery phase
         '''
-        super(
-            crawl_infrastructure, self).__init__(crawl_infrastructure_plugins, w3af_core,
-                                                 thread_name='CrawlInfra')
+        super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
+                                                   w3af_core,
+                                                   thread_name='CrawlInfra')
         self._max_discovery_time = max_discovery_time
 
         # For filtering fuzzable requests found by plugins:

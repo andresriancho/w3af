@@ -357,7 +357,7 @@ class profile(object):
 
     def get_target(self):
         '''
-        @return: The profile target with the options (target_os, targetFramework, etc.)
+        @return: The profile target with the options (target_os, target_framework, etc.)
         '''
         # Get the plugin defaults with their types
         target_instance = w3af_core_target()

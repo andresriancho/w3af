@@ -54,7 +54,7 @@ class w3af_core_target(Configurable):
     def clear(self):
         cf.cf.save('targets', [])
         cf.cf.save('target_os', 'unknown')
-        cf.cf.save('targetFramework', 'unknown')
+        cf.cf.save('target_framework', 'unknown')
         cf.cf.save('target_domains', set())
         cf.cf.save('baseURLs', [])
         cf.cf.save('session_name', 'defaultSession' + '-' +
@@ -89,9 +89,9 @@ class w3af_core_target(Configurable):
         # This list "hack" has to be done because the default value is the one
         # in the first position on the list
         tmp_list = self._programming_frameworks[:]
-        tmp_list.remove(cf.cf.get('targetFramework'))
-        tmp_list.insert(0, cf.cf.get('targetFramework'))
-        o = opt_factory('targetFramework', tmp_list, d, 'combo', help=h)
+        tmp_list.remove(cf.cf.get('target_framework'))
+        tmp_list.insert(0, cf.cf.get('target_framework'))
+        o = opt_factory('target_framework', tmp_list, d, 'combo', help=h)
         ol.add(o)
 
         return ol
@@ -195,9 +195,9 @@ class w3af_core_target(Configurable):
         else:
             raise w3afException('Unknown target operating system: ' + os)
 
-        pf = options_list['targetFramework'].get_value_str()
+        pf = options_list['target_framework'].get_value_str()
         if pf.lower() in self._programming_frameworks:
-            cf.cf.save('targetFramework', pf.lower())
+            cf.cf.save('target_framework', pf.lower())
         else:
             raise w3afException('Unknown target programming framework: ' + pf)
 

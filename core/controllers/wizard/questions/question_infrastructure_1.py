@@ -56,7 +56,7 @@ class question_infrastructure_1(question):
     def get_next_question_id(self, options_list):
         # I don't care about the target OS for these tests, so I add them here with the default value
         o2 = opt_factory('target_os', 'unknown', '', 'string')
-        o3 = opt_factory('targetFramework', 'unknown', '', 'string')
+        o3 = opt_factory('target_framework', 'unknown', '', 'string')
 
         #   Manually copy the OptionList... the copy.deepcopy method fails :(
         ol_copy = OptionList()

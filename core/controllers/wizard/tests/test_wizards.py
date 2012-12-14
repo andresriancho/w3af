@@ -111,7 +111,7 @@ class test_wizards(object):
         values = {
             'target': 'http://www.w3af.org',
             'target_os': 'Unix',
-            'targetFramework': 'PHP'
+            'target_framework': 'PHP'
         }
 
         for option in option_list:
@@ -131,7 +131,7 @@ class test_wizards(object):
         values = {
             'target': 'foo://www.w3af.org',
             'target_os': 'Minix',
-            'targetFramework': 'C++'
+            'target_framework': 'C++'
         }
 
         for option in option_list:
