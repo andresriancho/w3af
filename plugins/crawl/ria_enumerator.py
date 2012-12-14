@@ -64,7 +64,7 @@ class ria_enumerator(CrawlPlugin):
                                             self._wordlist)
 
         # Send the requests using threads:
-        self._tm.threadpool.map(self._send_and_check, url_generator,
+        self.worker_pool.map(self._send_and_check, url_generator,
                                 chunksize=10)
 
         return []

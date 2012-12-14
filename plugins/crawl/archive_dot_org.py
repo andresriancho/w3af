@@ -113,7 +113,7 @@ class archive_dot_org(CrawlPlugin):
 
         # Verify if they exist in the target site and add them to
         # the result if they do. Send the requests using threads:
-        self._tm.threadpool.map(self._exists_in_target, real_URLs)
+        self.worker_pool.map(self._exists_in_target, real_URLs)
 
     def _spider_archive(self, url_list, max_depth, domain):
         '''
@@ -157,7 +157,7 @@ class archive_dot_org(CrawlPlugin):
 
         url_list, max_depth, domain
         args = izip(url_list, repeat(max_depth), repeat(domain))
-        self._tm.threadpool.map_multi_args(spider_worker, args)
+        self.worker_pool.map_multi_args(spider_worker, args)
 
         return list(set(res))
 

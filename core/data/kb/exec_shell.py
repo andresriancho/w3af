@@ -39,8 +39,8 @@ class ExecShell(shell):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, v):
-        shell.__init__(self, v)
+    def __init__(self, vuln, uri_opener, worker_pool):
+        super(ExecShell, self).__init__(vuln, uri_opener, worker_pool)
 
         # For writing files to the remote server
         self._transfer_handler = None

@@ -118,7 +118,7 @@ class find_captchas(CrawlPlugin):
                 image_path_list = document_parser.get_references_of_tag('img')
 
                 GET = self._uri_opener.GET
-                result_iter = self._tm.threadpool.imap_unordered(
+                result_iter = self.worker_pool.imap_unordered(
                     GET, image_path_list)
                 for image_response in result_iter:
                     if image_response.is_image():

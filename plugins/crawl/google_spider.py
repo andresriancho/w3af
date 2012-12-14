@@ -66,7 +66,7 @@ class google_spider(CrawlPlugin):
         except:
             pass
         else:
-            self._tm.threadpool.map(self._get_fuzzable_requests,
+            self.worker_pool.map(self._get_fuzzable_requests,
                                     [r.URL for r in g_results])
 
     def _get_fuzzable_requests(self, url):

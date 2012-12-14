@@ -24,7 +24,6 @@ import textwrap
 import plugins.attack.payloads.payload_handler as payload_handler
 
 from core.controllers.threads.threadpool import return_args
-from core.controllers.threads.threadManager import thread_manager
 
 SYSCALL_LIST = ['read', 'write', 'execute', 'unlink', 'is_open_port']
 
@@ -33,6 +32,7 @@ class Payload(object):
 
     def __init__(self, shell_obj):
         self.shell = shell_obj
+        self.worker_pool = self.shell.worker_pool
 
     def can_run(self):
         '''
@@ -115,7 +115,7 @@ class Payload(object):
         @param fname_iter: An iterator that yields all the file names to read.
         '''
         read_file = return_args(self.shell.read)
-        results = thread_manager.threadpool.imap_unordered(read_file, fname_iter)
+        results = self.worker_pool.imap_unordered(read_file, fname_iter)
         for (file_name,), content in results:
             yield file_name, content
 

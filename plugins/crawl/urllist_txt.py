@@ -71,7 +71,7 @@ class urllist_txt(CrawlPlugin):
                                                          http_response.get_body())
 
             # Send the requests using threads:
-            self._tm.threadpool.map(self._get_and_parse, url_generator)
+            self.worker_pool.map(self._get_and_parse, url_generator)
 
     def _is_urllist_txt(self, base_url, body):
         '''

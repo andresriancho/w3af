@@ -35,7 +35,7 @@ from core.controllers.core_helpers.target import w3af_core_target
 from core.controllers.core_helpers.strategy import w3af_core_strategy
 from core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
 from core.controllers.core_helpers.exception_handler import ExceptionHandler
-from core.controllers.threads.threadManager import thread_manager
+from core.controllers.threads.threadpool import Pool
 
 from core.controllers.misc.epoch_to_string import epoch_to_string
 from core.controllers.misc.dns_cache import enable_dns_cache
@@ -59,7 +59,9 @@ class w3afCore(object):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-
+    
+    WORKER_THREADS = 20
+    
     def __init__(self):
         '''
         Init some variables and files.
@@ -69,6 +71,8 @@ class w3afCore(object):
         self._home_directory()
         self._tmp_directory()
 
+        self._create_worker_pool()
+                
         # These are some of the most important moving parts in the w3afCore
         # they basically handle every aspect of the w3af framework:
         self.strategy = w3af_core_strategy(self)
@@ -86,6 +90,7 @@ class w3afCore(object):
         self.uri_opener = xUrllib()
         fp_404_db = fingerprint_404_singleton()
         fp_404_db.set_url_opener(self.uri_opener)
+        fp_404_db.set_worker_pool(self.worker_pool)
 
         # And one of the most important aspects of our core, the exception handler
         self.exception_handler = ExceptionHandler()
@@ -103,7 +108,6 @@ class w3afCore(object):
         error handling!
         '''
         om.out.debug('Called w3afCore.start()')
-        thread_manager.start()
 
         # If this is not the first scan, I want to clear the old bug data that
         # might be stored in the exception_handler.
@@ -178,6 +182,10 @@ class w3afCore(object):
 
             self._end()
 
+    def _create_worker_pool(self):
+        self.worker_pool = Pool(self.WORKER_THREADS,
+                                worker_names='WorkerThread')
+        
     def get_run_time(self):
         '''
         @return: The time (in minutes) between now and the call to start().
@@ -223,8 +231,8 @@ class w3afCore(object):
         om.out.debug('The user stopped the core.')
         self.strategy.stop()
         self.uri_opener.stop()
-        thread_manager.terminate()
-        thread_manager.join()
+        self.worker_pool.terminate()
+        self.worker_pool.join()
 
     def pause(self, pause_yes_no):
         '''
@@ -242,8 +250,8 @@ class w3afCore(object):
         self.cleanup()
         self.strategy.quit()
         self.uri_opener.stop()
-        thread_manager.terminate()
-        thread_manager.join()
+        self.worker_pool.terminate()
+        self.worker_pool.join()
         # Now it's safe to remove the temp_dir
         remove_temp_dir()
 
@@ -291,9 +299,13 @@ class w3afCore(object):
                 raise
 
         finally:
-            thread_manager.terminate()
-            thread_manager.join()
-
+            # The scan has ended, but the worker pool might be needed for
+            # the exploiting section. So we join the current workers and
+            # create a new pool.
+            self.worker_pool.terminate()
+            self.worker_pool.join()
+            self._create_worker_pool()
+            
             self.status.stop()
             self.progress.stop()
 

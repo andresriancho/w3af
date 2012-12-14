@@ -57,7 +57,7 @@ class dot_net_errors(InfrastructurePlugin):
 
             test_generator = self._generate_URLs(fuzzable_request.get_url())
 
-            self._tm.threadpool.map(self._send_and_check,
+            self.worker_pool.map(self._send_and_check,
                                     test_generator,
                                     chunksize=1)
 

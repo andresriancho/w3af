@@ -116,7 +116,7 @@ class eval(AuditPlugin):
         @param freq: A FuzzableRequest
         '''
         fake_mutants = create_mutants(freq, ['', ])
-        self._tm.threadpool.map(self._test_delay, fake_mutants)
+        self.worker_pool.map(self._test_delay, fake_mutants)
 
     def _test_delay(self, mutant):
         '''

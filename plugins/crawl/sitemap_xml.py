@@ -81,7 +81,7 @@ class sitemap_xml(CrawlPlugin):
                     else:
                         parsed_url_list.append(url)
 
-                self._tm.threadpool.map(self._get_and_parse, parsed_url_list)
+                self.worker_pool.map(self._get_and_parse, parsed_url_list)
 
     def _get_and_parse(self, url):
         '''

@@ -71,9 +71,10 @@ class os_commanding(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln):
             # Create the shell object
-            shell_obj = OSCommandingShell(vuln)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_cut(self._header_length, self._footer_length)
+            shell_obj = OSCommandingShell(vuln, self._uri_opener,
+                                          self.worker_pool,
+                                          self._header_length,
+                                          self._footer_length)
             return shell_obj
 
         else:
@@ -131,6 +132,11 @@ class os_commanding(AttackPlugin):
 
 
 class OSCommandingShell(ExecShell):
+
+    def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
+        super(OSCommandingShell, self).__init__(vuln, url_opener, worker_pool)
+
+        self.set_cut(header_len, footer_len)
 
     @exec_debug
     def execute(self, command):

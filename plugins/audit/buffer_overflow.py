@@ -106,7 +106,7 @@ class buffer_overflow(AuditPlugin):
             mutants = create_mutants(
                 freq, self.BUFFER_TESTS, orig_resp=orig_resp)
 
-            self._tm.threadpool.map(self._send_request, mutants)
+            self.worker_pool.map(self._send_request, mutants)
 
     def _send_request(self, mutant):
         '''

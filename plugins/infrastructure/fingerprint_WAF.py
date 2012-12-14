@@ -71,7 +71,7 @@ class fingerprint_WAF(InfrastructurePlugin):
                    self._fingerprint_HyperGuard]
 
         args_iter = izip(methods, repeat(fuzzable_request))
-        self._tm.threadpool.map_multi_args(self._worker, args_iter)
+        self.worker_pool.map_multi_args(self._worker, args_iter)
 
     def _worker(self, func, fuzzable_request):
         return func(fuzzable_request)

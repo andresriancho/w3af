@@ -77,7 +77,7 @@ class user_dir(CrawlPlugin):
         # Check the users to see if they exist
         url_user_list = self._create_dirs(base_url)
         #   Send the requests using threads:
-        self._tm.threadpool.map_multi_args(self._do_request,
+        self.worker_pool.map_multi_args(self._do_request,
                                            url_user_list)
 
         # Only do this if I already know that users can be identified.

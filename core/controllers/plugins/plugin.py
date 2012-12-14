@@ -28,7 +28,6 @@ import core.data.kb.vuln as vuln
 
 from core.data.options.option_list import OptionList
 from core.controllers.configurable import Configurable
-from core.controllers.threads.threadManager import thread_manager
 from core.controllers.threads.threadpool import return_args
 from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
 
@@ -51,15 +50,24 @@ class Plugin(Configurable):
         Create some generic attributes that are going to be used by most plugins.
         '''
         self._uri_opener = None
+        self.worker_pool = None
+        
         self.output_queue = Queue.Queue()
-        self._tm = thread_manager
         self._plugin_lock = threading.RLock()
+
+    def set_worker_pool(self, worker_pool):
+        '''
+        Sets the worker pool (at the moment of writing this is a thread pool)
+        that will be used by the plugin to send requests using different
+        threads.
+        '''
+        self.worker_pool = worker_pool
 
     def set_url_opener(self, urlOpener):
         '''
         This method should not be overwritten by any plugin (but you are free
         to do it, for example a good idea is to rewrite this method to change
-        the UrlOpener to do some IDS evasion technic).
+        the UrlOpener to do some IDS evasion technique).
 
         This method takes a CustomUrllib object as parameter and assigns it
         to itself. Then, on the testUrl method you use
@@ -220,7 +228,7 @@ class Plugin(Configurable):
         but performs all the HTTP requests in parallel threads.
         '''
         func = return_args(func, **kwds)
-        for (mutant,), http_response in self._tm.threadpool.imap_unordered(func, iterable):
+        for (mutant,), http_response in self.worker_pool.imap_unordered(func, iterable):
             callback(mutant, http_response)
 
 

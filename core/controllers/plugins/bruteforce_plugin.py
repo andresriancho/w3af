@@ -103,7 +103,7 @@ class BruteforcePlugin(AuditPlugin):
         @param combinations: A generator with tuples that contain (user,pass)
         '''
         args_iter = izip(repeat(url), combinations)
-        self._tm.threadpool.map_multi_args(
+        self.worker_pool.map_multi_args(
             self._brute_worker, args_iter, chunksize=100)
 
     def end(self):

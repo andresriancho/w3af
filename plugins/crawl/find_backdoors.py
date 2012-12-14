@@ -139,7 +139,7 @@ class find_backdoors(CrawlPlugin):
             self._analyzed_dirs.add(domain_path)
 
             #   Send the requests using threads:
-            self._tm.threadpool.map(self._check_if_exists,
+            self.worker_pool.map(self._check_if_exists,
                                     (domain_path.url_join(
                                         fname) for fname in WEB_SHELLS)
                                     )

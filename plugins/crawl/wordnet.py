@@ -57,7 +57,7 @@ class wordnet(CrawlPlugin):
         args = izip(original_response_repeat, mutants)
 
         #   Send the requests using threads:
-        self._tm.threadpool.map_multi_args(self._check_existance,
+        self.worker_pool.map_multi_args(self._check_existance,
                                            args)
 
     def _check_existance(self, original_response, mutant):

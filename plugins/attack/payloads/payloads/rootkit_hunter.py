@@ -4,7 +4,6 @@ import core.controllers.output_manager as om
 
 from core.ui.console.tables import table
 from core.controllers.threads.threadpool import return_args
-from core.controllers.threads.threadManager import thread_manager
 
 from plugins.attack.payloads.base_payload import Payload
 
@@ -80,7 +79,7 @@ class rootkit_hunter(Payload):
 
         read_file = return_args(self._read_with_progress)
         fname_iter = self.fname_generator()
-        for (file_name,), content in thread_manager.threadpool.imap_unordered(read_file, fname_iter):
+        for (file_name,), content in self.worker_pool.imap_unordered(read_file, fname_iter):
             if content:
                 self.result['backdoor_files'].append(file_name)
 

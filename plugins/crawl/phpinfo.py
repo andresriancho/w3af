@@ -69,7 +69,7 @@ class phpinfo(CrawlPlugin):
                 url_repeater = repeat(domain_path)
                 args = izip(url_repeater, self._get_potential_phpinfos())
 
-                self._tm.threadpool.map_multi_args(
+                self.worker_pool.map_multi_args(
                     self._check_and_analyze, args)
 
     def _check_and_analyze(self, domain_path, php_info_filename):

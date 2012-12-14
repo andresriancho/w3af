@@ -103,8 +103,8 @@ def get_payload_instance(payload_name, shell_obj):
     '''
     @return: A payload instance.
     '''
-    name = '.'.join(
-        ['plugins', 'attack', 'payloads', 'payloads', payload_name])
+    name = '.'.join(['plugins', 'attack', 'payloads', 'payloads',
+                     payload_name])
     __import__(name)
     module = sys.modules[name]
     klass = getattr(module, payload_name)
@@ -128,8 +128,8 @@ def get_payload_list():
     True
     '''
     result = []
-    py_list = [x for x in os.listdir(
-        PAYLOAD_PATH) if x.endswith('.py') and x != '__init__.py']
+    py_list = [x for x in os.listdir(PAYLOAD_PATH) if 
+               x.endswith('.py') and x != '__init__.py']
     for p in py_list:
         p = p.replace('.py', '')
         result.append(p)

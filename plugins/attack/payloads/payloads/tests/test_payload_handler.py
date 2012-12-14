@@ -34,6 +34,10 @@ from core.data.kb.read_shell import ReadShell
 
 class TestPayloadHandler(unittest.TestCase):
 
+    def test_payload_to_file(self):
+        cpu_info_file = payload_to_file('cpu_info')
+        self.assertEqual(cpu_info_file, 'plugins/attack/payloads/payloads/cpu_info.py')
+
     def test_get_payload_list(self):
         payload_list = get_payload_list()
 
@@ -55,13 +59,14 @@ class TestPayloadHandler(unittest.TestCase):
         self.assertFalse('__init__.py' in payload_list)
 
     def test_get_payload_instance(self):
+        shell = FakeExecShell(None, None, None)
         for payload_name in get_payload_list():
-            payload_inst = get_payload_instance(payload_name, None)
+            payload_inst = get_payload_instance(payload_name, FakeExecShell)
 
             self.assertTrue(payload_inst.require() in ('linux', 'windows'))
 
     def test_runnable_payloads_exec(self):
-        shell = FakeExecShell(None)
+        shell = FakeExecShell(None, None, None)
         runnable = runnable_payloads(shell)
 
         EXCEPTIONS = set(['portscan', ])
@@ -74,7 +79,7 @@ class TestPayloadHandler(unittest.TestCase):
         )
 
     def test_runnable_payloads_read(self):
-        shell = FakeReadShell(None)
+        shell = FakeReadShell(None, None, None)
         runnable = runnable_payloads(shell)
 
         EXPECTED = (
@@ -89,12 +94,12 @@ class TestPayloadHandler(unittest.TestCase):
             self.assertFalse(name in runnable)
 
     def test_exec_payload_exec(self):
-        shell = FakeExecShell(None)
+        shell = FakeExecShell(None, None, None)
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
 
     def test_exec_payload_read(self):
-        shell = FakeReadShell(None)
+        shell = FakeReadShell(None, None, None)
         result = exec_payload(shell, 'os_fingerprint', use_api=True)
         self.assertEquals({'os': 'Linux'}, result)
 
@@ -116,7 +121,9 @@ class TestPayloadHandler(unittest.TestCase):
 
 
 class FakeExecShell(ExecShell):
-
+    
+    worker_pool = None
+    
     def execute(self, command):
         return commands.getoutput(command)
 
@@ -128,6 +135,8 @@ class FakeExecShell(ExecShell):
 
 
 class FakeReadShell(ReadShell):
+
+    worker_pool = None
 
     def read(self, filename):
         return file(filename).read()

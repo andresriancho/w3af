@@ -100,7 +100,7 @@ class afd(InfrastructurePlugin):
                 tests.append((offending_string, offending_URL,
                               original_response_body, rnd_param))
 
-            self._tm.threadpool.map_multi_args(self._send_and_analyze, tests)
+            self.worker_pool.map_multi_args(self._send_and_analyze, tests)
 
             # Analyze the results
             return self._filtered, self._not_filtered

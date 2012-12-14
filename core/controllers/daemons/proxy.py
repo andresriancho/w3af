@@ -32,7 +32,6 @@ from multiprocessing.dummy import Process
 
 import core.controllers.output_manager as om
 
-from core.controllers.threads.threadManager import thread_manager as tm
 from core.controllers.exceptions import w3afException, w3afProxyException
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
@@ -426,7 +425,6 @@ class Proxy(Process):
         self._proxy_handler = proxy_handler
         self._running = False
         self._uri_opener = uri_opener
-        self._tm = tm
 
         # User configured parameters
         self._ip = ip

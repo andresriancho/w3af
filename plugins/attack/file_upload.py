@@ -70,9 +70,8 @@ class file_upload(AttackPlugin):
         if self._verify_vuln(vuln_obj):
 
             # Set shell parameters
-            shell_obj = FileUploadShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_exploit_URL(self._exploit)
+            shell_obj = FileUploadShell(vuln_obj, self._uri_opener,
+                                        self.worker_pool, self._exploit)
             return shell_obj
         else:
             return None
@@ -174,11 +173,14 @@ class file_upload(AttackPlugin):
 
 
 class FileUploadShell(ExecShell):
-    def set_exploit_URL(self, eu):
-        self._exploit = eu
 
+    def __init__(self, vuln, uri_opener, worker_pool, exploit_url):
+        super(FileUploadShell, self).__init__(vuln, uri_opener, worker_pool)
+        
+        self._exploit_url = exploit_url
+            
     def get_exploit_URL(self):
-        return self._exploit
+        return self._exploit_url
 
     @exec_debug
     def execute(self, command):

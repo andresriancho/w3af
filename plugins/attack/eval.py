@@ -68,9 +68,8 @@ class eval(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = EvalShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_code(self._shell_code)
+            shell_obj = EvalShell(vuln_obj, self._uri_opener, self.worker_pool,
+                                  self._shell_code)
             return shell_obj
         else:
             return None
@@ -134,9 +133,11 @@ class eval(AttackPlugin):
 
 class EvalShell(ExecShell):
 
-    def set_code(self, code):
+    def __init__(self, vuln, uri_opener, worker_pool, code):
+        super(EvalShell, self).__init__(vuln, uri_opener, worker_pool)
+        
         self._shell_code = code
-
+        
     @exec_debug
     def execute(self, command):
         '''
@@ -160,12 +161,6 @@ class EvalShell(ExecShell):
             return 'Unexpected error, please try again.'
         else:
             return shell_handler.extract_result(response.get_body())
-
-    def end(self):
-        '''
-        Finish execution, clean-up, clear the local web server.
-        '''
-        pass
 
     def get_name(self):
         return 'eval_shell'

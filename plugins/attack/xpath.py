@@ -29,7 +29,6 @@ import core.controllers.output_manager as om
 
 from core.controllers.plugins.attack_plugin import AttackPlugin
 from core.controllers.threads.threadpool import return_args
-from core.controllers.threads.threadManager import thread_manager
 from core.controllers.exceptions import w3afException
 from core.data.kb.shell import shell
 
@@ -97,8 +96,9 @@ class xpath(AttackPlugin):
         vuln_verified, is_error_resp = self._verify_vuln(vuln)
         if vuln_verified:
             # Create the shell object
-            shell_obj = XPathReader(vuln, self._uri_opener, self.STR_DELIM,
-                                    self.TRUE_COND, is_error_resp)
+            shell_obj = XPathReader(vuln, self._uri_opener, self.worker_pool,
+                                    self.STR_DELIM, self.TRUE_COND,
+                                    is_error_resp)
             return shell_obj
 
         else:
@@ -237,10 +237,10 @@ class xpath(AttackPlugin):
 
 class XPathReader(shell):
 
-    def __init__(self, vuln, uri_opener, str_delim, true_xpath, is_error_resp):
-        shell.__init__(self, vuln)
+    def __init__(self, vuln, uri_opener, worker_pool, str_delim,
+                 true_xpath, is_error_resp):
+        super(XPathReader, self).__init__(vuln, uri_opener, worker_pool)
         
-        self.uri_opener = uri_opener
         self.STR_DELIM = str_delim
         self.TRUE_COND = true_xpath
         self.is_error_resp = is_error_resp
@@ -343,7 +343,7 @@ class XPathReader(shell):
         @return: True when the response does NOT contain an XPATH error.
         '''
         exploit_dc = self.get_dc()
-        function_ptr = getattr(self.uri_opener, self.get_method())
+        function_ptr = getattr(self._uri_opener, self.get_method())
         orig_value = self.get_mutant().get_mutant().get_original_value()
         skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
         
@@ -381,7 +381,7 @@ class XPathReader(shell):
         data = [None] * data_len
         
         mod_get_char = return_args(self.get_char_in_pos)
-        imap_unordered = thread_manager.threadpool.imap_unordered
+        imap_unordered = self.worker_pool.imap_unordered
         len_iter = xrange(data_len)
         
         for (pos,), char in imap_unordered(mod_get_char, len_iter):
@@ -406,7 +406,7 @@ class XPathReader(shell):
         @return: The character for position @pos in the XML.
         '''
         exploit_dc = self.get_dc()
-        function_ptr = getattr(self.uri_opener, self.get_method())
+        function_ptr = getattr(self._uri_opener, self.get_method())
         
         for c in range(32, 127):
 

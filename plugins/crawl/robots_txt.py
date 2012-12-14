@@ -86,7 +86,7 @@ class robots_txt(CrawlPlugin):
                     else:
                         dirs.append(url)
 
-        self._tm.threadpool.map(self._get_and_parse, dirs)
+        self.worker_pool.map(self._get_and_parse, dirs)
 
     def _get_and_parse(self, url):
         '''

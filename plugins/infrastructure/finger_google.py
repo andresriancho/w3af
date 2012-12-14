@@ -104,7 +104,7 @@ class finger_google(InfrastructurePlugin):
             raise w3afRunOnce()
         else:
             #   Send the requests using threads:
-            self._tm.threadpool.map(self._find_accounts, result_page_objects)
+            self.worker_pool.map(self._find_accounts, result_page_objects)
 
     def _find_accounts(self, googlePage):
         '''

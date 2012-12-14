@@ -217,7 +217,7 @@ class find_vhosts(InfrastructurePlugin):
         base_url_repeater = repeat(base_url)
         args_iterator = izip(base_url_repeater, vhosts)
         http_get = return_args(one_to_many(self._http_get_vhost))
-        pool_results = self._tm.threadpool.imap_unordered(http_get,
+        pool_results = self.worker_pool.imap_unordered(http_get,
                                                           args_iterator)
 
         for ((base_url, vhost),), vhost_response in pool_results:

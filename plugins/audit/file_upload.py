@@ -168,7 +168,7 @@ class file_upload(AuditPlugin):
             http_response_repeater = repeat(mutant_response)
             args = izip(url_generator, mutant_repeater, http_response_repeater)
 
-            self._tm.threadpool.map_multi_args(self._confirm_file_upload,
+            self.worker_pool.map_multi_args(self._confirm_file_upload,
                                                args)
 
     def _confirm_file_upload(self, path, mutant, http_response):

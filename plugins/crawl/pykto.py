@@ -128,7 +128,7 @@ class pykto(CrawlPlugin):
                 test_generator = self._test_generator_method(db_file, url)
 
                 # Send the requests using threads:
-                self._tm.threadpool.map_multi_args(
+                self.worker_pool.map_multi_args(
                     self._send_and_check, test_generator,
                     chunksize=10)
 

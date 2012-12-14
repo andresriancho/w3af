@@ -103,7 +103,7 @@ class find_dvcs(CrawlPlugin):
             self._analyzed_dirs.add(domain_path)
 
             test_generator = self._url_generator(domain_path)
-            self._tm.threadpool.map_multi_args(self._send_and_check,
+            self.worker_pool.map_multi_args(self._send_and_check,
                                                test_generator)
 
     def _url_generator(self, domain_path):
@@ -158,7 +158,7 @@ class find_dvcs(CrawlPlugin):
                     parsed_url_set.add(test_url)
                     self._analyzed_filenames.add(filename)
 
-            self._tm.threadpool.map(self._get_and_parse, parsed_url_set)
+            self.worker_pool.map(self._get_and_parse, parsed_url_set)
 
             if parsed_url_set:
                 v = vuln.vuln()

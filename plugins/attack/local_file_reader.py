@@ -70,6 +70,7 @@ class local_file_reader(AttackPlugin):
         if self._verify_vuln(vuln_obj):
 
             shell_obj = FileReaderShell(vuln_obj, self._uri_opener,
+                                        self.worker_pool,
                                         self._header_length,
                                         self._footer_length)
 
@@ -188,11 +189,10 @@ class FileReaderShell(ReadShell):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, v, url_opener, header_len, footer_len):
-        super(FileReaderShell, self).__init__(v)
+    def __init__(self, vuln, url_opener, worker_pool, header_len, footer_len):
+        super(FileReaderShell, self).__init__(vuln, url_opener, worker_pool)
 
         self.set_cut(header_len, footer_len)
-        self._uri_opener = url_opener
 
         self._initialized = False
         self._application_file_not_found_error = None

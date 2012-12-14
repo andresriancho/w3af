@@ -2,9 +2,7 @@ import re
 
 import core.controllers.output_manager as om
 
-from core.controllers.threads.threadManager import thread_manager
 from core.ui.console.tables import table
-
 from plugins.attack.payloads.base_payload import Payload
 
 
@@ -28,61 +26,63 @@ class list_processes(Payload):
         else:
             return ''
 
-    def _thread_read(self, pid):
-        #   "progress bar"
-        self.k -= 1
-        if self.k == 0:
-            om.out.console('.', new_line=False)
-            self.k = 400
-        #   end "progress bar"
-
-        status_file = self.shell.read('/proc/' + str(pid) + '/status')
-        cmd = ''
-        if status_file:
-            name = self.parse_proc_name(status_file)
-            state = self.parse_proc_state(status_file)
-            cmd = self.shell.read('/proc/' + str(pid) + '/cmdline')
-            if not cmd:
-                cmd = '[kernel process]'
-            cmd = cmd.replace('\x00', ' ')
-            cmd = cmd.strip()
-            self.result[str(pid)] = {'name': name, 'state': state, 'cmd': cmd}
-            om.out.console('+', new_line=False)
-
-        #TODO: Check how to append to the KB
-        #if kb.kb:
-            #kb.kb.append(str(i), [str(i), name, state, cmd])
-
     def api_read(self, max_pid_user):
         try:
             max_pid_user = int(max_pid_user)
         except:
             raise ValueError('Invalid max_pid, expected an integer.')
 
-        self.result = {}
-        self.k = 400
+        result = {}
+        stat_count = 400
 
         max_pid_proc = self.shell.read('/proc/sys/kernel/pid_max')[:-1]
         max_pid = min(max_pid_proc, max_pid_user)
-
         pid_iter = xrange(1, int(max_pid))
-        thread_manager.threadpool.map(self._thread_read, pid_iter)
+        
+        def fname_iter(pid_iter):
+            for pid in pid_iter:
+                yield '/proc/%s/status' % pid
+        
+        
+        for file_name, status_file in self.read_multi(fname_iter(pid_iter)):
+            #   "progress bar"
+            stat_count -= 1
+            if stat_count == 0:
+                om.out.console('.', new_line=False)
+                stat_count = 400
+            #   end "progress bar"
+    
+            cmd = ''
+            if status_file:
+                name = self.parse_proc_name(status_file)
+                state = self.parse_proc_state(status_file)
+                
+                pid = file_name.split('/')[2]
+                
+                cmd = self.shell.read('/proc/%s/cmdline' % pid)
+                cmd = cmd.replace('\x00', ' ')
+                cmd = cmd.strip()
+                if not cmd:
+                    cmd = '[kernel process]'
+                    
+                result[pid] = {'name': name, 'state': state, 'cmd': cmd}
+                om.out.console('+', new_line=False)
 
-        return self.result
+        return result
 
     def api_win_read(self):
-        self.result = {}
+        result = {}
 
         def parse_iis6_log(iis6_log):
             process_list = re.findall(
                 '(?<=OC_ABOUT_TO_COMMIT_QUEUE:[)(.*)', iis6_log, re.MULTILINE)
             for process in process_list:
                 pid, name = process.split('] ')
-                self.result[pid] = {'name': name, 'state':
+                result[pid] = {'name': name, 'state':
                                     'unknown', 'cmd': 'unknown'}
 
         parse_iis6_log(self.shell.read('/windows/iis6.log'))
-        return self.result
+        return result
 
     def run_read(self, max_pid):
         api_result = self.api_read(max_pid)

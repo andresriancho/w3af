@@ -89,7 +89,7 @@ class dot_listing(CrawlPlugin):
                         users.add(username)
                         groups.add(group)
 
-                self._tm.threadpool.map(self._get_and_parse, parsed_url_set)
+                self.worker_pool.map(self._get_and_parse, parsed_url_set)
 
                 if parsed_url_set:
                     v = vuln.vuln()

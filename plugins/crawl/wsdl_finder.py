@@ -58,7 +58,7 @@ class wsdl_finder(CrawlPlugin):
 
             wsdl_url_generator = self.wsdl_url_generator(url_string)
 
-            self._tm.threadpool.map(self._do_request,
+            self.worker_pool.map(self._do_request,
                                     wsdl_url_generator,
                                     chunksize=1)
 

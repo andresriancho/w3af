@@ -193,16 +193,15 @@ class rfi(AttackPlugin):
         if exploit_success == SUCCESS_COMPLETE:
 
             # Create the shell object
-            shell_obj = RFIShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_exploit_dc(self._exploit_dc)
+            shell_obj = RFIShell(vuln_obj, self._uri_opener,
+                                 self.worker_pool, self._exploit_dc)
             return shell_obj
 
         elif exploit_success == SUCCESS_OPEN_PORT:
 
             # Create the portscan shell object
-            shell_obj = PortScanShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
+            shell_obj = PortScanShell(vuln_obj, self._uri_opener,
+                                      self.worker_pool)
             return shell_obj
 
         else:
@@ -377,15 +376,15 @@ class rfi(AttackPlugin):
 
 class PortScanShell(shell):
     '''
-    I create this shell when for some reason I was unable to create the RFIShell,
-    AND the "include()" method is showing errors, allowing me to determine if a
-    port is open or not.
+    I create this shell when for some reason I was unable to create the
+    RFIShell, AND the "include()" method is showing errors, allowing me to
+    determine if a port is open or not.
     '''
-    def __init__(self, vuln):
+    def __init__(self, vuln, uri_opener, worker_pool):
         '''
         Create the obj
         '''
-        shell.__init__(self, vuln)
+        super(PortScanShell, self).__init__(vuln, uri_opener, worker_pool)
 
     def is_open_port(self, host, port):
         '''
@@ -420,32 +419,17 @@ class PortScanShell(shell):
 class RFIShell(ExecShell, PortScanShell):
     '''
     I create this shell when the remote host allows outgoing connections, or when
-    the attack plugin was configured to use XSS vulnerabilities to exploit the RFI and
-    a XSS vulnerability was actually found.
+    the attack plugin was configured to use XSS vulnerabilities to exploit the
+    RFI and a XSS vulnerability was actually found.
     '''
-    def __init__(self, vuln):
+    def __init__(self, vuln, uri_opener, worker_pool, exploit_dc):
         '''
         Create the obj
         '''
-        PortScanShell.__init__(self, vuln)
-        ExecShell.__init__(self, vuln)
+        PortScanShell.__init__(self, vuln, uri_opener, worker_pool)
+        ExecShell.__init__(self, vuln, uri_opener, worker_pool)
 
-        self._exploit_dc = None
-
-    def set_exploit_dc(self, e_dc):
-        '''
-        Save the exploit data container, that holds all the parameters for a
-        successful exploitation
-
-        @param e_dc: The exploit data container.
-        '''
-        self._exploit_dc = e_dc
-
-    def get_exploit_dc(self):
-        '''
-        Get the exploit data container.
-        '''
-        return self._exploit_dc
+        self._exploit_dc = exploit_dc
 
     @exec_debug
     def execute(self, command):
@@ -458,7 +442,7 @@ class RFIShell(ExecShell, PortScanShell):
         @param command: The command to handle ( ie. "read", "exec", etc ).
         @return: The result of the command.
         '''
-        e_dc = self.get_exploit_dc()
+        e_dc = self._exploit_dc
         e_dc = e_dc.copy()
         e_dc['cmd'] = command
 
@@ -478,7 +462,7 @@ class RFIShell(ExecShell, PortScanShell):
         '''
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
-            self._rm_file(self.get_exploit_dc()[self.get_var()])
+            self._rm_file(self._exploit_dc[self.get_var()])
         except Exception, e:
             msg = 'Remote file inclusion shell cleanup failed with exception: %s'
             om.out.error(msg % e)

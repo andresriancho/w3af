@@ -71,7 +71,7 @@ class digit_sum(CrawlPlugin):
 
             args = izip(fr_generator, response_repeater, header_repeater)
 
-            self._tm.threadpool.map_multi_args(self._do_request, args)
+            self.worker_pool.map_multi_args(self._do_request, args)
 
             # I add myself so the next call to this plugin wont find me ...
             # Example: index1.html ---> index2.html --!!--> index1.html

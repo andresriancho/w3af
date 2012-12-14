@@ -69,9 +69,8 @@ class dav(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = DAVShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_exploit_URL(self._exploit_url)
+            shell_obj = DAVShell(vuln_obj, self._uri_opener, self.worker_pool,
+                                 self._exploit_url)
             return shell_obj
         else:
             return None
@@ -149,12 +148,12 @@ class dav(AttackPlugin):
 
 
 class DAVShell(ExecShell):
-    def set_exploit_URL(self, eu):
-        self._exploit_url = eu
-
-    def get_exploit_URL(self):
-        return self._exploit_url
-
+    
+    def __init__(self, vuln, uri_opener, worker_pool, exploit_url):
+        super(DAVShell, self).__init__(vuln, uri_opener, worker_pool)
+        
+        self.exploit_url = exploit_url
+    
     def execute(self, command):
         '''
         This method executes a command in the remote operating system by
@@ -163,13 +162,13 @@ class DAVShell(ExecShell):
         @param command: The command to handle ( ie. "ls", "whoami", etc ).
         @return: The result of the command.
         '''
-        to_send = self.get_exploit_URL() + command
+        to_send = self.exploit_url + command
         to_send = URL(to_send)
         response = self._uri_opener.GET(to_send)
         return shell_handler.extract_result(response.get_body())
 
     def end(self):
-        url_to_del = self._exploit_url.uri2url()
+        url_to_del = self.exploit_url.uri2url()
 
         msg = 'DAVShell is going to delete the web shell that was uploaded to %s.'
         om.out.debug(msg % url_to_del)

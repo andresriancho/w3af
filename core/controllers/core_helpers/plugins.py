@@ -128,17 +128,19 @@ class w3af_core_plugins(object):
 
     def set_plugins(self, plugin_names, plugin_type):
         '''
-        This method sets the plugins that w3afCore is going to use. Before this plugin
-        existed w3afCore used setcrawl_plugins() / setAuditPlugins() / etc , this wasnt
-        really extensible and was replaced with a combination of set_plugins and get_plugin_types.
-        This way the user interface isnt bound to changes in the plugin types that are added or
-        removed.
+        This method sets the plugins that w3afCore is going to use. Before this
+        plugin existed w3afCore used setcrawl_plugins() / setAuditPlugins() /
+        etc , this wasnt really extensible and was replaced with a combination
+        of set_plugins and get_plugin_types. This way the user interface isnt
+        bound to changes in the plugin types that are added or removed.
 
-        @param plugin_names: A list with the names of the Plugins that will be run.
-        @param plugin_type: The type of the plugin.
+        @param plugin_names: A list with the names of the Plugins that will be
+                             run.
+         @param plugin_type: The type of the plugin.
 
-        @return: A list of plugins that are unknown to the framework. This is mainly used to have
-        some error handling related to old profiles, that might reference deprecated plugins.
+        @return: A list of plugins that are unknown to the framework. This is
+                 mainly used to have some error handling related to old profiles,
+                 that might reference deprecated plugins.
         '''
         unknown_plugins = []
 
@@ -229,6 +231,8 @@ class w3af_core_plugins(object):
         '''
         plugin_inst = factory('plugins.' + plugin_type + '.' + plugin_name)
         plugin_inst.set_url_opener(self._w3af_core.uri_opener)
+        plugin_inst.set_worker_pool(self._w3af_core.worker_pool)
+        
         if plugin_name in self._plugins_options[plugin_type].keys():
             plugin_inst.set_options(
                 self._plugins_options[plugin_type][plugin_name])
@@ -321,8 +325,8 @@ class w3af_core_plugins(object):
         def create_instances():
             for plugin_type, enabled_plugins in self._plugins_names_dict.iteritems():
                 for plugin_name in enabled_plugins:
-                    plugin_instance = self.get_plugin_inst(
-                        plugin_type, plugin_name)
+                    plugin_instance = self.get_plugin_inst(plugin_type,
+                                                           plugin_name)
                     if plugin_instance not in self.plugins[plugin_type]:
                         self.plugins[plugin_type].append(plugin_instance)
 

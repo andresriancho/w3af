@@ -73,9 +73,8 @@ class sqlmap(AttackPlugin):
         # Check if we really can execute commands on the remote server
         if self._verify_vuln(vuln_obj):
             # Create the shell object
-            shell_obj = SQLMapShell(vuln_obj)
-            shell_obj.set_url_opener(self._uri_opener)
-            shell_obj.set_wrapper(self._sqlmap)
+            shell_obj = SQLMapShell(vuln_obj, self._uri_opener,
+                                    self.worker_pool, self._sqlmap)
             return shell_obj
         else:
             return None
@@ -162,13 +161,13 @@ class RunFunctor(Process):
         
         final_content = process.stdout.read()
         om.out.console(final_content, new_line=False)
-    
-class SQLMapShell(ReadShell):
-    def set_wrapper(self, sqlmap):
-        self.sqlmap = sqlmap
 
-    def get_wrapper(self):
-        return self.sqlmap
+
+class SQLMapShell(ReadShell):
+    
+    def __init__(self, vuln, uri_opener, worker_pool, sqlmap):
+        super(SQLMapShell, self).__init__(vuln, uri_opener, worker_pool)
+        self.sqlmap = sqlmap
 
     ALIAS = ('dbs', 'tables', 'users', 'dump')
 

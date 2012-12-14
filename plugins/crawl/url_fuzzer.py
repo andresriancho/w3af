@@ -100,7 +100,7 @@ class url_fuzzer(CrawlPlugin):
             url_repeater = repeat(url)
             args = izip(url_repeater, mutants_chain)
 
-            self._tm.threadpool.map_multi_args(self._do_request, args)
+            self.worker_pool.map_multi_args(self._do_request, args)
 
     def _do_request(self, url, mutant):
         '''

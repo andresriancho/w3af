@@ -35,8 +35,8 @@ class ReadShell(shell):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, v):
-        shell.__init__(self, v)
+    def __init__(self, vuln, uri_opener, worker_pool):
+        super(ReadShell, self).__init__(vuln, uri_opener, worker_pool)
 
     def help(self, command):
         '''

@@ -81,7 +81,7 @@ class find_jboss(InfrastructurePlugin):
 
         args_iter = izip(repeat(base_url), self.JBOSS_VULNS)
         otm_send_request = one_to_many(self.send_request)
-        response_pool = self._tm.threadpool.imap_unordered(
+        response_pool = self.worker_pool.imap_unordered(
             otm_send_request, args_iter)
 
         for vuln_db_instance, response in response_pool:

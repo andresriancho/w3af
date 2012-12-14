@@ -66,7 +66,7 @@ class finger_bing(InfrastructurePlugin):
                 '@' + self._domain_root, self._result_limit)
 
             #   Send the requests using threads:
-            self._tm.threadpool.map(self._find_accounts, results)
+            self.worker_pool.map(self._find_accounts, results)
 
             self.print_uniq(kb.kb.get('finger_bing', 'emails'), None)
 

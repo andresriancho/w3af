@@ -198,7 +198,7 @@ class web_spider(CrawlPlugin):
         @param resp: HTTP response object
         @param fuzzable_req: The HTTP request that generated the response
         '''
-        self._tm.threadpool.map_multi_args(
+        self.worker_pool.map_multi_args(
             self._verify_reference,
             self._urls_to_verify_generator(
                 resp, fuzzable_req)

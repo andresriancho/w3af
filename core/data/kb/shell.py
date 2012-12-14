@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
-from core.data.kb.vuln import vuln as vuln
+from core.data.kb.vuln import vuln as Vuln
 from core.data.kb.exploit_result import ExploitResult
 
 
-class shell(vuln, ExploitResult):
+class shell(Vuln, ExploitResult):
     '''
     This class represents the output of an attack plugin that gives a shell to
     the w3af user.
@@ -34,10 +34,13 @@ class shell(vuln, ExploitResult):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
-    def __init__(self, v):
-        vuln.__init__(self, v)
+    def __init__(self, vuln, uri_opener, worker_pool):
+        Vuln.__init__(self, vuln)
         ExploitResult.__init__(self)
-
+        
+        self._uri_opener = uri_opener
+        self.worker_pool = worker_pool
+        
         self._rOS = None
         self._rSystem = None
         self._rUser = None

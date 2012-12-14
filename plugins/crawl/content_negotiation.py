@@ -144,7 +144,7 @@ class content_negotiation(CrawlPlugin):
         wl_url_generator = self._wordlist_url_generator()
         args_generator = izip(wl_url_generator, repeat(Headers()))
         # Send the requests using threads:
-        for base_url, alternates in self._tm.threadpool.map_multi_args(
+        for base_url, alternates in self.worker_pool.map_multi_args(
             self._request_and_get_alternates,
             args_generator,
                 chunksize=10):

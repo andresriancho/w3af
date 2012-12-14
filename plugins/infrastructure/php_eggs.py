@@ -273,7 +273,7 @@ class php_eggs(InfrastructurePlugin):
         http_get = one_to_many(http_get)
         fr_repeater = repeat(fuzzable_request)
         args_iterator = izip(fr_repeater, self.PHP_EGGS)
-        pool_results = self._tm.threadpool.imap_unordered(
+        pool_results = self.worker_pool.imap_unordered(
             http_get, args_iterator)
 
         for response, egg_URL, egg_desc in pool_results:

@@ -21,11 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import Queue
 
+from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from core.controllers.core_helpers.consumers.constants import (POISON_PILL,
                                                                FORCE_LOGIN)
-
-from core.controllers.threads.threadManager import thread_manager as tm
-from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
 
 class auth(BaseConsumer):

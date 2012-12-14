@@ -89,7 +89,7 @@ class form_auth(BruteforcePlugin):
                     login_failed_result_list, generator):
         args_iter = izip(repeat(url), repeat(user_field), repeat(passwd_field),
                          repeat(login_failed_result_list), generator)
-        self._tm.threadpool.map_multi_args(
+        self.worker_pool.map_multi_args(
             self._brute_worker, args_iter, chunksize=100)
 
     def _bruteforce_test(self, url, user_field, passwd_field,

@@ -32,7 +32,6 @@ from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alnum
 
 from core.controllers.exceptions import w3afException
-from core.controllers.threads.threadManager import thread_manager
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.controllers.misc.lru import LRU
 from core.controllers.misc.decorators import retry
@@ -41,7 +40,7 @@ from core.controllers.misc.decorators import retry
 IS_EQUAL_RATIO = 0.90
 
 
-class fingerprint_404:
+class fingerprint_404(object):
     '''
     Read the 404 page(s) returned by the server.
 
@@ -56,7 +55,8 @@ class fingerprint_404:
         #   the knowledge about the server's 404 response bodies.
         #
         self._uri_opener = None
-
+        self._worker_pool = None
+        
         #
         #   Internal variables
         #
@@ -72,6 +72,9 @@ class fingerprint_404:
 
     def set_url_opener(self, urlopener):
         self._uri_opener = urlopener
+
+    def set_worker_pool(self, worker_pool):
+        self._worker_pool = worker_pool
 
     def generate_404_knowledge(self, url):
         '''
@@ -114,7 +117,7 @@ class fingerprint_404:
             url404 = domain_path.url_join(rand_alnum_file)
             args_list.append(url404)
 
-        thread_manager.threadpool.map(self._send_404, args_list)
+        self._worker_pool.map(self._send_404, args_list)
 
         #
         #   I have the bodies in self._response_body_list , but maybe they
