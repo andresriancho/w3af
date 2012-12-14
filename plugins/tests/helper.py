@@ -62,28 +62,12 @@ class PluginTest(unittest.TestCase):
         @param plugins: PluginConfig objects to activate and setup before
             the test runs.
         '''
-        def _targetoptions(*target):
-            opts = OptionList()
-
-            opt = opt_factory('target', '', '', LIST)
-            opt.set_value(','.join(target))
-            opts.add(opt)
-            opt = opt_factory(
-                'target_os', ('unknown', 'unix', 'windows'), '', 'combo')
-            opts.add(opt)
-            opt = opt_factory(
-                'targetFramework',
-                ('unknown', 'php', 'asp', 'asp.net',
-                             'java', 'jsp', 'cfm', 'ruby', 'perl'),
-                '', 'combo'
-            )
-            opts.add(opt)
-            return opts
-
         # Set target(s)
         if isinstance(target, basestring):
             target = (target,)
-        self.w3afcore.target.set_options(_targetoptions(*target))
+        
+        target_opts = create_target_option_list(*target)
+        self.w3afcore.target.set_options(target_opts)
 
         # Enable plugins to be tested
         for ptype, plugincfgs in plugins.items():
@@ -161,3 +145,23 @@ def onlyroot(meth):
             raise SkipTest('This test requires root privileges.')
     test_inner_onlyroot.root = True
     return test_inner_onlyroot
+
+
+def create_target_option_list(*target):
+    opts = OptionList()
+
+    opt = opt_factory('target', '', '', LIST)
+    opt.set_value(','.join(target))
+    opts.add(opt)
+    
+    opt = opt_factory('target_os', ('unknown', 'unix', 'windows'), '', 'combo')
+    opts.add(opt)
+    
+    opt = opt_factory('target_framework',
+                      ('unknown', 'php', 'asp', 'asp.net',
+                       'java', 'jsp', 'cfm', 'ruby', 'perl'),
+                      '', 'combo'
+    )
+    opts.add(opt)
+    
+    return opts
