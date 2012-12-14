@@ -99,7 +99,7 @@ class xUrllib(object):
         '''
         self._user_stopped = True
 
-    def _call_before_send(self):
+    def _before_send_hook(self):
         '''
         This is a method that is called before every request is sent. I'm using
         it as a hook implement:
@@ -535,7 +535,7 @@ class xUrllib(object):
         '''
         # This is the place where I hook the pause and stop feature
         # And some other things like memory usage debugging.
-        self._call_before_send()
+        self._before_send_hook()
 
         # Sanitize the URL
         self._check_uri(req)
