@@ -51,11 +51,16 @@ class return_args(object):
     def __call__(self, *args, **kwds):
         return args, self.func(*args, **kwds)
 
+class DaemonProcess(Process):
+    
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs={}):
+        super(DaemonProcess, self).__init__(group, target, name, args, kwargs)
+        self.daemon = True
 
 class Pool(ThreadPool):
 
     def __init__(self, processes=None, initializer=None, initargs=(), worker_names=None):
-        self.Process = partial(Process, name=worker_names)
+        self.Process = partial(DaemonProcess, name=worker_names)
         ThreadPool.__init__(self, processes, initializer, initargs)
 
     def map_multi_args(self, func, iterable, chunksize=None):
