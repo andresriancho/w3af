@@ -456,7 +456,8 @@ class ThreadedURLImpact(threading.Thread):
         '''Init ThreadedURLImpact.'''
         threading.Thread.__init__(self)
         self.name = 'ThreadedURLImpact'
-
+        self.daemon = True
+        
         self.w3af = w3af
         self.request = request
         self.plugin_name = plugin_name

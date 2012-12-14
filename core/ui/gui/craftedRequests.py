@@ -63,13 +63,15 @@ Content-Type: application/x-www-form-urlencoded
 class ThreadedURLImpact(threading.Thread):
     '''Impacts an URL in a different thread.'''
     def __init__(self, w3af, tsup, tlow, event, fixContentLength):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        
         self.tsup = tsup
         self.tlow = tlow
         self.w3af = w3af
         self.event = event
         self.ok = False
         self.fixContentLength = fixContentLength
-        threading.Thread.__init__(self)
 
     def run(self):
         '''Starts the thread.'''

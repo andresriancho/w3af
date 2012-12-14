@@ -635,7 +635,9 @@ class MainApp(object):
                 self._scan_finished()
 
         # start real work in background, and start supervising if it ends
-        Process(target=start_scan_wrap, name='MainGTKScanner').start()
+        scanner = Process(target=start_scan_wrap, name='MainGTKScanner')
+        scanner.daemon = True
+        scanner.start()
         gobject.timeout_add(500, self._scan_superviseStatus)
 
         self.sb(_("The scan has started"))

@@ -124,8 +124,6 @@ _threadPool = []
 def endThreads():
     '''This function must be called once when the GUI shuts down'''
     for t in _threadPool:
-        if not t.isAlive():
-            continue
         t.my_thread_ended = True
         t.join()
 
@@ -151,6 +149,7 @@ class RegistThread(threading.Thread):
 
         super(RegistThread, self).__init__()
         self.name = 'RegistThread'
+        self.daemon = True
 
         self.start()
 

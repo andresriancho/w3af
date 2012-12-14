@@ -60,6 +60,8 @@ class bug_report_worker(threading.Thread):
 
     def __init__(self, bug_report_function, bugs_to_report):
         threading.Thread.__init__(self)
+        self.daemon = True
+        
         self.bug_report_function = bug_report_function
         self.bugs_to_report = bugs_to_report
         self.output = Queue.Queue()

@@ -106,7 +106,9 @@ class ClusterCellWindow(entries.RememberingWindow):
             self._sw.add(self._cl_data_widget)
 
         # Create the widget that shows the data in a different thread
-        threading.Thread(target=_helper).start()
+        th = threading.Thread(target=_helper)
+        th.daemon = True
+        th.start()
         gobject.timeout_add(200, self._verify_if_finished)
 
     def _showThrobber(self):

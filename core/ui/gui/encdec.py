@@ -212,7 +212,9 @@ class ThreadedProc(threading.Thread):
         self.event = event
         self.func = func
         self.text = text
+
         threading.Thread.__init__(self)
+        self.daemon = True
 
     def run(self):
         '''Starts the thread.'''
