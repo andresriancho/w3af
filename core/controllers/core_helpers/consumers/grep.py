@@ -59,11 +59,11 @@ class grep(BaseConsumer):
             else:
                 request, response = work_unit
 
-                for grep_plugin in self._consumer_plugins:
+                for plugin in self._consumer_plugins:
                     try:
-                        grep_plugin.grep_wrapper(request, response)
+                        plugin.grep_wrapper(request, response)
                     except Exception, e:
-                        self.handle_exception(
-                            'grep', plugin.get_name(), request, e)
+                        self.handle_exception('grep', plugin.get_name(),
+                                              request, e)
 
                 self.in_queue.task_done()
