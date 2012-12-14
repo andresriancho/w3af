@@ -22,6 +22,8 @@ import os
 import shutil
 import time
 import unittest
+import threading
+import pprint
 
 from multiprocessing.dummy import Process
 from nose.plugins.attrib import attr
@@ -82,7 +84,7 @@ class TestW3afCorePause(unittest.TestCase):
         means that the process doesn't send any more HTTP requests, fact
         that is verified with the "fake" count plugin.
         '''        
-        core_start = Process(target=self.w3afcore.start)
+        core_start = Process(target=self.w3afcore.start, name='TestRunner')
         core_start.daemon = True
         core_start.start()
         
@@ -114,7 +116,7 @@ class TestW3afCorePause(unittest.TestCase):
         means that the process doesn't send any more HTTP requests after we,
         pause and that stop works when paused.
         '''
-        core_start = Process(target=self.w3afcore.start)
+        core_start = Process(target=self.w3afcore.start, name='TestRunner')
         core_start.daemon = True
         core_start.start()
         
@@ -147,7 +149,7 @@ class TestW3afCorePause(unittest.TestCase):
         means that the process doesn't send any more HTTP requests after we
         stop().
         '''
-        core_start = Process(target=self.w3afcore.start)
+        core_start = Process(target=self.w3afcore.start, name='TestRunner')
         core_start.daemon = True
         core_start.start()
         
@@ -163,3 +165,11 @@ class TestW3afCorePause(unittest.TestCase):
         count_after_stop = self.count_plugin.count
         
         self.assertEqual(count_after_stop, count_before_stop)
+
+        alive_threads = threading.enumerate()
+        self.assertEqual(len(alive_threads), 0, nice_repr(alive_threads))
+
+def nice_repr(alive_threads):
+    repr_alive = [repr(x) for x in alive_threads]
+    repr_alive.sort()
+    return pprint.pformat(repr_alive)    
