@@ -77,10 +77,9 @@ class xst(AuditPlugin):
                 v.set_id(response.id)
                 v.set_severity(severity.LOW)
                 v.set_name('Cross site tracing vulnerability')
-                msg = 'The web server at "' + \
-                    response.get_url() + '" is vulnerable to'
-                msg += ' Cross Site Tracing.'
-                v.set_desc(msg)
+                msg = 'The web server at "%s" is vulnerable to Cross Site'\
+                      ' Tracing.'
+                v.set_desc(msg % response.get_url())
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                 kb.kb.append(self, 'xst', v)
 
