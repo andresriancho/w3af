@@ -24,7 +24,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 
 
 class error_500(GrepPlugin):
@@ -42,7 +42,7 @@ class error_500(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        self._error_500_responses = disk_set()
+        self._error_500_responses = DiskSet()
 
     def grep(self, request, response):
         '''

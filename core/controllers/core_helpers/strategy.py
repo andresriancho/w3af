@@ -60,7 +60,7 @@ class w3af_core_strategy(object):
         self._w3af_core = w3af_core
 
         # Internal attribute to keep track of all known fuzzable requests
-        # TODO: Make this a disk_set to reduce memory usage.
+        # TODO: Make this a DiskSet to reduce memory usage.
         self._fuzzable_request_set = set()
         kb.kb.save('urls', 'fuzzable_requests', self._fuzzable_request_set)
 

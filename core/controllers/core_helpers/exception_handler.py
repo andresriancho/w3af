@@ -49,7 +49,7 @@ class ExceptionHandler(object):
                    w3afMustStopException, w3afMustStopByUserRequest)
 
     def __init__(self):
-        # TODO: Maybe this should be a disk_list just to make sure we don't
+        # TODO: Maybe this should be a DiskList just to make sure we don't
         # fill the memory with exceptions?
         self._exception_data = []
         self._lock = threading.RLock()

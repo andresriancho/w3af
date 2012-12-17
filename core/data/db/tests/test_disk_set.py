@@ -24,7 +24,7 @@ import threading
 from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 
 from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
@@ -32,14 +32,14 @@ from core.data.request.HTTPPostDataRequest import HTTPPostDataRequest
 from core.data.dc.headers import Headers
 
 
-class test_disk_set(unittest.TestCase):
+class test_DiskSet(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
 
     @attr('smoke')
     def test_add(self):
-        ds = disk_set()
+        ds = DiskSet()
         ds.add(1)
         ds.add(2)
         ds.add(3)
@@ -49,7 +49,7 @@ class test_disk_set(unittest.TestCase):
         self.assertEqual(len(ds), 3)
 
     def test_add_urlobject(self):
-        ds = disk_set()
+        ds = DiskSet()
 
         ds.add(URL('http://w3af.org/?id=2'))
         ds.add(URL('http://w3af.org/?id=3'))
@@ -62,7 +62,7 @@ class test_disk_set(unittest.TestCase):
         self.assertTrue(URL('http://w3af.org/?id=2') in ds)
 
     def test_add_HTTPQSRequest(self):
-        ds = disk_set()
+        ds = DiskSet()
 
         uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
@@ -92,7 +92,7 @@ class test_disk_set(unittest.TestCase):
 
     @attr('smoke')
     def test_add_HTTPPostDataRequest(self):
-        ds = disk_set()
+        ds = DiskSet()
 
         uri = URL('http://w3af.org/?id=2')
         hdr = Headers([('Referer', 'http://w3af.org/')])
@@ -121,14 +121,14 @@ class test_disk_set(unittest.TestCase):
         self.assertTrue(pdr2 in ds)
 
     def test_update(self):
-        ds = disk_set()
+        ds = DiskSet()
         ds.add(1)
         ds.update([2, 3, 1])
 
         self.assertEqual(list(ds), [1, 2, 3])
 
     def test_thread_safe(self):
-        ds = disk_set()
+        ds = DiskSet()
 
         def worker(range_inst):
             for i in range_inst:
@@ -142,7 +142,7 @@ class test_disk_set(unittest.TestCase):
             th = threading.Thread(target=worker, args=(xrange(_min, _max),))
             threads.append(th)
 
-            # For testing the uniqueness of disk_sets
+            # For testing the uniqueness of DiskSets
             add_dups = not add_dups
             if add_dups:
                 th = threading.Thread(

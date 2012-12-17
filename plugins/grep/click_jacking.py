@@ -23,7 +23,7 @@ import core.data.kb.knowledge_base as kb
 import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -39,8 +39,8 @@ class click_jacking(GrepPlugin):
 
         self._total_count = 0
         self._vuln_count = 0
-        self._vulns = disk_list()
-        self._ids = disk_list()
+        self._vulns = DiskList()
+        self._ids = DiskList()
 
     def grep(self, request, response):
         '''

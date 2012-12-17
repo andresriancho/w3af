@@ -29,7 +29,7 @@ import core.data.parsers.document_parser as DocumentParser
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 
 
 class find_captchas(CrawlPlugin):
@@ -41,7 +41,7 @@ class find_captchas(CrawlPlugin):
     def __init__(self):
         CrawlPlugin.__init__(self)
 
-        self._captchas_found = disk_set()
+        self._captchas_found = DiskSet()
 
     def crawl(self, fuzzable_request):
         '''

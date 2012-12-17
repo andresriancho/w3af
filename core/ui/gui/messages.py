@@ -25,7 +25,7 @@ import core.data.kb.knowledge_base as kb
 
 from core.ui.gui import helpers, entries
 from core.ui.gui.common.searchable import Searchable
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 
 
 def getQueueDiverter(reset=False, instance=[]):
@@ -62,7 +62,7 @@ class _LineScroller(gtk.TextView):
         self.textbuffer = self.get_buffer()
         self.show()
         self.messages = getQueueDiverter()
-        self.all_messages = disk_list()
+        self.all_messages = DiskList()
         self.possible = set(possible)
         self.active_filter = active_filter
         self.text_position = 0

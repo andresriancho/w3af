@@ -649,7 +649,7 @@ class VersionMgr(object):  # TODO: Make it singleton?
         http://code.activestate.com/recipes/81731-reloading-all-modules/
 
         But both failed. What I want to avoid are bugs like the ones related to
-        the "complex type needs to implement..." disk_list.
+        the "complex type needs to implement..." DiskList.
         '''
         pass
 

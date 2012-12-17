@@ -26,7 +26,7 @@ import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.parsers.parser_cache as parser_cache
 
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.exceptions import w3afException
 
@@ -46,8 +46,8 @@ class cache_control(GrepPlugin):
 
         self._total_count = 0
         self._vuln_count = 0
-        self._vulns = disk_list()
-        self._ids = disk_list()
+        self._vulns = DiskList()
+        self._ids = DiskList()
 
     def grep(self, request, response):
         if response.is_image() or response.is_swf():

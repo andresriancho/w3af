@@ -33,7 +33,7 @@ import core.data.kb.info as info
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 
 
 class phpinfo(CrawlPlugin):
@@ -51,7 +51,7 @@ class phpinfo(CrawlPlugin):
         CrawlPlugin.__init__(self)
 
         # Internal variables
-        self._analyzed_dirs = disk_set()
+        self._analyzed_dirs = DiskSet()
         self._has_audited = 0
 
     def crawl(self, fuzzable_request):

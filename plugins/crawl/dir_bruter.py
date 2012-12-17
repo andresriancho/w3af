@@ -33,7 +33,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, BOOL
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.utils import rand_alnum
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 
 
 class dir_bruter(CrawlPlugin):
@@ -53,7 +53,7 @@ class dir_bruter(CrawlPlugin):
 
         # Internal variables
         self._exec = True
-        self._already_tested = disk_set()
+        self._already_tested = DiskSet()
 
     def crawl(self, fuzzable_request):
         '''

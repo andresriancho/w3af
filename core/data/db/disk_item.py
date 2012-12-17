@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 class disk_item(object):
     '''
     This is a very simple class that's intented to be a base class for objects
-    that want to be stored in a disk_list of disk_set. It basically exposes the
+    that want to be stored in a DiskList of DiskSet. It basically exposes the
     "get_eq_attrs" method which returns a list with the names of the attributes
     that make this object "unique".
     '''

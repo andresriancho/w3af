@@ -33,7 +33,7 @@ import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
 from core.controllers.exceptions import w3afException
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import OUTPUT_FILE
 from core.data.options.option_list import OptionList
@@ -63,7 +63,7 @@ class html_file(OutputPlugin):
 
         # These attributes hold the file pointers
         self._file = None
-        self._aditional_info = disk_list()
+        self._aditional_info = DiskList()
 
         # User configured parameters
         self._verbose = False

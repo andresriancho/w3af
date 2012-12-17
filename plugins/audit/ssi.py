@@ -29,7 +29,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
 from core.data.db.temp_shelve import temp_shelve
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 from core.data.esmre.multi_in import multi_in
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
@@ -45,7 +45,7 @@ class ssi(AuditPlugin):
 
         # Internal variables
         self._expected_res_mutant = temp_shelve()
-        self._freq_list = disk_list()
+        self._freq_list = DiskList()
         
         re_str = '<!--#exec cmd="echo -n (.*?);echo -n (.*?)" -->'
         self._extract_results_re = re.compile(re_str) 

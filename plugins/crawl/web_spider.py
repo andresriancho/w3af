@@ -35,7 +35,7 @@ from core.controllers.misc.itertools_toolset import unique_justseen
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.db.variant_db import VariantDB
-from core.data.db.disk_set import disk_set
+from core.data.db.disk_set import DiskSet
 from core.data.dc.headers import Headers
 from core.data.fuzzer.form_filler import smart_fill
 from core.data.options.opt_factory import opt_factory
@@ -59,7 +59,7 @@ class web_spider(CrawlPlugin):
         # Internal variables
         self._compiled_ignore_re = None
         self._compiled_follow_re = None
-        self._broken_links = disk_set()
+        self._broken_links = DiskSet()
         self._first_run = True
         self._known_variants = VariantDB()
         self._already_filled_form = ScalableBloomFilter()

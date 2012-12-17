@@ -26,20 +26,20 @@ import threading
 from nose.plugins.attrib import attr
 
 from core.controllers.misc.temp_dir import create_temp_dir
-from core.data.db.disk_list import disk_list
+from core.data.db.disk_list import DiskList
 from core.data.parsers.url import URL
 from core.data.request.HTTPQsRequest import HTTPQSRequest
 from core.data.dc.headers import Headers
 
 
-class test_disk_list(unittest.TestCase):
+class test_DiskList(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
 
     @attr('smoke')
     def test_int(self):
-        dl = disk_list()
+        dl = DiskList()
 
         for i in xrange(0, 1000):
             _ = dl.append(i)
@@ -54,7 +54,7 @@ class test_disk_list(unittest.TestCase):
 
     @attr('smoke')
     def test_string(self):
-        dl = disk_list()
+        dl = DiskList()
 
         for i in xrange(0, 1000):
             rnd = ''.join(random.choice(string.letters) for i in xrange(40))
@@ -68,7 +68,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(rnd in dl, True)
 
     def test_unicode(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append(u'à')
         dl.append(u'המלצת השבוע')
@@ -80,7 +80,7 @@ class test_disk_list(unittest.TestCase):
 
     @attr('smoke')
     def test_urlobject(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append(URL('http://w3af.org/?id=2'))
         dl.append(URL('http://w3af.org/?id=3'))
@@ -91,7 +91,7 @@ class test_disk_list(unittest.TestCase):
         self.assertTrue(URL('http://w3af.org/?id=2') in dl)
 
     def test_fuzzable_request(self):
-        dl = disk_list()
+        dl = DiskList()
 
         uri = URL('http://w3af.org/?id=2')
         qsr1 = HTTPQSRequest(uri, method='GET', headers=Headers(
@@ -114,7 +114,7 @@ class test_disk_list(unittest.TestCase):
         self.assertTrue(qsr2 in dl)
 
     def test_len(self):
-        dl = disk_list()
+        dl = DiskList()
 
         for i in xrange(0, 100):
             _ = dl.append(i)
@@ -122,7 +122,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(len(dl) == 100, True)
 
     def test_pickle(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('a')
         dl.append(1)
@@ -137,7 +137,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(values[2] == [3, 2, 1], True)
 
     def test_getitem(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('a')
         dl.append(1)
@@ -148,11 +148,11 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(dl[2] == [3, 2, 1], True)
 
     def test_not(self):
-        dl = disk_list()
+        dl = DiskList()
         self.assertFalse(dl)
 
     def test_extend(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('a')
         dl.extend([1, 2, 3])
@@ -164,7 +164,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(dl[3], 3)
 
     def test_clear(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('a')
         dl.append('b')
@@ -176,7 +176,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(len(dl), 0)
 
     def test_sorted(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('abc')
         dl.append('def')
@@ -187,7 +187,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(['aaa', 'abc', 'def'], sorted_dl)
 
     def test_ordered_iter(self):
-        dl = disk_list()
+        dl = DiskList()
 
         dl.append('abc')
         dl.append('def')
@@ -200,7 +200,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(['aaa', 'abc', 'def'], sorted_dl)
 
     def test_reverse_iteration(self):
-        dl = disk_list()
+        dl = DiskList()
         dl.append(1)
         dl.append(2)
         dl.append(3)
@@ -212,7 +212,7 @@ class test_disk_list(unittest.TestCase):
         self.assertEqual(reverse_iter_res, [3, 2, 1])
 
     def test_thread_safe(self):
-        dl = disk_list()
+        dl = DiskList()
 
         def worker(range_inst):
             for i in range_inst:
