@@ -88,14 +88,15 @@ class rootMenu(menu):
         self._scan_thread.name = 'ConsoleScanThread'
         self._scan_thread.daemon = True
         self._scan_thread.start()
+        
+        # let the core thread start
+        time.sleep(1)
+        
         try:
-            # let the core start
-            time.sleep(1)
             if self._w3af.status.get_status() != 'Not running.':
                 self.show_progress_on_request()
-        except KeyboardInterrupt, k:
-            om.out.console('User hit Ctrl+C, stopping scan.')
-            time.sleep(1)
+        except KeyboardInterrupt:
+            om.out.console('User pressed Ctrl+C, stopping scan.')
             self._w3af.stop()
 
     def _cmd_cleanup(self, params):
