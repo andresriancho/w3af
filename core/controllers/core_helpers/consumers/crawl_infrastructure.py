@@ -76,7 +76,7 @@ class crawl_infrastructure(BaseConsumer):
             try:
                 work_unit = self.in_queue.get(timeout=0.2)
             except:
-                pass
+                self._route_all_plugin_results()
             else:
                 if work_unit == POISON_PILL:
 
@@ -96,8 +96,6 @@ class crawl_infrastructure(BaseConsumer):
 
                     self._consume(work_unit)
                     self.in_queue.task_done()
-            finally:
-                self._route_all_plugin_results()
 
     def _teardown(self, plugin=None):
         '''End plugins'''
@@ -164,8 +162,8 @@ class crawl_infrastructure(BaseConsumer):
                     # Update the list / set that lives in the KB
                     update_kb(fuzzable_request)
 
-                    self._out_queue.put(
-                        (plugin.get_name(), None, fuzzable_request))
+                    self._out_queue.put((plugin.get_name(), None,
+                                         fuzzable_request))
 
     def join(self):
         super(crawl_infrastructure, self).join()
