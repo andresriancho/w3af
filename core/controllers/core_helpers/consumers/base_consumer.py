@@ -183,9 +183,8 @@ class BaseConsumer(Process):
         while not self.in_queue.empty():
             self.in_queue.get()
             self.in_queue.task_done()
-
-        self.in_queue_put(POISON_PILL)
-        self.in_queue.join()
+        
+        self.join()
 
     def get_result(self, timeout=0.5):
         '''
