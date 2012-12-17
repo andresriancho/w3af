@@ -38,12 +38,10 @@ def close_all_db_connections():
     right way to close all threads... but I was unable to find a cleaner
     way.
     '''
-    return
     for thread in threading.enumerate():
         if isinstance(thread, DBClient):
             thread.close()
             thread.join()
-        
 
 class DBClient(object):
     """Simple w3af DB interface"""
@@ -267,7 +265,6 @@ class DBClientSQLite(Process, DBClient):
 
     def close(self):
         self.raise_pending()
-        self.filename = None
         self.execute('--close--')
 
     def get_file_name(self):
