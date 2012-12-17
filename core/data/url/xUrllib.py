@@ -696,8 +696,6 @@ class xUrllib(object):
         read = ''
         try:
             read = res.read()
-        except KeyboardInterrupt:
-            raise
         except Exception, e:
             om.out.error(str(e))
         return read

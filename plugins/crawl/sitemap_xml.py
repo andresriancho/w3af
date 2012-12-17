@@ -92,11 +92,9 @@ class sitemap_xml(CrawlPlugin):
         '''
         try:
             http_response = self._uri_opener.GET(url, cache=True)
-        except KeyboardInterrupt, k:
-            raise k
         except w3afException, w3:
-            msg = 'w3afException while fetching page in crawl.sitemap_xml, error: "'
-            msg += str(w3) + '"'
+            msg = 'w3afException while fetching page in crawl.sitemap_xml,'\
+                  'error: "%s".' % w3
             om.out.debug(msg)
         else:
             if not is_404(http_response):

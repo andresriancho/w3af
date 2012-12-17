@@ -269,25 +269,19 @@ class DiskCachedResponse(CachedResponse):
             headers = str(response.info())
             f.write(headers)
             f.close()
-        except KeyboardInterrupt, e:
-            raise e
         except Exception, e:
             raise w3afException(
                 'localCache.py: Could not save headers file. Error: ' + str(e))
 
         try:
             body = response.read()
-        except KeyboardInterrupt, e:
-            raise e
-        except:
+        except Exception, e:
             om.out.error('localCache.py: Timeout while fetching page body.')
         else:
             try:
                 f = open(fname + ".body", "w")
                 f.write(body)
                 f.close()
-            except KeyboardInterrupt, e:
-                raise e
             except Exception, e:
                 raise w3afException(
                     'localCache.py: Could not save body file. Error: ' + str(e))
@@ -301,8 +295,6 @@ class DiskCachedResponse(CachedResponse):
             # store data to disk
             f.write(str(response.code))
             f.close()
-        except KeyboardInterrupt, e:
-            raise e
         except Exception, e:
             raise w3afException(
                 'localCache.py: Could not save msg file. Error: ' + str(e))
@@ -311,8 +303,6 @@ class DiskCachedResponse(CachedResponse):
             f = open(fname + ".msg", "w")
             f.write(str(response.msg))
             f.close()
-        except KeyboardInterrupt, e:
-            raise e
         except Exception, e:
             om.out.error(
                 'localCache.py: Could not save msg file. Error: ' + str(e))
@@ -385,8 +375,6 @@ class SQLCachedResponse(CachedResponse):
         # Now save them
         try:
             hi.save()
-        except KeyboardInterrupt, k:
-            raise k
         except Exception, ex:
             msg = ('Exception while inserting request/response to the'
                    ' database: %s\nThe request/response that generated'

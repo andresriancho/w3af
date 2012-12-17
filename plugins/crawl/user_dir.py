@@ -97,36 +97,33 @@ class user_dir(CrawlPlugin):
 
         @return: True when the user was found.
         '''
-        try:
-            response = self._uri_opener.GET(mutated_url, cache=True,
-                                            headers=self._headers)
-        except KeyboardInterrupt, e:
-            raise e
+        response = self._uri_opener.GET(mutated_url, cache=True,
+                                        headers=self._headers)
+        
+        path = mutated_url.get_path()
+        response_body = response.get_body().replace(path, '')
+
+        if relative_distance_lt(response_body, self._non_existent, 0.7):
+
+            # Avoid duplicates
+            if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
+                i = info.info()
+                i.set_plugin_name(self.get_name())
+                i.set_name('User directory: ' + response.get_url())
+                i.set_id(response.id)
+                i.set_url(response.get_url())
+                i.set_desc('A user directory was found at: ' +
+                           response.get_url())
+                i['user'] = user
+
+                kb.kb.append(self, 'users', i)
+
+                for fr in self._create_fuzzable_requests(response):
+                    self.output_queue.put(fr)
+
+            return True
         else:
-            path = mutated_url.get_path()
-            response_body = response.get_body().replace(path, '')
-
-            if relative_distance_lt(response_body, self._non_existent, 0.7):
-
-                # Avoid duplicates
-                if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('User directory: ' + response.get_url())
-                    i.set_id(response.id)
-                    i.set_url(response.get_url())
-                    i.set_desc('A user directory was found at: ' +
-                               response.get_url())
-                    i['user'] = user
-
-                    kb.kb.append(self, 'users', i)
-
-                    for fr in self._create_fuzzable_requests(response):
-                        self.output_queue.put(fr)
-
-                return True
-            else:
-                return False
+            return False
 
     def _advanced_identification(self, url, ident):
         '''

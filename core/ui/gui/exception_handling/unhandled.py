@@ -24,6 +24,8 @@ import traceback
 
 from functools import partial
 
+import core.controllers.output_manager as om
+
 from core.ui.gui import helpers
 from core.ui.gui.exception_handling import unhandled_bug_report
 from core.controllers.exception_handling.helpers import create_crash_file
@@ -33,14 +35,7 @@ from core.controllers.exception_handling.cleanup_bug_report import cleanup_bug_r
 def handle_crash(w3af_core, _type, value, tb, plugins=''):
     '''Function to handle any exception that is not addressed explicitly.'''
     if issubclass(_type, KeyboardInterrupt):
-        helpers.endThreads()
-        import core.controllers.output_manager as om
-        om.out.set_output_plugins(['console'])
-        om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af.'))
-        om.out.console(_('Bye!'))
-        om.out.process_all_messages()
-        sys.exit(0)
-        return
+        handle_keyboardinterrupt(w3af_core)
 
     # Print the information to the console so everyone can see it
     exception = traceback.format_exception(_type, value, tb)
@@ -62,6 +57,28 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
     # Blocks waiting for user interaction
     bug_report_win.show()
 
+
+def handle_keyboardinterrupt(w3af_core):
+    helpers.endThreads()
+        
+    w3af_core.stop()
+
+    import threading
+    import pprint
+    
+    def nice_repr(alive_threads):
+        repr_alive = [repr(x) for x in alive_threads]
+        repr_alive.sort()
+        return pprint.pformat(repr_alive)
+    print nice_repr(threading.enumerate())
+        
+    om.out.set_output_plugins(['console'])
+    om.out.console(_('\nStopping after Ctrl+C. Thanks for using w3af, bye!'))
+    om.out.process_all_messages()
+     
+    # 130 seems to be the correct exit code for this case
+    # http://tldp.org/LDP/abs/html/exitcodes.html
+    sys.exit(130)
 
 def set_except_hook(w3af_core):
     sys.excepthook = partial(handle_crash, w3af_core)

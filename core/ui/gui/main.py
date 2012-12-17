@@ -616,6 +616,8 @@ class MainApp(object):
             try:
                 self.w3af.start()
             except KeyboardInterrupt:
+                # FIXME: Confirm: we should never get here because threads
+                # send the KeyboardInterrupt to the main thread.
                 pass
             except w3afMustStopByUserRequest:
                 pass
