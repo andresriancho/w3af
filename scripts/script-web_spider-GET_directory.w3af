@@ -25,7 +25,7 @@ audit sqli
 back
 
 target
-set target http://moth/w3af/discovery/web_spider/a/b/c/d/
+set target http://moth/w3af/crawl/web_spider/a/b/c/d/
 back
 
 start
