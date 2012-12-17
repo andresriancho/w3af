@@ -283,5 +283,12 @@ class info(dict):
 
     def add_to_highlight(self, *str_match):
         for s in str_match:
-            if s:
-                self._string_matches.add(s)
+            if not isinstance(s, basestring):
+                raise TypeError('Only able to highlight strings.')
+            
+            if not s:
+                msg = 'Only able to highlight strings with at least'\
+                      ' one char.'
+                raise ValueError(msg)
+            
+            self._string_matches.add(s)
