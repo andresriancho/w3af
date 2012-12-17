@@ -116,7 +116,9 @@ class MiscSettings(Configurable):
         ol.add(opt)
 
         desc = 'Indicates the extension to use when fuzzing file content'
-        opt = opt_factory('fuzzed_files_extension', cf.cf.get('fuzzed_files_extension'), desc, 'string', tabid='Fuzzer parameters')
+        opt = opt_factory('fuzzed_files_extension',
+                          cf.cf.get('fuzzed_files_extension'), desc, 'string',
+                          tabid='Fuzzer parameters')
         ol.add(opt)
 
         desc = 'A list with all fuzzable header names'
@@ -125,14 +127,16 @@ class MiscSettings(Configurable):
             tabid='Fuzzer parameters')
         ol.add(opt)
 
-        desc = 'Indicates what HTML form combo values w3af plugins will use: all, tb, tmb, t, b'
-        help = 'Indicates what HTML form combo values, e.g. select options values,  w3af plugins will'
-        help += ' use: all (All values), tb (only top and bottom values), tmb (top, middle and bottom'
-        help += ' values), t (top values), b (bottom values)'
+        d = 'Indicates what HTML form combo values w3af plugins will use:'\
+            ' all, tb, tmb, t, b'
+        h = 'Indicates what HTML form combo values, e.g. select options values,'\
+            ' w3af plugins will use: all (All values), tb (only top and bottom '\
+            ' values), tmb (top, middle and bottom values), t (top values), b'\
+            ' (bottom values).'
         opt = opt_factory(
             'form_fuzzing_mode', cf.cf.get(
-                'form_fuzzing_mode'), desc, 'string',
-            help=help, tabid='Fuzzer parameters')
+                'form_fuzzing_mode'), d, 'string',
+            help=h, tabid='Fuzzer parameters')
         ol.add(opt)
 
         ######## Core parameters ########
@@ -147,13 +151,12 @@ class MiscSettings(Configurable):
         ol.add(opt)
 
         desc = 'Maximum crawl time (minutes)'
-        help = 'Many users tend to enable numerous plugins without actually knowing what they are'
-        help += ' and the potential time they will take to run. By using this parameter, users will'
-        help += ' be able to set the maximum amount of time the crawl phase will run.'
-        opt = opt_factory(
-            'max_discovery_time', cf.cf.get(
-                'max_discovery_time'), desc, 'integer',
-            help=help, tabid='Core settings')
+        h = 'Many users tend to enable numerous plugins without actually'\
+            ' knowing what they are and the potential time they will take'\
+            ' to run. By using this parameter, users will be able to set'\
+            ' the maximum amount of time the crawl phase will run.'
+        opt = opt_factory('max_discovery_time', cf.cf.get('max_discovery_time'),
+                          desc, 'integer', help=h, tabid='Core settings')
         ol.add(opt)
 
         ######## Network parameters ########
