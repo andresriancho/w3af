@@ -255,7 +255,12 @@ class w3afCore(object):
                 msg = '%s were needed to stop the core.' % epoch_to_string(stop_start_time)
                 break
             
-            time.sleep(loop_delay)
+            try:
+                time.sleep(loop_delay)
+            except KeyboardInterrupt:
+                msg = 'The user cancelled the cleanup process, forcing exit.'
+                break
+            
         else:
             msg = 'The core failed to stop in %s seconds, forcing exit.'
             msg = msg % wait_max
