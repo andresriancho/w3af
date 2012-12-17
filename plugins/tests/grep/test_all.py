@@ -50,6 +50,38 @@ class test_all(unittest.TestCase):
             self._plugins.append(
                 self._w3af.plugins.get_plugin_inst('grep', pname))
 
+    def test_image_with_image_content_type(self):
+        '''
+        Verify that our plugins don't break when we send them an image.
+        '''
+        file_path = os.path.join('plugins', 'tests', 'grep',
+                                 'data', 'w3af.png')        
+        body = file(file_path).read()
+        hdrs = Headers({'Content-Type': 'image/png'}.items())
+        response = HTTPResponse(200, body, hdrs, self.url_inst, self.url_inst,
+                                _id=random.randint(1, 5000))
+        request = FuzzableRequest(self.url_inst)
+        
+        for pinst in self._plugins:
+            pinst.grep(request, response)
+        
+    def test_image_with_text_html_content_type(self):
+        '''
+        Verify that our plugins don't break when we send them an image with
+        a text/html content type.
+        '''
+        file_path = os.path.join('plugins', 'tests', 'grep',
+                                 'data', 'w3af.png')        
+        body = file(file_path).read()
+        # Here is the change from the previous test:
+        hdrs = Headers({'Content-Type': 'text/html'}.items())
+        response = HTTPResponse(200, body, hdrs, self.url_inst, self.url_inst,
+                                _id=random.randint(1, 5000))
+        request = FuzzableRequest(self.url_inst)
+        
+        for pinst in self._plugins:
+            pinst.grep(request, response)
+
     def test_options_for_grep_plugins(self):
         '''
         We're not going to assert anything here. What just want to see if
@@ -92,8 +124,8 @@ class test_all(unittest.TestCase):
                 for counter in xrange(1, 5):
 
                     file_name = 'test-' + str(counter) + '.html'
-                    file_path = os.path.join(
-                        'plugins', 'tests', 'grep', 'data', file_name)
+                    file_path = os.path.join('plugins', 'tests', 'grep',
+                                             'data', file_name)
 
                     body = file(file_path).read()
                     hdrs = Headers({'Content-Type': 'text/html'}.items())

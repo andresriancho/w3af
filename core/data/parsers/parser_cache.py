@@ -71,7 +71,7 @@ class ParserCache(object):
         
         # @see: test_bug_13_Dec_2012 to understand why we concat the uri to the
         #       body before hashing
-        hash_string = hash(http_response.body + http_response.get_uri())
+        hash_string = hash(http_response.body + str(http_response.get_uri().url_string))
 
         with self._LRULock:
             if hash_string in self._cache:
