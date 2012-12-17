@@ -19,12 +19,12 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
-import core.controllers.output_manager as om
 import time
 
+import core.controllers.output_manager as om
 
-class progress:
+
+class progress(object):
     """
     This class keeps track of the progress of something. Mostly used to keeps
     track of the progress of the w3afCore tests (discovery/audit/etc).
@@ -106,8 +106,8 @@ class progress:
 
     def stop(self):
         '''
-        This method is called from the core to indicate that the scan process has been stopped
-        by the user, or an error has been found.
+        This method is called from the core to indicate that the scan process
+        has been stopped by the user, or an error has been found.
         '''
         self._max_value = 0.0
         self._current_value = 0.0
