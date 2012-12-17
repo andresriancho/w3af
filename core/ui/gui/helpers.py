@@ -121,7 +121,7 @@ def clean_description(desc):
 _threadPool = []
 
 
-def endThreads():
+def end_threads():
     '''This function must be called once when the GUI shuts down'''
     for t in _threadPool:
         t.my_thread_ended = True

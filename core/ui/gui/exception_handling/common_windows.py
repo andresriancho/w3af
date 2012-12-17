@@ -27,7 +27,7 @@ import gobject
 from core.controllers.easy_contribution.sourceforge import SourceforgeXMLRPC
 from core.controllers.easy_contribution.sourceforge import DEFAULT_USER_NAME, DEFAULT_PASSWD
 
-from core.ui.gui.helpers import endThreads
+from core.ui.gui.helpers import end_threads
 from core.ui.gui.entries import EmailEntry
 from core.ui.gui.helpers import Throbber
 from core.ui.gui.constants import W3AF_ICON
@@ -47,7 +47,7 @@ class simple_base_window(gtk.Window):
         self.set_icon_from_file(W3AF_ICON)
 
     def _handle_cancel(self, *args):
-        endThreads()
+        end_threads()
         self.destroy()
 
 

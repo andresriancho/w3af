@@ -540,7 +540,7 @@ class MainApp(object):
 
         if opt != gtk.RESPONSE_YES:
             return True
-        helpers.endThreads()
+        helpers.end_threads()
         self.sb.clear()
 
         try:
