@@ -94,13 +94,14 @@ class vuln(info):
             # One request OR more than one request
             desc_to_return = self._desc
             if len(self._id) > 1:
-                desc_to_return += ' This vulnerability was found in the requests with'
-                desc_to_return += ' ids ' + \
-                    self._convert_to_range_wrapper(self._id) + '.'
+                desc_to_return += ' This vulnerability was found in the'\
+                                  ' requests with ids %s.'
+                id_range = self._convert_to_range_wrapper(self._id)
+                desc_to_return = desc_to_return % id_range
             else:
-                desc_to_return += ' This vulnerability was found in the request with'
-                desc_to_return += ' id ' + str(self._id[0]) + '.'
-
+                desc_to_return += ' This vulnerability was found in the'\
+                                  ' request with id %s.'
+                desc_to_return = desc_to_return % self._id[0]
             return desc_to_return
         else:
             return self._desc

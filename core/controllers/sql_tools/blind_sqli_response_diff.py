@@ -123,7 +123,8 @@ class blind_sqli_response_diff(object):
         compare_diff = False
 
         om.out.debug('Comparing body_true_response and body_false_response.')
-        if self.equal_with_limit(body_true_response, body_false_response, compare_diff):
+        if self.equal_with_limit(body_true_response, body_false_response,
+                                 compare_diff):
             #
             #    They might be equal because of various reasons, in the best
             #    case scenario there IS a blind SQL injection but the % of the
@@ -139,50 +140,52 @@ class blind_sqli_response_diff(object):
 
         self.debug(
             'Comparing body_true_response and body_syntax_error_response.')
-        if not self.equal_with_limit(body_true_response,
-                                     body_syntax_error_response,
-                                     compare_diff):
+        if self.equal_with_limit(body_true_response,
+                                 body_syntax_error_response,
+                                 compare_diff):
+            return None
+        
+        # Verify the injection!
+        statements = self._get_statements(mutant)
+        second_true_stm = statements[statement_type][0]
+        second_false_stm = statements[statement_type][1]
 
-            # Verify the injection!
-            statements = self._get_statements(mutant)
-            second_true_stm = statements[statement_type][0]
-            second_false_stm = statements[statement_type][1]
+        mutant.set_mod_value(second_true_stm)
+        second_true_response, body_second_true_response = self.send_clean(
+            mutant)
 
-            mutant.set_mod_value(second_true_stm)
-            second_true_response, body_second_true_response = self.send_clean(
-                mutant)
+        mutant.set_mod_value(second_false_stm)
+        second_false_response, body_second_false_response = self.send_clean(mutant)
 
-            mutant.set_mod_value(second_false_stm)
-            second_false_response, body_second_false_response = self.send_clean(mutant)
-
-            self.debug(
-                'Comparing body_second_true_response and body_true_response.')
-            if self.equal_with_limit(body_second_true_response,
+        self.debug(
+            'Comparing body_second_true_response and body_true_response.')
+        if not self.equal_with_limit(body_second_true_response,
                                      body_true_response,
                                      compare_diff):
+            return None
+        
+        self.debug('Comparing body_second_false_response and body_false_response.')
+        if self.equal_with_limit(body_second_false_response,
+                                 body_false_response,
+                                 compare_diff):
+            v = vuln.vuln(mutant)
+            v.set_id([second_false_response.id,
+                      second_true_response.id])
+            v.set_severity(severity.HIGH)
+            v.set_name('Blind SQL injection vulnerability')
+            desc = 'Blind SQL injection was found at: "%s", using'\
+                   ' HTTP method %s. The injectable parameter is: "%s"'
+            desc = desc % (v.get_url(),
+                           v.get_method(),
+                           mutant.get_var())
+            v.set_desc(desc)
+            om.out.debug(v.get_desc())
 
-                self.debug('Comparing body_second_false_response and body_false_response.')
-                if self.equal_with_limit(body_second_false_response,
-                                         body_false_response,
-                                         compare_diff):
-                    v = vuln.vuln(mutant)
-                    v.set_id([second_false_response.id,
-                              second_true_response.id])
-                    v.set_severity(severity.HIGH)
-                    v.set_name('Blind SQL injection vulnerability')
-                    desc = 'Blind SQL injection was found at: "%s", using'\
-                           ' HTTP method %s. The injectable parameter is: "%s"'
-                    desc = desc % (v.get_url(),
-                                   v.get_method(),
-                                   mutant.get_var())
-                    v.set_desc(desc)
-                    om.out.debug(v.get_desc())
-
-                    v['type'] = statement_type
-                    v['trueHtml'] = second_true_response.get_body()
-                    v['falseHtml'] = second_false_response.get_body()
-                    v['errorHtml'] = syntax_error_response.get_body()
-                    return v
+            v['type'] = statement_type
+            v['true_html'] = second_true_response.get_body()
+            v['false_html'] = second_false_response.get_body()
+            v['error_html'] = syntax_error_response.get_body()
+            return v
 
         return None
 

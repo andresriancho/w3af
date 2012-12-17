@@ -105,9 +105,9 @@ class blind_sqli(AuditPlugin):
         opt_list = OptionList()
 
         desc = 'String equal ratio (0.0 to 1.0)'
-        _help = 'Two pages are considered equal if they match in more'\
-                ' than eq_limit.'
-        opt = opt_factory('eq_limit', self._eq_limit, desc, 'float', help=_help)
+        h = 'Two pages are considered equal if they match in more'\
+            ' than eq_limit.'
+        opt = opt_factory('eq_limit', self._eq_limit, desc, 'float', help=h)
 
         opt_list.add(opt)
 
