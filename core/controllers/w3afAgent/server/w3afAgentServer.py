@@ -91,6 +91,7 @@ class ConnectionManager(Process):
                 newsock, address = self.sock.accept()
             except KeyboardInterrupt, k:
                 om.out.console('Exiting.')
+                break
             except socket.error:
                 # This catches socket timeouts
                 pass
@@ -209,7 +210,7 @@ class TCPRelay(Process):
     def run(self):
         while self._keep_running:
             try:
-                sockClient, address = self.sock.accept()
+                sock_cli, address = self.sock.accept()
             except socket.error:
                 # This catches socket timeouts
                 pass
@@ -221,13 +222,14 @@ class TCPRelay(Process):
                     connToW3afClient = self._cm.get_connection()
                 except KeyboardInterrupt:
                     om.out.information('Exiting.')
+                    break
                 except:
                     om.out.debug('[TCPRelay] Connection manager has no active connections.')
                 else:
-                    pt1 = PipeThread(sockClient, connToW3afClient)
+                    pt1 = PipeThread(sock_cli, connToW3afClient)
                     self._pipes.append(pt1)
                     pt1.start()
-                    pt2 = PipeThread(connToW3afClient, sockClient)
+                    pt2 = PipeThread(connToW3afClient, sock_cli)
                     self._pipes.append(pt2)
                     pt2.start()
 

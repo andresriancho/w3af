@@ -50,6 +50,7 @@ from core.controllers.exceptions import (w3afException, w3afMustStopException,
 
 from core.data.url.xUrllib import xUrllib
 from core.data.kb.knowledge_base import kb
+from core.data.db.db import close_all_db_connections
 
 
 class w3afCore(object):
@@ -229,11 +230,21 @@ class w3afCore(object):
         @return: None. The stop method can take some seconds to return.
         '''
         om.out.debug('The user stopped the core.')
+        
         self.strategy.stop()
         self.uri_opener.stop()
+        close_all_db_connections()
+        
         self.worker_pool.terminate()
         self.worker_pool.join()
-
+    
+    def quit(self):
+        '''
+        The user is in a hurry, he wants to exit w3af ASAP.
+        '''
+        self.stop()
+        remove_temp_dir()
+        
     def pause(self, pause_yes_no):
         '''
         Pauses/Un-Pauses scan.
@@ -242,18 +253,6 @@ class w3afCore(object):
         self.status.pause(pause_yes_no)
         self.strategy.pause(pause_yes_no)
         self.uri_opener.pause(pause_yes_no)
-
-    def quit(self):
-        '''
-        The user is in a hurry, he wants to exit w3af ASAP.
-        '''
-        self.cleanup()
-        self.strategy.quit()
-        self.uri_opener.stop()
-        self.worker_pool.terminate()
-        self.worker_pool.join()
-        # Now it's safe to remove the temp_dir
-        remove_temp_dir()
 
     def verify_environment(self):
         '''
@@ -290,7 +289,9 @@ class w3afCore(object):
             # be used by exploit plugins.
             self.uri_opener.end()
             self.uri_opener = xUrllib()
-
+            
+            close_all_db_connections()
+            
             if exc_inst:
                 om.out.debug(str(exc_inst))
 

@@ -111,8 +111,6 @@ class w3af_core_strategy(object):
     def stop(self):
         self.terminate()
 
-    quit = stop
-
     def pause(self, pause_yes_no):
         # FIXME: Consumers should have something to do with this, most likely
         # another constant similar to the poison pill

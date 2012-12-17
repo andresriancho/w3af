@@ -23,12 +23,27 @@ from __future__ import with_statement
 
 import sqlite3
 import sys
+import threading
 
 from multiprocessing.dummy import Queue, Process
 from collections import namedtuple
 
 from core.data.misc.file_utils import replace_file_special_chars
 
+
+def close_all_db_connections():
+    '''
+    FIXME: I'm really unsure about this function and all the ACTIVE_CLIENTS
+    thing... I dislike module-level variables and this doesn't seem to be the
+    right way to close all threads... but I was unable to find a cleaner
+    way.
+    '''
+    return
+    for thread in threading.enumerate():
+        if isinstance(thread, DBClient):
+            thread.close()
+            thread.join()
+        
 
 class DBClient(object):
     """Simple w3af DB interface"""
@@ -137,7 +152,7 @@ class DBClientSQLite(Process, DBClient):
                   ' to "%s".'
             einfo = self._exception_info
             raise Exception(msg % (einfo.e, einfo.filename))
-
+        
     def run(self):
         '''
         This is the "main" method for this class, the one that
@@ -158,7 +173,6 @@ class DBClientSQLite(Process, DBClient):
         perform a "while True" and the Queue.get() will make sure we don't have
         100% CPU usage in the loop.
         '''
-
         #
         #    Setup phase
         #

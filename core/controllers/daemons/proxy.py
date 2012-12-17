@@ -513,8 +513,10 @@ class ProxyServer(HTTPServer, SocketServer.ThreadingMixIn):
                 self.handle_request()
             except KeyboardInterrupt:
                 self.stop = True
-        om.out.debug(
-            'Exiting proxy server serve_forever(); stop() was successful.')
+                break
+        
+        msg = 'Exiting proxy server serve_forever(); stop() was successful.'
+        om.out.debug(msg)
 
     def server_bind(self):
         msg = 'Changing socket options of ProxyServer to (socket.SOL_SOCKET,'\

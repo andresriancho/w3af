@@ -69,9 +69,10 @@ class BaseConsumer(Process):
             if work_unit == POISON_PILL:
 
                 # Close the pool and wait for everyone to finish
-                self._threadpool.close()
+                self._threadpool.terminate()
                 self._threadpool.join()
-
+                del self._threadpool
+                
                 self._teardown()
 
                 # Finish this consumer and everyone consuming the output

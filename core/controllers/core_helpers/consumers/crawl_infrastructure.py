@@ -81,9 +81,10 @@ class crawl_infrastructure(BaseConsumer):
                 if work_unit == POISON_PILL:
 
                     # Close the pool and wait for everyone to finish
-                    self._threadpool.close()
+                    self._threadpool.terminate()
                     self._threadpool.join()
-
+                    del self._threadpool
+                    
                     self._teardown()
 
                     # Finish this consumer and everyone consuming the output
@@ -364,10 +365,6 @@ class crawl_infrastructure(BaseConsumer):
 
         try:
             result = plugin.discover_wrapper(fuzzable_request)
-        except KeyboardInterrupt:
-            # TODO: Is this still working? How do we handle Ctrl+C in a thread?
-            om.out.information('The user interrupted the crawl phase, '
-                               'continuing with audit.')
         except w3afException, e:
             msg = 'An exception was found while running "%s" with "%s": "%s".'
             om.out.error(msg % (plugin.get_name(), fuzzable_request), e)

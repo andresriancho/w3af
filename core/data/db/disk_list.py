@@ -1,5 +1,5 @@
 '''
-disk_list.py
+DiskList.py
 
 Copyright 2008 Andres Riancho
 
@@ -31,15 +31,15 @@ from core.data.db.disk_item import disk_item
 from core.data.db.db import DBClientSQLite
 
 
-class disk_list(DBClientSQLite):
+class DiskList(DBClientSQLite):
     '''
-    A disk_list is a sqlite3 wrapper which has the following features:
+    A DiskList is a sqlite3 wrapper which has the following features:
         - Automagically creates the file in the /tmp directory
         - Is thread safe
         - Implements an iterator and a reversed iterator
-        - Deletes the file when the disk_list object is deleted from memory
+        - Deletes the file when the DiskList object is deleted from memory
 
-    I had to replace the old disk_list because the old one did not support
+    I had to replace the old DiskList because the old one did not support
     iteration, and the only way of adding iteration to that object was doing
     something like this:
 
@@ -66,7 +66,7 @@ class disk_list(DBClientSQLite):
         fname = ''.join(starmap(choice, repeat((string.letters,), 18)))
         self._filename = os.path.join(temp_dir, fname + '.w3af.temp_db')
 
-        super(disk_list, self).__init__(self._filename, autocommit=False,
+        super(DiskList, self).__init__(self._filename, autocommit=False,
                                         journal_mode='OFF', cache_size=200)
 
         # Create table
@@ -95,12 +95,12 @@ class disk_list(DBClientSQLite):
             pass
 
     def __del__(self):
+        self.close()
+
+    def close(self):
+        super(DiskList, self).close()
         try:
-            try:
-                self.close()
-                os.remove(self._filename)
-            except:
-                pass
+            os.remove(self._filename)
         except:
             pass
 
@@ -158,7 +158,7 @@ class disk_list(DBClientSQLite):
 
     def append(self, value):
         '''
-        Append a value to the disk_list.
+        Append a value to the DiskList.
 
         @param value: The value to append.
         '''
