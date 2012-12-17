@@ -33,6 +33,8 @@ class GrepPlugin(Plugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    TARGET_DOMAINS = None
+
     def __init__(self):
         Plugin.__init__(self)
 
@@ -49,10 +51,17 @@ class GrepPlugin(Plugin):
         @return: If something is found it must be reported to the Output
             Manager and the KB.
         '''
+        # Only run once for each HTTP response
         if response.get_from_cache():
             return
 
-        if response.get_url().get_domain() in cf.cf.get('target_domains'):
+        # This cache is here to avoid a query to the cf each time a request
+        # goes to a grep plugin. Given that in the future the cf will be a
+        # sqlite database, this is an important improvement.
+        if self.TARGET_DOMAINS is None:
+            self.TARGET_DOMAINS = cf.cf.get('target_domains')
+        
+        if response.get_url().get_domain() in self.TARGET_DOMAINS:
             self.grep(fuzzable_request, response)
 
     def grep(self, fuzzable_request, response):
