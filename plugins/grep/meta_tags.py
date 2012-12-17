@@ -68,7 +68,7 @@ class meta_tags(GrepPlugin):
         uri = response.get_uri()
 
         if response.is_text_or_html() and not is_404(response) \
-                and uri not in self._already_inspected:
+        and uri not in self._already_inspected:
 
             self._already_inspected.add(uri)
 

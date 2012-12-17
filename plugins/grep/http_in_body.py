@@ -20,17 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.controllers.output_manager as om
-
-# options
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
-from core.data.esmre.multi_re import multi_re
+import core.data.kb.knowledge_base as kb
+import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-
-import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.esmre.multi_re import multi_re
 
 
 class http_in_body (GrepPlugin):
@@ -61,11 +56,15 @@ class http_in_body (GrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         uri = response.get_uri()
+        
         # 501 Code is "Not Implemented" which in some cases responds with this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
-        if response.get_code() != 501 and uri not in self._already_inspected \
-                and response.is_text_or_html():
+        
+        if response.get_code() != 501\
+        and response.is_text_or_html()\
+        and uri not in self._already_inspected:
+            
             # Don't repeat URLs
             self._already_inspected.add(uri)
 
@@ -95,16 +94,6 @@ class http_in_body (GrepPlugin):
                     i.add_to_highlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 
-    def set_options(self, options_list):
-        pass
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-        return ol
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
@@ -119,22 +108,13 @@ class http_in_body (GrepPlugin):
                     om.out.information(
                         '- ' + i.get_uri() + '  (id:' + str(i.get_id()) + ')')
 
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return '''
-        This plugin searches for HTTP responses that contain other HTTP request/responses
-        in their response body. This situation is mostly seen when programmers enable
-        some kind of debugging for the web application, and print the original request
-        in the response HTML as a comment.
-
-        No configurable parameters exist.
+        return '''\
+        This plugin searches for HTTP responses that contain other HTTP
+        request/responses in their response body. This situation is mostly seen
+        when programmers enable some kind of debugging for the web application,
+        and print the original request in the response HTML as a comment.
         '''

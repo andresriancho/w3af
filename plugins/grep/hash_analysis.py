@@ -51,40 +51,44 @@ class hash_analysis(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        # I know that by doing this I loose the chance of finding hashes in PDF files, but...
-        # This is much faster
-        if response.is_text_or_html():
+        # I know that by doing this I loose the chance of finding hashes in
+        # PDF files, but... this is much faster
+        if not response.is_text_or_html():
+            return
 
-            body = response.get_body()
-            splitted_body = self._split_re.split(body)
-            for possible_hash in splitted_body:
+        body = response.get_body()
+        splitted_body = self._split_re.split(body)
+        for possible_hash in splitted_body:
 
-                #    This is a performance enhancement that cuts the execution
-                #    time of this plugin in half.
-                if len(possible_hash) > 31:
+            #    This is a performance enhancement that cuts the execution
+            #    time of this plugin in half.
+            if len(possible_hash) < 31 or\
+            len(possible_hash) > 129 :
+                return
+            
+            hash_type = self._get_hash_type(possible_hash)
+            if not hash_type:
+                return
 
-                    hash_type = self._get_hash_type(possible_hash)
-                    if hash_type:
+            possible_hash = possible_hash.lower()
+            if self._has_hash_distribution(possible_hash):
+                if (possible_hash, response.get_url()) not in self._already_reported:
+                    i = info.info()
+                    i.set_plugin_name(self.get_name())
+                    i.set_name(hash_type + 'hash in HTML content')
+                    i.set_url(response.get_url())
+                    i.add_to_highlight(possible_hash)
+                    i.set_id(response.id)
+                    msg = 'The URL: "' + response.get_url(
+                    ) + '" returned a response that may'
+                    msg += ' contain a "' + hash_type + \
+                        '" hash. The hash is: "' + possible_hash
+                    msg += '". This is uncommon and requires human verification.'
+                    i.set_desc(msg)
+                    kb.kb.append(self, 'hash_analysis', i)
 
-                        possible_hash = possible_hash.lower()
-                        if self._has_hash_distribution(possible_hash):
-                            if (possible_hash, response.get_url()) not in self._already_reported:
-                                i = info.info()
-                                i.set_plugin_name(self.get_name())
-                                i.set_name(hash_type + 'hash in HTML content')
-                                i.set_url(response.get_url())
-                                i.add_to_highlight(possible_hash)
-                                i.set_id(response.id)
-                                msg = 'The URL: "' + response.get_url(
-                                ) + '" returned a response that may'
-                                msg += ' contain a "' + hash_type + \
-                                    '" hash. The hash is: "' + possible_hash
-                                msg += '". This is uncommon and requires human verification.'
-                                i.set_desc(msg)
-                                kb.kb.append(self, 'hash_analysis', i)
-
-                                self._already_reported.add(
-                                    (possible_hash, response.get_url()))
+                    self._already_reported.add(
+                        (possible_hash, response.get_url()))
 
     def _has_hash_distribution(self, possible_hash):
         '''

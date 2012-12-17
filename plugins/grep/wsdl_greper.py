@@ -87,13 +87,6 @@ class wsdl_greper(GrepPlugin):
                 i.add_to_highlight(disco_string)
                 kb.kb.append(self, 'disco', i)
 
-    def get_plugin_deps(self):
-        '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
-        '''
-        return []
-
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.

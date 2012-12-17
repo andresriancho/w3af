@@ -90,68 +90,69 @@ class path_disclosure(GrepPlugin):
         @param response: The HTTP response object
         @return: None, the result is saved in the kb.
         '''
-        if response.is_text_or_html():
+        if not response.is_text_or_html():
+            return
+        
+        html_string = response.get_body()
 
-            html_string = response.get_body()
+        for potential_disclosure in self._potential_disclosures(html_string):
 
-            for potential_disclosure in self._potential_disclosures(html_string):
+            path_disc_regex = self._compiled_regexes[potential_disclosure]
+            match_list = path_disc_regex.findall(html_string)
 
-                path_disc_regex = self._compiled_regexes[potential_disclosure]
-                match_list = path_disc_regex.findall(html_string)
+            # Decode the URL, this will transform things like
+            #     http://host.tld/?id=%2Fhome
+            # into,
+            #     http://host.tld/?id=/home
+            realurl = response.get_url().url_decode()
 
-                # Decode the URL, this will transform things like
-                #     http://host.tld/?id=%2Fhome
-                # into,
-                #     http://host.tld/?id=/home
-                realurl = response.get_url().url_decode()
+            #   Sort by the longest match, this is needed for filtering out some false positives
+            #   please read the note below.
+            match_list.sort(self._longest)
 
-                #   Sort by the longest match, this is needed for filtering out some false positives
-                #   please read the note below.
-                match_list.sort(self._longest)
+            for match in match_list:
 
-                for match in match_list:
+                # This if is to avoid false positives
+                if not request.sent(match) and not \
+                        self._attr_value(match, html_string):
 
-                    # This if is to avoid false positives
-                    if not request.sent(match) and not \
-                            self._attr_value(match, html_string):
+                    # Check for dups
+                    if (realurl, match) in self._already_added:
+                        continue
 
-                        # Check for dups
-                        if (realurl, match) in self._already_added:
-                            continue
+                    #   There is a rare bug also, which is triggered in cases like this one:
+                    #
+                    #   >>> import re
+                    #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
+                    #   ['/var/www/foobar/htdocs/article.php']
+                    #   >>> re.findall('/htdocs/.*','/var/www/foobar/htdocs/article.php')
+                    #   ['/htdocs/article.php']
+                    #   >>>
+                    #
+                    #   What I need to do here, is to keep the longest match.
+                    for realurl_added, match_added in self._already_added:
+                        if match_added.endswith(match):
+                            break
+                    else:
 
-                        #   There is a rare bug also, which is triggered in cases like this one:
-                        #
-                        #   >>> import re
-                        #   >>> re.findall('/var/www/.*','/var/www/foobar/htdocs/article.php')
-                        #   ['/var/www/foobar/htdocs/article.php']
-                        #   >>> re.findall('/htdocs/.*','/var/www/foobar/htdocs/article.php')
-                        #   ['/htdocs/article.php']
-                        #   >>>
-                        #
-                        #   What I need to do here, is to keep the longest match.
-                        for realurl_added, match_added in self._already_added:
-                            if match_added.endswith(match):
-                                break
-                        else:
+                        #   Note to self: I get here when "break" is NOT executed.
+                        #   It's a new one, report!
+                        self._already_added.append((realurl, match))
 
-                            #   Note to self: I get here when "break" is NOT executed.
-                            #   It's a new one, report!
-                            self._already_added.append((realurl, match))
-
-                            v = vuln.vuln()
-                            v.set_plugin_name(self.get_name())
-                            v.set_url(realurl)
-                            v.set_id(response.id)
-                            msg = 'The URL: "' + \
-                                v.get_url() + '" has a path disclosure '
-                            msg += 'vulnerability which discloses: "' + \
-                                match + '".'
-                            v.set_desc(msg)
-                            v.set_severity(severity.LOW)
-                            v.set_name('Path disclosure vulnerability')
-                            v['path'] = match
-                            v.add_to_highlight(match)
-                            kb.kb.append(self, 'path_disclosure', v)
+                        v = vuln.vuln()
+                        v.set_plugin_name(self.get_name())
+                        v.set_url(realurl)
+                        v.set_id(response.id)
+                        msg = 'The URL: "' + \
+                            v.get_url() + '" has a path disclosure '
+                        msg += 'vulnerability which discloses: "' + \
+                            match + '".'
+                        v.set_desc(msg)
+                        v.set_severity(severity.LOW)
+                        v.set_name('Path disclosure vulnerability')
+                        v['path'] = match
+                        v.add_to_highlight(match)
+                        kb.kb.append(self, 'path_disclosure', v)
 
         self._update_KB_path_list()
 

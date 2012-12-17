@@ -78,10 +78,9 @@ class dom_xss(GrepPlugin):
             v.set_id(response.id)
             v.set_severity(severity.LOW)
             v.set_name('DOM Cross site scripting (Risky JavaScript Code)')
-            msg = 'The URL: "' + v.get_url(
-            ) + '" has a DOM XSS (Risky JavaScript Code) '
-            msg += 'bug using: "' + vuln_code + '".'
-            v.set_desc(msg)
+            msg = 'The URL: "%s" has a DOM XSS (Risky JavaScript Code) ' \
+                  'bug using: "%s".'
+            v.set_desc(msg % (v.get_url(), vuln_code))
             kb.kb.append(self, 'dom_xss', v)
 
     def _smart_grep(self, response):
@@ -117,10 +116,6 @@ class dom_xss(GrepPlugin):
         '''
         return '''
         This plugin greps every page for traces of DOM XSS.
-
-        Two configurable parameters exist:
-            - simpleGrep
-            - smartGrep
 
         An interesting paper about DOM XSS
         can be found here:

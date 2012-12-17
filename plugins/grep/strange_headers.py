@@ -84,7 +84,6 @@ class strange_headers(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-
         # Check if the header names are common or not
         for header_name in response.get_headers().keys():
             if header_name.upper() not in self.COMMON_HEADERS:
@@ -129,7 +128,8 @@ class strange_headers(GrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         if 'content-location' in response.get_lower_case_headers() \
-                and response.get_code() not in xrange(300, 310):
+        and response.get_code() > 300\
+        and response.get_code() < 310:
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Content-Location HTTP header anomaly')

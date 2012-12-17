@@ -63,7 +63,7 @@ class http_auth_detect(GrepPlugin):
                 # Perform all the work in this method
                 self._analyze_401(response)
 
-        else:
+        elif response.is_text_or_html():
 
             # I get here for "normal" HTTP 200 responses
             self._find_auth_uri(response)

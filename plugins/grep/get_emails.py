@@ -76,8 +76,8 @@ class get_emails(GrepPlugin):
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
-            msg = 'If I can\'t parse the document, I won\'t be able to find any'
-            msg += ' emails. Ignoring the response for "%s".'
+            msg = 'If I can\'t parse the document, I won\'t be able to find'\
+                  '  any emails. Ignoring the response for "%s".'
             om.out.debug(msg % response.get_url())
             return
 
@@ -143,9 +143,9 @@ class get_emails(GrepPlugin):
         '''
         ol = OptionList()
 
-        d1 = 'When greping, only search emails for domain of target'
-        o1 = opt_factory(
-            'only_target_domain', self._only_target_domain, d1, 'boolean')
+        d1 = 'Only search emails for domain of target'
+        o1 = opt_factory('only_target_domain', self._only_target_domain,
+                         d1, 'boolean')
         ol.add(o1)
 
         return ol

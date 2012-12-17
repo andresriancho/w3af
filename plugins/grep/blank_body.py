@@ -33,6 +33,9 @@ class blank_body(GrepPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    METHODS = ('GET', 'POST')
+    HTTP_CODES = (401, 304, 302, 301, 204)
+    
     def __init__(self):
         GrepPlugin.__init__(self)
         self._already_reported = ScalableBloomFilter()
@@ -45,10 +48,10 @@ class blank_body(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.get_body() == '' and request.get_method() in ['GET', 'POST']\
-            and response.get_code() not in [401, 304, 302, 301, 204]\
-            and 'location' not in response.get_lower_case_headers()\
-                and response.get_url() not in self._already_reported:
+        if response.get_body() == '' and request.get_method() in self.METHODS\
+        and response.get_code() not in self.HTTP_CODES\
+        and 'location' not in response.get_lower_case_headers()\
+        and response.get_url() not in self._already_reported:
 
             #   report these informations only once
             self._already_reported.add(response.get_url())

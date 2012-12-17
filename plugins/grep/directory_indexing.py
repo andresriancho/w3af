@@ -64,31 +64,28 @@ class directory_indexing(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
+        if not response.is_text_or_html():
+            return
+        
         if response.get_url().get_domain_path() in self._already_visited:
-            # Already worked for this URL, no reason to work twice
             return
 
-        else:
-            # Save it,
-            self._already_visited.add(response.get_url().get_domain_path())
-
-            # Work,
-            if response.is_text_or_html():
-                html_string = response.get_body()
-                for dir_indexing_match in self._multi_in.query(html_string):
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
-                    v.set_url(response.get_url())
-                    msg = 'The URL: "' + \
-                        response.get_url() + '" has a directory '
-                    msg += 'indexing vulnerability.'
-                    v.set_desc(msg)
-                    v.set_id(response.id)
-                    v.set_severity(severity.LOW)
-                    path = response.get_url().get_path()
-                    v.set_name('Directory indexing - ' + path)
-                    kb.kb.append(self, 'directory', v)
-                    break
+        self._already_visited.add(response.get_url().get_domain_path())
+        
+        html_string = response.get_body()
+        for dir_indexing_match in self._multi_in.query(html_string):
+            v = vuln.vuln()
+            v.set_plugin_name(self.get_name())
+            v.set_url(response.get_url())
+            msg = 'The URL: "%s" has a directory ' \
+                  'indexing vulnerability.'
+            v.set_desc(msg % response.get_url())
+            v.set_id(response.id)
+            v.set_severity(severity.LOW)
+            path = response.get_url().get_path()
+            v.set_name('Directory indexing - ' + path)
+            kb.kb.append(self, 'directory', v)
+            break
 
     def end(self):
         '''

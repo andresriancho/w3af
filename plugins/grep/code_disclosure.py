@@ -53,7 +53,8 @@ class code_disclosure(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html() and response.get_url() not in self._already_added:
+        if response.is_text_or_html() and \
+        response.get_url() not in self._already_added:
 
             match, lang = is_source_file(response.get_body())
 
@@ -65,7 +66,7 @@ class code_disclosure(GrepPlugin):
                     v.set_url(response.get_url())
                     v.set_id(response.id)
                     v.set_severity(severity.LOW)
-                    v.set_name(lang + ' code disclosure vulnerability')
+                    v.set_name('%s code disclosure vulnerability' % lang)
                     v.add_to_highlight(match.group())
                     fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
                     v.set_desc(fmt % (v.get_url(), lang))
@@ -80,10 +81,10 @@ class code_disclosure(GrepPlugin):
                     v.set_id(response.id)
                     v.set_severity(severity.LOW)
                     v.add_to_highlight(match.group())
-                    v.set_name(
-                        lang + ' code disclosure vulnerability in 404 page')
-                    fmt = 'The URL: "%s" has a %s code disclosure vulnerability'\
-                          ' in the customized 404 script.'
+                    name = '%s code disclosure vulnerability in 404 page'
+                    v.set_name(name % lang)
+                    fmt = 'The URL: "%s" has a %s code disclosure'\
+                          ' vulnerability in the customized 404 script.'
                     v.set_desc(fmt % (v.get_url(), lang))
                     kb.kb.append(self, 'code_disclosure', v)
 
@@ -92,18 +93,18 @@ class code_disclosure(GrepPlugin):
         This method is called when the plugin wont be used anymore.
         '''
         # Print code_disclosure
-        self.print_uniq(
-            kb.kb.get('code_disclosure', 'code_disclosure'), 'URL')
+        self.print_uniq(kb.kb.get('code_disclosure',
+                                  'code_disclosure'), 'URL')
 
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page in order to find code disclosures. Basically
-        it greps for '<?.*?>' and '<%.*%>' using the re module and reports
-        findings.
+        This plugin greps every page in order to find code disclosures.
+        Basically it greps for '<?.*?>' and '<%.*%>' using the re module and
+        reports findings.
 
-        Code disclosures are usually generated due to web server misconfigurations,
-        or wierd web application "features".
+        Code disclosures are usually generated due to web server
+        misconfigurations, or wierd web application "features".
         '''

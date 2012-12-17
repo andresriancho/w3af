@@ -59,44 +59,45 @@ class dot_net_event_validation(GrepPlugin):
         @param request: The HTTP request object.
         @param response: The HTTP response object
         '''
-        if response.is_text_or_html():
+        if not response.is_text_or_html():
+            return
 
-            # First verify if we havent analyzed this URI yet
-            if request.get_url() in self._already_analyzed:
-                return
+        # First verify if we havent analyzed this URI yet
+        if request.get_url() in self._already_analyzed:
+            return
 
-            self._already_analyzed.add(request.get_url())
+        self._already_analyzed.add(request.get_url())
 
-            res = self._viewstate.search(response.get_body())
-            if res:
+        res = self._viewstate.search(response.get_body())
+        if res:
 
-                # I have __viewstate!, verify if event validation is enabled
-                if not self._eventvalidation.search(response.get_body()):
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('.NET Event Validation is disabled')
-                    i.set_url(response.get_url())
-                    i.set_id(response.id)
-                    i.add_to_highlight(res.group())
-                    msg = 'The URL: "' + i.get_url(
-                    ) + '" has .NET Event Validation disabled. '
-                    msg += 'This programming/configuration error should be manually verified.'
-                    i.set_desc(msg)
-                    kb.kb.append(self, 'dot_net_event_validation', i)
+            # I have __viewstate!, verify if event validation is enabled
+            if not self._eventvalidation.search(response.get_body()):
+                i = info.info()
+                i.set_plugin_name(self.get_name())
+                i.set_name('.NET Event Validation is disabled')
+                i.set_url(response.get_url())
+                i.set_id(response.id)
+                i.add_to_highlight(res.group())
+                msg = 'The URL: "' + i.get_url(
+                ) + '" has .NET Event Validation disabled. '
+                msg += 'This programming/configuration error should be manually verified.'
+                i.set_desc(msg)
+                kb.kb.append(self, 'dot_net_event_validation', i)
 
-                if not self._encryptedVs.search(response.get_body()):
-                    # Nice! We can decode the viewstate! =)
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('.NET ViewState encryption is disabled')
-                    i.set_url(response.get_url())
-                    i.set_id(response.id)
-                    msg = 'The URL: "' + i.get_url(
-                    ) + '" has .NET ViewState encryption disabled. '
-                    msg += 'This programming/configuration error could be exploited '
-                    msg += 'to decode the viewstate contents.'
-                    i.set_desc(msg)
-                    kb.kb.append(self, 'dot_net_event_validation', i)
+            if not self._encryptedVs.search(response.get_body()):
+                # Nice! We can decode the viewstate! =)
+                i = info.info()
+                i.set_plugin_name(self.get_name())
+                i.set_name('.NET ViewState encryption is disabled')
+                i.set_url(response.get_url())
+                i.set_id(response.id)
+                msg = 'The URL: "' + i.get_url(
+                ) + '" has .NET ViewState encryption disabled. '
+                msg += 'This programming/configuration error could be exploited '
+                msg += 'to decode the viewstate contents.'
+                i.set_desc(msg)
+                kb.kb.append(self, 'dot_net_event_validation', i)
 
     def end(self):
         '''

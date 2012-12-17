@@ -48,40 +48,41 @@ class strange_http_codes(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        if response.get_code() not in self.COMMON_HTTP_CODES:
+        if response.get_code() in self.COMMON_HTTP_CODES:
+            return
 
-            # I check if the kb already has a info object with this code:
-            strange_code_infos = kb.kb.get(
-                'strange_http_codes', 'strange_http_codes')
+        # I check if the kb already has a info object with this code:
+        strange_code_infos = kb.kb.get('strange_http_codes',
+                                       'strange_http_codes')
 
-            corresponding_info = None
-            for info_obj in strange_code_infos:
-                if info_obj['code'] == response.get_code():
-                    corresponding_info = info_obj
-                    break
+        corresponding_info = None
+        for info_obj in strange_code_infos:
+            if info_obj['code'] == response.get_code():
+                corresponding_info = info_obj
+                break
 
-            if corresponding_info:
-                # Work with the "old" info object:
-                id_list = corresponding_info.get_id()
-                id_list.append(response.id)
-                corresponding_info.set_id(id_list)
+        if corresponding_info:
+            # Work with the "old" info object:
+            id_list = corresponding_info.get_id()
+            id_list.append(response.id)
+            corresponding_info.set_id(id_list)
 
-            else:
-                # Create a new info object from scratch and save it to the kb:
-                i = info.info()
-                i.set_plugin_name(self.get_name())
-                i.set_name(
-                    'Strange HTTP Response code - ' + str(response.get_code()))
-                i.set_url(response.get_url())
-                i.set_id(response.id)
-                i['code'] = response.get_code()
-                desc = 'The remote Web server sent a strange HTTP response code: "'
-                desc += str(response.get_code(
-                )) + '" with the message: "' + response.get_msg()
-                desc += '", manual inspection is advised.'
-                i.set_desc(desc)
-                i.add_to_highlight(str(response.get_code()), response.get_msg())
-                kb.kb.append(self, 'strange_http_codes', i)
+        else:
+            # Create a new info object from scratch and save it to the kb:
+            i = info.info()
+            i.set_plugin_name(self.get_name())
+            i.set_name(
+                'Strange HTTP Response code - ' + str(response.get_code()))
+            i.set_url(response.get_url())
+            i.set_id(response.id)
+            i['code'] = response.get_code()
+            desc = 'The remote Web server sent a strange HTTP response code: "'
+            desc += str(response.get_code(
+            )) + '" with the message: "' + response.get_msg()
+            desc += '", manual inspection is advised.'
+            i.set_desc(desc)
+            i.add_to_highlight(str(response.get_code()), response.get_msg())
+            kb.kb.append(self, 'strange_http_codes', i)
 
     def end(self):
         '''

@@ -43,8 +43,10 @@ class xss_protection_header(GrepPlugin):
         @param response: The HTTP response object
         @return: None, all results are saved in the kb.
         '''
-        value = response.get_lower_case_headers().get('x-xss-protection', None)
-        if value == '0':
+        headers = response.get_headers()
+        heaver_value, header_name = headers.iget('x-xss-protection', None)
+        heaver_value = heaver_value.strip()
+        if heaver_value == '0':
             i = info.info()
             i.set_plugin_name(self.get_name())
             i.set_name('Insecure X-XSS-Protection header usage')

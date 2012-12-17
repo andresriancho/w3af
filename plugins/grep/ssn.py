@@ -57,8 +57,8 @@ class ssn(GrepPlugin):
         uri = response.get_uri()
 
         if response.is_text_or_html() and response.get_code() == 200 \
-            and response.get_clear_text_body() is not None \
-                and uri not in self._already_inspected:
+        and response.get_clear_text_body() is not None \
+        and uri not in self._already_inspected:
 
             # Don't repeat URLs
             self._already_inspected.add(uri)

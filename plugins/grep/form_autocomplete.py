@@ -71,7 +71,7 @@ class form_autocomplete(GrepPlugin):
         dom = response.get_dom()
 
         if response.is_text_or_html() and dom is not None \
-                and not url in self._already_inspected:
+        and not url in self._already_inspected:
 
             self._already_inspected.add(url)
 
@@ -109,5 +109,7 @@ class form_autocomplete(GrepPlugin):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
-        return "This plugin greps every page for autocomplete-able forms " \
-            "containing password-type inputs."
+        return '''\
+        This plugin greps every page for autocomplete-able forms containing 
+        password-type inputs.
+        '''

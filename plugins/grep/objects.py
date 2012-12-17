@@ -55,7 +55,7 @@ class objects(GrepPlugin):
         dom = response.get_dom()
 
         if response.is_text_or_html() and dom is not None \
-                and url not in self._already_analyzed:
+        and url not in self._already_analyzed:
 
             self._already_analyzed.add(url)
 

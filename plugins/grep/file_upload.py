@@ -26,7 +26,6 @@ import core.data.kb.info as info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from core.data.options.option_list import OptionList
 
 
 FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
@@ -77,16 +76,6 @@ class file_upload(GrepPlugin):
                     to_highlight = etree.tostring(input_file)
                     i.add_to_highlight(to_highlight)
                     kb.kb.append(self, 'file_upload', i)
-
-    def set_options(self, option_list):
-        pass
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-        return ol
 
     def end(self):
         '''

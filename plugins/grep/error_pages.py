@@ -150,54 +150,63 @@ class error_pages(GrepPlugin):
         @param response: The HTTP response object
         @return: None
         '''
-        if response.is_text_or_html():
+        if not response.is_text_or_html():
+            return
+        
+        self.find_error_page(request, response)
+        self.find_version_numbers(request, response)
+    
+    def find_error_page(self, request, response):
+        for msg in self._multi_in.query(response.body):
+            i = info.info()
+            i.set_plugin_name(self.get_name())
 
-            for msg in self._multi_in.query(response.body):
-                i = info.info()
-                i.set_plugin_name(self.get_name())
+            # Set a nicer name for the vulnerability
+            name = 'Descriptive error page - "'
+            if len(msg) > 12:
+                name += msg[:12] + '..."'
+            else:
+                name += msg + '"'
+            i.set_name(name)
 
-                # Set a nicer name for the vulnerability
-                name = 'Descriptive error page - "'
-                if len(msg) > 12:
-                    name += msg[:12] + '..."'
-                else:
-                    name += msg + '"'
-                i.set_name(name)
+            i.set_url(response.get_url())
+            i.set_id(response.id)
+            i.set_desc('The URL: "' + response.get_url(
+            ) + '" contains the descriptive error: "' + msg + '"')
+            i.add_to_highlight(msg)
+            kb.kb.append(self, 'errorPage', i)
 
-                i.set_url(response.get_url())
-                i.set_id(response.id)
-                i.set_desc('The URL: "' + response.get_url(
-                ) + '" contains the descriptive error: "' + msg + '"')
-                i.add_to_highlight(msg)
-                kb.kb.append(self, 'errorPage', i)
+            # There is no need to report more than one info for the same result,
+            # the user will read the info object and analyze it even if we report it
+            # only once. If we report it twice, he'll get mad ;)
+            break
 
-                # There is no need to report more than one info for the same result,
-                # the user will read the info object and analyze it even if we report it
-                # only once. If we report it twice, he'll get mad ;)
-                break
+    def find_version_numbers(self, request, response):
+        '''
+        Now i'll check if I can get a version number from the error page
+        This is common in apache, tomcat, etc...
+        '''
+        if response.get_code() > 400 and\
+        response.get_code() < 600:
 
-            # Now i'll check if I can get a version number from the error page
-            # This is common in apache, tomcat, etc...
-            if response.get_code() in range(400, 600):
-
-                for match, regex_str, regex_comp, server in self._multi_re.query(response.body):
-                    match_string = match.group(0)
-                    if match_string not in self._already_reported_versions:
-                        # Save the info obj
-                        i = info.info()
-                        i.set_plugin_name(self.get_name())
-                        i.set_name('Error page with information disclosure')
-                        i.set_url(response.get_url())
-                        i.set_id(response.id)
-                        i.set_name('Error page with information disclosure')
-                        i.set_desc('An error page sent this ' + server +
-                                   ' version: "' + match_string + '".')
-                        i.add_to_highlight(server)
-                        i.add_to_highlight(match_string)
-                        kb.kb.append(self, 'server', i)
-                        # Save the string
-                        kb.kb.append(self, 'server', match_string)
-                        self._already_reported_versions.append(match_string)
+            for match, regex_str, regex_comp, server in self._multi_re.query(response.body):
+                match_string = match.group(0)
+                if match_string not in self._already_reported_versions:
+                    # Save the info obj
+                    i = info.info()
+                    i.set_plugin_name(self.get_name())
+                    i.set_name('Error page with information disclosure')
+                    i.set_url(response.get_url())
+                    i.set_id(response.id)
+                    i.set_name('Error page with information disclosure')
+                    i.set_desc('An error page sent this ' + server +
+                               ' version: "' + match_string + '".')
+                    i.add_to_highlight(server)
+                    i.add_to_highlight(match_string)
+                    kb.kb.append(self, 'server', i)
+                    # Save the string
+                    kb.kb.append(self, 'server', match_string)
+                    self._already_reported_versions.append(match_string)
 
     def end(self):
         '''

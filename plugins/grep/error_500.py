@@ -35,6 +35,7 @@ class error_500(GrepPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
 
+    IGNORE_CODES = (404, 403, 401, 405, 400, 501)
     FALSE_POSITIVE_STRINGS = ('<h1>Bad Request (Invalid URL)</h1>',
                               )
 
@@ -52,9 +53,10 @@ class error_500(GrepPlugin):
         @return: None
         '''
         if response.is_text_or_html() \
-            and response.get_code() in xrange(400, 600) \
-            and response.get_code() not in (404, 403, 401, 405, 400, 501)\
-                and not self._is_false_positive(response):
+        and response.get_code() > 400 \
+        and response.get_code() < 600 \
+        and response.get_code() not in self.IGNORE_CODES\
+        and not self._is_false_positive(response):
             self._error_500_responses.add((request, response.id))
 
     def _is_false_positive(self, response):
@@ -94,11 +96,12 @@ class error_500(GrepPlugin):
                 v.set_id(error_500_response_id)
                 v.set_severity(severity.MEDIUM)
                 v.set_name('Unhandled error in web application')
-                msg = 'An unidentified web application error (HTTP response code 500)'
-                msg += ' was found at: "' + v.get_url() + '".'
-                msg += ' Enable all plugins and try again, if the vulnerability still is not'
-                msg += ' identified, please verify manually and report it to the w3af developers.'
-                v.set_desc(msg)
+                msg = 'An unidentified web application error (HTTP response'\
+                      ' code 500) was found at: "%s". Enable all plugins and'\
+                      ' try again, if the vulnerability still is not identified'\
+                      ', please verify manually and report it to the w3af'\
+                      ' developers.'
+                v.set_desc(msg % v.get_url())
                 kb.kb.append(self, 'error_500', v)
 
         self.print_uniq(kb.kb.get('error_500', 'error_500'), 'VAR')
