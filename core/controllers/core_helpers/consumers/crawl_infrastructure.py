@@ -55,13 +55,15 @@ class crawl_infrastructure(BaseConsumer):
         super(crawl_infrastructure, self).__init__(crawl_infrastructure_plugins,
                                                    w3af_core,
                                                    thread_name='CrawlInfra')
-        self._max_discovery_time = max_discovery_time
+        self._max_discovery_time = int(max_discovery_time)
 
         # For filtering fuzzable requests found by plugins:
         self._variant_db = VariantDB()
         self._already_seen_urls = ScalableBloomFilter()
 
         self._disabled_plugins = set()
+        self._running = True
+        self._report_max_time = True
 
     def run(self):
         '''
@@ -84,7 +86,7 @@ class crawl_infrastructure(BaseConsumer):
                     self._threadpool.terminate()
                     self._threadpool.join()
                     del self._threadpool
-                    
+                    self._running = False
                     self._teardown()
 
                     # Finish this consumer and everyone consuming the output
@@ -130,6 +132,9 @@ class crawl_infrastructure(BaseConsumer):
             self._route_all_plugin_results()
 
     def _plugin_finished_cb(self, ((plugin, fuzzable_request), plugin_result)):
+        if not self._running:
+            return
+        
         self._route_plugin_results(plugin)
 
         # Finished one fuzzable_request, inc!
@@ -140,6 +145,9 @@ class crawl_infrastructure(BaseConsumer):
 
             if plugin in self._disabled_plugins:
                 continue
+
+            if not self._running:
+                return
 
             self._route_plugin_results(plugin)
 
@@ -154,6 +162,14 @@ class crawl_infrastructure(BaseConsumer):
             except Queue.Empty:
                 break
             else:
+                # Should I continue with the crawl phase? If not, simply loop
+                # through all these results and ignore them, which will by
+                # itself cut the input to the consumer and stop producing
+                # more fuzzable requests
+                if self._should_stop_discovery():
+                    continue
+
+                
                 # The plugin has finished and now we need to analyze which of
                 # the returned fuzzable_request_list are new and should be put in the
                 # input_queue again.
@@ -219,15 +235,19 @@ class crawl_infrastructure(BaseConsumer):
                  set by the user, or simply because the user wants to stop the
                  crawl phase.
         '''
-        # If the user wants to stop, I have to stop and at least
-        # return the findings I've got until now.
-        if self._w3af_core.status.is_stopped():
+        if not self._running:
             return True
-
-        # TODO: unittest this limit
+        
         if self._w3af_core.get_run_time() > self._max_discovery_time:
-            om.out.information('Maximum crawl time limit hit.')
+            if self._report_max_time:
+                self._report_max_time = False                
+                msg = 'Maximum crawl time limit hit, no new URLs will be'\
+                      ' added to the queue.'
+                om.out.information(msg)
             return True
+        else:
+            om.out.debug('FOOOOO %s < %s' % (self._w3af_core.get_run_time(),
+                                             self._max_discovery_time))
 
         return False
 
@@ -348,10 +368,6 @@ class crawl_infrastructure(BaseConsumer):
         
         om.out.debug('Called _discover_worker(%s,%s)' % (plugin.get_name(),
                                                          fuzzable_request.get_uri()))
-
-        # Should I continue with the crawl phase? If not, return an empty result
-        if self._should_stop_discovery():
-            return []
 
         # Status reporting
         status = self._w3af_core.status
