@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
 import core.data.kb.info as info
@@ -67,65 +66,61 @@ class meta_tags(GrepPlugin):
         '''
         uri = response.get_uri()
 
-        if response.is_text_or_html() and not is_404(response) \
-        and uri not in self._already_inspected:
+        if not response.is_text_or_html() or uri in self._already_inspected\
+        or is_404(response):
+            return
 
-            self._already_inspected.add(uri)
+        self._already_inspected.add(uri)
 
-            try:
-                dp = parser_cache.dpc.get_document_parser_for(response)
-            except w3afException:
-                pass
-            else:
-                meta_tag_list = dp.get_meta_tags()
+        try:
+            dp = parser_cache.dpc.get_document_parser_for(response)
+        except w3afException:
+            return
 
-                for tag in meta_tag_list:
-                    tag_name = self._find_name(tag)
-                    for attr in tag:
+        meta_tag_list = dp.get_meta_tags()
 
-                        key = attr[0].lower()
-                        val = attr[1].lower()
+        for tag in meta_tag_list:
+            tag_name = self._find_name(tag)
+            for key, val in tag.items():
 
-                        for word in self.INTERESTING_WORDS:
+                for word in self.INTERESTING_WORDS:
 
-                            # Check if we have something interesting
-                            # and WHERE that thing actually is
-                            where = content = None
-                            if (word in key):
-                                where = 'name'
-                                content = key
-                            elif (word in val):
-                                where = 'value'
-                                content = val
+                    # Check if we have something interesting
+                    # and WHERE that thing actually is
+                    where = content = None
+                    if (word in key):
+                        where = 'name'
+                        content = key
+                    elif (word in val):
+                        where = 'value'
+                        content = val
 
-                            # Now... if we found something, report it =)
-                            if where is not None:
-                                # The atribute is interesting!
-                                i = info.info()
-                                i.set_plugin_name(self.get_name())
-                                i.set_name('Interesting META tag')
-                                i.set_uri(response.get_uri())
-                                i.set_id(response.id)
-                                msg = 'The URI: "' + \
-                                    i.get_uri() + '" sent a META tag with '
-                                msg += 'attribute ' + \
-                                    where + ' "' + content + '" which'
-                                msg += ' looks interesting.'
-                                i.add_to_highlight(where, content)
-                                if self.INTERESTING_WORDS.get(tag_name, None):
-                                    msg += ' The tag is used for '
-                                    msg += self.INTERESTING_WORDS[
-                                        tag_name] + '.'
-                                i.set_desc(msg)
-                                kb.kb.append(self, 'meta_tags', i)
+                    # Now... if we found something, report it =)
+                    if where is not None:
+                        # The atribute is interesting!
+                        i = info.info()
+                        i.set_plugin_name(self.get_name())
+                        i.set_name('Interesting META tag')
+                        i.set_uri(response.get_uri())
+                        i.set_id(response.id)
+                        fmt = 'The URI: "%s" sent a <meta> tag with attribute'\
+                              ' %s set to "%s" which looks interesting.'
+                        msg = fmt % (i.get_uri(), where, content)
+                        i.add_to_highlight(where, content)
+                        if self.INTERESTING_WORDS.get(tag_name, None):
+                            msg += ' The tag is used for '
+                            msg += self.INTERESTING_WORDS[
+                                tag_name] + '.'
+                        i.set_desc(msg)
+                        kb.kb.append(self, 'meta_tags', i)
 
     def _find_name(self, tag):
         '''
         @return: the tag name.
         '''
-        for attr in tag:
-            if attr[0].lower() == 'name':
-                return attr[1]
+        for key, value in tag.items():
+            if key.lower() == 'name':
+                return value
         return ''
 
     def end(self):
