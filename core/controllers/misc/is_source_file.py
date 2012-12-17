@@ -36,26 +36,10 @@ _multi_re = multi_re(SOURCE_CODE, re.IGNORECASE | re.DOTALL)
 
 def is_source_file(file_content):
     '''
-    @param file_content:
-    @return: A tuple with (
-                            a re.match object if the file_content matches a source code file,
-                            a string with the source code programming language
-                          ).
-
-    >>> is_source_file( 'foo <? echo "a"; ?> bar' ) != (None, None )
-    True
-
-    >>> is_source_file( 'foo <? echo "bar' ) == (None, None )
-    True
-
-    >>> is_source_file( 'foo <?xml ?> "bar' ) == (None, None )
-    True
-
-    >>> is_source_file( 'foo <?xpacket ?> "bar' ) == (None, None )
-    True
-
-    >>> is_source_file( 'foo <?ypacket ?> "bar' ) != (None, None )
-    True
+    @param file_content: The content of the http response body to analyze
+    @return: A tuple with:
+                a re.match object if the file_content matches a source code file,
+                a string with the source code programming language
     '''
     for match, _, _, lang in _multi_re.query(file_content):
         return (match, lang)
