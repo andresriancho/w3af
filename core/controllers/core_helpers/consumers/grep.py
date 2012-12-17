@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.core_helpers.consumers.constants import POISON_PILL
-
 from core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 
 
@@ -36,8 +35,7 @@ class grep(BaseConsumer):
         @param grep_plugins: Instances of grep plugins in a list
         @param w3af_core: The w3af core that we'll use for status reporting
         '''
-        super(grep, self).__init__(grep_plugins, w3af_core,
-                                   thread_name='Greper')
+        super(grep, self).__init__(grep_plugins, w3af_core, create_pool=False)
 
     def run(self):
         '''
@@ -58,7 +56,10 @@ class grep(BaseConsumer):
 
             else:
                 request, response = work_unit
-
+                
+                # Note that I'm NOT processing the grep plugin data in different
+                # threads. This is because it makes no sense (these are all CPU
+                # bound).
                 for plugin in self._consumer_plugins:
                     try:
                         plugin.grep_wrapper(request, response)
