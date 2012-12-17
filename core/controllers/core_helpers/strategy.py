@@ -110,7 +110,7 @@ class w3af_core_strategy(object):
 
     def stop(self):
         self.terminate()
-
+        
     def pause(self, pause_yes_no):
         # FIXME: Consumers should have something to do with this, most likely
         # another constant similar to the poison pill
@@ -127,7 +127,7 @@ class w3af_core_strategy(object):
 
     def join_all_consumers(self):
         '''
-        End the strategy specific things.
+        Wait for the consumers to process all their work.
         '''
         self._teardown_grep()
         self._teardown_audit()
