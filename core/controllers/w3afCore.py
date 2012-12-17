@@ -68,9 +68,22 @@ class w3afCore(object):
         Init some variables and files.
         Create the URI opener.
         '''
+        self._init_core_internals()
+        
+    def _init_core_internals(self):
+        '''
+        Create directories, threads and consumers required to perform a w3af
+        scan. Used both when we init the core and when we want to clear all
+        the previous results and state from an old scan and start again.
+        
+        @return: None
+        '''
         # Create some directories
         self._home_directory()
         self._tmp_directory()
+
+        # Reset global sequence number generator
+        consecutive_number_generator.reset()
 
         self._create_worker_pool()
                 
@@ -84,7 +97,6 @@ class w3afCore(object):
         self.progress = progress()
 
         # Init some internal variables
-        self._init_internal_vars()
         self.plugins.zero_enabled_plugins()
 
         # Init the 404 detection for the whole framework
@@ -143,12 +155,12 @@ class w3afCore(object):
                   ' to stop.'
             om.out.error(msg)
             raise
-        except w3afMustStopByUserRequest:
+        except w3afMustStopByUserRequest, sbur:
             # I don't have to do anything here, since the user is the one that
             # requested the scanner to stop. From here the code continues at the
             # "finally" clause, which simply shows a message saying that the
             # scan finished.
-            pass
+            om.out.information('%s' % sbur)
         except w3afMustStopByUnknownReasonExc:
             #
             # TODO: Jan 31, 2011. Temporary workaround. Make w3af crash on
@@ -166,21 +178,23 @@ class w3afCore(object):
             raise
         finally:
 
+            self.status.scan_finished()
+
+            time_spent = epoch_to_string(self._start_time_epoch)
+            msg = 'Scan finished in %s' % time_spent
+            
             try:
-                msg = 'Scan finished in %s' % epoch_to_string(
-                    self._start_time_epoch)
                 om.out.information(msg)
             except:
                 # In some cases we get here after a disk full exception
-                # where the output manager can't even writea log message
+                # where the output manager can't even write a log message
                 # to disk and/or the console. Seen this happen many times
                 # in LiveCDs like Backtrack that don't have "real disk space"
-                pass
+                print msg
 
             self.strategy.stop()
-            self.status.stop()
             self.progress.stop()
-
+        
             self._end()
 
     def _create_worker_pool(self):
@@ -193,7 +207,8 @@ class w3afCore(object):
         '''
         now = time.time()
         diff = now - self._start_time_epoch
-        return diff / 60
+        run_time = diff / 60
+        return run_time
 
     def cleanup(self):
         '''
@@ -205,9 +220,6 @@ class w3afCore(object):
         '''
         # Clean all data that is stored in the kb
         kb.cleanup()
-
-        # Zero internal variables from the core
-        self._init_internal_vars()
 
         # Not cleaning the config is a FEATURE, because the user is most likely
         # going to start a new scan to the same target, and he wants the proxy,
@@ -229,14 +241,26 @@ class w3afCore(object):
 
         @return: None. The stop method can take some seconds to return.
         '''
-        om.out.debug('The user stopped the core.')
+        om.out.debug('The user stopped the core, finishing threads...')
         
         self.strategy.stop()
         self.uri_opener.stop()
-        close_all_db_connections()
         
-        self.worker_pool.terminate()
-        self.worker_pool.join()
+        stop_start_time = time.time()
+        
+        wait_max = 10 # seconds
+        loop_delay = 0.5
+        for _ in xrange(int(wait_max/loop_delay)):
+            if not self.status.is_running():
+                msg = '%s were needed to stop the core.' % epoch_to_string(stop_start_time)
+                break
+            
+            time.sleep(loop_delay)
+        else:
+            msg = 'The core failed to stop in %s seconds, forcing exit.'
+            msg = msg % wait_max
+        
+        om.out.debug(msg)
     
     def quit(self):
         '''
@@ -285,10 +309,11 @@ class w3afCore(object):
             # from the history in their end() method. 
             om.out.end_output_plugins()
             
-            # End the xUrllib (clear the cache) and create a new one, so it can
-            # be used by exploit plugins.
+            # End the xUrllib (clear the cache
+            #
+            # A new instance will be created at _init_core_internals so that
+            # we can perform some exploitation.
             self.uri_opener.end()
-            self.uri_opener = xUrllib()
             
             close_all_db_connections()
             
@@ -300,12 +325,12 @@ class w3afCore(object):
                 raise
 
         finally:
-            # The scan has ended, but the worker pool might be needed for
-            # the exploiting section. So we join the current workers and
-            # create a new pool.
+            # The scan has ended, terminate all workers
+            #
+            # The pool might be needed during the exploiting phase create a new
+            # pool in _init_core_internals()
             self.worker_pool.terminate()
             self.worker_pool.join()
-            self._create_worker_pool()
             
             self.status.stop()
             self.progress.stop()
@@ -314,7 +339,9 @@ class w3afCore(object):
             self.plugins.zero_enabled_plugins()
 
             # No targets to be scanned.
-            cf.cf.save('targets', [])
+            cf.cf.save('targets', set())
+            
+            self._init_core_internals()
 
     def _home_directory(self):
         '''
@@ -346,14 +373,3 @@ class w3afCore(object):
             print msg
             sys.exit(-3)
 
-    def _init_internal_vars(self):
-        '''
-        Init some internal variables; this method is called when the whole
-        process starts, and when the user performs a clear() in the gtk user
-        interface.
-        '''
-        self.plugins.initialized = False
-        self.target.clear()
-
-        # Reset global sequence number generator
-        consecutive_number_generator.reset()

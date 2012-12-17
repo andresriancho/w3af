@@ -32,32 +32,25 @@ class w3af_core_status(object):
         # Init some internal values
         self._is_running = False
         self._paused = False
-        self._stopped = True
-
+        
         # This indicates if we are doing discovery/audit/exploit/etc...
-        self._currentPhase = ''
+        self._current_phase = ''
         # This indicates the plugin that is running right now
-        self._runningPlugin = ''
+        self._running_plugin = ''
         # The current fuzzable request that the core is analyzing
         self._current_fuzzable_request = ''
 
     def pause(self, pause_yes_no):
         self._paused = pause_yes_no
         self._is_running = not pause_yes_no
-        self._stopped = False
         om.out.debug('The user paused/unpaused the scan.')
 
     def start(self):
         self._is_running = True
-        self._stopped = False
 
     def stop(self):
         # Now I'm definitely not running:
         self._is_running = False
-        self._stopped = True
-
-    def is_stopped(self):
-        return self._stopped
 
     def get_status(self):
         '''
@@ -79,8 +72,8 @@ class w3af_core_status(object):
         '''
         if self._paused:
             return 'Paused.'
-        elif self._stopped:
-            return 'Not running.'
+        elif not self.is_running():
+            return 'Stopped.'
         else:
             if self.get_phase() != '' and self.get_running_plugin() != '':
                 running = 'Running %s.%s on %s.'
@@ -94,7 +87,7 @@ class w3af_core_status(object):
         '''
         @return: The phase which the core is running.
         '''
-        return self._currentPhase
+        return self._current_phase
 
     def set_phase(self, phase):
         '''
@@ -103,7 +96,7 @@ class w3af_core_status(object):
 
         @param phase: The phase which the w3afCore is running in a given moment
         '''
-        self._currentPhase = phase
+        self._current_phase = phase
 
     def set_running_plugin(self, plugin_name, log=True):
         '''
@@ -115,13 +108,13 @@ class w3af_core_status(object):
         '''
         if log:
             om.out.debug('Starting plugin: ' + plugin_name)
-        self._runningPlugin = plugin_name
+        self._running_plugin = plugin_name
 
     def get_running_plugin(self):
         '''
         @return: The plugin that the core is running when the method is called.
         '''
-        return self._runningPlugin
+        return self._running_plugin
 
     def is_running(self):
         '''
@@ -129,6 +122,9 @@ class w3af_core_status(object):
         core is still working, it should call is_running() to know that.
         '''
         return self._is_running
+    
+    def scan_finished(self):
+        self._is_running = False
 
     def get_current_fuzzable_request(self):
         '''
