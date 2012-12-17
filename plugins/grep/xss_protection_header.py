@@ -44,7 +44,7 @@ class xss_protection_header(GrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         headers = response.get_headers()
-        heaver_value, header_name = headers.iget('x-xss-protection', None)
+        heaver_value, header_name = headers.iget('x-xss-protection', '')
         heaver_value = heaver_value.strip()
         if heaver_value == '0':
             i = info.info()
