@@ -59,9 +59,10 @@ def handle_crash(w3af_core, _type, value, tb, plugins=''):
 
 
 def handle_keyboardinterrupt(w3af_core):
-    helpers.endThreads()
+    # Kills some threads from the GUI, not from the core
+    helpers.end_threads()
         
-    w3af_core.stop()
+    w3af_core.quit()
 
     import threading
     import pprint
