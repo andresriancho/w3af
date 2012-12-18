@@ -24,7 +24,11 @@ import unittest
 from nose.plugins.attrib import attr
 
 from core.data.kb.info import Info
+from core.data.parsers.url import URL
 
+class MockInfo(Info):
+    def __init__(self):
+        super(MockInfo, self).__init__('TestCase', 'desc', 1, 'plugin_name')
 
 @attr('smoke')
 class TestInfo(unittest.TestCase):
@@ -36,7 +40,7 @@ class TestInfo(unittest.TestCase):
     '''
 
     def test_convert_to_range(self):
-        inf = Info()
+        inf = MockInfo()
 
         res = inf._convert_to_range_wrapper([1, 2, 3, 4, 5, 6])
         self.assertEquals('1 to 6', res)
@@ -58,3 +62,24 @@ class TestInfo(unittest.TestCase):
 
         res = len(inf._convert_to_range_wrapper(range(0, 30000, 2)).split())
         self.assertEquals(15001, res)
+
+    def test_set_uri(self):
+        i = MockInfo()
+        self.assertRaises(TypeError, i.set_uri, 'http://www.w3af.com/')
+        
+        uri = URL('http://www.w3af.com/')
+        i.set_uri(uri)
+        self.assertEqual(i.get_uri(), uri)
+
+    def test_set_url(self):
+        i = MockInfo()
+        self.assertRaises(TypeError, i.set_url, 'http://www.w3af.com/?id=1')
+        
+        uri = URL('http://www.w3af.com/?id=1')
+        url = URL('http://www.w3af.com/')
+        
+        i.set_url(uri)
+        
+        self.assertEqual(i.get_uri(), uri)
+        self.assertEqual(i.get_url(), url)
+    

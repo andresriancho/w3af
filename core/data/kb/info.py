@@ -74,17 +74,6 @@ class Info(dict):
         return self._name
 
     def set_url(self, url):
-        '''
-        >>> i = Info()
-        >>> i.set_url('http://www.google.com/')
-        Traceback (most recent call last):
-          ...
-        TypeError: The URL in the info object must be of url.URL type.
-        >>> url = URL('http://www.google.com/')
-        >>> i.set_url(url)
-        >>> i.get_url() == url
-        True
-        '''
         if not isinstance(url, URL):
             error = 'The URL in the info object must be of url.URL type.'
             raise TypeError(error)
@@ -96,21 +85,9 @@ class Info(dict):
         return self._url
 
     def set_uri(self, uri):
-        '''
-        >>> i = Info()
-        >>> i.set_uri('http://www.google.com/')
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        TypeError: The URI in the info object must be of url.URL type.
-        >>> uri = URL('http://www.google.com/')
-        >>> i = Info()
-        >>> i.set_uri(uri)
-        >>> i.get_uri() == uri
-        True
-        '''
         if not isinstance(uri, URL):
-            raise TypeError(
-                'The URI in the info object must be of url.URL type.')
+            msg = 'The URI in the info object must be of url.URL type.'
+            raise TypeError(msg)
 
         self._uri = uri
         self._url = uri.uri2url()
