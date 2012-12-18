@@ -42,7 +42,7 @@ from core.controllers.misc.temp_dir import get_temp_dir
 from core.controllers.misc.FileLock import FileLock, FileLockRead
 from core.data.db.db import DB
 from core.data.db.db import WhereHelper
-
+from core.data.fuzzer.utils import rand_alpha
 
 class HistoryItem(object):
     '''Represents history item.'''
@@ -120,8 +120,8 @@ class HistoryItem(object):
         db_name = os.path.join(get_temp_dir(), 'db_' + session_name)
 
         # Find one database file that does NOT exist
-        for i in xrange(100):
-            newdb_name = db_name + '-' + str(i)
+        for _ in xrange(100):
+            newdb_name = db_name + '-' + rand_alpha(4)
             if not os.path.exists(newdb_name):
                 db_name = newdb_name
                 break
@@ -133,8 +133,8 @@ class HistoryItem(object):
         tablename = self.get_table_name()
         # Init tables
         self._db.create_table(tablename,
-                             self.get_columns(),
-                             self.get_primary_key_columns())
+                              self.get_columns(),
+                              self.get_primary_key_columns())
         self._db.create_index(tablename, self.get_index_columns())
         # Init dirs
         try:
