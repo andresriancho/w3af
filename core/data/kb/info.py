@@ -104,15 +104,14 @@ class Info(dict):
     def set_desc(self, desc):
         if not isinstance(desc, basestring):
             raise TypeError('Descriptions need to be strings.')
+        
+        if len(desc) <= 4:
+            raise ValueError('Description too short')
+        
         self._desc = desc
 
     def get_desc(self, with_id=True):
-        #
-        #    TODO: Who's creating a Info() object and not setting a description?!
-        #
-        if self._desc is None:
-            return 'No description was set for this object.'
-
+        
         if self._id is not None and self._id != 0 and with_id:
             if not self._desc.strip().endswith('.'):
                 self._desc += '.'
