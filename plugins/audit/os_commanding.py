@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from __future__ import with_statement
 
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
@@ -32,6 +31,7 @@ from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 from core.data.constants.file_patterns import FILE_PATTERNS
+from core.data.kb.vuln import Vuln
 
 
 class os_commanding(AuditPlugin):
@@ -107,19 +107,16 @@ class os_commanding(AuditPlugin):
                     # Search for the correct command and separator
                     sentOs, sentSeparator = self._get_os_separator(mutant)
 
+                    desc = 'OS Commanding was found at: %s' % mutant.found_at()
                     # Create the vuln obj
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_name('OS commanding vulnerability')
-                    v.set_severity(severity.HIGH)
+                    v = Vuln('OS commanding vulnerability', desc,
+                             severity.HIGH, response.id, self.get_name(),
+                             mutant)
+
                     v['os'] = sentOs
                     v['separator'] = sentSeparator
-                    v.set_desc(
-                        'OS Commanding was found at: ' + mutant.found_at())
-                    v.set_dc(mutant.get_dc())
-                    v.set_id(response.id)
-                    v.set_uri(response.get_uri())
                     v.add_to_highlight(file_pattern_match)
+                    
                     kb.kb.append_uniq(self, 'os_commanding', v)
                     break
 
@@ -158,17 +155,15 @@ class os_commanding(AuditPlugin):
                 success, responses = ed.delay_is_controlled()
 
                 if success:
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_name('OS commanding vulnerability')
-                    v.set_severity(severity.HIGH)
+                    desc = 'OS Commanding was found at: %s' % mutant.found_at()
+                                        
+                    v = Vuln('OS commanding vulnerability', desc,
+                             severity.HIGH, [r.id for r in responses],
+                             self.get_name(), mutant)
+
                     v['os'] = delay_obj.get_OS()
                     v['separator'] = delay_obj.get_separator()
-                    v.set_desc(
-                        'OS Commanding was found at: ' + mutant.found_at())
-                    v.set_dc(mutant.get_dc())
-                    v.set_id([r.id for r in responses])
-                    v.set_uri(r.get_uri())
+
                     kb.kb.append_uniq(self, 'os_commanding', v)
 
                     break

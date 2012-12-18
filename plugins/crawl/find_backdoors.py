@@ -24,12 +24,12 @@ import re
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.exceptions import w3afException
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 # By aungkhant. Lists are taken from underground shell repositories and
 # common sense
@@ -156,15 +156,14 @@ class find_backdoors(CrawlPlugin):
             om.out.debug('Failed to GET webshell:' + web_shell_url)
         else:
             if self._is_possible_backdoor(response):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('Possible web backdoor')
-                v.set_severity(severity.HIGH)
+                desc = 'A web backdoor was found at: "%s"; this could ' \
+                       'indicate that the server has been compromised.'
+                desc = desc % response.get_url()
+                
+                v = Vuln('Potential web backdoor', desc, severity.HIGH,
+                         response.id, self.get_name())
                 v.set_url(response.get_url())
-                msg = 'A web backdoor was found at: "%s"; this could ' \
-                    'indicate that the server was hacked.' % v.get_url()
-                v.set_desc(msg)
+                
                 kb.kb.append(self, 'backdoors', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 

@@ -21,8 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -30,6 +28,8 @@ from core.controllers.exceptions import w3afException, w3afMustStopException
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class buffer_overflow(AuditPlugin):
@@ -99,12 +99,12 @@ class buffer_overflow(AuditPlugin):
         try:
             orig_resp = self._uri_opener.send_mutant(freq)
         except w3afException:
-            msg = 'Failed to perform the initial request during buffer'
-            msg += ' overflow testing'
+            msg = 'Failed to perform the initial request during buffer'\
+                  ' overflow testing'
             om.out.debug(msg)
         else:
-            mutants = create_mutants(
-                freq, self.BUFFER_TESTS, orig_resp=orig_resp)
+            mutants = create_mutants(freq, self.BUFFER_TESTS,
+                                     orig_resp=orig_resp)
 
             self.worker_pool.map(self._send_request, mutants)
 
@@ -116,14 +116,14 @@ class buffer_overflow(AuditPlugin):
         try:
             response = self._uri_opener.send_mutant(mutant)
         except (w3afException, w3afMustStopException):
-            i = info.info(mutant)
-            i.set_plugin_name(self.get_name())
-            i.set_name('Potential buffer overflow vulnerability')
-            msg = 'A potential (most probably a false positive than a bug)' \
-                  ' buffer-overflow was found when requesting: "%s", using' \
-                  ' HTTP method %s. The data sent was: "%s".'
-            msg = msg % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
-            i.set_desc(msg)
+            desc = 'A potential (most probably a false positive than a bug)' \
+                   ' buffer-overflow was found when requesting: "%s", using' \
+                   ' HTTP method %s. The data sent was: "%s".'
+            desc = desc % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
+
+            i = Info('Potential buffer overflow vulnerability', desc,
+                     severity.HIGH, response.ids, self.get_name(), mutant)
+            
             kb.kb.append_uniq(self, 'buffer_overflow', i)
         else:
             self._analyze_result(mutant, response)
@@ -135,16 +135,16 @@ class buffer_overflow(AuditPlugin):
         for error_str in self._multi_in.query(response.body):
             # And not in the original response
             if error_str not in mutant.get_original_response_body() and \
-                    self._has_no_bug(mutant):
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_severity(severity.MEDIUM)
-                v.set_name('Buffer overflow vulnerability')
-                msg = 'A potential buffer overflow (accurate detection is' \
-                      ' hard...) was found at: %s' % mutant.found_at()
-                v.set_desc(msg)
+            self._has_no_bug(mutant):
+                desc = 'A potential buffer overflow (accurate detection is' \
+                       ' hard...) was found at: %s' % mutant.found_at()
+                      
+                v = Vuln('Buffer overflow vulnerability', desc,
+                         severity.MEDIUM, response.id, self.get_name(),
+                         mutant)
+            
                 v.add_to_highlight(error_str)
+                
                 kb.kb.append_uniq(self, 'buffer_overflow', v)
 
     def end(self):

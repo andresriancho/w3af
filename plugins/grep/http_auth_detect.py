@@ -23,13 +23,13 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.parsers.parser_cache as parser_cache
 
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
 
 
 class http_auth_detect(GrepPlugin):
@@ -79,15 +79,13 @@ class http_auth_detect(GrepPlugin):
         if ('@' in response.get_uri() and
                 self._auth_uri_regex.match(response.get_uri().url_string)):
             # An authentication URI was found!
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            desc = 'The resource: "%s" has a user and password in' \
+                   ' the URI.'
+            desc = desc % response.get_uri()
+            v = Vuln('Basic HTTP credentials', desc, severity.HIGH,
+                     response.id, self.get_name())
+
             v.set_url(response.get_url())
-            v.set_id(response.id)
-            desc = 'The resource: "%s" has a user and password in ' \
-                'the URI.' % response.get_uri()
-            v.set_desc(desc)
-            v.set_severity(severity.HIGH)
-            v.set_name('Basic HTTP credentials')
             v.add_to_highlight(response.get_uri().url_string)
 
             kb.kb.append(self, 'userPassUri', v)
@@ -112,17 +110,15 @@ class http_auth_detect(GrepPlugin):
 
             if ('@' in url.url_string and
                     self._auth_uri_regex.match(url.url_string)):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_url(response.get_url())
-                v.set_id(response.id)
-                msg = 'The resource: "' + response.get_url(
-                ) + '" has a user and password in the'
-                msg += ' body. The offending URL is: "' + url + '".'
-                v.set_desc(msg)
 
-                v.set_severity(severity.HIGH)
-                v.set_name('Basic HTTP credentials')
+                desc = 'The resource: "%s" has a user and password in the'\
+                       ' body. The offending URL is: "%s".'
+                desc = desc % (response.get_url(), url)
+                
+                v = Vuln('Basic HTTP credentials', desc,
+                         severity.HIGH, response.id, self.get_name())
+
+                v.set_url(response.get_url())
                 v.add_to_highlight(url.url_string)
 
                 kb.kb.append(self, 'userPassUri', v)
@@ -142,28 +138,31 @@ class http_auth_detect(GrepPlugin):
 
         if realm is None:
             # Report this strange case
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Authentication without www-authenticate header')
+            desc = 'The resource: "%s" requires authentication (HTTP Code'\
+                   ' 401) but the www-authenticate header is not present.'\
+                   ' This requires human verification.'
+            desc = desc % response.get_url() 
+            i = Info('Authentication without www-authenticate header', desc,
+                     severity.MEDIUM, response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            i.set_desc('The resource: "' + response.get_url() + '" requires authentication ' +
-                       '(HTTP Code 401) but the www-authenticate header is not present. This requires ' +
-                       'human verification.')
+
             kb.kb.append(self, 'non_rfc_auth', i)
 
         else:
+            desc = 'The resource: "%s" requires authentication. The realm is:'\
+                   ' "%s".'
+            desc = desc % (response.get_url(), realm)
             # Report the common case, were a realm is set.
-            i = info.info()
-            i.set_plugin_name(self.get_name())
             if 'ntlm' in realm.lower():
-                i.set_name('NTLM authentication')
+                
+                i = Info('NTLM authentication', desc,
+                         severity.LOW, response.id, self.get_name())
+
             else:
-                i.set_name('HTTP Basic authentication')
+                i = Info('HTTP Basic authentication', desc,
+                         severity.MEDIUM, response.id, self.get_name())
+
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            i.set_desc('The resource: "' + response.get_url() + '" requires authentication.' +
-                       ' The realm is: "' + realm + '".')
             i['message'] = realm
             i.add_to_highlight(realm)
 

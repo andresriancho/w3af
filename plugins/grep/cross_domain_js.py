@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -75,7 +75,7 @@ class cross_domain_js(GrepPlugin):
                     script_domain = script_full_url.get_domain()
 
                     if script_domain != response.get_url().get_domain():
-                        i = info.info()
+                        i = Info()
                         i.set_plugin_name(self.get_name())
                         i.set_name('Cross-domain javascript source')
                         i.set_url(url)

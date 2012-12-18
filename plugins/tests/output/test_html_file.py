@@ -22,8 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import re
 
-import core.data.kb.vuln as vuln
-
+from core.data.kb.vuln import Vuln
 from core.data.parsers.url import URL
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -80,7 +79,7 @@ class TestHTMLOutput(PluginTest):
             mo = vuln_url_re.search(line)
             if mo:
                 url = URL(mo.group(1))
-                v = vuln.vuln()
+                v = Vuln('TestCase', 'desc', 'High', 1, 'plugin')
                 v.set_url(url)
                 vulns.append(v)
 

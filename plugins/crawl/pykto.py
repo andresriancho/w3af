@@ -25,7 +25,6 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -39,6 +38,7 @@ from core.data.options.option_types import INPUT_FILE, BOOL, LIST
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class pykto(CrawlPlugin):
@@ -426,24 +426,14 @@ class pykto(CrawlPlugin):
         if self._analyze_result(response, expected_response, parameters, url):
             kb.kb.append(self, 'url', response.get_url())
 
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            desc = 'pykto plugin found a vulnerability at URL: "%s".'\
+                   ' Vulnerability description: "%s".'
+            desc = desc % (response.get_url(), desc.strip())
+
+            v = Vuln('Insecure resource', desc, severity.LOW,
+                     response.id, self.get_name())
             v.set_uri(response.get_uri())
             v.set_method(method)
-            vuln_desc = 'pykto plugin found a vulnerability at URL: "' + \
-                v.get_url() + '". '
-            vuln_desc += 'Vulnerability description: "' + desc.strip() + '"'
-            if not vuln_desc.endswith('.'):
-                vuln_desc += '.'
-            v.set_desc(vuln_desc)
-            v.set_id(response.id)
-
-            if not response.get_url().get_path().endswith('/'):
-                msg = 'Insecure file - ' + response.get_url().get_path()
-            else:
-                msg = 'Insecure directory - ' + response.get_url().get_path()
-            v.set_name(msg)
-            v.set_severity(severity.LOW)
 
             kb.kb.append(self, 'vuln', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())

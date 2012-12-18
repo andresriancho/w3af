@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alpha, rand_alnum
 from core.data.dc.headers import Headers
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
 
@@ -88,16 +88,15 @@ class dav(AuditPlugin):
             'xmlns:a="DAV:"' in res
 
         if content_matches and res.get_code() in xrange(200, 300):
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_url(res.get_url())
-            v.set_id(res.id)
-            v.set_severity(severity.MEDIUM)
-            v.set_name('Insecure DAV configuration')
-            v.set_method('SEARCH')
             msg = 'Directory listing with HTTP SEARCH method was found at' \
                   'directory: "%s".' % domain_path
-            v.set_desc(msg)
+                  
+            v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
+                     res.id, self.get_name())
+
+            v.set_url(res.get_url())
+            v.set_method('SEARCH')
+            
             kb.kb.append(self, 'dav', v)
 
     #pylint: disable=C0103
@@ -117,16 +116,15 @@ class dav(AuditPlugin):
             domain_path, data=content, headers=hdrs)
 
         if "D:href" in res and res.get_code() in xrange(200, 300):
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_url(res.get_url())
-            v.set_id(res.id)
-            v.set_severity(severity.MEDIUM)
-            v.set_name('Insecure DAV configuration')
-            v.set_method('PROPFIND')
             msg = 'Directory listing with HTTP PROPFIND method was found at' \
                   ' directory: "%s".' % domain_path
-            v.set_desc(msg)
+
+            v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
+                     res.id, self.get_name())
+
+            v.set_url(res.get_url())
+            v.set_method('PROPFIND')
+
             kb.kb.append(self, 'dav', v)
 
     #pylint: disable=C0103
@@ -142,46 +140,46 @@ class dav(AuditPlugin):
         # check if uploaded
         res = self._uri_opener.GET(url, cache=True)
         if res.get_body() == rnd_content:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_url(url)
-            v.set_id([put_response.id, res.id])
-            v.set_severity(severity.HIGH)
-            v.set_name('Insecure DAV configuration')
-            v.set_method('PUT')
             msg = 'File upload with HTTP PUT method was found at resource:' \
                   ' "%s". A test file was uploaded to: "%s".'
-            v.set_desc(msg % (domain_path, res.get_url()))
+            msg = msg % (domain_path, res.get_url())
+            
+            v = Vuln('Insecure DAV configuration', msg, severity.HIGH,
+                     [put_response.id, res.id], self.get_name())
+
+            v.set_url(url)
+            v.set_method('PUT')
+            
             kb.kb.append(self, 'dav', v)
 
         # Report some common errors
         elif put_response.get_code() == 500:
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_url(url)
-            i.set_id(res.id)
-            i.set_name('DAV incorrect configuration')
-            i.set_method('PUT')
             msg = 'DAV seems to be incorrectly configured. The web server' \
                   ' answered with a 500 error code. In most cases, this means'\
                   ' that the DAV extension failed in some way. This error was'\
                   ' found at: "%s".' % put_response.get_url()
-            i.set_desc(msg)
+
+            i = Info('DAV incorrect configuration', msg, res.id, self.get_name())
+
+            i.set_url(url)
+            i.set_method('PUT')
+            
             kb.kb.append(self, 'dav', i)
 
         # Report some common errors
         elif put_response.get_code() == 403:
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_url(url)
-            i.set_id([put_response.id, res.id])
-            i.set_name('DAV insufficient privileges')
-            i.set_method('PUT')
             msg = 'DAV seems to be correctly configured and allowing you to'\
                   ' use the PUT method but the directory does not have the'\
                   ' correct permissions that would allow the web server to'\
                   ' write to it. This error was found at: "%s".'
-            i.set_desc(msg % put_response.get_url())
+            msg = msg % put_response.get_url()
+            
+            i = Info('DAV incorrect configuration', msg,
+                     [put_response.id, res.id], self.get_name())
+
+            i.set_url(url)
+            i.set_method('PUT')
+            
             kb.kb.append(self, 'dav', i)
 
     def end(self):

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.constants.response_codes as response_codes
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -134,7 +134,7 @@ class allowed_methods(InfrastructurePlugin):
 
             if non_exist_response.get_code() not in self.BAD_CODES\
                     and get_response.get_body() == non_exist_response.get_body():
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Non existent methods default to GET')
                 i.set_url(url)
@@ -177,7 +177,7 @@ class allowed_methods(InfrastructurePlugin):
         if set(allowed_methods).intersection(self.DAV_METHODS):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this information
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url)
             i.set_url(url)
@@ -191,7 +191,7 @@ class allowed_methods(InfrastructurePlugin):
         else:
             # Save the results in the KB so that other plugins can use this information
             # Do not remove these information, other plugins REALLY use it !
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Allowed methods for ' + url)
             i.set_url(url)

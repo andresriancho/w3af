@@ -23,7 +23,7 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
@@ -109,7 +109,7 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
             response_body = response.get_body()
             if 'Fatal error: ' in response_body:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('WordPress path disclosure')
                 i.set_url(pvuln_url)

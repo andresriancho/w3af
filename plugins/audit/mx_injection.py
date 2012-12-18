@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.vuln import Vuln
 
 
 class mx_injection(AuditPlugin):
@@ -81,13 +81,13 @@ class mx_injection(AuditPlugin):
             mx_error_list = self._multi_in.query(response.body)
             for mx_error in mx_error_list:
                 if mx_error not in mutant.get_original_response_body():
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_name('MX injection vulnerability')
-                    v.set_severity(severity.MEDIUM)
-                    v.set_desc(
-                        'MX injection was found at: ' + mutant.found_at())
-                    v.set_id(response.id)
+                    
+                    desc = 'MX injection was found at: %s' % mutant.found_at()
+                    
+                    v = Vuln('MX injection vulnerability', desc,
+                             severity.MEDIUM, response.id, self.get_name(),
+                             mutant)
+                    
                     v.add_to_highlight(mx_error)
                     kb.kb.append_uniq(self, 'mx_injection', v)
                     break

@@ -23,12 +23,12 @@ from __future__ import with_statement
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 HEADER_NAME = 'vulnerable073b'
 HEADER_VALUE = 'ae5cw3af'
@@ -85,7 +85,7 @@ class response_splitting(AuditPlugin):
                     msg += ' modifies the headers of the response, but this error was sent while'
                     msg += ' testing for response splitting: "' + error + '"'
 
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_desc(msg)
                     i.set_var(mutant.get_var())
@@ -98,13 +98,12 @@ class response_splitting(AuditPlugin):
                     return
 
             if self._header_was_injected(response):
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_desc(
-                    'Response Splitting was found at: ' + mutant.found_at())
-                v.set_id(response.id)
-                v.set_severity(severity.MEDIUM)
-                v.set_name('Response splitting vulnerability')
+                desc = 'Response splitting was found at: %s' % mutant.found_at()
+                
+                v = Vuln('Response splitting vulnerability', desc,
+                         severity.MEDIUM, response.id, self.get_name(),
+                         mutant)
+
                 kb.kb.append(self, 'response_splitting', v)
 
     def end(self):
@@ -136,7 +135,7 @@ class response_splitting(AuditPlugin):
                 msg += ' Please verify manually.'
                 om.out.information(msg)
 
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_desc(msg)
                 i.set_id(response.id)

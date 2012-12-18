@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.parsers.parser_cache as parser_cache
 
 from core.data.fuzzer.fuzzer import create_mutants
+from core.data.kb.vuln import Vuln
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.audit_plugin import AuditPlugin
 
@@ -69,20 +69,19 @@ class global_redirect(AuditPlugin):
         Analyze results of the _send_mutant method.
         '''
         if self._find_redirect(response):
-            v = vuln.vuln(mutant)
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('Insecure redirection')
-            v.set_severity(severity.MEDIUM)
-            v.set_desc('Global redirect was found at: ' + mutant.found_at())
+            desc = 'Global redirect was found at: ' + mutant.found_at()
+            
+            v = Vuln('Insecure redirection', desc, severity.MEDIUM,
+                     response.id, self.get_name(), mutant)
+
             kb.kb.append_uniq(self, 'global_redirect', v)
 
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(
-            kb.kb.get('global_redirect', 'global_redirect'), 'VAR')
+        self.print_uniq(kb.kb.get('global_redirect',
+                                  'global_redirect'), 'VAR')
 
     def _find_redirect(self, response):
         '''

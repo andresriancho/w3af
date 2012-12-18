@@ -67,7 +67,7 @@ class dav(AttackPlugin):
                  a parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln(vuln_obj):
+        if self._verify_Vuln_obj):
             # Create the shell object
             shell_obj = DAVShell(vuln_obj, self._uri_opener, self.worker_pool,
                                  self._exploit_url)

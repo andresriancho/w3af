@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.controllers.output_manager as om
-import core.data.kb.vuln as vuln
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.headers import Headers
+from core.data.kb.vuln import Vuln
 
 
 class xst(AuditPlugin):
@@ -71,15 +71,16 @@ class xst(AuditPlugin):
             # create a regex to test the response.
             regex = re.compile("FakeHeader: *?XST", re.IGNORECASE)
             if re.search(regex, response.get_body()):
-                # If vulnerable record it. This will now become visible on the KB Browser
-                v = vuln.vuln(freq)
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_severity(severity.LOW)
-                v.set_name('Cross site tracing vulnerability')
-                msg = 'The web server at "%s" is vulnerable to Cross Site'\
+                # If vulnerable record it. This will now become visible on
+                # the KB Browser
+                desc = 'The web server at "%s" is vulnerable to Cross Site'\
                       ' Tracing.'
-                v.set_desc(msg % response.get_url())
+                desc = desc % response.get_url()
+                
+                v = Vuln('Cross site tracing vulnerability', desc,
+                         severity.LOW, response.id, self.get_name(),
+                         freq)
+
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                 kb.kb.append(self, 'xst', v)
 

@@ -23,12 +23,13 @@ import re
 
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
-import core.data.kb.vuln as vuln
+import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
-from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.controllers.exceptions import w3afException
+from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
 
 
 class strange_parameters(GrepPlugin):
@@ -55,69 +56,65 @@ class strange_parameters(GrepPlugin):
         try:
             dp = parser_cache.dpc.get_document_parser_for(response)
         except w3afException:
-            pass
-        else:
-            # Note:
-            # - With parsed_references I'm 100% that it's really something in the HTML
-            # that the developer intended to add.
-            #
-            # - The re_references are the result of regular expressions, which in some cases
-            # are just false positives.
-            parsed_references, _ = dp.get_references()
+            return
 
-            for ref in parsed_references:
+        # Note:
+        # - With parsed_references I'm 100% that it's really something in the
+        #   HTML that the developer intended to add.
+        #
+        # - The re_references are the result of regular expressions, which in
+        #   some cases are just false positives.
+        #
+        parsed_references, _ = dp.get_references()
 
-                qs = ref.querystring
+        for ref in parsed_references:
 
-                for param_name in qs:
-                    # This for loop is to address the repeated parameter name issue
-                    for element_index in xrange(len(qs[param_name])):
-                        if self._is_strange(request, param_name, qs[param_name][element_index])\
-                                and (ref.uri2url(), param_name) not in self._already_reported:
-                            # Don't repeat findings
-                            self._already_reported.add(
-                                (ref.uri2url(), param_name))
+            qs = ref.querystring
 
-                            i = info.info()
-                            i.set_plugin_name(self.get_name())
-                            i.set_name('Strange parameter')
-                            i.set_uri(ref)
-                            i.set_id(response.id)
-                            msg = 'The URI: "' + i.get_uri(
-                            ) + '" has a parameter named: "' + param_name
-                            msg += '" with value: "' + qs[param_name][
-                                element_index] + '", which is quite odd.'
-                            i.set_desc(msg)
-                            i.set_var(param_name)
-                            i['parameterValue'] = qs[param_name][element_index]
-                            i.add_to_highlight(qs[param_name][element_index])
+            for param_name in qs:
+                # This for loop is to address the repeated parameter name issue
+                for element_index in xrange(len(qs[param_name])):
+                    if self._is_strange(request, param_name, qs[param_name][element_index])\
+                    and (ref.uri2url(), param_name) not in self._already_reported:
+                        # Don't repeat findings
+                        self._already_reported.add((ref.uri2url(), param_name))
 
-                            kb.kb.append(self, 'strange_parameters', i)
+                        desc = 'The URI: "%s" has a parameter named: "%s"'\
+                               ' with value: "%s", which is very uncommon.'\
+                               ' and requires manual verification.'
+                        desc = desc % (response.get_uri(), param_name,
+                                       qs[param_name][element_index])
 
-                        # To find this kind of vulns
-                        # http://thedailywtf.com/Articles/Oklahoma-
-                        # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
-                        # Sensitive-Data.aspx
-                        if self._is_SQL(request, param_name, qs[param_name][element_index])\
-                                and ref not in self._already_reported:
+                        i = Info('Uncommon query string parameter', desc,
+                                 response.id, self.get_name())
+                        i.set_uri(ref)
+                        i.set_var(param_name)
+                        i['parameterValue'] = qs[param_name][element_index]
+                        i.add_to_highlight(qs[param_name][element_index])
 
-                            # Don't repeat findings
-                            self._already_reported.add(ref)
+                        kb.kb.append(self, 'strange_parameters', i)
 
-                            v = vuln.vuln()
-                            v.set_plugin_name(self.get_name())
-                            v.set_name('Parameter has SQL sentence')
-                            v.set_uri(ref)
-                            v.set_id(response.id)
-                            msg = 'The URI: "' + v.get_uri(
-                            ) + '" has a parameter named: "' + param_name
-                            msg += '" with value: "' + qs[param_name][
-                                element_index] + '", which is a SQL sentence.'
-                            v.set_desc(msg)
-                            v.set_var(param_name)
-                            v['parameterValue'] = qs[param_name][element_index]
-                            v.add_to_highlight(qs[param_name][element_index])
-                            kb.kb.append(self, 'strange_parameters', v)
+                    # To find this kind of vulns
+                    # http://thedailywtf.com/Articles/Oklahoma-
+                    # Leaks-Tens-of-Thousands-of-Social-Security-Numbers,-Other-
+                    # Sensitive-Data.aspx
+                    if self._is_SQL(request, param_name, qs[param_name][element_index])\
+                    and ref not in self._already_reported:
+
+                        # Don't repeat findings
+                        self._already_reported.add(ref)
+                        desc = 'The URI: "%s" has a parameter named: "%s"'\
+                               ' with value: "%s", which is a SQL query.'
+                        desc = desc % (response.get_uri(), param_name,
+                                       qs[param_name][element_index])
+                        v = Vuln('Parameter has SQL sentence', desc,
+                                 severity.LOW, response.id, self.get_name())
+                        v.set_uri(ref)
+                        v.set_var(param_name)
+                        v['parameterValue'] = qs[param_name][element_index]
+                        
+                        v.add_to_highlight(qs[param_name][element_index])
+                        kb.kb.append(self, 'strange_parameters', v)
 
     def end(self):
         '''

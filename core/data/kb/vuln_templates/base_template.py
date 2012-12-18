@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
 
 from core.controllers.configurable import Configurable
 from core.controllers.misc.number_generator import consecutive_number_generator
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import parse_qs
+from core.data.kb.vuln import Vuln
 
 
 class BaseTemplate(Configurable):
@@ -111,13 +111,13 @@ class BaseTemplate(Configurable):
         '''
         @return: A vulnerability with some preconfigured settings
         '''
-        v = vuln.vuln()
-        v.set_plugin_name('Manually added vulnerability')
-        v.set_id(self.get_vuln_id())
-        v.set_severity(severity.HIGH)
-        desc = 'This vulnerability was added to the knowledge-base by the user'\
-               ' and represents a "%s" vulnerability.'
-        v.set_desc(desc % self.get_vulnerability_name())
+        desc = 'This vulnerability was added to the knowledge-base by the'\
+               ' user and represents a "%s" vulnerability.'
+        desc = desc % self.get_vulnerability_name()
+        
+        v = Vuln('Manually added vulnerability', desc, severity.HIGH,
+                 self.get_vuln_id(), 'manual')
+        
         return v
 
     def create_vuln(self):

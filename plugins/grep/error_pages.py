@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.esmre.multi_in import multi_in
 from core.data.esmre.multi_re import multi_re
@@ -158,7 +158,7 @@ class error_pages(GrepPlugin):
     
     def find_error_page(self, request, response):
         for msg in self._multi_in.query(response.body):
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
 
             # Set a nicer name for the vulnerability
@@ -193,7 +193,7 @@ class error_pages(GrepPlugin):
                 match_string = match.group(0)
                 if match_string not in self._already_reported_versions:
                     # Save the info obj
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Error page with information disclosure')
                     i.set_url(response.get_url())

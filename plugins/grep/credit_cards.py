@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.kb.vuln import Vuln
 
 
 def luhnCheck(value):
@@ -88,15 +88,15 @@ class credit_cards(GrepPlugin):
             found_cards = self._find_card(response.get_clear_text_body())
 
             for card in found_cards:
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
+                desc = 'The URL: "%s" discloses the credit card number: "%s"'
+                desc = desc % (response.get_url(), card)
+                
+                v = Vuln('Credit card number disclosure', desc,
+                         severity.LOW, response.id, self.get_name())
+
                 v.set_url(response.get_url())
-                v.set_id(response.id)
-                v.set_severity(severity.LOW)
-                v.set_name('Credit card number disclosure')
                 v.add_to_highlight(card)
-                msg = 'The URL: "%s" discloses the credit card number: "%s"'
-                v.set_desc(msg % (v.get_url(), card))
+                
                 kb.kb.append(self, 'credit_cards', v)
 
     def _find_card(self, body):

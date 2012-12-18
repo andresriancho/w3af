@@ -25,8 +25,6 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.config as cf
 
@@ -35,6 +33,8 @@ from core.controllers.misc.is_source_file import is_source_file
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
 from core.data.constants.file_patterns import FILE_PATTERNS
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class lfi(AuditPlugin):
@@ -151,14 +151,16 @@ class lfi(AuditPlugin):
         file_content_list = self._find_file(response)
         for file_pattern_match in file_content_list:
             if file_pattern_match not in mutant.get_original_response_body():
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('Local file inclusion vulnerability')
-                v.set_severity(severity.MEDIUM)
-                v.set_desc(
-                    'Local File Inclusion was found at: ' + mutant.found_at())
+                
+                desc = 'Local File Inclusion was found at: %s'
+                desc = desc % mutant.found_at()
+                
+                v = Vuln('Local file inclusion vulnerability', desc,
+                         severity.MEDIUM, response.id, self.get_name(),
+                         mutant)
+
                 v['file_pattern'] = file_pattern_match
+                
                 v.add_to_highlight(file_pattern_match)
                 kb.kb.append_uniq(self, 'lfi', v)
                 return
@@ -174,14 +176,12 @@ class lfi(AuditPlugin):
             if match:
                 # We were able to read the source code of the file that is
                 # vulnerable to local file read
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('Local file read vulnerability')
-                v.set_severity(severity.MEDIUM)
-                msg = 'An arbitrary local file read vulnerability was found at: '
-                msg += mutant.found_at()
-                v.set_desc(msg)
+                desc = 'An arbitrary local file read vulnerability was'\
+                       ' found at: %s' % mutant.found_at()
+                
+                v = Vuln('Local file inclusion vulnerability', desc,
+                         severity.MEDIUM, response.id, self.get_name(),
+                         mutant)
 
                 #
                 #    Set which part of the source code to match
@@ -201,12 +201,12 @@ class lfi(AuditPlugin):
             match = regex.search(response.get_body())
 
             if match and not regex.search(mutant.get_original_response_body()):
-                i = info.info(mutant)
-                i.set_plugin_name(self.get_name())
-                i.set_id(response.id)
-                i.set_name('File read error')
                 desc = 'A file read error was found at: %s'
-                i.set_desc(desc % mutant.found_at())
+                desc = desc % mutant.found_at()
+                
+                i = Info('File read error', desc, response.id,
+                         self.get_name(), mutant)
+                
                 kb.kb.append_uniq(self, 'error', i)
 
     def end(self):

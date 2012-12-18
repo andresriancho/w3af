@@ -23,13 +23,13 @@ from math import log, floor
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.mutants.headers_mutant import HeadersMutant
+from core.data.kb.vuln import Vuln
 from core.data.dc.data_container import DataContainer
 
 COMMON_CSRF_NAMES = [
@@ -72,13 +72,11 @@ class csrf(AuditPlugin):
             return
 
         # Ok, we have found vulnerable to CSRF attack request
-        v = vuln.vuln(freq)
-        v.set_plugin_name(self.get_name())
-        v.set_id(orig_response.id)
-        v.set_name('CSRF vulnerability')
-        v.set_severity(severity.HIGH)
         msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
-        v.set_desc(msg)
+        
+        v = Vuln('CSRF vulnerability', msg, severity.HIGH,
+                 orig_response.id, self.get_name(), freq)
+        
         kb.kb.append(self, 'csrf', v)
 
     def _is_resp_equal(self, res1, res2):

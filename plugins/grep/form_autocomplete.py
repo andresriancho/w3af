@@ -27,7 +27,7 @@ import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from core.data.kb.info import info
+from core.data.kb.info import Info
 
 # Find all form elements that don't include the'autocomplete' attribute;
 # otherwise (if included) not equals 'off'
@@ -88,7 +88,7 @@ class form_autocomplete(GrepPlugin):
                 if passwd_inputs and all(map(autocompletable,
                                              chain(passwd_inputs, self._text_input_xpath(form)))):
 
-                    i = info()
+                    i = Info()
                     i.set_name('Auto-completable form')
                     i.set_url(url)
                     i.set_id(response.id)

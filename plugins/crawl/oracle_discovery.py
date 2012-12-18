@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -81,7 +81,7 @@ class oracle_discovery(CrawlPlugin):
                 mo = re_obj.search(response.get_body(), re.DOTALL)
 
                 if mo:
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Oracle application')
                     i.set_url(response.get_url())

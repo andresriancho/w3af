@@ -67,7 +67,7 @@ class local_file_reader(AttackPlugin):
         @param vuln_obj: The vuln to exploit.
         @return: The shell object based on the vulnerability that was passed as a parameter.
         '''
-        if self._verify_vuln(vuln_obj):
+        if self._verify_Vuln_obj):
 
             shell_obj = FileReaderShell(vuln_obj, self._uri_opener,
                                         self.worker_pool,

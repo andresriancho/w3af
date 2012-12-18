@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import plugins.infrastructure.oHmap.hmap as originalHmap
 
 from core.controllers.exceptions import w3afRunOnce, w3afException
@@ -87,7 +87,7 @@ class hmap(InfrastructurePlugin):
             if len(results):
                 server = results[0]
 
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Webserver Fingerprint')
                 desc = 'The most accurate fingerprint for this HTTP server is: "'

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.group_by_min_key import group_by_min_key
@@ -101,7 +101,7 @@ class strange_headers(GrepPlugin):
                         break
                 else:
                     # Create a new info object from scratch and save it to the kb:
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Strange header')
                     i.set_url(response.get_url())
@@ -130,7 +130,7 @@ class strange_headers(GrepPlugin):
         if 'content-location' in response.get_lower_case_headers() \
         and response.get_code() > 300\
         and response.get_code() < 310:
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Content-Location HTTP header anomaly')
             i.set_url(response.get_url())

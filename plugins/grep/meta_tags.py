@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -98,7 +98,7 @@ class meta_tags(GrepPlugin):
                     # Now... if we found something, report it =)
                     if where is not None:
                         # The atribute is interesting!
-                        i = info.info()
+                        i = Info()
                         i.set_plugin_name(self.get_name())
                         i.set_name('Interesting META tag')
                         i.set_uri(response.get_uri())

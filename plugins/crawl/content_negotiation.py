@@ -27,7 +27,7 @@ from itertools import izip, repeat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.options.opt_factory import opt_factory
@@ -260,7 +260,7 @@ class content_negotiation(CrawlPlugin):
                 self._content_negotiation_enabled = True
 
                 # Save the result as an info in the KB, for the user to see it:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('HTTP Content Negotiation enabled')
                 i.set_url(response.get_url())

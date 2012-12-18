@@ -24,8 +24,6 @@ import xml.dom.minidom
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -34,6 +32,8 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class ria_enumerator(CrawlPlugin):
@@ -109,7 +109,7 @@ class ria_enumerator(CrawlPlugin):
     def _analyze_gears_manifest(self, url, response, file_name):
         if '"entries":' in response:
             # Save it to the kb!
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Gears Manifest')
             i.set_url(url)
@@ -130,7 +130,7 @@ class ria_enumerator(CrawlPlugin):
             if 'allow-access-from' in response.get_body() or \
                 'cross-domain-policy' in response.get_body() or \
                     'cross-domain-access' in response.get_body():
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Invalid ' + file_name)
                 i.set_url(response.get_url())
@@ -152,32 +152,25 @@ class ria_enumerator(CrawlPlugin):
             for url in url_list:
                 url = url.getAttribute(attribute)
 
+                desc = 'The "%s" file at "%s" allows flash/silverlight'\
+                       ' access from any site.'
+                desc = desc % (file_name, response.get_url())
+
                 if url == '*':
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
+                    v = Vuln('Insecure RIA settings', desc, severity.LOW,
+                             response.id, self.get_name())
                     v.set_url(response.get_url())
                     v.set_method('GET')
-                    v.set_name('Insecure "' + file_name + '" settings')
-                    v.set_severity(severity.LOW)
-                    msg = 'The "' + file_name + \
-                        '" file at "' + response.get_url() + '" allows'
-                    msg += ' flash/silverlight access from any site.'
-                    v.set_desc(msg)
-                    v.set_id(response.id)
+
                     kb.kb.append(self, 'vuln', v)
-                    om.out.vulnerability(
-                        v.get_desc(), severity=v.get_severity())
+                    om.out.vulnerability(v.get_desc(),
+                                         severity=v.get_severity())
                 else:
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Crossdomain allow ACL')
+                    i = Info('Cross-domain allow ACL', desc, severity.LOW,
+                             response.id, self.get_name())
                     i.set_url(response.get_url())
                     i.set_method('GET')
-                    msg = 'The "' + file_name + \
-                        '" file at "' + response.get_url() + '" allows'
-                    msg += ' flash/silverlight access from "' + url + '".'
-                    i.set_desc(msg)
-                    i.set_id(response.id)
+
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
 

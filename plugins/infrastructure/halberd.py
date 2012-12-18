@@ -42,7 +42,7 @@ import Halberd.clues.analysis as halberd_analysis
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as infokb
+from core.data.kb.info import Infokb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce

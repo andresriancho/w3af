@@ -22,9 +22,9 @@ import tempfile
 
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.data.dc.data_container import DataContainer
+from core.data.kb.vuln import Vuln
 from core.ui.console.tables import table
 from plugins.attack.payloads.base_payload import Payload
 
@@ -58,13 +58,13 @@ class php_sca(Payload):
         def write_vuln_to_kb(vulnty, url, funcs):
             vulndata = php_sca.KB_DATA[vulnty]
             for f in funcs:
-                v = vuln.vuln()
-                v.set_severity(vulndata['severity'])
-                v.set_name(vulndata['name'])
-                v.set_url(url)
+                vuln_sev = vulndata['severity']
+                desc = name = vulndata['name']
+                
+                v = Vuln(name, desc, vuln_sev, 1, self.get_name())
                 v.set_uri(url)
                 v.set_var(f.vulnsources[0])
-                v.set_desc(vulndata['name'])
+
                 args = list(vulndata['kb_key']) + [v]
 
                 # TODO: Extract the method from the PHP code

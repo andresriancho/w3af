@@ -21,15 +21,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from itertools import repeat, izip
 
-import core.data.kb.info as info
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
+import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.threads.threadpool import one_to_many
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class find_jboss(InfrastructurePlugin):
@@ -89,24 +90,19 @@ class find_jboss(InfrastructurePlugin):
             if not is_404(response):
 
                 vuln_url = base_url.url_join(vuln_db_instance['url'])
+                name = vuln_db_instance['name']
+                desc = vuln_db_instance['desc']
 
                 if vuln_db_instance['type'] == 'info':
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name(vuln_db_instance['name'])
-                    i.set_url(vuln_url)
-                    i.set_id(response.id)
-                    i.set_desc(vuln_db_instance['desc'])
-                    kb.kb.append(self, 'find_jboss', i)
+                    o = Info(name, desc, response.id, self.get_name())
 
-                else:
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
-                    v.set_name(vuln_db_instance['name'])
-                    v.set_url(vuln_url)
-                    v.set_id(response.id)
-                    v.set_desc(vuln_db_instance['desc'])
-                    kb.kb.append(self, 'find_jboss', v)
+                else:                    
+                    o = Vuln(name, desc, severity.LOW, response.id,
+                             self.get_name())
+                    
+                o.set_url(vuln_url)
+
+                kb.kb.append(self, 'find_jboss', o)
 
                 fuzzable_requests_to_return.extend(
                     self._create_fuzzable_requests(response))

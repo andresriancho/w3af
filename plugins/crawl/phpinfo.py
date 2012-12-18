@@ -26,14 +26,14 @@ from itertools import repeat, izip
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
-import core.data.kb.info as info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.db.disk_set import DiskSet
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class phpinfo(CrawlPlugin):
@@ -63,14 +63,15 @@ class phpinfo(CrawlPlugin):
         '''
         for domain_path in fuzzable_request.get_url().get_directories():
 
-            if domain_path not in self._analyzed_dirs:
-                self._analyzed_dirs.add(domain_path)
+            if domain_path in self._analyzed_dirs:
+                continue
+            
+            self._analyzed_dirs.add(domain_path)
 
-                url_repeater = repeat(domain_path)
-                args = izip(url_repeater, self._get_potential_phpinfos())
+            url_repeater = repeat(domain_path)
+            args = izip(url_repeater, self._get_potential_phpinfos())
 
-                self.worker_pool.map_multi_args(
-                    self._check_and_analyze, args)
+            self.worker_pool.map_multi_args(self._check_and_analyze, args)
 
     def _check_and_analyze(self, domain_path, php_info_filename):
         '''
@@ -81,11 +82,9 @@ class phpinfo(CrawlPlugin):
         php_info_url = domain_path.url_join(php_info_filename)
         try:
             response = self._uri_opener.GET(php_info_url, cache=True)
-            om.out.debug('[phpinfo] Testing "' + php_info_url + '".')
         except w3afException, w3:
-            msg = 'Failed to GET phpinfo file: "' + php_info_url + '".'
-            msg += 'Exception: "' + str(w3) + '".'
-            om.out.debug(msg)
+            msg = 'Failed to GET phpinfo file: "%s". Exception: "%s".'
+            om.out.debug(msg % (php_info_url, w3))
         else:
             # Feb/17/2009 by Aung Khant:
             # when scanning phpinfo in window box
@@ -115,30 +114,29 @@ class phpinfo(CrawlPlugin):
                 One example, ning.com.
 
                 '''
-                regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1 class="p">PHP Version (.*?)</h1>'
-                php_version = re.search(
-                    regex_str, response.get_body(), re.IGNORECASE)
+                regex_str = '(<tr class="h"><td>\n|alt="PHP Logo" /></a>)<h1'\
+                            ' class="p">PHP Version (.*?)</h1>'
+                php_version = re.search(regex_str, response.get_body(), re.I)
 
                 regex_str = 'System </td><td class="v">(.*?)</td></tr>'
-                sysinfo = re.search(
-                    regex_str, response.get_body(), re.IGNORECASE)
+                sysinfo = re.search(regex_str, response.get_body(), re.I)
 
                 if (php_version and sysinfo):
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_name('phpinfo() file found')
-                    v.set_severity(severity.MEDIUM)
+                    desc = 'The phpinfo() file was found at: %s. The version'\
+                           ' of PHP is: "%s" and the system information is:'\
+                           ' "%s".'
+                    desc = desc % (response.get_url(),
+                                   php_version.group(2),
+                                   sysinfo.group(1))
+                    
+                    v = Vuln('phpinfo() file found', desc, severity.MEDIUM,
+                             response.id, self.get_name())
                     v.set_url(response.get_url())
-                    desc = 'The phpinfo() file was found at: ' + v.get_url()
-                    desc += '. The version of PHP is: "' + php_version.group(2)
-                    desc += '" and the system information is: "' + \
-                        sysinfo.group(1)
-                    desc += '".'
-                    v.set_desc(desc)
+
                     kb.kb.append(self, 'phpinfo', v)
-                    om.out.vulnerability(
-                        v.get_desc(), severity=v.get_severity())
+                    om.out.vulnerability(v.get_desc(),
+                                         severity=v.get_severity())
+                    
                     if (self._has_audited == 0):
                         self.audit_phpinfo(response)
                         self._has_audited = 1
@@ -157,20 +155,16 @@ class phpinfo(CrawlPlugin):
 
         ### [register_globals] ###
         regex_str = 'register_globals</td><td class="v">(On|Off)</td>'
-        register_globals = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        register_globals = re.search(regex_str, response.get_body(), re.I)
         rg_flag = ''
         if register_globals:
             rg = register_globals.group(1)
             if(rg == 'On'):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('register_globals: On')
-                v.set_severity(severity.MEDIUM)
-                v.set_url(response.get_url())
                 desc = 'The phpinfo()::register_globals is on.'
-                v.set_desc(desc)
+                v = Vuln('PHP register_globals: On', desc,
+                         severity.MEDIUM, response.id, self.get_name())
+                v.set_url(response.get_url())
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             else:
@@ -182,93 +176,76 @@ class phpinfo(CrawlPlugin):
 
         ### [allow_url_fopen] ###
         regex_str = 'allow_url_fopen</td><td class="v">(On|<i>no value</i>)</td>'
-        allow_url_fopen = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        allow_url_fopen = re.search(regex_str, response.get_body(), re.I)
         if allow_url_fopen:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('allow_url_fopen: On')
-            v.set_severity(severity.MEDIUM)
-            v.set_url(response.get_url())
             desc = 'The phpinfo()::allow_url_fopen is enabled.'
-            v.set_desc(desc)
+            v = Vuln('PHP allow_url_fopen: On', desc,
+                     severity.MEDIUM, response.id, self.get_name())
+            v.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/allow_url_fopen] ###
 
         ### [allow_url_include] ###
         regex_str = 'allow_url_include</td><td class="v">(On|<i>no value</i>)</td>'
-        allow_url_include = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        allow_url_include = re.search(regex_str, response.get_body(), re.I)
         if allow_url_include:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('allow_url_include: On')
-            v.set_severity(severity.MEDIUM)
-            v.set_url(response.get_url())
             desc = 'The phpinfo()::allow_url_include is enabled.'
-            v.set_desc(desc)
+            v = Vuln('PHP allow_url_include: On', desc,
+                     severity.MEDIUM, response.id, self.get_name())
+            v.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/allow_url_include] ###
 
         ### [display_errors] ###
         regex_str = 'display_errors</td><td class="v">(On|<i>no value</i>)</td>'
-        display_errors = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        display_errors = re.search(regex_str, response.get_body(), re.I)
         if display_errors:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('display_errors: On')
-            v.set_severity(severity.MEDIUM)
-            v.set_url(response.get_url())
             desc = 'The phpinfo()::display_errors is enabled.'
-            v.set_desc(desc)
+            v = Vuln('PHP display_errors: On', desc,
+                     severity.MEDIUM, response.id, self.get_name())
+            v.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/display_errors] ###
 
         ### [expose_php] ###
         regex_str = 'expose_php</td><td class="v">(On|<i>no value</i>)</td>'
-        expose_php = re.search(regex_str, response.get_body(), re.IGNORECASE)
+        expose_php = re.search(regex_str, response.get_body(), re.I)
         if expose_php:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('expose_php: On')
-            v.set_severity(severity.MEDIUM)
-            v.set_url(response.get_url())
             desc = 'The phpinfo()::expose_php is enabled.'
-            v.set_desc(desc)
+            v = Vuln('PHP expose_php: On', desc,
+                     severity.MEDIUM, response.id, self.get_name())
+            v.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/expose_php] ###
 
         ### [lowest_privilege_test] ###
         regex_str = 'User/Group </td><td class="v">(.*?)\((\d.*?)\)/(\d.*?)</td>'
-        lowest_privilege_test = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        lowest_privilege_test = re.search(regex_str, response.get_body(), re.I)
         lpt_flag = ''
         if lowest_privilege_test:
             lpt_uname = lowest_privilege_test.group(1)
             lpt_uid = lowest_privilege_test.group(2)
             lpt_uid = int(lpt_uid)
             lpt_gid = lowest_privilege_test.group(3)
-            if(lpt_uid < 99 or lpt_gid < 99 or re.match('root|apache|daemon|bin|operator|adm', lpt_uname, re.IGNORECASE)):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('lowest_privilege_test:fail')
-                v.set_severity(severity.MEDIUM)
+            if lpt_uid < 99 or lpt_gid < 99 or \
+            re.match('root|apache|daemon|bin|operator|adm', lpt_uname, re.I):
+
+                desc = 'phpinfo()::PHP may be executing as a higher privileged'\
+                       ' group. Username: %s, UserID: %s, GroupID: %s.' 
+                desc = desc % (lpt_uname, lpt_uid, lpt_gid)
+                
+                v = Vuln('PHP lowest_privilege_test:fail', desc,
+                         severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
-                desc = 'phpinfo()::PHP may be executing as a higher privileged group. '
-                desc += 'Username: ' + lpt_uname + ', '
-                desc += 'UserID: ' + str(lpt_uid) + ', '
-                desc += 'GroupID: ' + lpt_gid
-                v.set_desc(desc)
+
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             else:
@@ -282,29 +259,24 @@ class phpinfo(CrawlPlugin):
 
         ### [disable_functions] ###
         regex_str = 'disable_functions</td><td class="v">(.*?)</td>'
-        disable_functions = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        disable_functions = re.search(regex_str, response.get_body(), re.I)
         if disable_functions:
             secure_df = 8
             df = disable_functions.group(1)
             dfe = df.split(',')
             if(len(dfe) < secure_df):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('disable_functions:few')
-                v.set_severity(severity.MEDIUM)
-                v.set_url(response.get_url())
                 desc = 'The phpinfo()::disable_functions are set to few.'
-                v.set_desc(desc)
+                v = Vuln('PHP disable_functions:few', desc,
+                         severity.MEDIUM, response.id, self.get_name())
+                v.set_url(response.get_url())
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/disable_functions] ###
 
         ### [curl_file_support] ###
         regex_str = '<h1 class="p">PHP Version (\d).(\d).(\d)</h1>'
-        curl_file_support = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        curl_file_support = re.search(regex_str, response.get_body(), re.I)
         if curl_file_support:
             php_major_ver = curl_file_support.group(1)
             php_minor_ver = curl_file_support.group(2)
@@ -333,123 +305,101 @@ class phpinfo(CrawlPlugin):
                 curl_vuln = 0
 
             if(curl_vuln == 1):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('curl_file_support:not_fixed')
-                v.set_severity(severity.MEDIUM)
+                desc = 'The phpinfo()::cURL::file_support has a security hole'\
+                       ' present in this version of PHP allows the cURL'\
+                       ' functions to bypass safe_mode and open_basedir'\
+                       ' restrictions.'
+                v = Vuln('PHP curl_file_support:not_fixed', desc,
+                         severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
-                desc = 'The phpinfo()::cURL::file_support has a security hole present in this'
-                desc += ' version of PHP allows the cURL functions to bypass safe_mode and'
-                desc += ' open_basedir restrictions.  .'
-                v.set_desc(desc)
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/curl_file_support] ###
 
         ### [cgi_force_redirect] ###
         regex_str = 'cgi_force_redirect</td><td class="v">(.*?)</td>'
-        cgi_force_redirect = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        cgi_force_redirect = re.search(regex_str, response.get_body(), re.I)
         if cgi_force_redirect:
             utd = cgi_force_redirect.group(1) + ''
             if(utd != 'On'):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('cgi_force_redirect: Off')
-                v.set_severity(severity.MEDIUM)
-                v.set_url(response.get_url())
                 desc = 'The phpinfo()::CGI::force_redirect is disabled.'
-                v.set_desc(desc)
+                v = Vuln('PHP cgi_force_redirect: Off', desc,
+                         severity.MEDIUM, response.id, self.get_name())
+                v.set_url(response.get_url())
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/cgi_force_redirect] ###
 
         ### [session_cookie_httponly] ###
         regex_str = 'session\.cookie_httponly</td><td class="v">(Off|no|0)</td>'
-        session_cookie_httponly = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        session_cookie_httponly = re.search(regex_str, response.get_body(), re.I)
         if session_cookie_httponly:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('session.cookie_httponly: Off')
-            v.set_severity(severity.MEDIUM)
-            v.set_url(response.get_url())
             desc = 'The phpinfo()::session.cookie_httponly is off.'
-            v.set_desc(desc)
+            v = Vuln('PHP session.cookie_httponly: Off', desc,
+                     severity.MEDIUM, response.id, self.get_name())
+            v.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/session_cookie_httponly] ###
 
         ### [session_save_path] ###
         regex_str = 'session\.save_path</td><td class="v">(<i>no value</i>)</td>'
-        session_save_path = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        session_save_path = re.search(regex_str, response.get_body(), re.I)
         if session_save_path:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('session_save_path:Everyone')
-            v.set_severity(severity.LOW)
+            desc = 'The phpinfo()::session.save_path may be set to world-'\
+                   'accessible directory.'
+            v = Vuln('PHP session_save_path:Everyone', desc,
+                     severity.LOW, response.id, self.get_name())
             v.set_url(response.get_url())
-            desc = 'The phpinfo()::session.save_path may be set to world-accessible directory.'
-            v.set_desc(desc)
+
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/session_save_path] ###
 
         ### [session_use_trans] ###
         regex_str = 'session\.use_trans</td><td class="v">(On)</td>'
-        session_use_trans = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        session_use_trans = re.search(regex_str, response.get_body(), re.I)
         if session_use_trans:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('session_use_trans: On')
-            v.set_severity(severity.MEDIUM)
+            desc = 'The phpinfo()::session.use_trans is enabled. This makes'\
+                   ' session hijacking easier.'
+            v = Vuln('PHP session_use_trans: On', desc,
+                     severity.MEDIUM, response.id, self.get_name())
             v.set_url(response.get_url())
-            desc = 'The phpinfo()::session.use_trans is enabled. This makes session hijacking easier.'
-            v.set_desc(desc)
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/session_use_trans] ###
 
         ### [default_charset] ###
         regex_str = 'default_charset</td><td class="v">(Off|no|0)</td>'
-        default_charset = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        default_charset = re.search(regex_str, response.get_body(), re.I)
         if default_charset:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('default_charset: Off')
-            v.set_severity(severity.MEDIUM)
+            desc = 'The phpinfo()::default_charset is set to none. This'\
+                   ' makes PHP scripts vulnerable to variable charset'\
+                   ' encoding XSS.'
+            v = Vuln('PHP default_charset: Off', desc,
+                     severity.MEDIUM, response.id, self.get_name())
             v.set_url(response.get_url())
-            desc = 'The phpinfo()::default_charset is set to none. This makes PHP scripts vulnerable'
-            desc += ' to variable charset encoding XSS.'
-            v.set_desc(desc)
+            
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/default_charset] ###
 
         ### [enable_dl] ###
         regex_str = 'enable_dl</td><td class="v">(On|Off)</td>'
-        enable_dl = re.search(regex_str, response.get_body(), re.IGNORECASE)
+        enable_dl = re.search(regex_str, response.get_body(), re.I)
         ed_flag = ''
         if enable_dl:
             rg = enable_dl.group(1)
             if(rg == 'On'):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('enable_dl: On')
-                v.set_severity(severity.MEDIUM)
-                v.set_url(response.get_url())
                 desc = 'The phpinfo()::enable_dl is on.'
-                v.set_desc(desc)
+                v = Vuln('PHP enable_dl: On', desc,
+                         severity.MEDIUM, response.id, self.get_name())
+                v.set_url(response.get_url())
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             else:
@@ -460,21 +410,18 @@ class phpinfo(CrawlPlugin):
 
         ### [memory_limit] ###
         regex_str = 'memory_limit</td><td class="v">(\d.*?)</td>'
-        memory_limit = re.search(regex_str, response.get_body(), re.IGNORECASE)
+        memory_limit = re.search(regex_str, response.get_body(), re.I)
         if memory_limit:
             secure_ml = 10
             ml = memory_limit.group(1) + ''
             ml = ml.replace('M', '')
             if(ml > secure_ml):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('memory_limit:high')
-                v.set_severity(severity.MEDIUM)
+                desc = 'The phpinfo()::memory_limit is set to higher value'\
+                       ' (%s).' % memory_limit.group(1)
+                v = Vuln('PHP memory_limit:high', desc,
+                         severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
-                desc = 'The phpinfo()::memory_limit is set to higher value (' + \
-                    memory_limit.group(1) + ').'
-                v.set_desc(desc)
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/memory_limit] ###
@@ -489,14 +436,12 @@ class phpinfo(CrawlPlugin):
             pms = pms.replace('M', '')
             pms = int(pms)
             if(pms > secure_pms):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('post_max_size:high')
-                v.set_severity(severity.LOW)
+                desc = 'The phpinfo()::post_max_size is set to higher value'\
+                       ' (%s).' % post_max_size.group(1)
+                v = Vuln('PHP post_max_size:high', desc,
+                         severity.LOW, response.id, self.get_name())
                 v.set_url(response.get_url())
-                desc = 'The phpinfo()::post_max_size is set to higher value (' + post_max_size.group(1) + ').'
-                v.set_desc(desc)
+
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/post_max_size] ###
@@ -511,31 +456,26 @@ class phpinfo(CrawlPlugin):
             umf = umf.replace('M', '')
             umf = int(umf)
             if(umf > secure_umf):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(response.id)
-                v.set_name('post_max_size:high')
-                v.set_severity(severity.LOW)
+                desc = 'The phpinfo()::upload_max_filesize is set to higher'\
+                       ' value (%s).' % upload_max_filesize.group(1)
+                v = Vuln('PHP upload_max_filesize:high', desc,
+                         severity.LOW, response.id, self.get_name())
                 v.set_url(response.get_url())
-                desc = 'The phpinfo()::upload_max_filesize is set to higher value (' + upload_max_filesize.group(1) + ').'
-                v.set_desc(desc)
+                
                 kb.kb.append(self, 'phpinfo', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/upload_max_filesize] ###
 
         ### [upload_tmp_dir] ###
         regex_str = 'upload_tmp_dir</td><td class="v">(<i>no value</i>)</td>'
-        upload_tmp_dir = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        upload_tmp_dir = re.search(regex_str, response.get_body(), re.I)
         if upload_tmp_dir:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_name('upload_tmp_dir:Everyone')
-            v.set_severity(severity.LOW)
+            desc = 'The phpinfo()::upload_tmp_dir may be set to world-'\
+                   'accessible directory.'
+            v = Vuln('PHP upload_tmp_dir:Everyone', desc,
+                     severity.LOW, response.id, self.get_name())
             v.set_url(response.get_url())
-            desc = 'The phpinfo()::upload_tmp_dir may be set to world-accessible directory.'
-            v.set_desc(desc)
+
             kb.kb.append(self, 'phpinfo', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
         ### [/upload_tmp_dir] ###
@@ -544,36 +484,27 @@ class phpinfo(CrawlPlugin):
         ##### [Useful Informative Settings] #####
         ### [privilege] ###
         if lpt_flag == 'info':
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_name(lpt_name)
+            i = Info(lpt_name, lpt_desc, response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_desc(lpt_desc)
+            
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
         ### [/privilege] ###
 
         ### [register_globals]###
         if rg_flag == 'info':
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_name(rg_name)
+            i = Info(rg_name, rg_desc, response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_desc(rg_desc)
+
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
         ### [/register_globals]###
 
         ### [enable_dl]###
         if ed_flag == 'info':
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_name(ed_name)
+            i = Info(ed_name, ed_desc, response.id, self.get_name())            
             i.set_url(response.get_url())
-            i.set_desc(ed_desc)
+            
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
         ### [/enable_dl]###
@@ -582,34 +513,31 @@ class phpinfo(CrawlPlugin):
         regex_str = 'file_uploads</td><td class="v">(On|<i>no value</i>)</td>'
         file_uploads = re.search(regex_str, response.get_body(), re.IGNORECASE)
         if file_uploads:
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_name('file_uploads: On')
-            i.set_url(response.get_url())
             desc = 'The phpinfo()::file_uploads is enabled.'
-            i.set_desc(desc)
+            i = Info('PHP file_uploads: On', desc, response.id, self.get_name())
+            i.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
         ### [/file_uploads] ###
 
         ### [magic_quotes_gpc] ###
         regex_str = 'magic_quotes_gpc</td><td class="v">(On|Off)</td>'
-        magic_quotes_gpc = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        magic_quotes_gpc = re.search(regex_str, response.get_body(), re.I)
         if magic_quotes_gpc:
             mqg = magic_quotes_gpc.group(1)
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_url(response.get_url())
+            
             if (mqg == 'On'):
-                i.set_name('magic_quotes_gpc: On')
                 desc = 'The phpinfo()::magic_quotes_gpc is on.'
+                i = Info('PHP magic_quotes_gpc: On', desc, response.id,
+                         self.get_name())
+                
             else:
-                i.set_name('magic_quotes_gpc: Off')
                 desc = 'The phpinfo()::magic_quotes_gpc is off.'
-            i.set_desc(desc)
+                i = Info('PHP magic_quotes_gpc: Off', desc, response.id,
+                         self.get_name())
+                
+            i.set_url(response.get_url())
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
 
@@ -617,25 +545,23 @@ class phpinfo(CrawlPlugin):
 
         ### [open_basedir] ###
         regex_str = 'open_basedir</td><td class="v">(.*?)</td>'
-        open_basedir = re.search(regex_str, response.get_body(), re.IGNORECASE)
+        open_basedir = re.search(regex_str, response.get_body(), re.I)
 
         if open_basedir:
             obd = open_basedir.group(1)
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_url(response.get_url())
 
             if(obd == '<i>no value</i>'):
-                i.set_name('open_basedir:disabled')
                 desc = 'The phpinfo()::open_basedir is not set.'
-                i.set_desc(desc)
+                i = Info('PHP open_basedir:disabled', desc, response.id,
+                         self.get_name())
 
             else:
-                i.set_name('open_basedir:enabled')
-                desc = 'The phpinfo()::open_basedir is set to ' + \
-                    open_basedir.group(1) + '.'
-                i.set_desc(desc)
+                desc = 'The phpinfo()::open_basedir is set to %s.'
+                desc = desc % open_basedir.group(1)
+                i = Info('PHP open_basedir:enabled', desc, response.id,
+                         self.get_name())
+            
+            i.set_url(response.get_url())
 
         kb.kb.append(self, 'phpinfo', i)
         om.out.information(i.get_desc())
@@ -643,21 +569,21 @@ class phpinfo(CrawlPlugin):
 
         ### [session_hash_function] ###
         regex_str = 'session\.hash_function</td><td class="v">(.*?)</td>'
-        session_hash_function = re.search(
-            regex_str, response.get_body(), re.IGNORECASE)
+        session_hash_function = re.search(regex_str, response.get_body(), re.I)
         if session_hash_function:
-            i = info.info()
-            i.set_plugin_name(self.get_name())
-            i.set_id(response.id)
-            i.set_url(response.get_url())
-            if (session_hash_function.group(1) == 0 or session_hash_function.group(1) != 'no'):
-                i.set_name('session.hash_function:md5')
+            
+            if session_hash_function.group(1) == 0\
+            or session_hash_function.group(1) != 'no':
                 desc = 'The phpinfo()::session.hash_function use md5 algorithm.'
+                i = Info('PHP session.hash_function:md5', desc, response.id,
+                         self.get_name())
             else:
-                i.set_name('session.hash_function:sha')
                 desc = 'The phpinfo()::session.hash_function use sha algorithm.'
+                i = Info('PHP session.hash_function:sha', desc, response.id,
+                         self.get_name())
 
-            i.set_desc(desc)
+            i.set_url(response.get_url())
+            
             kb.kb.append(self, 'phpinfo', i)
             om.out.information(i.get_desc())
         ### [/session_hash_function] ###
@@ -668,18 +594,14 @@ class phpinfo(CrawlPlugin):
         '''
         @return: Filename of the php info file.
         '''
-        res = []
-        res.extend(
-            ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php'])
-        res.extend(['phpInfo.php', 'info.php', 'test.php?mode=phpinfo'])
-        res.extend(['index.php?view=phpinfo', 'index.php?mode=phpinfo'])
-        res.extend(
-            ['TEST.php?mode=phpinfo', '?mode=phpinfo', '?view=phpinfo'])
-        res.extend(['install.php?mode=phpinfo', 'INSTALL.php?mode=phpinfo'])
-        res.extend(
-            ['admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php'])
-        res.extend(['test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php'])
-        res.extend(['PHPversion.php', 'x.php', 'xx.php', 'xxx.php'])
+        res = ['phpinfo.php', 'PhpInfo.php', 'PHPinfo.php', 'PHPINFO.php',
+               'phpInfo.php', 'info.php', 'test.php?mode=phpinfo',
+               'index.php?view=phpinfo', 'index.php?mode=phpinfo',
+               'TEST.php?mode=phpinfo', '?mode=phpinfo', '?view=phpinfo',
+               'install.php?mode=phpinfo', 'INSTALL.php?mode=phpinfo',
+               'admin.php?mode=phpinfo', 'phpversion.php', 'phpVersion.php',
+               'test1.php', 'phpinfo1.php', 'phpInfo1.php', 'info1.php',
+               'PHPversion.php', 'x.php', 'xx.php', 'xxx.php']
 
         identified_os = kb.kb.get('fingerprint_os', 'operating_system_str')
 

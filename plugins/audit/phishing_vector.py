@@ -24,11 +24,11 @@ from __future__ import with_statement
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.fuzzer.fuzzer import create_mutants
 from core.controllers.plugins.audit_plugin import AuditPlugin
+from core.data.kb.vuln import Vuln
 
 
 class phishing_vector(AuditPlugin):
@@ -94,13 +94,11 @@ class phishing_vector(AuditPlugin):
                 for url in self._test_urls:
                     if src_attr.startswith(url):
                         # Vuln vuln!
-                        v = vuln.vuln(mutant)
-                        v.set_plugin_name(self.get_name())
-                        v.set_id(response.id)
-                        v.set_severity(severity.LOW)
-                        v.set_name('Phishing vector')
-                        v.set_desc('A phishing vector was found at: ' +
-                                   mutant.found_at())
+                        desc = 'A phishing vector was found at: %s' % mutant.found_at()
+                        
+                        v = Vuln('Phishing vector', desc, severity.LOW,
+                                 response.id, self.get_name(), mutant)
+                        
                         v.add_to_highlight(src_attr)
                         res.append(v)
 
@@ -110,16 +108,17 @@ class phishing_vector(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(
-            kb.kb.get('phishing_vector', 'phishing_vector'), 'VAR')
+        self.print_uniq(kb.kb.get('phishing_vector',
+                                  'phishing_vector'), 'VAR')
 
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugins finds phishing vectors in web applications, for example, a bug of this type is found
-        if I request the URL "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
+        This plugins finds phishing vectors in web applications, for example,
+        a bug of this type is found if I request the URL
+        "http://site.tld/asd.asp?info=http://attacker.tld" and in the response
         HTML the web application sends:
             ...
             <iframe src="http://attacker.tld">

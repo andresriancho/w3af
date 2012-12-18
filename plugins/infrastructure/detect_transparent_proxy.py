@@ -23,7 +23,7 @@ import socket
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -48,7 +48,7 @@ class detect_transparent_proxy(InfrastructurePlugin):
                                     (among other things) the URL to test.
         '''
         if self._is_proxyed_conn(fuzzable_request):
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Transparent proxy detected')
             i.set_url(fuzzable_request.get_url())

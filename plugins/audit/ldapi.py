@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.esmre.multi_in import multi_in
 from core.data.fuzzer.fuzzer import create_mutants
+from core.data.kb.vuln import Vuln
 
 
 class ldapi(AuditPlugin):
@@ -113,14 +113,15 @@ class ldapi(AuditPlugin):
             ldap_error_list = self._find_ldap_error(response)
             for ldap_error_string in ldap_error_list:
                 if ldap_error_string not in mutant.get_original_response_body():
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_severity(severity.HIGH)
-                    v.set_name('LDAP injection vulnerability')
-                    v.set_desc(
-                        'LDAP injection was found at: ' + mutant.found_at())
+                    
+                    desc = 'LDAP injection was found at: %s' % mutant.found_at()
+                    
+                    v = Vuln('LDAP injection vulnerability', desc,
+                             severity.HIGH, response.id, self.get_name(),
+                             mutant)
+                    
                     v.add_to_highlight(ldap_error_string)
+                    
                     kb.kb.append_uniq(self, 'ldapi', v)
                     break
 

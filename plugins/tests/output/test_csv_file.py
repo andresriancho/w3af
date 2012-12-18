@@ -22,8 +22,7 @@ import os
 import csv
 import json
 
-import core.data.kb.vuln as vuln
-
+from core.data.kb.vuln import Vuln
 from core.data.parsers.url import URL
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -89,15 +88,11 @@ class TestCSVFile(PluginTest):
                                  quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
         for name, method, uri, var, dc, _id, desc in vuln_reader:
-            v = vuln.vuln()
-
-            v.set_name(name)
+            v = Vuln(name, desc, 'High', json.loads(_id), 'TestCase')
             v.set_method(method)
             v.set_uri(URL(uri))
             v.set_var(var)
             v.set_dc(dc)
-            v.set_id(json.loads(_id))
-            v.set_desc(desc)
 
             file_vulns.append(v)
 

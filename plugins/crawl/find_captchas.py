@@ -24,7 +24,7 @@ import hashlib
 import core.controllers.output_manager as om
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.parsers.document_parser as DocumentParser
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -81,7 +81,7 @@ class find_captchas(CrawlPlugin):
                 if img_src.uri2url() not in self._captchas_found:
                     self._captchas_found.add(img_src.uri2url())
 
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Captcha image detected')
                     i.set_uri(img_src)

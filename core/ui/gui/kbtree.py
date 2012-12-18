@@ -27,8 +27,8 @@ import core.data.kb
 from core.ui.gui import helpers, exploittab
 
 TYPES_OBJ = {
-    core.data.kb.vuln.vuln: "vuln",
-    core.data.kb.info.info: "info",
+    core.data.kb.Vuln: "vuln",
+    core.data.kb.Info: "info",
 }
 
 
@@ -349,7 +349,7 @@ class KBTree(gtk.TreeView):
         #    menu.popup(None, None, None, event.button, event.time)
         #    # get instance
         #    vuln = self.get_instance(path)
-        #    if isinstance(vuln, core.data.kb.vuln.vuln):
+        #    if isinstance(vuln, core.data.kb.Vuln):
         #        vulnid = vuln.get_id()
         #
         #        def go_log(w):

@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from __future__ import with_statement
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import create_format_string
+from core.data.kb.vuln import Vuln
 
 
 class format_string(AuditPlugin):
@@ -70,18 +70,17 @@ class format_string(AuditPlugin):
                 # Check if the error string is in the response
 
                 if error in response.body and \
-                        error not in mutant.get_original_response_body():
-                    # vuln, vuln!
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_severity(severity.MEDIUM)
-                    v.set_name('Format string vulnerability')
-                    msg = 'A possible (detection is really hard...) format'
-                    msg += ' string vulnerability was found at: '
-                    msg += mutant.found_at()
-                    v.set_desc(msg)
+                error not in mutant.get_original_response_body():
+                    desc = 'A possible (detection is really hard...) format'\
+                          ' string vulnerability was found at: %s'
+                    desc = desc % mutant.found_at()
+                    
+                    v = Vuln('Format string vulnerability', desc,
+                             severity.MEDIUM, response.id, self.get_name(),
+                             mutant)
+                    
                     v.add_to_highlight(error)
+                    
                     kb.kb.append_uniq(self, 'format_string', v)
                     break
 

@@ -23,11 +23,11 @@ import core.controllers.output_manager as om
 import core.data.constants.dbms as dbms
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_re import multi_re
+from core.data.kb.vuln import Vuln
 
 
 class sqli(AuditPlugin):
@@ -156,16 +156,16 @@ class sqli(AuditPlugin):
             if not sql_regex.search(orig_resp_body):
                 if self._has_no_bug(mutant):
                     # Create the vuln,
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_name('SQL injection')
-                    v.set_severity(severity.HIGH)
+                    desc = 'SQL injection in a %s was found at: %s'
+                    desc = desc % (dbms_type, mutant.found_at())
+                                        
+                    v = Vuln('SQL injection', desc, severity.HIGH,
+                             response.id, self.get_name(), mutant)
+
                     v.add_to_highlight(sql_error_string)
                     v['error'] = sql_error_string
                     v['db'] = dbms_type
-                    v.set_desc('SQL injection in a %s was found at: %s' %
-                              (v['db'], mutant.found_at()))
+                    
                     kb.kb.append_uniq(self, 'sqli', v)
                     break
 

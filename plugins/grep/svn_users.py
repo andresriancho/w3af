@@ -22,11 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class svn_users(GrepPlugin):
@@ -64,17 +64,19 @@ class svn_users(GrepPlugin):
 
             for regex in self._regex_list:
                 for m in regex.findall(response.get_body()):
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
+                    user = m[0]
+                    
+                    desc = 'The URL: "%s" contains a SVN versioning signature'\
+                           ' with the username "%s".'
+                    desc = desc % (uri, user)
+                    
+                    v = Vuln('SVN user disclosure vulnerability', desc,
+                             severity.LOW, response.id, self.get_name())
+
                     v.set_uri(uri)
-                    v.set_id(response.id)
-                    msg = 'The URL: "' + uri + '" contains a SVN versioning '
-                    msg += 'signature with the username: "' + m[0] + '" .'
-                    v.set_desc(msg)
-                    v['user'] = m[0]
-                    v.set_severity(severity.LOW)
-                    v.set_name('SVN user disclosure vulnerability')
-                    v.add_to_highlight(m[0])
+                    v['user'] = user
+                    v.add_to_highlight(user)
+                    
                     kb.kb.append(self, 'users', v)
 
     def end(self):

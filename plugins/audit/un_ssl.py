@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.controllers.exceptions import w3afException
+from core.data.kb.vuln import Vuln
 
 
 class un_ssl(AuditPlugin):
@@ -78,24 +78,25 @@ class un_ssl(AuditPlugin):
                 # (because there is nothing listening on that port).
                 pass
             else:
-                if insecure_response.get_code() == secure_response.get_code():
+                if insecure_response.get_code() == secure_response.get_code()\
+                and relative_distance_boolean(insecure_response.get_body(),
+                                              secure_response.get_body(),
+                                              0.95):
+                    desc = 'Secure content can be accesed using the insecure'\
+                           ' protocol HTTP. The vulnerable URLs are:'\
+                           ' "%s" - "%s" .'
+                    desc = desc % (secure_url, insecure_url)
+                    
+                    response_ids = [insecure_response.id, secure_response.id]
+                    
+                    v = Vuln('Secure content over insecure channel', desc,
+                             severity.MEDIUM, response_ids,
+                             self.get_name(), freq)
 
-                    if relative_distance_boolean(insecure_response.get_body(),
-                                                 secure_response.get_body(),
-                                                 0.95):
-                        v = vuln.vuln(freq)
-                        v.set_plugin_name(self.get_name())
-                        v.set_url(insecure_response.get_url())
-                        v.set_name('Secure content over insecure channel')
-                        v.set_severity(severity.MEDIUM)
-                        msg = 'Secure content can be accesed using the' \
-                              ' insecure protocol HTTP. The vulnerable' \
-                              ' URLs are: "%s" - "%s" .'
-                        v.set_desc(msg % (secure_url, insecure_url))
-                        v.set_id([insecure_response.id, secure_response.id])
-                        kb.kb.append(self, 'un_ssl', v)
-                        om.out.vulnerability(
-                            v.get_desc(), severity=v.get_severity())
+                    kb.kb.append(self, 'un_ssl', v)
+                    
+                    om.out.vulnerability(v.get_desc(),
+                                         severity=v.get_severity())
 
     def get_long_desc(self):
         '''

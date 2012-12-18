@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.db.disk_set import DiskSet
+from core.data.kb.vuln import Vuln
 
 
 class error_500(GrepPlugin):
@@ -90,18 +90,19 @@ class error_500(GrepPlugin):
         for request, error_500_response_id in self._error_500_responses:
             if (request.get_uri(), request.get_dc()) not in all_vulns_tuples:
                 # Found a err 500 that wasnt identified !!!
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
+                desc = 'An unidentified web application error (HTTP response'\
+                       ' code 500) was found at: "%s". Enable all plugins and'\
+                       ' try again, if the vulnerability still is not identified'\
+                       ', please verify manually and report it to the w3af'\
+                       ' developers.'
+                desc = desc % request.get_url()
+                
+                v = Vuln('Unhandled error in web application', desc,
+                         severity.MEDIUM, error_500_response_id,
+                         self.get_name())
+                
                 v.set_uri(request.get_uri())
-                v.set_id(error_500_response_id)
-                v.set_severity(severity.MEDIUM)
-                v.set_name('Unhandled error in web application')
-                msg = 'An unidentified web application error (HTTP response'\
-                      ' code 500) was found at: "%s". Enable all plugins and'\
-                      ' try again, if the vulnerability still is not identified'\
-                      ', please verify manually and report it to the w3af'\
-                      ' developers.'
-                v.set_desc(msg % v.get_url())
+                
                 kb.kb.append(self, 'error_500', v)
 
         self.print_uniq(kb.kb.get('error_500', 'error_500'), 'VAR')

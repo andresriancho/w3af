@@ -19,28 +19,49 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.kb.info import info as info
+from core.data.kb.info import Info
+from core.data.constants.severity import INFORMATION, LOW, MEDIUM, HIGH
 from core.data.fuzzer.mutants.mutant import Mutant
 
 
-class vuln(info):
+class Vuln(Info):
     '''
     This class represents a web vulnerability.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, data_obj=None):
-        info.__init__(self, data_obj)
+    def __init__(self, name, desc, severity, response_ids,
+                 plugin_name, data_obj=None):
+        '''
+        @param name: The vulnerability name, will be checked against the values
+                     in core.data.constants.vulns.
+        
+        @param desc: The vulnerability description
+        
+        @param severity: The severity for this object
+        
+        @param response_ids: A list of response ids associated with this vuln
+        
+        @param plugin_name: The name of the plugin which identified the vuln
+        
+        @param data_obj: A Mutant or Vuln where we can take information from
+                         and assign it to this object.
+        '''
+        Info.__init__(self, name, desc, response_ids, plugin_name,
+                      data_obj)
+
+        self.set_id(response_ids)
+        self.set_name(name)
+        self.set_desc(desc)
+        self.set_severity(severity)
 
         # Default values
         self._method = None
-        self._id = None
         self._dc = None
-        self._severity = None
         self._variable = None
         self._mutant = None
 
         if isinstance(data_obj, Mutant) or \
-        isinstance(data_obj, vuln):
+        isinstance(data_obj, Vuln):
             self.set_method(data_obj.get_method())
             self.set_dc(data_obj.get_dc())
             self.set_var(data_obj.get_var())
@@ -63,6 +84,8 @@ class vuln(info):
         self._dc = dc
 
     def set_severity(self, severity):
+        if severity not in (INFORMATION, LOW, MEDIUM, HIGH):
+            raise ValueError('Invalid severity value.')
         self._severity = severity
 
     def get_method(self):

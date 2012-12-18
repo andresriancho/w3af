@@ -23,7 +23,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from core.data.kb.info import info
+from core.data.kb.info import Info
 
 
 @attr('smoke')
@@ -36,7 +36,7 @@ class TestInfo(unittest.TestCase):
     '''
 
     def test_convert_to_range(self):
-        inf = info()
+        inf = Info()
 
         res = inf._convert_to_range_wrapper([1, 2, 3, 4, 5, 6])
         self.assertEquals('1 to 6', res)

@@ -175,7 +175,7 @@ class HTTPResponse(httplib.HTTPResponse):
     # we need to subclass HTTPResponse in order to
     # 1) add readline() and readlines() methods
     # 2) add close_connection() methods
-    # 3) add info() and geturl() methods
+    # 3) add Info() and geturl() methods
 
     # in order to add readline(), read must be modified to deal with a
     # buffer.  example: readline must read a buffer and then spit back

@@ -29,7 +29,7 @@ import os.path
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
@@ -75,7 +75,7 @@ class favicon_identification(InfrastructurePlugin):
 
                 if md5part == remote_fav_md5:
                     # Save it to the kb!
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Favicon identification')
                     i.set_url(favicon_url)
@@ -90,7 +90,7 @@ class favicon_identification(InfrastructurePlugin):
                 #   Report to the kb that we failed to ID this favicon.ico
                 #   and that the md5 should be sent to the developers.
                 #
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Favicon identification failed')
                 i.set_url(favicon_url)

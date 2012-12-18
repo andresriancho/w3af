@@ -27,7 +27,7 @@ import re
 import core.controllers.output_manager as om
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.esmre.multi_in import multi_in
 from core.data.db.temp_shelve import temp_shelve
@@ -100,7 +100,7 @@ class html_comments(GrepPlugin):
         comment = comment.lower()
         for word in self._multi_in.query(response.body):
             if (word, response.get_url()) not in self._already_reported_interesting:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('HTML comment with "' + word + '" inside')
                 msg = 'A comment with the string "' + \
@@ -124,7 +124,7 @@ class html_comments(GrepPlugin):
         if html_in_comment and \
                 (comment, response.get_url()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('HTML comment contains HTML code')
             comment = comment.replace('\n', '')

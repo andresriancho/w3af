@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -93,7 +93,7 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
         @param response: The response that triggered the detection
         '''
-        i = info.info()
+        i = Info()
         i.set_plugin_name(self.get_name())
         i.set_name('Reverse proxy')
         i.set_id(response.get_id())

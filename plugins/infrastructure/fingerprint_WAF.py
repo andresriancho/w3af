@@ -25,7 +25,7 @@ from itertools import izip, repeat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException
@@ -293,7 +293,7 @@ class fingerprint_WAF(InfrastructurePlugin):
         @param response: The HTTP response object that was used to identify the WAF
         @param protected_by: A more detailed description/version of the WAF
         '''
-        i = info.info()
+        i = Info()
         i.set_plugin_name(self.get_name())
         i.set_url(response.get_url())
         i.set_id(response.id)

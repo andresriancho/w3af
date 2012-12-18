@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -59,7 +59,7 @@ class wsdl_greper(GrepPlugin):
 
             match_list = self._multi_in.query(response.body)
             if len(match_list):
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('WSDL file')
                 i.set_url(response.get_url())
@@ -77,7 +77,7 @@ class wsdl_greper(GrepPlugin):
                     break
 
             if is_disco:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_url(response.get_url())
                 msg = 'The URL: "' + i.get_url(

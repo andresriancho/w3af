@@ -25,7 +25,7 @@ from itertools import repeat, izip
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
@@ -304,7 +304,7 @@ class php_eggs(InfrastructurePlugin):
             #   The remote web server has expose_php = On. Report all the findings.
             #
             for response, egg_desc, egg_URL in GET_results:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('PHP Egg - ' + egg_desc)
                 i.set_url(egg_URL)
@@ -344,7 +344,7 @@ class php_eggs(InfrastructurePlugin):
                     found = True
 
             if matching_versions:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('PHP Egg')
                 msg = 'The PHP framework version running on the remote server was identified as:'

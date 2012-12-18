@@ -28,13 +28,13 @@ from xml.sax.handler import ContentHandler
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, BOOL
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
+from core.data.kb.vuln import Vuln
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
@@ -77,15 +77,14 @@ class phishtank(CrawlPlugin):
 
         # Only create the vuln object once
         if phishtank_matches:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_url(ptm.url)
-            v.set_id(response.id)
-            v.set_name('Phishing scam')
-            v.set_severity(severity.MEDIUM)
             desc = 'The URL: "%s" seems to be involved in a phishing scam.' \
                    ' Please see %s for more info.'
-            v.set_desc(desc % (ptm.url, ptm.more_info_URL))
+            desc = desc % (ptm.url, ptm.more_info_URL)
+            
+            v = Vuln('Phishing scam', desc, severity.MEDIUM, response.id,
+                     self.get_name())
+            v.set_url(ptm.url)
+            
             kb.kb.append(self, 'phishtank', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 

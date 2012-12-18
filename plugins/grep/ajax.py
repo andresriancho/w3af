@@ -23,7 +23,7 @@ import re
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -77,7 +77,7 @@ class ajax(GrepPlugin):
 
                         res = self._ajax_regex_re.search(script_content)
                         if res:
-                            i = info.info()
+                            i = Info()
                             i.set_plugin_name(self.get_name())
                             i.set_name('AJAX code')
                             i.set_url(url)

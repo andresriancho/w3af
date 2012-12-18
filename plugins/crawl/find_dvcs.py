@@ -23,13 +23,13 @@ import struct
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class find_dvcs(CrawlPlugin):
@@ -161,16 +161,15 @@ class find_dvcs(CrawlPlugin):
             self.worker_pool.map(self._get_and_parse, parsed_url_set)
 
             if parsed_url_set:
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_id(http_response.id)
-                v.set_name(repo + ' found')
-                v.set_severity(severity.MEDIUM)
+                desc = 'A %s was found at: "%s"; this could indicate that'\
+                       ' a %s is accessible. You might be able to download'\
+                       ' the Web application source code.'
+                desc = desc % (repo, http_response.get_url(), repo)
+                
+                v = Vuln('Source code repository', desc, severity.MEDIUM,
+                         http_response.id, self.get_name())
                 v.set_url(http_response.get_url())
-                msg = ('A %s was found at: "%s"; this could'
-                       ' indicate that a %s is accessible. You might'
-                       ' be able to download the Web application source code.')
-                v.set_desc(msg % (repo, v.get_url(), repo))
+                
                 kb.kb.append(self, repo, v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 

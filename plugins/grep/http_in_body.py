@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -75,7 +75,7 @@ class http_in_body (GrepPlugin):
             for match, _, _, reqres in self._multi_re.query(body_without_tags):
 
                 if reqres == 'REQUEST':
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Request in HTTP body')
                     i.set_uri(uri)
@@ -85,7 +85,7 @@ class http_in_body (GrepPlugin):
                     kb.kb.append(self, 'request', i)
 
                 if reqres == 'RESPONSE':
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('HTTP Response in HTTP body')
                     i.set_uri(uri)

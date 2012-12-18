@@ -24,10 +24,10 @@ import itertools
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 from plugins.grep.ssndata.ssnAreasGroups import areas_groups_map
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 
@@ -66,15 +66,13 @@ class ssn(GrepPlugin):
             found_ssn, validated_ssn = self._find_SSN(
                 response.get_clear_text_body())
             if validated_ssn:
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
+                desc = 'The URL: "%s" possibly discloses a US Social Security'\
+                       ' Number: "%s".'
+                desc = desc % (uri, validated_ssn)
+                v = Vuln('US Social Security Number disclosure', desc,
+                         severity.LOW, response.id, self.get_name())
                 v.set_uri(uri)
-                v.set_id(response.id)
-                v.set_severity(severity.LOW)
-                v.set_name('US Social Security Number disclosure')
-                msg = 'The URL: "' + uri + '" possibly discloses a US '
-                msg += 'Social Security Number: "' + validated_ssn + '"'
-                v.set_desc(msg)
+
                 v.add_to_highlight(found_ssn)
                 kb.kb.append(self, 'ssn', v)
 

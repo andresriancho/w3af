@@ -23,13 +23,13 @@ from __future__ import with_statement
 
 import core.controllers.output_manager as om
 
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class redos(AuditPlugin):
@@ -109,28 +109,24 @@ class redos(AuditPlugin):
 
                 # compare the times
                 if response.get_wait_time() > (first_wait_time * 1.5):
-                    # Now I can be sure that I found a vuln, I control the time of the response.
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_name('ReDoS vulnerability')
-                    v.set_severity(severity.MEDIUM)
-                    v.set_desc('ReDoS was found at: ' + mutant.found_at())
-                    v.set_dc(mutant.get_dc())
-                    v.set_id(response.id)
-                    v.set_uri(response.get_uri())
+                    # Now I can be sure that I found a vuln, I control the
+                    # time of the response.
+                    desc = 'ReDoS was found at: %s' % mutant.found_at()
+                    
+                    v = Vuln('ReDoS vulnerability', desc,
+                             severity.MEDIUM, response.id, self.get_name(),
+                             mutant)
+                    
                     kb.kb.append_uniq(self, 'redos', v)
 
                 else:
                     # The first delay existed... I must report something...
-                    i = info.info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Possible ReDoS vulnerability')
-                    i.set_id(response.id)
-                    i.set_dc(mutant.get_dc())
-                    i.set_method(mutant.get_method())
-                    msg = 'A possible ReDoS was found at: ' + mutant.found_at()
-                    msg += ' . Please review manually.'
-                    i.set_desc(msg)
+                    desc = 'A potential ReDoS was found at: %s. Please review'\
+                           ' manually.'
+                    desc = desc % mutant.found_at()
+                    
+                    i = Info('Potential ReDoS vulnerability', desc,
+                             response.id, self.get_name())
 
                     # Just printing to the debug log, we're not sure about this
                     # finding and we don't want to clog the report with false

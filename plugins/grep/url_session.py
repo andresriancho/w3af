@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.parsers.parser_cache as parser_cache
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -81,7 +81,7 @@ class url_session(GrepPlugin):
                     self._already_reported.add(response.get_url())
                     
                     #   append the info object to the KB.
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Session ID in URL')
                     i.set_uri(response.get_uri())
@@ -106,7 +106,7 @@ class url_session(GrepPlugin):
                 self._already_reported.add(response.get_url())
     
                 #   append the info object to the KB.
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Session ID in URL')
                 i.set_uri(response.get_uri())

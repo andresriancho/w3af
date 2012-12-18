@@ -24,7 +24,7 @@ import socket
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
+from core.data.kb.vuln import Vuln
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -102,23 +102,20 @@ class shared_hosting(InfrastructurePlugin):
                             is_vulnerable = False
 
             if is_vulnerable:
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_url(fuzzable_request.get_url())
-                v.set_id(1)
-
-                v['alsoInHosting'] = results
-                msg = 'The web application under test seems to be in a shared' \
-                      ' hosting. This list of domains, and the domain of the ' \
-                      ' web application under test, all point to the same IP' \
-                      ' address (%s):\n' % ip_address
+                desc = 'The web application under test seems to be in a shared' \
+                       ' hosting. This list of domains, and the domain of the ' \
+                       ' web application under test, all point to the same IP' \
+                       ' address (%s):\n' % ip_address
                 for url in results:
                     domain = url.get_domain()
-                    msg += '- %s\n' % url
+                    desc += '- %s\n' % url
                     kb.kb.append(self, 'domains', domain)
-                v.set_desc(msg)
-                v.set_name('Shared hosting')
-                v.set_severity(severity.MEDIUM)
+                    
+                v = Vuln('Shared hosting', desc, severity.MEDIUM, 1,
+                         self.get_name(), fuzzable_request)
+
+                v['also_in_hosting'] = results
+                
                 om.out.vulnerability(msg, severity=severity.MEDIUM)
                 kb.kb.append(self, 'shared_hosting', v)
 

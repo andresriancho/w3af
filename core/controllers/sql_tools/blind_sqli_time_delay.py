@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
 
+from core.data.kb.vuln import Vuln
 from core.controllers.delay_detection.exact_delay import ExactDelay
 from core.controllers.delay_detection.delay import delay
 
@@ -54,15 +54,13 @@ class blind_sqli_time_delay(object):
             if success:
                 # Now I can be sure that I found a vuln, we control the response
                 # time with the delay
-                v = vuln.vuln(mutant)
-                v.set_name('Blind SQL injection vulnerability')
-                v.set_severity(severity.HIGH)
                 desc = 'Blind SQL injection using time delays was found at: %s'
                 desc = desc % mutant.found_at()
-                v.set_desc(desc)
-                v.set_dc(mutant.get_dc())
-                v.set_id([r.id for r in responses])
-                v.set_uri(r.get_uri())
+                
+                response_ids = [r.id for r in responses]
+                
+                v = Vuln('Blind SQL injection vulnerability', desc, severity.HIGH,
+                         response_ids, 'blind_sqli', mutant)
 
                 om.out.debug(v.get_desc())
 

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException
@@ -83,7 +83,7 @@ class domain_dot(InfrastructurePlugin):
                          the response to analyze.
         '''
         if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
-            i = info.info(resp)
+            i = Info(resp)
             i.set_plugin_name(self.get_name())
             i.set_id([original_resp.id, resp.id])
             i.set_name('Responses differ')

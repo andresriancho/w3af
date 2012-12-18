@@ -25,7 +25,6 @@ from itertools import izip, repeat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
@@ -33,6 +32,7 @@ from core.controllers.exceptions import w3afException, w3afMustStopOnUrlError
 from core.controllers.misc.levenshtein import relative_distance_ge
 from core.data.dc import form
 from core.data.fuzzer.utils import rand_alnum
+from core.data.kb.vuln import Vuln
 
 
 class form_auth(BruteforcePlugin):
@@ -297,29 +297,26 @@ class form_auth(BruteforcePlugin):
                     if self._matches_failed_login(body, login_failed_result_list):
                         freq_url = freq.get_url()
                         self._found.add(freq_url)
-                        v = vuln.vuln()
-                        v.set_id(resp.id)
-                        v.set_plugin_name(self.get_name())
-                        v.set_url(freq.get_url())
+                        
                         if user_field is not None:
-                            msg = ('Found authentication credentials to: '
-                                   '"%s". A correct user and password combination'
-                                   ' is: %s/%s' % (freq_url, user, pwd))
+                            desc = ('Found authentication credentials to: '
+                                    '"%s". A correct user and password combination'
+                                    ' is: %s/%s' % (freq_url, user, pwd))
                         else:
                             # There is no user field!
-                            msg = ('Found authentication credentials to: '
-                                   '"%s". The correct password is: "%s".'
-                                   % (freq_url, pwd))
-
-                        v.set_desc(msg)
+                            desc = ('Found authentication credentials to: '
+                                    '"%s". The correct password is: "%s".'
+                                    % (freq_url, pwd))
+                            
+                        v = Vuln('Guessable credentials', desc, severity.HIGH,
+                                 resp.id, self.get_name(), freq)
                         v['user'] = user
                         v['pass'] = pwd
                         v['response'] = resp
-                        v.set_severity(severity.HIGH)
-                        v.set_name('Guessable credentials')
+
                         kb.kb.append(self, 'auth', v)
 
-                        om.out.vulnerability(msg, severity=severity.HIGH)
+                        om.out.vulnerability(desc, severity=severity.HIGH)
                         return
 
     def end(self):

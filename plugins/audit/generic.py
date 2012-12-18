@@ -22,8 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import copy
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.data.options.opt_factory import opt_factory
@@ -32,6 +30,8 @@ from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_number, rand_alnum
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.levenshtein import relative_distance
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class generic(AuditPlugin):
@@ -134,28 +134,28 @@ class generic(AuditPlugin):
                     1 - self._diff_ratio:
                 # The two limits are "equal"; It's safe to suppose that we have found the
                 # limit here and that the error string really produced an error
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_id(id_list)
-                v.set_severity(severity.MEDIUM)
-                v.set_name('Unidentified vulnerability')
-                v.set_desc('An unidentified vulnerability was found at: ' +
-                           mutant.found_at())
+                desc = 'An unidentified vulnerability was found at: %s'
+                desc = desc % mutant.found_at()
+                
+                v = Vuln('Unidentified vulnerability', desc,
+                         severity.MEDIUM, id_list, self.get_name(), mutant)
+
                 kb.kb.append(self, 'generic', v)
-                self._already_reported.append(
-                    (mutant.get_url(), mutant.get_var()))
+                self._already_reported.append((mutant.get_url(),
+                                               mutant.get_var()))
             else:
                 # *maybe* and just *maybe* this is a vulnerability
-                i = info.info(mutant)
-                i.set_plugin_name(self.get_name())
-                i.set_id(id_list)
-                i.set_name('Possible unidentified vulnerability')
-                msg = '[Manual verification required] A possible vulnerability was found at: '
-                msg += mutant.found_at()
-                i.set_desc(msg)
+                desc = '[Manual verification required] A potential' \
+                       'vulnerability was found at: %s'
+                desc = desc % mutant.found_at()
+                
+                i = Info('Potential unidentified vulnerability', desc,
+                         severity.MEDIUM, id_list, self.get_name(), mutant)
+                
                 kb.kb.append(self, 'generic', i)
-                self._already_reported.append(
-                    (mutant.get_url(), mutant.get_var()))
+                
+                self._already_reported.append((mutant.get_url(),
+                                               mutant.get_var()))
 
     def _get_limit_response(self, m):
         '''

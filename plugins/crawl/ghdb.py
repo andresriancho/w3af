@@ -26,7 +26,6 @@ import xml.dom.minidom
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -37,6 +36,7 @@ from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.search_engines.google import google as google
+from core.data.kb.vuln import Vuln
 
 
 class ghdb(CrawlPlugin):
@@ -100,16 +100,16 @@ class ghdb(CrawlPlugin):
             # I found a vuln in the site!
             response = self._uri_opener.GET(result.URL, cache=True)
             if not is_404(response):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
+                desc = 'ghdb plugin found a vulnerability at URL: "%s".' \
+                      ' According to GHDB the vulnerability description'\
+                      ' is "%s".'
+                desc = desc % (response.get_url(), gh.desc)
+                
+                v = Vuln('Google hack database match', desc,
+                         severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
                 v.set_method('GET')
-                v.set_name('Google hack database vulnerability')
-                v.set_severity(severity.MEDIUM)
-                msg = 'ghdb plugin found a vulnerability at URL: "%s".' \
-                      ' According to GHDB the vulnerability description is "%s".'
-                v.set_desc(msg % (response.get_url(), gh.desc))
-                v.set_id(response.id)
+
                 kb.kb.append(self, 'vuln', v)
                 om.out.vulnerability(v.get_desc(), severity=severity.LOW)
 

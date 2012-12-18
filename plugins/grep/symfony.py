@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -64,7 +64,7 @@ class symfony(GrepPlugin):
             if self.symfony_detected(response):
                 dom = response.get_dom()
                 if dom is not None and not self.csrf_detected(dom):
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Symfony Framework')
                     i.set_url(url)

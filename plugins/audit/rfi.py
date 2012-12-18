@@ -28,7 +28,6 @@ from functools import partial
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.controllers.daemons.webserver as webserver
 import core.data.constants.ports as ports
@@ -44,6 +43,7 @@ from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alnum
 from core.data.parsers.url import URL
+from core.data.kb.vuln import Vuln
 
 
 class rfi(AuditPlugin):
@@ -246,14 +246,13 @@ class rfi(AuditPlugin):
         Analyze results of the _send_mutant method.
         '''
         if rfi_data.rfi_result in response:
-            v = vuln.vuln(mutant)
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_severity(severity.HIGH)
-            v.set_name('Remote code execution')
-            msg = 'A remote file inclusion vulnerability that allows remote' \
-                  ' code execution was found at: ' + mutant.found_at()
-            v.set_desc(msg)
+            desc = 'A remote file inclusion vulnerability that allows remote' \
+                  ' code execution was found at: %s' % mutant.found_at()
+            
+            v = Vuln('Remote code execution', desc,
+                     severity.HIGH, response.id, self.get_name(),
+                     mutant)
+
             kb.kb.append_uniq(self, 'rfi', v)
 
         elif rfi_data.rfi_result_part_1 in response \
@@ -261,14 +260,13 @@ class rfi(AuditPlugin):
             # This means that both parts ARE in the response body but the
             # rfi_data.rfi_result is NOT in it. In other words, the remote
             # content was embedded but not executed
-            v = vuln.vuln(mutant)
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_severity(severity.MEDIUM)
-            v.set_name('Remote file inclusion')
-            msg = 'A remote file inclusion vulnerability without code' \
-                  ' execution was found at: ' + mutant.found_at()
-            v.set_desc(msg)
+            desc = 'A remote file inclusion vulnerability without code' \
+                  ' execution was found at: %s' % mutant.found_at()
+            
+            v = Vuln('Remote file inclusion', desc,
+                     severity.MEDIUM, response.id, self.get_name(),
+                     mutant)
+
             kb.kb.append_uniq(self, 'rfi', v)
 
         else:
@@ -278,16 +276,15 @@ class rfi(AuditPlugin):
             #
             for error in self.RFI_ERRORS:
                 if error in response and not error in mutant.get_original_response_body():
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_severity(severity.LOW)
+                    desc = 'A potential remote file inclusion vulnerability' \
+                           ' was identified by the means of application error' \
+                           '  messages at: %s' % mutant.found_at()
+                    
+                    v = Vuln('Potential remote file inclusion', desc,
+                             severity.LOW, response.id, self.get_name(),
+                             mutant)
+
                     v.add_to_highlight(error)
-                    v.set_name('Potential remote file inclusion')
-                    msg = 'A potential remote file inclusion vulnerability' \
-                          ' was identified by the means of application error' \
-                          '  messages at: ' + mutant.found_at()
-                    v.set_desc(msg)
                     kb.kb.append_uniq(self, 'rfi', v)
                     break
 

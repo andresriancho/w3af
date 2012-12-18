@@ -28,7 +28,7 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 
 class robots_txt(CrawlPlugin):
@@ -56,7 +56,7 @@ class robots_txt(CrawlPlugin):
 
         if not is_404(http_response):
             # Save it to the kb!
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('robots.txt file')
             i.set_url(robots_url)

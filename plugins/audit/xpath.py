@@ -23,12 +23,12 @@ from __future__ import with_statement
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.vuln import Vuln
 
 
 class xpath(AuditPlugin):
@@ -115,13 +115,13 @@ class xpath(AuditPlugin):
             xpath_error_list = self._find_xpath_error(response)
             for xpath_error in xpath_error_list:
                 if xpath_error not in mutant.get_original_response_body():
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_name('XPATH injection vulnerability')
-                    v.set_severity(severity.MEDIUM)
-                    v.set_desc(
-                        'XPATH injection was found at: ' + mutant.found_at())
-                    v.set_id(response.id)
+                    
+                    desc = 'XPATH injection was found at: %s' % mutant.found_at()
+                    
+                    v = Vuln('XPATH injection vulnerability', desc,
+                             severity.MEDIUM, response.id, self.get_name(),
+                             mutant)
+                    
                     v.add_to_highlight(xpath_error)
                     kb.kb.append(self, 'xpath', v)
                     break

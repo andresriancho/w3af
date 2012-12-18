@@ -23,7 +23,7 @@ import urllib
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
@@ -134,7 +134,7 @@ class afd(InfrastructurePlugin):
         Analyze the test results and save the conclusion to the kb.
         '''
         if len(filtered) >= len(self._get_offending_strings()) / 5.0:
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Active filter detected')
             msg = 'The remote network has an active filter. IMPORTANT: The result'

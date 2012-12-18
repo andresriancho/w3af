@@ -30,8 +30,6 @@ from pprint import pformat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -39,6 +37,8 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
 
 
 class ssl_certificate(AuditPlugin):
@@ -82,14 +82,15 @@ class ssl_certificate(AuditPlugin):
         except Exception, e:
             pass
         else:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            desc = 'The target host "%s" has SSL version 2 enabled which is'\
+                   ' known to be insecure.'
+            desc = desc % domain
+            
+            v = Vuln('Insecure SSL version', desc,
+                     severity.LOW, 1, self.get_name())
+
             v.set_url(url)
-            v.set_severity(severity.LOW)
-            v.set_name('Insecure SSL version')
-            desc = 'The target host "%s" has SSL version 2 enabled which is'
-            desc += ' known to be insecure.'
-            v.set_desc(desc % domain)
+
             kb.kb.append(self, 'ssl_v2', v)
             om.out.vulnerability(desc % domain)
 
@@ -113,22 +114,25 @@ class ssl_certificate(AuditPlugin):
                     invalid_cert = True
 
             if invalid_cert:
-                v = vuln.vuln()
-                v.set_severity(severity.LOW)
-                v.set_name('Invalid SSL certificate')
-                desc = '"%s" uses an invalid security certificate. '
-                desc += 'The certificate is not trusted because: "%s".'
+                desc = '"%s" uses an invalid security certificate.'\
+                       ' The certificate is not trusted because: "%s".'
+                desc = desc % (domain, details)
+                
+                v = Vuln('Invalid SSL certificate', desc,
+                         severity.LOW, 1, self.get_name())
+
                 tag = 'invalid_ssl_cert'
             else:
-                # We use here info() instead of vuln() because it is too common case
-                v = info.info()
-                v.set_name('Invalid SSL connection')
+                # We use here Info instead of Vuln because it is too common case
                 desc = '"%s" has an invalid SSL configuration. Technical details: "%s"'
+                desc = desc % (domain, details)
+                
+                v = Info('Invalid SSL connection', desc, 1, self.get_name())
+
                 tag = 'invalid_ssl_connect'
 
-            v.set_desc(desc % (domain, details))
-            v.set_plugin_name(self.get_name())
             v.set_url(url)
+            
             kb.kb.append(self, tag, v)
             om.out.vulnerability(v.get_name() + ': ' + v.get_desc())
             return
@@ -146,23 +150,19 @@ class ssl_certificate(AuditPlugin):
         expire_days = (date(exp_date.tm_year, exp_date.tm_mon,
                        exp_date.tm_mday) - date.today()).days
         if expire_days < self._min_expire_days:
-            i = info.info()
+            desc = 'The certificate for "%s" will expire soon.' % domain
+            i = Info('Soon to expire SSL certificate', desc, 1, self.get_name())
             i.set_url(url)
-            i.set_plugin_name(self.get_name())
-            i.set_name('Soon expire SSL certificate')
-            i.set_desc('The certificate for "%s" will expire soon.' % domain)
             kb.kb.append(self, 'ssl_soon_expire', i)
             om.out.information(i.get_desc())
 
         # Print the SSL information to the log
-        desc = 'This is the information about the SSL certificate used in the target site:\n'
-        desc += self._dump_ssl_info(cert, cert_der, cipher)
+        desc = 'This is the information about the SSL certificate used in the'\
+               ' target site:\n%s' % self._dump_ssl_info(cert, cert_der, cipher)
         om.out.information(desc)
-        i = info.info()
+        i = Info('SSL Certificate dump', desc, 1, self.get_name())
         i.set_url(url)
-        i.set_plugin_name(self.get_name())
-        i.set_name('SSL Certificate')
-        i.set_desc(desc)
+        
         kb.kb.append(self, 'certificate', i)
 
     def _dump_ssl_info(self, cert, cert_der, cipher):

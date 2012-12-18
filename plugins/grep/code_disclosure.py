@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.is_source_file import is_source_file
@@ -61,31 +61,30 @@ class code_disclosure(GrepPlugin):
             if match:
                 # Check also for 404
                 if not is_404(response):
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
+                    desc = 'The URL: "%s" has a %s code disclosure vulnerability.'
+                    desc = desc % (response.get_url(), lang)
+                    
+                    v = Vuln('Code disclosure vulnerability', desc,
+                             severity.LOW, response.id, self.get_name())
+
                     v.set_url(response.get_url())
-                    v.set_id(response.id)
-                    v.set_severity(severity.LOW)
-                    v.set_name('%s code disclosure vulnerability' % lang)
                     v.add_to_highlight(match.group())
-                    fmt = 'The URL: "%s" has a %s code disclosure vulnerability.'
-                    v.set_desc(fmt % (v.get_url(), lang))
+                    
                     kb.kb.append(self, 'code_disclosure', v)
                     self._already_added.add(response.get_url())
 
                 else:
                     self._first_404 = False
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
+                    
+                    desc = 'The URL: "%s" has a %s code disclosure'\
+                           ' vulnerability in the customized 404 script.'
+                    desc = desc % (v.get_url(), lang)
+                    
+                    v = Vuln('Code disclosure vulnerability in 404 page', desc,
+                             severity.LOW, response.id, self.get_name())
+
                     v.set_url(response.get_url())
-                    v.set_id(response.id)
-                    v.set_severity(severity.LOW)
                     v.add_to_highlight(match.group())
-                    name = '%s code disclosure vulnerability in 404 page'
-                    v.set_name(name % lang)
-                    fmt = 'The URL: "%s" has a %s code disclosure'\
-                          ' vulnerability in the customized 404 script.'
-                    v.set_desc(fmt % (v.get_url(), lang))
                     kb.kb.append(self, 'code_disclosure', v)
 
     def end(self):

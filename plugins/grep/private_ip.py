@@ -23,12 +23,12 @@ import re
 import socket
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.get_local_ip import get_local_ip
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class private_ip(GrepPlugin):
@@ -83,17 +83,14 @@ class private_ip(GrepPlugin):
                     # If i'm requesting 192.168.2.111 then I don't want to be
                     # alerted about it
                     if match not in self._ignore_if_match:
-                        v = vuln.vuln()
-                        v.set_plugin_name(self.get_name())
-                        v.set_url(response.get_url())
-                        v.set_id(response.id)
-                        v.set_severity(severity.LOW)
-                        v.set_name('Private IP disclosure vulnerability')
+                        desc = 'The URL: "%s" returned an HTTP header with a'\
+                               ' private IP address: "%s".'
+                        desc = desc % (response.get_url(), match)
+                        v = Vuln('Private IP disclosure vulnerability', desc,
+                                 severity.LOW, response.id, self.get_name())
 
-                        msg = 'The URL: "' + \
-                            v.get_url() + '" returned an HTTP header '
-                        msg += 'with an IP address: "' + match + '".'
-                        v.set_desc(msg)
+                        v.set_url(response.get_url())
+
                         v['IP'] = match
                         v.add_to_highlight(match)
                         kb.kb.append(self, 'header', v)
@@ -119,18 +116,15 @@ class private_ip(GrepPlugin):
 
                         # If i'm requesting 192.168.2.111 then I don't want to be alerted about it
                         if match not in self._ignore_if_match and \
-                                not request.sent(match):
-                            v = vuln.vuln()
-                            v.set_plugin_name(self.get_name())
-                            v.set_url(response.get_url())
-                            v.set_id(response.id)
-                            v.set_severity(severity.LOW)
-                            v.set_name('Private IP disclosure vulnerability')
+                        not request.sent(match):
+                            desc = 'The URL: "%s" returned an HTML document'\
+                                   ' with a private IP address: "%s".'
+                            desc = desc % (response.get_url(), match)
+                            v = Vuln('Private IP disclosure vulnerability', desc,
+                                     severity.LOW, response.id, self.get_name())
 
-                            msg = 'The URL: "' + \
-                                v.get_url() + '" returned an HTML document '
-                            msg += 'with an IP address: "' + match + '".'
-                            v.set_desc(msg)
+                            v.set_url(response.get_url())
+
                             v['IP'] = match
                             v.add_to_highlight(match)
                             kb.kb.append(self, 'HTML', v)

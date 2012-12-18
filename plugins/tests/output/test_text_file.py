@@ -23,8 +23,7 @@ import re
 
 from nose.plugins.attrib import attr
 
-import core.data.kb.vuln as vuln
-
+from core.data.kb.vuln import Vuln
 from core.data.parsers.url import URL
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -84,9 +83,10 @@ class TestTextFile(PluginTest):
             mo = vuln_re.search(line)
 
             if mo:
-                v = vuln.vuln()
+                v = Vuln('TestCase', 'desc', 'High', 1, 'plugin')
                 v.set_url(URL(mo.group(1)))
                 v.set_method(mo.group(2))
+                
                 file_vulns.append(v)
 
         return file_vulns

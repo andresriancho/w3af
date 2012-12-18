@@ -23,12 +23,12 @@ import base64
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from core.controllers.exceptions import w3afException
 from core.data.dc.headers import Headers
+from core.data.kb.vuln import Vuln
 
 
 class basic_auth(BruteforcePlugin):
@@ -99,21 +99,21 @@ class basic_auth(BruteforcePlugin):
                 # GET was OK
                 if response.get_code() != 401:
                     self._found = True
-                    v = vuln.vuln()
-                    v.set_id(response.id)
-                    v.set_plugin_name(self.get_name())
+                    
+                    desc = 'Found authentication credentials to: "%s".'\
+                           ' A valid user and password combination is: %s/%s .'
+                    desc = desc % (url, user, passwd)
+                    v = Vuln('Guessable credentials', desc,
+                             severity.HIGH, response.id, self.get_name())
                     v.set_url(url)
-                    v.set_desc('Found authentication credentials to: "' + url +
-                               '". A correct user and password combination is: ' + user + '/' + passwd)
+
                     v['user'] = user
                     v['pass'] = passwd
                     v['response'] = response
-                    v.set_severity(severity.HIGH)
-                    v.set_name('Guessable credentials')
 
                     kb.kb.append(self, 'auth', v)
-                    om.out.vulnerability(
-                        v.get_desc(), severity=v.get_severity())
+                    om.out.vulnerability(v.get_desc(),
+                                         severity=v.get_severity())
 
     def end(self):
         '''

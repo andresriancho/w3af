@@ -24,8 +24,8 @@ import cgi
 
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
 
+from core.data.kb.vuln import Vuln
 from core.data.fuzzer.utils import rand_number
 from core.controllers.misc.levenshtein import relative_distance_boolean
 from core.controllers.misc.diff import diff
@@ -168,17 +168,19 @@ class blind_sqli_response_diff(object):
         if self.equal_with_limit(body_second_false_response,
                                  body_false_response,
                                  compare_diff):
-            v = vuln.vuln(mutant)
-            v.set_id([second_false_response.id,
-                      second_true_response.id])
-            v.set_severity(severity.HIGH)
-            v.set_name('Blind SQL injection vulnerability')
+            
+            response_ids = [second_false_response.id,
+                            second_true_response.id]
+            
             desc = 'Blind SQL injection was found at: "%s", using'\
                    ' HTTP method %s. The injectable parameter is: "%s"'
-            desc = desc % (v.get_url(),
-                           v.get_method(),
+            desc = desc % (mutant.get_url(),
+                           mutant.get_method(),
                            mutant.get_var())
-            v.set_desc(desc)
+            
+            v = Vuln('Blind SQL injection vulnerability', desc, severity.HIGH,
+                     response_ids, 'blind_sqli', mutant)
+            
             om.out.debug(v.get_desc())
 
             v['type'] = statement_type

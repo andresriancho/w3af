@@ -23,13 +23,13 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class dot_listing(CrawlPlugin):
@@ -72,59 +72,60 @@ class dot_listing(CrawlPlugin):
         except w3afException, w3:
             msg = ('Failed to GET .listing file: "%s". Exception: "%s".')
             om.out.debug(msg % (url, w3))
-        else:
-            # Check if it's a .listing file
-            if not is_404(response):
+            return
 
-                for fr in self._create_fuzzable_requests(response):
-                    self.output_queue.put(fr)
+        # Check if it's a .listing file
+        if not is_404(response):
 
-                parsed_url_set = set()
-                users = set()
-                groups = set()
+            for fr in self._create_fuzzable_requests(response):
+                self.output_queue.put(fr)
 
-                for username, group, filename in self._extract_info_from_listing(response.get_body()):
-                    if filename != '.' and filename != '..':
-                        parsed_url_set.add(domain_path.url_join(filename))
-                        users.add(username)
-                        groups.add(group)
+            parsed_url_set = set()
+            users = set()
+            groups = set()
 
-                self.worker_pool.map(self._get_and_parse, parsed_url_set)
+            extracted_info = self._extract_info_from_listing(response.get_body())
+            for username, group, filename in extracted_info:
+                if filename != '.' and filename != '..':
+                    parsed_url_set.add(domain_path.url_join(filename))
+                    users.add(username)
+                    groups.add(group)
 
-                if parsed_url_set:
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_name('.listing file found')
-                    v.set_severity(severity.LOW)
-                    v.set_url(response.get_url())
-                    msg = ('A .listing file was found at: "%s". The contents'
-                           ' of this file disclose filenames.')
-                    v.set_desc(msg % (v.get_url()))
-                    kb.kb.append(self, 'dot_listing', v)
-                    om.out.vulnerability(
-                        v.get_desc(), severity=v.get_severity())
+            self.worker_pool.map(self._get_and_parse, parsed_url_set)
 
-                real_users = set([u for u in users if not u.isdigit()])
-                real_groups = set([g for g in groups if not g.isdigit()])
+            if parsed_url_set:
+                desc = 'A .listing file was found at: "%s". The contents'\
+                       ' of this file disclose filenames.'
+                desc = desc % (response.get_url())
+                
+                v = Vuln('.listing file found', desc, severity.LOW,
+                         response.id, self.get_name())
+                v.set_url(response.get_url())
+                
+                kb.kb.append(self, 'dot_listing', v)
+                om.out.vulnerability(v.get_desc(),
+                                     severity=v.get_severity())
 
-                if real_users or real_groups:
-                    v = vuln.vuln()
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_name('Operating system username and group leak')
-                    v.set_severity(severity.LOW)
-                    v.set_url(response.get_url())
-                    msg = 'A .listing file which leaks operating system usernames' \
-                          ' and groups was identified at %s. The leaked users are %s,' \
-                          ' and the groups are %s. This information can be used' \
-                          ' during a bruteforce attack to the Web application,' \
-                          ' SSH or FTP services.'
-                    v.set_desc(msg % (v.get_url(
-                    ), ', '.join(real_users), ', '.join(real_groups)))
-                    kb.kb.append(self, 'dot_listing', v)
-                    om.out.vulnerability(
-                        v.get_desc(), severity=v.get_severity())
+            real_users = set([u for u in users if not u.isdigit()])
+            real_groups = set([g for g in groups if not g.isdigit()])
+
+            if real_users or real_groups:
+                desc = 'A .listing file which leaks operating system usernames' \
+                       ' and groups was identified at %s. The leaked users are %s,' \
+                       ' and the groups are %s. This information can be used' \
+                       ' during a bruteforce attack to the Web application,' \
+                       ' SSH or FTP services.'
+                desc = desc % (v.get_url(),
+                               ', '.join(real_users),
+                               ', '.join(real_groups))
+                
+                v = Vuln('Operating system username and group leak', desc, severity.LOW,
+                         response.id, self.get_name())
+                v.set_url(response.get_url())
+                
+                kb.kb.append(self, 'dot_listing', v)
+                om.out.vulnerability(v.get_desc(),
+                                     severity=v.get_severity())
 
     def _extract_info_from_listing(self, listing_file_content):
         '''

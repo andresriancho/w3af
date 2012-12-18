@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.data.parsers.url import URL
@@ -77,7 +77,7 @@ class fingerprint_os(InfrastructurePlugin):
 
             if relative_distance_ge(original_response.get_body(),
                                     windows_response.get_body(), 0.98):
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
                 i.set_url(windows_response.get_url())
@@ -89,7 +89,7 @@ class fingerprint_os(InfrastructurePlugin):
                 kb.kb.append(self, 'operating_system', i)
                 om.out.information(i.get_desc())
             else:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Operating system')
                 i.set_url(original_response.get_url())

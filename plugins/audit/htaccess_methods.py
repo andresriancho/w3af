@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 import core.data.constants.response_codes as http_constants
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class htaccess_methods(AuditPlugin):
@@ -134,18 +134,20 @@ class htaccess_methods(AuditPlugin):
                     allowed_methods.append((method, response.id))
 
         if len(allowed_methods) > 0:
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            
+            response_ids = [i for m, i in allowed_methods]
+            methods = ', '.join([m for m, i in allowed_methods]) + '.'
+            desc = 'The resource: "%s" requires authentication but the access'\
+                   ' is misconfigured and can be bypassed using these'\
+                   ' methods: %s.'
+            desc = desc % (url, methods)
+            
+            v = Vuln('Misconfigured access control', desc,
+                     severity.MEDIUM, response_ids, self.get_name())
+
             v.set_url(url)
-            v.set_id([i for m, i in allowed_methods])
-            v.set_name('Misconfigured access control')
-            v.set_severity(severity.MEDIUM)
-            msg = 'The resource: "' + url + \
-                '" requires authentication but the access'
-            msg += ' is misconfigured and can be bypassed using these methods: '
-            msg += ', '.join([m for m, i in allowed_methods]) + '.'
-            v.set_desc(msg)
             v['methods'] = allowed_methods
+            
             kb.kb.append(self, 'auth', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 

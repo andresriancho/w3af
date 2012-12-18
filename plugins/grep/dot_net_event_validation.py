@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -73,7 +73,7 @@ class dot_net_event_validation(GrepPlugin):
 
             # I have __viewstate!, verify if event validation is enabled
             if not self._eventvalidation.search(response.get_body()):
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('.NET Event Validation is disabled')
                 i.set_url(response.get_url())
@@ -87,7 +87,7 @@ class dot_net_event_validation(GrepPlugin):
 
             if not self._encryptedVs.search(response.get_body()):
                 # Nice! We can decode the viewstate! =)
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('.NET ViewState encryption is disabled')
                 i.set_url(response.get_url())

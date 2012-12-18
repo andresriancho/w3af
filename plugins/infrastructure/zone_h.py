@@ -23,14 +23,14 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.url import URL
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class zone_h(InfrastructurePlugin):
@@ -96,27 +96,24 @@ class zone_h(InfrastructurePlugin):
 
             # Do the if...
             if total_attacks > 1:
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_name('Previous defacements')
+                desc = 'The target site was defaced more than one time in the'\
+                       ' past. For more information please visit the following'\
+                       ' URL: "%s".' % response.get_url()
+                       
+                v = Vuln('Previous defacements', desc,
+                         severity.MEDIUM, response.id, self.get_name())
                 v.set_url(response.get_url())
-                v.set_severity(severity.MEDIUM)
-                msg = 'The target site was defaced more than one time in the past. For more'
-                msg += ' information please visit the following URL: "' + \
-                    response.get_url()
-                msg += '".'
-                v.set_desc(msg)
+                
                 kb.kb.append(self, 'defacements', v)
                 om.out.information(v.get_desc())
             elif total_attacks == 1:
-                i = info.info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Previous defacement')
+                desc = 'The target site was defaced in the past. For more'\
+                       ' information please visit the following URL: "%s".'
+                desc = desc % response.get_url()
+                i = Info('Previous defacements', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                msg = 'The target site was defaced in the past. For more information'
-                msg += ' please visit the following URL: "' + \
-                    response.get_url() + '".'
-                i.set_desc(msg)
+
                 kb.kb.append(self, 'defacements', i)
                 om.out.information(i.get_desc())
 

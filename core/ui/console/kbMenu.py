@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
-import core.data.kb.vuln as vuln
+from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
 import core.data.kb.shell as shell
 import core.controllers.output_manager as om
 
@@ -46,11 +46,11 @@ class kbMenu(menu):
             'vulns': (
                 kb.kb.get_all_vulns,
                 ['Vulnerabilities'],
-                [vuln.vuln.get_desc]),
+                [Vuln.get_desc]),
             'info': (
                 kb.kb.get_all_infos,
                 ['Info'],
-                [info.info.get_desc]),
+                [Info.get_desc]),
             'shells': (
                 kb.kb.get_all_shells,
                 ['Shells'],

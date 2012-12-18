@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
+from core.data.kb.vuln import Vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -94,7 +94,7 @@ class dot_net_errors(InfrastructurePlugin):
 
         if viewable_remote_machine not in response.body\
                 and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
-            v = vuln.vuln(response)
+            v = Vuln(response)
             v.set_plugin_name(self.get_name())
             v.set_id(response.id)
             v.set_severity(severity.LOW)

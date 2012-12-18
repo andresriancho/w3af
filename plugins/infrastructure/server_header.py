@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 
@@ -63,7 +63,7 @@ class server_header(InfrastructurePlugin):
         for hname, hvalue in response.get_lower_case_headers().iteritems():
             if hname == 'server':
                 server = hvalue
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Server header')
                 i.set_id(response.get_id())
@@ -82,7 +82,7 @@ class server_header(InfrastructurePlugin):
 
         else:
             # strange !
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Omitted server header')
             i.set_id(response.get_id())
@@ -122,7 +122,7 @@ class server_header(InfrastructurePlugin):
                         #
                         #    I don't have it in the KB, so I need to add it,
                         #
-                        i = info.info()
+                        i = Info()
                         i.set_plugin_name(self.get_name())
                         i.set_name('"%s" header' % header_name)
                         i.set_id(response.get_id())

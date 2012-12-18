@@ -62,8 +62,8 @@ class FoundObjectsGuardian(gtk.HBox):
         self.vuln = _Guarded("vuln")
         self.shll = _Guarded("shell")
         self.objcont = {
-            core.data.kb.vuln.vuln: self.vuln,
-            core.data.kb.info.info: self.info,
+            core.data.kb.Vuln: self.vuln,
+            core.data.kb.Info: self.info,
         }
 
         # builds the presentation

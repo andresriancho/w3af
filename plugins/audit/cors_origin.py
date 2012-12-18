@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
+from core.data.kb.vuln import Vuln
 from core.data.options.option_list import OptionList
 from core.data.options.opt_factory import opt_factory
 from core.controllers.plugins.audit_plugin import AuditPlugin
@@ -133,20 +133,18 @@ class cors_origin(AuditPlugin):
             else:
                 if section not in self._reported_global:
                     self._reported_global.add(section)
-
-                    v = vuln.vuln()
-                    v.set_url(analysis_response[0].get_url())
-                    v.set_id(analysis_response[0].get_id())
-                    v.set_severity(vuln_severity)
-                    v.set_name('Multiple CORS misconfigurations')
-
+                    
+                    response_id = analysis_response[0].get_id()
                     msg = 'More than %s URLs in the Web application under analysis' \
                           ' returned a CORS response that triggered the %s' \
                           ' detection. Given that this seems to be an issue' \
                           ' that affects all of the site URLs, the scanner will' \
                           ' not report any other specific vulnerabilities of this'\
                           ' type.'
-                    v.set_desc(msg % (self.MAX_REPEATED_REPORTS, section))
+                    msg = msg % (self.MAX_REPEATED_REPORTS, section)
+                    
+                    v = Vuln('Multiple CORS misconfigurations', msg,
+                             vuln_severity, response_id, self.get_name())
 
                     kb.kb.append(self, 'cors_origin', v)
                     om.out.vulnerability(msg)
@@ -228,12 +226,11 @@ class cors_origin(AuditPlugin):
                            ' methods: %s.'
                     msg = msg % (', '.join(report_strange),)
 
-                v = vuln.vuln()
+                v = Vuln(name, msg, severity.LOW, response.get_id(),
+                         self.get_name())
+
                 v.set_url(forged_req.get_url())
-                v.set_id(response.get_id())
-                v.set_severity(severity.LOW)
-                v.set_name(name)
-                v.set_desc(msg)
+                
                 kb.kb.append(self, 'cors_origin', v)
                 om.out.vulnerability(msg)
 
@@ -252,18 +249,15 @@ class cors_origin(AuditPlugin):
                  (if any).
         '''
         if allow_origin == '*':
-
-            v = vuln.vuln()
-            v.set_url(forged_req.get_url())
-            v.set_id(response.get_id())
-            v.set_severity(severity.LOW)
-            v.set_name('Access-Control-Allow-Origin set to "*"')
-
             msg = 'The remote Web application, specifically "%s", returned' \
                   ' an %s header with the value set to "*" which is insecure'\
                   ' and leaves the application open to Cross-domain attacks.'
-            v.set_desc(
-                msg % (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN))
+            msg = msg % (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN)
+            
+            v = Vuln('Access-Control-Allow-Origin set to "*"', msg,
+                     severity.LOW, response.get_id(), self.get_name())
+
+            v.set_url(forged_req.get_url())
 
             kb.kb.append(self, 'cors_origin', v)
             om.out.vulnerability(msg)
@@ -293,13 +287,9 @@ class cors_origin(AuditPlugin):
 
             if origin in allow_origin:
 
-                v = vuln.vuln()
-                v.set_url(forged_req.get_url())
-                v.set_id(response.get_id())
-
                 if allow_credentials:
                     sev = severity.HIGH
-                    v.set_name('Insecure Access-Control-Allow-Origin with credentials')
+                    name = 'Insecure Access-Control-Allow-Origin with credentials'
                     msg = 'The remote Web application, specifically "%s", returned' \
                           ' an %s header with the value set to the value sent in the'\
                           ' request\'s Origin header and a %s header with the value'\
@@ -312,7 +302,7 @@ class cors_origin(AuditPlugin):
 
                 else:
                     sev = severity.LOW
-                    v.set_name('Insecure Access-Control-Allow-Origin')
+                    name = 'Insecure Access-Control-Allow-Origin'
                     msg = 'The remote Web application, specifically "%s", returned' \
                           ' an %s header with the value set to the value sent in the'\
                           ' request\'s Origin header, which is insecure and leaves'\
@@ -320,8 +310,8 @@ class cors_origin(AuditPlugin):
                     msg = msg % (forged_req.get_url(),
                                  ACCESS_CONTROL_ALLOW_ORIGIN)
 
-                v.set_severity(sev)
-                v.set_desc(msg)
+                v = Vuln(name, msg, sev, response.get_id(), self.get_name())
+                v.set_url(forged_req.get_url())
 
                 kb.kb.append(self, 'cors_origin', v)
                 om.out.vulnerability(msg)
@@ -354,21 +344,19 @@ class cors_origin(AuditPlugin):
 
         if allow_credentials and allow_origin == '*':
 
-            v = vuln.vuln()
-            v.set_url(forged_req.get_url())
-            v.set_id(response.get_id())
-            v.set_severity(severity.INFORMATION)
-            v.set_name('Incorrect withCredentials implementation')
-
             msg = 'The remote Web application, specifically "%s", returned' \
                   ' an %s header with the value set to "*"  and an %s header'\
                   ' with the value set to "true" which according to Mozilla\'s'\
                   ' documentation is invalid. This implementation error might'\
                   ' affect the application behavior.'
-            v.set_desc(msg % (forged_req.get_url(),
-                              ACCESS_CONTROL_ALLOW_ORIGIN,
-                              ACCESS_CONTROL_ALLOW_CREDENTIALS))
-
+            msg = msg % (forged_req.get_url(),
+                         ACCESS_CONTROL_ALLOW_ORIGIN,
+                         ACCESS_CONTROL_ALLOW_CREDENTIALS)
+            
+            v = Vuln('Incorrect withCredentials implementation', msg,
+                     severity.INFORMATION, response.get_id(), self.get_name())
+            v.set_url(forged_req.get_url())
+            
             kb.kb.append(self, 'cors_origin', v)
             om.out.vulnerability(msg)
             return self._filter_report('_universal_origin_allow_creds_counter',

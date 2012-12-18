@@ -26,7 +26,6 @@ from itertools import repeat, izip
 
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.misc.temp_dir import get_temp_dir
@@ -36,6 +35,7 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alnum
+from core.data.kb.vuln import Vuln
 
 
 class file_upload(AuditPlugin):
@@ -186,16 +186,17 @@ class file_upload(AuditPlugin):
             # saver will break cause REAL file objects can't
             # be picked
             mutant.set_mod_value('<file_object>')
-            v = vuln.vuln(mutant)
-            v.set_plugin_name(self.get_name())
-            v.set_id([http_response.id, get_response.id])
-            v.set_severity(severity.HIGH)
-            v.set_name('Insecure file upload')
+
+            desc = 'A file upload to a directory inside the webroot' \
+                   ' was found at: %s' % mutant.found_at()
+            
+            v = Vuln('Insecure file upload', desc,
+                     severity.HIGH, [http_response.id, get_response.id],
+                     self.get_name(), mutant)
+            
             v['file_dest'] = get_response.get_url()
             v['file_vars'] = mutant.get_file_vars()
-            msg = ('A file upload to a directory inside the '
-                   'webroot was found at: ' + mutant.found_at())
-            v.set_desc(msg)
+
             kb.kb.append(self, 'file_upload', v)
             return
 

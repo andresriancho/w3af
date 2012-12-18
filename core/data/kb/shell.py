@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
-from core.data.kb.vuln import vuln as Vuln
+from core.data.kb.vuln import Vuln as Vuln
 from core.data.kb.exploit_result import ExploitResult
 
 

@@ -24,12 +24,12 @@ import re
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.exceptions import w3afException
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alnum
+from core.data.kb.vuln import Vuln
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.constants.browsers import (ALL, INTERNET_EXPLORER_6,
@@ -348,16 +348,15 @@ class xss(AuditPlugin):
 
                 # Save it to the KB
                 if vulnerable:
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_name('Cross site scripting vulnerability')
-                    v.set_severity(severity.MEDIUM)
-                    msg = 'Cross Site Scripting was found at: ' + \
-                        mutant.found_at()
-                    msg += ' This vulnerability affects ' + \
-                        ','.join(mutant.affected_browsers)
-                    v.set_desc(msg)
+                    desc = 'Cross Site Scripting was found at: %s The'\
+                           ' vulnerability affects %s.'
+                    desc = desc % (mutant.found_at(),
+                                   ','.join(mutant.affected_browsers))
+                    
+                    v = Vuln('Cross site scripting vulnerability', desc,
+                             severity.MEDIUM, response.id, self.get_name(),
+                             mutant)
+
                     v.add_to_highlight(mod_value)
                     kb.kb.append_uniq(self, 'xss', v)
 
@@ -418,31 +417,29 @@ class xss(AuditPlugin):
                                                         cache=False)
 
                 for mutant, mutant_response_id in self._xssMutants:
-                    # Remember that HTTPResponse objects have a faster "__in__" than
-                    # the one in strings; so string in response.get_body() is slower than
-                    # string in response
+                    # Remember that HTTPResponse objects have a faster "__in__"
+                    # than the one in strings; so string in response.get_body()
+                    # is slower than string in response
                     if mutant.get_mod_value() in response:
-
-                        v = vuln.vuln(mutant)
-                        v.set_plugin_name(self.get_name())
-                        v.set_url(fuzzable_request.get_url())
-                        v.set_dc(fuzzable_request.get_dc())
-                        v.set_method(fuzzable_request.get_method())
+                        desc = 'Permanent Cross Site Scripting was found at:' \
+                               ' %s. Using method: %s . The XSS was sent to'\
+                               ' the URL: %s. %s'
+                               
+                        desc = desc % (response.get_url(),
+                                       mutant.get_method(),
+                                       mutant.get_url(),
+                                       mutant.print_mod_value())
+                                                       
+                        response_ids = [response.id, mutant_response_id]
+                        
+                        v = Vuln('Permanent cross site scripting vulnerability',
+                                 desc, severity.HIGH, response_ids,
+                                 self.get_name(), mutant)
 
                         v['permanent'] = True
                         v['write_payload'] = mutant
                         v['read_payload'] = fuzzable_request
-                        v.set_name(
-                            'Permanent cross site scripting vulnerability')
-                        v.set_severity(severity.HIGH)
-                        msg = 'Permanent Cross Site Scripting was found at: ' + \
-                            response.get_url()
-                        msg += ' . Using method: ' + \
-                            v.get_method() + '. The XSS was sent to the'
-                        msg += ' URL: ' + \
-                            mutant.get_url() + '. ' + mutant.print_mod_value()
-                        v.set_desc(msg)
-                        v.set_id([response.id, mutant_response_id])
+
                         v.add_to_highlight(mutant.get_mod_value())
 
                         om.out.vulnerability(v.get_desc())

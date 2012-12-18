@@ -24,8 +24,7 @@ import StringIO
 from lxml import etree
 from nose.plugins.attrib import attr
 
-import core.data.kb.vuln as vuln
-
+from core.data.kb.vuln import Vuln
 from core.data.parsers.url import URL
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -108,10 +107,12 @@ class XMLParser:
                        var="text">
         '''
         if tag == 'vulnerability':
-            v = vuln.vuln()
-            v.set_plugin_name(attrib['plugin'])
-            v.set_name(attrib['name'])
+            name = attrib['name']
+            plugin = attrib['plugin']
+            
+            v = Vuln(name, 'desc', 'High', 1, plugin)
             v.set_url(URL(attrib['url']))
+            
             self.vulns.append(v)
 
     def close(self):

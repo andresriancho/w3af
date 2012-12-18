@@ -24,7 +24,7 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
@@ -90,7 +90,7 @@ class user_defined_regex(GrepPlugin):
                         ids.append(response.id)
                         info_inst.set_id(ids)
                     else:
-                        info_inst = info.info()
+                        info_inst = Info()
                         info_inst.set_plugin_name(self.get_name())
 
                         msg = 'User defined regular expression "%s" matched a' \

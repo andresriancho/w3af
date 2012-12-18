@@ -19,33 +19,34 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import core.data.constants.severity as severity
-
+from core.data.constants.vulns import is_valid_name
+from core.data.constants.severity import INFORMATION
 from core.data.parsers.url import URL
 
 
-class info(dict):
+class Info(dict):
     '''
     This class represents an information that is saved to the kb.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, data_obj=None):
+    def __init__(self, name, desc, response_ids, plugin_name,
+                 data_obj=None):
 
         # Default values
         self._url = None
         self._uri = None
-        self._desc = None
         self._method = None
         self._variable = None
-        self._id = []
-        self._name = None
-        self._plugin_name = None
-        self._plugin_name = ''
         self._dc = None
         self._string_matches = set()
 
+        self.set_id(response_ids)
+        self.set_name(name)
+        self.set_desc(desc)
+        self.set_plugin_name(plugin_name)
+        
         # Clone the info object!
-        if isinstance(data_obj, info):
+        if isinstance(data_obj, Info):
             self.set_uri(data_obj.get_uri())
             self.set_desc(data_obj.get_desc())
             self.set_method(data_obj.get_method())
@@ -61,9 +62,12 @@ class info(dict):
         @return: severity.INFORMATION , all information objects have the same
                  level of severity.
         '''
-        return severity.INFORMATION
+        return INFORMATION
 
     def set_name(self, name):
+        if not is_valid_name(name):
+            msg = 'Invalid vulnerability name "%s" specified.'
+            raise ValueError(msg % name)
         self._name = name
 
     def get_name(self):
@@ -71,7 +75,7 @@ class info(dict):
 
     def set_url(self, url):
         '''
-        >>> i = info()
+        >>> i = Info()
         >>> i.set_url('http://www.google.com/')
         Traceback (most recent call last):
           ...
@@ -82,8 +86,8 @@ class info(dict):
         True
         '''
         if not isinstance(url, URL):
-            raise TypeError(
-                'The URL in the info object must be of url.URL type.')
+            error = 'The URL in the info object must be of url.URL type.'
+            raise TypeError(error)
 
         self._url = url.uri2url()
         self._uri = url
@@ -93,13 +97,13 @@ class info(dict):
 
     def set_uri(self, uri):
         '''
-        >>> i = info()
+        >>> i = Info()
         >>> i.set_uri('http://www.google.com/')
         Traceback (most recent call last):
           File "<stdin>", line 1, in ?
         TypeError: The URI in the info object must be of url.URL type.
         >>> uri = URL('http://www.google.com/')
-        >>> i = info()
+        >>> i = Info()
         >>> i.set_uri(uri)
         >>> i.get_uri() == uri
         True
@@ -121,11 +125,13 @@ class info(dict):
         return self._method
 
     def set_desc(self, desc):
+        if not isinstance(desc, basestring):
+            raise TypeError('Descriptions need to be strings.')
         self._desc = desc
 
     def get_desc(self, with_id=True):
         #
-        #    TODO: Who's creating a info() object and not setting a description?!
+        #    TODO: Who's creating a Info() object and not setting a description?!
         #
         if self._desc is None:
             return 'No description was set for this object.'
@@ -242,9 +248,9 @@ class info(dict):
         if isinstance(id, list):
             # A list with more than one ID:
             # Ensuring that all of them are actually integers
+            error_msg = 'All request/response ids have to be integers.'
             for i in id:
-                assert isinstance(
-                    i, int), 'All request/response ids have to be integers.'
+                assert isinstance(i, int), error_msg
             id.sort()
             self._id = id
         else:
@@ -271,13 +277,14 @@ class info(dict):
 
     def get_to_highlight(self):
         '''
-        The string match is the string that was used to identify the vulnerability.
-        For example, in a SQL injection the string match would look like:
+        The string match is the string that was used to identify the
+        vulnerability. For example, in a SQL injection the string match would
+        look like:
 
             - "...supplied argument is not a valid MySQL..."
 
-        This information is used to highlight the string in the GTK user interface,
-        when showing the request / response.
+        This information is used to highlight the string in the GTK user
+        interface, when showing the request / response.
         '''
         return self._string_matches
 

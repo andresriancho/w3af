@@ -23,12 +23,12 @@ from __future__ import with_statement
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.vuln import Vuln
 
 
 class preg_replace(AuditPlugin):
@@ -72,13 +72,14 @@ class preg_replace(AuditPlugin):
 
             for preg_error_string in self._find_preg_error(response):
                 if preg_error_string not in mutant.get_original_response_body():
-                    v = vuln.vuln(mutant)
-                    v.set_plugin_name(self.get_name())
-                    v.set_id(response.id)
-                    v.set_severity(severity.HIGH)
-                    v.set_name('Unsafe usage of preg_replace')
-                    v.set_desc('Unsafe usage of preg_replace was found at: ' +
-                               mutant.found_at())
+                    
+                    desc = 'Unsafe usage of preg_replace was found at: %s'
+                    desc = desc % mutant.found_at()
+                    
+                    v = Vuln('Unsafe preg_replace usage', desc,
+                             severity.HIGH, response.id, self.get_name(),
+                             mutant)
+
                     v.add_to_highlight(preg_error_string)
                     kb.kb.append_uniq(self, 'preg_replace', v)
                     break
@@ -98,12 +99,12 @@ class preg_replace(AuditPlugin):
         '''
         res = []
         for error_match in self._multi_in.query(response.body):
-            msg = 'An unsafe usage of preg_replace() function was found, the error that was'
-            msg += ' sent by the web application is (only a fragment is shown): "'
-            msg += error_match + '" ; and was found'
-            msg += ' in the response with id ' + str(response.id) + '.'
+            msg = 'An unsafe usage of preg_replace() function was found,'\
+                  ' the error that was sent by the web application is (only'\
+                  ' a fragment is shown): "%s", and was found in the'\
+                  ' response with id %s.'
 
-            om.out.information(msg)
+            om.out.information(msg % (error_match, response.id))
             res.append(error_match)
         return res
 

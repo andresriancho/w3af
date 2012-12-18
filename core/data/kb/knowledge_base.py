@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import threading
 
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 import core.data.kb.shell as shell
 
 
@@ -63,7 +63,7 @@ class InMemoryKnowledgeBase(object):
                  vulnerability in the KB location with the same URL and
                  parameter.
         '''
-        if not isinstance(info_inst, info.info):
+        if not isinstance(info_inst, Info):
             ValueError('append_unique requires an info object as parameter.')
 
         with self._kb_lock:
@@ -148,13 +148,13 @@ class InMemoryKnowledgeBase(object):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(vuln.vuln)
+        return self.get_all_entries_of_class(Vuln)
 
     def get_all_infos(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(info.info)
+        return self.get_all_entries_of_class(Info)
 
     def get_all_shells(self):
         '''
@@ -216,7 +216,7 @@ class DBKnowledgeBase(object):
                  vulnerability in the KB location with the same URL and
                  parameter.
         '''
-        if not isinstance(info_inst, info.info):
+        if not isinstance(info_inst, Info):
             ValueError('append_unique requires an info object as parameter.')
 
         with self._kb_lock:
@@ -292,13 +292,13 @@ class DBKnowledgeBase(object):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(vuln.vuln)
+        return self.get_all_entries_of_class(Vuln)
 
     def get_all_infos(self):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(info.info)
+        return self.get_all_entries_of_class(Info)
 
     def get_all_shells(self):
         '''

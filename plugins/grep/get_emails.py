@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.parsers.parser_cache as parser_cache
 import core.controllers.output_manager as om
 
@@ -99,7 +99,7 @@ class get_emails(GrepPlugin):
 
             if mail_address not in email_map:
                 # Create a new info object, and report it
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_url(url)
                 i.set_id(response.id)

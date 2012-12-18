@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.controllers.output_manager as om
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -96,7 +96,7 @@ class frontpage_version(InfrastructurePlugin):
             #Set the self._exec to false
             self._exec = False
 
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_id(response.id)
             i.set_name('FrontPage Configuration Information')
@@ -123,7 +123,7 @@ class frontpage_version(InfrastructurePlugin):
         else:
             # This is strange... we found a _vti_inf file, but there is no frontpage
             # information in it... IPS? WAF? honeypot?
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_id(response.id)
             i.set_name('Fake FrontPage Configuration Information')
@@ -145,7 +145,7 @@ class frontpage_version(InfrastructurePlugin):
         '''
         admin_location = response.get_url().get_domain_path().url_join(
             frontpage_admin.group(1))
-        i = info.info()
+        i = Info()
         i.set_plugin_name(self.get_name())
         i.set_id(response.id)
         i.set_url(admin_location)
@@ -182,7 +182,7 @@ class frontpage_version(InfrastructurePlugin):
         author_location = response.get_url().get_domain_path().url_join(
             frontpage_author.group(1))
 
-        i = info.info()
+        i = Info()
         i.set_plugin_name(self.get_name())
         i.set_id(response.id)
         i.set_url(author_location)

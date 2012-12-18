@@ -23,7 +23,6 @@ import core.controllers.output_manager as om
 
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-import core.data.kb.vuln as vuln
 
 from core.controllers.exceptions import w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -31,6 +30,7 @@ from core.controllers.plugins.audit_plugin import AuditPlugin
 
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.fuzzer.utils import rand_alpha
+from core.data.kb.vuln import Vuln
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
@@ -141,17 +141,16 @@ class frontpage(AuditPlugin):
         else:
             # The file we uploaded has the reversed filename as body
             if res.get_body() == rand_file[::-1] and not is_404(res):
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
+                desc = 'An insecure configuration in the frontpage extensions'\
+                       ' allows unauthenticated users to upload files to the'\
+                       ' remote web server.'
+                
+                v = Vuln('Insecure Frontpage extensions configuration', desc,
+                         severity.HIGH, [upload_id, res.id], self.get_name())
+
                 v.set_url(target_url)
-                v.set_id([upload_id, res.id])
-                v.set_severity(severity.HIGH)
-                v.set_name('Insecure Frontpage extensions configuration')
                 v.set_method('POST')
-                msg = 'An insecure configuration in the frontpage extensions'
-                msg += ' allows unauthenticated users to upload files to the'
-                msg += ' remote web server.'
-                v.set_desc(msg)
+                
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                 kb.kb.append(self, 'frontpage', v)
             else:

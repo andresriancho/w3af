@@ -26,8 +26,6 @@ from itertools import izip, repeat
 import core.controllers.output_manager as om
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -38,6 +36,8 @@ from core.controllers.threads.threadpool import return_args, one_to_many
 from core.data.fuzzer.utils import rand_alnum
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.dc.headers import Headers
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class find_vhosts(InfrastructurePlugin):
@@ -85,22 +85,17 @@ class find_vhosts(InfrastructurePlugin):
         for vhost, request_id in analysis_result:
             if vhost not in reported:
                 reported.add(vhost)
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_url(fuzzable_request.get_url())
-                v.set_method('GET')
-                v.set_name('Shared hosting')
-                v.set_severity(severity.LOW)
 
                 domain = fuzzable_request.get_url().get_domain()
-
-                msg = 'Found a new virtual host at the target web server, the ' \
-                      'virtual host name is: "' + vhost + '". To access this site' \
-                      ' you might need to change your DNS resolution settings in' \
-                      ' order to point "' + vhost + '" to the IP address of "' \
-                      + domain + '".'
-                v.set_desc(msg)
-                v.set_id(request_id)
+                desc = 'Found a new virtual host at the target web server, the ' \
+                       'virtual host name is: "%s". To access this site' \
+                       ' you might need to change your DNS resolution settings in' \
+                       ' order to point "%s" to the IP address of "%s".'
+                desc = desc % (vhost, vhost, domain)
+                
+                v = Vuln('Virtual host identified', desc, severity.LOW,
+                         request_id, self.get_name(), fuzzable_request)
+                
                 kb.kb.append(self, 'find_vhosts', v)
                 om.out.information(v.get_desc())
 
@@ -153,7 +148,7 @@ class find_vhosts(InfrastructurePlugin):
                     relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Internal hostname in HTML link')
                 i.set_url(fuzzable_request.get_url())

@@ -28,7 +28,7 @@ from string import Template
 
 import core.data.kb.knowledge_base as kb
 import core.data.kb.config as cf
-import core.data.kb.vuln as vuln
+from core.data.kb.vuln import Vuln
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.output_plugin import OutputPlugin
@@ -282,7 +282,7 @@ class html_file(OutputPlugin):
                 port = 'There is no port associated with this item.'
                 escaped_url = 'There is no URL associated with this item.'
 
-            if isinstance(i, vuln.vuln):
+            if isinstance(i, Vuln):
                 color = 'red'
                 i_class = 'Vulnerability'
             else:

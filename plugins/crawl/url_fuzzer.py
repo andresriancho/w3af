@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import chain, repeat, izip
 
 import core.controllers.output_manager as om
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -119,7 +119,7 @@ class url_fuzzer(CrawlPlugin):
             #   Save it to the kb (if new)!
             #
             if response.get_url() not in self._seen and response.get_url().get_file_name():
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Potentially interesting file')
                 i.set_url(response.get_url())

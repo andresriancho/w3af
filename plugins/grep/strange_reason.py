@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
@@ -118,7 +118,7 @@ class strange_reason(GrepPlugin):
 
                 else:
                     # Create a new info object from scratch and save it to the kb:
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('Strange HTTP Reason message - ' +
                                str(response.get_msg()))

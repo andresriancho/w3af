@@ -23,11 +23,11 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.constants.common_directories import get_common_directories
+from core.data.kb.vuln import Vuln
 
 
 class path_disclosure(GrepPlugin):
@@ -106,8 +106,8 @@ class path_disclosure(GrepPlugin):
             #     http://host.tld/?id=/home
             realurl = response.get_url().url_decode()
 
-            #   Sort by the longest match, this is needed for filtering out some false positives
-            #   please read the note below.
+            #   Sort by the longest match, this is needed for filtering out
+            #   some false positives please read the note below.
             match_list.sort(self._longest)
 
             for match in match_list:
@@ -139,17 +139,14 @@ class path_disclosure(GrepPlugin):
                         #   It's a new one, report!
                         self._already_added.append((realurl, match))
 
-                        v = vuln.vuln()
-                        v.set_plugin_name(self.get_name())
+                        desc = 'The URL: "%s" has a path disclosure'\
+                               ' vulnerability which discloses "%s".'
+                        desc = desc % (response.get_url(), match)
+
+                        v = Vuln('Path disclosure vulnerability', desc,
+                                 severity.LOW, response.id, self.get_name())
+
                         v.set_url(realurl)
-                        v.set_id(response.id)
-                        msg = 'The URL: "' + \
-                            v.get_url() + '" has a path disclosure '
-                        msg += 'vulnerability which discloses: "' + \
-                            match + '".'
-                        v.set_desc(msg)
-                        v.set_severity(severity.LOW)
-                        v.set_name('Path disclosure vulnerability')
                         v['path'] = match
                         v.add_to_highlight(match)
                         kb.kb.append(self, 'path_disclosure', v)

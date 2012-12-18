@@ -23,13 +23,13 @@ import re
 
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
 from core.data.db.temp_shelve import temp_shelve
 from core.data.db.disk_list import DiskList
+from core.data.kb.vuln import Vuln
 from core.data.esmre.multi_in import multi_in
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 
@@ -103,13 +103,13 @@ class ssi(AuditPlugin):
         if self._has_no_bug(mutant):
             e_res = self._extract_result_from_payload(mutant.get_mod_value())
             if e_res in response and not e_res in mutant.get_original_response_body():
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_name('Server side include vulnerability')
-                v.set_severity(severity.HIGH)
-                v.set_desc('Server side include (SSI) was found at: ' +
-                           mutant.found_at())
-                v.set_id(response.id)
+                
+                desc = 'Server side include (SSI) was found at: %s'
+                desc = desc % mutant.found_at()
+                
+                v = Vuln('Server side include vulnerability', desc, severity.HIGH,
+                         response.id, self.get_name(), mutant)
+
                 v.add_to_highlight(e_res)
                 kb.kb.append_uniq(self, 'ssi', v)
 
@@ -151,15 +151,16 @@ class ssi(AuditPlugin):
                 # self._persistent_data to find which of the mutants sent it
                 # and create the vulnerability
                 mutant = self._expected_res_mutant[matched_expected_result]
-                v = vuln.vuln(mutant)
-                v.set_plugin_name(self.get_name())
-                v.set_name('Persistent server side include vulnerability')
-                v.set_severity(severity.HIGH)
-                msg = 'Server side include (SSI) was found at: %s' \
-                      ' The result of that injection is shown by browsing'\
-                      ' to "%s".' 
-                v.set_desc(msg % (mutant.found_at(), freq.get_url()))
-                v.set_id(response.id)
+                
+                desc = 'Server side include (SSI) was found at: %s' \
+                       ' The result of that injection is shown by browsing'\
+                       ' to "%s".' 
+                desc = desc % (mutant.found_at(), freq.get_url())
+                
+                v = Vuln('Persistent server side include vulnerability',
+                         desc, severity.HIGH,
+                         response.id, self.get_name(), mutant)
+                
                 v.add_to_highlight(matched_expected_result)
                 kb.kb.append(self, 'ssi', v)
 

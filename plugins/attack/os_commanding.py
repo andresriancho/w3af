@@ -69,7 +69,7 @@ class os_commanding(AttackPlugin):
                  parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_vuln(vuln):
+        if self._verify_Vuln):
             # Create the shell object
             shell_obj = OSCommandingShell(vuln, self._uri_opener,
                                           self.worker_pool,

@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.vuln import Vuln
 
 
 class directory_indexing(GrepPlugin):
@@ -74,16 +74,14 @@ class directory_indexing(GrepPlugin):
         
         html_string = response.get_body()
         for dir_indexing_match in self._multi_in.query(html_string):
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            
+            desc = 'The URL: "%s" has a directory indexing vulnerability.'
+            desc = desc % response.get_url()
+            
+            v = Vuln('Directory indexing', desc, severity.LOW, response.id,
+                     self.get_name())
             v.set_url(response.get_url())
-            msg = 'The URL: "%s" has a directory ' \
-                  'indexing vulnerability.'
-            v.set_desc(msg % response.get_url())
-            v.set_id(response.id)
-            v.set_severity(severity.LOW)
-            path = response.get_url().get_path()
-            v.set_name('Directory indexing - ' + path)
+
             kb.kb.append(self, 'directory', v)
             break
 

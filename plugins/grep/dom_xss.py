@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.kb.vuln import Vuln
 
 
 class dom_xss(GrepPlugin):
@@ -71,16 +71,14 @@ class dom_xss(GrepPlugin):
             return
 
         for vuln_code in self._smart_grep(response):
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
+            desc = 'The URL: "%s" has a DOM XSS (insecure javascript code)'\
+                   ' bug using: "%s".'
+            desc = desc % (response.get_url(), vuln_code)
+            
+            v = Vuln('DOM Cross site scripting', desc,
+                     severity.LOW, response.id, self.get_name())
+
             v.add_to_highlight(vuln_code)
-            v.set_url(response.get_url())
-            v.set_id(response.id)
-            v.set_severity(severity.LOW)
-            v.set_name('DOM Cross site scripting (Risky JavaScript Code)')
-            msg = 'The URL: "%s" has a DOM XSS (Risky JavaScript Code) ' \
-                  'bug using: "%s".'
-            v.set_desc(msg % (v.get_url(), vuln_code))
             kb.kb.append(self, 'dom_xss', v)
 
     def _smart_grep(self, response):

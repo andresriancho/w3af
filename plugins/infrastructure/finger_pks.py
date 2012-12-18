@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce
@@ -51,7 +51,7 @@ class finger_pks(InfrastructurePlugin):
         results = pks_se.search(root_domain)
 
         for result in results:
-            i = info.info()
+            i = Info()
             i.set_url(URL('http://pgp.mit.edu:11371/'))
             i.set_plugin_name(self.get_name())
             i.set_id([])

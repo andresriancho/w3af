@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.data.db.disk_list import DiskList
+from core.data.kb.vuln import Vuln
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -65,27 +65,25 @@ class click_jacking(GrepPlugin):
         if not self._vuln_count:
             return
 
-        v = vuln.vuln()
-        v.set_plugin_name(self.get_name())
-        v.set_name('Potential Click-Jacking vulnerability')
-        v.set_severity(severity.MEDIUM)
-        v.set_id([_id for _id in self._ids])
+        response_ids = [_id for _id in self._ids]
+        
         # If none of the URLs implement protection, simply report
         # ONE vulnerability that says that.
         if self._total_count == self._vuln_count:
-            msg = 'The whole target has no protection (X-Frame-Options'\
+            desc = 'The whole target has no protection (X-Frame-Options'\
                   ' header) against Click-Jacking attacks'
-            v.set_desc(msg)
-            kb.kb.append(self, 'click_jacking', v)
         # If most of the URLs implement the protection but some
         # don't, report ONE vulnerability saying: "Most are protected,
         # but x, y are not.
         if self._total_count > self._vuln_count:
-            msg = 'Some URLs have no protection (X-Frame-Options header) '\
+            desc = 'Some URLs have no protection (X-Frame-Options header) '\
                   'against Click-Jacking attacks. Among them:\n '\
                   ' '.join([str(url) + '\n' for url in self._vulns])
-            v.set_desc(msg)
-            kb.kb.append(self, 'click_jacking', v)
+
+        v = Vuln('Click-Jacking vulnerability', desc,
+                 severity.MEDIUM, response_ids, self.get_name())
+        
+        kb.kb.append(self, 'click_jacking', v)
 
         self.print_uniq(kb.kb.get('click_jacking', 'click_jacking'), 'URL')
 

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -107,7 +107,7 @@ class user_dir(CrawlPlugin):
 
             # Avoid duplicates
             if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('User directory: ' + response.get_url())
                 i.set_id(response.id)
@@ -227,7 +227,7 @@ class user_dir(CrawlPlugin):
             url_user_list = self._create_dirs(url, user_list=[user, ])
             for uDir, user in url_user_list:
                 if self._do_request(uDir, user):
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     if ident == 'os':
                         msg = 'The remote OS can be identified as "' + \

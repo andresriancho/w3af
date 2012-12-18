@@ -23,7 +23,7 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
@@ -65,7 +65,7 @@ class motw (GrepPlugin):
 
             # Create the info object
             if motw_match or self._withoutMOTW:
-                i = info.info()
+                i = Info()
                 i.set_plugin_name(self.get_name())
                 i.set_name('Mark of the web')
                 i.set_url(response.get_url())

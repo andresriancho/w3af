@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
@@ -47,7 +47,7 @@ class xss_protection_header(GrepPlugin):
         heaver_value, header_name = headers.iget('x-xss-protection', '')
         heaver_value = heaver_value.strip()
         if heaver_value == '0':
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Insecure X-XSS-Protection header usage')
             i.set_url(response.get_url())

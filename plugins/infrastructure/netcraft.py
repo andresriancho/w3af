@@ -31,7 +31,7 @@ from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException, w3afRunOnce
 
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.data.parsers.url import URL
 
@@ -94,7 +94,7 @@ class netcraft(InfrastructurePlugin):
         if netblock_owner_match:
             netblock_owner = netblock_owner_match.group(1)
 
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('Netblock owner')
             i.set_id(response.get_id())

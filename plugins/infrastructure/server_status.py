@@ -23,15 +23,15 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
-import core.data.kb.info as info
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.data.parsers.url import URL
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
+from core.data.parsers.url import URL
+from core.data.kb.vuln import Vuln
+from core.data.kb.info import Info
 
 
 class server_status(InfrastructurePlugin):
@@ -78,14 +78,13 @@ class server_status(InfrastructurePlugin):
         for version in re.findall('<dl><dt>Server Version: (.*?)</dt>',
                                   response.get_body()):
             # Save the results in the KB so the user can look at it
-            i = info.info()
-            i.set_plugin_name(self.get_name())
+            desc = 'The web server has the apache server status module'\
+                   ' enabled which discloses the following remote server'\
+                   ' version: "%s".'
+            desc = desc % version
+            
+            i = Info('Apache Server version', desc, response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            i.set_name('Apache Server version')
-            msg = 'The web server has the apache server status module enabled, '
-            msg += 'which discloses the following remote server version: "%s".'
-            i.set_desc(msg % version)
 
             om.out.information(i.get_desc())
             kb.kb.append(self, 'server', i)
@@ -121,22 +120,20 @@ class server_status(InfrastructurePlugin):
 
         # Now that we are outsite the for loop, we can report the possible vulns
         if len(self._shared_hosting_hosts):
-            v = vuln.vuln()
-            v.set_plugin_name(self.get_name())
-            v.set_url(fuzzable_request.get_url())
-            v.set_id(response.id)
+            desc = 'The web application under test seems to be in a shared'\
+                   ' hosting.'
+            v = Vuln('Shared hosting', desc, severity.MEDIUM, response.id,
+                     self.get_name(), fuzzable_request)
+
             self._shared_hosting_hosts = list(
                 set(self._shared_hosting_hosts))
-            v['alsoInHosting'] = self._shared_hosting_hosts
-            v.set_desc('The web application under test seems to be in a shared hosting.')
-            v.set_name('Shared hosting')
-            v.set_severity(severity.MEDIUM)
+            v['also_in_hosting'] = self._shared_hosting_hosts
 
             kb.kb.append(self, 'shared_hosting', v)
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
-            msg = 'This list of domains, and the domain of the web application under test,'
-            msg += ' all point to the same server:'
+            msg = 'This list of domains, and the domain of the web application'\
+                  ' under test, all point to the same server:'
             om.out.vulnerability(msg, severity=severity.MEDIUM)
             for url in self._shared_hosting_hosts:
                 om.out.vulnerability('- ' + url, severity=severity.MEDIUM)

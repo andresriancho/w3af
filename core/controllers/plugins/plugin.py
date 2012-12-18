@@ -24,8 +24,8 @@ import threading
 import Queue
 
 import core.controllers.output_manager as om
-import core.data.kb.vuln as vuln
 
+from core.data.kb.vuln import Vuln
 from core.data.options.option_list import OptionList
 from core.controllers.configurable import Configurable
 from core.controllers.threads.threadpool import return_args
@@ -135,55 +135,49 @@ class Plugin(Configurable):
         raise w3afException(
             'Plugin is not implementing required method get_long_desc')
 
-    def print_uniq(self, infoObjList, unique):
+    def print_uniq(self, info_obj_list, unique):
         '''
-        Print the items of infoObjList to the user interface
+        Print the items of info_obj_list to the user interface
 
-        @param infoObjList: A list of info objects
+        @param info_obj_list: A list of info objects
         @param unique: Defines whats unique:
             - 'URL': The URL must be unique
             - 'VAR': The url/variable combination must be unique
             - None: Print all vulns, nothing should be unique
-
-        >>> b = Plugin()
-        >>> v1 = vuln.vuln()
-        >>> v1.set_desc('hello')
-        >>> v2 = vuln.vuln()
-        >>> v2.set_desc('world')
-        >>> info_obj = [ v1, v2 ]
-        >>> b.print_uniq(info_obj, None) is None
-        True
         '''
 
         # Create the list of things to inform
         inform = []
         if unique == 'URL':
-            reportedURLs = []
-            for i in infoObjList:
-                if i.get_url() not in reportedURLs:
-                    reportedURLs.append(i.get_url())
+            reported_urls = []
+            for i in info_obj_list:
+                if i.get_url() not in reported_urls:
+                    reported_urls.append(i.get_url())
                     inform.append(i)
 
         elif unique == 'VAR':
             reportedVARs = []
-            for i in infoObjList:
+            for i in info_obj_list:
                 if (i.get_url(), i.get_var()) not in reportedVARs:
                     reportedVARs.append((i.get_url(), i.get_var()))
                     inform.append(i)
 
         elif unique is None:
-            inform = infoObjList
+            inform = info_obj_list
 
         else:
-            om.out.error(
-                'plugins.print_uniq(): Unknown unique parameter value.')
+            error = 'plugins.print_uniq(): Unknown unique parameter value.'
+            om.out.error(error)
 
         # Print the list
         for i in inform:
-            if isinstance(i, vuln.vuln):
-                om.out.vulnerability(i.get_desc(), severity=i.get_severity())
+            if isinstance(i, Vuln):
+                om.out.vulnerability(i.get_desc(),
+                                     severity=i.get_severity())
             else:
                 om.out.information(i.get_desc())
+        
+        return inform
 
     def __eq__(self, other):
         '''

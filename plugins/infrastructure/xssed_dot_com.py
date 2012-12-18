@@ -24,13 +24,13 @@ import urllib2
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.vuln as vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
 from core.data.parsers.url import URL
+from core.data.kb.vuln import Vuln
 
 
 class xssed_dot_com(InfrastructurePlugin):
@@ -116,42 +116,44 @@ class xssed_dot_com(InfrastructurePlugin):
                 xss_report_response = self._uri_opener.GET(mirror_url)
                 matches = re.findall("URL:.+", xss_report_response.get_body())
 
-                v = vuln.vuln()
-                v.set_plugin_name(self.get_name())
-                v.set_name('Possible XSS vulnerability')
-                v.set_url(mirror_url)
+                dxss = self._decode_xssed_url
 
                 if self._fixed in xss_report_response.get_body():
-                    v.set_severity(severity.LOW)
-                    msg = 'This script contained a XSS vulnerability: "'
-                    msg += self._decode_xssed_url(
-                        self._decode_xssed_url(matches[0])) + '".'
+                    vuln_severity = severity.LOW
+                    desc = 'This script contained a XSS vulnerability: "%s".'
+                    desc = desc % dxss(dxss(matches[0]))
                 else:
-                    v.set_severity(severity.HIGH)
-                    msg = 'According to xssed.com, this script contains a XSS vulnerability: "'
-                    msg += self._decode_xssed_url(
-                        self._decode_xssed_url(matches[0])) + '".'
+                    vuln_severity = severity.HIGH
+                    desc = 'According to xssed.com, this script contains a'\
+                           ' XSS vulnerability: "%s".'
+                    desc = desc % dxss(dxss(matches[0]))
+                    
+                v = Vuln('Potential XSS vulnerability', desc,
+                         vuln_severity, response.id, self.get_name())
 
-                v.set_desc(msg)
+                v.set_url(mirror_url)
+
                 kb.kb.append(self, 'xss', v)
                 om.out.information(v.get_desc())
 
                 #
-                #   Add the fuzzable request, this is useful if I have the XSS plugin enabled
-                #   because it will re-test this and possibly confirm the vulnerability
+                #   Add the fuzzable request, this is useful if I have the
+                #   XSS plugin enabled because it will re-test this and
+                #   possibly confirm the vulnerability
                 #
                 fuzzable_request_list = self._create_fuzzable_requests(
                     xss_report_response)
                 return fuzzable_request_list
         else:
             #   Nothing to see here...
-            om.out.debug('xssed_dot_com did not find any previously reported XSS vulnerabilities.')
+            om.out.debug('xssed_dot_com did not find any previously reported'
+                         ' XSS vulnerabilities.')
 
         return []
 
     def get_long_desc(self):
         return '''
         This plugin searches the xssed.com database and parses the result. The
-        information stored in that database is useful to know about previous XSS
-        vulnerabilities in the target website.
+        information stored in that database is useful to know about previous
+        XSS vulnerabilities in the target website.
         '''

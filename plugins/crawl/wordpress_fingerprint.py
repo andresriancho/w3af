@@ -25,7 +25,7 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-import core.data.kb.info as info
+from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
@@ -140,7 +140,7 @@ class wordpress_fingerprint(CrawlPlugin):
                 if release_db_hash == remote_release_hash:
 
                     # Save it to the kb!
-                    i = info.info()
+                    i = Info()
                     i.set_plugin_name(self.get_name())
                     i.set_name('WordPress version')
                     i.set_url(install_url)
@@ -170,7 +170,7 @@ class wordpress_fingerprint(CrawlPlugin):
             version = m.group(1)
 
             # Save it to the kb!
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
             i.set_url(wp_readme_url)
@@ -197,7 +197,7 @@ class wordpress_fingerprint(CrawlPlugin):
             version = m.group(1)
 
             # Save it to the kb!
-            i = info.info()
+            i = Info()
             i.set_plugin_name(self.get_name())
             i.set_name('WordPress version')
             i.set_url(wp_index_url)
@@ -225,7 +225,7 @@ class wordpress_fingerprint(CrawlPlugin):
                 break
 
         # Save it to the kb!
-        i = info.info()
+        i = Info()
         i.set_plugin_name(self.get_name())
         i.set_name('WordPress version')
         i.set_url(test_url)

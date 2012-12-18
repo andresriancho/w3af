@@ -24,7 +24,7 @@ import socket
 from scapy.all import traceroute
 
 import core.controllers.output_manager as om
-import core.data.kb.info as info
+from core.data.kb.info import Info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -63,7 +63,7 @@ class http_vs_https_dist(InfrastructurePlugin):
             return
 
         def set_info(name, desc):
-            inf = info.info()
+            inf = Info()
             inf.set_plugin_name(self.get_name())
             inf.set_name(name)
             inf.set_desc(desc)
