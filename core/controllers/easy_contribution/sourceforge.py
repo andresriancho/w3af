@@ -19,17 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-import cookielib
 import hashlib
-import re
 import socket
 import string
+import ssl
 import time
-import urllib2
-import urllib
 import xmlrpclib
 
-import core.data.url.handlers.MultipartPostHandler as MultipartPostHandler
 from core.controllers.exception_handling.helpers import VERSIONS
 
 #
@@ -138,6 +134,8 @@ class SourceforgeXMLRPC(Sourceforge):
             self.logged_in = True
         except xmlrpclib.ProtocolError:
             return False
+        except ssl.SSLError:
+            return False
         except socket.gaierror:
             print 'Error resolving DNS name for sourceforge. Is your DNS properly set?'
             return False
@@ -163,6 +161,8 @@ class SourceforgeXMLRPC(Sourceforge):
                                                   values, True)
             return str(newticket), self.CREATED_TKT + str(newticket)
         except xmlrpclib.ProtocolError:
+            return None
+        except ssl.SSLError:
             return None
 
 
