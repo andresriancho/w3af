@@ -75,6 +75,7 @@ def smart_unicode(s, encoding='utf8', errors='strict', on_error_guess=True):
     """
     if isinstance(s, unicode):
         return s
+    
     if isinstance(s, str):
         try:
             s = s.decode(encoding, errors)

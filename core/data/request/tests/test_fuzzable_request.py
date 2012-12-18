@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 test_fuzzablerequest.py
 
@@ -25,6 +26,8 @@ from nose.plugins.attrib import attr
 
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.parsers.url import URL
+from core.data.dc.headers import Headers
+from core.data.misc.encoding import smart_unicode
 
 
 @attr('smoke')
@@ -70,3 +73,37 @@ class TestFuzzableRequest(unittest.TestCase):
         fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']})
         fr_other = FuzzableRequest(self.url, method='GET', dc={'a': ['']})
         self.assertTrue(fr.is_variant_of(fr_other))
+
+    def test_dump_case01(self):
+        expected = '\n'.join(['GET http://w3af.com/a/b/c.php HTTP/1.1',
+                              'Hello: World',
+                              '',
+                              ''])
+        headers = Headers([('Hello', 'World')])
+
+        fr = FuzzableRequest(self.url, method='GET', dc={'a': ['b']},
+                             headers=headers)
+        self.assertEqual(fr.dump(), expected)
+
+    def test_dump_case02(self):
+        expected = u'\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                              u'Hola: Múndo',
+                              u'',
+                              u''])
+        headers = Headers([(u'Hola', u'Múndo')])
+        fr = FuzzableRequest(self.url, method='GET', dc={u'á': ['b']},
+                             headers=headers)
+        self.assertEqual(fr.dump(), expected)
+
+    def test_dump_case03(self):
+        header_value = ''.join(chr(i) for i in xrange(256))
+        
+        expected = u'\n'.join([u'GET http://w3af.com/a/b/c.php HTTP/1.1',
+                              u'Hola: %s' % smart_unicode(header_value),
+                              u'',
+                              u''])
+
+        headers = Headers([(u'Hola', header_value)])
+        fr = FuzzableRequest(self.url, method='GET', dc={u'a': ['b']},
+                             headers=headers)
+        self.assertEqual(fr.dump(), expected)

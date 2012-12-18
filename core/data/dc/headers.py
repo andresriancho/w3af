@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.data.constants.encodings import UTF8
 from core.data.dc.data_container import DataContainer
+from core.data.misc.encoding import smart_unicode
 
 
 class Headers(DataContainer):
@@ -29,8 +30,25 @@ class Headers(DataContainer):
     @author: Javier Andalia (jandalia AT gmail DOT com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
-        super(Headers, self).__init__(init_val, encoding)
+        cleaned_vals = self.clean_values(init_val)
+        super(Headers, self).__init__(cleaned_vals, encoding)
+    
+    def clean_values(self, init_val):        
+        if isinstance(init_val, DataContainer)\
+        or isinstance(init_val, dict):
+            return init_val
+        else:
+            cleaned_vals = []
 
+            # Cleanup whatever came from the wire into a unicode string
+            for key, value in init_val:
+                # I can do this key, value thing because the headers do NOT
+                # have multiple header values like query strings and post-data
+                cleaned_vals.append((smart_unicode(key),
+                                    smart_unicode(value)))
+        
+        return cleaned_vals
+    
     def iget(self, header_name, default=None):
         '''
         @param header_name: The name of the header we want the value for

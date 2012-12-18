@@ -1,4 +1,4 @@
-# coding: utf8
+# -*- coding: utf-8 -*-
 '''
 test_headers.py
 
@@ -35,6 +35,16 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
+    def test_raises(self):
+        self.assertRaises(TypeError, Headers, {})
+        
+    def test_build_with_headers(self):
+        headers = Headers([('a', 'b')])
+        headers = Headers(headers)
+        
+        self.assertIn('a', headers)
+        self.assertEqual(headers['a'], 'b')
+
     def test_str(self):
         headers = Headers([('a', 'b')])
 
@@ -50,6 +60,14 @@ class TestHeaders(unittest.TestCase):
 
         self.assertEqual(unicode(headers), 'a: b\n')
 
+    def test_str_strange(self):
+        header_value = ''.join(chr(i) for i in xrange(256))
+        headers = Headers([(u'Hola', header_value)])
+        
+        # I don't assert in a stricter way because the output depends on
+        # smart_unicode which might change in the future
+        self.assertIn('Hola: \x00\x01\x02', str(headers))
+        
     def test_repeated_overwrite(self):
         headers = Headers([('a', 'b'), ('a', '3')])
 
