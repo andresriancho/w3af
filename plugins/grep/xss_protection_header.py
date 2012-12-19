@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.kb.info import Info
 
 
 class xss_protection_header(GrepPlugin):
@@ -47,17 +47,14 @@ class xss_protection_header(GrepPlugin):
         heaver_value, header_name = headers.iget('x-xss-protection', '')
         heaver_value = heaver_value.strip()
         if heaver_value == '0':
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Insecure X-XSS-Protection header usage')
-            i.set_url(response.get_url())
-            i.set_id(response.id)
-            msg = 'The remote web server sent the HTTP X-XSS-Protection header'\
-                  ' with a 0 value, which disables Internet Explorer\'s XSS ' \
-                  ' filter. In most cases, this is a bad practice and should' \
-                  ' be subject to review.'
-            i.set_desc(msg)
+            desc = 'The remote web server sent the HTTP X-XSS-Protection header'\
+                   ' with a 0 value, which disables Internet Explorer\'s XSS ' \
+                   ' filter. In most cases, this is a bad practice and should' \
+                   ' be subject to review.'
+            i = Info('Insecure X-XSS-Protection header usage', desc,
+                     response.id, self.get_name())
             i.add_to_highlight('X-XSS-Protection')
+            
             kb.kb.append(self, 'xss_protection_header', i)
 
     def end(self):

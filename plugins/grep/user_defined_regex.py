@@ -24,13 +24,13 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.exceptions import w3afException
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INPUT_FILE, REGEX
 from core.data.options.option_list import OptionList
+from core.data.kb.info import Info
 
 
 class user_defined_regex(GrepPlugin):
@@ -90,23 +90,19 @@ class user_defined_regex(GrepPlugin):
                         ids.append(response.id)
                         info_inst.set_id(ids)
                     else:
-                        info_inst = Info()
-                        info_inst.set_plugin_name(self.get_name())
-
-                        msg = 'User defined regular expression "%s" matched a' \
-                              ' response. Matched string is: "%s".'
-
                         str_match = match_object.group(0)
                         if len(str_match) > 20:
                             str_match = str_match[:20] + '...'
-
-                        om.out.information(msg % (regex.pattern, str_match))
-                        info_inst.set_desc(msg % (regex.pattern, str_match))
-
+                            
+                        desc = 'User defined regular expression "%s" matched a' \
+                               ' response. The matched string is: "%s".'
+                        desc = desc % (regex.pattern, str_match)
+                        
+                        info_inst = Info('User defined regular expression match',
+                                         desc, response.id, self.get_name())
                         info_inst.set_url(response.get_url())
-                        info_inst.set_id(response.id)
-                        info_inst.set_name(
-                            'User defined regex - %s' % regex.pattern)
+                        
+                        om.out.information(desc)
 
                         kb.kb.append(self, 'user_defined_regex', info_inst)
 

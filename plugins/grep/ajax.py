@@ -23,10 +23,10 @@ import re
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class ajax(GrepPlugin):
@@ -66,25 +66,25 @@ class ajax(GrepPlugin):
 
             dom = response.get_dom()
             # In some strange cases, we fail to normalize the document
-            if dom is not None:
+            if dom is None:
+                return
+            
+            script_elements = self._script_xpath(dom)
+            for element in script_elements:
+                # returns the text between <script> and </script>
+                script_content = element.text
 
-                script_elements = self._script_xpath(dom)
-                for element in script_elements:
-                    # returns the text between <script> and </script>
-                    script_content = element.text
+                if script_content is not None:
 
-                    if script_content is not None:
-
-                        res = self._ajax_regex_re.search(script_content)
-                        if res:
-                            i = Info()
-                            i.set_plugin_name(self.get_name())
-                            i.set_name('AJAX code')
-                            i.set_url(url)
-                            i.set_desc('The URL: "%s" has an AJAX code.' % url)
-                            i.set_id(response.id)
-                            i.add_to_highlight(res.group(0))
-                            kb.kb.append(self, 'ajax', i)
+                    res = self._ajax_regex_re.search(script_content)
+                    if res:
+                        desc = 'The URL: "%s" has an AJAX code.' % url
+                        i = Info('AJAX code', desc, response.id,
+                                 self.get_name())
+                        i.set_url(url)
+                        i.add_to_highlight(res.group(0))
+                        
+                        kb.kb.append(self, 'ajax', i)
 
     def end(self):
         '''

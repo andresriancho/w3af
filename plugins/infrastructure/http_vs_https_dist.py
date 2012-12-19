@@ -24,7 +24,6 @@ import socket
 from scapy.all import traceroute
 
 import core.controllers.output_manager as om
-from core.data.kb.info import Info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -33,6 +32,8 @@ from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import INT
 from core.data.options.option_list import OptionList
 from core.controllers.exceptions import w3afRunOnce
+from core.data.kb.info import Info
+
 
 PERM_ERROR_MSG = "w3af won't be able to run plugin infrastructure.http_vs_https_dist." \
                  " It seems that the user running the w3af process has not"\
@@ -63,11 +64,8 @@ class http_vs_https_dist(InfrastructurePlugin):
             return
 
         def set_info(name, desc):
-            inf = Info()
-            inf.set_plugin_name(self.get_name())
-            inf.set_name(name)
-            inf.set_desc(desc)
-            kb.kb.append(self, 'http_vs_https_dist', inf)
+            i = Info(name, desc, 1, self.get_name())
+            kb.kb.append(self, 'http_vs_https_dist', i)
 
         target_url = fuzzable_request.get_url()
         domain = target_url.get_domain()
@@ -129,10 +127,10 @@ class http_vs_https_dist(InfrastructurePlugin):
                 trc2 = header % (
                     domain, https_port, trace_str(https_ip_tuples))
 
-                desc = 'Routes to target \'%s\' using ports \'%s\' and ' \
-                    '\'%s\' are different:\n%s\n%s' % (domain, http_port,
-                    https_port, trc1, trc2)
-                set_info('HTTP vs. HTTPS Distance', desc)
+                desc = 'Routes to target "%s" using ports "%s2 and ' \
+                       '"%s" are different:\n%s\n%s'
+                desc = desc % (domain, http_port, https_port, trc1, trc2)
+                set_info('HTTP and HTTPs hop distance', desc)
                 om.out.information(desc)
             else:
                 desc = 'The routes to the target\'s HTTP and HTTPS ports are' \

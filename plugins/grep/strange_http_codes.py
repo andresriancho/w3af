@@ -20,9 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
+from core.data.kb.info import Info
 
 
 class strange_http_codes(GrepPlugin):
@@ -69,19 +69,16 @@ class strange_http_codes(GrepPlugin):
 
         else:
             # Create a new info object from scratch and save it to the kb:
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name(
-                'Strange HTTP Response code - ' + str(response.get_code()))
+            desc = 'The remote Web server sent a strange HTTP response code:'\
+                   ' "%s" with the message: "%s", manual inspection is advised.'
+            desc = desc % (response.get_code(), response.get_msg())
+            
+            i = Info('Strange HTTP response code', desc,
+                     response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
             i['code'] = response.get_code()
-            desc = 'The remote Web server sent a strange HTTP response code: "'
-            desc += str(response.get_code(
-            )) + '" with the message: "' + response.get_msg()
-            desc += '", manual inspection is advised.'
-            i.set_desc(desc)
             i.add_to_highlight(str(response.get_code()), response.get_msg())
+            
             kb.kb.append(self, 'strange_http_codes', i)
 
     def end(self):

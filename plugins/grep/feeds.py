@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class feeds(GrepPlugin):
@@ -71,15 +71,13 @@ class feeds(GrepPlugin):
                 feed_type = self._feed_types[feed_tag.lower()]
                 version = element.attrib.get('version', 'unknown')
 
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name(feed_type + ' feed')
-                i.set_uri(uri)
                 fmt = 'The URL "%s" is a %s version %s feed.'
-                msg = fmt % (uri, feed_type, version)
-                i.set_desc(msg)
-                i.set_id(response.id)
+                desc = fmt % (uri, feed_type, version)
+                i = Info('Content feed resource', desc, response.id,
+                         self.get_name())
+                i.set_uri(uri)
                 i.add_to_highlight(feed_type)
+                
                 kb.kb.append(self, 'feeds', i)
 
     def end(self):

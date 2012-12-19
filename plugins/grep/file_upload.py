@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 FILE_INPUT_XPATH = ".//input[translate(@type,'FILE','file')='file']"
@@ -65,16 +65,15 @@ class file_upload(GrepPlugin):
 
                 # Loop through file inputs tags
                 for input_file in self._file_input_xpath(dom):
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('File upload form')
+                    msg = 'The URL: "%s" has form with file upload capabilities.'
+                    msg = msg % url
+                    
+                    i = Info('File upload form', msg, response.id,
+                             self.get_name())
                     i.set_url(url)
-                    i.set_id(response.id)
-                    msg = 'The URL: "%s" has form with file upload ' \
-                        'capabilities.' % url
-                    i.set_desc(msg)
                     to_highlight = etree.tostring(input_file)
                     i.add_to_highlight(to_highlight)
+                    
                     kb.kb.append(self, 'file_upload', i)
 
     def end(self):

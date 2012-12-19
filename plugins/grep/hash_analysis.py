@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class hash_analysis(GrepPlugin):
@@ -73,22 +73,20 @@ class hash_analysis(GrepPlugin):
             possible_hash = possible_hash.lower()
             if self._has_hash_distribution(possible_hash):
                 if (possible_hash, response.get_url()) not in self._already_reported:
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name(hash_type + 'hash in HTML content')
+                    desc = 'The URL: "%s" returned a response that may contain'\
+                          ' a "%s" hash. The hash string is: "%s". This is'\
+                          ' uncommon and requires human verification.'
+                    desc = desc % (response.get_url(), hash_type, possible_hash)
+                    
+                    i = Info('Hash string in HTML content', desc,
+                             response.id, self.get_name())
                     i.set_url(response.get_url())
                     i.add_to_highlight(possible_hash)
-                    i.set_id(response.id)
-                    msg = 'The URL: "' + response.get_url(
-                    ) + '" returned a response that may'
-                    msg += ' contain a "' + hash_type + \
-                        '" hash. The hash is: "' + possible_hash
-                    msg += '". This is uncommon and requires human verification.'
-                    i.set_desc(msg)
+                    
                     kb.kb.append(self, 'hash_analysis', i)
 
-                    self._already_reported.add(
-                        (possible_hash, response.get_url()))
+                    self._already_reported.add( (possible_hash,
+                                                 response.get_url()) )
 
     def _has_hash_distribution(self, possible_hash):
         '''
@@ -126,13 +124,21 @@ class hash_analysis(GrepPlugin):
         @return: The hash type if the string seems to be a md5 / sha1 hash.
         None otherwise.
         '''
-        # FIXME: Add more here!
-        if len(possible_hash) == 32:
-            return 'MD5'
-        elif len(possible_hash) == 40:
-            return 'SHA1'
-        else:
-            return None
+        # When adding something here, please review the code above where
+        # we also check the length.
+        hash_type_len = {
+                         'MD5': 32,
+                         'SHA1': 40,
+                         'SHA224': 56,
+                         'SHA256': 64,
+                         'SHA384': 96,
+                         'SHA512': 128,
+                         }
+        for hash_type, hash_len in hash_type_len.items():                
+            if len(possible_hash) == hash_len:
+                return hash_type
+            
+        return None
 
     def end(self):
         '''

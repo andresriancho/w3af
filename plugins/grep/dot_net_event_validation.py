@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class dot_net_event_validation(GrepPlugin):
@@ -38,17 +38,17 @@ class dot_net_event_validation(GrepPlugin):
     def __init__(self):
         GrepPlugin.__init__(self)
 
-        vsRegex = r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value=".*?" />'
-        self._viewstate = re.compile(vsRegex, re.IGNORECASE | re.DOTALL)
+        vs_regex = r'<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value=".*?" />'
+        self._viewstate = re.compile(vs_regex, re.IGNORECASE | re.DOTALL)
 
-        evRegex = r'<input type="hidden" name="__EVENTVALIDATION" '
-        evRegex += 'id="__EVENTVALIDATION" value=".*?" />'
-        self._eventvalidation = re.compile(evRegex, re.IGNORECASE | re.DOTALL)
+        ev_regex = r'<input type="hidden" name="__EVENTVALIDATION" '
+        ev_regex += 'id="__EVENTVALIDATION" value=".*?" />'
+        self._eventvalidation = re.compile(ev_regex, re.IGNORECASE | re.DOTALL)
 
-        encryptedVsRegex = r'<input type="hidden" name="__VIEWSTATEENCRYPTED" '
-        encryptedVsRegex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
+        encryptedvs_regex = r'<input type="hidden" name="__VIEWSTATEENCRYPTED" '
+        encryptedvs_regex += 'id="__VIEWSTATEENCRYPTED" value=".*?" />'
         self._encryptedVs = re.compile(
-            encryptedVsRegex, re.IGNORECASE | re.DOTALL)
+            encryptedvs_regex, re.IGNORECASE | re.DOTALL)
 
         self._already_analyzed = ScalableBloomFilter()
 
@@ -73,30 +73,28 @@ class dot_net_event_validation(GrepPlugin):
 
             # I have __viewstate!, verify if event validation is enabled
             if not self._eventvalidation.search(response.get_body()):
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('.NET Event Validation is disabled')
+                desc = 'The URL: "%s" has .NET Event Validation disabled.'\
+                       ' This programming/configuration error should be '\
+                       ' manually verified.'
+                desc = desc % response.get_url()
+                i = Info('.NET Event Validation is disabled', desc,
+                         response.id, self.get_name())
                 i.set_url(response.get_url())
-                i.set_id(response.id)
                 i.add_to_highlight(res.group())
-                msg = 'The URL: "' + i.get_url(
-                ) + '" has .NET Event Validation disabled. '
-                msg += 'This programming/configuration error should be manually verified.'
-                i.set_desc(msg)
+                
                 kb.kb.append(self, 'dot_net_event_validation', i)
 
             if not self._encryptedVs.search(response.get_body()):
                 # Nice! We can decode the viewstate! =)
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('.NET ViewState encryption is disabled')
+                desc = 'The URL: "%s" has .NET ViewState encryption disabled.'\
+                       ' This programming/configuration error could be exploited'\
+                       ' to decode the viewstate contents.'
+                desc = desc % response.get_url()
+                
+                i = Info('.NET ViewState encryption is disabled', desc,
+                         response.id, self.get_name())
                 i.set_url(response.get_url())
-                i.set_id(response.id)
-                msg = 'The URL: "' + i.get_url(
-                ) + '" has .NET ViewState encryption disabled. '
-                msg += 'This programming/configuration error could be exploited '
-                msg += 'to decode the viewstate contents.'
-                i.set_desc(msg)
+                
                 kb.kb.append(self, 'dot_net_event_validation', i)
 
     def end(self):

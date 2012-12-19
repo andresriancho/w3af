@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class objects(GrepPlugin):
@@ -63,16 +63,14 @@ class objects(GrepPlugin):
             for element in elem_list:
 
                 tag_name = element.tag
-
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name(tag_name.title() + ' tag')
-                i.set_url(url)
-                i.set_id(response.id)
-                msg = 'The URL: "%s" has an "%s" tag. We recommend you download' \
+                
+                desc = 'The URL: "%s" has an "%s" tag. We recommend you download'\
                       ' the client side code and analyze it manually.'
-                msg = msg % (i.get_uri(), tag_name)
-                i.set_desc(msg)
+                desc = desc % (response.get_uri(), tag_name)
+
+                i = Info('Browser plugin content', desc, response.id,
+                         self.get_name())
+                i.set_url(url)
                 i.add_to_highlight(tag_name)
 
                 kb.kb.append(self, tag_name, i)

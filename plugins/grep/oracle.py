@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class oracle(GrepPlugin):
@@ -32,6 +32,8 @@ class oracle(GrepPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+
+    OAS_TAGS = ['<!-- Created by Oracle ',]
 
     def __init__(self):
         GrepPlugin.__init__(self)
@@ -49,27 +51,17 @@ class oracle(GrepPlugin):
         if response.is_text_or_html() and url not in self._already_analyzed:
             self._already_analyzed.add(url)
 
-            for msg in self._get_descriptiveMessages():
-                # Remember that HTTPResponse objects have a faster "__in__" than
-                # the one in strings; so string in response.get_body() is slower than
-                # string in response
+            for msg in self.OAS_TAGS:
                 if msg in response:
-
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Oracle application')
+                    desc = 'The URL: "%s" was created using Oracle Application'\
+                           ' Server.'
+                    desc = desc % response.get_url()
+                    i = Info('Oracle application server', desc, response.id,
+                             self.get_name())
                     i.set_url(url)
-                    i.set_id(response.id)
                     i.add_to_highlight(msg)
-                    msg = 'The URL: "' + url + '" was created using Oracle'
-                    msg += ' Application server.'
-                    i.set_desc(msg)
+                    
                     kb.kb.append(self, 'oracle', i)
-
-    def _get_descriptiveMessages(self):
-        res = []
-        res.append('<!-- Created by Oracle ')
-        return res
 
     def end(self):
         '''

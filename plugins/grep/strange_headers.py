@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.misc.group_by_min_key import group_by_min_key
+from core.data.kb.info import Info
 
 
 class strange_headers(GrepPlugin):
@@ -89,8 +89,8 @@ class strange_headers(GrepPlugin):
             if header_name.upper() not in self.COMMON_HEADERS:
 
                 # Check if the kb already has a info object with this code:
-                strange_header_infos = kb.kb.get(
-                    'strange_headers', 'strange_headers')
+                strange_header_infos = kb.kb.get('strange_headers',
+                                                 'strange_headers')
 
                 for info_obj in strange_header_infos:
                     if info_obj['header_name'] == header_name:
@@ -100,21 +100,22 @@ class strange_headers(GrepPlugin):
                         info_obj.set_id(id_list)
                         break
                 else:
-                    # Create a new info object from scratch and save it to the kb:
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Strange header')
-                    i.set_url(response.get_url())
-                    i.set_id(response.id)
-                    msg = 'The remote web server sent the HTTP header: "' + \
-                        header_name
-                    msg += '" with value: "' + \
-                        response.get_headers()[header_name] + '".'
-                    i.set_desc(msg)
-                    i['header_name'] = header_name
+                    # Create a new info object from scratch and save it to
+                    # the kb:
                     hvalue = response.get_headers()[header_name]
+                    
+                    desc = 'The remote web server sent the HTTP header: "%s"'\
+                           ' with value: "%s", which is quite uncommon and'\
+                           ' requires manual analysis.'
+                    desc = desc % (header_name, hvalue)
+
+                    i = Info('Strange header', desc, response.id,
+                             self.get_name())
+                    i.set_url(response.get_url())
+                    i['header_name'] = header_name
                     i['header_value'] = hvalue
                     i.add_to_highlight(hvalue, header_name)
+                    
                     kb.kb.append(self, 'strange_headers', i)
 
         # Now check for protocol anomalies
@@ -130,20 +131,17 @@ class strange_headers(GrepPlugin):
         if 'content-location' in response.get_lower_case_headers() \
         and response.get_code() > 300\
         and response.get_code() < 310:
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Content-Location HTTP header anomaly')
+            desc = 'The URL: "%s" sent the HTTP header: "content-location"'\
+                   ' with value: "%s" in an HTTP response with code %s which'\
+                   ' is a violation to the RFC.'
+            desc = desc % (response.get_url(),
+                           response.get_lower_case_headers()['content-location'],
+                           response.get_code())
+            i = Info('Content-Location HTTP header anomaly', desc,
+                     response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            msg = 'The URL: "' + i.get_url(
-            ) + '" sent the HTTP header: "content-location"'
-            msg += ' with value: "' + \
-                response.get_lower_case_headers()['content-location']
-            msg += '" in an HTTP response with code ' + str(
-                response.get_code()) + ' which is'
-            msg += ' a violation to the RFC.'
-            i.set_desc(msg)
             i.add_to_highlight('content-location')
+            
             kb.kb.append(self, 'anomaly', i)
 
     def end(self):

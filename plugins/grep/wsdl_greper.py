@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_in import multi_in
+from core.data.kb.info import Info
 
 
 class wsdl_greper(GrepPlugin):
@@ -59,15 +59,16 @@ class wsdl_greper(GrepPlugin):
 
             match_list = self._multi_in.query(response.body)
             if len(match_list):
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('WSDL file')
+                desc = 'The URL: "%s" is a Web Services Description Language'\
+                       ' page. This requires manual analysis to determine the'\
+                       ' security of the web service.'
+                desc = desc % response.get_url()
+                
+                i = Info('WSDL resource', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                i.set_id(response.id)
                 i.add_to_highlight(*match_list)
-                msg = 'The URL: "' + i.get_url() + '" is a Web Services '
-                msg += 'Description Language page.'
-                i.set_desc(msg)
+                
                 kb.kb.append(self, 'wsdl', i)
 
             is_disco = False
@@ -77,16 +78,16 @@ class wsdl_greper(GrepPlugin):
                     break
 
             if is_disco:
-                i = Info()
-                i.set_plugin_name(self.get_name())
+                desc = 'The URL: "%s" is a DISCO file that contains references'\
+                       ' to WSDL URLs.'
+                desc = desc % i.get_url()
+                i = Info('DISCO resource', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                msg = 'The URL: "' + i.get_url(
-                ) + '" is a DISCO file that contains'
-                msg += ' references to WSDLs.'
-                i.set_desc(msg)
                 i.add_to_highlight(disco_string)
+                
                 kb.kb.append(self, 'disco', i)
-
+                
     def end(self):
         '''
         This method is called when the plugin wont be used anymore.

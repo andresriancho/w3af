@@ -86,22 +86,24 @@ class form_autocomplete(GrepPlugin):
                 # Test existence of password-type inputs and verify that
                 # all inputs are autocompletable
                 if passwd_inputs and all(map(autocompletable,
-                                             chain(passwd_inputs, self._text_input_xpath(form)))):
+                                             chain(passwd_inputs,
+                                                   self._text_input_xpath(form)))):
 
-                    i = Info()
-                    i.set_name('Auto-completable form')
+                    desc = 'The URL: "%s" has a "<form>" element with ' \
+                           'auto-complete enabled.'
+                    desc = desc % url
+
+                    i = Info('Auto-completable form', desc, response.id,
+                             self.get_name())
                     i.set_url(url)
-                    i.set_id(response.id)
-                    msg = 'The URL: "%s" has a "<form>" element with ' \
-                        'auto-complete enabled.' % url
-                    i.set_desc(msg)
+
                     form_str = etree.tostring(form)
                     to_highlight = form_str[:(form_str).find('>') + 1]
                     i.add_to_highlight(to_highlight)
 
                     # Store and print
                     kb.kb.append(self, 'form_autocomplete', i)
-                    om.out.information(msg)
+                    om.out.information(desc)
 
                     break
 

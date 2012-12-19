@@ -27,11 +27,11 @@ import re
 import core.controllers.output_manager as om
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.data.esmre.multi_in import multi_in
 from core.data.db.temp_shelve import temp_shelve
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.exceptions import w3afException
 
@@ -78,20 +78,20 @@ class html_comments(GrepPlugin):
                 dp = parser_cache.dpc.get_document_parser_for(response)
             except w3afException:
                 return
-            else:
-                for comment in dp.get_comments():
-                    # These next two lines fix this issue:
-                    # audit.ssi + grep.html_comments + web app with XSS = false positive
-                    if request.sent(comment):
-                        continue
+            
+            for comment in dp.get_comments():
+                # These next two lines fix this issue:
+                # audit.ssi + grep.html_comments + web app with XSS = false positive
+                if request.sent(comment):
+                    continue
 
-                    # show nice comments ;)
-                    comment = comment.strip()
+                # show nice comments ;)
+                comment = comment.strip()
 
-                    if self._is_new(comment, response):
+                if self._is_new(comment, response):
 
-                        self._interesting_word(comment, request, response)
-                        self._html_in_comment(comment, request, response)
+                    self._interesting_word(comment, request, response)
+                    self._html_in_comment(comment, request, response)
 
     def _interesting_word(self, comment, request, response):
         '''
@@ -100,19 +100,19 @@ class html_comments(GrepPlugin):
         comment = comment.lower()
         for word in self._multi_in.query(response.body):
             if (word, response.get_url()) not in self._already_reported_interesting:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('HTML comment with "' + word + '" inside')
-                msg = 'A comment with the string "' + \
-                    word + '" was found in: "'
-                msg += response.get_url() + '". This could be interesting.'
-                i.set_desc(msg)
-                i.set_id(response.id)
+                desc = 'A comment with the string "%s" was found in: "%s".'\
+                       ' This could be interesting.'
+                desc = desc % (word, response.get_url())
+
+                i = Info('Interesting HTML comment', desc,
+                         response.id, self.get_name())
                 i.set_dc(request.get_dc)
                 i.set_uri(response.get_uri())
                 i.add_to_highlight(word)
+                
                 kb.kb.append(self, 'interesting_comments', i)
                 om.out.information(i.get_desc())
+                
                 self._already_reported_interesting.add(
                     (word, response.get_url()))
 
@@ -122,21 +122,20 @@ class html_comments(GrepPlugin):
         '''
         html_in_comment = self.HTML_RE.search(comment)
         if html_in_comment and \
-                (comment, response.get_url()) not in self._already_reported_interesting:
+        (comment, response.get_url()) not in self._already_reported_interesting:
             # There is HTML code in the comment.
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('HTML comment contains HTML code')
             comment = comment.replace('\n', '')
             comment = comment.replace('\r', '')
-            desc = 'A comment with the string "' + comment + \
-                '" was found in: "'
-            desc += response.get_url() + '" . This could be interesting.'
-            i.set_desc(desc)
-            i.set_id(response.id)
+            desc = 'A comment with the string "%s" was found in: "%s".'\
+                   ' This could be interesting.'
+            desc = desc % (comment, response.get_url())
+
+            i = Info('HTML comment contains HTML code', desc,
+                     response.id, self.get_name())
             i.set_dc(request.get_dc)
             i.set_uri(response.get_uri())
             i.add_to_highlight(html_in_comment.group(0))
+            
             kb.kb.append(self, 'html_comment_hides_html', i)
             om.out.information(i.get_desc())
             self._already_reported_interesting.add(
@@ -190,5 +189,6 @@ class html_comments(GrepPlugin):
         '''
         return '''
         This plugin greps every page for HTML comments, special comments like
-        the ones containing the words "password" or "user" are specially reported.
+        the ones containing the words "password" or "user" are specially
+        reported.
         '''

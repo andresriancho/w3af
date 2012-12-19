@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class blank_body(GrepPlugin):
@@ -56,16 +56,14 @@ class blank_body(GrepPlugin):
             #   report these informations only once
             self._already_reported.add(response.get_url())
 
-            #   append the info object to the KB.
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Blank body')
+            desc = 'The URL: "%s" returned an empty body, this could indicate'\
+                  ' an application error.'
+            desc = desc % response.get_url()
+
+            i = Info('Blank http response body', desc,
+                     response.id, self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            msg = 'The URL: "' + response.get_url() + \
-                '" returned an empty body. '
-            msg += 'This could indicate an error.'
-            i.set_desc(msg)
+            
             kb.kb.append(self, 'blank_body', i)
 
     def end(self):

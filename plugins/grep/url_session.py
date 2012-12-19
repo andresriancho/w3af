@@ -20,12 +20,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.data.parsers.parser_cache as parser_cache
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.constants.cookies import ALL_COOKIES
+from core.data.kb.info import Info
 
 
 class url_session(GrepPlugin):
@@ -79,19 +79,19 @@ class url_session(GrepPlugin):
                 response.get_url() not in self._already_reported:
                     #   report these informations only once
                     self._already_reported.add(response.get_url())
+
+                    desc = 'The HTML content at "%s" contains a link (%s)'\
+                           ' which holds a session id. The ID could be leaked'\
+                           ' to third party domains through the referrer'\
+                           ' header.'
+                    desc = desc % (response.get_url(), link_uri)
                     
                     #   append the info object to the KB.
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Session ID in URL')
+                    i = Info('Session ID in URL', desc, response.id,
+                             self.get_name())
                     i.set_uri(response.get_uri())
-                    i.set_id(response.id)
-                    msg = 'The HTML content at "%s" contains a link (%s) which'\
-                          ' holds a session id. The ID could be leaked to third'\
-                          ' party domains through the referrer header.'
-                    i.set_desc(msg % (response.get_url(), link_uri))
-                    kb.kb.append(self, 'url_session', i)
                     
+                    kb.kb.append(self, 'url_session', i)
                     break
     
     
@@ -104,17 +104,17 @@ class url_session(GrepPlugin):
         response.get_url() not in self._already_reported:
                 #   report these informations only once
                 self._already_reported.add(response.get_url())
-    
-                #   append the info object to the KB.
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Session ID in URL')
-                i.set_uri(response.get_uri())
-                i.set_id(response.id)
-                msg = 'The URL "%s" contains a session id which could be'\
+                
+                desc = 'The URL "%s" contains a session id which could be'\
                       ' leaked to third party domains through the referrer'\
                       ' header.'
-                i.set_desc(msg % request_uri)
+                desc = desc % request_uri
+                
+                #   append the info object to the KB.
+                i = Info('Session ID in URL', desc, response.id,
+                         self.get_name())
+                i.set_uri(response.get_uri())
+
                 kb.kb.append(self, 'url_session', i)
 
     def end(self):

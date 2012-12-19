@@ -22,10 +22,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from lxml import etree
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 SCRIPT_SRC_XPATH = ".//script[@src]"
 
@@ -60,34 +60,35 @@ class cross_domain_js(GrepPlugin):
             dom = response.get_dom()
 
             # In some strange cases, we fail to normalize the document
-            if dom is not None:
+            if dom is None:
+                return
+            
+            # Loop through script inputs tags
+            for script_src_tag in self._script_src_xpath(dom):
 
-                # Loop through script inputs tags
-                for script_src_tag in self._script_src_xpath(dom):
+                # This should be always False due to the XPATH we're using
+                # but you never know...
+                if not 'src' in script_src_tag.attrib:
+                    continue
 
-                    # This should be always False due to the XPATH we're using
-                    # but you never know...
-                    if not 'src' in script_src_tag.attrib:
-                        continue
+                script_src = script_src_tag.attrib['src']
+                script_full_url = response.get_url().url_join(script_src)
+                script_domain = script_full_url.get_domain()
 
-                    script_src = script_src_tag.attrib['src']
-                    script_full_url = response.get_url().url_join(script_src)
-                    script_domain = script_full_url.get_domain()
-
-                    if script_domain != response.get_url().get_domain():
-                        i = Info()
-                        i.set_plugin_name(self.get_name())
-                        i.set_name('Cross-domain javascript source')
-                        i.set_url(url)
-                        i.set_id(response.id)
-                        msg = 'The URL: "%s" has script tag with a source that points' \
-                              ' to a third party site ("%s"). This practice is not' \
-                              ' recommended as security of the current site is being' \
-                              ' delegated to that entity.'
-                        i.set_desc(msg)
-                        to_highlight = etree.tostring(script_src_tag)
-                        i.add_to_highlight(to_highlight)
-                        kb.kb.append(self, 'cross_domain_js', i)
+                if script_domain != response.get_url().get_domain():
+                    desc = 'The URL: "%s" has script tag with a source that points' \
+                           ' to a third party site ("%s"). This practice is not' \
+                           ' recommended as security of the current site is being' \
+                           ' delegated to that external entity.'
+                    desc = desc % (url, script_domain) 
+                    
+                    i = Info('Cross-domain javascript source', desc,
+                             response.id, self.get_name())
+                    i.set_url(url)
+                    to_highlight = etree.tostring(script_src_tag)
+                    i.add_to_highlight(to_highlight)
+                    
+                    kb.kb.append(self, 'cross_domain_js', i)
 
     def end(self):
         '''

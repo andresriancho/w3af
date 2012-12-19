@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.data.parsers.parser_cache as parser_cache
 import core.controllers.output_manager as om
 
@@ -29,6 +28,7 @@ from core.controllers.exceptions import w3afException
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class get_emails(GrepPlugin):
@@ -99,20 +99,18 @@ class get_emails(GrepPlugin):
 
             if mail_address not in email_map:
                 # Create a new info object, and report it
-                i = Info()
-                i.set_plugin_name(self.get_name())
+                desc = 'The mail account: "%s" was found in: \n- %s'\
+                       ' - In request with id: %s.'
+                desc = desc % (mail_address, url, response.id)
+
+                i = Info('Exposed email address', desc, response.id,
+                         self.get_name())
                 i.set_url(url)
-                i.set_id(response.id)
-                i.set_name(mail_address)
-                desc = 'The mail account: "' + \
-                    mail_address + '" was found in: '
-                desc += '\n- ' + url
-                desc += ' - In request with id: ' + str(response.id)
-                i.set_desc(desc)
                 i['mail'] = mail_address
-                i['url_list'] = [url]
+                i['url_list'] = set([url,])
                 i['user'] = mail_address.split('@')[0]
                 i.add_to_highlight(mail_address)
+                
                 kb.kb.append('emails', kb_key, i)
 
             else:
@@ -122,17 +120,17 @@ class get_emails(GrepPlugin):
                 # And work
                 if url not in i['url_list']:
                     # This email was already found in some other URL
-                    # I'm just going to modify the url_list and the description message
-                    # of the information object.
+                    # I'm just going to modify the url_list and the description
+                    # message of the information object.
                     id_list_of_info = i.get_id()
                     id_list_of_info.append(response.id)
                     i.set_id(id_list_of_info)
                     i.set_url(url)
                     desc = i.get_desc()
-                    desc += '\n- ' + url
-                    desc += ' - In request with id: ' + str(response.id)
+                    desc += '\n- %s - In request with id: %s.'
+                    desc = desc % (url, response.id)
                     i.set_desc(desc)
-                    i['url_list'].append(url)
+                    i['url_list'].add(url)
 
     def set_options(self, options_list):
         self._only_target_domain = options_list['only_target_domain'].get_value()
@@ -162,7 +160,7 @@ class get_emails(GrepPlugin):
         @return: A DETAILED description of the plugin functions and features.
         '''
         return '''
-        This plugin greps every page for emails, these can be used in other places,
-        like bruteforce plugins, and are of great value when doing a complete
-        penetration test.
+        This plugin greps every page for emails, these can be used in other
+        places, like bruteforce plugins, and are of great value when doing a
+        complete information security assessment.
         '''

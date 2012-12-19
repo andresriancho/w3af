@@ -21,11 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.esmre.multi_re import multi_re
+from core.data.kb.info import Info
 
 
 class http_in_body (GrepPlugin):
@@ -57,7 +57,8 @@ class http_in_body (GrepPlugin):
         '''
         uri = response.get_uri()
         
-        # 501 Code is "Not Implemented" which in some cases responds with this in the body:
+        # 501 Code is "Not Implemented" which in some cases responds with
+        # this in the body:
         # <body><h2>HTTP/1.1 501 Not Implemented</h2></body>
         # Which creates a false positive.
         
@@ -75,22 +76,20 @@ class http_in_body (GrepPlugin):
             for match, _, _, reqres in self._multi_re.query(body_without_tags):
 
                 if reqres == 'REQUEST':
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('HTTP Request in HTTP body')
+                    desc = 'An HTTP request was found in the HTTP body of'\
+                           ' a response.'
+                    i = Info('HTTP Request in HTTP body', desc, response.id,
+                             self.get_name())
                     i.set_uri(uri)
-                    i.set_id(response.id)
-                    i.set_desc('An HTTP request was found in the HTTP body of a response')
                     i.add_to_highlight(match.group(0))
                     kb.kb.append(self, 'request', i)
 
                 if reqres == 'RESPONSE':
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('HTTP Response in HTTP body')
+                    desc = 'An HTTP response was found in the HTTP body of'\
+                           ' a response.'
+                    i = Info('HTTP Response in HTTP body', desc, response.id,
+                             self.get_name())
                     i.set_uri(uri)
-                    i.set_id(response.id)
-                    i.set_desc('An HTTP response was found in the HTTP body of a response')
                     i.add_to_highlight(match.group(0))
                     kb.kb.append(self, 'response', i)
 

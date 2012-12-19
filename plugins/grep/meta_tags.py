@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.exceptions import w3afException
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class meta_tags(GrepPlugin):
@@ -98,20 +98,19 @@ class meta_tags(GrepPlugin):
                     # Now... if we found something, report it =)
                     if where is not None:
                         # The atribute is interesting!
-                        i = Info()
-                        i.set_plugin_name(self.get_name())
-                        i.set_name('Interesting META tag')
-                        i.set_uri(response.get_uri())
-                        i.set_id(response.id)
                         fmt = 'The URI: "%s" sent a <meta> tag with attribute'\
                               ' %s set to "%s" which looks interesting.'
-                        msg = fmt % (i.get_uri(), where, content)
-                        i.add_to_highlight(where, content)
+                        desc = fmt % (response.get_uri(), where, content)
+                        
                         if self.INTERESTING_WORDS.get(tag_name, None):
-                            msg += ' The tag is used for '
-                            msg += self.INTERESTING_WORDS[
-                                tag_name] + '.'
-                        i.set_desc(msg)
+                            usage = self.INTERESTING_WORDS[tag_name]
+                            desc += ' The tag is used for %s.' % usage
+                        
+                        i = Info('Interesting META tag', desc, response.id,
+                                 self.get_name())
+                        i.set_uri(response.get_uri())
+                        i.add_to_highlight(where, content)
+
                         kb.kb.append(self, 'meta_tags', i)
 
     def _find_name(self, tag):

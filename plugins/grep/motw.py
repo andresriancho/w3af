@@ -23,12 +23,12 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.grep_plugin import GrepPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
+from core.data.kb.info import Info
 
 
 class motw (GrepPlugin):
@@ -46,9 +46,6 @@ class motw (GrepPlugin):
         regex += r"""+(:\d+)?(/([\w/_\.]*(\?\S+)?)?)?|about:internet)\s{1}\-\->"""
         self._motw_re = re.compile(regex)
 
-        # User configured parameter
-        self._withoutMOTW = False
-
     def grep(self, request, response):
         '''
         Plugin entry point, search for motw.
@@ -63,15 +60,6 @@ class motw (GrepPlugin):
         if not is_404(response):
             motw_match = self._motw_re.search(response.get_body())
 
-            # Create the info object
-            if motw_match or self._withoutMOTW:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Mark of the web')
-                i.set_url(response.get_url())
-                i.set_id(response.id)
-                i.add_to_highlight(motw_match.group(0))
-
             # Act based on finding/non-finding
             if motw_match:
 
@@ -79,40 +67,27 @@ class motw (GrepPlugin):
                 # the data before
                 url_length_indicated = int(motw_match.group(1))
                 url_length_actual = len(motw_match.group(2))
+                
                 if (url_length_indicated <= url_length_actual):
-                    msg = 'The  URL: "' + response.get_url() + '"'
-                    msg += ' contains a  valid Mark of the Web.'
-                    i.set_desc(msg)
-                    kb.kb.append(self, 'motw', i)
+                    desc = 'The URL: "%s" contains a valid mark of the web.'
+                    desc = desc % response.get_url()
+                    i = self.create_info(desc, response, motw_match)
+
                 else:
-                    msg = 'The URL: "' + \
-                        response.get_url() + '" will be executed in Local '
-                    msg += 'Machine Zone security context because the indicated length is '
-                    msg += 'greater than the actual URL length.'
-                    i['localMachine'] = True
-                    i.set_desc(msg)
-                    kb.kb.append(self, 'motw', i)
+                    desc = 'The URL: "%s" will be executed in Local Machine'\
+                           ' Zone security context because the indicated length'\
+                           ' is greater than the actual URL length.'
+                    desc = desc % response.get_url() 
+                    i = self.create_info(desc, response, motw_match)
+                    i['local_machine'] = True
+                    
+                kb.kb.append(self, 'motw', i)
 
-            elif self._withoutMOTW:
-                msg = 'The URL: "' + response.get_url()
-                msg += '" doesn\'t contain a Mark of the Web.'
-                i.set_desc(msg)
-                kb.kb.append(self, 'no_motw', i)
-
-    def set_options(self, options_list):
-        self._withoutMOTW = options_list['withoutMOTW'].get_value()
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-
-        d1 = 'List the pages that don\'t have a MOTW'
-        o1 = opt_factory('withoutMOTW', self._withoutMOTW, d1, 'boolean')
-        ol.add(o1)
-
-        return ol
+    def create_info(self, desc, response, motw_match):
+        i = Info('Mark of the web', desc, response.id, self.get_name())
+        i.set_url(response.get_url())
+        i.add_to_highlight(motw_match.group(0))
+        return i
 
     def end(self):
         '''
@@ -121,7 +96,6 @@ class motw (GrepPlugin):
         # Print the results to the user
         pretty_msg = {}
         pretty_msg['motw'] = 'The following URLs contain a MOTW:'
-        pretty_msg['no_motw'] = 'The following URLs don\'t contain a MOTW:'
         for motw_type in pretty_msg:
             inform = []
             for i in kb.kb.get('motw', motw_type):
@@ -130,12 +104,11 @@ class motw (GrepPlugin):
             if len(inform):
                 om.out.information(pretty_msg[motw_type])
                 for i in inform:
-                    if 'localMachine' not in i:
-                        om.out.information('- ' + i.get_url())
+                    if 'local_machine' not in i:
+                        om.out.information('- %s' % i.get_url())
                     else:
-                        msg = '- ' + i.get_url(
-                        ) + ' [Executed in Local machine context]'
-                        om.out.information(msg)
+                        msg = '- %s [Executed in Local machine context]'
+                        om.out.information(msg % i.get_url())
 
     def get_long_desc(self):
         '''
