@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from core.data.constants.vulns import is_valid_name
 from core.data.constants.severity import INFORMATION
 from core.data.parsers.url import URL
+from core.data.fuzzer.mutants.mutant import Mutant
 
 
 class Info(dict):
@@ -35,27 +36,40 @@ class Info(dict):
         # Default values
         self._url = None
         self._uri = None
-        self._method = None
+        self._method = 'GET'
         self._variable = None
         self._dc = None
         self._string_matches = set()
-
+        self._mutant = None
+        
         self.set_id(response_ids)
         self.set_name(name)
         self.set_desc(desc)
         self.set_plugin_name(plugin_name)
         
         # Clone the info object!
-        if isinstance(data_obj, Info):
-            self.set_uri(data_obj.get_uri())
-            self.set_desc(data_obj.get_desc())
-            self.set_method(data_obj.get_method())
-            self.set_var(data_obj.get_var())
-            self.set_id(data_obj.get_id())
-            self.set_name(data_obj.get_name())
-            self.set_dc(data_obj.get_dc())
-            for k in data_obj.keys():
-                self[k] = data_obj[k]
+        if data_obj is not None:
+            if isinstance(data_obj, Info):
+                self.set_desc(data_obj.get_desc())
+                self.set_id(data_obj.get_id())
+                self.set_name(data_obj.get_name())
+                self.set_mutant(data_obj.get_mutant())
+                
+                for k in data_obj.keys():
+                    self[k] = data_obj[k]
+            
+            if isinstance(data_obj, Mutant):
+                self.set_mutant(data_obj)
+                
+            if isinstance(data_obj, (Mutant, Info)):
+                self.set_uri(data_obj.get_uri())
+                self.set_method(data_obj.get_method())
+                self.set_var(data_obj.get_var())
+                self.set_dc(data_obj.get_dc())
+            
+            if not isinstance(data_obj, (Mutant, Info)):
+                raise TypeError('Expected Vuln or Mutant to init another vuln.')
+                    
 
     def get_severity(self):
         '''
@@ -105,12 +119,18 @@ class Info(dict):
         if not isinstance(desc, basestring):
             raise TypeError('Descriptions need to be strings.')
         
-        if len(desc) <= 4:
-            raise ValueError('Description too short')
+        if len(desc) <= 15:
+            raise ValueError('Description too short.')
+
+        if '%s' in desc:
+            raise ValueError('Format string resolution missing.')
         
         self._desc = desc
 
     def get_desc(self, with_id=True):
+        return self._get_desc_impl('information', with_id)
+    
+    def _get_desc_impl(self, what, with_id=True):
         
         if self._id is not None and self._id != 0 and with_id:
             if not self._desc.strip().endswith('.'):
@@ -119,12 +139,14 @@ class Info(dict):
             # One request OR more than one request
             desc_to_return = self._desc
             if len(self._id) > 1:
-                desc_to_return += ' This information was found in the requests with'
-                desc_to_return += ' ids ' + \
-                    self._convert_to_range_wrapper(self._id) + '.'
+                id_range = self._convert_to_range_wrapper(self._id)
+                
+                desc_to_return += ' This %s was found in the requests with' % what
+                desc_to_return += ' ids %s.' % id_range
+
             elif len(self._id) == 1:
-                desc_to_return += ' This information was found in the request with'
-                desc_to_return += ' id ' + str(self._id[0]) + '.'
+                desc_to_return += ' This %s was found in the request with' % what
+                desc_to_return += ' id %s.' % self._id[0]
 
             return desc_to_return
         else:
@@ -251,6 +273,15 @@ class Info(dict):
     def get_dc(self):
         return self._dc
 
+    def set_mutant(self, mutant):
+        '''
+        Sets the mutant that created this vuln.
+        '''
+        self._mutant = mutant
+
+    def get_mutant(self):
+        return self._mutant
+
     def get_to_highlight(self):
         '''
         The string match is the string that was used to identify the
@@ -268,10 +299,5 @@ class Info(dict):
         for s in str_match:
             if not isinstance(s, basestring):
                 raise TypeError('Only able to highlight strings.')
-            
-            if not s:
-                msg = 'Only able to highlight strings with at least'\
-                      ' one char.'
-                raise ValueError(msg)
             
             self._string_matches.add(s)

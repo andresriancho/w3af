@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import plugins.attack.payloads.payload_handler as payload_handler
 import core.controllers.output_manager as om
 
-from core.data.kb.vuln import Vuln as Vuln
+from core.data.kb.vuln import Vuln
 from core.data.kb.exploit_result import ExploitResult
 
 
@@ -35,7 +35,8 @@ class shell(Vuln, ExploitResult):
     '''
 
     def __init__(self, vuln, uri_opener, worker_pool):
-        Vuln.__init__(self, vuln)
+        Vuln.__init__(self, vuln.get_name(), vuln.get_desc(), vuln.get_severity(),
+                      vuln.get_id(), vuln.get_plugin_name(), vuln)
         ExploitResult.__init__(self)
         
         self._uri_opener = uri_opener
