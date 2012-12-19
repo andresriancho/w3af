@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.data.parsers.parser_cache as parser_cache
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -34,6 +33,7 @@ from core.controllers.misc.is_private_site import is_private_site
 from core.data.search_engines.bing import bing as bing
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
+from core.data.kb.info import Info
 
 
 class finger_bing(InfrastructurePlugin):
@@ -103,17 +103,17 @@ class finger_bing(InfrastructurePlugin):
                 for mail in document_parser.get_emails(self._domain_root):
                     if mail not in self._accounts:
                         self._accounts.append(mail)
+                        
+                        desc = 'The mail account: "%s" was found at: "%s".'
+                        desc = desc % (mail, page.URL)
 
-                        i = Info()
-                        i.set_plugin_name(self.get_name())
+                        i = Info('Email account', desc, response.id,
+                                 self.get_name())
                         i.set_url(page.URL)
-                        i.set_name(mail)
-                        msg = 'The mail account: "' + \
-                            mail + '" was found in: "' + page.URL + '"'
-                        i.set_desc(msg)
                         i['mail'] = mail
                         i['user'] = mail.split('@')[0]
                         i['url_list'] = [page.URL, ]
+                        
                         kb.kb.append('emails', 'emails', i)
                         kb.kb.append('finger_bing', 'emails', i)
 

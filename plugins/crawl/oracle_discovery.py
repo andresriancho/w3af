@@ -22,13 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
+from core.data.kb.info import Info
 
 
 class oracle_discovery(CrawlPlugin):
@@ -81,15 +81,13 @@ class oracle_discovery(CrawlPlugin):
                 mo = re_obj.search(response.get_body(), re.DOTALL)
 
                 if mo:
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Oracle application')
-                    i.set_url(response.get_url())
                     desc = '"%s" version "%s" was detected at "%s".'
                     desc = desc % (mo.group(1).title(), mo.group(2).title(),
                                    response.get_url())
-                    i.set_desc(desc)
-                    i.set_id(response.id)
+                    i = Info('Oracle Application Server', desc, response.id,
+                             self.get_name())
+                    i.set_url(response.get_url())
+                    
                     kb.kb.append(self, 'oracle_discovery', i)
                     om.out.information(i.get_desc())
                 else:

@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
-from core.data.parsers.url import URL
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.levenshtein import relative_distance_ge
+from core.data.kb.info import Info
+from core.data.parsers.url import URL
 
 
 class fingerprint_os(InfrastructurePlugin):
@@ -77,30 +77,23 @@ class fingerprint_os(InfrastructurePlugin):
 
             if relative_distance_ge(original_response.get_body(),
                                     windows_response.get_body(), 0.98):
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Operating system')
-                i.set_url(windows_response.get_url())
-                i.set_method('GET')
-                i.set_desc(
-                    'Fingerprinted this host as a Microsoft Windows system.')
-                i.set_id([windows_response.id, original_response.id])
-                kb.kb.save(self, 'operating_system_str', 'windows')
-                kb.kb.append(self, 'operating_system', i)
-                om.out.information(i.get_desc())
+                desc = 'Fingerprinted this host as a Microsoft Windows system.'
+                os_str = 'windows'
             else:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Operating system')
-                i.set_url(original_response.get_url())
-                i.set_method('GET')
-                msg = 'Fingerprinted this host as a *nix system. Detection for'
-                msg += '  this operating system is weak, "if not windows: is linux".'
-                i.set_desc(msg)
-                i.set_id([original_response.id, windows_response.id])
-                kb.kb.save(self, 'operating_system_str', 'unix')
-                kb.kb.append(self, 'operating_system', i)
-                om.out.information(i.get_desc())
+                desc = 'Fingerprinted this host as a *nix system. Detection for'\
+                       ' this operating system is weak, "if not windows then'\
+                       ' linux".'
+                os_str = 'unix'
+
+            response_ids = [windows_response.id, original_response.id]
+            i = Info('Operating system', desc, response_ids,
+                     self.get_name())
+            i.set_url(windows_response.get_url())
+            
+            kb.kb.save(self, 'operating_system_str', os_str)
+            kb.kb.append(self, 'operating_system', i)
+            om.out.information(i.get_desc())
+            
 
         return found_os
 

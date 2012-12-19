@@ -25,11 +25,11 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
+from core.data.kb.info import Info
 
 
 class wordpress_fingerprint(CrawlPlugin):
@@ -139,18 +139,17 @@ class wordpress_fingerprint(CrawlPlugin):
 
                 if release_db_hash == remote_release_hash:
 
-                    # Save it to the kb!
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('WordPress version')
+                    desc = 'The sysadmin used WordPress version "%s" during the'\
+                           ' installation, which was found by matching the contents'\
+                           ' of "%s" with the hashes of known releases. If the'\
+                           ' sysadmin did not update wordpress, the current version'\
+                           ' will still be the same.'
+                    desc = desc % (release_db_name, install_url)
+
+                    i = Info('Fingerprinted Wordpress version', desc, response.id,
+                             self.get_name())
                     i.set_url(install_url)
-                    i.set_id(response.id)
-                    msg = 'The sysadmin used WordPress version "%s" during the'
-                    msg += ' installation, which was found by matching the contents'
-                    msg += ' of "%s" with the hashes of known releases. If the'
-                    msg += ' sysadmin did not update wordpress, the current version'
-                    msg += ' will still be the same.'
-                    i.set_desc(msg % (release_db_name, install_url))
+                    
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
 
@@ -169,14 +168,13 @@ class wordpress_fingerprint(CrawlPlugin):
         if m:
             version = m.group(1)
 
-            # Save it to the kb!
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('WordPress version')
+            desc = 'WordPress version "%s" found in the readme.html file.'
+            desc = desc % version
+
+            i = Info('Fingerprinted Wordpress version', desc, response.id,
+                     self.get_name())
             i.set_url(wp_readme_url)
-            i.set_id(response.id)
-            msg = 'WordPress version "%s" found in the readme.html file.'
-            i.set_desc(msg % version)
+            
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
 
@@ -197,13 +195,13 @@ class wordpress_fingerprint(CrawlPlugin):
             version = m.group(1)
 
             # Save it to the kb!
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('WordPress version')
+            desc = 'WordPress version "%s" found in the index header.'
+            desc = desc % version
+
+            i = Info('Fingerprinted Wordpress version', desc, response.id,
+                     self.get_name())
             i.set_url(wp_index_url)
-            i.set_id(response.id)
-            msg = 'WordPress version "%s" found in the index header.'
-            i.set_desc(msg % version)
+            
             kb.kb.append(self, 'info', i)
             om.out.information(i.get_desc())
 
@@ -225,12 +223,12 @@ class wordpress_fingerprint(CrawlPlugin):
                 break
 
         # Save it to the kb!
-        i = Info()
-        i.set_plugin_name(self.get_name())
-        i.set_name('WordPress version')
+        desc = 'WordPress version "%s" found from data.'
+        desc = desc % version
+        i = Info('Fingerprinted Wordpress version', desc, response.id,
+                 self.get_name())
         i.set_url(test_url)
-        i.set_id(response.id)
-        i.set_desc('WordPress version "' + version + '" found from data.')
+
         kb.kb.append(self, 'info', i)
         om.out.information(i.get_desc())
 

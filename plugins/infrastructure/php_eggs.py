@@ -25,13 +25,13 @@ from itertools import repeat, izip
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.threads.threadpool import one_to_many
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class php_eggs(InfrastructurePlugin):
@@ -273,8 +273,8 @@ class php_eggs(InfrastructurePlugin):
         http_get = one_to_many(http_get)
         fr_repeater = repeat(fuzzable_request)
         args_iterator = izip(fr_repeater, self.PHP_EGGS)
-        pool_results = self.worker_pool.imap_unordered(
-            http_get, args_iterator)
+        pool_results = self.worker_pool.imap_unordered(http_get,
+                                                       args_iterator)
 
         for response, egg_URL, egg_desc in pool_results:
             GET_results.append((response, egg_desc, egg_URL))
@@ -304,15 +304,14 @@ class php_eggs(InfrastructurePlugin):
             #   The remote web server has expose_php = On. Report all the findings.
             #
             for response, egg_desc, egg_URL in GET_results:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('PHP Egg - ' + egg_desc)
+                desc = 'The PHP framework running on the remote server has a'\
+                       ' "%s" easter egg, access to the PHP egg is possible'\
+                       ' through the URL: "%s".'
+                desc = desc % (egg_desc, egg_URL)
+                
+                i = Info('PHP Egg', desc, response.id, self.get_name())
                 i.set_url(egg_URL)
-                desc = 'The PHP framework running on the remote server has a "'
-                desc += egg_desc + \
-                    '" easter egg, access to the PHP egg is possible'
-                desc += ' through the URL: "' + egg_URL + '".'
-                i.set_desc(desc)
+                
                 kb.kb.append(self, 'eggs', i)
                 om.out.information(i.get_desc())
 
@@ -344,33 +343,34 @@ class php_eggs(InfrastructurePlugin):
                     found = True
 
             if matching_versions:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('PHP Egg')
-                msg = 'The PHP framework version running on the remote server was identified as:'
-                for m_ver in matching_versions:
-                    msg += '\n- ' + m_ver
-                i.set_desc(msg)
+                desc = 'The PHP framework version running on the remote'\
+                       ' server was identified as:\n- %s'
+                versions = '\n- '.join(matching_versions)
+                desc = desc % versions
+                
+                i = Info('Fingerprinted PHP version', desc, response.id,
+                         self.get_name())
                 i['version'] = matching_versions
+                
                 kb.kb.append(self, 'version', i)
                 om.out.information(i.get_desc())
 
             if not found:
                 version = 'unknown'
                 powered_by_headers = kb.kb.get(
-                    'server_header', 'poweredByString')
+                    'server_header', 'powered_by_string')
                 try:
                     for v in powered_by_headers:
                         if 'php' in v.lower():
                             version = v.split('/')[1]
                 except:
                     pass
-                msg = 'The PHP version could not be identified using PHP eggs, please send this'
-                msg += ' signature and the PHP version to the w3af project develop mailing list.'
-                msg += ' Signature: EGG_DB[\'' + version + \
-                    '\'] = ' + str(list(cmp_set))
-                msg += '\n'
-                msg += 'The server_header plugin reported this PHP version: "' + version + '".'
+                
+                msg = 'The PHP version could not be identified using PHP eggs,'\
+                      ', please send this signature and the PHP version to the'\
+                      ' w3af project develop mailing list. Signature:'\
+                      ' EGG_DB[\'%s\'] = %s\n'
+                msg = msg % (version, str(list(cmp_set)))
                 om.out.information(msg)
 
     def get_plugin_deps(self):

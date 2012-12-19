@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from itertools import chain, repeat, izip
 
 import core.controllers.output_manager as om
-from core.data.kb.info import Info
 import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
@@ -35,6 +34,7 @@ from core.data.fuzzer.utils import rand_alnum
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
+from core.data.kb.info import Info
 
 
 class url_fuzzer(CrawlPlugin):
@@ -111,21 +111,23 @@ class url_fuzzer(CrawlPlugin):
             mutant, cache=True, headers=self._headers)
 
         if not (is_404(response) or
-                response.get_code() in (403, 401) or
-                self._return_without_eval(mutant)):
+        response.get_code() in (403, 401) or
+        self._return_without_eval(mutant)):
+            
             for fr in self._create_fuzzable_requests(response):
                 self.output_queue.put(fr)
+            
             #
             #   Save it to the kb (if new)!
             #
             if response.get_url() not in self._seen and response.get_url().get_file_name():
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Potentially interesting file')
-                i.set_url(response.get_url())
-                i.set_id(response.id)
                 desc = 'A potentially interesting file was found at: "%s".'
-                i.set_desc(desc % response.get_url())
+                desc = desc % response.get_url()
+
+                i = Info('Potentially interesting file', desc, response.id,
+                         self.get_name())
+                i.set_url(response.get_url())
+                
                 kb.kb.append(self, 'files', i)
                 om.out.information(i.get_desc())
 
@@ -326,7 +328,7 @@ class url_fuzzer(CrawlPlugin):
 
         d = 'Apply URL fuzzing to all URLs, including images, videos, zip, etc.'
         h = 'Don\'t change this unless you read the plugin code.'
-        o = opt_factory('fuzzImages', self._fuzz_images, d, 'boolean', help=h)
+        o = opt_factory('fuzz_images', self._fuzz_images, d, 'boolean', help=h)
         ol.add(o)
 
         return ol
@@ -339,7 +341,7 @@ class url_fuzzer(CrawlPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._fuzz_images = options_list['fuzzImages'].get_value()
+        self._fuzz_images = options_list['fuzz_images'].get_value()
 
     def get_plugin_deps(self):
         '''
@@ -368,5 +370,5 @@ class url_fuzzer(CrawlPlugin):
         plugin searches for backup files, source code, and other common extensions.
 
         One configurable parameter exist:
-            - fuzzImages
+            - fuzz_images
         '''

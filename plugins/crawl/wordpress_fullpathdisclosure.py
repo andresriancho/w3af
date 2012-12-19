@@ -23,11 +23,11 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
+from core.data.kb.info import Info
 
 
 class wordpress_fullpathdisclosure(CrawlPlugin):
@@ -109,14 +109,12 @@ class wordpress_fullpathdisclosure(CrawlPlugin):
 
             response_body = response.get_body()
             if 'Fatal error: ' in response_body:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('WordPress path disclosure')
-                i.set_url(pvuln_url)
-                i.set_id(response.id)
                 desc = 'Analyze the HTTP response body to find the full path'\
                        ' where wordpress was installed.'
-                i.set_desc(desc)
+                i = Info('WordPress path disclosure', desc, response.id,
+                         self.get_name())
+                i.set_url(pvuln_url)
+                
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
                 break

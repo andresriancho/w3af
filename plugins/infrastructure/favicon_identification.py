@@ -29,12 +29,12 @@ import os.path
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.exceptions import w3afRunOnce
+from core.data.kb.info import Info
 
 
 class favicon_identification(InfrastructurePlugin):
@@ -74,14 +74,11 @@ class favicon_identification(InfrastructurePlugin):
             for md5part, favicon_desc in self._read_favicon_db():
 
                 if md5part == remote_fav_md5:
-                    # Save it to the kb!
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Favicon identification')
-                    i.set_url(favicon_url)
-                    i.set_id(response.id)
                     desc = 'Favicon.ico file was identified as "%s".' % favicon_desc
-                    i.set_desc(desc)
+                    i = Info('Favicon identification', desc, response.id,
+                             self.get_name())
+                    i.set_url(favicon_url)
+                    
                     kb.kb.append(self, 'info', i)
                     om.out.information(i.get_desc())
                     break
@@ -90,19 +87,18 @@ class favicon_identification(InfrastructurePlugin):
                 #   Report to the kb that we failed to ID this favicon.ico
                 #   and that the md5 should be sent to the developers.
                 #
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Favicon identification failed')
-                i.set_url(favicon_url)
-                i.set_id(response.id)
                 desc = 'Favicon identification failed. If the remote site is'  \
                        ' using framework that is being exposed by its favicon,'\
                        ' please send an email to w3af-develop@lists.sourceforge.net'\
-                       ' including this md5 hash "' + remote_fav_md5 + '" and the' \
+                       ' including this md5 hash "%s" and the' \
                        ' name of the server or Web application it represents.' \
                        ' New fingerprints make this plugin more powerful and ' \
                        ' accurate.'
-                i.set_desc(desc)
+                desc = desc % remote_fav_md5
+                i = Info('Favicon identification failed', desc, response.id,
+                         self.get_name())
+                i.set_url(favicon_url)
+
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
 

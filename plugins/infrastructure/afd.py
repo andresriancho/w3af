@@ -23,7 +23,6 @@ import urllib
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
@@ -31,6 +30,7 @@ from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.parsers.url import URL
 from core.data.fuzzer.utils import rand_alnum
+from core.data.kb.info import Info
 
 
 class afd(InfrastructurePlugin):
@@ -74,8 +74,8 @@ class afd(InfrastructurePlugin):
         rnd_param = rand_alnum(7)
         rnd_value = rand_alnum(7)
         fmt = '%s?%s=%s'
-        original_url_str = fmt % (
-            fuzzable_request.get_url(), rnd_param, rnd_value)
+        original_url_str = fmt % (fuzzable_request.get_url(),
+                                  rnd_param, rnd_value)
         original_url = URL(original_url_str)
 
         try:
@@ -114,8 +114,8 @@ class afd(InfrastructurePlugin):
                  self._not_filtered lists.
         '''
         try:
-            resp_body = self._uri_opener.GET(
-                offending_URL, cache=False).get_body()
+            resp_body = self._uri_opener.GET(offending_URL,
+                                             cache=False).get_body()
         except w3afException:
             # I get here when the remote end closes the connection
             self._filtered.append(offending_URL)
@@ -134,14 +134,14 @@ class afd(InfrastructurePlugin):
         Analyze the test results and save the conclusion to the kb.
         '''
         if len(filtered) >= len(self._get_offending_strings()) / 5.0:
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Active filter detected')
-            msg = 'The remote network has an active filter. IMPORTANT: The result'
-            msg += ' of all the other plugins will be unaccurate, web applications'
-            msg += ' could be vulnerable but "protected" by the active filter.'
-            i.set_desc(msg)
+            desc = 'The remote network has an active filter. IMPORTANT: The'\
+                   ' result of all the other plugins will be unaccurate, web'\
+                   ' applications could be vulnerable but "protected" by the'\
+                   ' active filter.'
+                   
+            i = Info('Active filter detected', desc, 1, self.get_name())
             i['filtered'] = filtered
+            
             kb.kb.append(self, 'afd', i)
             om.out.information(i.get_desc())
 

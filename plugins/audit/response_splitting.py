@@ -80,19 +80,13 @@ class response_splitting(AuditPlugin):
             for error in self.HEADER_ERRORS:
 
                 if error in response:
-                    msg = 'The variable "' + \
-                        mutant.get_var() + '" of the URL ' + mutant.get_url()
-                    msg += ' modifies the headers of the response, but this error was sent while'
-                    msg += ' testing for response splitting: "' + error + '"'
-
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_desc(msg)
-                    i.set_var(mutant.get_var())
-                    i.set_uri(mutant.get_uri())
-                    i.set_dc(mutant.get_dc())
-                    i.set_id(response.id)
-                    i.set_name('Parameter modifies headers')
+                    desc = 'The variable "%s" at URL "%s" modifies the HTTP'\
+                           ' response headers, but this error was sent while'\
+                           ' testing for response splitting: "%s".'
+                    desc = desc % (mutant.get_var(), mutant.get_url(), error)
+                    i = Info('Parameter modifies response headers', desc, response.id,
+                             self.get_name(), mutant)
+                    
                     kb.kb.append(self, 'response_splitting', i)
 
                     return
@@ -110,9 +104,8 @@ class response_splitting(AuditPlugin):
         '''
         This method is called when the plugin wont be used anymore.
         '''
-        self.print_uniq(
-            kb.kb.get('response_splitting', 'response_splitting'), 'VAR'
-        )
+        self.print_uniq(kb.kb.get('response_splitting',
+                                  'response_splitting'), 'VAR')
 
     def _header_was_injected(self, response):
         '''
@@ -130,16 +123,15 @@ class response_splitting(AuditPlugin):
                 return True
 
             elif HEADER_NAME in header and value.lower() != HEADER_VALUE:
-                msg = 'The vulnerable header was added to the HTTP response, '
-                msg += 'but the value is not what w3af expected (' + HEADER_NAME + ': ' + HEADER_VALUE + ')'
-                msg += ' Please verify manually.'
+                msg = 'The vulnerable header was added to the HTTP response,'\
+                      ' but the value is not what w3af expected (%s: %s).'\
+                      ' Please verify manually.'
+                msg = msg % (HEADER_NAME,HEADER_VALUE)
                 om.out.information(msg)
 
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_desc(msg)
-                i.set_id(response.id)
-                i.set_name('Parameter modifies headers')
+                i = Info('Parameter modifies response headers', msg,
+                         response.id, self.get_name())
+                
                 kb.kb.append(self, 'response_splitting', i)
                 return False
 

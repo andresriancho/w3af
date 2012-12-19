@@ -38,7 +38,7 @@ class TestServerHeader(PluginTest):
         self._scan(cfg['target'], cfg['plugins'])
 
         server = self.kb.get('server_header', 'server')
-        pow_by = self.kb.get('server_header', 'poweredBy')
+        pow_by = self.kb.get('server_header', 'powered_by')
 
         self.assertEqual(len(server), 1, server)
         self.assertEqual(len(pow_by), 1, pow_by)

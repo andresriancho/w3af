@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.data.constants.response_codes as response_codes
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
@@ -30,6 +29,7 @@ from core.controllers.misc.group_by_min_key import group_by_min_key
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.info import Info
 
 
 class allowed_methods(InfrastructurePlugin):
@@ -133,17 +133,17 @@ class allowed_methods(InfrastructurePlugin):
             get_response = self._uri_opener.GET(url)
 
             if non_exist_response.get_code() not in self.BAD_CODES\
-                    and get_response.get_body() == non_exist_response.get_body():
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Non existent methods default to GET')
-                i.set_url(url)
-                i.set_id([non_exist_response.get_id(), get_response.get_id()])
-                msg = 'The remote Web server has a custom configuration, in'\
+            and get_response.get_body() == non_exist_response.get_body():
+
+                desc = 'The remote Web server has a custom configuration, in'\
                       ' which any not implemented methods that are invoked are'\
                       ' defaulted to GET instead of returning a "Not Implemented"'\
                       ' response.'
-                i.set_desc(msg)
+                response_ids = [non_exist_response.get_id(), get_response.get_id()]
+                i = Info('Non existent methods default to GET', desc, response_ids,
+                         self.get_name())
+                i.set_url(url)
+                
                 kb.kb.append(self, 'custom-configuration', i)
                 #
                 #   It makes no sense to continue working, all methods will
@@ -176,30 +176,28 @@ class allowed_methods(InfrastructurePlugin):
         # Check for DAV
         if set(allowed_methods).intersection(self.DAV_METHODS):
             # dav is enabled!
-            # Save the results in the KB so that other plugins can use this information
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Allowed methods for ' + url)
+            # Save the results in the KB so that other plugins can use this
+            # information
+            msg = 'The URL "%s" has the following allowed methods. These'\
+                  ' include DAV methods and should be disabled: %s' 
+            desc = desc % (url, ', '.join(allowed_methods))
+            
+            i = Info('DAV methods enabled', desc, id_list, self.get_name())
             i.set_url(url)
-            i.set_id(id_list)
             i['methods'] = allowed_methods
-            msg = 'The URL "' + url + \
-                '" has the following allowed methods, which'
-            msg += ' include DAV methods: ' + ', '.join(allowed_methods)
-            i.set_desc(msg)
+            
             kb.kb.append(self, 'dav-methods', i)
         else:
-            # Save the results in the KB so that other plugins can use this information
-            # Do not remove these information, other plugins REALLY use it !
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Allowed methods for ' + url)
+            # Save the results in the KB so that other plugins can use this
+            # information. Do not remove these information, other plugins
+            # REALLY use it !
+            desc = 'The URL "%s" has the following enabled HTTP methods: %s'
+            desc = desc % (url, ', '.join(allowed_methods))
+            
+            i = Info('Allowed HTTP methods', desc, id_list, self.get_name())
             i.set_url(url)
-            i.set_id(id_list)
             i['methods'] = allowed_methods
-            msg = 'The URL "' + url + '" has the following allowed methods:'
-            msg += ' ' + ', '.join(allowed_methods)
-            i.set_desc(msg)
+            
             kb.kb.append(self, 'methods', i)
 
         return []

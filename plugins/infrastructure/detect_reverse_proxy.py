@@ -22,12 +22,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.controllers.output_manager as om
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
+from core.data.kb.info import Info
 
 
 class detect_reverse_proxy(InfrastructurePlugin):
@@ -93,14 +93,11 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
         @param response: The response that triggered the detection
         '''
-        i = Info()
-        i.set_plugin_name(self.get_name())
-        i.set_name('Reverse proxy')
-        i.set_id(response.get_id())
+        desc = 'The remote web server seems to have a reverse proxy installed.'
+
+        i = Info('Reverse proxy identified', desc, response.id, self.get_name())
         i.set_url(response.get_url())
-        i.set_desc(
-            'The remote web server seems to have a reverse proxy installed.')
-        i.set_name('Found reverse proxy')
+
         kb.kb.append(self, 'detect_reverse_proxy', i)
         om.out.information(i.get_desc())
 
@@ -138,8 +135,8 @@ class detect_reverse_proxy(InfrastructurePlugin):
 
     def get_plugin_deps(self):
         '''
-        @return: A list with the names of the plugins that should be run before the
-        current one.
+        @return: A list with the names of the plugins that should be run before
+        the current one.
         '''
         return ['infrastructure.detect_transparent_proxy']
 

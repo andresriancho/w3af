@@ -91,7 +91,7 @@ class dot_listing(CrawlPlugin):
                     users.add(username)
                     groups.add(group)
 
-            self.worker_pool.map(self._get_and_parse, parsed_url_set)
+            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
             if parsed_url_set:
                 desc = 'A .listing file was found at: "%s". The contents'\
@@ -140,23 +140,6 @@ class dot_listing(CrawlPlugin):
         '''
         for user, group, filename in self._listing_parser_re.findall(listing_file_content):
             yield user, group, filename.strip()
-
-    def _get_and_parse(self, url):
-        '''
-        GET a URL that was found in the .listing file, and parse it.
-
-        @param url: The URL to GET.
-        @return: None, everything is saved to self.out_queue.
-        '''
-        try:
-            http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = ('w3afException while fetching page in crawl.dot_listing, error: "%s".')
-            om.out.debug(msg, (w3))
-        else:
-            if not is_404(http_response):
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
 
     def get_long_desc(self):
         '''

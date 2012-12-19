@@ -60,7 +60,7 @@ class redos(AuditPlugin):
         #
         #   TODO: Add other frameworks that are not vulnerable!
         #
-        for powered_by in kb.kb.get('server_header', 'poweredByString'):
+        for powered_by in kb.kb.get('server_header', 'powered_by_string'):
             if 'php' in powered_by.lower():
                 return
 

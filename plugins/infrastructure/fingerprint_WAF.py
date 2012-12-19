@@ -25,13 +25,13 @@ from itertools import izip, repeat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.fuzzer.utils import rand_alpha
+from core.data.kb.info import Info
 
 
 class fingerprint_WAF(InfrastructurePlugin):
@@ -293,17 +293,18 @@ class fingerprint_WAF(InfrastructurePlugin):
         @param response: The HTTP response object that was used to identify the WAF
         @param protected_by: A more detailed description/version of the WAF
         '''
-        i = Info()
-        i.set_plugin_name(self.get_name())
+        desc = 'The remote network seems to have a "%s" WAF deployed to' \
+              ' protect access to the web server.'
+        desc = desc % name
+        
+        if protected_by:
+            desc += ' The following is the WAF\'s version: "%s".'
+        
+        i = Info('Web Application Firewall fingerprint', desc, response.id,
+                 self.get_name())
         i.set_url(response.get_url())
         i.set_id(response.id)
-        msg = 'The remote network seems to have a "' + name + '" WAF deployed to' \
-              ' protect access to the web server.'
-        if protected_by:
-            msg += ' The following is a detailed version of the WAF: "' + \
-                protected_by + '".'
-        i.set_desc(msg)
-        i.set_name('Found ' + name)
+
         kb.kb.append(self, name, i)
         om.out.information(i.get_desc())
 

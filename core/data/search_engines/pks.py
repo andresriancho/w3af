@@ -46,8 +46,8 @@ class pks(SearchEngine):
         @param hostname: The hostname from which we want to get emails from.
         '''
         if hostname.count('//'):
-            msg = 'You must provide the PKS search engine with a root domain'
-            msg += ' name (as returned by URL.get_root_domain).'
+            msg = 'You must provide the PKS search engine with a root domain'\
+                  ' name (as returned by URL.get_root_domain).'
             raise w3afException(msg)
 
         res = self.met_search(hostname)
@@ -95,17 +95,18 @@ class pks(SearchEngine):
 
                     if domain == query:
                         if account not in accounts:
-                            pksr = PKSResult(name, account)
+                            pksr = PKSResult(name, account, response.id)
                             results.append(pksr)
                             accounts.append(account)
 
         return results
 
 
-class PKSResult:
-    def __init__(self, name, username):
+class PKSResult(object):
+    def __init__(self, name, username, _id):
         self.name = name
         self.username = username
+        self.id = _id
 
     def __repr__(self):
         return '<%s@%s>' % (self.name, self.username)

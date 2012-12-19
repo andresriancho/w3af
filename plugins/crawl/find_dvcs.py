@@ -144,7 +144,7 @@ class find_dvcs(CrawlPlugin):
 
         @return: None, everything is saved to the self.out_queue.
         '''
-        http_response = self._get_and_parse(repo_url)
+        http_response = self.http_get_and_parse(repo_url)
 
         if not is_404(http_response):
 
@@ -158,7 +158,7 @@ class find_dvcs(CrawlPlugin):
                     parsed_url_set.add(test_url)
                     self._analyzed_filenames.add(filename)
 
-            self.worker_pool.map(self._get_and_parse, parsed_url_set)
+            self.worker_pool.map(self.http_get_and_parse, parsed_url_set)
 
             if parsed_url_set:
                 desc = 'A %s was found at: "%s"; this could indicate that'\
@@ -172,27 +172,6 @@ class find_dvcs(CrawlPlugin):
                 
                 kb.kb.append(self, repo, v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
-
-    def _get_and_parse(self, url):
-        '''
-        GET a URL that was found in the repository index file, and parse it.
-
-        @param url: The URL to GET.
-        @return: None, everything is saved to self.out_queue.
-        '''
-        try:
-            http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = 'w3afException while fetching page in crawl.find_dvcs,'\
-                  ' error: "%s".' % w3
-            om.out.debug(msg)
-            raise
-        else:
-            if not is_404(http_response):
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
-
-            return http_response
 
     def git_index(self, body):
         '''

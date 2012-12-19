@@ -109,15 +109,15 @@ class ria_enumerator(CrawlPlugin):
     def _analyze_gears_manifest(self, url, response, file_name):
         if '"entries":' in response:
             # Save it to the kb!
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Gears Manifest')
+            desc = 'A gears manifest file was found at: "%s".'\
+                   ' Each file should be manually reviewed for sensitive'\
+                   ' information that may get cached on the client.'
+            desc = desc % url
+            
+            i = Info('Gears manifest resource', desc, response.id,
+                     self.get_name())
             i.set_url(url)
-            i.set_id(response.id)
-            desc = 'A gears manifest file was found at: "' + url
-            desc += '".  Each file should be manually reviewed for sensitive'
-            desc += ' information that may get cached on the client.'
-            i.set_desc(desc)
+            
             kb.kb.append(self, url, i)
             om.out.information(i.get_desc())
 
@@ -128,17 +128,16 @@ class ria_enumerator(CrawlPlugin):
             # Report this, it may be interesting for the final user
             # not a vulnerability per-se... but... it's information after all
             if 'allow-access-from' in response.get_body() or \
-                'cross-domain-policy' in response.get_body() or \
-                    'cross-domain-access' in response.get_body():
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Invalid ' + file_name)
+            'cross-domain-policy' in response.get_body() or \
+            'cross-domain-access' in response.get_body():
+
+                desc = 'The "%s" file at: "%s" is not a valid XML.'
+                desc = desc % (file_name, response.get_url())
+            
+                i = Info('Invalid RIA settings file', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                i.set_method('GET')
-                msg = 'The "' + file_name + '" file at: "' + response.get_url()
-                msg += '" is not a valid XML.'
-                i.set_desc(msg)
-                i.set_id(response.id)
+                
                 kb.kb.append(self, 'info', i)
                 om.out.information(i.get_desc())
         else:
@@ -166,7 +165,7 @@ class ria_enumerator(CrawlPlugin):
                     om.out.vulnerability(v.get_desc(),
                                          severity=v.get_severity())
                 else:
-                    i = Info('Cross-domain allow ACL', desc, severity.LOW,
+                    i = Info('Cross-domain allow ACL', desc,
                              response.id, self.get_name())
                     i.set_url(response.get_url())
                     i.set_method('GET')

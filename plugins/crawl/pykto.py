@@ -287,14 +287,14 @@ class pykto(CrawlPlugin):
         '''
         # Try to get the server type from hmap
         # it is the most accurate way to do it but hmap plugin
-        if kb.kb.get('hmap', 'serverString') != []:
-            kb_server = kb.kb.get('hmap', 'serverString')
+        if kb.kb.get('hmap', 'server_string') != []:
+            kb_server = kb.kb.get('hmap', 'server_string')
             self._source = 'hmap'
 
-        elif kb.kb.get('server_header', 'serverString') != []:
+        elif kb.kb.get('server_header', 'server_string') != []:
             # Get the server type from the server_header plugin. It gets this info
             # by reading the "server" header of request responses.
-            kb_server = kb.kb.get('server_header', 'serverString')
+            kb_server = kb.kb.get('server_header', 'server_string')
             self._source = 'server_header'
 
         else:

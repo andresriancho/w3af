@@ -21,14 +21,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import plugins.infrastructure.oHmap.hmap as originalHmap
 
 from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.misc.decorators import runonce
+from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
-from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.data.kb.info import Info
 
 
 class hmap(InfrastructurePlugin):
@@ -72,8 +72,8 @@ class hmap(InfrastructurePlugin):
             server = server.split(':')[0]
 
         try:
-            results = originalHmap.testServer(
-                ssl, server, port, 1, self._gen_fp)
+            results = originalHmap.testServer(ssl, server, port, 1,
+                                              self._gen_fp)
         except w3afException, w3:
             msg = 'A w3afException occurred while running hmap: "%s"' % w3
             om.out.error(msg)
@@ -87,27 +87,30 @@ class hmap(InfrastructurePlugin):
             if len(results):
                 server = results[0]
 
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Webserver Fingerprint')
-                desc = 'The most accurate fingerprint for this HTTP server is: "'
-                desc += str(server) + '".'
-                i.set_desc(desc)
+                desc = 'The most accurate fingerprint for this HTTP server is:'\
+                       ' "%s".'
+                desc = desc % server
+
+                i = Info('Webserver fingerprint', desc, 1,
+                         self.get_name())
+
                 i['server'] = server
                 om.out.information(i.get_desc())
 
-                # Save the results in the KB so that other plugins can use this information
+                # Save the results in the KB so that other plugins can use this
+                # information
                 kb.kb.append(self, 'server', i)
-                kb.kb.save(self, 'serverString', server)
+                kb.kb.save(self, 'server_string', server)
 
             #
             # Fingerprint file generated (this is independent from the results)
             #
             if self._gen_fp:
-                msg = 'Hmap fingerprint file generated, please send a mail to w3af-develop'
-                msg += '@lists.sourceforge.net including the fingerprint file, your name'
-                msg += ' and what server you fingerprinted. New fingerprints make the hmap'
-                msg += ' plugin more powerfull and accurate.'
+                msg = 'Hmap fingerprint file generated, please send a mail to'\
+                      ' w3af-develop@lists.sourceforge.net including the'\
+                      ' fingerprint file, your name and what server you'\
+                      ' fingerprinted. New fingerprints make the hmap plugin'\
+                      ' more powerfull and accurate.'
                 om.out.information(msg)
 
     def get_options(self):

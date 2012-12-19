@@ -49,20 +49,21 @@ class finger_pks(InfrastructurePlugin):
 
         pks_se = pks(self._uri_opener)
         results = pks_se.search(root_domain)
+        pks_url = 'http://pgp.mit.edu:11371/'
 
         for result in results:
-            i = Info()
-            i.set_url(URL('http://pgp.mit.edu:11371/'))
-            i.set_plugin_name(self.get_name())
-            i.set_id([])
             mail = result.username + '@' + root_domain
-            i.set_name(mail)
-            i.set_desc('The mail account: "' + mail +
-                       '" was found in the MIT PKS server. ')
+            
+            desc = 'The mail account: "%s" was found at: "%s".'
+            desc = desc % (mail, pks_url)
+
+            i = Info('Email account', desc, result.id, self.get_name())
+            i.set_url(URL(pks_url))
             i['mail'] = mail
             i['user'] = result.username
             i['name'] = result.name
-            i['url_list'] = ['http://pgp.mit.edu:11371/', ]
+            i['url_list'] = [URL(pks_url), ]
+            
             kb.kb.append('emails', 'emails', i)
             #   Don't save duplicated information in the KB. It's useless.
             #kb.kb.append( self, 'emails', i )

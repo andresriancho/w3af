@@ -23,11 +23,11 @@ import re
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.core_helpers.fingerprint_404 import is_404
+from core.data.kb.info import Info
 
 
 class wordpress_enumerate_users(CrawlPlugin):
@@ -119,7 +119,7 @@ class wordpress_enumerate_users(CrawlPlugin):
                 # The title changed, username probably found
                 self._title_cache = title
                 username = title.split(' ')[0]
-                self._kb_info_user(self.get_name(), response_author.get_url(),
+                self._kb_info_user(response_author.get_url(),
                                    response_author.id, username)
                 return True
 
@@ -130,25 +130,25 @@ class wordpress_enumerate_users(CrawlPlugin):
         if 'author' in path:
             # A redirect to /author/<username> was made, username probably found
             username = path.split("/")[-2]
-            self._kb_info_user(self.get_name(), response_author.get_uri(),
+            self._kb_info_user(response_author.get_uri(),
                                response_author.id, username)
 
             return True
 
         return False
 
-    def _kb_info_user(self, p_name, url, response_id, username):
+    def _kb_info_user(self, url, response_id, username):
         '''
         Put user in Kb
         @return: None, everything is saved in kb
         '''
-        i = Info()
-        i.set_plugin_name(p_name)
-        i.set_name('WordPress user "%s" found' % username)
+        desc = 'WordPress user "%s" found during username enumeration.'
+        desc = desc % username
+        
+        i = Info('Identified WordPress user', desc, response_id,
+                 self.get_name())
         i.set_url(url)
-        i.set_id(response_id)
-        msg = 'WordPress user "%s" found during username enumeration.'
-        i.set_desc(msg % username)
+        
         kb.kb.append(self, 'users', i)
         om.out.information(i.get_desc())
 

@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from core.data.kb.info import Info
 
 
 class server_header(InfrastructurePlugin):
@@ -63,40 +63,40 @@ class server_header(InfrastructurePlugin):
         for hname, hvalue in response.get_lower_case_headers().iteritems():
             if hname == 'server':
                 server = hvalue
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Server header')
-                i.set_id(response.get_id())
-                i.set_desc('The server header for the remote web server is: "' + server + '".')
+                
+                desc = 'The server header for the remote web server is: "%s".'
+                desc = desc % server
+                
+                i = Info('Server header', desc, response.id, self.get_name())
                 i['server'] = server
-                om.out.information(i.get_desc())
                 i.add_to_highlight(hname + ':')
+                
+                om.out.information(i.get_desc())
 
                 # Save the results in the KB so the user can look at it
                 kb.kb.append(self, 'server', i)
 
                 # Also save this for easy internal use
                 # other plugins can use this information
-                kb.kb.save(self, 'serverString', server)
+                kb.kb.save(self, 'server_string', server)
                 break
 
         else:
             # strange !
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('Omitted server header')
-            i.set_id(response.get_id())
-            msg = 'The remote HTTP Server omitted the "server" header in its response.'
-            i.set_desc(msg)
+            desc = 'The remote HTTP Server omitted the "server" header in'\
+                  ' its response.'
+            i = Info('Omitted server header', desc, response.id,
+                     self.get_name())
+
             om.out.information(i.get_desc())
 
             # Save the results in the KB so that other plugins can use this
             # information
-            kb.kb.append(self, 'omittedHeaders', i)
+            kb.kb.append(self, 'ommited_server_header', i)
 
             # Also save this for easy internal use
             # other plugins can use this information
-            kb.kb.save(self, 'serverString', '')
+            kb.kb.save(self, 'server_string', '')
 
     def _check_x_power(self, fuzzable_request):
         '''
@@ -115,38 +115,35 @@ class server_header(InfrastructurePlugin):
                     #
                     #    Check if I already have this info in the KB
                     #
-                    pow_by_kb = kb.kb.get('server_header', 'poweredBy')
-                    powered_by_in_kb = [j['poweredBy'] for j in pow_by_kb]
+                    pow_by_kb = kb.kb.get('server_header', 'powered_by')
+                    powered_by_in_kb = [j['powered_by'] for j in pow_by_kb]
                     if powered_by not in powered_by_in_kb:
 
                         #
                         #    I don't have it in the KB, so I need to add it,
                         #
-                        i = Info()
-                        i.set_plugin_name(self.get_name())
-                        i.set_name('"%s" header' % header_name)
-                        i.set_id(response.get_id())
-                        msg = '"' + header_name + \
-                            '" header for this HTTP server is: "'
-                        msg += powered_by + '".'
-                        i.set_desc(msg)
-                        i['poweredBy'] = powered_by
-                        om.out.information(i.get_desc())
+                        desc = 'The %s header for the target HTTP server is "%s".'
+                        desc = desc % (header_name, powered_by)
+                        
+                        i = Info('Powered-by header', desc, response.id,
+                                 self.get_name())
+                        i['powered_by'] = powered_by
                         i.add_to_highlight(header_name + ':')
+                        
+                        om.out.information(i.get_desc())
 
                         # Save the results in the KB so that other plugins can
                         # use this information. Before knowing that some servers
                         # may return more than one poweredby header I had:
-                        #     kb.kb.save( self , 'poweredBy' , poweredBy )
+                        #     kb.kb.save( self , 'powered_by' , powered_by )
                         # But I have seen an IIS server with PHP that returns
                         # both the ASP.NET and the PHP headers
-                        pow_by_kb = kb.kb.get('server_header', 'poweredBy')
-                        powered_by_in_kb = [j['poweredBy'] for j in pow_by_kb]
+                        pow_by_kb = kb.kb.get('server_header', 'powered_by')
+                        powered_by_in_kb = [j['powered_by'] for j in pow_by_kb]
 
                         if powered_by not in powered_by_in_kb:
-                            kb.kb.append(self, 'poweredBy', i)
-                            kb.kb.append(
-                                self, 'poweredByString', powered_by)
+                            kb.kb.append(self, 'powered_by', i)
+                            kb.kb.append(self, 'powered_by_string', powered_by)
 
     def get_long_desc(self):
         '''

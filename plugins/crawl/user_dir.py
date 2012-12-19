@@ -21,11 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.dc.headers import Headers
+from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
@@ -95,7 +95,8 @@ class user_dir(CrawlPlugin):
         '''
         Perform the request and compare.
 
-        @return: True when the user was found.
+        @return: The HTTP response id if the mutated_url is a web user directory,
+                 None otherwise.
         '''
         response = self._uri_opener.GET(mutated_url, cache=True,
                                         headers=self._headers)
@@ -107,13 +108,12 @@ class user_dir(CrawlPlugin):
 
             # Avoid duplicates
             if user not in [u['user'] for u in kb.kb.get('user_dir', 'users')]:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('User directory: ' + response.get_url())
-                i.set_id(response.id)
+                desc = 'A user directory was found at: %s'
+                desc = desc % response.get_url()
+                
+                i = Info('Web user home directory', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                i.set_desc('A user directory was found at: ' +
-                           response.get_url())
                 i['user'] = user
 
                 kb.kb.append(self, 'users', i)
@@ -121,9 +121,9 @@ class user_dir(CrawlPlugin):
                 for fr in self._create_fuzzable_requests(response):
                     self.output_queue.put(fr)
 
-            return True
-        else:
-            return False
+            return response.id
+
+        return None
 
     def _advanced_identification(self, url, ident):
         '''
@@ -219,34 +219,36 @@ class user_dir(CrawlPlugin):
             return res
 
         if ident == 'os':
-            toTest = get_users_by_OS()
+            to_test = get_users_by_OS()
         else:
-            toTest = get_users_by_app()
+            to_test = get_users_by_app()
 
-        for data_related_to_user, user in toTest:
+        for data_related_to_user, user in to_test:
             url_user_list = self._create_dirs(url, user_list=[user, ])
-            for uDir, user in url_user_list:
-                if self._do_request(uDir, user):
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
+            for user_dir, user in url_user_list:
+                
+                http_response_id = self._do_request(user_dir, user)
+                
+                if http_response_id is not None:
+
                     if ident == 'os':
-                        msg = 'The remote OS can be identified as "' + \
-                            data_related_to_user
-                        msg += '" based on the remote user "' + user + '".'
-                        i.set_desc(msg)
-                        i['rOS'] = data_related_to_user
-                        i.set_name('Identified Operating System: ' +
-                                   data_related_to_user)
-                        kb.kb.append(self, 'os', i)
+                        desc = 'The remote OS can be identified as "%s" based'\
+                               ' on the remote user "%s" information that is'\
+                               ' exposed by the web server.'
+                        desc = desc % (data_related_to_user, user)
+                        
+                        name = 'Fingerprinted operating system'
                     else:
-                        msg = 'The remote server has "' + \
-                            data_related_to_user + '" installed, w3af'
-                        msg += ' found this information based on the remote user "' + user + '".'
-                        i.set_desc(msg)
-                        i['application'] = data_related_to_user
-                        i.set_name('Identified application: ' +
-                                   data_related_to_user)
-                        kb.kb.append(self, 'applications', i)
+                        desc = 'The remote server has "%s" installed, w3af'\
+                               ' found this information based on the remote'\
+                               ' user "%s".'
+                        desc = desc % (data_related_to_user, user)
+                        
+                        name = 'Identified installed application'
+                    
+                    i = Info(name, desc, http_response_id, self.get_name())
+                    i[ident] = data_related_to_user
+                    kb.kb.append(self, ident, i)
 
     def _report_findings(self):
         '''
@@ -259,7 +261,7 @@ class user_dir(CrawlPlugin):
             for u in userList:
                 om.out.information('- ' + u)
 
-        OS_list = [u['rOS'] for u in kb.kb.get('user_dir', 'os')]
+        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
         if OS_list:
             om.out.information(
                 'The remote operating system was identifyed as:')
@@ -270,7 +272,7 @@ class user_dir(CrawlPlugin):
             msg = 'Failed to identify the remote OS based on the users available in'
             msg += ' the user_dir plugin database.'
             om.out.information(msg)
-        OS_list = [u['rOS'] for u in kb.kb.get('user_dir', 'os')]
+        OS_list = [u['remote_os'] for u in kb.kb.get('user_dir', 'os')]
 
         app_list = [u['application'] for u in kb.kb.get('user_dir',
                                                         'applications')]
@@ -324,10 +326,10 @@ class user_dir(CrawlPlugin):
         @return: A list of option objects for this plugin.
         '''
         d1 = 'Try to identify the remote operating system based on the remote users'
-        o1 = opt_factory('identifyOS', self._identify_OS, d1, 'boolean')
+        o1 = opt_factory('identify_os', self._identify_OS, d1, 'boolean')
 
         d2 = 'Try to identify applications installed remotely using the available users'
-        o2 = opt_factory('identifyApplications',
+        o2 = opt_factory('identify_apps',
                          self._identify_applications, d2, 'boolean')
 
         ol = OptionList()
@@ -343,9 +345,8 @@ class user_dir(CrawlPlugin):
         @param options_list: An OptionList with the options for the plugin.
         @return: No value is returned.
         '''
-        self._identify_OS = options_list['identifyOS'].get_value()
-        self._identify_applications = options_list[
-            'identifyApplications'].get_value()
+        self._identify_OS = options_list['identify_os'].get_value()
+        self._identify_applications = options_list['identify_apps'].get_value()
 
     def get_plugin_deps(self):
         '''

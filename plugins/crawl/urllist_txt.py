@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afRunOnce, w3afException
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.decorators import runonce
+from core.data.kb.info import Info
 
 
 class urllist_txt(CrawlPlugin):
@@ -53,13 +53,16 @@ class urllist_txt(CrawlPlugin):
         if not is_404(http_response):
             if self._is_urllist_txt(base_url, http_response.get_body()):
                 # Save it to the kb!
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('urllist.txt file')
+                desc = 'A urllist.txt file was found at: "%s", this file might'\
+                       ' expose private URLs and requires a manual review. The'\
+                       ' scanner will add all URLs listed in this files to the'\
+                       ' analysis queue.'
+                desc = desc % urllist_url
+                
+                i = Info('urllist.txt file', desc, http_response.id,
+                         self.get_name())
                 i.set_url(urllist_url)
-                i.set_id(http_response.id)
-                i.set_desc(
-                    'A urllist.txt file was found at: "%s".' % urllist_url)
+                
                 kb.kb.append(self, 'urllist.txt', i)
                 om.out.information(i.get_desc())
 
@@ -71,7 +74,7 @@ class urllist_txt(CrawlPlugin):
                                                          http_response.get_body())
 
             # Send the requests using threads:
-            self.worker_pool.map(self._get_and_parse, url_generator)
+            self.worker_pool.map(self.http_get_and_parse, url_generator)
 
     def _is_urllist_txt(self, base_url, body):
         '''
@@ -106,24 +109,6 @@ class urllist_txt(CrawlPlugin):
                     pass
                 else:
                     yield url
-
-    def _get_and_parse(self, url):
-        '''
-        GET and URL that was found in the robots.txt file, and parse it.
-
-        @param url: The URL to GET.
-        @return: None, everything is put() to self.output_queue.
-        '''
-        try:
-            http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = 'w3afException while fetching page in crawl.urllist_txt, error: "'
-            msg += str(w3) + '"'
-            om.out.debug(msg)
-        else:
-            if not is_404(http_response):
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
 
     def get_long_desc(self):
         '''

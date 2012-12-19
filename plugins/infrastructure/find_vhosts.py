@@ -148,18 +148,15 @@ class find_vhosts(InfrastructurePlugin):
                     relative_distance_lt(vhost_resp_body, nonexist_resp_body, 0.35):
                 res.append((domain, vhost_response.id))
             else:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Internal hostname in HTML link')
+                desc = 'The content of "%s" references a non existant domain:'\
+                       ' "%s". This can be a broken link, or an internal domain'\
+                       ' name.'
+                desc = desc % (fuzzable_request.get_url(), domain)
+                
+                i = Info('Internal hostname in HTML link', desc, original_response.id,
+                         self.get_name())
                 i.set_url(fuzzable_request.get_url())
-                i.set_method('GET')
-                i.set_id(original_response.id)
-                msg = 'The content of "' + \
-                    fuzzable_request.get_url() + '" references a non '
-                msg += 'existant domain: "' + domain + \
-                    '". This may be a broken link, or an'
-                msg += ' internal domain name.'
-                i.set_desc(msg)
+                
                 kb.kb.append(self, 'find_vhosts', i)
                 om.out.information(i.get_desc())
 

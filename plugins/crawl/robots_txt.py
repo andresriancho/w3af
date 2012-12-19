@@ -19,15 +19,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-
 import core.controllers.output_manager as om
+import core.data.kb.knowledge_base as kb
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
-from core.controllers.exceptions import w3afRunOnce, w3afException
+from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.core_helpers.fingerprint_404 import is_404
-
-import core.data.kb.knowledge_base as kb
 from core.data.kb.info import Info
 
 
@@ -46,7 +44,7 @@ class robots_txt(CrawlPlugin):
         Get the robots.txt file and parse it.
 
         @param fuzzable_request: A fuzzable_request instance that contains
-                                                      (among other things) the URL to test.
+                                (among other things) the URL to test.
         '''
         dirs = []
 
@@ -56,13 +54,16 @@ class robots_txt(CrawlPlugin):
 
         if not is_404(http_response):
             # Save it to the kb!
-            i = Info()
-            i.set_plugin_name(self.get_name())
-            i.set_name('robots.txt file')
+            desc = 'A robots.txt file was found at: "%s", this file might'\
+                   ' expose private URLs and requires a manual review. The'\
+                   ' scanner will add all URLs listed in this files to the'\
+                   ' analysis queue.'
+            desc =  desc % robots_url
+            
+            i = Info('robots.txt file', desc,
+                     http_response.id, self.get_name())
             i.set_url(robots_url)
-            i.set_id(http_response.id)
-            i.set_desc(
-                'A robots.txt file was found at: "' + robots_url + '".')
+            
             kb.kb.append(self, 'robots.txt', i)
             om.out.information(i.get_desc())
 
@@ -86,25 +87,7 @@ class robots_txt(CrawlPlugin):
                     else:
                         dirs.append(url)
 
-        self.worker_pool.map(self._get_and_parse, dirs)
-
-    def _get_and_parse(self, url):
-        '''
-        GET and URL that was found in the robots.txt file, and parse it.
-
-        @param url: The URL to GET.
-        @return: None, everything is put() to self.output_queue.
-        '''
-        try:
-            http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = 'w3afException while fetching page in crawl.robots_txt,'\
-                  'error: "%s".' % w3
-            om.out.debug(msg)
-        else:
-            if not is_404(http_response):
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
+        self.worker_pool.map(self.http_get_and_parse, dirs)
 
     def get_long_desc(self):
         '''

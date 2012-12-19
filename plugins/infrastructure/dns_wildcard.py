@@ -24,13 +24,13 @@ import socket
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException, w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.dc.headers import Headers
+from core.data.kb.info import Info
 
 
 class dns_wildcard(InfrastructurePlugin):
@@ -95,16 +95,15 @@ class dns_wildcard(InfrastructurePlugin):
         else:
             if relative_distance_lt(modified_response.get_body(),
                                     original_response.get_body(), 0.35):
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('Default domain')
+
+                desc = 'The contents of %s and %s differ.' 
+                desc = desc % (modified_response.get_uri(),
+                               original_response.get_uri())
+                
+                i = Info('Default virtual host', desc, modified_response.id,
+                         self.get_name())
                 i.set_url(modified_response.get_url())
-                i.set_method('GET')
-                msg = 'The contents of ' + modified_response.get_uri()
-                msg += ' differ from the contents of ' + \
-                    original_response.get_uri()
-                i.set_desc(msg)
-                i.set_id(modified_response.id)
+
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())
 
@@ -123,29 +122,25 @@ class dns_wildcard(InfrastructurePlugin):
         else:
             if relative_distance_lt(modified_response.get_body(),
                                     original_response.get_body(), 0.35):
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('No DNS wildcard')
+                desc = 'The target site has NO DNS wildcard, and the contents' \
+                       ' of "%s" differ from the contents of "%s".'
+                desc = desc % (dns_wildcard_url, original_response.get_url())
+                
+                i = Info('No DNS wildcard', desc, modified_response.id,
+                         self.get_name())
                 i.set_url(dns_wildcard_url)
-                i.set_method('GET')
-                msg = 'The target site has NO DNS wildcard, and the contents of ' \
-                      '"%s" differ from the contents of "%s".'
-                i.set_desc(
-                    msg % (dns_wildcard_url, original_response.get_url()))
-                i.set_id(modified_response.id)
+
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())
             else:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('DNS wildcard')
-                i.set_url(original_response.get_url())
-                i.set_method('GET')
-                msg = 'The target site has a DNS wildcard configuration, the' \
+                desc = 'The target site has a DNS wildcard configuration, the'\
                       ' contents of "%s" are equal to the ones of "%s".'
-                i.set_desc(
-                    msg % (dns_wildcard_url, original_response.get_url()))
-                i.set_id(modified_response.id)
+                desc = desc % (dns_wildcard_url, original_response.get_url())
+                
+                i = Info('DNS wildcard', desc, modified_response.id,
+                         self.get_name())
+                i.set_url(original_response.get_url())
+
                 kb.kb.append(self, 'dns_wildcard', i)
                 om.out.information(i.get_desc())
 

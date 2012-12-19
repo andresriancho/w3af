@@ -81,25 +81,7 @@ class sitemap_xml(CrawlPlugin):
                     else:
                         parsed_url_list.append(url)
 
-                self.worker_pool.map(self._get_and_parse, parsed_url_list)
-
-    def _get_and_parse(self, url):
-        '''
-        GET and URL that was found in the robots.txt file, and parse it.
-
-        @param url: The URL to GET.
-        @return: None, everything is put() to self.output_queue.
-        '''
-        try:
-            http_response = self._uri_opener.GET(url, cache=True)
-        except w3afException, w3:
-            msg = 'w3afException while fetching page in crawl.sitemap_xml,'\
-                  'error: "%s".' % w3
-            om.out.debug(msg)
-        else:
-            if not is_404(http_response):
-                for fr in self._create_fuzzable_requests(http_response):
-                    self.output_queue.put(fr)
+                self.worker_pool.map(self.http_get_and_parse, parsed_url_list)
 
     def get_long_desc(self):
         '''

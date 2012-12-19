@@ -23,6 +23,6 @@ back
 start
 
 assert len( kb.kb.get('sqli', 'sqli') ) == 1
-assert 'Apache' in kb.kb.get( 'hmap','serverString')
+assert 'Apache' in kb.kb.get( 'hmap','server_string')
 
 exit

@@ -27,13 +27,13 @@ from itertools import izip, repeat
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from core.data.dc.headers import Headers
+from core.data.kb.info import Info
 
 
 class content_negotiation(CrawlPlugin):
@@ -69,7 +69,7 @@ class content_negotiation(CrawlPlugin):
                                                     (among other things) the URL to test.
         '''
         if self._content_negotiation_enabled is not None \
-                and self._content_negotiation_enabled == False:
+        and self._content_negotiation_enabled == False:
             return
 
         else:
@@ -260,15 +260,14 @@ class content_negotiation(CrawlPlugin):
                 self._content_negotiation_enabled = True
 
                 # Save the result as an info in the KB, for the user to see it:
-                i = Info()
-                i.set_plugin_name(self.get_name())
-                i.set_name('HTTP Content Negotiation enabled')
+                desc = 'HTTP Content negotiation is enabled in the remote web'\
+                       ' server. This could be used to bruteforce file names'\
+                       ' and find new resources.'
+ 
+                i = Info('HTTP Content Negotiation enabled', desc, response.id,
+                         self.get_name())
                 i.set_url(response.get_url())
-                i.set_method('GET')
-                desc = 'HTTP Content negotiation is enabled in the remote web server. This'
-                desc += ' could be used to bruteforce file names and find new resources.'
-                i.set_desc(desc)
-                i.set_id(response.id)
+                
                 kb.kb.append(self, 'content_negotiation', i)
                 om.out.information(i.get_desc())
             else:

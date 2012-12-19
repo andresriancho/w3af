@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from core.controllers.plugins.plugin import Plugin
 from core.controllers.exceptions import w3afException
+from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.data.request.factory import create_fuzzable_requests
 
 
@@ -65,3 +66,21 @@ class CrawlPlugin(Plugin):
 
     def get_type(self):
         return 'crawl'
+    
+    def http_get_and_parse(self, url):
+        '''
+        Perform an HTTP GET to url, extract URLs from the HTTP response and put
+        them into the plugin's output queue.
+        
+        @return: The http response that was parsed
+        '''
+        try:
+            http_response = self._uri_opener.GET(url, cache=True)
+        except w3afException:
+            pass
+        else:
+            if not is_404(http_response):
+                for fr in self._create_fuzzable_requests(http_response):
+                    self.output_queue.put(fr)
+            
+            return http_response

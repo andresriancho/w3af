@@ -23,11 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import core.controllers.output_manager as om
 import core.data.parsers.parser_cache as parser_cache
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.data.search_engines.google import google as google
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
+from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException
@@ -142,16 +142,16 @@ class finger_google(InfrastructurePlugin):
                 if mail not in self._accounts:
                     self._accounts.append(mail)
 
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name(mail)
+                    desc = 'The mail account: "%s" was found at: "%s".'
+                    desc = desc % (mail, response.get_uri())
+
+                    i = Info('Email account', desc, response.id,
+                             self.get_name())
                     i.set_url(response.get_uri())
-                    msg = 'The mail account: "' + mail + '" was found in: "'
-                    msg += response.get_uri() + '"'
-                    i.set_desc(msg)
                     i['mail'] = mail
                     i['user'] = mail.split('@')[0]
                     i['url_list'] = [response.get_uri(), ]
+
                     kb.kb.append('emails', 'emails', i)
                     kb.kb.append(self, 'emails', i)
 
