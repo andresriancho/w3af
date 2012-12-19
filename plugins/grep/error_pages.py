@@ -20,10 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.data.esmre.multi_in import multi_in
 from core.data.esmre.multi_re import multi_re
+from core.data.kb.info import Info
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -158,23 +158,15 @@ class error_pages(GrepPlugin):
     
     def find_error_page(self, request, response):
         for msg in self._multi_in.query(response.body):
-            i = Info()
-            i.set_plugin_name(self.get_name())
-
-            # Set a nicer name for the vulnerability
-            name = 'Descriptive error page - "'
-            if len(msg) > 12:
-                name += msg[:12] + '..."'
-            else:
-                name += msg + '"'
-            i.set_name(name)
-
+            
+            desc = 'The URL: "%s" contains the descriptive error: "%s".'
+            desc = desc % (response.get_url(), msg)
+            i = Info('Descriptive error page', desc, response.id,
+                     self.get_name())
             i.set_url(response.get_url())
-            i.set_id(response.id)
-            i.set_desc('The URL: "' + response.get_url(
-            ) + '" contains the descriptive error: "' + msg + '"')
             i.add_to_highlight(msg)
-            kb.kb.append(self, 'errorPage', i)
+            
+            kb.kb.append(self, 'error_page', i)
 
             # There is no need to report more than one info for the same result,
             # the user will read the info object and analyze it even if we report it
@@ -193,19 +185,17 @@ class error_pages(GrepPlugin):
                 match_string = match.group(0)
                 if match_string not in self._already_reported_versions:
                     # Save the info obj
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Error page with information disclosure')
+                    desc = 'An error page sent this %s version: "%s".'
+                    desc = desc % (server, match_string)
+                    i = Info('Error page with information disclosure', desc,
+                             response.id, self.get_name())
                     i.set_url(response.get_url())
-                    i.set_id(response.id)
-                    i.set_name('Error page with information disclosure')
-                    i.set_desc('An error page sent this ' + server +
-                               ' version: "' + match_string + '".')
                     i.add_to_highlight(server)
                     i.add_to_highlight(match_string)
+                    
                     kb.kb.append(self, 'server', i)
-                    # Save the string
                     kb.kb.append(self, 'server', match_string)
+                    
                     self._already_reported_versions.append(match_string)
 
     def end(self):

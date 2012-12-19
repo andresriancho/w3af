@@ -42,7 +42,7 @@ class TestErrorPages(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
-        infos = self.kb.get('error_pages', 'errorPage')
+        infos = self.kb.get('error_pages', 'error_page')
         info = infos[0]
 
         self.assertEquals(1, len(infos))
