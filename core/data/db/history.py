@@ -21,6 +21,7 @@ from __future__ import with_statement
 
 import os
 import time
+import threading
 
 from shutil import rmtree
 from errno import EEXIST
@@ -74,15 +75,18 @@ class HistoryItem(object):
     code = 200
     time = 0.2
 
+    history_lock = threading.RLock()
+
     def __init__(self):
         '''Construct object.'''
-        if kb.kb.get('history', 'db') == []:
-            # This means that it is the first time that w3af creates a
-            # HistoryItem and we need to create some dirs and DBs
-            self.init_structure()
-        else:
-            self._db = kb.kb.get('history', 'db')
-            self._session_dir = kb.kb.get('history', 'session_dir')
+        with self.history_lock:
+            if kb.kb.get('history', 'db') == []:
+                # This means that it is the first time that w3af creates a
+                # HistoryItem and we need to create some dirs and DBs
+                self.init_structure()
+            else:
+                self._db = kb.kb.get('history', 'db')
+                self._session_dir = kb.kb.get('history', 'session_dir')
 
     def get_response(self):
         resp = self._response
