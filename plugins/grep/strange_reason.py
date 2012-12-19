@@ -20,8 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
+from core.data.kb.info import Info
+from core.data.constants.http_messages import W3C_REASONS
 from core.controllers.plugins.grep_plugin import GrepPlugin
 
 
@@ -31,54 +32,6 @@ class strange_reason(GrepPlugin):
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    W3C_REASONS = {
-        100: ['continue', ],
-        101: ['switching protocols', ],
-
-        200: ['ok', ],
-        201: ['created', ],
-        202: ['accepted', ],
-        203: ['non-authoritative information', ],
-        204: ['no content', ],
-        205: ['reset content', ],
-        206: ['partial content', ],
-
-        300: ['multiple choices', ],
-        301: ['moved permanently', ],
-        302: ['found', ],
-        303: ['see other', ],
-        304: ['not modified', ],
-        305: ['use proxy', ],
-        306: ['(unused)', ],
-        307: ['temporary redirect', ],
-
-        400: ['bad request', ],
-        401: ['unauthorized', 'authorization required'],
-        402: ['payment required', ],
-        403: ['forbidden', ],
-        404: ['not found', ],
-        405: ['method not allowed', 'not allowed'],
-        406: ['not acceptable', ],
-        407: ['proxy authentication required', ],
-        408: ['request timeout', ],
-        409: ['conflict', ],
-        410: ['gone', ],
-        411: ['length required', ],
-        412: ['precondition failed', ],
-        413: ['request entity too large', ],
-        414: ['request-uri too long', ],
-        415: ['unsupported media type', ],
-        416: ['requested range not satisfiable', ],
-        417: ['expectation failed', ],
-
-        500: ['internal server error', ],
-        501: ['not implemented', ],
-        502: ['bad gateway', ],
-        503: ['service unavailable', ],
-        504: ['gateway timeout', ],
-        505: ['http version not supported', ],
-    }
-
     def __init__(self):
         GrepPlugin.__init__(self)
 
@@ -91,7 +44,7 @@ class strange_reason(GrepPlugin):
         @return: None, all results are saved in the kb.
         '''
         response_code = response.get_code()
-        msg_list = self.W3C_REASONS.get(response_code, None)
+        msg_list = W3C_REASONS.get(response_code, None)
 
         if msg_list is not None:
 
@@ -101,8 +54,8 @@ class strange_reason(GrepPlugin):
                 #
                 #   I check if the kb already has a info object with this code:
                 #
-                strange_reason_infos = kb.kb.get(
-                    'strange_reason', 'strange_reason')
+                strange_reason_infos = kb.kb.get('strange_reason',
+                                                 'strange_reason')
 
                 corresponding_info = None
                 for info_obj in strange_reason_infos:
@@ -118,18 +71,15 @@ class strange_reason(GrepPlugin):
 
                 else:
                     # Create a new info object from scratch and save it to the kb:
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Strange HTTP Reason message - ' +
-                               str(response.get_msg()))
+                    desc = 'The remote Web server sent a strange HTTP reason'\
+                           'message: "%s" manual inspection is advised.'
+                    desc = desc % response.get_msg()
+                    i = Info('Strange HTTP Reason message', desc,
+                             response.id, self.get_name())
                     i.set_url(response.get_url())
-                    i.set_id(response.id)
                     i['reason'] = response.get_msg()
-                    desc = 'The remote Web server sent a strange HTTP reason message: "'
-                    desc += str(
-                        response.get_msg()) + '" manual inspection is advised.'
-                    i.set_desc(desc)
                     i.add_to_highlight(response.get_msg())
+                    
                     kb.kb.append(self, 'strange_reason', i)
 
     def end(self):
