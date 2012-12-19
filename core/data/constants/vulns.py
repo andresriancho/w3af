@@ -71,7 +71,18 @@ VULNS = {
          10046: 'Permanent cross site scripting vulnerability',
          10047: 'Cross site scripting vulnerability',
          10048: 'Cross site tracing vulnerability',
-
+         10049: 'Parameter modifies response headers',
+         10050: '',
+         10051: '',
+         10052: '',
+         10053: '',
+         10054: '',
+         10055: '',
+         10056: '',
+         10057: '',
+         10058: '',
+         10059: '',
+         
          # Crawl
          20000: 'phpinfo() file found',
          20001: 'PHP register_globals: On',
@@ -108,7 +119,7 @@ VULNS = {
          20032: 'Insecure RIA settings',
          20033: 'Cross-domain allow ACL',
          20034: 'Potential web backdoor',
-         20035: '',
+         20035: 'Captcha image detected',
          20036: '',
          20037: '',
          20038: '',

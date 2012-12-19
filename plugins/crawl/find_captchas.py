@@ -21,15 +21,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import hashlib
 
+from collections import namedtuple
+
 import core.controllers.output_manager as om
 
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 import core.data.parsers.document_parser as DocumentParser
 
 from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.exceptions import w3afException
 from core.data.db.disk_set import DiskSet
+from core.data.kb.info import Info
 
 
 class find_captchas(CrawlPlugin):
@@ -50,6 +52,32 @@ class find_captchas(CrawlPlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
+        result, captchas = self._identify_captchas(fuzzable_request)
+        
+        if result:
+            for captcha in captchas:
+                
+                desc = 'Found a CAPTCHA image at: "%s".' % captcha.img_src
+                response_ids = [response.id for response in captcha.http_responses]
+                
+                i = Info('Captcha image detected', desc, response_ids, self.get_name())
+                i.set_uri(captcha.img_src)
+    
+                kb.kb.append(self, 'CAPTCHA', i)
+                om.out.information(i.get_desc())
+
+    def _identify_captchas(self, fuzzable_request):
+        '''
+        @return: A tuple with the following information:
+                    * True indicating that the page has CAPTCHAs
+                    * A list with tuples that contain:
+                        * The CAPTCHA image source
+                        * The http responses used to verify that the image was
+                          indeed a CAPTCHA
+        '''
+        found_captcha = False
+        captchas = []
+        
         # GET the document, and fetch the images
         images_1 = self._get_images(fuzzable_request)
 
@@ -63,47 +91,45 @@ class find_captchas(CrawlPlugin):
 
             not_in_2 = []
 
-            for img_src_1, img_hash_1 in images_1:
-                for _, img_hash_2 in images_2:
+            for img_src_1, img_hash_1, http_response_1 in images_1:
+                for _, img_hash_2, http_response_2 in images_2:
                     if img_hash_1 == img_hash_2:
                         # The image is in both lists, can't be a CAPTCHA
                         break
                 else:
-                    not_in_2.append((img_src_1, img_hash_1))
+                    not_in_2.append((img_src_1, img_hash_1, [http_response_1, http_response_2]))
 
             # Results
             #
             # TODO: This allows for more than one CAPTCHA in the same page. Does
             #       that make sense? When that's found, should I simply declare
             #       defeat and don't report anything?
-            for img_src, _ in not_in_2:
+            for img_src, _, http_responses in not_in_2:
 
-                if img_src.uri2url() not in self._captchas_found:
-                    self._captchas_found.add(img_src.uri2url())
-
-                    i = Info()
-                    i.set_plugin_name(self.get_name())
-                    i.set_name('Captcha image detected')
-                    i.set_uri(img_src)
-                    i.set_method('GET')
-                    i.set_desc('Found a CAPTCHA image at: "%s".' % img_src)
-                    kb.kb.append(self, 'CAPTCHA', i)
-                    om.out.information(i.get_desc())
-
-        return []
+                CaptchaInfo = namedtuple('CaptchaInfo', ['img_src', 'http_responses'])
+                img_src = img_src.uri2url()
+                
+                if img_src not in self._captchas_found:
+                    self._captchas_found.add(img_src)
+                    found_captcha = True
+                    
+                    captchas.append(CaptchaInfo(img_src, http_responses))
+                    
+        return found_captcha, captchas
+        
 
     def _get_images(self, fuzzable_request):
         '''
         Get all img tags and retrieve the src.
 
         @param fuzzable_request: The request to modify
-        @return: A list with tuples containing (img_src, image_hash)
+        @return: A list with tuples containing (img_src, image_hash, http_response)
         '''
         res = []
 
         try:
-            response = self._uri_opener.GET(
-                fuzzable_request.get_uri(), cache=False)
+            response = self._uri_opener.GET(fuzzable_request.get_uri(),
+                                            cache=False)
         except:
             om.out.debug('Failed to retrieve the page for finding captchas.')
         else:
@@ -113,19 +139,20 @@ class find_captchas(CrawlPlugin):
             try:
                 document_parser = DocumentParser.DocumentParser(response)
             except w3afException:
-                pass
-            else:
-                image_path_list = document_parser.get_references_of_tag('img')
+                return []
+            
+            image_path_list = document_parser.get_references_of_tag('img')
 
-                GET = self._uri_opener.GET
-                result_iter = self.worker_pool.imap_unordered(
-                    GET, image_path_list)
-                for image_response in result_iter:
-                    if image_response.is_image():
-                        img_src = image_response.get_uri()
-                        img_hash = hashlib.sha1(
-                            image_response.get_body()).hexdigest()
-                        res.append((img_src, img_hash))
+            GET = self._uri_opener.GET
+            sha1 = hashlib.sha1
+            
+            result_iter = self.worker_pool.imap_unordered(GET, image_path_list)
+            
+            for image_response in result_iter:
+                if image_response.is_image():
+                    img_src = image_response.get_uri()
+                    img_hash = sha1(image_response.get_body()).hexdigest()
+                    res.append((img_src, img_hash, response))
 
         return res
 
