@@ -344,7 +344,7 @@ class XPathReader(shell):
         '''
         exploit_dc = self.get_dc()
         function_ptr = getattr(self._uri_opener, self.get_method())
-        orig_value = self.get_mutant().get_mutant().get_original_value()
+        orig_value = self.get_mutant().get_original_value()
         skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
         
         findlen = xpath_fmt % (orig_value, self.STR_DELIM, XML_FILTER,
@@ -410,7 +410,7 @@ class XPathReader(shell):
         
         for c in range(32, 127):
 
-            orig_value = self.get_mutant().get_mutant().get_original_value()
+            orig_value = self.get_mutant().get_original_value()
             skip_len = len(orig_value) + len(self.STR_DELIM) + len(' ')
 
             hexcar = chr(c)
