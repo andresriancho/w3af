@@ -189,7 +189,7 @@ class rfi(AttackPlugin):
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        exploit_success = self._verify_Vuln_obj)
+        exploit_success = self._verify_vuln(vuln_obj)
         if exploit_success == SUCCESS_COMPLETE:
 
             # Create the shell object

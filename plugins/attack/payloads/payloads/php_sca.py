@@ -61,7 +61,7 @@ class php_sca(Payload):
                 vuln_sev = vulndata['severity']
                 desc = name = vulndata['name']
                 
-                v = Vuln(name, desc, vuln_sev, 1, self.get_name())
+                v = Vuln(name, desc, vuln_sev, 1, 'PHP Static Code Analyzer')
                 v.set_uri(url)
                 v.set_var(f.vulnsources[0])
 

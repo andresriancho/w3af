@@ -42,11 +42,11 @@ import Halberd.clues.analysis as halberd_analysis
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Infokb
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
+from core.data.kb.info import Info
 
 
 class halberd(InfrastructurePlugin):
@@ -122,8 +122,8 @@ class halberd(InfrastructurePlugin):
         @return: None.
         """
         if len(scantask.analyzed) == 1:
-            msg = 'The site: "%s" doesn\'t seem to have a HTTP load balancer ' \
-                  'configuration.'
+            msg = '"%s" doesn\'t seem to have an HTTP load balancer'\
+                  ' configuration.'
             om.out.information(msg % scantask.url)
         else:
             clues = scantask.analyzed
@@ -133,45 +133,38 @@ class halberd(InfrastructurePlugin):
             # recomputation in case the clues needed a re-analysis.
             diff_fields = halberd_analysis.diff_fields(clues)
 
-            om.out.information('=' * 70)
-            om.out.information('%s' % scantask.url, new_line=False)
-            if scantask.addr:
-                om.out.information(' (%s)' % scantask.addr, new_line=False)
-            om.out.information(': %d real server(s)' % len(clues))
-            om.out.information('=' * 70)
+            desc = 'Target URL for HTTP load balancer detection: %s\n'\
+                   'Number of real server(s) detected: %d\n'\
+                   'Server information:\n    %s'
+            real_servers = '    %s\n' % scantask.addr
+            desc = desc % (scantask.url, len(clues), real_servers)
+            
+            om.out.information(desc)
 
             for num, clue in enumerate(clues):
                 assert hits > 0
-                info = clue.info
+                clue_info = clue.info
 
                 om.out.information('')
                 om.out.information(
-                    'server %d: %s' % (num + 1, info['server'].lstrip()))
+                    'server %d: %s' % (num + 1, clue_info['server'].lstrip()))
                 om.out.information('-' * 70 + '\n')
-
-                # This is added so other w3af plugins can read the halberd results.
-                # If needed by other plugins, I could fill up the info object with more
-                # data about the different headers, time, etc...
-                i = infokb.info()
-                i['server'] = info['server'].lstrip()
-                i['serverNumber'] = num + 1
-                kb.kb.append(self, 'halberd', i)
 
                 om.out.information('difference: %d seconds' % clue.diff)
 
                 om.out.information('successful requests: %d hits (%.2f%%)'
                                    % (clue.get_count(), clue.get_count() * 100 / float(hits)))
 
-                if info['contloc']:
+                if clue_info['contloc']:
                     om.out.information(
-                        'content-location: %s' % info['contloc'].lstrip())
+                        'content-location: %s' % clue_info['contloc'].lstrip())
 
-                if len(info['cookies']) > 0:
+                if len(clue_info['cookies']) > 0:
                     om.out.information('cookie(s):')
-                for cookie in info['cookies']:
+                for cookie in clue_info['cookies']:
                     om.out.information('  %s' % cookie.lstrip())
 
-                om.out.information('header fingerprint: %s' % info['digest'])
+                om.out.information('header fingerprint: %s' % clue_info['digest'])
 
                 different = [(field, value) for field, value in clue.headers
                              if field in diff_fields]
@@ -189,6 +182,16 @@ class halberd(InfrastructurePlugin):
                     om.out.information(tmp)
 
             om.out.information('\n')
+            
+            # This is added so other w3af plugins can read the halberd results.
+            # If needed by other plugins, I could fill up the info object with more
+            # data about the different headers, time, etc...
+            i = Info('HTTP load balancer detected', desc, 1, self.get_name())
+            i['server'] = clue_info['server'].lstrip()
+            i['server_number'] = len(clues)
+            
+            kb.kb.append(self, 'halberd', i)
+            
 
     def get_long_desc(self):
         '''

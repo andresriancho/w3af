@@ -67,7 +67,7 @@ class file_upload(AttackPlugin):
         @return: True is a shell object based on the param vuln was created ok.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_Vuln_obj):
+        if self._verify_vuln(vuln_obj):
 
             # Set shell parameters
             shell_obj = FileUploadShell(vuln_obj, self._uri_opener,

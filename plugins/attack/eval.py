@@ -66,7 +66,7 @@ class eval(AttackPlugin):
         @return: A shell object based on the vuln that is passed as parameter.
         '''
         # Check if we really can execute commands on the remote server
-        if self._verify_Vuln_obj):
+        if self._verify_vuln(vuln_obj):
             # Create the shell object
             shell_obj = EvalShell(vuln_obj, self._uri_opener, self.worker_pool,
                                   self._shell_code)

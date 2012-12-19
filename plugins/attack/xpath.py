@@ -93,7 +93,7 @@ class xpath(AttackPlugin):
         #
         #    Check if the vulnerability can be exploited using our techniques
         #
-        vuln_verified, is_error_resp = self._verify_Vuln)
+        vuln_verified, is_error_resp = self._verify_vuln(vuln)
         if vuln_verified:
             # Create the shell object
             shell_obj = XPathReader(vuln, self._uri_opener, self.worker_pool,

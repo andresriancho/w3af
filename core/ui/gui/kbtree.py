@@ -27,8 +27,8 @@ import core.data.kb
 from core.ui.gui import helpers, exploittab
 
 TYPES_OBJ = {
-    core.data.kb.Vuln: "vuln",
-    core.data.kb.Info: "info",
+    core.data.kb.vuln: "vuln",
+    core.data.kb.info: "info",
 }
 
 

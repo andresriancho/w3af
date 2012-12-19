@@ -178,7 +178,8 @@ VULNS = {
          30052: 'Browser plugin content',
          30053: 'Strange HTTP Reason message',
          30054: 'Hash string in HTML content',
-         30055: 'Blank http response body',  
+         30055: 'Blank http response body',
+         30056: 'Content feed resource',
          
          # Infrastructure
          40001: 'Potential XSS vulnerability',
@@ -211,6 +212,7 @@ VULNS = {
          40029: 'DAV methods enabled',
          40030: 'Active filter detected',
          40031: 'Reverse proxy identified',
+         40032: 'HTTP load balancer detected',
          
          # Bruteforce
          50000: 'Guessable credentials',
