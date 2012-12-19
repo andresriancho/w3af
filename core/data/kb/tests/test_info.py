@@ -28,7 +28,8 @@ from core.data.parsers.url import URL
 
 class MockInfo(Info):
     def __init__(self):
-        super(MockInfo, self).__init__('TestCase', 'desc', 1, 'plugin_name')
+        desc = 'desc ' * 10
+        super(MockInfo, self).__init__('TestCase', desc, 1, 'plugin_name')
 
 @attr('smoke')
 class TestInfo(unittest.TestCase):
@@ -83,3 +84,11 @@ class TestInfo(unittest.TestCase):
         self.assertEqual(i.get_uri(), uri)
         self.assertEqual(i.get_url(), url)
     
+    def test_set_desc(self):
+        i = MockInfo()
+        
+        self.assertRaises(ValueError, i.set_desc, 'abc')
+        
+        desc = 'abc ' * 30
+        i.set_desc(desc)
+        self.assertTrue(i.get_desc().startswith(desc))
