@@ -122,6 +122,8 @@ VULNS = {
          20045: 'Invalid RIA settings file',
          20046: 'Identified WordPress user',
          20047: 'WordPress path disclosure',
+         20048: 'PHP register_globals: Off',
+         20049: 'PHP enable_dl: Off',
          
          # Grep
          30001: 'US Social Security Number disclosure',

@@ -43,18 +43,15 @@ class TestPHPInfo(PluginTest):
         infos = self.kb.get('phpinfo', 'phpinfo')
         self.assertTrue(len(infos) > 5, infos)
 
-        EXPECTED_INFOS = (
-            'register_globals: Off',
-            'expose_php: On',
-            'session.hash_function:md5',
-        )
+        EXPECTED_INFOS = set([
+            'PHP register_globals: Off',
+            'PHP expose_php: On',
+            'PHP session.hash_function:md5',
+            'phpinfo() file found'])
 
         info_urls = [i.get_url().url_string for i in infos]
-        self.assertTrue(self.base_url + 'phpinfo.php' in info_urls)
-
-        for e_info_name in EXPECTED_INFOS:
-            for info in infos:
-                if info.get_name() == e_info_name:
-                    break
-            else:
-                self.assertTrue(False, e_info_name)
+        self.assertIn(self.base_url + 'phpinfo.php', info_urls)
+        
+        found_infos = set([i.get_name() for i in infos])
+        
+        self.assertTrue(found_infos.issuperset(EXPECTED_INFOS))

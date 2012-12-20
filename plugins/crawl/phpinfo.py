@@ -169,7 +169,7 @@ class phpinfo(CrawlPlugin):
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             else:
                 rg_flag = 'info'
-                rg_name = 'register_globals: Off'
+                rg_name = 'PHP register_globals: Off'
                 rg_desc = 'The phpinfo()::register_globals is off.'
 
         ### [/register_globals] ###
@@ -404,7 +404,7 @@ class phpinfo(CrawlPlugin):
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             else:
                 ed_flag = 'info'
-                ed_name = 'enable_dl: Off'
+                ed_name = 'PHP enable_dl: Off'
                 ed_desc = 'The phpinfo()::enable_dl is off.'
         ### [/enable_dl] ###
 
