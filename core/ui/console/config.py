@@ -84,7 +84,7 @@ class configMenu(menu):
             raise w3afException('Unknown option: ' + params[0])
         else:
             name = params[0]
-            value = ''.join(params[1:])
+            value = ' '.join(params[1:])
 
             self._options[name].set_value(value)
             self._plainOptions[name] = value
