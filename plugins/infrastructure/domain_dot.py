@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afException
 from core.controllers.misc.levenshtein import relative_distance_lt
 from core.data.dc.headers import Headers
+from core.data.kb.info import Info
 
 
 class domain_dot(InfrastructurePlugin):
@@ -83,20 +83,18 @@ class domain_dot(InfrastructurePlugin):
                          the response to analyze.
         '''
         if relative_distance_lt(original_resp.get_body(), resp.get_body(), 0.7):
-            i = Info(resp)
-            i.set_plugin_name(self.get_name())
-            i.set_id([original_resp.id, resp.id])
-            i.set_name('Responses differ')
-            msg = '[Manual verification required] The response body for a ' \
+            response_ids = [original_resp.id, resp.id]
+            desc = '[Manual verification required] The response body for a ' \
                   'request with a trailing dot in the domain, and the response ' \
                   'body without a trailing dot in the domain differ. This could ' \
                   'indicate a misconfiguration in the virtual host settings. In ' \
                   'some cases, this misconfiguration permits the attacker to ' \
                   'read the source code of the web application.'
-            i.set_desc(msg)
-
-            om.out.information(msg)
-
+            
+            i = Info('Potential virtual host misconfiguration', desc,
+                     response_ids, self.get_name())
+            
+            om.out.information(desc)
             kb.kb.append(self, 'domain_dot', i)
 
     def get_long_desc(self):

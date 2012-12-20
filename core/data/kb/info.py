@@ -131,9 +131,11 @@ class Info(dict):
         return INFORMATION
 
     def set_name(self, name):
+        '''
         if not is_valid_name(name):
             msg = 'Invalid vulnerability name "%s" specified.'
             raise ValueError(msg % name)
+        '''
         self._name = name
 
     def get_name(self):

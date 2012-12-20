@@ -214,6 +214,7 @@ VULNS = {
          40031: 'Reverse proxy identified',
          40032: 'HTTP load balancer detected',
          40033: 'Information disclosure via .NET errors',
+         40034: 'Potential virtual host misconfiguration',
          
          # Bruteforce
          50000: 'Guessable credentials',
