@@ -78,7 +78,7 @@ class TestCrawlExceptions(PluginTest):
         self.assertEqual(len(caught_exceptions), 1)
         
         edata = caught_exceptions[0]
-        self.assertEqual(edata.get_where(), 'crawl.failing_spider:366')
+        self.assertEqual(edata.get_where(), 'crawl.failing_spider:44')
         
         # I tried to make some more advanced unittests here, but it was
         # very difficult to get a result that was NOT random from failing_spider
