@@ -8,7 +8,6 @@ use_time_delay = True
 use_echo = True
 
 [grep.motw]
-withoutMOTW = False
 
 [grep.credit_cards]
 
@@ -138,8 +137,8 @@ diffRatio = 0.35
 genFpF = False
 
 [crawl.user_dir]
-identifyOS = True
-identifyApplications = True
+identify_os = True
+identify_apps = True
 
 [audit.htaccess_methods]
 
