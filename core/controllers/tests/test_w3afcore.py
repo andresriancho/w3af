@@ -169,6 +169,24 @@ class TestW3afCorePause(unittest.TestCase):
         alive_threads = threading.enumerate()
         self.assertEqual(len(alive_threads), 0, nice_repr(alive_threads))
 
+class TestExceptionHandler(TestW3afCorePause):
+    '''
+    Inherit from TestW3afCorePause to get the nice setUp().
+    '''
+    def test_same_id(self):
+        '''
+        Verify that the exception handler is the same before and after the scan
+        '''
+        before_id_ehandler = id(self.w3afcore.exception_handler)
+        
+        self.w3afcore.start()
+        
+        after_id_ehandler = id(self.w3afcore.exception_handler)
+        
+        self.assertEqual(before_id_ehandler, after_id_ehandler)
+        
+
+
 def nice_repr(alive_threads):
     repr_alive = [repr(x) for x in alive_threads]
     repr_alive.sort()

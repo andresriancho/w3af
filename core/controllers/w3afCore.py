@@ -70,6 +70,12 @@ class w3afCore(object):
         '''
         self._init_core_internals()
         
+        # We want to have only one exception handler instance during the whole
+        # w3af process. The data captured by it will be cleared before starting
+        # each scan, but we want to keep the same instance after a scan because
+        # we'll extract info from it.
+        self.exception_handler = ExceptionHandler()
+        
     def _init_core_internals(self):
         '''
         Create directories, threads and consumers required to perform a w3af
@@ -104,9 +110,6 @@ class w3afCore(object):
         fp_404_db = fingerprint_404_singleton()
         fp_404_db.set_url_opener(self.uri_opener)
         fp_404_db.set_worker_pool(self.worker_pool)
-
-        # And one of the most important aspects of our core, the exception handler
-        self.exception_handler = ExceptionHandler()
 
         # FIXME: In the future, when the output_manager is not an awful singleton
         # anymore, this line should be removed and the output_manager object
