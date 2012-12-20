@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.kb.read_shell import ReadShell
+from core.data.kb.tests.test_vuln import MockVuln
 
 
 class TestReadShell(unittest.TestCase):
     
     def test_help_format(self):
-        shell = ReadShell(None, None, None)
+        shell = ReadShell(MockVuln(), None, None)
         _help = shell.help(None)
         
         self.assertFalse(_help.startswith(' '))
@@ -37,7 +38,7 @@ class TestReadShell(unittest.TestCase):
         self.assertNotIn('     help', _help)
     
     def test_help_contents(self):
-        shell = ReadShell(None, None, None)
+        shell = ReadShell(MockVuln(), None, None)
         _help = shell.help(None)
         
         self.assertNotIn('execute', _help)
@@ -45,7 +46,7 @@ class TestReadShell(unittest.TestCase):
         self.assertIn('read', _help)
 
     def test_help_contents_specific(self):
-        shell = ReadShell(None, None, None)
+        shell = ReadShell(MockVuln(), None, None)
         _help = shell.help('read')
         
         self.assertIn('read', _help)

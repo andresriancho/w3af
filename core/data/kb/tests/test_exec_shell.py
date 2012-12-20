@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 
 from core.data.kb.exec_shell import ExecShell
+from core.data.kb.tests.test_vuln import MockVuln
 
 
 class TestExecShell(unittest.TestCase):
     
     def test_help_format(self):
-        shell = ExecShell(None, None, None)
+        shell = ExecShell(MockVuln(), None, None)
         _help = shell.help(None)
         
         self.assertFalse(_help.startswith(' '))
@@ -37,7 +38,7 @@ class TestExecShell(unittest.TestCase):
         self.assertNotIn('     help', _help)
     
     def test_help_contents(self):
-        shell = ExecShell(None, None, None)
+        shell = ExecShell(MockVuln(), None, None)
         _help = shell.help(None)
         
         self.assertIn('execute', _help)

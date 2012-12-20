@@ -55,8 +55,8 @@ class DataContainer(OrderedDict):
                     raise TypeError('key, val = item')
 
                 if key in self:
-                    msg = 'Not supported init_val, the way of using repeated parameter' \
-                          ' names is [(u"b", [u"2", u"3"])]'
+                    msg = 'Not supported init_val, the way of using repeated' \
+                          ' parameter names is [(u"b", [u"2", u"3"])]'
                     TypeError(msg)
 
                 self[key] = val

@@ -25,7 +25,7 @@ import unittest
 
 from core.data.constants.vulns import VULNS
 
-
+       
 class TestVulnsConstants(unittest.TestCase):
     
     LOCATION = os.path.join('core', 'data', 'constants', 'vulns.py')
@@ -50,5 +50,5 @@ class TestVulnsConstants(unittest.TestCase):
     
     def test_no_empty(self):
         items = VULNS.items()
-        empty_values = [(key, val) for (key, val) in items if not val]
+        empty_values = set([(key, val) for (key, val) in items if not val])
         self.assertEqual(set([]), empty_values)

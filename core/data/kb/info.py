@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
-from core.data.constants.vulns import is_valid_name
 from core.data.constants.severity import INFORMATION
 from core.data.parsers.url import URL
 from core.data.fuzzer.mutants.mutant import Mutant
@@ -168,6 +167,9 @@ class Info(dict):
 
     def get_method(self):
         return self._method
+
+    # Just for testing
+    LONG_DESC = 'Just for testing ' * 10
 
     def set_desc(self, desc):
         if not isinstance(desc, basestring):

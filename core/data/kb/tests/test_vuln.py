@@ -32,8 +32,8 @@ from core.data.fuzzer.mutants.mutant import Mutant
 
 class MockVuln(Vuln):
     def __init__(self):
-        desc = 'desc ' * 10
-        super(MockVuln, self).__init__('TestCase', desc, 'High', 1, 'plugin_name')
+        super(MockVuln, self).__init__('TestCase', Vuln.LONG_DESC, 'High',
+                                       1, 'plugin_name')
 
 @attr('smoke')
 class TestVuln(unittest.TestCase):

@@ -32,8 +32,7 @@ from core.data.fuzzer.mutants.mutant import Mutant
 
 class MockInfo(Info):
     def __init__(self):
-        desc = 'desc ' * 10
-        super(MockInfo, self).__init__('TestCase', desc, 1, 'plugin_name')
+        super(MockInfo, self).__init__('TestCase', Info.LONG_DESC, 1, 'plugin_name')
 
 @attr('smoke')
 class TestInfo(unittest.TestCase):

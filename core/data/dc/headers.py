@@ -31,21 +31,24 @@ class Headers(DataContainer):
     '''
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
+        print cleaned_vals, init_val
         super(Headers, self).__init__(cleaned_vals, encoding)
     
     def clean_values(self, init_val):        
         if isinstance(init_val, DataContainer)\
         or isinstance(init_val, dict):
             return init_val
-        else:
-            cleaned_vals = []
 
-            # Cleanup whatever came from the wire into a unicode string
-            for key, value in init_val:
-                # I can do this key, value thing because the headers do NOT
-                # have multiple header values like query strings and post-data
-                cleaned_vals.append((smart_unicode(key),
-                                    smart_unicode(value)))
+        cleaned_vals = []
+
+        # Cleanup whatever came from the wire into a unicode string
+        for key, value in init_val:
+            # I can do this key, value thing because the headers do NOT
+            # have multiple header values like query strings and post-data
+            if isinstance(value, basestring):
+                value = smart_unicode(value)
+            
+            cleaned_vals.append( (smart_unicode(key), value) )
         
         return cleaned_vals
     
