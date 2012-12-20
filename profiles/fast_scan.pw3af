@@ -33,7 +33,6 @@ msf_location = /opt/metasploit3/bin/
 verbose = False
 
 [grep.motw]
-withoutMOTW = False
 
 [grep.objects]
 
