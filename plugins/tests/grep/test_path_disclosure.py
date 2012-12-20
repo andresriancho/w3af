@@ -45,14 +45,14 @@ class test_path_disclosure(unittest.TestCase):
     def test_path_disclosure(self):
 
         res = HTTPResponse(
-            200, 'header body footer', self.header, self.url, self.url)
+            200, 'header body footer', self.header, self.url, self.url, _id=1)
         self.plugin.grep(self.request, res)
         infos = kb.kb.get('path_disclosure', 'path_disclosure')
         self.assertEquals(len(infos), 0)
 
     def test_path_disclosure_positive(self):
         res = HTTPResponse(200, 'header /etc/passwd footer',
-                           self.header, self.url, self.url)
+                           self.header, self.url, self.url, _id=1)
         self.plugin.grep(self.request, res)
 
         infos = kb.kb.get('path_disclosure', 'path_disclosure')

@@ -45,7 +45,7 @@ class test_oracle(unittest.TestCase):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
@@ -54,7 +54,7 @@ class test_oracle(unittest.TestCase):
         body = 'ABC ' * 10000
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
@@ -65,7 +65,7 @@ class test_oracle(unittest.TestCase):
         body += '</br> ' * 50
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 1)

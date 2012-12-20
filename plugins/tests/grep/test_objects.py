@@ -49,7 +49,7 @@ class test_objects(unittest.TestCase):
         footer'''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -67,7 +67,7 @@ class test_objects(unittest.TestCase):
         footer'''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -79,7 +79,7 @@ class test_objects(unittest.TestCase):
         body = '<an object="1"> <or applet=2> <apple>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 

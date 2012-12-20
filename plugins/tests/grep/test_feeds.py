@@ -43,7 +43,7 @@ class test_feeds(unittest.TestCase):
         body = 'header <rss version="3"> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -56,7 +56,7 @@ class test_feeds(unittest.TestCase):
         body = 'header <feed foo="4" version="3"> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -69,7 +69,7 @@ class test_feeds(unittest.TestCase):
         body = 'header <opml version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -82,7 +82,7 @@ class test_feeds(unittest.TestCase):
         body = 'header <nofeed version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -92,7 +92,7 @@ class test_feeds(unittest.TestCase):
         body = 'header <rss foo="3"> footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 

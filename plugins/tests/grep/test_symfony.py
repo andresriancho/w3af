@@ -55,7 +55,7 @@ class test_symfony(unittest.TestCase):
         self.url = URL('http://www.w3af.com/')
         self.request = FuzzableRequest(self.url)
         self.http_resp = partial(
-            HTTPResponse, code=200, geturl=self.url, original_url=self.url)
+            HTTPResponse, code=200, geturl=self.url, original_url=self.url, _id=1)
 
     def tearDown(self):
         self.plugin.end()

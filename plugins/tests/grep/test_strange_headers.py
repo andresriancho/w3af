@@ -47,7 +47,7 @@ class test_strange_headers(unittest.TestCase):
                            ('hello-world', 'yes!')])
         request = FuzzableRequest(url, method='GET')
 
-        resp_positive = HTTPResponse(200, body, headers, url, url)
+        resp_positive = HTTPResponse(200, body, headers, url, url, _id=1)
         self.plugin.grep(request, resp_positive)
 
         infos = kb.kb.get('strange_headers', 'strange_headers')
@@ -64,7 +64,7 @@ class test_strange_headers(unittest.TestCase):
                            ('x-pad', 'yes!')])
         request = FuzzableRequest(url, method='GET')
 
-        resp_positive = HTTPResponse(200, body, headers, url, url)
+        resp_positive = HTTPResponse(200, body, headers, url, url, _id=1)
         self.plugin.grep(request, resp_positive)
 
         infos = kb.kb.get('strange_headers', 'strange_headers')

@@ -48,7 +48,7 @@ class test_ajax(unittest.TestCase):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 0)
@@ -57,7 +57,7 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </script></head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
@@ -66,7 +66,7 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true); </head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
@@ -75,7 +75,7 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
@@ -84,7 +84,7 @@ class test_ajax(unittest.TestCase):
         body = '<html><head><script> ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script></head><html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)
@@ -93,7 +93,7 @@ class test_ajax(unittest.TestCase):
         body = '<script> ... xhr = new XMLHttpRequest(); ... xhr = new ActiveXObject("Microsoft.XMLHTTP"); ... </script>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('ajax', 'ajax')), 1)

@@ -43,7 +43,7 @@ class test_analyze_cookies(unittest.TestCase):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 0)
@@ -55,7 +55,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers(
             {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
@@ -67,13 +67,13 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers(
             {'content-type': 'text/html', 'Set-Cookie': 'abc=def'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
         headers = Headers(
             {'content-type': 'text/html', 'Set-Cookie': '123=456'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -86,19 +86,19 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': '123=456'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=456'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
 
@@ -111,7 +111,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def; secure; HttpOnly'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
@@ -123,7 +123,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers(
             {'content-type': 'text/html', 'Set-Cookie': ''}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
@@ -135,7 +135,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'PHPSESSID=d98238ab39de038'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -153,7 +153,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def; secure;'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -171,7 +171,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -189,7 +189,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('https://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def; secure; httponly'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -202,7 +202,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('https://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def;Secure;HttpOnly'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -215,7 +215,7 @@ class test_analyze_cookies(unittest.TestCase):
         url = URL('https://www.w3af.com/')
         headers = Headers({'content-type': 'text/html',
                            'Set-Cookie': 'abc=def;HttpOnly;  secure;'}.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)
@@ -229,7 +229,7 @@ class test_analyze_cookies(unittest.TestCase):
         headers = {'content-type': 'text/html',
                    'Set-Cookie': 'name2=value2; Expires=Wed, 09-Jun-2021 10:18:14 GMT;Secure;HttpOnly'}
         headers = Headers(headers.items())
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
 
         self.plugin.grep(request, response)

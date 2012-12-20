@@ -43,7 +43,7 @@ class test_credit_cards(unittest.TestCase):
         body = '378282246310005'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
@@ -52,7 +52,7 @@ class test_credit_cards(unittest.TestCase):
         body = '3566 0020 2036 0505'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
@@ -61,7 +61,7 @@ class test_credit_cards(unittest.TestCase):
         body = '<a> 378282246310005</a>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 1)
@@ -80,7 +80,7 @@ class test_credit_cards(unittest.TestCase):
             body = '<A href="#123">%s</A>' % card
             url = URL('http://www.w3af.com/')
             headers = Headers([('content-type', 'text/html')])
-            response = HTTPResponse(200, body, headers, url, url)
+            response = HTTPResponse(200, body, headers, url, url, _id=1)
             request = FuzzableRequest(url, method='GET')
             self.plugin.grep(request, response)
             self.assertEquals(
@@ -91,7 +91,7 @@ class test_credit_cards(unittest.TestCase):
         body = '3566 0020 2036 0705'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('credit_cards', 'credit_cards')), 0)

@@ -47,15 +47,15 @@ class test_strange_http_codes(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         request = FuzzableRequest(url, method='GET')
 
-        resp_200 = HTTPResponse(200, body, headers, url, url)
-        resp_404 = HTTPResponse(404, body, headers, url, url)
+        resp_200 = HTTPResponse(200, body, headers, url, url, _id=1)
+        resp_404 = HTTPResponse(404, body, headers, url, url, _id=1)
         KNOWN_GOOD = [resp_200, resp_404]
 
-        resp_999 = HTTPResponse(999, body, headers, url, url)
-        resp_123 = HTTPResponse(123, body, headers, url, url)
-        resp_567 = HTTPResponse(567, body, headers, url, url)
-        resp_666 = HTTPResponse(666, body, headers, url, url)
-        resp_777 = HTTPResponse(777, body, headers, url, url)
+        resp_999 = HTTPResponse(999, body, headers, url, url, _id=1)
+        resp_123 = HTTPResponse(123, body, headers, url, url, _id=1)
+        resp_567 = HTTPResponse(567, body, headers, url, url, _id=1)
+        resp_666 = HTTPResponse(666, body, headers, url, url, _id=1)
+        resp_777 = HTTPResponse(777, body, headers, url, url, _id=1)
         KNOWN_BAD = [resp_999, resp_123, resp_567, resp_666, resp_777]
 
         for resp in KNOWN_GOOD:

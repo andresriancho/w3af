@@ -43,7 +43,7 @@ class test_xss_protection_header(unittest.TestCase):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(
@@ -54,7 +54,7 @@ class test_xss_protection_header(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '1')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(
@@ -65,7 +65,7 @@ class test_xss_protection_header(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', '0')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(
@@ -76,7 +76,7 @@ class test_xss_protection_header(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('X-XSS-Protection', 'abc' * 45)])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(

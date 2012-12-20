@@ -45,7 +45,7 @@ class test_private_ip(unittest.TestCase):
         body = ''
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 0)
@@ -54,7 +54,7 @@ class test_private_ip(unittest.TestCase):
         body = '<html><head>192.168.1.1</head></html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
@@ -63,7 +63,7 @@ class test_private_ip(unittest.TestCase):
         body = '<html><head>192.168.1.1</html>'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
@@ -72,7 +72,7 @@ class test_private_ip(unittest.TestCase):
         body = 'header 10.2.34.2 footer'
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 1)
@@ -82,7 +82,7 @@ class test_private_ip(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-via', '10.3.4.5')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'header')), 1)
@@ -92,7 +92,7 @@ class test_private_ip(unittest.TestCase):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html'),
                            ('x-via', '10.256.3.10.1.2.3')])
-        response = HTTPResponse(200, body, headers, url, url)
+        response = HTTPResponse(200, body, headers, url, url, _id=1)
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('private_ip', 'HTML')), 0)
