@@ -48,6 +48,8 @@ class audit(BaseConsumer):
                 plugin.end()
             except w3afException, e:
                 om.out.error(str(e))
+            except Exception, e:
+                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)                
 
     def _consume(self, fuzzable_request):
         for plugin in self._consumer_plugins:

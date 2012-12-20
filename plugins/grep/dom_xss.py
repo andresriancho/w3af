@@ -77,8 +77,9 @@ class dom_xss(GrepPlugin):
             
             v = Vuln('DOM Cross site scripting', desc,
                      severity.LOW, response.id, self.get_name())
-
+            v.set_url(response.get_url())
             v.add_to_highlight(vuln_code)
+            
             kb.kb.append(self, 'dom_xss', v)
 
     def _smart_grep(self, response):

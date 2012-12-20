@@ -44,7 +44,4 @@ class TestDirectoryIndexing(PluginTest):
         v = vulns[0]
         self.assertEquals(self.dir_indexing_url, str(v.get_url()))
         self.assertEquals(severity.LOW, v.get_severity())
-        self.assertEquals(
-            'Directory indexing - /w3af/grep/directory_indexing/',
-            v.get_name()
-        )
+        self.assertEquals('Directory indexing',v.get_name())

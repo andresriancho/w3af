@@ -74,7 +74,7 @@ class dot_net_event_validation(GrepPlugin):
             # I have __viewstate!, verify if event validation is enabled
             if not self._eventvalidation.search(response.get_body()):
                 desc = 'The URL: "%s" has .NET Event Validation disabled.'\
-                       ' This programming/configuration error should be '\
+                       ' This programming/configuration error should be'\
                        ' manually verified.'
                 desc = desc % response.get_url()
                 i = Info('.NET Event Validation is disabled', desc,

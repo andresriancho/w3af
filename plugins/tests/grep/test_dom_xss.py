@@ -50,8 +50,7 @@ class TestDOMXSS(PluginTest):
 
         v = vulns[0]
         self.assertEquals(severity.LOW, v.get_severity())
-        self.assertEquals(
-            'DOM Cross site scripting (Risky JavaScript Code)', v.get_name())
+        self.assertEquals('DOM Cross site scripting', v.get_name())
         self.assertEquals(len(v.get_id()), 1)
         self.assertTrue('document.URL' in v.get_desc())
         self.assertEqual(

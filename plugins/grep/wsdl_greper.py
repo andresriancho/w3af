@@ -55,38 +55,40 @@ class wsdl_greper(GrepPlugin):
         '''
         uri = response.get_uri()
         if response.get_code() == 200 and uri not in self._already_inspected:
+            
             self._already_inspected.add(uri)
 
-            match_list = self._multi_in.query(response.body)
-            if len(match_list):
-                desc = 'The URL: "%s" is a Web Services Description Language'\
-                       ' page. This requires manual analysis to determine the'\
-                       ' security of the web service.'
-                desc = desc % response.get_url()
-                
-                i = Info('WSDL resource', desc, response.id,
-                         self.get_name())
-                i.set_url(response.get_url())
-                i.add_to_highlight(*match_list)
-                
-                kb.kb.append(self, 'wsdl', i)
+            self.analyze_wsdl(request, response)
+            self.analyze_disco(request, response)
+    
+    def analyze_wsdl(self, request, response):
+        match_list = self._multi_in.query(response.body)
+        if len(match_list):
+            desc = 'The URL: "%s" is a Web Services Description Language'\
+                   ' page. This requires manual analysis to determine the'\
+                   ' security of the web service.'
+            desc = desc % response.get_url()
+            
+            i = Info('WSDL resource', desc, response.id,
+                     self.get_name())
+            i.set_url(response.get_url())
+            i.add_to_highlight(*match_list)
+            
+            kb.kb.append(self, 'wsdl', i)
 
-            is_disco = False
-            for disco_string in self._disco_strings:
-                if disco_string in response:
-                    is_disco = True
-                    break
-
-            if is_disco:
+    def analyze_disco(self, request, response):
+        for disco_string in self._disco_strings:
+            if disco_string in response:
                 desc = 'The URL: "%s" is a DISCO file that contains references'\
                        ' to WSDL URLs.'
-                desc = desc % i.get_url()
+                desc = desc % response.get_url()
                 i = Info('DISCO resource', desc, response.id,
                          self.get_name())
                 i.set_url(response.get_url())
                 i.add_to_highlight(disco_string)
                 
                 kb.kb.append(self, 'disco', i)
+                break
                 
     def end(self):
         '''

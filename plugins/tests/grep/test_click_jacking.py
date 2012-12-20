@@ -50,8 +50,7 @@ class TestClickJacking(PluginTest):
 
         v = vulns[0]
         self.assertEquals(severity.MEDIUM, v.get_severity())
-        self.assertEquals(
-            'Potential Click-Jacking vulnerability', v.get_name())
+        self.assertEquals('Click-Jacking vulnerability', v.get_name())
         self.assertEquals(len(v.get_id()), 1)
         self.assertTrue(
             self.click_jacking_url + 'without_protection.php' in v.get_desc())

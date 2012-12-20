@@ -67,7 +67,7 @@ class TestDav(PluginTest):
 
         self.assertEquals(len(vulns), 2, vulns)
 
-        iname = 'DAV insufficient privileges'
+        iname = 'DAV incorrect configuration'
         info_no_privs = [i for i in vulns if i.get_name() == iname][0]
 
         vname = 'Insecure DAV configuration'

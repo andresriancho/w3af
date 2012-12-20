@@ -55,7 +55,5 @@ class TestHTMLComments(PluginTest):
         html_info = infos_html[0]
         interesting_info = infos_interesting[0]
 
-        self.assertEqual(
-            interesting_info.get_name(), 'HTML comment with "pass" inside')
-        self.assertEqual(
-            html_info.get_name(), 'HTML comment contains HTML code')
+        self.assertEqual(interesting_info.get_name(), 'Interesting HTML comment')
+        self.assertEqual(html_info.get_name(), 'HTML comment contains HTML code')

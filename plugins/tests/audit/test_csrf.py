@@ -25,6 +25,7 @@ from plugins.audit.csrf import csrf
 
 from core.data.url.HTTPResponse import HTTPResponse
 from core.data.parsers.url import URL
+from core.data.dc.headers import Headers
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.url.xUrllib import xUrllib
 
@@ -50,7 +51,7 @@ class TestCSRF(PluginTest):
     def test_resp_is_equal(self):
         x = csrf()
         url = URL('http://www.w3af.com/')
-        headers = {'content-type': 'text/html'}
+        headers = Headers([('content-type', 'text/html')])
 
         r1 = HTTPResponse(200, 'body', headers, url, url)
         r2 = HTTPResponse(404, 'body', headers, url, url)
