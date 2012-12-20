@@ -289,8 +289,9 @@ class form_auth(BruteforcePlugin):
                     # previous possible found credentials are valid
                     data_container[passwd_field][0] = rand_alnum(8)
                     freq.set_dc(data_container)
-                    verif_resp = self._uri_opener.send_mutant(
-                        freq, cookies=False, grep=False)
+                    verif_resp = self._uri_opener.send_mutant(freq,
+                                                              cookies=False,
+                                                              grep=False)
                     body = verif_resp.get_body()
                     body = body.replace(user, '').replace(pwd, '')
 
@@ -308,8 +309,9 @@ class form_auth(BruteforcePlugin):
                                     '"%s". The correct password is: "%s".'
                                     % (freq_url, pwd))
                             
-                        v = Vuln('Guessable credentials', desc, severity.HIGH,
-                                 resp.id, self.get_name(), freq)
+                        v = Vuln.from_fr('Guessable credentials', desc,
+                                         severity.HIGH, resp.id,
+                                         self.get_name(), freq)
                         v['user'] = user
                         v['pass'] = pwd
                         v['response'] = resp
