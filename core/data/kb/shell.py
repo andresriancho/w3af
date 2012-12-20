@@ -26,7 +26,7 @@ from core.data.kb.vuln import Vuln
 from core.data.kb.exploit_result import ExploitResult
 
 
-class shell(Vuln, ExploitResult):
+class shell(ExploitResult):
     '''
     This class represents the output of an attack plugin that gives a shell to
     the w3af user.
@@ -35,19 +35,21 @@ class shell(Vuln, ExploitResult):
     '''
 
     def __init__(self, vuln, uri_opener, worker_pool):
-        Vuln.__init__(self, vuln.get_name(), vuln.get_desc(), vuln.get_severity(),
-                      vuln.get_id(), vuln.get_plugin_name(), vuln)
         ExploitResult.__init__(self)
+        
+        if not isinstance(vuln, Vuln):
+            raise TypeError('Expected Vuln instance in Shell ctor.')
         
         self._uri_opener = uri_opener
         self.worker_pool = worker_pool
+        self._vuln = vuln
         
         self._rOS = None
         self._rSystem = None
         self._rUser = None
         self._rSystemName = None
         self.id = 0
-
+    
     def get_remote_os(self):
         return self._rOS
 
@@ -61,7 +63,7 @@ class shell(Vuln, ExploitResult):
     def get_remote_user(self):
         return self._rUser
 
-    def get_remote_systemName(self):
+    def get_remote_system_name(self):
         '''
         @return: dz0@sock3t:~/w3af$ uname -n
         sock3t
@@ -228,10 +230,8 @@ class shell(Vuln, ExploitResult):
 
         @return: None
         '''
-        msg = 'You should implement the end method for classes that inherit from'
-        msg += ' "shell"'
-        raise NotImplementedError(msg)
-
+        pass
+    
     def get_name(self):
         '''
         This method is called when the shell is used, in order to create a prompt
@@ -261,3 +261,13 @@ class shell(Vuln, ExploitResult):
                       self.get_remote_system())
 
     __str__ = __repr__
+    
+    def __getattr__(self, name):
+        '''
+        All the other methods are forwarded to the vuln object except for
+        the magic methods.
+        '''
+        if name.startswith('__'):
+            raise AttributeError("%s instance has no attribute '%s'" %
+                                (self.__class__.__name__, name))
+        return getattr(self._vuln, name)    
