@@ -56,9 +56,8 @@ class basic_auth(BruteforcePlugin):
                 self._already_tested.append(domain_path)
 
                 # Let the user know what we are doing
-                msg = 'Starting basic authentication bruteforce on URL: "' + \
-                    domain_path + '".'
-                om.out.information(msg)
+                msg = 'Starting basic authentication bruteforce on URL: "%s".'
+                om.out.information(msg % domain_path)
 
                 up_generator = self._create_user_pass_generator(domain_path)
 
@@ -92,8 +91,8 @@ class basic_auth(BruteforcePlugin):
                 response = self._uri_opener.GET(url, cache=False, grep=False,
                                                 headers=headers)
             except w3afException, w3:
-                msg = 'Exception while bruteforcing basic authentication, error'
-                msg += ' message: "%s"'
+                msg = 'Exception while bruteforcing basic authentication,'\
+                      ' error message: "%s".'
                 om.out.debug(msg % w3)
             else:
                 # GET was OK
