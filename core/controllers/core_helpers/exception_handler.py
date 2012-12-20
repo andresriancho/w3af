@@ -224,7 +224,7 @@ class ExceptionData(object):
         # Extract the filename and line number where the exception was raised
         filepath = traceback.extract_tb(tb)[-1][0]
         self.filename = basename(filepath)
-        self.lineno = tb.tb_lineno
+        self.lineno = self._get_line_number(tb)
 
         self.traceback_str = ''.join(traceback.format_tb(tb))
         self.traceback_str = cleanup_bug_report(self.traceback_str)
@@ -236,6 +236,13 @@ class ExceptionData(object):
 
         self.fuzzable_request = current_status.get_current_fuzzable_request()
         self.fuzzable_request = cleanup_bug_report(str(self.fuzzable_request))
+
+    def _get_line_number(self, tb):
+        current = tb
+        while getattr(current, 'tb_next', None) is not None:
+            current = current.tb_next
+        
+        return current.tb_lineno        
 
     def get_summary(self):
         res = 'An exception was found while running %s.%s on "%s". The exception'
