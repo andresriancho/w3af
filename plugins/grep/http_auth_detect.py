@@ -124,51 +124,68 @@ class http_auth_detect(GrepPlugin):
                 kb.kb.append(self, 'userPassUri', v)
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
 
+    def _get_realm(self, response):
+        for key in response.get_headers():
+            if key.lower() == 'www-authenticate':
+                realm = response.get_headers()[key]
+                return realm
+        
+        return None
+        
+    def _report_no_realm(self, response):
+        # Report this strange case
+        desc = 'The resource: "%s" requires authentication (HTTP Code'\
+               ' 401) but the www-authenticate header is not present.'\
+               ' This requires human verification.'
+        desc = desc % response.get_url() 
+        i = Info('Authentication without www-authenticate header', desc,
+                 response.id, self.get_name())
+        i.set_url(response.get_url())
+
+        kb.kb.append(self, 'non_rfc_auth', i)
+        om.out.information(i.get_desc())
+        
     def _analyze_401(self, response):
         '''
         Analyze a 401 response and report it.
         @return: None
         '''
-        # Get the realm
-        realm = None
-        for key in response.get_headers():
-            if key.lower() == 'www-authenticate':
-                realm = response.get_headers()[key]
-                break
-
+        realm = self._get_realm(response)
+        
         if realm is None:
-            # Report this strange case
-            desc = 'The resource: "%s" requires authentication (HTTP Code'\
-                   ' 401) but the www-authenticate header is not present.'\
-                   ' This requires human verification.'
-            desc = desc % response.get_url() 
-            i = Info('Authentication without www-authenticate header', desc,
-                     severity.MEDIUM, response.id, self.get_name())
-            i.set_url(response.get_url())
-
-            kb.kb.append(self, 'non_rfc_auth', i)
+            self._report_no_realm(response)
+            return
+        
+        insecure = response.get_url().get_protocol() == 'http'
+        vuln_severity = severity.HIGH if insecure else severity.LOW
+        
+        desc = 'The resource: "%s" requires HTTP authentication'
+        if insecure:
+            desc += ' over a non-encrypted channel, which allows'\
+                    ' potential intruders to sniff traffic and capture'\
+                    ' valid credentials.'
+        else:
+            desc += '.'
+        
+        desc += ' The received authentication realm is: "%s".'
+        desc = desc % (response.get_url(), realm)
+        
+        # Report the common case, were a realm is set.
+        if 'ntlm' in realm.lower():
+            
+            v = Vuln('NTLM authentication', desc,
+                     vuln_severity, response.id, self.get_name())
 
         else:
-            desc = 'The resource: "%s" requires authentication. The realm is:'\
-                   ' "%s".'
-            desc = desc % (response.get_url(), realm)
-            # Report the common case, were a realm is set.
-            if 'ntlm' in realm.lower():
-                
-                i = Info('NTLM authentication', desc,
-                         severity.LOW, response.id, self.get_name())
+            v = Vuln('HTTP Basic authentication', desc,
+                     vuln_severity, response.id, self.get_name())
 
-            else:
-                i = Info('HTTP Basic authentication', desc,
-                         severity.MEDIUM, response.id, self.get_name())
+        v.set_url(response.get_url())
+        v['message'] = realm
+        v.add_to_highlight(realm)
 
-            i.set_url(response.get_url())
-            i['message'] = realm
-            i.add_to_highlight(realm)
-
-            kb.kb.append(self, 'auth', i)
-
-        om.out.information(i.get_desc())
+        kb.kb.append(self, 'auth', v)
+        om.out.information(v.get_desc())
 
     def get_long_desc(self):
         '''
