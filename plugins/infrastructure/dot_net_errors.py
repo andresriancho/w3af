@@ -20,11 +20,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.vuln import Vuln
 import core.data.constants.severity as severity
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
+from core.data.kb.vuln import Vuln
 
 
 class dot_net_errors(InfrastructurePlugin):
@@ -93,16 +93,16 @@ class dot_net_errors(InfrastructurePlugin):
         viewable_remote_machine += ' remote machines'
 
         if viewable_remote_machine not in response.body\
-                and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
-            v = Vuln(response)
-            v.set_plugin_name(self.get_name())
-            v.set_id(response.id)
-            v.set_severity(severity.LOW)
-            v.set_name('Information disclosure via .NET errors')
-            msg = 'Detailed information about ASP.NET error messages can be'
-            msg += ' viewed from remote sites. The URL: "%s" discloses detailed'
-            msg += ' error messages.'
-            v.set_desc(msg % response.get_url())
+        and '<h2> <i>Runtime Error</i> </h2></span>' in response.body:
+
+            desc = 'Detailed information about ASP.NET error messages can be'\
+                   ' viewed from remote sites. The URL: "%s" discloses'\
+                   ' detailed error messages.'
+            desc = desc % response.get_url()
+        
+            v = Vuln('Information disclosure via .NET errors', desc,
+                     severity.LOW, response.id, self.get_name())
+        
             kb.kb.append(self, 'dot_net_errors', v)
 
     def get_plugin_deps(self):

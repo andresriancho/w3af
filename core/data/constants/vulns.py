@@ -213,6 +213,7 @@ VULNS = {
          40030: 'Active filter detected',
          40031: 'Reverse proxy identified',
          40032: 'HTTP load balancer detected',
+         40033: 'Information disclosure via .NET errors',
          
          # Bruteforce
          50000: 'Guessable credentials',

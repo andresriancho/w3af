@@ -111,8 +111,8 @@ class shared_hosting(InfrastructurePlugin):
                     desc += '- %s\n' % url
                     kb.kb.append(self, 'domains', domain)
                     
-                v = Vuln('Shared hosting', desc, severity.MEDIUM, 1,
-                         self.get_name(), fuzzable_request)
+                v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM, 1,
+                                 self.get_name(), fuzzable_request)
 
                 v['also_in_hosting'] = results
                 

@@ -122,8 +122,8 @@ class server_status(InfrastructurePlugin):
         if len(self._shared_hosting_hosts):
             desc = 'The web application under test seems to be in a shared'\
                    ' hosting.'
-            v = Vuln('Shared hosting', desc, severity.MEDIUM, response.id,
-                     self.get_name(), fuzzable_request)
+            v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM,
+                             response.id, self.get_name(), fuzzable_request)
 
             self._shared_hosting_hosts = list(
                 set(self._shared_hosting_hosts))

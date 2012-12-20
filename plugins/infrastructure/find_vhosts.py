@@ -93,8 +93,8 @@ class find_vhosts(InfrastructurePlugin):
                        ' order to point "%s" to the IP address of "%s".'
                 desc = desc % (vhost, vhost, domain)
                 
-                v = Vuln('Virtual host identified', desc, severity.LOW,
-                         request_id, self.get_name(), fuzzable_request)
+                v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
+                                 request_id, self.get_name(), fuzzable_request)
                 
                 kb.kb.append(self, 'find_vhosts', v)
                 om.out.information(v.get_desc())
