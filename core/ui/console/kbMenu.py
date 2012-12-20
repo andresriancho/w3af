@@ -20,13 +20,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
-from core.data.kb.vuln import Vuln
-import core.data.kb.shell as shell
 import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
+from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
+from core.data.kb.shell import shell
 
 
 class kbMenu(menu):
@@ -54,7 +54,9 @@ class kbMenu(menu):
             'shells': (
                 kb.kb.get_all_shells,
                 ['Shells'],
-                [shell.shell.get_desc])
+                #pylint: disable=E1101
+                [shell.get_desc])
+                #pylint: enable=E1101
         }
 
     def _list_objects(self, descriptor, objs):
