@@ -75,9 +75,9 @@ class format_string(AuditPlugin):
                           ' string vulnerability was found at: %s'
                     desc = desc % mutant.found_at()
                     
-                    v = Vuln('Format string vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('Format string vulnerability', desc,
+                                         severity.MEDIUM, response.id,
+                                         self.get_name(), mutant)
                     
                     v.add_to_highlight(error)
                     

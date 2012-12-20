@@ -24,13 +24,13 @@ import re
 import core.controllers.output_manager as om
 import core.data.constants.severity as severity
 import core.data.kb.knowledge_base as kb
-from core.data.kb.vuln import Vuln
 
 from core.controllers.plugins.audit_plugin import AuditPlugin
 from core.controllers.delay_detection.exact_delay import ExactDelay
 from core.controllers.delay_detection.delay import delay
 from core.data.fuzzer.fuzzer import create_mutants
 from core.data.fuzzer.utils import rand_alpha
+from core.data.kb.vuln import Vuln
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
 
@@ -134,9 +134,11 @@ class eval(AuditPlugin):
                 desc = 'eval() input injection was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                v = Vuln('eval() input injection vulnerability', desc,
-                         severity.HIGH, [r.id for r in responses],
-                         self.get_name(), mutant)
+                response_ids = [r.id for r in responses]
+                
+                v = Vuln.from_mutant('eval() input injection vulnerability',
+                                     desc, severity.HIGH, response_ids,
+                                     self.get_name(), mutant)
 
                 kb.kb.append_uniq(self, 'eval', v)
                 break
@@ -154,9 +156,9 @@ class eval(AuditPlugin):
                 desc = 'eval() input injection was found at: %s'
                 desc = desc % mutant.found_at()
 
-                v = Vuln('eval() input injection vulnerability', desc,
-                         severity.HIGH, response.id,
-                         self.get_name(), mutant)
+                v = Vuln.from_mutant('eval() input injection vulnerability',
+                                     desc, severity.HIGH, response.id,
+                                     self.get_name(), mutant)
 
                 kb.kb.append_uniq(self, 'eval', v)
 

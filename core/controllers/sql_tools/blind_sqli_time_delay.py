@@ -59,8 +59,9 @@ class blind_sqli_time_delay(object):
                 
                 response_ids = [r.id for r in responses]
                 
-                v = Vuln('Blind SQL injection vulnerability', desc, severity.HIGH,
-                         response_ids, 'blind_sqli', mutant)
+                v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
+                                     severity.HIGH, response_ids, 'blind_sqli',
+                                     mutant)
 
                 om.out.debug(v.get_desc())
 

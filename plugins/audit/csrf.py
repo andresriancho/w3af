@@ -74,8 +74,8 @@ class csrf(AuditPlugin):
         # Ok, we have found vulnerable to CSRF attack request
         msg = 'Cross Site Request Forgery has been found at: ' + freq.get_url()
         
-        v = Vuln('CSRF vulnerability', msg, severity.HIGH,
-                 orig_response.id, self.get_name(), freq)
+        v = Vuln.from_fr('CSRF vulnerability', msg, severity.HIGH,
+                         orig_response.id, self.get_name(), freq)
         
         kb.kb.append(self, 'csrf', v)
 

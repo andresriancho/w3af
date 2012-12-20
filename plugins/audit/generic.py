@@ -137,8 +137,9 @@ class generic(AuditPlugin):
                 desc = 'An unidentified vulnerability was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                v = Vuln('Unidentified vulnerability', desc,
-                         severity.MEDIUM, id_list, self.get_name(), mutant)
+                v = Vuln.from_mutant('Unidentified vulnerability', desc,
+                                     severity.MEDIUM, id_list, self.get_name(),
+                                     mutant)
 
                 kb.kb.append(self, 'generic', v)
                 self._already_reported.append((mutant.get_url(),
@@ -149,8 +150,8 @@ class generic(AuditPlugin):
                        'vulnerability was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                i = Info('Potential unidentified vulnerability', desc,
-                         severity.MEDIUM, id_list, self.get_name(), mutant)
+                i = Info.from_mutant('Potential unidentified vulnerability',
+                                     desc, id_list, self.get_name(), mutant)
                 
                 kb.kb.append(self, 'generic', i)
                 

@@ -159,8 +159,8 @@ class sqli(AuditPlugin):
                     desc = 'SQL injection in a %s was found at: %s'
                     desc = desc % (dbms_type, mutant.found_at())
                                         
-                    v = Vuln('SQL injection', desc, severity.HIGH,
-                             response.id, self.get_name(), mutant)
+                    v = Vuln.from_mutant('SQL injection', desc, severity.HIGH,
+                                         response.id, self.get_name(), mutant)
 
                     v.add_to_highlight(sql_error_string)
                     v['error'] = sql_error_string

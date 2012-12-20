@@ -71,8 +71,8 @@ class global_redirect(AuditPlugin):
         if self._find_redirect(response):
             desc = 'Global redirect was found at: ' + mutant.found_at()
             
-            v = Vuln('Insecure redirection', desc, severity.MEDIUM,
-                     response.id, self.get_name(), mutant)
+            v = Vuln.from_mutant('Insecure redirection', desc, severity.MEDIUM,
+                                 response.id, self.get_name(), mutant)
 
             kb.kb.append_uniq(self, 'global_redirect', v)
 

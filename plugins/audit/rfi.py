@@ -249,9 +249,9 @@ class rfi(AuditPlugin):
             desc = 'A remote file inclusion vulnerability that allows remote' \
                   ' code execution was found at: %s' % mutant.found_at()
             
-            v = Vuln('Remote code execution', desc,
-                     severity.HIGH, response.id, self.get_name(),
-                     mutant)
+            v = Vuln.from_mutant('Remote code execution', desc,
+                                 severity.HIGH, response.id, self.get_name(),
+                                 mutant)
 
             kb.kb.append_uniq(self, 'rfi', v)
 
@@ -263,9 +263,9 @@ class rfi(AuditPlugin):
             desc = 'A remote file inclusion vulnerability without code' \
                   ' execution was found at: %s' % mutant.found_at()
             
-            v = Vuln('Remote file inclusion', desc,
-                     severity.MEDIUM, response.id, self.get_name(),
-                     mutant)
+            v = Vuln.from_mutant('Remote file inclusion', desc,
+                                 severity.MEDIUM, response.id, self.get_name(),
+                                 mutant)
 
             kb.kb.append_uniq(self, 'rfi', v)
 
@@ -280,9 +280,9 @@ class rfi(AuditPlugin):
                            ' was identified by the means of application error' \
                            '  messages at: %s' % mutant.found_at()
                     
-                    v = Vuln('Potential remote file inclusion', desc,
-                             severity.LOW, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('Potential remote file inclusion',
+                                         desc, severity.LOW, response.id,
+                                         self.get_name(), mutant)
 
                     v.add_to_highlight(error)
                     kb.kb.append_uniq(self, 'rfi', v)

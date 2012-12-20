@@ -109,9 +109,9 @@ class os_commanding(AuditPlugin):
 
                     desc = 'OS Commanding was found at: %s' % mutant.found_at()
                     # Create the vuln obj
-                    v = Vuln('OS commanding vulnerability', desc,
-                             severity.HIGH, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                                         severity.HIGH, response.id,
+                                         self.get_name(), mutant)
 
                     v['os'] = sentOs
                     v['separator'] = sentSeparator
@@ -157,9 +157,9 @@ class os_commanding(AuditPlugin):
                 if success:
                     desc = 'OS Commanding was found at: %s' % mutant.found_at()
                                         
-                    v = Vuln('OS commanding vulnerability', desc,
-                             severity.HIGH, [r.id for r in responses],
-                             self.get_name(), mutant)
+                    v = Vuln.from_mutant('OS commanding vulnerability', desc,
+                                         severity.HIGH, [r.id for r in responses],
+                                         self.get_name(), mutant)
 
                     v['os'] = delay_obj.get_OS()
                     v['separator'] = delay_obj.get_separator()

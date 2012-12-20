@@ -76,9 +76,9 @@ class preg_replace(AuditPlugin):
                     desc = 'Unsafe usage of preg_replace was found at: %s'
                     desc = desc % mutant.found_at()
                     
-                    v = Vuln('Unsafe preg_replace usage', desc,
-                             severity.HIGH, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('Unsafe preg_replace usage', desc,
+                                         severity.HIGH, response.id,
+                                         self.get_name(), mutant)
 
                     v.add_to_highlight(preg_error_string)
                     kb.kb.append_uniq(self, 'preg_replace', v)

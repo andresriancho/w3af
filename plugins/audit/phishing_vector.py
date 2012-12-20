@@ -96,8 +96,9 @@ class phishing_vector(AuditPlugin):
                         # Vuln vuln!
                         desc = 'A phishing vector was found at: %s' % mutant.found_at()
                         
-                        v = Vuln('Phishing vector', desc, severity.LOW,
-                                 response.id, self.get_name(), mutant)
+                        v = Vuln.from_mutant('Phishing vector', desc,
+                                             severity.LOW, response.id,
+                                             self.get_name(), mutant)
                         
                         v.add_to_highlight(src_attr)
                         res.append(v)

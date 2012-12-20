@@ -116,9 +116,9 @@ class ldapi(AuditPlugin):
                     
                     desc = 'LDAP injection was found at: %s' % mutant.found_at()
                     
-                    v = Vuln('LDAP injection vulnerability', desc,
-                             severity.HIGH, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('LDAP injection vulnerability', desc,
+                                         severity.HIGH, response.id,
+                                         self.get_name(), mutant)
                     
                     v.add_to_highlight(ldap_error_string)
                     

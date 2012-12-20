@@ -113,9 +113,9 @@ class redos(AuditPlugin):
                     # time of the response.
                     desc = 'ReDoS was found at: %s' % mutant.found_at()
                     
-                    v = Vuln('ReDoS vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('ReDoS vulnerability', desc,
+                                         severity.MEDIUM, response.id,
+                                         self.get_name(), mutant)
                     
                     kb.kb.append_uniq(self, 'redos', v)
 

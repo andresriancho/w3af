@@ -118,9 +118,9 @@ class xpath(AuditPlugin):
                     
                     desc = 'XPATH injection was found at: %s' % mutant.found_at()
                     
-                    v = Vuln('XPATH injection vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('XPATH injection vulnerability', desc,
+                                         severity.MEDIUM, response.id,
+                                         self.get_name(), mutant)
                     
                     v.add_to_highlight(xpath_error)
                     kb.kb.append(self, 'xpath', v)

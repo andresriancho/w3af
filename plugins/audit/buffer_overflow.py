@@ -121,8 +121,8 @@ class buffer_overflow(AuditPlugin):
                    ' HTTP method %s. The data sent was: "%s".'
             desc = desc % (mutant.get_url(), mutant.get_method(), mutant.get_dc())
 
-            i = Info('Potential buffer overflow vulnerability', desc,
-                     severity.HIGH, response.ids, self.get_name(), mutant)
+            i = Info.from_mutant('Potential buffer overflow vulnerability',
+                                 desc, response.ids, self.get_name(), mutant)
             
             kb.kb.append_uniq(self, 'buffer_overflow', i)
         else:
@@ -139,9 +139,9 @@ class buffer_overflow(AuditPlugin):
                 desc = 'A potential buffer overflow (accurate detection is' \
                        ' hard...) was found at: %s' % mutant.found_at()
                       
-                v = Vuln('Buffer overflow vulnerability', desc,
-                         severity.MEDIUM, response.id, self.get_name(),
-                         mutant)
+                v = Vuln.from_mutant('Buffer overflow vulnerability', desc,
+                                     severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
             
                 v.add_to_highlight(error_str)
                 

@@ -178,8 +178,9 @@ class blind_sqli_response_diff(object):
                            mutant.get_method(),
                            mutant.get_var())
             
-            v = Vuln('Blind SQL injection vulnerability', desc, severity.HIGH,
-                     response_ids, 'blind_sqli', mutant)
+            v = Vuln.from_mutant('Blind SQL injection vulnerability', desc,
+                                 severity.HIGH, response_ids, 'blind_sqli',
+                                 mutant)
             
             om.out.debug(v.get_desc())
 

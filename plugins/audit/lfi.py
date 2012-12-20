@@ -155,9 +155,9 @@ class lfi(AuditPlugin):
                 desc = 'Local File Inclusion was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                v = Vuln('Local file inclusion vulnerability', desc,
-                         severity.MEDIUM, response.id, self.get_name(),
-                         mutant)
+                v = Vuln.from_mutant('Local file inclusion vulnerability',
+                                     desc, severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
 
                 v['file_pattern'] = file_pattern_match
                 
@@ -179,9 +179,9 @@ class lfi(AuditPlugin):
                 desc = 'An arbitrary local file read vulnerability was'\
                        ' found at: %s' % mutant.found_at()
                 
-                v = Vuln('Local file inclusion vulnerability', desc,
-                         severity.MEDIUM, response.id, self.get_name(),
-                         mutant)
+                v = Vuln.from_mutant('Local file inclusion vulnerability',
+                                     desc, severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
 
                 #
                 #    Set which part of the source code to match
@@ -204,8 +204,8 @@ class lfi(AuditPlugin):
                 desc = 'A file read error was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                i = Info('File read error', desc, response.id,
-                         self.get_name(), mutant)
+                i = Info.from_mutant('File read error', desc, response.id,
+                                     self.get_name(), mutant)
                 
                 kb.kb.append_uniq(self, 'error', i)
 

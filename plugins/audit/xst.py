@@ -77,9 +77,9 @@ class xst(AuditPlugin):
                       ' Tracing.'
                 desc = desc % response.get_url()
                 
-                v = Vuln('Cross site tracing vulnerability', desc,
-                         severity.LOW, response.id, self.get_name(),
-                         freq)
+                v = Vuln.from_fr('Cross site tracing vulnerability', desc,
+                                 severity.LOW, response.id, self.get_name(),
+                                 freq)
 
                 om.out.vulnerability(v.get_desc(), severity=v.get_severity())
                 kb.kb.append(self, 'xst', v)

@@ -190,9 +190,9 @@ class file_upload(AuditPlugin):
             desc = 'A file upload to a directory inside the webroot' \
                    ' was found at: %s' % mutant.found_at()
             
-            v = Vuln('Insecure file upload', desc,
-                     severity.HIGH, [http_response.id, get_response.id],
-                     self.get_name(), mutant)
+            v = Vuln.from_mutant('Insecure file upload', desc, severity.HIGH,
+                                 [http_response.id, get_response.id],
+                                 self.get_name(), mutant)
             
             v['file_dest'] = get_response.get_url()
             v['file_vars'] = mutant.get_file_vars()

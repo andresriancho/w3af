@@ -353,9 +353,9 @@ class xss(AuditPlugin):
                     desc = desc % (mutant.found_at(),
                                    ','.join(mutant.affected_browsers))
                     
-                    v = Vuln('Cross site scripting vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('Cross site scripting vulnerability',
+                                         desc, severity.MEDIUM, response.id,
+                                         self.get_name(), mutant)
 
                     v.add_to_highlight(mod_value)
                     kb.kb.append_uniq(self, 'xss', v)
@@ -432,9 +432,9 @@ class xss(AuditPlugin):
                                                        
                         response_ids = [response.id, mutant_response_id]
                         
-                        v = Vuln('Permanent cross site scripting vulnerability',
-                                 desc, severity.HIGH, response_ids,
-                                 self.get_name(), mutant)
+                        v = Vuln.from_mutant('Permanent cross site scripting vulnerability',
+                                             desc, severity.HIGH, response_ids,
+                                             self.get_name(), mutant)
 
                         v['permanent'] = True
                         v['write_payload'] = mutant

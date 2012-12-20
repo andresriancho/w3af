@@ -75,6 +75,15 @@ class response_splitting(AuditPlugin):
         #
         if self._has_no_bug(mutant):
 
+            if self._header_was_injected(response):
+                desc = 'Response splitting was found at: %s' % mutant.found_at()
+                
+                v = Vuln.from_mutant('Response splitting vulnerability', desc,
+                                     severity.MEDIUM, response.id,
+                                     self.get_name(), mutant)
+
+                kb.kb.append(self, 'response_splitting', v)
+                
             # When trying to send a response splitting to php 5.1.2 I get :
             # Header may not contain more than a single header, new line detected
             for error in self.HEADER_ERRORS:
@@ -84,21 +93,15 @@ class response_splitting(AuditPlugin):
                            ' response headers, but this error was sent while'\
                            ' testing for response splitting: "%s".'
                     desc = desc % (mutant.get_var(), mutant.get_url(), error)
-                    i = Info('Parameter modifies response headers', desc, response.id,
-                             self.get_name(), mutant)
+                    i = Info.from_mutant('Parameter modifies response headers',
+                                         desc, response.id, self.get_name(),
+                                         mutant)
                     
                     kb.kb.append(self, 'response_splitting', i)
 
                     return
 
-            if self._header_was_injected(response):
-                desc = 'Response splitting was found at: %s' % mutant.found_at()
-                
-                v = Vuln('Response splitting vulnerability', desc,
-                         severity.MEDIUM, response.id, self.get_name(),
-                         mutant)
 
-                kb.kb.append(self, 'response_splitting', v)
 
     def end(self):
         '''

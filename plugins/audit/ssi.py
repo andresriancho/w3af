@@ -107,8 +107,9 @@ class ssi(AuditPlugin):
                 desc = 'Server side include (SSI) was found at: %s'
                 desc = desc % mutant.found_at()
                 
-                v = Vuln('Server side include vulnerability', desc, severity.HIGH,
-                         response.id, self.get_name(), mutant)
+                v = Vuln.from_mutant('Server side include vulnerability', desc,
+                                     severity.HIGH, response.id, self.get_name(),
+                                     mutant)
 
                 v.add_to_highlight(e_res)
                 kb.kb.append_uniq(self, 'ssi', v)
@@ -157,9 +158,9 @@ class ssi(AuditPlugin):
                        ' to "%s".' 
                 desc = desc % (mutant.found_at(), freq.get_url())
                 
-                v = Vuln('Persistent server side include vulnerability',
-                         desc, severity.HIGH,
-                         response.id, self.get_name(), mutant)
+                v = Vuln.from_mutant('Persistent server side include vulnerability',
+                                     desc, severity.HIGH, response.id,
+                                     self.get_name(), mutant)
                 
                 v.add_to_highlight(matched_expected_result)
                 kb.kb.append(self, 'ssi', v)

@@ -84,9 +84,9 @@ class mx_injection(AuditPlugin):
                     
                     desc = 'MX injection was found at: %s' % mutant.found_at()
                     
-                    v = Vuln('MX injection vulnerability', desc,
-                             severity.MEDIUM, response.id, self.get_name(),
-                             mutant)
+                    v = Vuln.from_mutant('MX injection vulnerability', desc,
+                                         severity.MEDIUM, response.id,
+                                         self.get_name(), mutant)
                     
                     v.add_to_highlight(mx_error)
                     kb.kb.append_uniq(self, 'mx_injection', v)
