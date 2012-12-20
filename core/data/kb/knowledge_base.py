@@ -23,7 +23,7 @@ import threading
 
 from core.data.kb.vuln import Vuln
 from core.data.kb.info import Info
-import core.data.kb.shell as shell
+from core.data.kb.shell import shell
 
 
 class InMemoryKnowledgeBase(object):
@@ -160,7 +160,7 @@ class InMemoryKnowledgeBase(object):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(shell.shell)
+        return self.get_all_entries_of_class(shell)
 
     def dump(self):
         return self._kb
@@ -304,7 +304,7 @@ class DBKnowledgeBase(object):
         '''
         @return: A list of all vulns reported by all plugins.
         '''
-        return self.get_all_entries_of_class(shell.shell)
+        return self.get_all_entries_of_class(shell)
 
     def dump(self):
         return self._kb
