@@ -33,10 +33,10 @@ class TestPlugin(unittest.TestCase):
     def test_print_uniq_url(self):
         p = Plugin()
         
-        v1 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v1 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v1.set_url(URL('http://host.tld/'))
         
-        v2 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v2 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v2.set_url(URL('http://host.tld/'))
         
         info_obj = [v1, v2]
@@ -47,11 +47,11 @@ class TestPlugin(unittest.TestCase):
     def test_print_uniq_var_case01(self):
         p = Plugin()
         
-        v1 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v1 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v1.set_url(URL('http://host.tld/'))
         v1.set_var('id')
         
-        v2 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v2 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v2.set_url(URL('http://host.tld/'))
         v2.set_var('id')
         
@@ -63,11 +63,11 @@ class TestPlugin(unittest.TestCase):
     def test_print_uniq_var_case02(self):
         p = Plugin()
         
-        v1 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v1 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v1.set_url(URL('http://host.tld/'))
         v1.set_var('id')
         
-        v2 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v2 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v2.set_url(URL('http://host.tld/'))
         v2.set_var('file')
         
@@ -79,10 +79,10 @@ class TestPlugin(unittest.TestCase):
     def test_print_uniq_none(self):
         p = Plugin()
         
-        v1 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v1 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v1.set_url(URL('http://host.tld/'))
         
-        v2 = Vuln('TestCase', 'description', severity.HIGH, 1, 'name')
+        v2 = Vuln('TestCase', Vuln.LONG_DESC, severity.HIGH, 1, 'name')
         v2.set_url(URL('http://host.tld/'))
         
         info_obj = [v1, v2]
