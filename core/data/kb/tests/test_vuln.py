@@ -1,5 +1,5 @@
 '''
-test_info.py
+test_vuln.py
 
 Copyright 2012 Andres Riancho
 
@@ -23,91 +23,32 @@ import unittest
 
 from nose.plugins.attrib import attr
 
-from core.data.kb.info import Info
+from core.data.kb.vuln import Vuln
 from core.data.parsers.url import URL
 from core.data.request.fuzzable_request import FuzzableRequest
 from core.data.dc.data_container import DataContainer
 from core.data.fuzzer.mutants.mutant import Mutant
 
 
-class MockInfo(Info):
+class MockVuln(Vuln):
     def __init__(self):
         desc = 'desc ' * 10
-        super(MockInfo, self).__init__('TestCase', desc, 1, 'plugin_name')
+        super(MockVuln, self).__init__('TestCase', desc, 'High', 1, 'plugin_name')
 
 @attr('smoke')
-class TestInfo(unittest.TestCase):
-    '''
-    Simplest tests for info. Mainly started because of incompatibilities between
-    nosetests, doctest and "_".
-
-    @author: Andres Riancho (andres.riancho@gmail.com)
-    '''
-
-    def test_convert_to_range(self):
-        inf = MockInfo()
-
-        res = inf._convert_to_range_wrapper([1, 2, 3, 4, 5, 6])
-        self.assertEquals('1 to 6', res)
-
-        res = inf._convert_to_range_wrapper([1, 2, 3, 6])
-        self.assertEquals('1 to 3 and 6', res)
-
-        res = inf._convert_to_range_wrapper([1, 2, 3, 6, 7, 8])
-        self.assertEquals('1 to 3, 6 to 8', res)
-
-        res = inf._convert_to_range_wrapper([1, 2, 3, 6, 7, 8, 10])
-        self.assertEquals('1 to 3, 6 to 8 and 10', res)
-
-        res = inf._convert_to_range_wrapper([1, 2, 3, 10, 20, 30])
-        self.assertEquals('1 to 3, 10, 20 and 30', res)
-
-        res = inf._convert_to_range_wrapper([1, 3, 10, 20, 30])
-        self.assertEquals('1, 3, 10, 20 and 30', res)
-
-        res = len(inf._convert_to_range_wrapper(range(0, 30000, 2)).split())
-        self.assertEquals(15001, res)
-
-    def test_set_uri(self):
-        i = MockInfo()
-        self.assertRaises(TypeError, i.set_uri, 'http://www.w3af.com/')
-        
-        uri = URL('http://www.w3af.com/')
-        i.set_uri(uri)
-        self.assertEqual(i.get_uri(), uri)
-
-    def test_set_url(self):
-        i = MockInfo()
-        self.assertRaises(TypeError, i.set_url, 'http://www.w3af.com/?id=1')
-        
-        uri = URL('http://www.w3af.com/?id=1')
-        url = URL('http://www.w3af.com/')
-        
-        i.set_url(uri)
-        
-        self.assertEqual(i.get_uri(), uri)
-        self.assertEqual(i.get_url(), url)
+class TestVuln(unittest.TestCase):
     
-    def test_set_desc(self):
-        i = MockInfo()
-        
-        self.assertRaises(ValueError, i.set_desc, 'abc')
-        
-        desc = 'abc ' * 30
-        i.set_desc(desc)
-        self.assertTrue(i.get_desc().startswith(desc))
-    
-    def test_from_info(self):
+    def test_from_vuln(self):
         url = URL('http://moth/')
         
-        inst1 = MockInfo()
+        inst1 = MockVuln()
         inst1.set_uri(url)
         inst1['eggs'] = 'spam'
         
-        inst2 = Info.from_info(inst1)
+        inst2 = Vuln.from_vuln(inst1)
         
         self.assertNotEqual(id(inst1), id(inst2))
-        self.assertIsInstance(inst2, Info)
+        self.assertIsInstance(inst2, Vuln)
         
         self.assertEqual(inst1.get_uri(), inst2.get_uri())
         self.assertEqual(inst1.get_uri(), url)
@@ -134,9 +75,10 @@ class TestInfo(unittest.TestCase):
                 
         mutant = created_mutants[0]
         
-        inst = Info.from_mutant('TestCase', 'desc' * 30, 1, 'plugin_name', mutant)
+        inst = Vuln.from_mutant('TestCase', 'desc' * 30, 'High', 1,
+                                'plugin_name', mutant)
         
-        self.assertIsInstance(inst, Info)
+        self.assertIsInstance(inst, Vuln)
         
         self.assertEqual(inst.get_uri(), mutant.get_uri())
         self.assertEqual(inst.get_url(), mutant.get_url())

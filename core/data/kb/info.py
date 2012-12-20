@@ -23,16 +23,28 @@ from core.data.constants.vulns import is_valid_name
 from core.data.constants.severity import INFORMATION
 from core.data.parsers.url import URL
 from core.data.fuzzer.mutants.mutant import Mutant
+from core.data.request.fuzzable_request import FuzzableRequest
 
 
 class Info(dict):
     '''
     This class represents an information that is saved to the kb.
+    
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
-    def __init__(self, name, desc, response_ids, plugin_name,
-                 data_obj=None):
-
+    def __init__(self, name, desc, response_ids, plugin_name):
+        '''
+        @param name: The vulnerability name, will be checked against the values
+                     in core.data.constants.vulns.
+        
+        @param desc: The vulnerability description
+        
+        @param severity: The severity for this object
+        
+        @param response_ids: A list of response ids associated with this vuln
+        
+        @param plugin_name: The name of the plugin which identified the vuln
+        '''
         # Default values
         self._url = None
         self._uri = None
@@ -46,30 +58,70 @@ class Info(dict):
         self.set_name(name)
         self.set_desc(desc)
         self.set_plugin_name(plugin_name)
+    
+    @classmethod
+    def from_mutant(cls, name, desc, response_ids, plugin_name, mutant):
+        '''
+        @return: An info instance with the proper data set based on the values
+                 taken from the mutant.
+        '''
+        if not isinstance(mutant, Mutant):
+            raise TypeError('Mutant expected in from_mutant.')
         
-        # Clone the info object!
-        if data_obj is not None:
-            if isinstance(data_obj, Info):
-                self.set_desc(data_obj.get_desc())
-                self.set_id(data_obj.get_id())
-                self.set_name(data_obj.get_name())
-                self.set_mutant(data_obj.get_mutant())
-                
-                for k in data_obj.keys():
-                    self[k] = data_obj[k]
+        inst = cls(name, desc, response_ids, plugin_name)
+
+        inst.set_uri(mutant.get_uri())
+        inst.set_method(mutant.get_method())
+        inst.set_var(mutant.get_var())
+        inst.set_dc(mutant.get_dc())
+        inst.set_mutant(mutant)
             
-            if isinstance(data_obj, Mutant):
-                self.set_mutant(data_obj)
-                
-            if isinstance(data_obj, (Mutant, Info)):
-                self.set_uri(data_obj.get_uri())
-                self.set_method(data_obj.get_method())
-                self.set_var(data_obj.get_var())
-                self.set_dc(data_obj.get_dc())
+        return inst
+
+    @classmethod
+    def from_fr(cls, name, desc, response_ids, plugin_name, freq):
+        '''
+        @return: An info instance with the proper data set based on the values
+                 taken from the fuzzable request.
+        '''
+        if not isinstance(freq, FuzzableRequest):
+            raise TypeError('FuzzableRequest expected in from_fr.')
+        
+        inst = cls(name, desc, response_ids, plugin_name)
+
+        inst.set_uri(freq.get_uri())
+        inst.set_method(freq.get_method())
+        inst.set_dc(freq.get_dc())
             
-            if not isinstance(data_obj, (Mutant, Info)):
-                raise TypeError('Expected Vuln or Mutant to init another vuln.')
-                    
+        return inst
+            
+    @classmethod
+    def from_info(cls, other_info):
+        '''
+        @return: A clone of other_info. 
+        '''
+        if not isinstance(other_info, Info):
+            raise TypeError('Info expected in from_info.')
+        
+        name = other_info.get_name()
+        desc = other_info.get_desc()
+        response_ids = other_info.get_id()
+        plugin_name = other_info.get_plugin_name()
+        
+        inst = cls(name, desc, response_ids, plugin_name)
+
+        inst._uri = other_info.get_uri()
+        inst._url = other_info.get_url()
+        inst._method = other_info.get_method()
+        inst._variable = other_info.get_var()
+        inst._dc = other_info.get_dc()
+        inst._string_matches = other_info.get_to_highlight()
+        inst._mutant = other_info.get_mutant()
+
+        for k in other_info.keys():
+            inst[k] = other_info[k]
+
+        return inst
 
     def get_severity(self):
         '''
@@ -212,7 +264,7 @@ class Info(dict):
     def __repr__(self):
         return '<info object for issue: "' + self._desc + '">'
 
-    def set_id(self, id):
+    def set_id(self, _id):
         '''
         The id is a unique number that identifies every request and response
         performed by the framework.
@@ -243,16 +295,18 @@ class Info(dict):
         Will save:
             [3, 4]
         '''
-        if isinstance(id, list):
+        if isinstance(_id, list):
             # A list with more than one ID:
             # Ensuring that all of them are actually integers
             error_msg = 'All request/response ids have to be integers.'
-            for i in id:
+            for i in _id:
                 assert isinstance(i, int), error_msg
-            id.sort()
-            self._id = id
+            _id.sort()
+            self._id = _id
+        elif isinstance(_id, int):
+            self._id = [_id, ]
         else:
-            self._id = [id, ]
+            raise TypeError('IDs need to be lists of int or int not %s' % type(_id))
 
     def get_id(self):
         '''
