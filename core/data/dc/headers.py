@@ -31,7 +31,6 @@ class Headers(DataContainer):
     '''
     def __init__(self, init_val=(), encoding=UTF8):
         cleaned_vals = self.clean_values(init_val)
-        print cleaned_vals, init_val
         super(Headers, self).__init__(cleaned_vals, encoding)
     
     def clean_values(self, init_val):        
