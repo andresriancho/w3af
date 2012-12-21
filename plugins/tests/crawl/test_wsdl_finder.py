@@ -47,6 +47,6 @@ class TestWSDLFinder(PluginTest):
 
         info = infos[0]
 
-        self.assertTrue(info.get_name().startswith('WSDL file'))
-        self.assertEquals(info.get_url(
-        ).url_string, self.base_url + 'web_service_server.php')
+        self.assertIn('WSDL resource', info.get_name())
+        self.assertEquals(info.get_url().url_string,
+                          self.base_url + 'web_service_server.php')
