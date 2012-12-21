@@ -35,6 +35,7 @@ class test_strange_headers(unittest.TestCase):
 
     def setUp(self):
         create_temp_dir()
+        kb.kb.cleanup()
         self.plugin = strange_headers()
 
     def tearDown(self):
