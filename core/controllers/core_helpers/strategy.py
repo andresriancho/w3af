@@ -127,13 +127,18 @@ class w3af_core_strategy(object):
 
     def join_all_consumers(self):
         '''
-        Wait for the consumers to process all their work.
+        Wait for the consumers to process all their work, the order seems to be
+        important (not actually verified nor tested) but basically we first
+        finish the consumers that generate URLs and then the ones that consume
+        them.
         '''
-        self._teardown_grep()
+        self._teardown_crawl_infrastructure()        
+        
         self._teardown_audit()
-        self._teardown_auth()
-        self._teardown_crawl_infrastructure()
         self._teardown_bruteforce()
+                
+        self._teardown_auth()
+        self._teardown_grep()        
 
     def _fuzzable_request_router(self):
         '''
