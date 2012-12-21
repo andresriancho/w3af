@@ -24,9 +24,6 @@ import core.controllers.output_manager as om
 
 from core.ui.console.menu import menu
 from core.ui.console.util import suggest
-from core.data.kb.info import Info
-from core.data.kb.vuln import Vuln
-from core.data.kb.shell import shell
 
 
 class kbMenu(menu):
@@ -45,31 +42,25 @@ class kbMenu(menu):
         self.__getters = {
             'vulns': (
                 kb.kb.get_all_vulns,
-                ['Vulnerabilities'],
-                [Vuln.get_desc]),
+                ['Vulnerabilities'],),
             'info': (
                 kb.kb.get_all_infos,
-                ['Info'],
-                [Info.get_desc]),
+                ['Info'],),
             'shells': (
                 kb.kb.get_all_shells,
-                ['Shells'],
-                #pylint: disable=E1101
-                [shell.get_desc])
-                #pylint: enable=E1101
+                ['Shells'],)
         }
 
     def _list_objects(self, descriptor, objs):
         colNames = descriptor[0]
-        colGetters = descriptor[1]
         result = []
         result.append(colNames)
 
         for obj in objs:
             result.append([])
             row = []
-            for getter in colGetters:
-                row.append(getter(obj))
+            row.append(obj.get_name())
+            row.append(obj.get_desc())
 
             result.append(row)
 
