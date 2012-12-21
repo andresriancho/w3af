@@ -110,7 +110,7 @@ class XMLParser:
             name = attrib['name']
             plugin = attrib['plugin']
             
-            v = Vuln(name, 'desc', 'High', 1, plugin)
+            v = Vuln(name, Vuln.LONG_DESC, 'High', 1, plugin)
             v.set_url(URL(attrib['url']))
             
             self.vulns.append(v)

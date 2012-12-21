@@ -94,91 +94,107 @@ class allowed_methods(InfrastructurePlugin):
         domain_path = fuzzable_request.get_url().get_domain_path()
         if domain_path not in self._already_tested:
             self._already_tested.add(domain_path)
-            self._check_methods(domain_path)
+            allowed_methods, id_list = self._identify_allowed_methods(domain_path)
+            self._analyze_methods(domain_path, allowed_methods, id_list)
 
-    def _check_methods(self, url):
+    def _identify_allowed_methods(self, url):
+        # First, try to check available methods using OPTIONS,
+        # if OPTIONS isn't enabled, do it manually
+        allowed_options, id_options = self._identify_with_OPTIONS(url)
+        allowed_bf, id_bf = self._identify_with_bruteforce(url)
+        
+        allowed_methods = allowed_options + allowed_bf
+        id_list = id_options + id_bf
+        
+        # Added this to make the output a little bit more readable.
+        allowed_methods.sort()
+        
+        return allowed_methods, id_list
+        
+        
+    def _identify_with_OPTIONS(self, url):
         '''
-        Find out what methods are allowed.
+        Find out what methods are allowed using OPTIONS
         @param url: Where to check.
         '''
         allowed_methods = []
-        with_options = False
         id_list = []
 
-        # First, try to check available methods using OPTIONS,
-        # if OPTIONS isn't enabled, do it manually
         try:
             res = self._uri_opener.OPTIONS(url)
-            headers = res.get_lower_case_headers()
         except:
-            headers = {}
-
-        for header_name in ['allow', 'public']:
-            if header_name in headers:
-                allowed_methods.extend(headers[header_name].split(','))
-                allowed_methods = [x.strip() for x in allowed_methods]
-                with_options = True
-                allowed_methods = list(set(allowed_methods))
-
-        # Save the ID for later
-        if with_options:
-            id_list.append(res.id)
-
+            pass
         else:
+            headers = res.get_lower_case_headers()
+            id_list.append(res.id)
+            
+            for header_name in ['allow', 'public']:
+                if header_name in headers:
+                    allowed_methods.extend(headers[header_name].split(','))
+                    allowed_methods = [x.strip() for x in allowed_methods]
+                    allowed_methods = list(set(allowed_methods))
+        
+        return allowed_methods, id_list
+            
+    
+    def _identify_with_bruteforce(self, url):
+        id_list = []
+        allowed_methods = []
+        #
+        #   Before doing anything else, I'll send a request with a
+        #   non-existant method if that request succeds, then all will...
+        #
+        non_exist_response = self._uri_opener.ARGENTINA(url)
+        get_response = self._uri_opener.GET(url)
+
+        if non_exist_response.get_code() not in self.BAD_CODES\
+        and get_response.get_body() == non_exist_response.get_body():
+
+            desc = 'The remote Web server has a custom configuration, in'\
+                  ' which any not implemented methods that are invoked are'\
+                  ' defaulted to GET instead of returning a "Not Implemented"'\
+                  ' response.'
+            response_ids = [non_exist_response.get_id(), get_response.get_id()]
+            i = Info('Non existent methods default to GET', desc, response_ids,
+                     self.get_name())
+            i.set_url(url)
+            
+            kb.kb.append(self, 'custom-configuration', i)
             #
-            #   Before doing anything else, I'll send a request with a
-            #   non-existant method if that request succeds, then all will...
+            #   It makes no sense to continue working, all methods will
+            #   appear as enabled because of this custom configuration.
             #
-            non_exist_response = self._uri_opener.ARGENTINA(url)
-            get_response = self._uri_opener.GET(url)
+            return [], [non_exist_response.id, get_response.id]
 
-            if non_exist_response.get_code() not in self.BAD_CODES\
-            and get_response.get_body() == non_exist_response.get_body():
+        # 'DELETE' is not tested! I don't want to remove anything...
+        # 'PUT' is not tested! I don't want to overwrite anything...
+        methods_to_test = self._supported_methods.copy()
 
-                desc = 'The remote Web server has a custom configuration, in'\
-                      ' which any not implemented methods that are invoked are'\
-                      ' defaulted to GET instead of returning a "Not Implemented"'\
-                      ' response.'
-                response_ids = [non_exist_response.get_id(), get_response.get_id()]
-                i = Info('Non existent methods default to GET', desc, response_ids,
-                         self.get_name())
-                i.set_url(url)
-                
-                kb.kb.append(self, 'custom-configuration', i)
-                #
-                #   It makes no sense to continue working, all methods will
-                #   appear as enabled because of this custom configuration.
-                #
-                return []
+        # remove dangerous methods.
+        methods_to_test.remove('DELETE')
+        methods_to_test.remove('PUT')
 
-            # 'DELETE' is not tested! I don't want to remove anything...
-            # 'PUT' is not tested! I don't want to overwrite anything...
-            methods_to_test = self._supported_methods.copy()
+        for method in methods_to_test:
+            method_functor = getattr(self._uri_opener, method)
+            try:
+                response = apply(method_functor, (url,), {})
+            except:
+                pass
+            else:
+                code = response.get_code()                
+                if code not in self.BAD_CODES:
+                    allowed_methods.append(method)
+                    id_list.append(response.id)
+        
+        return allowed_methods, id_list
 
-            # remove dangerous methods.
-            methods_to_test.remove('DELETE')
-            methods_to_test.remove('PUT')
-
-            for method in methods_to_test:
-                method_functor = getattr(self._uri_opener, method)
-                try:
-                    response = apply(method_functor, (url,), {})
-                    code = response.get_code()
-                except:
-                    pass
-                else:
-                    if code not in self.BAD_CODES:
-                        allowed_methods.append(method)
-
-        # Added this to make the output a little more readable.
-        allowed_methods.sort()
-
+    def _analyze_methods(self, url, allowed_methods, id_list):
         # Check for DAV
         if set(allowed_methods).intersection(self.DAV_METHODS):
             # dav is enabled!
             # Save the results in the KB so that other plugins can use this
             # information
-            msg = 'The URL "%s" has the following allowed methods. These'\
+            desc = 'The URL "%s" has the following allowed methods. These'\
                   ' include DAV methods and should be disabled: %s' 
             desc = desc % (url, ', '.join(allowed_methods))
             
@@ -199,8 +215,7 @@ class allowed_methods(InfrastructurePlugin):
             i['methods'] = allowed_methods
             
             kb.kb.append(self, 'methods', i)
-
-        return []
+            
 
     def end(self):
         '''
@@ -254,11 +269,11 @@ class allowed_methods(InfrastructurePlugin):
         ol = OptionList()
 
         d1 = 'Execute plugin only one time'
-        h1 = 'Generally the methods allowed for a URL are \
-          configured system wide, so executing this plugin only one \
-          time is the faster choice. The safest choice is to run it against every URL.'
-        o = opt_factory(
-            'execOneTime', self._exec_one_time, d1, 'boolean', help=h1)
+        h1 = 'Generally the methods allowed for a URL are configured system'\
+             ' wide, so executing this plugin only once is the faster choice.'\
+             ' The most accurate choice is to run it against every URL.'
+        o = opt_factory('execOneTime', self._exec_one_time, d1,
+                        'boolean', help=h1)
         ol.add(o)
 
         d2 = 'Only report findings if uncommon methods are found'

@@ -83,7 +83,7 @@ class TestTextFile(PluginTest):
             mo = vuln_re.search(line)
 
             if mo:
-                v = Vuln('TestCase', 'desc', 'High', 1, 'plugin')
+                v = Vuln('TestCase', Vuln.LONG_DESC, 'High', 1, 'plugin')
                 v.set_url(URL(mo.group(1)))
                 v.set_method(mo.group(2))
                 
