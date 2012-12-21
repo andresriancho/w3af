@@ -239,8 +239,8 @@ class shell(ExploitResult):
 
         @return: The name of the shell ( os_commanding_shell, dav, etc )
         '''
-        msg = 'You should implement the get_name method for classes that inherit'
-        msg += ' from "shell"'
+        msg = 'You should implement the get_name method for classes that'\
+              'inherit from "shell"'
         raise NotImplementedError(msg)
 
     def _identify_os(self):
