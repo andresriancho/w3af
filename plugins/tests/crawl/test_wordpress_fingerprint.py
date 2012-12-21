@@ -55,7 +55,7 @@ class Testwordpress_fingerprint(PluginTest):
         self.assertEqual(len(infos), 4)
 
         for i in infos:
-            self.assertEqual('WordPress version', i.get_name())
+            self.assertEqual('Fingerprinted Wordpress version', i.get_name())
 
         descriptions = set([i.get_desc(with_id=False) for i in infos])
         expected_descriptions = set(
