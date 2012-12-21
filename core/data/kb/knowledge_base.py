@@ -190,6 +190,7 @@ class DBKnowledgeBase(object):
     '''
 
     def __init__(self):
+        # TODO: Read the comment in password_profiling about performance
         self._kb = {}
         self._kb_lock = threading.RLock()
 

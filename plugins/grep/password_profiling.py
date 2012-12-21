@@ -51,7 +51,7 @@ class password_profiling(GrepPlugin):
 
     def __init__(self):
         GrepPlugin.__init__(self)
-        kb.kb.save(self, 'password_profiling', {})
+        self._init = True
 
         #TODO: develop more plugins, there is a, pure-python metadata reader named
         #      hachoir-metadata it will be useful for writing A LOT of plugins
@@ -68,7 +68,14 @@ class password_profiling(GrepPlugin):
         @param response: The HTTP response object
         @return: None.
         '''
+        if self._init:
+            kb.kb.save(self, 'password_profiling', {})
+            self._init = False
+            
         # Initial setup
+        # FIXME: When I migrate to a DB backend for the KB, this line will
+        # have a huge performance hit since it will run a DB query for each
+        # HTTP request
         lang = kb.kb.get('lang', 'lang') or 'unknown'
 
         # I added the 404 code here to avoid doing some is_404 lookups
