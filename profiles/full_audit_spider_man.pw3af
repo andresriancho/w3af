@@ -107,7 +107,6 @@ override = False
 [grep.private_ip]
 
 [grep.motw]
-withoutMOTW = False
 
 [grep.code_disclosure]
 
