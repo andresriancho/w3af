@@ -44,7 +44,7 @@ class TestXssedDotCom(PluginTest):
 
         info = infos[0]
 
-        self.assertEqual(info.get_name(), 'Possible XSS vulnerability')
+        self.assertEqual(info.get_name(), 'Potential XSS vulnerability')
         self.assertTrue(info.get_desc().startswith('According to xssed.com,'))
 
     def test_xssed_dot_com_negative(self):
