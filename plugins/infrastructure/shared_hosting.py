@@ -24,15 +24,15 @@ import socket
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
-from core.data.kb.vuln import Vuln
 
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_list import OptionList
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
-from core.data.search_engines.bing import bing as bing
 from core.controllers.misc.is_private_site import is_private_site
+from core.data.options.opt_factory import opt_factory
+from core.data.options.option_list import OptionList
+from core.data.search_engines.bing import bing as bing
+from core.data.kb.vuln import Vuln
 
 
 class shared_hosting(InfrastructurePlugin):
@@ -53,24 +53,46 @@ class shared_hosting(InfrastructurePlugin):
         @param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         '''
-        bing_wrapper = bing(self._uri_opener)
-
         domain = fuzzable_request.get_url().get_domain()
+        is_public = self._is_public(domain)
+        
+        if is_public:
+            
+            ip_address_list = self._get_ip_addresses(domain)
+            self._analyze_ips(ip_address_list, fuzzable_request)
+    
+    def _is_public(self, domain):
+        
         if is_private_site(domain):
-            msg = 'shared_hosting plugin is not checking for subdomains for '
-            msg += 'domain: "' + domain + '" because it is a private address.'
+            msg = 'shared_hosting plugin is not checking for subdomains for'\
+                  ' domain: "%s" because it is a private address.' % domain
             om.out.debug(msg)
-            return
+            return False
+        
+        return True
 
+    def _get_ip_addresses(self, domain):
+        '''
+        @return: All IP addresses for this domain.
+        '''
         try:
             addrinfo = socket.getaddrinfo(domain, 0)
         except:
             om.out.error('Failed to resolve address: "%s"' % domain)
-            return
+            return []
 
         ip_address_list = [info[4][0] for info in addrinfo]
         ip_address_list = list(set(ip_address_list))
-
+        return ip_address_list
+    
+    
+    def _analyze_ips(self, ip_address_list, fuzzable_request):
+        '''
+        Search all IP addresses in Bing and determine if they have more than
+        one domain hosted on it. Store findings in KB.
+        '''
+        bing_wrapper = bing(self._uri_opener)
+        
         # This is the best way to search, one by one!
         for ip_address in ip_address_list:
             results = bing_wrapper.get_n_results('ip:' + ip_address,
@@ -116,7 +138,7 @@ class shared_hosting(InfrastructurePlugin):
 
                 v['also_in_hosting'] = results
                 
-                om.out.vulnerability(msg, severity=severity.MEDIUM)
+                om.out.vulnerability(desc, severity=severity.MEDIUM)
                 kb.kb.append(self, 'shared_hosting', v)
 
     def get_options(self):
