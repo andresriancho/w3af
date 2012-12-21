@@ -83,10 +83,12 @@ class ConsoleUI(object):
 
     def __init__(self, commands=[], parent=None, do_upd=None, rev=0):
         self._commands = commands
-        self._line = []  # the line which is being typed
-        self._position = 0  # cursor position
-        self._history = historyTable(
-        )  # each menu has array of (array, positionInArray)
+        # the line which is being typed
+        self._line = []
+        # cursor position
+        self._position = 0
+        # each menu has array of (array, positionInArray)
+        self._history = historyTable()
         self._trace = []
         self._upd_avail = False
 
