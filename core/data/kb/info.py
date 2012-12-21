@@ -179,7 +179,9 @@ class Info(dict):
             raise ValueError('Description too short.')
 
         if '%s' in desc:
-            raise ValueError('Format string resolution missing.')
+            msg = 'Format string resolution missing is set_desc method for'\
+                  ' string "%s".'
+            raise ValueError(msg % desc)
         
         self._desc = desc
 
