@@ -19,8 +19,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
-
 from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.crawl.wordnet import wordnet
 
 
 class TestWordnet(PluginTest):
@@ -53,6 +53,13 @@ class TestWordnet(PluginTest):
             set(str(u) for u in urls),
             set((self.target_url + end) for end in expected_urls)
         )
+
+    def test_search_wordnet(self):
+        wn = wordnet()
+        wn_result = wn._search_wn('blue')
+        
+        self.assertEqual(len(wn_result), wn._wordnet_results)
+        self.assertIn('red', wn_result)
 
     def test_fix_bug(self):
         '''

@@ -67,8 +67,10 @@ class wordnet(CrawlPlugin):
         @return: None, all important data is put() to self.output_queue
         '''
         response = self._uri_opener.send_mutant(mutant)
+        
         if not is_404(response) and \
-                relative_distance_lt(original_response.body, response.body, 0.85):
+        relative_distance_lt(original_response.body, response.body, 0.85):
+            
             for fr in self._create_fuzzable_requests(response):
                 self.output_queue.put(fr)
 
@@ -104,41 +106,31 @@ class wordnet(CrawlPlugin):
         Search the wordnet for this word, based on user options.
 
         @return: A list of related words.
-
-        >>> wn = wordnet()
-        >>> wn_result = wn._search_wn('blue')
-        >>> len(wn_result) == wn._wordnet_results
-        True
-        >>> 'red' in wn_result
-        True
-
         '''
-        if not word:
-            return []
-
-        if word.isdigit():
-            return []
-
         result = []
+        
+        if not word or word.isdigit():
+            return result
 
-        # Now the magic that gets me a lot of results:
-        try:
-            result.extend(wn.synsets(word)[0].hypernyms()[0].hyponyms())
-        except:
-            pass
-
-        synset_list = wn.synsets(word)
-
-        for synset in synset_list:
-
-            # first I add the synsec as it is:
-            result.append(synset)
-
-            # Now some variations...
-            result.extend(synset.hypernyms())
-            result.extend(synset.hyponyms())
-            result.extend(synset.member_holonyms())
-            result.extend(synset.lemmas[0].antonyms())
+        with self._plugin_lock:
+            # Now the magic that gets me a lot of results:
+            try:
+                result.extend(wn.synsets(word)[0].hypernyms()[0].hyponyms())
+            except:
+                pass
+    
+            synset_list = wn.synsets(word)
+    
+            for synset in synset_list:
+    
+                # first I add the synset as it is:
+                result.append(synset)
+    
+                # Now some variations...
+                result.extend(synset.hypernyms())
+                result.extend(synset.hyponyms())
+                result.extend(synset.member_holonyms())
+                result.extend(synset.lemmas[0].antonyms())
 
         # Now I have a results list filled up with a lot of words, the problem is that
         # this words are really Synset objects, so I'll transform them to strings:
