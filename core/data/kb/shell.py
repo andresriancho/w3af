@@ -270,4 +270,10 @@ class shell(ExploitResult):
         if name.startswith('__'):
             raise AttributeError("%s instance has no attribute '%s'" %
                                 (self.__class__.__name__, name))
-        return getattr(self._vuln, name)    
+        return getattr(self._vuln, name)
+    
+    def __setitem__(self, key, value):
+        self._vuln[key] = value
+    
+    def __getitem__(self, key):
+        return self._vuln[key]
