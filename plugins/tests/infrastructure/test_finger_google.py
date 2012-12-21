@@ -40,3 +40,6 @@ class TestFingerGoogle(PluginTest):
         emails = self.kb.get('finger_google', 'emails')
 
         self.assertEqual(len(emails), 3, emails)
+        
+        users = [em['user'] for em in emails]
+        self.assertNotIn('x3d', users) 
