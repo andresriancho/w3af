@@ -332,8 +332,8 @@ class fingerprint_404(object):
         return relative_distance_ge(clean_response_404_body, html_body, IS_EQUAL_RATIO)
 
 
-def fingerprint_404_singleton():
-    if fingerprint_404._instance is None:
+def fingerprint_404_singleton(cleanup=False):
+    if fingerprint_404._instance is None or cleanup:
         fingerprint_404._instance = fingerprint_404()
 
     return fingerprint_404._instance
