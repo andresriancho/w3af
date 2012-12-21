@@ -38,7 +38,7 @@ from core.controllers.exceptions import w3afException
 
 class html_comments(GrepPlugin):
     '''
-    Find HTML comments.
+    Extract and analyze HTML comments.
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''

@@ -37,7 +37,7 @@ from core.controllers.plugins.output_plugin import OutputPlugin
 
 from core.data.options.option_types import (
     BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST,
-    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT)
+    REGEX, COMBO, INPUT_FILE, OUTPUT_FILE, PORT, IP)
 
 from plugins.tests.helper import PluginTest, PluginConfig
 
@@ -74,7 +74,7 @@ class TestBasic(unittest.TestCase):
 
         OPTION_TYPES = (
             BOOL, INT, FLOAT, STRING, URL, IPPORT, LIST, REGEX, COMBO,
-            INPUT_FILE, OUTPUT_FILE, PORT)
+            INPUT_FILE, OUTPUT_FILE, PORT, IP)
 
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
@@ -114,13 +114,22 @@ class TestBasic(unittest.TestCase):
             for plugin in self.plugins[plugin_type]:
                 self.assertTrue(isinstance(plugin.get_plugin_deps(), list))
 
-                self.assertTrue(
-                    isinstance(plugin.get_long_desc(), basestring))
-
+                
                 self.assertTrue(isinstance(plugin.get_desc(), basestring))
-                msg = 'Description for %s.%s is too short'
-                self.assertGreater(
-                    len(plugin.get_desc()), 20, msg % (plugin_type, plugin))
+                msg = 'Description "%s" (len:%s) for %s.%s is too short'
+                self.assertGreaterEqual(len(plugin.get_desc()), 20,
+                                        msg % (plugin.get_desc(),
+                                               len(plugin.get_desc()),
+                                               plugin_type,
+                                               plugin.get_name()))
+                
+                self.assertTrue(isinstance(plugin.get_long_desc(), basestring))
+                
+                msg = 'Long description "%s" for %s.%s is too short'
+                self.assertGreater(len(plugin.get_long_desc()), 50,
+                                   msg % (plugin.get_long_desc(),
+                                          plugin_type,
+                                          plugin.get_name()))
 
     def test_plugin_root_probability(self):
         for plugin in self.plugins['attack']:
@@ -133,16 +142,16 @@ class TestBasic(unittest.TestCase):
     def test_plugin_is_of_correct_type(self):
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
-                msg = '%s if not of expected type %s' % (
-                    plugin, PLUGIN_TYPES[plugin_type])
-                self.assertTrue(
-                    isinstance(plugin, PLUGIN_TYPES[plugin_type]), msg)
-
+                
+                ptype = PLUGIN_TYPES[plugin_type]
+                msg = '%s if not of expected type %s' % (plugin, ptype)
+                
+                self.assertTrue(isinstance(plugin, ptype), msg)
                 self.assertEqual(plugin.get_type(), plugin_type, msg)
 
                 # Also assert that the plugin called <Type>Plugin.__init__(self)
                 # and that the corresponding attrs are there
-                for attr in ('_uri_opener', 'output_queue', '_tm', '_plugin_lock'):
+                for attr in ('_uri_opener', 'output_queue', '_plugin_lock'):
                     msg = 'Plugin %s doesn\'t have attribute %s.' % (
                         plugin.get_name(), attr)
                     self.assertTrue(
