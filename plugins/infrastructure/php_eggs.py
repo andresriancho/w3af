@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import hashlib
 
 from itertools import repeat, izip
+from collections import namedtuple
 
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
@@ -248,11 +249,11 @@ class php_eggs(InfrastructurePlugin):
             self._already_analyzed_ext.add(ext)
 
             # Init some internal variables
-            GET_results = self._GET_php_eggs(fuzzable_request, ext)
+            query_results = self._GET_php_eggs(fuzzable_request, ext)
 
-            if self._are_php_eggs(GET_results):
+            if self._are_php_eggs(query_results):
                 # analyze the info to see if we can identify the version
-                self._extract_version_from_egg(GET_results)
+                self._extract_version_from_egg(query_results)
 
     def _GET_php_eggs(self, fuzzable_request, ext):
         '''
@@ -269,7 +270,11 @@ class php_eggs(InfrastructurePlugin):
                 return response, egg_URL, egg_desc
 
         # Send the requests using threads:
-        GET_results = []
+        query_results = []
+        EggQueryResult = namedtuple('EggQueryResult', ['http_response',
+                                                       'egg_desc',
+                                                       'egg_URL'])
+        
         http_get = one_to_many(http_get)
         fr_repeater = repeat(fuzzable_request)
         args_iterator = izip(fr_repeater, self.PHP_EGGS)
@@ -277,11 +282,12 @@ class php_eggs(InfrastructurePlugin):
                                                        args_iterator)
 
         for response, egg_URL, egg_desc in pool_results:
-            GET_results.append((response, egg_desc, egg_URL))
+            eqr = EggQueryResult(response, egg_desc, egg_URL)
+            query_results.append(eqr)
 
-        return GET_results
+        return query_results
 
-    def _are_php_eggs(self, GET_results):
+    def _are_php_eggs(self, query_results):
         '''
         Now I analyze if this is really a PHP eggs thing, or simply a response that
         changes a lot on each request. Before, I had something like this:
@@ -293,8 +299,8 @@ class php_eggs(InfrastructurePlugin):
         '''
         images = 0
         not_images = 0
-        for response, egg_desc, egg_URL in GET_results:
-            if 'image' in response.content_type:
+        for query_result in query_results:
+            if 'image' in query_result.http_response.content_type:
                 images += 1
             else:
                 not_images += 1
@@ -303,14 +309,14 @@ class php_eggs(InfrastructurePlugin):
             #
             #   The remote web server has expose_php = On. Report all the findings.
             #
-            for response, egg_desc, egg_URL in GET_results:
+            for query_result in query_results:
                 desc = 'The PHP framework running on the remote server has a'\
                        ' "%s" easter egg, access to the PHP egg is possible'\
                        ' through the URL: "%s".'
-                desc = desc % (egg_desc, egg_URL)
+                desc = desc % (query_result.egg_desc, query_result.egg_URL)
                 
-                i = Info('PHP Egg', desc, response.id, self.get_name())
-                i.set_url(egg_URL)
+                i = Info('PHP Egg', desc, query_result.http_response.id, self.get_name())
+                i.set_url(query_result.egg_URL)
                 
                 kb.kb.append(self, 'eggs', i)
                 om.out.information(i.get_desc())
@@ -319,18 +325,21 @@ class php_eggs(InfrastructurePlugin):
 
         return False
 
-    def _extract_version_from_egg(self, response):
+    def _extract_version_from_egg(self, query_results):
         '''
         Analyzes the eggs and tries to deduce a PHP version number
         ( which is then saved to the kb ).
         '''
-        if not response:
+        if not query_results:
             return None
         else:
             cmp_list = []
-            for r in response:
-                hash_str = hashlib.md5(r[0].get_body()).hexdigest()
-                cmp_list.append((hash_str, r[1]))
+            for query_result in query_results:
+                body = query_result.http_response.get_body()
+                hash_str = hashlib.md5(body).hexdigest()
+                
+                cmp_list.append((hash_str, query_result.egg_desc))
+                
             cmp_set = set(cmp_list)
 
             found = False
@@ -348,7 +357,9 @@ class php_eggs(InfrastructurePlugin):
                 versions = '\n- '.join(matching_versions)
                 desc = desc % versions
                 
-                i = Info('Fingerprinted PHP version', desc, response.id,
+                response_ids = [r.http_response.get_id() for r in query_results]
+                
+                i = Info('Fingerprinted PHP version', desc, response_ids,
                          self.get_name())
                 i['version'] = matching_versions
                 
@@ -357,8 +368,8 @@ class php_eggs(InfrastructurePlugin):
 
             if not found:
                 version = 'unknown'
-                powered_by_headers = kb.kb.get(
-                    'server_header', 'powered_by_string')
+                powered_by_headers = kb.kb.get('server_header',
+                                               'powered_by_string')
                 try:
                     for v in powered_by_headers:
                         if 'php' in v.lower():
