@@ -79,7 +79,7 @@ class TestHTMLOutput(PluginTest):
             mo = vuln_url_re.search(line)
             if mo:
                 url = URL(mo.group(1))
-                v = Vuln('TestCase', 'desc', 'High', 1, 'plugin')
+                v = Vuln('TestCase', Vuln.LONG_DESC, 'High', 1, 'plugin')
                 v.set_url(url)
                 vulns.append(v)
 
