@@ -386,7 +386,7 @@ class pykto(CrawlPlugin):
 
         @return: True if the requested URI responded as expected.
         '''
-        (server, query, expected_response, method, desc) = parameters
+        (server, query, expected_response, method, db_desc) = parameters
 
         #
         #    Small performance improvement. If all we want to know is if the
@@ -426,11 +426,11 @@ class pykto(CrawlPlugin):
         if self._analyze_result(response, expected_response, parameters, url):
             kb.kb.append(self, 'url', response.get_url())
 
-            desc = 'pykto plugin found a vulnerability at URL: "%s".'\
+            vdesc = 'pykto plugin found a vulnerability at URL: "%s".'\
                    ' Vulnerability description: "%s".'
-            desc = desc % (response.get_url(), desc.strip())
+            vdesc = vdesc % (response.get_url(), db_desc.strip())
 
-            v = Vuln('Insecure resource', desc, severity.LOW,
+            v = Vuln('Insecure resource', vdesc, severity.LOW,
                      response.id, self.get_name())
             v.set_uri(response.get_uri())
             v.set_method(method)
