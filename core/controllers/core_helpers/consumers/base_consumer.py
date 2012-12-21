@@ -71,7 +71,7 @@ class BaseConsumer(Process):
             if work_unit == POISON_PILL:
 
                 # Close the pool and wait for everyone to finish
-                self._threadpool.terminate()
+                self._threadpool.close()
                 self._threadpool.join()
                 del self._threadpool
                 
