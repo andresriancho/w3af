@@ -18,7 +18,9 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
+from mock import MagicMock
 from nose.plugins.attrib import attr
+
 from plugins.tests.helper import PluginTest, PluginConfig
 
 
@@ -63,9 +65,17 @@ class TestXPathShell(PluginTest):
         # Now I start testing the shell itself!
         #
         shell = exploit_result[0]
+        
+        self.assertEqual(shell._get_data_len(), 183)
+        
+        # Now that I know that this worked, lets modify the method in order for
+        # it to return a lower number and the getxml() process to be much
+        # shorter an faster to test.
+        
+        shell._get_data_len = MagicMock(return_value=45)
+        
         xml = shell.generic_user_input('getxml', [])
         self.assertIn('moth', xml)
-        self.assertIn('Spam Eggs', xml)
         
         _help = shell.help(None)
         self.assertNotIn('execute', _help)
