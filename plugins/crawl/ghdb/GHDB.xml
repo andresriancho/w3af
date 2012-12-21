@@ -686,7 +686,9 @@ By
 Chintan GurjarRahul Tygi</textualDescription></signature><signature><signatureReferenceNumber>3810</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3810/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=Pyxis Mobile Test Page</querystring><shortDescription>intitle:&quot;Pyxis Mobile Test Page&quot; inurl:&quot;mpTest.aspx&quot;</shortDescription><textualDescription>Pyxis Mobile Test Page
 
 intitle:&quot;Pyxis Mobile Test Page&quot; inurl:&quot;mpTest.aspx&quot;
-</textualDescription></signature><signature><signatureReferenceNumber>3811</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3811/</link><category>Network or vulnerability data</category><querystring>http://www.google.com/search?q=inurl:finger.cgi</querystring><shortDescription>inurl:finger.cgi</shortDescription><textualDescription>Finger</textualDescription></signature><signature><signatureReferenceNumber>3812</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3812/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:32400/web/index.html</querystring><shortDescription>inurl:32400/web/index.html</shortDescription><textualDescription>Submitting this for the GHDB.  These are web accessible Plex Media Servers
+</textualDescription></signature><signature><signatureReferenceNumber>3811</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3811/</link><category>Network or vulnerability data</category><querystring>http://www.google.com/search?q=inurl:finger.cgi</querystring><shortDescription>inurl:finger.cgi</shortDescription><textualDescription>Finger
+
+Submitted by: Christy Philip Mathew</textualDescription></signature><signature><signatureReferenceNumber>3812</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3812/</link><category>Various Online Devices</category><querystring>http://www.google.com/search?q=inurl:32400/web/index.html</querystring><shortDescription>inurl:32400/web/index.html</shortDescription><textualDescription>Submitting this for the GHDB.  These are web accessible Plex Media Servers
 where you can watch/listen to other people's media collections.
 
 FYI
@@ -746,4 +748,19 @@ Enumerate Solarwinds Orion network monitoring portals.  In some cases, the
 portal can be accessed without authenticating.
 
 -Sean
+</textualDescription></signature><signature><signatureReferenceNumber>3821</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3821/</link><category>Files containing passwords</category><querystring>https://www.google.com/search?q=allinurl%3A&quot;User_info%2Fauth_user_file.txt&quot;</querystring><shortDescription>allinurl:&quot;User_info/auth_user_file.txt&quot;</shortDescription><textualDescription>Google dork for find user info and configuration password of DCForum
+allinurl:&quot;User_info/auth_user_file.txt&quot;
+
+- Ajith Kp
+</textualDescription></signature><signature><signatureReferenceNumber>3822</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3822/</link><category>Error Messages</category><querystring>http://www.google.com/search?q=intext:&quot;Fatal error: Class 'Red_Action' not found in&quot;</querystring><shortDescription>intext:&quot;Fatal error: Class 'Red_Action' not found in&quot;</shortDescription><textualDescription>Dork to find Plugin errors in wordpress websites
+Dork - intext:&quot;Fatal error: Class 'Red_Action' not found in&quot; 		 	   		  </textualDescription></signature><signature><signatureReferenceNumber>3823</signatureReferenceNumber><link>http://www.exploit-db.com/ghdb/3823/</link><category>Files containing juicy info</category><querystring>http://www.google.com/search?q=Google dork inurl:newsnab/www/ automated.config.php</querystring><shortDescription>inurl:newsnab/www/ automated.config.php</shortDescription><textualDescription>Usenet Accounts from Newsnab configs
+inurl:newsnab/www/  automated.config.php
+Author: rmccurdy.com
+
+yay free newsgroup access !
+***********************************************************************
+The information in this email is confidential and may be legally privileged. It is intended solely for the addressee. Access to this email by anyone else is unauthorized. If you are not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is prohibited and may be unlawful. When addressed to our clients any opinions or advice contained in this email are subject to the terms and conditions expressed in the governing KPMG client engagement letter.
+***********************************************************************
+
+
 </textualDescription></signature></searchEngineSignature>
