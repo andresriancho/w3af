@@ -42,15 +42,20 @@ class test_all(unittest.TestCase):
         self.url_str = 'http://moth/'
         self.url_inst = URL(self.url_str)
 
-        self._is_404_patcher = patch
-
         self._w3af = w3afCore()
         self._plugins = []
         for pname in self._w3af.plugins.get_plugin_list('grep'):
             self._plugins.append(
                 self._w3af.plugins.get_plugin_inst('grep', pname))
 
-    def test_image_with_image_content_type(self):
+    # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
+    #       remember about adding the patch...
+    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))
+    def test_image_with_image_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image.
         '''
@@ -64,8 +69,15 @@ class test_all(unittest.TestCase):
         
         for pinst in self._plugins:
             pinst.grep(request, response)
-        
-    def test_image_with_text_html_content_type(self):
+
+    # TODO: Is there a nicer way to do this? If I add a new grep plugin I won't
+    #       remember about adding the patch...
+    @patch('plugins.grep.motw.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.password_profiling.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.lang.is_404', side_effect=repeat(False))
+    @patch('plugins.grep.code_disclosure.is_404', side_effect=repeat(False))        
+    def test_image_with_text_html_content_type(self, *args):
         '''
         Verify that our plugins don't break when we send them an image with
         a text/html content type.
