@@ -127,8 +127,8 @@ class http_vs_https_dist(InfrastructurePlugin):
                 trc2 = header % (
                     domain, https_port, trace_str(https_ip_tuples))
 
-                desc = 'Routes to target "%s" using ports "%s2 and ' \
-                       '"%s" are different:\n%s\n%s'
+                desc = 'Routes to target "%s" using ports %s and ' \
+                       '%s are different:\n%s\n%s'
                 desc = desc % (domain, http_port, https_port, trc1, trc2)
                 set_info('HTTP and HTTPs hop distance', desc)
                 om.out.information(desc)
