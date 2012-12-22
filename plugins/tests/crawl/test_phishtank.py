@@ -108,5 +108,10 @@ class TestPhishtank(PluginTest):
 
             time_delta = today_date - gen_date
 
-            msg = 'The phishtank database is too old.'
+            msg = 'The phishtank database is too old, in order to update it'\
+                  ' please follow these steps:\n'\
+                  'cd plugins/crawl/phishtank/\n'\
+                  'wget http://data.phishtank.com/data/online-valid/\n'\
+                  'mv index.html index.xml\n'\
+                  'cd -\n'
             self.assertTrue(time_delta.days < 30, msg)

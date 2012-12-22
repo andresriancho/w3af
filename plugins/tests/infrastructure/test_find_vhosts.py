@@ -42,7 +42,7 @@ class TestFindVhosts(PluginTest):
         self.assertEqual(len(infos), 1, infos)
 
         info = infos[0]
-        self.assertEqual('Shared hosting', info.get_name())
+        self.assertEqual('Virtual host identified', info.get_name())
         self.assertTrue('the virtual host name is: "intranet"' in info.get_desc(), info.get_desc())
 
     def test_find_vhost_dead_link(self):
@@ -52,6 +52,6 @@ class TestFindVhosts(PluginTest):
         infos = self.kb.get('find_vhosts', 'find_vhosts')
         self.assertEqual(len(infos), 2, infos)
 
-        expected = set(['Internal hostname in HTML link', 'Shared hosting'])
+        expected = set(['Internal hostname in HTML link', 'Virtual host identified'])
         self.assertEqual(expected,
                          set([i.get_name() for i in infos]))
