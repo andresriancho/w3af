@@ -57,7 +57,8 @@ class OpenerSettings(Configurable):
         # Set the openers to None
         self._basicAuthHandler = None
         self._proxy_handler = None
-        self._httpsHandler = None
+        self._kAHTTP = None
+        self._kAHTTPS = None
         self._mangleHandler = None
         self._urlParameterHandler = None
         self._ntlmAuthHandler = None

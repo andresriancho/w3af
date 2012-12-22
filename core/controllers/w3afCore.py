@@ -68,7 +68,11 @@ class w3afCore(object):
         Init some variables and files.
         Create the URI opener.
         '''
-        self._init_core_internals()
+        # Create some directories, do this every time before starting a new
+        # scan and before doing any other core init because these are widely
+        # used
+        self._home_directory()
+        self._tmp_directory()
         
         # We want to have only one exception handler instance during the whole
         # w3af process. The data captured by it will be cleared before starting
@@ -76,7 +80,28 @@ class w3afCore(object):
         # we'll extract info from it.
         self.exception_handler = ExceptionHandler()
         
-    def _init_core_internals(self):
+        # These are some of the most important moving parts in the w3afCore
+        # they basically handle every aspect of the w3af framework. I create
+        # these here because they are used by the UIs even before starting a
+        # scan.
+        self.profiles = w3af_core_profiles(self)
+        self.plugins = w3af_core_plugins(self)
+        self.status = w3af_core_status()
+        self.target = w3af_core_target()
+        self.progress = progress()
+        self.strategy = None
+        
+        self._create_worker_pool()
+
+        # FIXME: In the future, when the output_manager is not an awful singleton
+        # anymore, this line should be removed and the output_manager object
+        # should take a w3afCore object as a parameter in its __init__
+        om.out.set_w3af_core(self)
+        
+        # Create the URI opener object
+        self.uri_opener = xUrllib()
+                
+    def scan_start_hook(self):
         '''
         Create directories, threads and consumers required to perform a w3af
         scan. Used both when we init the core and when we want to clear all
@@ -84,38 +109,36 @@ class w3afCore(object):
         
         @return: None
         '''
-        # Create some directories
+        # If this is not the first scan, I want to clear the old bug data that
+        # might be stored in the exception_handler.
+        self.exception_handler.clear()
+        
+        self.cleanup()
+        
+        # Create some directories, do this every time before starting a new
+        # scan and before doing any other core init because these are widely
+        # used
         self._home_directory()
         self._tmp_directory()
-
+        
+        enable_dns_cache()
+        
         # Reset global sequence number generator
         consecutive_number_generator.reset()
-
-        self._create_worker_pool()
-                
-        # These are some of the most important moving parts in the w3afCore
-        # they basically handle every aspect of the w3af framework:
+               
+        # Now that we know we're going to run a scan, create the strategy
+        # instance, we don't create it before (in __init__) because we do not
+        # need it at that point
         self.strategy = w3af_core_strategy(self)
-        self.profiles = w3af_core_profiles(self)
-        self.plugins = w3af_core_plugins(self)
+        # And create these two again just to clear their internal states
         self.status = w3af_core_status()
-        self.target = w3af_core_target()
         self.progress = progress()
 
-        # Init some internal variables
-        self.plugins.zero_enabled_plugins()
-
         # Init the 404 detection for the whole framework
-        self.uri_opener = xUrllib()
-        fp_404_db = fingerprint_404_singleton()
+        fp_404_db = fingerprint_404_singleton(cleanup=True)
         fp_404_db.set_url_opener(self.uri_opener)
         fp_404_db.set_worker_pool(self.worker_pool)
-
-        # FIXME: In the future, when the output_manager is not an awful singleton
-        # anymore, this line should be removed and the output_manager object
-        # should take a w3afCore object as a parameter in its __init__
-        om.out.set_w3af_core(self)
-
+    
     def start(self):
         '''
         The user interfaces call this method to start the whole scanning
@@ -125,10 +148,8 @@ class w3afCore(object):
         '''
         om.out.debug('Called w3afCore.start()')
 
-        # If this is not the first scan, I want to clear the old bug data that
-        # might be stored in the exception_handler.
-        self.exception_handler.clear()
-
+        self.scan_start_hook()
+        
         # This will help identify the total scan time
         self._start_time_epoch = time.time()
 
@@ -148,7 +169,6 @@ class w3afCore(object):
                                    self.plugins.get_all_plugin_options())
 
         self.status.start()
-        enable_dns_cache()
 
         try:
             self.strategy.start()
@@ -172,7 +192,7 @@ class w3afCore(object):
             #
             raise
         except w3afMustStopException, wmse:
-            self._end(wmse, ignore_err=True)
+            self.scan_end_hook(wmse, ignore_err=True)
             om.out.error('\n**IMPORTANT** The following error was '
                          'detected by w3af and couldn\'t be resolved:\n%s\n' % wmse)
         except Exception:
@@ -198,7 +218,7 @@ class w3afCore(object):
             self.strategy.stop()
             self.progress.stop()
         
-            self._end()
+            self.scan_end_hook()
 
     def _create_worker_pool(self):
         self.worker_pool = Pool(self.WORKER_THREADS,
@@ -246,7 +266,8 @@ class w3afCore(object):
         '''
         om.out.debug('The user stopped the core, finishing threads...')
         
-        self.strategy.stop()
+        if self.strategy is not None:
+            self.strategy.stop()
         self.uri_opener.stop()
         
         stop_start_time = time.time()
@@ -307,26 +328,26 @@ class w3afCore(object):
             raise w3afException(
                 'No audit, grep or crawl plugins configured to run.')
 
-    def _end(self, exc_inst=None, ignore_err=False):
+    def scan_end_hook(self, exc_inst=None, ignore_err=False):
         '''
         This method is called when the process ends normally or by an error.
         '''
         try:
+            if exc_inst:
+                om.out.debug(str(exc_inst))
+
             # Close the output manager, this needs to be done BEFORE the end()
             # in uri_opener because some plugins (namely xml_output) use the data
             # from the history in their end() method. 
             om.out.end_output_plugins()
             
-            # End the xUrllib (clear the cache
+            # End the xUrllib (clear the cache and close connections)
             #
-            # A new instance will be created at _init_core_internals so that
+            # A new instance will be created at exploit_phase_prerequisites so that
             # we can perform some exploitation.
             self.uri_opener.end()
             
             close_all_db_connections()
-            
-            if exc_inst:
-                om.out.debug(str(exc_inst))
 
         except Exception:
             if not ignore_err:
@@ -336,20 +357,29 @@ class w3afCore(object):
             # The scan has ended, terminate all workers
             #
             # The pool might be needed during the exploiting phase create a new
-            # pool in _init_core_internals()
-            self.worker_pool.terminate()
-            self.worker_pool.join()
+            # pool in exploit_phase_prerequisites()
+            #self.worker_pool.terminate()
+            #self.worker_pool.join()
             
             self.status.stop()
             self.progress.stop()
 
             # Remove all references to plugins from memory
             self.plugins.zero_enabled_plugins()
+            
+            self.exploit_phase_prerequisites()
 
             # No targets to be scanned.
-            cf.cf.save('targets', set())
-            
-            self._init_core_internals()
+            self.target.clear()
+
+    def exploit_phase_prerequisites(self):
+        '''
+        This method is just a way to group all the things that we'll need 
+        from the core during the exploitation phase. In other words, which
+        internal objects do I need alive after a scan?
+        '''
+        self.uri_opener = xUrllib()
+        self._create_worker_pool()
 
     def _home_directory(self):
         '''
