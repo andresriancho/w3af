@@ -152,9 +152,14 @@ class phishtank(CrawlPlugin):
             '''
             def __init__(self, to_check):
                 self._to_check = to_check
+                
+                self.url = ''
+                self.phish_detail_url = ''
+                
                 self.inside_entry = False
                 self.inside_URL = False
                 self.inside_detail = False
+                
                 self.matches = []
 
             def start_element(self, name, attrs):
@@ -162,10 +167,10 @@ class phishtank(CrawlPlugin):
                     self.inside_entry = True
                 elif name == 'url':
                     self.inside_URL = True
-                    self.url = ""
+                    self.url = ''
                 elif name == 'phish_detail_url':
                     self.inside_detail = True
-                    self.phish_detail_url = ""
+                    self.phish_detail_url = ''
                 return
 
             def characters(self, ch):
@@ -191,11 +196,11 @@ class phishtank(CrawlPlugin):
                             target_host_url = URL(target_host)
 
                             if target_host_url.get_domain() == phish_url.get_domain() or \
-                                    phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
+                            phish_url.get_domain().endswith('.' + target_host_url.get_domain()):
 
                                 phish_detail_url = URL(self.phish_detail_url)
-                                ptm = PhishTankMatch(
-                                    phish_url, phish_detail_url)
+                                ptm = PhishTankMatch(phish_url,
+                                                     phish_detail_url)
                                 self.matches.append(ptm)
 
         try:
