@@ -191,10 +191,8 @@ class HTTPResponse(httplib.HTTPResponse):
     # modification from socket.py
 
     def __init__(self, sock, debuglevel=0, strict=0, method=None):
-        if method:  # the httplib in python 2.3 uses the method arg
-            httplib.HTTPResponse.__init__(self, sock, debuglevel, method)
-        else:  # 2.2 doesn't
-            httplib.HTTPResponse.__init__(self, sock, debuglevel)
+        httplib.HTTPResponse.__init__(self, sock, debuglevel, strict=strict,
+                                      method=method)
         self.fileno = sock.fileno
         self.code = None
         self._rbuf = ''
@@ -229,11 +227,13 @@ class HTTPResponse(httplib.HTTPResponse):
         if self.fp is None:
             return ''
 
-        if self.length > cf.cf.get('maxFileSize'):
-            self.status = NO_CONTENT
-            self.reason = 'No Content'  # Reason-Phrase
-            self.close()
-            return ''
+        max_file_size = cf.cf.get('max_file_size') or None
+        if max_file_size:
+            if self.length > max_file_size:
+                self.status = NO_CONTENT
+                self.reason = 'No Content'  # Reason-Phrase
+                self.close()
+                return ''
 
         if self.chunked:
             return self._read_chunked(amt)
@@ -372,6 +372,9 @@ class ConnectionManager(object):
         @param host: The host for to the connection. If passed, the connection
         will be removed faster.
         '''
+        # Just make sure we don't leak open connections
+        conn.close()
+
         with self._lock:
 
             if host:
@@ -562,7 +565,6 @@ class KeepAliveHandler(object):
         '''
         for conn in self._cm.get_all(host):
             self._cm.remove_connection(conn, host)
-            conn.close()
 
     def close_all(self):
         '''
@@ -571,7 +573,6 @@ class KeepAliveHandler(object):
         for conns in self._cm.get_all().values():
             for conn in conns:
                 self._cm.remove_connection(conn)
-                conn.close()
 
     def _request_closed(self, connection):
         '''
@@ -582,7 +583,6 @@ class KeepAliveHandler(object):
 
     def _remove_connection(self, host, conn):
         self._cm.remove_connection(conn, host)
-        conn.close()
 
     def do_open(self, req):
         '''
@@ -693,7 +693,6 @@ class KeepAliveHandler(object):
                 om.out.error("unexpected exception - closing connection to %s"
                              " (%d)" % (host, id(conn)))
             self._cm.remove_connection(conn, host)
-            conn.close()
             raise
 
         if r is None or r.version == 9:

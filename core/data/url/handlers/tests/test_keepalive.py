@@ -22,6 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import socket
 import unittest
 import time
+import urllib2
+import psutil
+import os
 
 from mock import MagicMock, Mock
 
@@ -33,7 +36,7 @@ from core.data.url.handlers.keepalive import (KeepAliveHandler,
                                               HTTPHandler, HTTPSHandler)
 
 
-class test_keepalive(unittest.TestCase):
+class TestKeepalive(unittest.TestCase):
 
     def setUp(self):
         # The handler
@@ -143,8 +146,36 @@ class test_keepalive(unittest.TestCase):
         conn_mgr_https = id(HTTPSHandler(':')._cm)
         
         self.assertNotEqual(conn_mgr_http,conn_mgr_https)
+    
+    
+    def test_close_all_established_sockets(self):
+        self.close_all_sockets(0)
 
+    def test_close_all_close_wait_sockets(self):
+        # Give the socket time to move to close_wait
+        self.close_all_sockets(20)
+        
+    def close_all_sockets(self, wait):
+        keep_alive_http = HTTPHandler()
 
+        uri_opener = urllib2.build_opener(keep_alive_http)
+        
+        response = uri_opener.open('http://moth/')
+        html = response.read()
+
+        time.sleep(wait)
+        
+        pid = os.getpid()
+        p = psutil.Process(pid)
+        connections_before = p.get_connections()
+        
+        keep_alive_http.close_all()
+        
+        connections_after = p.get_connections()
+        
+        self.assertLess(len(connections_after), len(connections_before))
+        
+        
 class test_connection_mgr(unittest.TestCase):
 
     def setUp(self):

@@ -110,7 +110,7 @@ class OpenerSettings(Configurable):
             cfg.save('ntlmAuthURL', '')
 
             cfg.save('ignoreSessCookies', False)
-            cfg.save('maxFileSize', 400000)
+            cfg.save('max_file_size', 400000)
             cfg.save('maxRetrys', 2)
 
             cfg.save('urlParameter', '')
@@ -154,9 +154,15 @@ class OpenerSettings(Configurable):
         '''
         for h, v in hList:
             self.header_list.append((h, v))
-            om.out.debug('Added the following header: ' + h + ': ' + v)
+            om.out.debug('Added the following header: %s:%s' % (h,v))
 
-    def getheaders_file(self):
+    def close_connections(self):
+        handlers = (self._kAHTTP, self._kAHTTPS)
+        for handler in handlers:
+            if handler is not None:
+                handler.close_all()
+
+    def get_headers_file(self):
         return cfg.get('headersFile')
 
     def set_cookieJarFile(self, CookieJarFile):
@@ -374,10 +380,10 @@ class OpenerSettings(Configurable):
         return self._manglePlugins
 
     def get_max_file_size(self):
-        return cfg.get('maxFileSize')
+        return cfg.get('max_file_size')
 
-    def set_maxFileSize(self, fsize):
-        cfg.save('maxFileSize', fsize)
+    def set_max_file_size(self, fsize):
+        cfg.save('max_file_size', fsize)
 
     def set_maxRetrys(self, retryN):
         cfg.save('maxRetrys', retryN)
@@ -475,8 +481,8 @@ class OpenerSettings(Configurable):
 
         d13 = 'Maximum file size'
         h13 = 'Indicates the maximum file size (in bytes) that w3af will GET/POST.'
-        o13 = opt_factory('maxFileSize', cfg.get(
-            'maxFileSize'), d13, 'integer', help=h13, tabid='Misc')
+        o13 = opt_factory('max_file_size', cfg.get(
+            'max_file_size'), d13, 'integer', help=h13, tabid='Misc')
 
         d14 = 'Maximum number of retries'
         h14 = 'Indicates the maximum number of retries when requesting an URL.'
@@ -574,7 +580,7 @@ class OpenerSettings(Configurable):
         self.set_user_agent(getOptsMapValue('userAgent'))
         cfg['ignoreSessCookies'] = getOptsMapValue('ignoreSessCookies')
 
-        self.set_maxFileSize(getOptsMapValue('maxFileSize'))
+        self.set_max_file_size(getOptsMapValue('max_file_size'))
         self.set_maxRetrys(getOptsMapValue('maxRetrys'))
 
         self.set_url_parameter(getOptsMapValue('urlParameter'))

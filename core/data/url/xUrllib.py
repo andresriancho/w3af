@@ -146,6 +146,7 @@ class xUrllib(object):
         self.clear()
         self.settings.clear_cookies()
         self.settings.clear_cache()
+        self.settings.close_connections()
 
     def _init(self):
         if self.settings.need_update or self._opener is None:
@@ -278,14 +279,14 @@ class xUrllib(object):
               like the follow_redir parameter.
         '''
         if not respect_size_limit:
-            original_size = cf.cf.get('maxFileSize')
-            cf.cf.save('maxFileSize', 10 ** 10)
+            original_size = cf.cf.get('max_file_size')
+            cf.cf.save('max_file_size', 10 ** 10)
             return
 
     def lower_size_limit(self, respect_size_limit, original_size):
         if not respect_size_limit:
             # restore the original value
-            cf.cf.save('maxFileSize', original_size)
+            cf.cf.save('max_file_size', original_size)
 
     def GET(self, uri, data=None, headers=Headers(), cache=False,
             grep=True, follow_redir=True, cookies=True, respect_size_limit=True):
