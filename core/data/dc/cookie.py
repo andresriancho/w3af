@@ -32,7 +32,6 @@ class Cookie(DataContainer):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, cookie_str='', encoding=DEFAULT_ENCODING):
-
         super(Cookie, self).__init__(encoding=encoding)
 
         for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';'):
@@ -64,7 +63,3 @@ class Cookie(DataContainer):
                 res += ks + '=' + vs + '; '
         return res[:-1]
 
-    def __reduce__(self):
-        r = list(super(Cookie, self).__reduce__())
-        r[1] = (str(self),)
-        return tuple(r)
