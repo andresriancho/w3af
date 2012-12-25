@@ -45,10 +45,10 @@ class TestXUrllibIntegration(unittest.TestCase):
         
         settings = OpenerSettings()
         options = settings.get_options()
-        ntlm_domain = options['ntlmAuthDomain'] 
-        ntlm_user = options['ntlmAuthUser']
-        ntlm_pass = options['ntlmAuthPass']
-        ntlm_url = options['ntlmAuthURL']
+        ntlm_domain = options['ntlm_auth_domain'] 
+        ntlm_user = options['ntlm_auth_user']
+        ntlm_pass = options['ntlm_auth_passwd']
+        ntlm_url = options['ntlm_auth_url']
         
         ntlm_domain.set_value('moth') 
         ntlm_user.set_value('admin')
