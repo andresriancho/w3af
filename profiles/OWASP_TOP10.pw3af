@@ -210,26 +210,26 @@ db_file = plugins/crawl/phishtank/index.xml
 update_db = False
 
 [http-settings]
-proxyPort = 8080
-urlParameter = 
-never404 = 
-headersFile = 
+proxy_port = 8080
+url_parameter = 
+never_404 = 
+headers_file = 
 maxFileSize = 400000
-proxyAddress = 
-basicAuthDomain = 
-always404 = 
-maxRetrys = 2
-ntlmAuthUser = 
-ntlmAuthPass = 
-ignoreSessCookies = False
+proxy_address = 
+basic_auth_domain = 
+always_404 = 
+max_http_retries = 2
+ntlm_auth_user = 
+ntlm_auth_passwd = 
+ignore_session_cookies = False
 timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-404string = 
-cookieJarFile = 
-ntlmAuthDomain = 
-ntlmAuthURL = 
+user_agent = w3af.sourceforge.net
+basic_auth_user = 
+basic_auth_passwd = 
+string_match_404 = 
+cookie_jar_file = 
+ntlm_auth_domain = 
+ntlm_auth_url = 
 
 [crawl.bing_spider]
 result_limit = 300

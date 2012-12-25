@@ -26,22 +26,22 @@ name = empty_profile
 [output.gtk_output]
 
 [http-settings]
-proxyPort = 8080
-urlParameter = 
-basicAuthDomain = 
+proxy_port = 8080
+url_parameter = 
+basic_auth_domain = 
 maxFileSize = 400000
-proxyAddress = 
-headersFile = 
-always404 = 
-maxRetrys = 2
-never404 = 
-ntlmAuthUser = 
-ntlmAuthPass = 
-ignoreSessCookies = False
-cookieJarFile = 
+proxy_address = 
+headers_file = 
+always_404 = 
+max_http_retries = 2
+never_404 = 
+ntlm_auth_user = 
+ntlm_auth_passwd = 
+ignore_session_cookies = False
+cookie_jar_file = 
 timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
-404string = 
+user_agent = w3af.sourceforge.net
+basic_auth_user = 
+basic_auth_passwd = 
+string_match_404 = 
 

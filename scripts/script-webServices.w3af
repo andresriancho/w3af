@@ -1,8 +1,8 @@
 # webServices
 
 http-settings
-set proxyAddress 127.0.0.1
-set proxyPort 8080
+set proxy_address 127.0.0.1
+set proxy_port 8080
 back
 
 misc-settings

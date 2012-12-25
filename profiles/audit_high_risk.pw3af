@@ -38,27 +38,27 @@ msf_location = /opt/metasploit3/bin/
 [audit.os_commanding]
 
 [http-settings]
-proxyPort = 8080
-urlParameter = 
-never404 = 
-basicAuthDomain = 
+proxy_port = 8080
+url_parameter = 
+never_404 = 
+basic_auth_domain = 
 maxFileSize = 400000
-always404 = 
-headersFile = 
-proxyAddress = 
-maxRetrys = 2
-ntlmAuthUser = 
-ntlmAuthPass = 
-ignoreSessCookies = False
+always_404 = 
+headers_file = 
+proxy_address = 
+max_http_retries = 2
+ntlm_auth_user = 
+ntlm_auth_passwd = 
+ignore_session_cookies = False
 timeout = 10
-userAgent = w3af.sourceforge.net
-basicAuthUser = 
-basicAuthPass = 
+user_agent = w3af.sourceforge.net
+basic_auth_user = 
+basic_auth_passwd = 
 byDirectoryAndExtension404 = False
-404string = 
-cookieJarFile = 
-ntlmAuthDomain = 
-ntlmAuthURL = 
+string_match_404 = 
+cookie_jar_file = 
+ntlm_auth_domain = 
+ntlm_auth_url = 
 
 [audit.blind_sqli]
 eq_limit = 0.9
