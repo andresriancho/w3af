@@ -182,8 +182,8 @@ class URL(disk_item):
         # Verify that the encoding is a valid one. If we don't do it here,
         # things might get crazy afterwards.
         if not is_known_encoding(encoding):
-            raise ValueError(
-                'Invalid encoding "%s" when creating URL.' % encoding)
+            msg = 'Invalid encoding "%s" when creating URL.'
+            raise ValueError(msg % encoding)
 
         if isinstance(data, tuple):
             scheme, netloc, path, params, qs, fragment = data
