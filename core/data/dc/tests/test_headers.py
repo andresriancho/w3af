@@ -69,10 +69,7 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('Hola: \x00\x01\x02', str(headers))
         
     def test_repeated_overwrite(self):
-        headers = Headers([('a', 'b'), ('a', '3')])
-
-        self.assertIn('a', headers)
-        self.assertEqual(headers['a'], '3')
+        self.assertRaises(TypeError, Headers, [('a', 'b'), ('a', '3')])
 
     def test_special_chars(self):
         headers = Headers([('á', 'ç')])
@@ -108,3 +105,12 @@ class TestHeaders(unittest.TestCase):
 
         self.assertEqual(cloned['a'], ['b'])
         self.assertEqual(cloned['c'], ['d'])
+
+    def test_str_headers(self):
+        h = Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items())
+        self.assertEqual('HoST: w3af.com\nAccEpt: */*\n', str(h))
+
+        h = Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items())
+        self.assertEqual("Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})",
+                         repr(h))
+        

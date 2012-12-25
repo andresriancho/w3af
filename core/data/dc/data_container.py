@@ -57,8 +57,17 @@ class DataContainer(OrderedDict):
                 if key in self:
                     msg = 'Not supported init_val, the way of using repeated' \
                           ' parameter names is [(u"b", [u"2", u"3"])]'
-                    TypeError(msg)
+                    raise TypeError(msg)
+                
+                if not isinstance(val, (list, tuple)):
+                    msg = 'Invalid type for dc ctor %s expected tuple or list.'
+                    raise TypeError(msg % type(val))
 
+                if not all(isinstance(i, basestring) for i in val):
+                    msg = 'Invalid type for dc ctor expected tuple or list'\
+                          ' containing strings.'
+                    raise TypeError(msg)
+                
                 self[key] = val
 
     def copy(self):
@@ -72,19 +81,6 @@ class DataContainer(OrderedDict):
     def __str__(self):
         '''
         Return string representation.
-
-        >>> str(DataContainer([(u'a','1'), (u'b', ['2','3'])]))
-        'a=1&b=2&b=3'
-        >>> str(DataContainer([(u'aaa', None)]))
-        'aaa='
-        >>> str(DataContainer([(u'aaa', '')]))
-        'aaa='
-        >>> str(DataContainer([(u'aaa', (None, ''))]))
-        'aaa=&aaa='
-        >>> import urllib
-        >>> dc = DataContainer([(u'a','1'), (u'u', u'Ú-ú-Ü-ü')], 'latin1')
-        >>> urllib.unquote(str(dc)).decode('latin-1') == u'a=1&u=Ú-ú-Ü-ü'
-        True
 
         @return: string representation of the DataContainer Object.
         '''

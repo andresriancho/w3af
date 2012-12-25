@@ -46,7 +46,8 @@ class Headers(DataContainer):
             # have multiple header values like query strings and post-data
             if isinstance(value, basestring):
                 value = smart_unicode(value)
-            
+                value = [value,]
+                
             cleaned_vals.append( (smart_unicode(key), value) )
         
         return cleaned_vals
@@ -85,12 +86,6 @@ class Headers(DataContainer):
 
     def __str__(self):
         '''
-        >>> str(Headers({'HoST': u'w3af.com', 'AccEpt': '*/*'}.items()))
-        'HoST: w3af.com\\nAccEpt: */*\\n'
-
-        >>> repr(Headers({'Host': u'w3af.com', 'AccEpt': '*/*'}.items()))
-        "Headers({'Host': 'w3af.com', 'AccEpt': '*/*'})"
-
         @return: string representation of the Headers() object.
         '''
         return self._to_str_with_separators(u': ', u'\n') + u'\n'
