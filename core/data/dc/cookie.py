@@ -23,6 +23,7 @@ import re
 
 from core.data.constants.encodings import DEFAULT_ENCODING
 from core.data.dc.data_container import DataContainer
+from core.data.misc.encoding import smart_unicode
 
 
 class Cookie(DataContainer):
@@ -37,12 +38,17 @@ class Cookie(DataContainer):
         for k, v in re.findall('(.*?)=(.*?);', cookie_str + ';'):
             k = k.strip()
             v = v.strip()
+            
+            # Just in case we receive something that's not ASCII, convert
+            # it to unicode using chardet
+            k = smart_unicode(k, encoding=encoding)
+            v = smart_unicode(v, encoding=encoding)
 
             # This was added to support repeated parameter names
             if k in self:
                 self[k].append(v)
             else:
-                self[k] = [v, ]
+                self[k] = [v,]
 
     def _sanitize(self, value):
         value = value.replace('\n', '%0a')
