@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.crawl.wordpress_fingerprint import FileFingerPrint
 from core.data.misc.file_utils import days_since_file_update
 
 
@@ -63,7 +64,9 @@ class Testwordpress_fingerprint(PluginTest):
 
              'WordPress version "3.4.1" found in the readme.html file.',
 
-             'WordPress version "2.7.1" found from data.',
+             'WordPress version "3.4.1" fingerprinted by matching known md5'
+             ' hashes to HTTP responses of static resources available at'
+             ' the remote WordPress install.',
 
              'The sysadmin used WordPress version "3.4.1.tar.gz"'
              ' during the installation, which was found by matching'
@@ -73,18 +76,33 @@ class Testwordpress_fingerprint(PluginTest):
              ' still be the same.', ])
         self.assertEqual(descriptions, expected_descriptions)
 
-    def test_todo(self):
-        '''
-        Please note that the version found by the data is 2.7.1 , this is because
-        of an outdated data in wordpress_fingerprint.py , more specifically the
-        WP_FINGERPRINT attribute.
+    def test_xml_parsing_case01(self):
+        wordpress_fingerprint_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
+                                                                           'wordpress_fingerprint')
 
-        I should modify the plugin in order to use the XML file provided by the
-        guys at wpscan.org:
-        https://github.com/wpscanteam/wpscan/blob/master/data/wp_versions.xml
-        '''
-        self.assertTrue(False)
+        wp_fingerprints = wordpress_fingerprint_inst._get_wp_fingerprints()
+        self.assertGreater(len(wp_fingerprints), 20)
 
+        wp_file_fp = FileFingerPrint('layout2b.css',
+                                     'baec6b6ccbf71d8dced9f1bf67c751e1',
+                                     '0.71-gold')
+        self.assertIn(wp_file_fp, wp_fingerprints)
+
+    def test_updated_wp_versions_xml(self):
+        wp_fp_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'wordpress_fingerprint')
+        url = 'https://raw.github.com/wpscanteam/wpscan/master/data/wp_versions.xml'
+        
+        wp_versions_file = wp_fp_inst.WP_VERSIONS_XML
+        is_older = days_since_file_update(wp_versions_file, 60)
+
+        msg = 'The wp_versions.xml file is too old. The following commands need'\
+              ' to be run in order to update it:\n'\
+              'cd plugins/crawl/wordpress_fingerprint/\n'\
+              'wget %s -O wp_versions.xml\n'\
+              'svn commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
+              'cd -'
+        self.assertFalse(is_older % url, msg)
+        
     def test_updated_release_db(self):
 
         wpfp_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
