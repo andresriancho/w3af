@@ -21,9 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 import copy
-import urllib
 
-from core.data.misc.encoding import smart_unicode
+from collections import Iterable
+
+import core.data.parsers.encode_decode as enc_dec
+
 from core.data.constants.encodings import UTF8
 from core.controllers.misc.ordereddict import OrderedDict
 
@@ -36,38 +38,28 @@ class DataContainer(OrderedDict):
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
+
         super(DataContainer, self).__init__()
         self.encoding = encoding
 
-        if isinstance(init_val, dict):
-            # we lose compatibility with other ordered dict types this way
-            raise TypeError('Undefined order, cannot get items from dict')
-
         if isinstance(init_val, DataContainer):
             self.update(init_val)
-            return
-                
-        for item in init_val:
-            try:
-                key, val = item
-            except TypeError:
-                raise TypeError('DataContainer requires (key, val) in init')
+        elif isinstance(init_val, dict):
+            # we lose compatibility with other ordered dict types this way
+            raise TypeError('Undefined order, cannot get items from dict')
+        else:
+            for item in init_val:
+                try:
+                    key, val = item
+                except TypeError:
+                    raise TypeError('key, val = item')
 
-            if key in self:
-                msg = 'Not supported init_val, the way of using repeated' \
-                      ' parameter names is [(u"b", [u"2", u"3"])]'
-                raise TypeError(msg)
-            
-            if not isinstance(val, (list, tuple)):
-                msg = 'Invalid type for dc ctor %s expected tuple or list.'
-                raise TypeError(msg % type(val))
+                if key in self:
+                    msg = 'Not supported init_val, the way of using repeated' \
+                          ' parameter names is [(u"b", [u"2", u"3"])]'
+                    TypeError(msg)
 
-            if not all(isinstance(i, basestring) for i in val):
-                msg = 'Invalid type for dc ctor expected tuple or list'\
-                      ' containing strings.'
-                raise TypeError(msg)
-            
-            self[key] = val
+                self[key] = val
 
     def copy(self):
         '''
@@ -77,25 +69,26 @@ class DataContainer(OrderedDict):
         '''
         return copy.deepcopy(self)
 
-    def __setitem__(self, k, v):
-        if not isinstance(k, basestring):
-            raise TypeError('DataContainer key must be a string.')
-
-        if not isinstance(v, (list, tuple)):
-            raise TypeError('DataContainer value must be list or tuple.')
-        
-        k = smart_unicode(k, encoding=self.encoding)
-        v = [smart_unicode(i, encoding=self.encoding) for i in v]
-        
-        super(DataContainer, self).__setitem__(k, v)
-        
     def __str__(self):
         '''
         Return string representation.
 
+        >>> str(DataContainer([(u'a','1'), (u'b', ['2','3'])]))
+        'a=1&b=2&b=3'
+        >>> str(DataContainer([(u'aaa', None)]))
+        'aaa='
+        >>> str(DataContainer([(u'aaa', '')]))
+        'aaa='
+        >>> str(DataContainer([(u'aaa', (None, ''))]))
+        'aaa=&aaa='
+        >>> import urllib
+        >>> dc = DataContainer([(u'a','1'), (u'u', u'Ú-ú-Ü-ü')], 'latin1')
+        >>> urllib.unquote(str(dc)).decode('latin-1') == u'a=1&u=Ú-ú-Ü-ü'
+        True
+
         @return: string representation of the DataContainer Object.
         '''
-        return self._to_str_with_separators(u'=', u'&', encode=True)
+        return enc_dec.urlencode(self, encoding=self.encoding)
 
     def __unicode__(self):
         '''
@@ -103,28 +96,26 @@ class DataContainer(OrderedDict):
 
         >>> unicode(DataContainer([(u'a', u'1'), (u'b', [u'2', u'3'])]))
         u'a=1&b=2&b=3'
+        >>> unicode(DataContainer([(u'aaa', None)]))
+        u'aaa='
+        >>> unicode(DataContainer([(u'aaa', u'')]))
+        u'aaa='
         '''
         return self._to_str_with_separators(u'=', u'&')
 
-    def _to_str_with_separators(self, key_val_sep, pair_sep, encode=False):
-        '''
-        @return: A string representation of self using key_val_sep as the
-                 key/value separator and pair_sep as the separator between
-                 different key/value pairs.
-        '''
+    def _to_str_with_separators(self, key_val_sep, pair_sep):
         lst = []
-        
-        for k, v_lst in self.items():
-            for v in v_lst:
-                
-                if encode:
-                    k = k.encode(self.encoding)
-                    v = v.encode(self.encoding)
-                    
-                    k = urllib.quote(k, safe='/<>"\'=:()')
-                    v = urllib.quote(v, safe='/<>"\'=:()')
-                    
-                to_append = k + key_val_sep + v
-                lst.append(to_append)
-                
+        for k, v in self.items():
+            if isinstance(v, basestring):
+                v = [v]
+            else:
+                if not isinstance(v, Iterable):
+                    v = [(v if v is None else unicode(v, UTF8))]
+
+            for ele in v:
+                if not ele:
+                    toapp = k + key_val_sep
+                else:
+                    toapp = k + key_val_sep + ele
+                lst.append(toapp)
         return pair_sep.join(lst)

@@ -37,13 +37,6 @@ class TestDataContainer(unittest.TestCase):
         self.assertEqual(dc['a'], ['1'])
         self.assertEqual(dc['b'], ['2', '3'])
     
-    def test_init_error_case01(self):
-        self.assertRaises(TypeError, DataContainer, [(u'a','1')])
-
-    def test_init_error_case02(self):
-        self.assertRaises(TypeError, DataContainer, [(u'a','1'),
-                                                     (u'a','1')])
-        
     def test_str(self):
         dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
         str_dc = str(dc)
