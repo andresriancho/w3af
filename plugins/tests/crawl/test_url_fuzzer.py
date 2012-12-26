@@ -36,9 +36,11 @@ class TestURLFuzzer(PluginTest):
     def test_fuzzer_found_urls(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
+        
         expected_urls = ('/index.html', '/index.html~',
                          '/index.html.zip', '.tgz')
         urls = self.kb.get('urls', 'url_objects')
+        
         self.assertEquals(
             set(str(u) for u in urls),
             set((self.base_url + end) for end in expected_urls)
