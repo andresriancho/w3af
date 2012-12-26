@@ -35,9 +35,6 @@ class TestHeaders(unittest.TestCase):
         self.assertIn('a', headers)
         self.assertEqual(headers['a'], 'b')
 
-    def test_raises(self):
-        self.assertRaises(TypeError, Headers, {})
-        
     def test_build_with_headers(self):
         headers = Headers([('a', 'b')])
         headers = Headers(headers)

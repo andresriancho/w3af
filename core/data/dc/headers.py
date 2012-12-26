@@ -30,27 +30,15 @@ class Headers(DataContainer):
     @author: Javier Andalia (jandalia AT gmail DOT com)
     '''
     def __init__(self, init_val=(), encoding=UTF8):
-        cleaned_vals = self.clean_values(init_val)
-        super(Headers, self).__init__(cleaned_vals, encoding)
-    
-    def clean_values(self, init_val):        
-        if isinstance(init_val, DataContainer)\
-        or isinstance(init_val, dict):
-            return init_val
-
-        cleaned_vals = []
-
-        # Cleanup whatever came from the wire into a unicode string
-        for key, value in init_val:
-            # I can do this key, value thing because the headers do NOT
-            # have multiple header values like query strings and post-data
-            if isinstance(value, basestring):
-                value = smart_unicode(value)
-                value = [value,]
-                
-            cleaned_vals.append( (smart_unicode(key), value) )
         
-        return cleaned_vals
+        if isinstance(init_val, (list, tuple)):
+            wrapped_init = []
+            for key, val in init_val:
+                wrapped_init.append( (key, [val,]) )
+            
+            init_val = wrapped_init
+            
+        super(Headers, self).__init__(init_val, encoding)
     
     def iget(self, header_name, default=None):
         '''
@@ -69,26 +57,12 @@ class Headers(DataContainer):
             clone[key] = [value, ]
         return clone
 
-    def __setitem__(self, k, v):
-        if isinstance(k, basestring):
-            k = k.encode(self.encoding, 'replace')
-        else:
-            raise ValueError('Header name must be a string.')
-
-        if isinstance(v, basestring):
-            v = v.encode(self.encoding, 'replace')
-        #
-        # Had to remove this for clone_with_list_values
-        #else:
-        #    raise ValueError('Header value must be a string.')
-
-        super(Headers, self).__setitem__(k, v)
+    def __getitem__(self, k):
+        return super(Headers, self).__getitem__(k)
 
     def __str__(self):
-        '''
-        @return: string representation of the Headers() object.
-        '''
-        return self._to_str_with_separators(u': ', u'\n') + u'\n'
+        return self._to_str_with_separators(u': ', u'\n', encode=True) + u'\n'
 
     def __unicode__(self):
-        return str(self).decode(self.encoding)
+        return self._to_str_with_separators(u': ', u'\n') + u'\n'
+

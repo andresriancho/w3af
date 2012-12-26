@@ -38,25 +38,6 @@ class TestDataContainer(unittest.TestCase):
         self.assertEqual(dc['b'], ['2', '3'])
     
     def test_init_error_case01(self):
-        msg = '''There is a problem with data containers: there is no
-        type check for values passed to the init function, which ends
-        with the following:
-        
-            DataContainer( [(u'a','123')] )
-            dc['a'] == '123'
-            
-            DataContainer( [(u'a', ['123'])] )
-            dc['a'] == ['123',]
-        
-        Which will cause bugs when someone does the following:
-            dc['a'][0]
-        
-        Expecting to get '123' and gets '1'. This bug won't raise an exception
-        (which makes it even harder to spot) but will in some cases prevent us
-        from finding a vulnerability or following the right link.
-        '''
-        raise SkipTest(msg)
-    
         self.assertRaises(TypeError, DataContainer, [(u'a','1')])
 
     def test_init_error_case02(self):
@@ -65,16 +46,26 @@ class TestDataContainer(unittest.TestCase):
         
     def test_str(self):
         dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
-        self.assertEqual(str(dc), 'a=1&b=2&b=3')        
+        str_dc = str(dc)
+        self.assertEqual(str_dc, 'a=1&b=2&b=3')
+        self.assertIsInstance(str_dc, str) 
         
         dc = DataContainer([(u'aaa', [''])])
         self.assertEqual(str(dc), 'aaa=')
         
         dc = DataContainer([(u'aaa', ('', ''))])
         self.assertEqual(str(dc), 'aaa=&aaa=')
-         
+    
+    def test_str_special_chars(self):
         dc = DataContainer([(u'a',['1']), (u'u', [u'Ú-ú-Ü-ü'])], 'latin1')
         decoded_str = urllib.unquote(str(dc)).decode('latin-1')
         self.assertEquals(u'a=1&u=Ú-ú-Ü-ü', decoded_str)
+        
+    def test_unicode(self):
+        dc = DataContainer([(u'a',['1']), (u'b', ['2','3'])])
+        udc = unicode(dc)
+        
+        self.assertEqual(udc, u'a=1&b=2&b=3')
+        self.assertIsInstance(udc, unicode)
         
         
