@@ -43,5 +43,5 @@ class TestUserDir(PluginTest):
 
         user = users[0]
 
-        self.assertTrue(user.get_name().startswith('User directory:'))
+        self.assertTrue(user.get_name().startswith('Web user home directory'))
         self.assertEquals(user.get_url().url_string, 'http://moth/~www/')

@@ -124,6 +124,7 @@ VULNS = {
          20047: 'WordPress path disclosure',
          20048: 'PHP register_globals: Off',
          20049: 'PHP enable_dl: Off',
+         20050: 'Web user home directory',
          
          # Grep
          30001: 'US Social Security Number disclosure',
