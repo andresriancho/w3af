@@ -21,36 +21,39 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import datetime
 import re
 
-import core.data.constants.severity as severity
-
-from plugins.tests.helper import PluginTest, PluginConfig
+from plugins.tests.helper import PluginTest
+from core.data.request.fuzzable_request import FuzzableRequest
+from core.data.parsers.url import URL
+from core.data.constants.severity import MEDIUM
 
 
 class TestPhishtank(PluginTest):
 
     safe_url = 'http://moth/'
-    vuln_url_1 = 'http://www.i-fotbal.eu/'
-    vuln_url_2 = 'http://190.16.196.11/web/update.html'
     phish_detail = 'http://www.phishtank.com/phish_detail.php?phish_id='
 
-    _run_configs = {
-        'cfg': {
-            'target': None,
-            'plugins': {'crawl': (PluginConfig('phishtank'),)}
-        }
-    }
-
     def test_phishtank_no_match(self):
-        cfg = self._run_configs['cfg']
-        self._scan(self.safe_url, cfg['plugins'])
-
+        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
+                                                               'phishtank')
+        
+        phishtank_inst.crawl(FuzzableRequest(URL(self.safe_url)))
         vulns = self.kb.get('phishtank', 'phishtank')
 
         self.assertEqual(len(vulns), 0, vulns)
 
+    def get_vulnerable_url(self, phishtank_inst):
+        for line in file(phishtank_inst.PHISHTANK_DB):
+            # <url>http://www.lucabrassi.com/wp/aol/index.htm</url>
+            match = re.search('<url>(.*?)</url>', line)
+            if match:
+                return match.group(1)
+
     def test_phishtank_match(self):
-        cfg = self._run_configs['cfg']
-        self._scan(self.vuln_url_1, cfg['plugins'])
+        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
+                                                               'phishtank')
+        
+        vuln_url = URL(self.get_vulnerable_url(phishtank_inst))
+        phishtank_inst.crawl(FuzzableRequest(vuln_url))
 
         vulns = self.kb.get('phishtank', 'phishtank')
 
@@ -58,33 +61,20 @@ class TestPhishtank(PluginTest):
         vuln = vulns[0]
 
         self.assertEqual(vuln.get_name(), 'Phishing scam')
-        self.assertEqual(vuln.get_severity(), severity.MEDIUM)
-        self.assertTrue(vuln.get_url().url_string.startswith(self.vuln_url_1),
-                        vuln.get_url())
+        self.assertEqual(vuln.get_severity(), MEDIUM)
+        self.assertEqual(vuln.get_url(), vuln_url)
 
-    def test_xml_parsing_1(self):
+    def test_xml_parsing(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
 
-        ptm_list = phishtank_inst._is_in_phishtank([self.vuln_url_1, ])
+        vuln_url_str = self.get_vulnerable_url(phishtank_inst)
+        ptm_list = phishtank_inst._is_in_phishtank([vuln_url_str, ])
         self.assertEqual(len(ptm_list), 1, ptm_list)
 
         ptm = ptm_list[0]
-        self.assertTrue(ptm.url.url_string.startswith(self.vuln_url_1))
-        self.assertTrue(
-            ptm.more_info_URL.url_string.startswith(self.phish_detail))
-
-    def test_xml_parsing_2(self):
-        phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
-                                                               'phishtank')
-
-        ptm_list = phishtank_inst._is_in_phishtank([self.vuln_url_2, ])
-        self.assertEqual(len(ptm_list), 1, ptm_list)
-
-        ptm = ptm_list[0]
-        self.assertTrue(ptm.url.url_string.startswith(self.vuln_url_2))
-        self.assertTrue(
-            ptm.more_info_URL.url_string.startswith(self.phish_detail))
+        self.assertEqual(ptm.url.url_string, vuln_url_str)
+        self.assertTrue(ptm.more_info_URL.url_string.startswith(self.phish_detail))
 
     def test_too_old_xml(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
@@ -92,7 +82,7 @@ class TestPhishtank(PluginTest):
 
         # Example: <generated_at>2012-11-01T11:00:13+00:00</generated_at>
         generated_at_re = re.compile('<generated_at>(.*?)</generated_at>')
-        mo = generated_at_re.search(file(phishtank_inst._phishtank_DB).read())
+        mo = generated_at_re.search(file(phishtank_inst.PHISHTANK_DB).read())
 
         if mo is None:
             self.assertTrue(False, 'Error while parsing XML file.')

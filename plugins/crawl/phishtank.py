@@ -30,9 +30,6 @@ import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
 import core.data.constants.severity as severity
 
-from core.data.options.opt_factory import opt_factory
-from core.data.options.option_types import INPUT_FILE, BOOL
-from core.data.options.option_list import OptionList
 from core.data.parsers.url import URL
 from core.data.kb.vuln import Vuln
 
@@ -49,23 +46,16 @@ class phishtank(CrawlPlugin):
     @author: Andres Riancho (andres.riancho@gmail.com)
     @author: Special thanks to http://www.phishtank.com/ !
     '''
+    PHISHTANK_DB = os.path.join('plugins', 'crawl', 'phishtank', 'index.xml')
 
     def __init__(self):
         CrawlPlugin.__init__(self)
-
-        # User defines variable
-        self._phishtank_DB = os.path.join('plugins', 'crawl', 'phishtank',
-                                          'index.xml')
-        self._update_DB = False
 
     @runonce(exc_class=w3afRunOnce)
     def crawl(self, fuzzable_request):
         '''
         Plugin entry point, perform all the work.
         '''
-        if self._update_DB:
-            self._do_update()
-
         to_check = self._get_to_check(fuzzable_request.get_url())
 
         # I found some URLs, create fuzzable requests
@@ -162,7 +152,7 @@ class phishtank(CrawlPlugin):
                 
                 self.matches = []
 
-            def start_element(self, name, attrs):
+            def startElement(self, name, attrs):
                 if name == 'entry':
                     self.inside_entry = True
                 elif name == 'url':
@@ -204,11 +194,11 @@ class phishtank(CrawlPlugin):
                                 self.matches.append(ptm)
 
         try:
-            phishtank_db_fd = codecs.open(self._phishtank_DB, 'r', 'utf-8',
+            phishtank_db_fd = codecs.open(self.PHISHTANK_DB, 'r', 'utf-8',
                                           errors='ignore')
         except Exception, e:
             msg = 'Failed to open phishtank database file: "%s", exception: "%s".'
-            raise w3afException(msg % (self._phishtank_DB, e))
+            raise w3afException(msg % (self.PHISHTANK_DB, e))
 
         parser = make_parser()
         pt_handler = PhishTankHandler(to_check)
@@ -225,55 +215,6 @@ class phishtank(CrawlPlugin):
 
         return pt_handler.matches
 
-    def set_options(self, option_list):
-        self._phishtank_DB = option_list['db_file'].get_value()
-        self._update_DB = option_list['update_db'].get_value()
-
-    def get_options(self):
-        '''
-        @return: A list of option objects for this plugin.
-        '''
-        ol = OptionList()
-
-        d = 'The path to the phishtank database file.'
-        o = opt_factory('db_file', self._phishtank_DB, d, INPUT_FILE)
-        ol.add(o)
-
-        d = 'Update the local phishtank database.'
-        h = 'If True, the plugin will download the phishtank database'\
-            ' from http://www.phishtank.com/ .'
-        o = opt_factory('update_db', self._update_DB, d, BOOL, help=h)
-        ol.add(o)
-
-        return ol
-
-    def _do_update(self):
-        '''
-        This method is called to update the database.
-        '''
-        try:
-            file_handler = codecs.open(self._phishtank_DB, 'w', 'utf-8')
-        except Exception, e:
-            msg = 'Failed to open file: "%s", error: "%s".'
-            raise w3afException(msg % (self._phishtank_DB, e))
-
-        msg = 'Updating the phishtank database, this will take some minutes'\
-              ' ( almost 7MB to download ).'
-        om.out.information(msg)
-
-        update_url = URL('http://data.phishtank.com/data/online-valid/')
-        res = self._uri_opener.GET(update_url)
-        om.out.information('Download complete, writing to the database file.')
-
-        try:
-            file_handler.write(res.get_body())
-            file_handler.close()
-        except Exception, e:
-            msg = 'Failed to write to file: "%s", error: "%s".'
-            raise w3afException(msg % (self._phishtank_DB, e))
-        else:
-            return True
-
     def get_long_desc(self):
         '''
         @return: A DETAILED description of the plugin functions and features.
@@ -282,8 +223,4 @@ class phishtank(CrawlPlugin):
         This plugin searches the domain being tested in the phishtank database.
         If your site is in this database the chances are that you were hacked
         and your server is now being used in phishing attacks.
-
-        Two configurable parameters exist:
-            - db_file
-            - update_db
         '''
