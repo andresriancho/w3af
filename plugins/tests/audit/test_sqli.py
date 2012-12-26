@@ -41,7 +41,9 @@ class TestSQLI(PluginTest):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
         vulns = self.kb.get('sqli', 'sqli')
+        
         self.assertEquals(1, len(vulns))
+        
         # Now some tests around specific details of the found vuln
         vuln = vulns[0]
         self.assertEquals("SELECT * FROM ", vuln['error'])
