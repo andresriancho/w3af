@@ -211,22 +211,23 @@ class crawl_infrastructure(BaseConsumer):
         # Sort URLs
         tmp_url_list = get_urls_from_kb()[:]
         tmp_url_list = list(set(tmp_url_list))
-        tmp_url_list.sort()
 
-        msg = 'Found %s URLs and %s different points of injection.'
+        msg = 'Found %s URLs and %s different injections points.'
         msg = msg % (len(tmp_url_list), len(get_fuzzable_requests_from_kb()))
         om.out.information(msg)
 
         # print the URLs
-        om.out.information('The list of URLs is:')
-        for i in tmp_url_list:
-            om.out.information('- ' + i)
+        om.out.information('The URL list is:')
+        
+        tmp_url_list = ['- %s' % u.url_string for u in tmp_url_list]
+        tmp_url_list.sort()
+        map(om.out.information, tmp_url_list)
 
         # Now I simply print the list that I have after the filter.
-        tmp_fr = ['- ' + str(fr) for fr in get_fuzzable_requests_from_kb()]
-        tmp_fr.sort()
-
         om.out.information('The list of fuzzable requests is:')
+        
+        tmp_fr = ['- %s' % fr for fr in get_fuzzable_requests_from_kb()]
+        tmp_fr.sort()
         map(om.out.information, tmp_fr)
 
     def _should_stop_discovery(self):
@@ -245,9 +246,6 @@ class crawl_infrastructure(BaseConsumer):
                       ' added to the queue.'
                 om.out.information(msg)
             return True
-        else:
-            om.out.debug('FOOOOO %s < %s' % (self._w3af_core.get_run_time(),
-                                             self._max_discovery_time))
 
         return False
 
