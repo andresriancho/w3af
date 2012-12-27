@@ -21,13 +21,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import core.controllers.output_manager as om
 import core.data.kb.knowledge_base as kb
-from core.data.kb.info import Info
 
 from core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from core.controllers.exceptions import w3afRunOnce
 from core.controllers.misc.decorators import runonce
 from core.data.search_engines.pks import pks as pks
 from core.data.parsers.url import URL
+from core.data.kb.info import Info
 
 
 class finger_pks(InfrastructurePlugin):

@@ -57,8 +57,6 @@ class pks(SearchEngine):
 
     def met_search(self, query):
         """
-        lookup(query) -> results
-
         Query a Public Key Server.
 
         This method is based from the pks.py file from the massive enumeration toolset,
@@ -87,26 +85,28 @@ class pks(SearchEngine):
                 name = ' '.join(tokens[3:-1])
 
                 # Copy+paste from baseparser.py
-                emailRegex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
-                if re.match(emailRegex, email, re.IGNORECASE):
+                email_regex = '([A-Z0-9\._%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})'
+                if re.match(email_regex, email, re.IGNORECASE):
 
                     account = email.split('@')[0]
                     domain = email.split('@')[1]
 
                     if domain == query:
                         if account not in accounts:
-                            pksr = PKSResult(name, account, response.id)
-                            results.append(pksr)
                             accounts.append(account)
+                            
+                            pksr = PKSResult(name, account, domain, response.id)
+                            results.append(pksr)
 
         return results
 
 
 class PKSResult(object):
-    def __init__(self, name, username, _id):
+    def __init__(self, name, username, domain, _id):
         self.name = name
         self.username = username
+        self.domain = domain
         self.id = _id
 
     def __repr__(self):
-        return '<%s@%s>' % (self.name, self.username)
+        return '<PKSResult: %s@%s>' % (self.name, self.domain)
