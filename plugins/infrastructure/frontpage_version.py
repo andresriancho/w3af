@@ -50,7 +50,7 @@ class frontpage_version(InfrastructurePlugin):
         self._analyzed_dirs = ScalableBloomFilter()
 
     @runonce(exc_class=w3afRunOnce)
-    def crawl(self, fuzzable_request):
+    def discover(self, fuzzable_request):
         '''
         For every directory, fetch a list of files and analyze the response.
 
