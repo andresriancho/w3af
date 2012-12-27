@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import os
 import unittest
+import urllib2
 
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
@@ -53,6 +54,22 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.quit()
         self.kb.cleanup()
 
+    def _verify_targets_up(self, target_list):
+        for target in target_list:
+            msg = 'The target site "%s" is down' % target
+            
+            try:
+                response = urllib2.urlopen(target)
+                response.read()
+            except urllib2.URLError, e:
+                if hasattr(e, 'code') and e.code == 404:
+                    continue
+                
+                self.assertTrue(False, msg)
+            
+            except Exception, e:
+                self.assertTrue(False, msg)
+
     def _scan(self, target, plugins, debug=False, assert_exceptions=True):
         '''
         Setup env and start scan. Typically called from children's
@@ -62,9 +79,13 @@ class PluginTest(unittest.TestCase):
         @param plugins: PluginConfig objects to activate and setup before
             the test runs.
         '''
-        # Set target(s)
+        if not isinstance(target, (basestring, tuple)):
+            raise TypeError('Expected basestring or tuple in scan target.')
+        
         if isinstance(target, basestring):
             target = (target,)
+        
+        self._verify_targets_up(target)
         
         target_opts = create_target_option_list(*target)
         self.w3afcore.target.set_options(target_opts)
