@@ -60,4 +60,11 @@ class TestLevenshtein(unittest.TestCase):
         for e, d, f in acceptance_tests:
             res1 = relative_distance_boolean(e, d, f)
             res2 = relative_distance(e, d) >= f
-            self.assertEqual(res1, res2)
+            
+            msg = 'relative_distance_boolean and relative_distance returned'\
+                  ' different results for the same parameters:\n'\
+                  '    - %s\n'\
+                  '    - %s\n'\
+                  '    - Threshold: %s\n'\
+            
+            self.assertEqual(res1, res2, msg % (e, d, f))

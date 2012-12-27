@@ -54,6 +54,9 @@ def relative_distance_boolean(a_str, b_str, threshold=0.6):
     if blen == 0 or alen == 0:
         return alen == blen
 
+    if blen == alen and a_str == b_str and threshold <= 1.0:
+        return True
+
     ratio = float(blen) / alen
 
     last_ratio, last_bound = UPPER_BOUNDS[-1]
