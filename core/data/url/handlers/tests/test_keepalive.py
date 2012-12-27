@@ -226,8 +226,6 @@ class test_connection_mgr(unittest.TestCase):
     def test_remove_conn(self):
         # Rem a non existing conn
         non_exist_conn = Mock()
-        self.assertRaises(
-            ValueError, self.cm.remove_connection, non_exist_conn)
         conn = self.cm.get_available_connection(self.host, lambda h: Mock())
         old_len = self.cm.get_connections_total()
         non_exist_host = "non_host"
