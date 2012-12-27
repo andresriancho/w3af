@@ -29,6 +29,7 @@ import core.data.kb.knowledge_base as kb
 
 from core.controllers.w3afCore import w3afCore
 from core.controllers.misc.homeDir import W3AF_LOCAL_PATH
+from core.controllers.misc.decorators import retry
 
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_types import LIST
@@ -54,6 +55,7 @@ class PluginTest(unittest.TestCase):
         self.w3afcore.quit()
         self.kb.cleanup()
 
+    @retry(tries=3, delay=0.5, backoff=2)
     def _verify_targets_up(self, target_list):
         for target in target_list:
             msg = 'The target site "%s" is down' % target
