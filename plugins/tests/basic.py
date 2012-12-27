@@ -140,22 +140,67 @@ class TestBasic(unittest.TestCase):
             self.w3afcore.plugins.get_plugin_type_desc(plugin_type)
 
     def test_plugin_is_of_correct_type(self):
+        
+        def defined_in_subclass(klass, attr):
+            any_klass_method = getattr(klass, attr, None)
+            
+            if any_klass_method is None:
+                # Not defined in class or parent class
+                return False
+            
+            for base_klass in klass.__class__.__bases__:
+                
+                base_method = getattr(base_klass, attr, None)
+                if base_method is None:
+                    # In some cases one of the base classes does not
+                    # implement all methods
+                    continue
+                
+                if any_klass_method.__func__ is not base_method.__func__:
+                    return True
+                
+            return False
+        
+        
+        ALL_TYPES_ATTRS = ('_uri_opener', 'output_queue', '_plugin_lock',
+                           'get_type')
+        
+        TYPES_AND_ATTRS = {'attack': ['_generate_shell', 'get_attack_type',
+                                      'get_root_probability', 'get_kb_location'],
+                           'audit': ['audit',],
+                           'auth': ['login', 'logout', 'is_logged'],
+                           'bruteforce': ['audit',],
+                           'crawl': ['crawl'],
+                           'evasion': ['get_priority', 'modify_request'],
+                           'grep': ['grep'],
+                           'infrastructure': ['discover',],
+                           'mangle': ['mangle_request', 'mangle_response',
+                                      'get_priority'],
+                           'output': ['debug', 'information', 'error',
+                                      'vulnerability', 'console']}
+        
         for plugin_type in self.plugins:
             for plugin in self.plugins[plugin_type]:
                 
                 ptype = PLUGIN_TYPES[plugin_type]
-                msg = '%s if not of expected type %s' % (plugin, ptype)
+                msg = '%s is not of expected type %s' % (plugin, ptype)
                 
                 self.assertTrue(isinstance(plugin, ptype), msg)
                 self.assertEqual(plugin.get_type(), plugin_type, msg)
 
                 # Also assert that the plugin called <Type>Plugin.__init__(self)
                 # and that the corresponding attrs are there
-                for attr in ('_uri_opener', 'output_queue', '_plugin_lock'):
-                    msg = 'Plugin %s doesn\'t have attribute %s.' % (
-                        plugin.get_name(), attr)
-                    self.assertTrue(
-                        getattr(plugin, attr, False) != False, msg)
+                for attr in ALL_TYPES_ATTRS:
+                    msg = 'Plugin %s doesn\'t have attribute %s: %r' % (plugin.get_name(),
+                                                                     attr,
+                                                                     dir(plugin))
+                    self.assertTrue(getattr(plugin, attr, False) != False, msg)
+                
+                # Verify that the current plugin, and not the parent, defined
+                # the required methods
+                for attr in TYPES_AND_ATTRS[plugin.get_type()]:
+                    msg = 'Plugin %s doesn\'t have attribute %s.' % (plugin.get_name(), attr)
+                    self.assertTrue(defined_in_subclass(plugin, attr), msg)
 
 
 class TestFailOnInvalidURL(PluginTest):
@@ -169,9 +214,11 @@ class TestFailOnInvalidURL(PluginTest):
 
     def test_fail_1(self):
         cfg = self._run_configs['cfg']
-        self.assertRaises(
-            w3afException, self._scan, 'http://http://moth/', cfg['plugins'])
+        self.assertRaises(w3afException,
+                          self._scan, 'http://http://moth/', cfg['plugins'],
+                          verify_targets=False)
 
     def test_fail_2(self):
         cfg = self._run_configs['cfg']
-        self.assertRaises(w3afException, self._scan, '', cfg['plugins'])
+        self.assertRaises(w3afException, self._scan, '', cfg['plugins'],
+                          verify_targets=False)

@@ -70,7 +70,8 @@ class PluginTest(unittest.TestCase):
             except Exception, e:
                 self.assertTrue(False, msg)
 
-    def _scan(self, target, plugins, debug=False, assert_exceptions=True):
+    def _scan(self, target, plugins, debug=False, assert_exceptions=True,
+              verify_targets=True):
         '''
         Setup env and start scan. Typically called from children's
         test methods.
@@ -85,7 +86,8 @@ class PluginTest(unittest.TestCase):
         if isinstance(target, basestring):
             target = (target,)
         
-        self._verify_targets_up(target)
+        if verify_targets:
+            self._verify_targets_up(target)
         
         target_opts = create_target_option_list(*target)
         self.w3afcore.target.set_options(target_opts)
