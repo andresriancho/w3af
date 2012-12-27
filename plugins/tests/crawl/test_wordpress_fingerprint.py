@@ -101,7 +101,7 @@ class Testwordpress_fingerprint(PluginTest):
               'wget %s -O wp_versions.xml\n'\
               'svn commit -m "Updating wp_versions.xml file." wp_versions.xml\n'\
               'cd -'
-        self.assertFalse(is_older % url, msg)
+        self.assertFalse(is_older, msg % url)
         
     def test_updated_release_db(self):
 
