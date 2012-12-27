@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 '''
 from core.controllers.plugins.plugin import Plugin
-from core.controllers.exceptions import w3afException
 
 
 class EvasionPlugin(Plugin):
@@ -46,8 +45,8 @@ class EvasionPlugin(Plugin):
         @param request: urllib2.Request instance that is going to be modified by the evasion plugin
         @return: A fuzzed version of the Request.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method modify_request')
+        msg = 'Plugin is not implementing required method modify_request'
+        raise NotImplementedError(msg)
 
     def set_url_opener(self, foo):
         pass
@@ -59,8 +58,8 @@ class EvasionPlugin(Plugin):
 
         @return: An integer specifying the priority. 100 is run first, 0 last.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method get_priority')
+        msg = 'Plugin is not implementing required method get_priority'
+        raise NotImplementedError(msg)
 
     def get_type(self):
         return 'evasion'

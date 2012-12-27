@@ -22,9 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import inspect
 
 import core.data.constants.severity as severity
-
 from core.controllers.plugins.plugin import Plugin
-from core.controllers.exceptions import w3afException
 
 
 class OutputPlugin(Plugin):
@@ -52,8 +50,7 @@ class OutputPlugin(Plugin):
 
         @return: No value is returned.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method debug')
+        raise NotImplementedError
 
     def information(self, message, new_line=True):
         '''
@@ -63,8 +60,7 @@ class OutputPlugin(Plugin):
 
         @return: No value is returned.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method information')
+        raise NotImplementedError
 
     def error(self, message, new_line=True):
         '''
@@ -74,8 +70,7 @@ class OutputPlugin(Plugin):
 
         @return: No value is returned.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method error')
+        raise NotImplementedError
 
     def vulnerability(self, message, new_line=True, severity=severity.MEDIUM):
         '''
@@ -85,8 +80,7 @@ class OutputPlugin(Plugin):
 
         @return: No value is returned.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method vulnerability')
+        raise NotImplementedError
 
     def console(self, message, new_line=True):
         '''
@@ -96,8 +90,7 @@ class OutputPlugin(Plugin):
 
         @return: No value is returned.
         '''
-        raise w3afException(
-            'Plugin is not implementing required method console')
+        raise NotImplementedError
 
     def log_http(self, request, response):
         '''

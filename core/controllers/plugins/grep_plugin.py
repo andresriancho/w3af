@@ -36,7 +36,7 @@ class GrepPlugin(Plugin):
     TARGET_DOMAINS = None
 
     def __init__(self):
-        Plugin.__init__(self)
+        super(GrepPlugin, self).__init__()
 
     def grep_wrapper(self, fuzzable_request, response):
         '''
