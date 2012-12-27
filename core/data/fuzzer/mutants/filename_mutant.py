@@ -89,6 +89,12 @@ class FileNameMutant(URLPartsMutant):
         '''
         This is a very important method which is called in order to create
         mutants. Usually called from fuzzer.py module.
+        
+        @param fuzzable_param_list: Please note that in this case the user
+                                    specifies the chunk of the filename that
+                                    he wants to fuzz. Chunks:
+                                        foo.bar.html
+                                        0   1   2
         '''
         if not fuzzer_config['fuzz_url_filenames']:
             return []
@@ -101,6 +107,9 @@ class FileNameMutant(URLPartsMutant):
         fname_chunks = [x for x in re.split(r'([a-zA-Z0-9]+)', fname) if x]
 
         for idx, fn_chunk in enumerate(fname_chunks):
+
+            if not (fuzzable_param_list == [] or idx in fuzzable_param_list):
+                continue
 
             for mutant_str in mutant_str_list:
 
