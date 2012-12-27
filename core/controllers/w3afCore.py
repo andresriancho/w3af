@@ -293,10 +293,10 @@ class w3afCore(object):
     
     def quit(self):
         '''
-        The user is in a hurry, he wants to exit w3af ASAP.
+        The user wants to exit w3af ASAP, so we stop the scan and exit.
         '''
         self.stop()
-        remove_temp_dir()
+        remove_temp_dir(ignore_errors=True)
         
     def pause(self, pause_yes_no):
         '''
