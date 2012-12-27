@@ -46,6 +46,7 @@ class pykto(CrawlPlugin):
     A nikto port to python.
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
+    DB_FILE = os.path.join('plugins', 'crawl', 'pykto', 'scan_database.db')
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -56,9 +57,6 @@ class pykto(CrawlPlugin):
         self._show_remote_server = True
 
         # User configured parameters
-        self._db_file = os.path.join(
-            'plugins', 'crawl', 'pykto', 'scan_database.db')
-
         self._extra_db_file = os.path.join('plugins', 'crawl', 'pykto',
                                            'w3af_scan_database.db')
 
@@ -117,7 +115,7 @@ class pykto(CrawlPlugin):
 
         @param url: The URL object I have to test.
         '''
-        for fname in [self._db_file, self._extra_db_file]:
+        for fname in [self.DB_FILE, self._extra_db_file]:
             try:
                 db_file = open(fname, "r")
             except Exception, e:
@@ -186,97 +184,6 @@ class pykto(CrawlPlugin):
             return True
 
         return False
-
-    def _update_db(self):
-        '''
-        This method updates the scan_database from cirt.net .
-        '''
-        # Only update once
-        self._update_scandb = False
-
-        # Here we have the versions
-        _version_file = 'plugins' + os.path.sep + 'crawl' + \
-            os.path.sep + 'pykto'
-        _version_file += os.path.sep + 'versions.txt'
-
-        try:
-            version_file = file(_version_file)
-        except Exception, e:
-            msg = 'Could not open: "' + _version_file + \
-                '" while updating pykto scan_database.'
-            msg += ' Exception message: "' + str(e) + '".'
-            raise w3afException(msg)
-
-        try:
-            for line in version_file:
-                if line.count('scan_database.db'):
-                    _, local_version = line.strip().split(',')
-                    break
-        except:
-            msg = 'Format error in file: ' + _version_file + \
-                ' while updating pykto scan_database.'
-            raise w3afException(msg)
-
-        version_file.close()
-        om.out.debug(
-            'Local version of pykto scan_database.db is: ' + local_version)
-
-        # fetching remote version
-        versions_url = URL(
-            'http://www.cirt.net/nikto/UPDATES/1.36/versions.txt')
-        res_version = self._uri_opener.GET(versions_url)
-
-        fetched_version = False
-        for line in res_version.get_body().split():
-            if line.count('scan_database.db'):
-                _, remote_version = line.strip().split(',')
-                fetched_version = True
-
-        if not fetched_version:
-            msg = 'pykto can\'t update the scan database, an error occurred while fetching the'
-            msg += ' versions.txt file from cirt.net .'
-            om.out.error(msg)
-        else:
-            om.out.debug('Remote version of nikto scan_database.db is: "' +
-                         remote_version + '".')
-
-            local_version = float(local_version)
-            remote_version = float(remote_version)
-
-            if local_version == remote_version:
-                msg = 'Local and Remote version of nikto scan_database.db match, no update needed.'
-                om.out.information(msg)
-            elif local_version > remote_version:
-                msg = 'Local version of scan_database.db is grater than remote version... this is'
-                msg += ' odd... check this.'
-                om.out.information(msg)
-            else:
-                msg = 'Updating to scan_database version: "' + \
-                    str(remote_version) + '".'
-                om.out.information(msg)
-                scan_database_url = URL(
-                    'http://www.cirt.net/nikto/UPDATES/1.36/scan_database.db')
-                res = self._uri_opener.GET(scan_database_url)
-                try:
-                    # Write new scan_database
-                    os.unlink(self._db_file)
-                    fd_new_db = file(self._db_file, 'w')
-                    fd_new_db.write(res.get_body())
-                    fd_new_db.close()
-
-                    # Write new version file
-                    os.unlink(_version_file)
-                    fd_new_version = file(_version_file, 'w')
-                    fd_new_version.write(res_version.get_body())
-                    fd_new_version.close()
-
-                    msg = 'Successfully updated scan_database.db to version: ' + str(remote_version)
-                    om.out.information(msg)
-
-                except Exception, e:
-                    msg = 'There was an error while writing the new scan_database.db file to disk.'
-                    msg += ' Exception message: "' + str(e) + '".'
-                    raise w3afException(msg)
 
     def _server_match(self, server):
         '''
@@ -468,56 +375,56 @@ class pykto(CrawlPlugin):
         ol = OptionList()
 
         d = 'CGI-BIN dirs where to search for vulnerable scripts.'
-        h = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
-        h += ' cgi-bin directory. The cgi-bin directory can be anything and change from install'
-        h += ' to install, so its a good idea to make this a user setting. The directories should'
-        h += ' be supplied comma separated and with a / at the beggining and one at the end.'
-        h += ' Example: "/cgi/,/cgibin/,/bin/"'
-        o = opt_factory('cgiDirs', self._cgi_dirs, d, LIST, help=h)
+        h = 'Pykto will search for vulnerable scripts in many places, one of'\
+            ' them is inside cgi-bin directory. The cgi-bin directory can be'\
+            ' anything and change from install to install, so its a good idea'\
+            ' to make this a user setting. The directories should be supplied'\
+            ' comma separated and with a / at the beggining and one at the end.'\
+            ' Example: "/cgi/,/cgibin/,/bin/"'
+        o = opt_factory('cgi_dirs', self._cgi_dirs, d, LIST, help=h)
         ol.add(o)
 
         d = 'Admin directories where to search for vulnerable scripts.'
-        h = 'Pykto will search for vulnerable scripts in many places, one of them is inside'
-        h += ' administration directories. The admin directory can be anything and change'
-        h += ' from install to install, so its a good idea to make this a user setting. The'
-        h += ' directories should be supplied comma separated and with a / at the beggining and'
-        h += ' one at the end. Example: "/admin/,/adm/"'
-        o = opt_factory('adminDirs', self._admin_dirs, d, LIST, help=h)
+        h = 'Pykto will search for vulnerable scripts in many places, one of'\
+            ' them is inside administration directories. The admin directory'\
+            ' can be anything and change from install to install, so its a'\
+            ' good idea to make this a user setting. The directories should'\
+            ' be supplied comma separated and with a / at the beggining and'\
+            ' one at the end. Example: "/admin/,/adm/"'
+        o = opt_factory('admin_dirs', self._admin_dirs, d, LIST, help=h)
         ol.add(o)
 
         d = 'PostNuke directories where to search for vulnerable scripts.'
-        h = 'The directories should be supplied comma separated and with a / at the'
-        h += ' beggining and one at the end. Example: "/forum/,/nuke/"'
-        o = opt_factory('nukeDirs', self._nuke, d, LIST, help=h)
+        h = 'The directories should be supplied comma separated and with a'\
+            'forward slash at the beginning and one at the end. Example:'\
+            '"/forum/,/nuke/"'
+        o = opt_factory('nuke_dirs', self._nuke, d, LIST, help=h)
         ol.add(o)
 
         d = 'The path to the nikto scan_databse.db file.'
         h = 'The default scan database file is ok in most cases.'
-        o = opt_factory('dbFile', self._db_file, d, INPUT_FILE, help=h)
+        o = opt_factory('dbFile', self.DB_FILE, d, INPUT_FILE, help=h)
         ol.add(o)
 
         d = 'The path to the w3af_scan_databse.db file.'
-        h = 'This is a file which has some extra checks for files that are not present in the'
-        h += ' nikto database.'
-        o = opt_factory(
-            'extra_db_file', self._extra_db_file, d, INPUT_FILE, help=h)
+        h = 'This is a file which has some extra checks for files that are not'\
+            ' present in the nikto database.'
+        o = opt_factory('extra_db_file', self._extra_db_file, d,
+                        INPUT_FILE, help=h)
         ol.add(o)
 
         d = 'Test all files with all root directories'
         h = 'Define if we will test all files with all root directories.'
-        o = opt_factory('mutateTests', self._mutate_tests, d, BOOL, help=h)
+        o = opt_factory('mutate_tests', self._mutate_tests, d, BOOL, help=h)
         ol.add(o)
 
-        d = 'Verify that pykto is using the latest scan_database from cirt.net.'
-        o = opt_factory('updateScandb', self._update_scandb, d, BOOL)
-        ol.add(o)
-
-        d = 'If generic scan is enabled all tests are sent to the remote server without'
-        d += ' checking the server type.'
-        h = 'Pykto will send all tests to the server if generic Scan is enabled. For example,'
-        h += ' if a test in the database is marked as "apache" and the remote server reported'
-        h += ' "iis" then the test is sent anyway.'
-        o = opt_factory('genericScan', self._generic_scan, d, BOOL, help=h)
+        d = 'If generic scan is enabled all tests are sent to the remote'\
+            ' server without checking the server type.'
+        h = 'Pykto will send all tests to the server if generic Scan is'\
+            ' enabled. For example, if a test in the database is marked'\
+            ' as "apache" and the remote server reported "iis" then the'\
+            ' test is sent anyway.'
+        o = opt_factory('generic_scan', self._generic_scan, d, BOOL, help=h)
         ol.add(o)
 
         return ol
@@ -530,14 +437,12 @@ class pykto(CrawlPlugin):
         @param OptionList: A dictionary with the options for the plugin.
         @return: No value is returned.
         '''
-        self._update_scandb = options_list['updateScandb'].get_value()
-        self._cgi_dirs = options_list['cgiDirs'].get_value()
-        self._admin_dirs = options_list['adminDirs'].get_value()
-        self._nuke = options_list['nukeDirs'].get_value()
+        self._cgi_dirs = options_list['cgi_dirs'].get_value()
+        self._admin_dirs = options_list['admin_dirs'].get_value()
+        self._nuke = options_list['nuke_dirs'].get_value()
         self._extra_db_file = options_list['extra_db_file'].get_value()
-        self._db_file = options_list['dbFile'].get_value()
-        self._mutate_tests = options_list['mutateTests'].get_value()
-        self._generic_scan = options_list['genericScan'].get_value()
+        self._mutate_tests = options_list['mutate_tests'].get_value()
+        self._generic_scan = options_list['generic_scan'].get_value()
 
     def get_plugin_deps(self):
         '''
@@ -554,18 +459,16 @@ class pykto(CrawlPlugin):
         This plugin is a nikto port to python. It uses the scan_database file
         from nikto to search for new and vulnerable URL's.
 
-        Seven configurable parameters exist:
-            - updateScandb
-            - cgiDirs
-            - adminDirs
-            - nukeDirs
-            - dbFile
+        The following configurable parameters exist:
+            - cgi_dirs
+            - admin_dirs
+            - nuke_dirs
             - extra_db_file
-            - mutateTests
-            - genericScan
+            - mutate_tests
+            - generic_scan
 
         This plugin reads every line in the scan_database (and extra_db_file)
-        and based on the configuration ("cgiDirs", "adminDirs" , "nukeDirs"
-        and "genericScan") it performs requests to the remote server searching
+        and based on the configuration ("cgi_dirs", "admin_dirs" , "nuke_dirs"
+        and "generic_scan") it performs requests to the remote server searching
         for common files that may contain vulnerabilities.
         '''
