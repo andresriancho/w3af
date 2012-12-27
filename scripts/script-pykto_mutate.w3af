@@ -9,7 +9,7 @@ back
 
 discovery config pykto
 set updateScandb True
-set mutateTests True
+set mutate_tests True
 back
 discovery pykto,server_header
 back
