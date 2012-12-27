@@ -383,36 +383,33 @@ class ConnectionManager(object):
                 if conn in self._hostmap[host]:
                     self._hostmap[host].remove(conn)
 
-            else:  # We don't know the host. Need to find it by looping
+            else:
+                # We don't know the host. Need to find it by looping
                 for _host, conns in self._hostmap.items():
                     if conn in conns:
                         host = _host
                         conns.remove(conn)
                         break
 
-            removed = False
-            try:
-                self._used_cons.remove(conn)
-                removed = True
-            except ValueError:
+            for lst in (self._free_conns, self._used_cons):
                 try:
-                    self._free_conns.remove(conn)
-                    removed = True
+                    lst.remove(conn)
                 except ValueError:
+                    # I don't care much about the connection not being in
+                    # the free_conns or used_conns. This might happen because
+                    # of a thread locking issue (basically, someone is not
+                    # locking before moving connections around).
                     pass
-            if not removed:
-                raise ValueError("Connection obj <%s> not present in pool" %
-                                 conn)
-
+            
+            # No more conns for 'host', remove it from mapping
             conn_total = self.get_connections_total(host)
+            if host and not conn_total:
+                del self._hostmap[host]
+            
             if DEBUG:
                 msg = 'keepalive: removed one connection, len(self._hostmap' \
                       '["%s"]): %s' % (host, conn_total)
                 om.out.debug(msg)
-
-            # No more conns for 'host', remove it from mapping
-            if host and not conn_total:
-                del self._hostmap[host]
 
     def free_connection(self, conn):
         '''
