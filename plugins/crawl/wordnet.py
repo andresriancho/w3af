@@ -25,7 +25,9 @@ from core.controllers.plugins.crawl_plugin import CrawlPlugin
 from core.controllers.core_helpers.fingerprint_404 import is_404
 from core.controllers.misc.levenshtein import relative_distance_lt
 
-from core.data.fuzzer.fuzzer import create_mutants
+from core.data.fuzzer.utils import rand_alpha
+from core.data.fuzzer.mutants.filename_mutant import FileNameMutant
+from core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from core.data.nltk_wrapper.nltk_wrapper import wn
 from core.data.options.opt_factory import opt_factory
 from core.data.options.option_list import OptionList
@@ -57,8 +59,7 @@ class wordnet(CrawlPlugin):
         args = izip(original_response_repeat, mutants)
 
         #   Send the requests using threads:
-        self.worker_pool.map_multi_args(self._check_existance,
-                                           args)
+        self.worker_pool.map_multi_args(self._check_existance, args)
 
     def _check_existance(self, original_response, mutant):
         '''
@@ -71,8 +72,16 @@ class wordnet(CrawlPlugin):
         if not is_404(response) and \
         relative_distance_lt(original_response.body, response.body, 0.85):
             
-            for fr in self._create_fuzzable_requests(response):
-                self.output_queue.put(fr)
+            # Verify against something random
+            rand = rand_alpha()
+            rand_mutant = mutant.copy()
+            rand_mutant.set_mod_value(rand)
+            rand_response = self._uri_opener.send_mutant(rand_mutant)
+            
+            if relative_distance_lt(response.body, rand_response.body, 0.85):
+                
+                for fr in self._create_fuzzable_requests(response):
+                    self.output_queue.put(fr)
 
     def _generate_mutants(self, fuzzable_request):
         '''
@@ -90,16 +99,19 @@ class wordnet(CrawlPlugin):
         @return: A list of mutants.
         '''
         query_string = fuzzable_request.get_uri().querystring
+        
         for parameter_name in query_string:
             # this for loop was added to address the repeated parameter name issue
             for element_index in xrange(len(query_string[parameter_name])):
-                wordnet_result = self._search_wn(
-                    query_string[parameter_name][element_index])
-                new_urls = self._generate_URL_from_wn_result(
-                    parameter_name, element_index,
-                    wordnet_result, fuzzable_request)
-                for u in new_urls:
-                    yield u
+                
+                orig_content = query_string[parameter_name][element_index]
+                wordnet_result = self._search_wn(orig_content)
+                
+                mutants = QSMutant.create_mutants(fuzzable_request, wordnet_result,
+                                                  [parameter_name,], False, {})
+                
+                for mutant in mutants:
+                    yield mutant
 
     def _search_wn(self, word):
         '''
@@ -176,63 +188,28 @@ class wordnet(CrawlPlugin):
         @return: A list mutants.
         '''
         url = fuzzable_request.get_url()
-        fname = self._get_filename(url)
+        fname_ext = url.get_file_name()
+        splitted_fname_ext = fname_ext.split('.')
+        
+        if not len(splitted_fname_ext) == 2:
+            return []
+        
+        name = splitted_fname_ext[0]
 
-        wordnet_result = self._search_wn(fname)
-        new_urls = self._generate_URL_from_wn_result(
-            None, None, wordnet_result,
-            fuzzable_request)
-        return new_urls
-
-    def _get_filename(self, url):
-        '''
-        @return: The filename, without the extension
-        '''
-        fname = url.get_file_name()
-        ext = url.get_extension()
-        return fname.replace('.' + ext, '')
-
-    def _generate_URL_from_wn_result(self, analyzed_variable, element_index,
-                                     result_set, fuzzable_request):
-        '''
-        Based on the result, create the new URLs to test.
-
-        @param analyzed_variable: The parameter name that is being analyzed
-        @param element_index: 0 in most cases, >0 if we have repeated parameter names
-        @param result_set: The set of results that wordnet gave use
-        @param fuzzable_request: The fuzzable request that we got as input in the first place.
-
-        @return: An URL list.
-        '''
-        if analyzed_variable is None:
-            # The URL was analyzed
-            url = fuzzable_request.get_url()
-            fname = url.get_file_name()
-            domain_path = url.get_domain_path()
-
-            # The result
-            result = []
-
-            splitted_fname = fname.split('.')
-            if len(splitted_fname) == 2:
-                name = splitted_fname[0]
-                extension = splitted_fname[1]
-            else:
-                name = '.'.join(splitted_fname[:-1])
-                extension = 'html'
-
-            for set_item in result_set:
-                new_fname = fname.replace(name, set_item)
-                frCopy = fuzzable_request.copy()
-                frCopy.set_url(domain_path.url_join(new_fname))
-                result.append(frCopy)
-
-            return result
-
-        else:
-            mutants = create_mutants(fuzzable_request, result_set,
-                                     fuzzable_param_list=[analyzed_variable, ])
-            return mutants
+        wordnet_result = self._search_wn(name)
+        
+        # Given that we're going to be testing these as filenames, we're
+        # going to remove the ones with spaces, since that's very strange
+        # to find online
+        wordnet_result = [word for word in wordnet_result if ' ' not in word]
+        
+        fuzzer_config = {}
+        fuzzer_config['fuzz_url_filenames'] = True
+        
+        mutants = FileNameMutant.create_mutants(fuzzable_request, wordnet_result,
+                                                [0,], False, fuzzer_config)
+        
+        return mutants
 
     def get_options(self):
         '''

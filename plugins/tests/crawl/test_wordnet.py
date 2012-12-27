@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 from plugins.tests.helper import PluginTest, PluginConfig
 from plugins.crawl.wordnet import wordnet
+from core.controllers.core_helpers.update_urls_in_kb import get_fuzzable_requests_from_kb
 
 
 class TestWordnet(PluginTest):
@@ -41,16 +42,18 @@ class TestWordnet(PluginTest):
 
     def test_found_urls(self):
         cfg = self._run_configs['cfg']
-        self._scan(cfg['target'], cfg['plugins'])
+        self._scan(cfg['target'], cfg['plugins'], debug=True)
 
         expected_urls = (
-            'azure.html', 'blue.html', 'green.html', 'red.html',
-            'hide.php', 'show.php', '',
+                         '', 'azure.html', 'blue.html', 'green.html', 'hide.php',
+                         'red.html', 'show.php', 'show.php?os=linux',
+                         'show.php?os=unix', 'show.php?os=windows',
         )
 
-        urls = self.kb.get('urls', 'url_objects')
+        frs = get_fuzzable_requests_from_kb()
+        
         self.assertEquals(
-            set(str(u) for u in urls),
+            set(fr.get_uri().url_string for fr in frs),
             set((self.target_url + end) for end in expected_urls)
         )
 
@@ -61,13 +64,3 @@ class TestWordnet(PluginTest):
         self.assertEqual(len(wn_result), wn._wordnet_results)
         self.assertIn('red', wn_result)
 
-    def test_fix_bug(self):
-        '''
-         FIXME: There is an ugly bug in the wordnet plugin that returns many
-         URIs to the core. Example:
-        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="bay window")
-        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="car window")
-        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="casement w...")
-        - http://moth/w3af/crawl/wordnet/hide.php | Method: GET | Parameters: (os="clerestory")
-        '''
-        self.assertTrue(False)
