@@ -59,7 +59,6 @@ class fingerprint_os(InfrastructurePlugin):
 
         @Return: None, the knowledge is saved in the knowledgeBase
         '''
-        found_os = False
         freq_url = fuzzable_request.get_url()
         filename = freq_url.get_file_name()
         dirs = freq_url.get_directories()[:-1]  # Skipping "domain level" dir.
@@ -73,7 +72,6 @@ class fingerprint_os(InfrastructurePlugin):
             windows_response = self._uri_opener.GET(windows_url)
 
             original_response = self._uri_opener.GET(freq_url)
-            found_os = True
 
             if relative_distance_ge(original_response.get_body(),
                                     windows_response.get_body(), 0.98):
@@ -93,9 +91,9 @@ class fingerprint_os(InfrastructurePlugin):
             kb.kb.save(self, 'operating_system_str', os_str)
             kb.kb.append(self, 'operating_system', i)
             om.out.information(i.get_desc())
-            
+            return True
 
-        return found_os
+        return False
 
     def get_long_desc(self):
         '''
