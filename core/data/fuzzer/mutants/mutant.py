@@ -28,20 +28,26 @@ from core.data.dc.form import Form
 from core.data.fuzzer.form_filler import smart_fill
 from core.data.constants.ignored_params import IGNORED_PARAMETERS
 from core.data.constants.file_templates.file_templates import get_file_from_template
+from core.data.db.disk_item import DiskItem
 
 
-class Mutant(object):
+class Mutant(DiskItem):
     '''
     This class is a wrapper for fuzzable requests that have been modified.
     '''
     def __init__(self, freq, israw=False):
+        super(Mutant, self).__init__()
+        
         self._freq = freq
-        self._fuzzable_type = None
         self._var = ''
         self._index = 0
         self._original_value = ''
         self._original_response_body = None
         self._mutant_dc = DataContainer()
+    
+    def get_eq_attrs(self):
+        return ['_freq', '_var', '_index', '_original_value',
+                '_original_response_body', '_mutant_dc']
     
     def get_mutant_dc(self):
         return self._mutant_dc
