@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 test_url.py
 
@@ -207,3 +208,55 @@ class TestURLParser(unittest.TestCase):
         
         result = [i.url_string for i in URL('http://w3af.com/def.html?id=/').get_directories()]
         self.assertEqual(result, expected)
+
+    #
+    #    Test url_join
+    #
+    def test_url_join_case01(self):
+        u = URL('http://w3af.com/foo.bar')
+        self.assertEqual(u.url_join('abc.html').url_string,
+                         u'http://w3af.com/abc.html')
+        
+        self.assertEqual(u.url_join('/abc.html').url_string,
+                         u'http://w3af.com/abc.html')
+    
+    def test_url_join_case02(self):
+        u = URL('http://w3af.com/')
+        self.assertEqual(u.url_join('/abc.html').url_string,
+                         u'http://w3af.com/abc.html')
+        
+        self.assertEqual(u.url_join('/def/abc.html').url_string,
+                         u'http://w3af.com/def/abc.html')
+
+    def test_url_join_case03(self):
+        u = URL('http://w3af.com/def/jkl/')
+        self.assertEqual(u.url_join('/def/abc.html').url_string,
+                         u'http://w3af.com/def/abc.html')
+        
+        self.assertEqual(u.url_join('def/abc.html').url_string,
+                         u'http://w3af.com/def/jkl/def/abc.html')
+
+    def test_url_join_case04(self):
+        u = URL('http://w3af.com:8080/')
+        self.assertEqual(u.url_join('abc.html').url_string,
+                         u'http://w3af.com:8080/abc.html')
+    
+    def test_url_join_case05(self):
+        u = URL('http://w3af.com/def/')
+        self.assertEqual(u.url_join(u'тест').url_string,
+                         u'http://w3af.com/def/тест')
+
+    def test_url_join_case06(self):
+        '''
+        Opera and Chrome behave like this. For those browsers the URL
+        leads to no good, so I'm going to do the same thing. If the user
+        wants to specify a URL that contains a colon he should URL
+        encode it.
+        '''
+        u = URL('http://w3af.com/')
+        self.assertRaises(ValueError, u.url_join, "d:url.html?id=13&subid=3")
+
+    def test_url_join_case07(self):
+        u = URL('http://w3af.com/')
+        self.assertEqual(u.url_join('http://w3af.org:8080/abc.html').url_string,
+                         u'http://w3af.org:8080/abc.html')

@@ -620,47 +620,7 @@ class URL(disk_item):
                          have the same encoding that the current url_object.
         @return: The joined URL.
 
-        Examples:
-
-        >>> u = URL('http://w3af.com/foo.bar')
-        >>> u.url_join('abc.html').url_string
-        u'http://w3af.com/abc.html'
-        >>> u.url_join('/abc.html').url_string
-        u'http://w3af.com/abc.html'
-
-        >>> u = URL('http://w3af.com/')
-        >>> u.url_join('/abc.html').url_string
-        u'http://w3af.com/abc.html'
-        >>> u.url_join('/def/abc.html').url_string
-        u'http://w3af.com/def/abc.html'
-
-        >>> u = URL('http://w3af.com/def/jkl/')
-        >>> u.url_join('/def/abc.html').url_string
-        u'http://w3af.com/def/abc.html'
-        >>> u.url_join('def/abc.html').url_string
-        u'http://w3af.com/def/jkl/def/abc.html'
-
-        >>> u = URL('http://w3af.com:8080/')
-        >>> u.url_join('abc.html').url_string
-        u'http://w3af.com:8080/abc.html'
-
-        >>> u = URL('http://w3af.com/def/')
-        >>> u.url_join(u'тест').url_string == u'http://w3af.com/def/тест'
-        True
-
-
-        Opera and Chrome behave like this. For those browsers the URL
-        leads to no good, so I'm going to do the same thing. If the user
-        wants to specify a URL that contains a colon he should URL
-        encode it.
-
-        >>> u = URL('http://w3af.com/')
-        >>> u.url_join("d:url.html?id=13&subid=3")
-        Traceback (most recent call last):
-          File "<stdin>", line 1, in ?
-        ValueError: Invalid URL "d:url.html?id=13&subid=3"
-
-
+        Example usage available in test_url.py
         '''
         resp_encoding = encoding if encoding is not None else self._encoding
         joined_url = urlparse.urljoin(self.url_string, relative)
