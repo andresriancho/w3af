@@ -1,0 +1,9 @@
+movie 'wivet1.swf' {
+// flash 9, total frames: 1, frame rate: 24 fps, 500x375 px, compressed, network access alowed
+
+  metadata <rdf:RDF xmlns:rdf=\'http://www.w3.org/1999/02/22-rdf-syntax-ns#\'><rdf:Description rdf:about=\'\' xmlns:dc=\'http://purl.org/dc/elements/1.1\'><dc:format>application/x-shockwave-flash</dc:format><dc:title>Adobe Flex 3 Application</dc:title><dc:description>http://www.adobe.com/products/flex</dc:description><dc:publisher>unknown</dc:publisher><dc:creator>unknown</dc:creator><dc:language>EN</dc:language><dc:date>01.Oca.2009</dc:date></rdf:Description></rdf:RDF>
+  
+  // unknown tag 82 length 1581
+  
+  // unknown tag 76 length 11
+}

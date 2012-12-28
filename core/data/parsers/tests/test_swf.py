@@ -28,6 +28,7 @@ from core.data.url.HTTPResponse import HTTPResponse
 from core.data.dc.headers import Headers
 from core.data.parsers.url import URL
 
+
 class TestSWFParser(unittest.TestCase):
     
     WIVET_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
@@ -63,7 +64,7 @@ class TestSWFParser(unittest.TestCase):
         parser = self.parse(self.DEMO_SAMPLE)
         parsed, re_refs = parser.get_references()
         
-        expected = set([URL('http://moth/subscribe.aspx'),])
+        expected = set([URL('http://moth/xyz/subscribe.aspx'),])
         
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)

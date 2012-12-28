@@ -81,6 +81,50 @@ class SWFParser(BaseParser):
         @param swf_body: SWF bytecode string
         '''
         self._regex_url_parse(swf_body)
+        self._0x83_getURL_parse(swf_body)
+    
+    def _0x83_getURL_parse(self, swf_body):
+        '''
+        After reading a couple of SWF files with a hex editor it was possible
+        to identify the following pattern:
+        
+            0x83    0xLENGTH    0x00    (0xLENGTH - 2 chars)    0x00
+        
+        0x83 is the bytecode for Adobe's getURL
+        0xLENGTH is the string length of the first parameter including the two
+                 0x00 string delimiters.
+        
+        So, with this information I'll extract links!
+        
+        @return: Store new URLs in self._re_urls, None is returned.
+        '''
+        for index, char in enumerate(swf_body):
+            if char == '\x83' and swf_body[index+2] == '\x00':
+                # potential getURL with string as first parameter
+                # lets get the length and verify that there is a 0x00 where
+                # we expect it to be
+                str_len = ord(swf_body[index+1])
+                str_end = swf_body[index + 1 + str_len]
+
+                # Strings in SWF bytecode have 0x00 content 0x00 and the len
+                # counts the delimiters, so a length of 2 or less is useless
+                if str_len <= 2:
+                    continue
+                
+                if str_end == '\x00':
+                    # Getting closer... lets reduce more false positives by
+                    # verifying that all chars in the url are ASCII
+                    start = index + 3
+                    end = start + str_len - 2
+                    url_str = swf_body[start:end]
+                    
+                    if all(32 < ord(c) < 127 for c in url_str):
+                        # All chars are ASCII, we've got a URL!
+                        #
+                        # In case you're wondering, this url_join does work with
+                        # both relative and full URLs
+                        url = self._base_url.url_join(url_str)
+                        self._re_urls.add(url)
 
     def get_references(self):
         '''
@@ -114,3 +158,4 @@ class SWFParser(BaseParser):
 
     get_references_of_tag = get_forms = get_comments = _return_empty_list
     get_meta_redir = get_meta_tags = _return_empty_list
+

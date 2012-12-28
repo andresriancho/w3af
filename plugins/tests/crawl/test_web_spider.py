@@ -136,12 +136,12 @@ class TestWebSpider(PluginTest):
         #
         W3AF_FAILS = set((
             '9_16ee31.php', '9_9ee31.php', '9_18ee31.php', '9_11ee31.php',
-            '19_1f52a.php', '9_20ee31.php', '9_25ee31.php', '9_15ee31.php',
+            '9_20ee31.php', '9_25ee31.php', '9_15ee31.php',
             '9_8ee31.php', '9_17ee31.php', '9_13ee31.php', '9_19ee31.php',
             '9_14ee31.php', '19_2e3a2.php', '17_143ef.php', '9_23ee31.php',
             '9_12ee31.php', '9_5ee31.php', '9_6ee31.php', '9_22ee31.php',
             '11_2d3ff.php', '17_2da76.php', '18_1a2f3.php', '9_24ee31.php',
-            '9_7ee31.php', '9_10ee31.php', '9_21ee31.php', '2_2b7a3.php',
+            '9_7ee31.php', '9_10ee31.php', '9_21ee31.php',
         ))
 
         EXPECTED_URLS = ALL_WIVET_URLS - W3AF_FAILS
@@ -163,7 +163,7 @@ class TestWebSpider(PluginTest):
         self.assertEquals(len(stats), 1, stats)
 
         coverage = get_coverage_for_scan_id(stats[0][0])
-        self.assertEqual(coverage, 50)
+        self.assertEqual(coverage, 51)
 
 
 def clear_wivet():
