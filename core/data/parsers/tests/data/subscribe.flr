@@ -1,0 +1,17 @@
+movie 'subscribe.swf' {
+// flash 6, total frames: 1, frame rate: 30 fps, 125x50 px, compressed
+
+  movieClip 12  {
+
+    frame 70 {
+      stop();
+    }
+  }
+
+  button 13 {
+
+    on (release) {
+      getURL('subscribe.aspx', '');
+    }
+  }
+}

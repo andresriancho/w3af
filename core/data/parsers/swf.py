@@ -1,5 +1,5 @@
 '''
-swfParser.py
+swf.py
 
 Copyright 2006 Andres Riancho
 
@@ -24,17 +24,18 @@ import zlib
 from core.data.parsers.baseparser import BaseParser
 
 
-class swfParser(BaseParser):
+class SWFParser(BaseParser):
     '''
-    This class is a SWF (flash) parser. This is the first version, so don't
-    expect much!
+    This class is a SWF (flash) parser which just focuses on extracting URLs.
+    
+    The parser is based on "SWF File Format Specification Version 10"
+    http://www.adobe.com/content/dam/Adobe/en/devnet/swf/pdf/swf_file_format_spec_v10.pdf
 
     @author: Andres Riancho (andres.riancho@gmail.com)
     '''
     def __init__(self, HTTPResponse):
         BaseParser.__init__(self, HTTPResponse)
 
-        # work !
         swf = HTTPResponse.get_body()
         if self._is_compressed(swf):
             try:
@@ -79,13 +80,7 @@ class swfParser(BaseParser):
 
         @param swf_body: SWF bytecode string
         '''
-        # FIXME: Jan 2012, JAP - Now this method does nothing. Extracting
-        # urls from a compiled flash leads to serious encoding issues
-        # while performing scans. The definite solution is to decompile
-        # swf files and decode the proper substrings (urls in swf files
-        # are found in specific sections) using the proper encoding name.
-        ##self._regex_url_parse(swf_body)
-        pass
+        self._regex_url_parse(swf_body)
 
     def get_references(self):
         '''

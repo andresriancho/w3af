@@ -30,8 +30,10 @@ from core.data.parsers.url import URL
 
 class TestPDF(unittest.TestCase):
     
-    SIMPLE_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests', 'simple.pdf')
-    LINKS_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests', 'links.pdf')
+    SIMPLE_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+                                 'data', 'simple.pdf')
+    LINKS_SAMPLE = os.path.join('core', 'data', 'parsers', 'tests',
+                                'data', 'links.pdf')
     
     def test_pdf_to_text(self):
         text = pdf_to_text(file(self.SIMPLE_SAMPLE).read())

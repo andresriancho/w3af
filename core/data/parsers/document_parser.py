@@ -21,10 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 '''
 import re
 
-import core.data.parsers.htmlParser as htmlParser
-import core.data.parsers.pdf as PDFParser
-import core.data.parsers.swfParser as swfParser
-import core.data.parsers.wml_parser as WMLParser
+from core.data.parsers.htmlParser import HTMLParser
+from core.data.parsers.pdf import PDFParser
+from core.data.parsers.swf import SWFParser
+from core.data.parsers.wml_parser import WMLParser
 
 from core.controllers.exceptions import w3afException
 
@@ -48,13 +48,13 @@ class DocumentParser(object):
             msg = 'There is no parser for images.'
             raise w3afException(msg)
         elif self._is_wml(http_resp):
-            parser = WMLParser.WMLParser(http_resp)
+            parser = WMLParser(http_resp)
         elif http_resp.is_text_or_html():
-            parser = htmlParser.HTMLParser(http_resp)
+            parser = HTMLParser(http_resp)
         elif self._is_pdf(http_resp):
-            parser = PDFParser.PDFParser(http_resp)
+            parser = PDFParser(http_resp)
         elif self._is_swf(http_resp):
-            parser = swfParser.swfParser(http_resp)
+            parser = SWFParser(http_resp)
         else:
             msg = 'There is no parser for "%s".' % http_resp.get_url()
             raise w3afException(msg)

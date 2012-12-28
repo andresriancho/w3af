@@ -32,7 +32,7 @@ class TestCookieDc(unittest.TestCase):
         self.assertIn('test', cookie_obj)
         self.assertIn('foobar', cookie_obj)
         self.assertIn('path', cookie_obj)
-        
+
         self.assertEqual(cookie_obj['test'], ['123'])
         self.assertEqual(cookie_obj['foobar'], ['abc def'])
         

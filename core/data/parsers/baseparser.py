@@ -152,12 +152,14 @@ class BaseParser(object):
 
         '''
         res = set()
-        filter_false_urls = self._filter_false_urls
 
         # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
-        # I'm removing those matches manually below
-        for match_tuple in filter(filter_false_urls,
-                                  self.RELATIVE_URL_RE.findall(doc_str)):
+        # I'm removing those matches with the filter
+        relative_urls = self.RELATIVE_URL_RE.findall(doc_str)
+        filter_false_urls = self._filter_false_urls
+        
+        
+        for match_tuple in filter(filter_false_urls, relative_urls):
 
             match_str = match_tuple[0]
 
@@ -172,7 +174,10 @@ class BaseParser(object):
                 pass
             else:
                 url_lower = url.url_string.lower()
-                if url_lower.startswith('http://') or url_lower.startswith('https://'):
+                
+                if url_lower.startswith('http://') or \
+                url_lower.startswith('https://'):
+                    
                     res.add(url)
 
         return res
