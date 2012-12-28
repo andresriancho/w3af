@@ -228,7 +228,7 @@ class ExceptionData(object):
 
         self.traceback_str = ''.join(traceback.format_tb(tb))
         self.traceback_str = cleanup_bug_report(self.traceback_str)
-
+        
         self.plugin = current_status.get_running_plugin()
         self.phase = current_status.get_phase()
         self.status = current_status
@@ -245,8 +245,8 @@ class ExceptionData(object):
         return current.tb_lineno        
 
     def get_summary(self):
-        res = 'An exception was found while running %s.%s on "%s". The exception'
-        res += ' was: "%s" at %s:%s.'
+        res = 'An exception was found while running %s.%s on "%s". The'\
+              ' exception was: "%s" at %s:%s.'
         res = res % (
             self.phase, self.plugin, self.fuzzable_request, self.exception,
             self.filename, self.lineno)
