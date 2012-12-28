@@ -161,7 +161,8 @@ class w3af_core_strategy(object):
         # Only check if these have exceptions and bring them to the main
         # thread in order to be handled by the ExceptionHandler and the
         # w3afCore
-        _other = [self._auth_consumer, self._grep_consumer]
+        _other = [self._audit_consumer, self._auth_consumer,
+                  self._grep_consumer]
         _other = filter(None, _other)
 
         finished = set()
