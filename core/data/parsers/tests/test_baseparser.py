@@ -118,9 +118,22 @@ class TestBaseParser(unittest.TestCase):
 
         self.assertEqual(expected_urls, self.bp_inst._re_urls)
 
+    def test_regex_url_parse_relative_url_slash_file(self):
+        input_str = u'header /subscribe.jsp footer'
+        expected_urls = set([URL('http://www.w3af.com/subscribe.jsp'), ])
+
+        self.bp_inst._regex_url_parse(input_str)
+
+        self.assertEqual(expected_urls, self.bp_inst._re_urls)
+
     def test_regex_url_parse_relative_url_file_only(self):
-        input_str = u'header /subscribe.aspx footer'
-        expected_urls = set([URL('http://www.w3af.com/subscribe.aspx'), ])
+        '''
+        Please note that the expected output in this case is an empty set,
+        adding support to parse "files" is possible, but too greedy and
+        leads to lots of "parser false positives".
+        '''
+        input_str = u'header subscribe.jsp footer'
+        expected_urls = set()
 
         self.bp_inst._regex_url_parse(input_str)
 
