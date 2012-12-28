@@ -102,7 +102,6 @@ class afd(InfrastructurePlugin):
 
             self.worker_pool.map_multi_args(self._send_and_analyze, tests)
 
-            # Analyze the results
             return self._filtered, self._not_filtered
 
     def _send_and_analyze(self, offending_string, offending_URL,
